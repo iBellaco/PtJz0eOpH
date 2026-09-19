@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
@@ -217,8 +218,8 @@ fun UserAvatarView(
                     contentDescription = "Marco de Administrador",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .size(size * 3.8f)
-                        .offset(y = size * 0.152f)
+                        .requiredSize(size * 3.6f)
+                        .offset(y = size * 0.10f)
                         .align(Alignment.Center)
                 )
             } else if (!adminFrameUrl.isNullOrBlank()) {
@@ -232,8 +233,8 @@ fun UserAvatarView(
                     contentDescription = "Marco de Administrador",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .size(size * 3.8f)
-                        .offset(y = size * 0.152f)
+                        .requiredSize(size * 3.6f)
+                        .offset(y = size * 0.10f)
                         .align(Alignment.Center)
                 )
             }
