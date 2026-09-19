@@ -182,24 +182,26 @@ fun AvatarSelectionBottomSheet(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
+                        .padding(if (isAdmin) 14.dp else 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier.padding(
-                            horizontal = if (isAdmin) 10.dp else 0.dp,
-                            vertical = if (isAdmin) 6.dp else 0.dp
+                            start = if (isAdmin) 24.dp else 0.dp,
+                            end = if (isAdmin) 24.dp else 0.dp,
+                            top = if (isAdmin) 18.dp else 0.dp,
+                            bottom = if (isAdmin) 18.dp else 0.dp
                         ),
                         contentAlignment = Alignment.Center
                     ) {
                         UserAvatarView(
                             avatarId = currentAvatarId,
                             rankBorder = currentRankBorder,
-                            size = if (isAdmin) 44.dp else 54.dp,
+                            size = if (isAdmin) 56.dp else 54.dp,
                             isAdmin = isAdmin
                         )
                     }
-                    Spacer(modifier = Modifier.width(if (isAdmin) 16.dp else 12.dp))
+                    Spacer(modifier = Modifier.width(if (isAdmin) 24.dp else 12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
