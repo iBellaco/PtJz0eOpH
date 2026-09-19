@@ -2468,10 +2468,16 @@ fun EnhancedUserAdminCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Avatar con badge de estado online
-                Box(contentAlignment = Alignment.BottomEnd) {
+                Box(
+                    modifier = Modifier.padding(
+                        horizontal = if (role == "admin") 6.dp else 0.dp,
+                        vertical = if (role == "admin") 4.dp else 0.dp
+                    ),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
                     UserAvatarView(
                         avatarId = avatarId,
-                        size = 46.dp,
+                        size = if (role == "admin") 34.dp else 46.dp,
                         fallbackInitial = name.take(1).uppercase(),
                         rankBorder = rankBorder,
                         isAdmin = (role == "admin")

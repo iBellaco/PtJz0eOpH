@@ -361,7 +361,7 @@ fun MainDraftingScreen(
                                 UserAvatarView(
                                     avatarId = currentAvatarId,
                                     rankBorder = currentRankBorder,
-                                    size = 36.dp,
+                                    size = if (isCurrentUserAdmin) 26.dp else 36.dp,
                                     fallbackInitial = authUser.displayName ?: authUser.email ?: "U",
                                     isAdmin = isCurrentUserAdmin
                                 )

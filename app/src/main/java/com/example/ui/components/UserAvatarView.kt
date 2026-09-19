@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
@@ -205,7 +206,7 @@ fun UserAvatarView(
             }
         }
 
-        // Marco exclusivo de Administrador
+        // Marco exclusivo de Administrador (rodeando el avatar por fuera)
         if (isAdmin && adminFrameUrl.isNotBlank()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -217,7 +218,8 @@ fun UserAvatarView(
                 contentDescription = "Marco de Administrador",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .size(size * 1.32f)
+                    .size(size * 3.7f)
+                    .offset(y = size * 0.16f)
                     .align(Alignment.Center)
             )
         }

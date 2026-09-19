@@ -503,6 +503,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             // Avatar in center
             Box(
                 modifier = Modifier
+                    .padding(
+                        top = if (isAdminUser) 20.dp else 6.dp,
+                        bottom = if (isAdminUser) 16.dp else 6.dp,
+                        start = if (isAdminUser) 24.dp else 8.dp,
+                        end = if (isAdminUser) 24.dp else 8.dp
+                    )
                     .graphicsLayer {
                         scaleX = avatarScale
                         scaleY = avatarScale
@@ -540,7 +546,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 UserAvatarView(
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
-                    size = if (isAdminUser) 78.dp else 72.dp,
+                    size = if (isAdminUser) 74.dp else 72.dp,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser,
                     adminFrameUrl = "https://i.postimg.cc/sf0BQR1q/administrador.png"
@@ -549,6 +555,10 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     modifier = Modifier
                         .size(24.dp)
                         .align(Alignment.BottomEnd)
+                        .offset(
+                            x = if (isAdminUser) 8.dp else 0.dp,
+                            y = if (isAdminUser) 4.dp else 0.dp
+                        )
                         .clip(CircleShape)
                         .background(activeTheme.secondary)
                         .border(1.5.dp, activeTheme.background, CircleShape),
