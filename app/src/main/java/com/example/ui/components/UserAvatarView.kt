@@ -1,6 +1,7 @@
 package com.example.ui.components
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -53,7 +55,8 @@ fun UserAvatarView(
     customBorderColor: Color? = null,
     rankBorder: String = "NONE",
     isAdmin: Boolean = false,
-    adminFrameUrl: String = "https://i.postimg.cc/sf0BQR1q/administrador.png"
+    adminFrameResId: Int = com.example.R.drawable.ic_frame_admin,
+    adminFrameUrl: String? = null
 ) {
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
     val parsedBorderColor = customBorderColor ?: try {
@@ -207,21 +210,33 @@ fun UserAvatarView(
         }
 
         // Marco exclusivo de Administrador (rodeando el avatar por fuera)
-        if (isAdmin && adminFrameUrl.isNotBlank()) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(adminFrameUrl)
-                    .crossfade(true)
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .memoryCachePolicy(CachePolicy.ENABLED)
-                    .build(),
-                contentDescription = "Marco de Administrador",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .size(size * 3.7f)
-                    .offset(y = size * 0.16f)
-                    .align(Alignment.Center)
-            )
+        if (isAdmin) {
+            if (adminFrameResId != 0) {
+                Image(
+                    painter = painterResource(id = adminFrameResId),
+                    contentDescription = "Marco de Administrador",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .size(size * 3.8f)
+                        .offset(y = size * 0.152f)
+                        .align(Alignment.Center)
+                )
+            } else if (!adminFrameUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(adminFrameUrl)
+                        .crossfade(true)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build(),
+                    contentDescription = "Marco de Administrador",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .size(size * 3.8f)
+                        .offset(y = size * 0.152f)
+                        .align(Alignment.Center)
+                )
+            }
         }
     }
 }
