@@ -65,6 +65,7 @@ fun AvatarSelectionBottomSheet(
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
     val unlockedAvatars by SubscriptionManager.unlockedAvatars.collectAsState()
     val userRole by SubscriptionManager.userRole.collectAsState()
+    val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
 
     val validRegions = remember {
         setOf("Aguas Esturbias", "Ciudad de Bandle", "Demacia", "El Vacío", "Freljord", "Islas de la Sombra", "Jonia", "Ixtal", "Noxus", "Piltóver", "Runaterra", "Shurima", "Targon", "Zaun", "Poro")
@@ -186,8 +187,9 @@ fun AvatarSelectionBottomSheet(
                 ) {
                     UserAvatarView(
                         avatarId = currentAvatarId,
-                                    rankBorder = currentRankBorder,
-                        size = 54.dp
+                        rankBorder = currentRankBorder,
+                        size = 54.dp,
+                        isAdmin = isAdmin
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {

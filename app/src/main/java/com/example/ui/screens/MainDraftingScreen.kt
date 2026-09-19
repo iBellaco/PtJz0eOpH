@@ -350,6 +350,7 @@ fun MainDraftingScreen(
                         // User Avatar Profile button
                         val authUser = com.example.util.AuthManager.getAuth()?.currentUser
                         if (authUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(authUser)) {
+                            val isCurrentUserAdmin = com.example.util.AuthManager.isCurrentUserAdmin()
                             IconButton(
                                 onClick = onNavigateToLogin,
                                 modifier = Modifier
@@ -361,7 +362,8 @@ fun MainDraftingScreen(
                                     avatarId = currentAvatarId,
                                     rankBorder = currentRankBorder,
                                     size = 36.dp,
-                                    fallbackInitial = authUser.displayName ?: authUser.email ?: "U"
+                                    fallbackInitial = authUser.displayName ?: authUser.email ?: "U",
+                                    isAdmin = isCurrentUserAdmin
                                 )
                             }
                         }

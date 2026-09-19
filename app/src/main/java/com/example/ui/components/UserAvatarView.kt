@@ -32,19 +32,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.clipPath
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.data.AvatarCatalog
 import com.example.model.AvatarItem
-import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechDarkBg
 import com.example.ui.theme.HextechGold
 import com.example.ui.theme.HextechGoldLight
 import kotlinx.coroutines.launch
-import kotlin.math.cos
-import kotlin.math.sin
 
 @Composable
 fun UserAvatarView(
@@ -54,7 +50,9 @@ fun UserAvatarView(
     fallbackInitial: String = "U",
     showBorder: Boolean = true,
     customBorderColor: Color? = null,
-    rankBorder: String = "NONE"
+    rankBorder: String = "NONE",
+    isAdmin: Boolean = false,
+    adminFrameUrl: String = "https://i.postimg.cc/sf0BQR1q/administrador.png"
 ) {
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
     val parsedBorderColor = customBorderColor ?: try {
@@ -64,7 +62,6 @@ fun UserAvatarView(
     }
     
     val rarityLower = avatar.rarity.lowercase()
-    val isCommon = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
     val borderWidth = when {
         rarityLower.contains("mítico") || rarityLower.contains("mitico") -> if (size > 60.dp) 3.5.dp else 2.5.dp
         rarityLower.contains("legendario") -> if (size > 60.dp) 3.dp else 2.dp
@@ -142,63 +139,86 @@ fun UserAvatarView(
                 scaleY = scaleAnim.value
                 translationY = slideAnim.value
                 alpha = alphaAnim.value
-            }
-            .clip(CircleShape)
-            .background(
-                Brush.radialGradient(
-                    listOf(
-                        Color(0xFF1E293B),
-                        Color(0xFF0F172A),
-                        HextechDarkBg
-                    )
-                )
-            )
-            .then(
-                if (rankBorder != "NONE") {
-                    Modifier.rankedBorderPainter(
-                        rank = rankBorder,
-                        glowPulse = glowPulse,
-                        rotation = rotation
-                    )
-                } else if (actualShowBorder) {
-                    val isCommon = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
-                    if (!isCommon) {
-                        Modifier.premiumBorderPainter(
-                            rarity = rarityLower
-                        )
-                    } else {
-                        Modifier.border(
-                            width = borderWidth,
-                            brush = runicBorderBrush,
-                            shape = CircleShape
-                        )
-                    }
-                } else Modifier
-            ),
+            },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = fallbackInitial.take(1).uppercase(),
-            color = HextechGoldLight,
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = (size.value * 0.38f).sp,
-            fontFamily = FontFamily.Serif
-        )
-        if (avatar.imageUrl.isNotBlank()) {
+        // Círculo base del Avatar
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        listOf(
+                            Color(0xFF1E293B),
+                            Color(0xFF0F172A),
+                            HextechDarkBg
+                        )
+                    )
+                )
+                .then(
+                    if (rankBorder != "NONE" && !isAdmin) {
+                        Modifier.rankedBorderPainter(
+                            rank = rankBorder,
+                            glowPulse = glowPulse,
+                            rotation = rotation
+                        )
+                    } else if (actualShowBorder && !isAdmin) {
+                        val isCom = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
+                        if (!isCom) {
+                            Modifier.premiumBorderPainter(
+                                rarity = rarityLower
+                            )
+                        } else {
+                            Modifier.border(
+                                width = borderWidth,
+                                brush = runicBorderBrush,
+                                shape = CircleShape
+                            )
+                        }
+                    } else Modifier
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = fallbackInitial.take(1).uppercase(),
+                color = HextechGoldLight,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = (size.value * 0.38f).sp,
+                fontFamily = FontFamily.Serif
+            )
+            if (avatar.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(avatar.imageUrl)
+                        .crossfade(true)
+                        .placeholder(com.example.R.drawable.ic_placeholder_loading)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build(),
+                    contentDescription = avatar.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                )
+            }
+        }
+
+        // Marco exclusivo de Administrador
+        if (isAdmin && adminFrameUrl.isNotBlank()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(avatar.imageUrl)
-.crossfade(true)
-.placeholder(com.example.R.drawable.ic_placeholder_loading)
-                    
+                    .data(adminFrameUrl)
+                    .crossfade(true)
                     .diskCachePolicy(CachePolicy.ENABLED)
                     .memoryCachePolicy(CachePolicy.ENABLED)
                     .build(),
-                contentDescription = avatar.name,
-                contentScale = ContentScale.Crop,
+                contentDescription = "Marco de Administrador",
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
+                    .size(size * 1.32f)
+                    .align(Alignment.Center)
             )
         }
     }
@@ -213,7 +233,6 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
         
         when (rank.uppercase()) {
             "MASTER" -> {
-                // Purple/Pink sleek frame
                 drawCircle(
                     brush = Brush.sweepGradient(listOf(Color(0xFFFF00FF), Color(0xFF8A2BE2), Color(0xFF4B0082), Color(0xFFFF00FF))),
                     radius = r - 2.dp.toPx(),
@@ -228,14 +247,12 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
                 )
             }
             "GRANDMASTER" -> {
-                // Red/Gold aggressive frame
                 drawCircle(
                     brush = Brush.sweepGradient(listOf(Color(0xFFFF4500), Color(0xFFDC143C), Color(0xFFFFD700), Color(0xFFFF4500))),
                     radius = r - 2.5.dp.toPx(),
                     center = Offset(cx, cy),
                     style = Stroke(width = 5.dp.toPx())
                 )
-                // Small inner accent
                 drawCircle(
                     color = Color(0xFFFFD700),
                     radius = r - 5.dp.toPx(),
@@ -244,7 +261,6 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
                 )
             }
             "CHALLENGER" -> {
-                // Bright glowing Gold and Cyan frame with spinning aura and pulsing gem
                 rotate(rotation) {
                     drawCircle(
                         brush = Brush.sweepGradient(listOf(Color(0xFF00FFFF), Color(0xFFFFD700), Color(0xFF00BFFF), Color(0xFFFFD700), Color(0xFF00FFFF))),
@@ -253,14 +269,12 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
                         style = Stroke(width = 6.dp.toPx())
                     )
                 }
-                // Pulsing glow inner ring
                 drawCircle(
                     color = Color(0xFFFFD700).copy(alpha = 0.3f + (0.4f * glowPulse)),
                     radius = r,
                     center = Offset(cx, cy),
                     style = Stroke(width = 8.dp.toPx())
                 )
-                // Soberano Bottom Gem (Hexagon)
                 val gemPath = Path().apply {
                     val gemR = 8.dp.toPx()
                     val gemY = size.height - 2.dp.toPx()
@@ -295,7 +309,6 @@ fun Modifier.premiumBorderPainter(rarity: String): Modifier {
     val isMythic = rarityLower.contains("mítico") || rarityLower.contains("mitico")
     val isLegendary = rarityLower.contains("legendario")
     val isEpic = rarityLower.contains("épico") || rarityLower.contains("epico")
-    val isRare = rarityLower.contains("raro")
     
     return this.drawWithCache {
         val strokeWidth = when {

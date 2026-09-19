@@ -2473,7 +2473,8 @@ fun EnhancedUserAdminCard(
                         avatarId = avatarId,
                         size = 46.dp,
                         fallbackInitial = name.take(1).uppercase(),
-                        rankBorder = rankBorder
+                        rankBorder = rankBorder,
+                        isAdmin = (role == "admin")
                     )
                     // Indicador de conexión verde/gris
                     Box(
@@ -2905,7 +2906,8 @@ fun UserDetailManagementDialog(
                             avatarId = avatarId,
                             size = 48.dp,
                             fallbackInitial = currentName.take(1).uppercase(),
-                            rankBorder = rankBorder
+                            rankBorder = rankBorder,
+                            isAdmin = (currentRole == "admin")
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {

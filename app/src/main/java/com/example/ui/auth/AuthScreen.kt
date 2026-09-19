@@ -513,33 +513,37 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(86.dp)
-                        .graphicsLayer {
-                            scaleX = haloPulse
-                            scaleY = haloPulse
-                        }
-                        .rotate(haloRotation)
-                        .border(
-                            width = 2.dp,
-                            brush = Brush.sweepGradient(
-                                listOf(
-                                    activeTheme.primary,
-                                    activeTheme.secondary,
-                                    activeTheme.primaryGlow,
-                                    activeTheme.primary
-                                )
-                            ),
-                            shape = CircleShape
-                        )
-                )
+                if (!isAdminUser) {
+                    Box(
+                        modifier = Modifier
+                            .size(86.dp)
+                            .graphicsLayer {
+                                scaleX = haloPulse
+                                scaleY = haloPulse
+                            }
+                            .rotate(haloRotation)
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.sweepGradient(
+                                    listOf(
+                                        activeTheme.primary,
+                                        activeTheme.secondary,
+                                        activeTheme.primaryGlow,
+                                        activeTheme.primary
+                                    )
+                                ),
+                                shape = CircleShape
+                            )
+                    )
+                }
 
                 UserAvatarView(
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
-                    size = 72.dp,
-                    fallbackInitial = finalUserName
+                    size = if (isAdminUser) 78.dp else 72.dp,
+                    fallbackInitial = finalUserName,
+                    isAdmin = isAdminUser,
+                    adminFrameUrl = "https://i.postimg.cc/sf0BQR1q/administrador.png"
                 )
                 Box(
                     modifier = Modifier
