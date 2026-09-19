@@ -387,6 +387,25 @@ class DraftDetectionAndValidationTest {
         val reportFlowVal = com.example.service.screen.LiteRTVisionClassifier.reportFlow.value
         assertEquals(com.example.service.screen.LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9, reportFlowVal.status)
         assertTrue(reportFlowVal.tensorDimensions.contains("48x48"))
+
+        // Simular slot en espera (fondo oscuro/icono con yelmo o línea) con 9 picks confirmados
+        val waitingSlotCrop = android.graphics.Bitmap.createBitmap(48, 48, android.graphics.Bitmap.Config.ARGB_8888)
+        val waitingCanvas = android.graphics.Canvas(waitingSlotCrop)
+        waitingCanvas.drawColor(android.graphics.Color.BLACK) // fondo negro típico del slot vacío
+
+        val resultWaiting = com.example.service.screen.LiteRTVisionClassifier.executeTenthPickInference(
+            cropBitmap = waitingSlotCrop,
+            isAlly = false,
+            confirmedChampionIds = emptySet(),
+            confirmedPicksCount = 9,
+            context = context
+        )
+        assertNull("Cuando el slot está vacío o en espera, NO debe inventar ningún pick", resultWaiting)
+
+        val reportWaiting = com.example.service.screen.LiteRTVisionClassifier.reportFlow.value
+        assertEquals(com.example.service.screen.LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK, reportWaiting.status)
+        assertNull(reportWaiting.pickedChampion)
+        assertFalse(reportWaiting.isConfirmed)
     }
 
     @Test

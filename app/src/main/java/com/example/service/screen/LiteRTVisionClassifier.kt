@@ -37,11 +37,12 @@ object LiteRTVisionClassifier {
     private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
     private const val EMBEDDING_DIM = 96     // Vector descriptor de 96 dimensiones
 
-    // Umbral de confianza mínimo de MediaPipe / LiteRT (65% similitud de tensor con 3 frames estables)
-    const val MIN_CONFIDENCE_THRESHOLD = 0.65f
+    // Umbral de confianza mínimo de MediaPipe / LiteRT (Pearson correlation >= 0.52f y margen de separación >= 0.035f)
+    const val MIN_CONFIDENCE_THRESHOLD = 0.52f
+    const val MIN_CANDIDATE_MARGIN = 0.035f
 
     // Cantidad de frames estables consecutivos requeridos para confirmar el 10º pick
-    const val REQUIRED_STABLE_FRAMES = 3
+    const val REQUIRED_STABLE_FRAMES = 4
 
     // Variables de seguimiento de estabilidad temporal entre fotogramas
     private var lastCandidateId: String? = null
@@ -254,15 +255,176 @@ object LiteRTVisionClassifier {
     }
 
     /**
-     * Calcula la similitud coseno entre dos vectores normalizados L2 [-1.0 a 1.0].
+     * Calcula la correlación de Pearson entre dos vectores de características [-1.0 a 1.0].
+     * A diferencia del producto punto o similitud coseno directa sobre números positivos (que sesga
+     * imágenes oscuras hacia puntuaciones artificiales de 0.70-0.80), la correlación de Pearson resta
+     * la media eliminando el sesgo de luminancia global y evaluando la correspondencia real
+     * de contrastes, tonos cromáticos y distribución espacial.
      */
-    private fun cosineSimilarity(v1: FloatArray, v2: FloatArray): Float {
-        var dot = 0.0f
+    private fun pearsonCorrelation(v1: FloatArray, v2: FloatArray): Float {
         val len = min(v1.size, v2.size)
+        if (len == 0) return 0f
+        var sum1 = 0f
+        var sum2 = 0f
         for (i in 0 until len) {
-            dot += v1[i] * v2[i]
+            sum1 += v1[i]
+            sum2 += v2[i]
         }
-        return dot.coerceIn(-1.0f, 1.0f)
+        val mean1 = sum1 / len
+        val mean2 = sum2 / len
+
+        var dot = 0f
+        var var1 = 0f
+        var var2 = 0f
+        for (i in 0 until len) {
+            val d1 = v1[i] - mean1
+            val d2 = v2[i] - mean2
+            dot += d1 * d2
+            var1 += d1 * d1
+            var2 += d2 * d2
+        }
+        val denom = sqrt(var1 * var2)
+        if (denom < 1e-6f) return 0f
+        return (dot / denom).coerceIn(-1.0f, 1.0f)
+    }
+
+    /**
+     * Datos del análisis visual del contenido interno del slot final.
+     */
+    data class SlotContentAnalysis(
+        val isEmptyOrWaiting: Boolean,
+        val darkPixelRatio: Float,
+        val midRingDarkRatio: Float,
+        val avgLuminance: Float,
+        val maxBrightness: Int,
+        val stdDevLuminance: Float,
+        val reason: String
+    )
+
+    /**
+     * Analiza exhaustivamente el contenido interno del slot final (ignorando el anillo exterior de borde)
+     * para determinar si está en estado de ESPERA (con yelmo espartano, icono de línea o fondo negro)
+     * o si ya contiene el retrato/splash art de un campeón seleccionado.
+     */
+    fun analyzeSlotContent(bitmap: Bitmap, isAlly: Boolean): SlotContentAnalysis {
+        val w = bitmap.width
+        val h = bitmap.height
+        if (w < 16 || h < 16) {
+            return SlotContentAnalysis(
+                isEmptyOrWaiting = true,
+                darkPixelRatio = 1f,
+                midRingDarkRatio = 1f,
+                avgLuminance = 0f,
+                maxBrightness = 0,
+                stdDevLuminance = 0f,
+                reason = "Recorte de imagen no disponible o dimensiones insuficientes"
+            )
+        }
+
+        val cx = w / 2f
+        val cy = h / 2f
+        val radius = min(cx, cy)
+
+        // Radio interior para evaluar el contenido del avatar sin tocar el anillo de borde (0.78 * radius)
+        val innerRadius = radius * 0.78f
+        val midRingInner = radius * 0.28f
+
+        var totalInner = 0
+        var darkInner = 0
+        var totalMidRing = 0
+        var darkMidRing = 0
+
+        var sumLum = 0.0
+        var sumLumSq = 0.0
+        var maxLum = 0
+
+        val step = max(1, (radius * 0.06f).toInt())
+        val startY = (cy - innerRadius).toInt().coerceAtLeast(0)
+        val endY = (cy + innerRadius).toInt().coerceAtMost(h)
+        val startX = (cx - innerRadius).toInt().coerceAtLeast(0)
+        val endX = (cx + innerRadius).toInt().coerceAtMost(w)
+
+        for (y in startY until endY step step) {
+            val dy = y - cy
+            for (x in startX until endX step step) {
+                val dx = x - cx
+                val dist = sqrt(dx * dx + dy * dy)
+                if (dist > innerRadius) continue
+
+                val px = bitmap.getPixel(x, y)
+                val r = (px shr 16) and 0xFF
+                val g = (px shr 8) and 0xFF
+                val b = px and 0xFF
+                val lum = (0.299f * r + 0.587f * g + 0.114f * b).toInt()
+
+                totalInner++
+                sumLum += lum
+                sumLumSq += (lum * lum)
+                if (lum > maxLum) maxLum = lum
+
+                if (lum < 50) {
+                    darkInner++
+                }
+
+                if (dist >= midRingInner) {
+                    totalMidRing++
+                    if (lum < 50) {
+                        darkMidRing++
+                    }
+                }
+            }
+        }
+
+        if (totalInner == 0) {
+            return SlotContentAnalysis(true, 1f, 1f, 0f, 0, 0f, "Sin píxeles interiores evaluables")
+        }
+
+        val avgLum = (sumLum / totalInner).toFloat()
+        val variance = ((sumLumSq / totalInner) - (avgLum * avgLum)).coerceAtLeast(0.0)
+        val stdDevLum = sqrt(variance).toFloat()
+        val darkRatio = darkInner.toFloat() / totalInner
+        val midRingDarkRatio = if (totalMidRing > 0) darkMidRing.toFloat() / totalMidRing else darkRatio
+
+        // COMPROBACIÓN CRÍTICA DEL USUARIO:
+        // "el décimo pick me di cuenta que lo seleccionas sin que muestren nada o sea ni siquiera se ve un Frame y tú ya lo estás seleccionando inventándote"
+        // En Wild Rift, un slot en espera (con yelmo espartano o icono de línea) o vacío tiene:
+        // 1. El anillo medio que rodea al icono central es fondo oscuro puro (> 58% de píxeles oscuros).
+        // 2. Más del 65% de todo el círculo interior es negro/fondo oscuro del UI.
+        // 3. El brillo promedio es muy bajo (< 40 de 255) y no hay zonas de alto brillo de campeones (maxLum < 135).
+        // 4. El contraste/desviación estándar es plano (< 18 con brillo < 52).
+        // En cambio, el retrato de un campeón llena el 100% del círculo con ilustración brillante y colorida.
+        val isEmptyOrWaiting = when {
+            midRingDarkRatio >= 0.58f -> true
+            darkRatio >= 0.65f -> true
+            avgLum < 40f && maxLum < 135 -> true
+            maxLum < 75 -> true
+            stdDevLum < 18f && avgLum < 52f -> true
+            else -> false
+        }
+
+        val reason = if (isEmptyOrWaiting) {
+            val iconType = if (isAlly) "icono de línea aliado" else "yelmo espartano rival"
+            "Slot final en espera ($iconType): ${(darkRatio * 100).toInt()}% fondo oscuro, ${(midRingDarkRatio * 100).toInt()}% anillo oscuro, brillo prom ${avgLum.toInt()}/255. A la espera de que el 10º jugador elija y confirme a su campeón."
+        } else {
+            "Contenido visual de campeón detectado en el slot final: brillo prom ${avgLum.toInt()}/255, contraste ${stdDevLum.toInt()}, ${(darkRatio * 100).toInt()}% oscuro."
+        }
+
+        return SlotContentAnalysis(
+            isEmptyOrWaiting = isEmptyOrWaiting,
+            darkPixelRatio = darkRatio,
+            midRingDarkRatio = midRingDarkRatio,
+            avgLuminance = avgLum,
+            maxBrightness = maxLum,
+            stdDevLuminance = stdDevLum,
+            reason = reason
+        )
+    }
+
+    /**
+     * Mantiene compatibilidad hacia atrás con llamadas existentes.
+     */
+    fun isSlotWaitingIcon(bitmap: Bitmap, isAlly: Boolean): Boolean {
+        return analyzeSlotContent(bitmap, isAlly).isEmptyOrWaiting
     }
 
     /**
@@ -320,26 +482,22 @@ object LiteRTVisionClassifier {
         // - Lado rival: muestra un borde rojo y un icono de yelmo espartano gris oscuro esperando selección.
         // - Lado aliado: muestra un borde azul y el icono de la línea asignada esperando selección.
         // - ÚNICAMENTE cuando el jugador confirma la selección, el icono es reemplazado por el Avatar del campeón.
-        val isWaitingIcon = isSlotWaitingIcon(cropBitmap, isAlly)
-        if (isWaitingIcon) {
+        // Si el slot está en espera o vacío, NO SE DEBE INVENTAR NINGÚN CAMPEÓN.
+        val visualAnalysis = analyzeSlotContent(cropBitmap, isAlly)
+        if (visualAnalysis.isEmptyOrWaiting) {
             resetStabilityTracker()
             val persistentCrop = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
-            val reason = if (isAlly) {
-                "Slot final aliado en espera (icono de línea con borde azul visible). A la espera de que se reemplace por el Avatar del campeón."
-            } else {
-                "Slot final rival en espera (yelmo espartano con borde rojo visible). A la espera de que se reemplace por el Avatar del campeón."
-            }
             _reportFlow.value = LiteRTInferenceReport(
                 status = EngineStatus.WAITING_FOR_TENTH_PICK,
                 pickedChampion = null,
                 confidencePercent = 0,
-                decisionReason = reason,
+                decisionReason = visualAnalysis.reason,
                 slotDescription = slotDesc,
                 evaluatedPicksCount = confirmedPicksCount,
                 cropBitmap = persistentCrop,
                 isConfirmed = false
             )
-            AppLogger.d(TAG, "LiteRT 10º Pick: $reason")
+            AppLogger.d(TAG, "LiteRT 10º Pick [EN ESPERA]: ${visualAnalysis.reason}")
             return@withContext null
         }
 
@@ -349,7 +507,7 @@ object LiteRTVisionClassifier {
         // Extraer el embedding tensor del recorte actual
         val inputEmbedding = extractTensorEmbedding(cropBitmap)
 
-        // Evaluar contra todos los campeones no tomados
+        // Evaluar contra todos los campeones no tomados usando correlación de Pearson
         val allChamps = WildRiftRepository.champions
         val candidateScores = mutableListOf<Pair<Champion, Float>>()
 
@@ -358,7 +516,7 @@ object LiteRTVisionClassifier {
             if (confirmedChampionIds.contains(champ.id)) continue
 
             val cachedEmbedding = championEmbeddingCache[champ.id] ?: continue
-            val similarity = cosineSimilarity(inputEmbedding, cachedEmbedding)
+            val similarity = pearsonCorrelation(inputEmbedding, cachedEmbedding)
             candidateScores.add(Pair(champ, similarity))
         }
 
@@ -373,9 +531,8 @@ object LiteRTVisionClassifier {
             return@withContext null
         }
 
-        // Ordenar candidatos por similitud de mayor a menor
+        // Ordenar candidatos por similitud Pearson de mayor a menor
         val sortedCandidates = candidateScores.sortedByDescending { it.second }
-        val topScore = sortedCandidates.first().second
 
         // Distribución Softmax para probabilidades relativas (temperatura calibrada T = 0.08)
         val temperature = 0.08f
@@ -387,7 +544,8 @@ object LiteRTVisionClassifier {
 
         val candidateReports = top5.mapIndexed { index, pair ->
             val prob = probabilities[index]
-            val confPct = ((pair.second * 0.7f + prob * 0.3f) * 100).toInt().coerceIn(1, 99)
+            val simNorm = ((pair.second + 1.0f) / 2.0f).coerceIn(0f, 1f)
+            val confPct = ((simNorm * 0.7f + prob * 0.3f) * 100).toInt().coerceIn(1, 99)
             LiteRTCandidateScore(
                 champion = pair.first,
                 similarityScore = pair.second,
@@ -399,13 +557,15 @@ object LiteRTVisionClassifier {
 
         val inferenceDuration = System.currentTimeMillis() - startTime
         val bestCandidate = candidateReports.first()
+        val secondCandidate = candidateReports.getOrNull(1)
+        val scoreMargin = if (secondCandidate != null) bestCandidate.similarityScore - secondCandidate.similarityScore else 1.0f
         val winnerChamp = bestCandidate.champion
         val finalConfidence = bestCandidate.confidencePercent
 
         // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO (Confidence Threshold) Y FRAMES ESTABLES:
         // Solicitado expresamente por el usuario para evitar que selecciones aleatorias o parpadeos
-        // en pantalla disparen el décimo pick por error.
-        val passesConfidence = bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD
+        // en pantalla disparen el décimo pick por error sin que el campeón esté realmente presente.
+        val passesConfidence = bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD && scoreMargin >= MIN_CANDIDATE_MARGIN
 
         if (passesConfidence) {
             if (winnerChamp.id == lastCandidateId) {
@@ -423,10 +583,13 @@ object LiteRTVisionClassifier {
 
         val decisionReason = when {
             isConfirmed -> {
-                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras superar el umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%) durante $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames estables consecutivos."
+                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras superar el umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}%) durante $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames estables consecutivos."
             }
             passesConfidence -> {
-                "Candidato ${winnerChamp.name} supera umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). Estabilizando: $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames..."
+                "Candidato ${winnerChamp.name} supera umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}%). Estabilizando: $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames..."
+            }
+            bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD -> {
+                "Margen insuficiente entre mejores candidatos (${winnerChamp.name}: ${(bestCandidate.similarityScore * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}% < ${(MIN_CANDIDATE_MARGIN * 100).toInt()}%). Esperando estabilidad."
             }
             else -> {
                 "Puntaje inferior al umbral mínimo (${(bestCandidate.similarityScore * 100).toInt()}% < ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). El motor continúa evaluando los tensores en pantalla."
@@ -457,70 +620,6 @@ object LiteRTVisionClassifier {
         } else {
             return@withContext null
         }
-    }
-
-    /**
-     * Determina si el recorte del slot final corresponde al icono de espera:
-     * - En el rival: círculo con borde rojo y silueta del yelmo espartano gris oscuro en el centro.
-     * - En el aliado: círculo con borde azul y silueta del icono de línea en el centro.
-     * Cuando el jugador selecciona un campeón, este icono se reemplaza por el Avatar (splash portrait).
-     */
-    fun isSlotWaitingIcon(bitmap: Bitmap, isAlly: Boolean): Boolean {
-        val w = bitmap.width
-        val h = bitmap.height
-        if (w < 16 || h < 16) return true
-
-        val cx = w / 2f
-        val cy = h / 2f
-        val radius = min(cx, cy)
-
-        // Muestrear píxeles en el área central (0.15 * radius a 0.55 * radius)
-        // para ignorar el borde exterior rojo/azul y analizar si el slot está verdaderamente vacío
-        var totalSamples = 0
-        var totalBrightness = 0f
-        var maxBrightness = 0
-        var maxSaturation = 0
-
-        val step = max(1, (radius * 0.08f).toInt())
-        val startY = (cy - radius * 0.55f).toInt()
-        val endY = (cy + radius * 0.55f).toInt()
-        val startX = (cx - radius * 0.55f).toInt()
-        val endX = (cx + radius * 0.55f).toInt()
-
-        for (y in startY until endY step step) {
-            for (x in startX until endX step step) {
-                val dx = x - cx
-                val dy = y - cy
-                val dist = sqrt(dx * dx + dy * dy)
-                if (dist < radius * 0.15f || dist > radius * 0.55f) continue
-
-                val px = bitmap.getPixel(x.coerceIn(0, w - 1), y.coerceIn(0, h - 1))
-                val r = Color.red(px)
-                val g = Color.green(px)
-                val b = Color.blue(px)
-                val lum = (0.299f * r + 0.587f * g + 0.114f * b).toInt()
-
-                val maxC = max(r, max(g, b))
-                val minC = min(r, min(g, b))
-                val sat = maxC - minC
-                if (sat > maxSaturation) maxSaturation = sat
-
-                totalSamples++
-                totalBrightness += lum
-                if (lum > maxBrightness) maxBrightness = lum
-            }
-        }
-
-        if (totalSamples == 0) return true
-        val avgBrightness = totalBrightness / totalSamples
-
-        // El yelmo espartano (rival) o el icono de línea (aliado) son siluetas monocromáticas oscuras sobre fondo negro:
-        // - El brillo promedio en su interior es muy bajo (< 40 de 255).
-        // - No contienen ninguna zona con brillo alto (maxBrightness < 105).
-        // - La saturación cromática es mínima o nula (maxSaturation < 22).
-        // Cualquier campeón tiene colores vivos, efectos mágicos o destellos que superan estos umbrales.
-        val isIcon = (avgBrightness < 40f && maxBrightness < 105 && maxSaturation < 22)
-        return isIcon
     }
 
     /**
