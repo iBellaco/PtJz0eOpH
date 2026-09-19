@@ -1278,7 +1278,7 @@ object DraftVisionScanner {
             total == 0 && allySummonerNamesCache.isNotEmpty() -> "Invocadores aliados detectados (${allySummonerNamesCache.size}/5)"
             total == 0 -> "Esperando selección en directo..."
             total == 10 -> {
-                val tenthChamp = if (tenthIsAlly) allySlots[tenthSlotIndex].champion else enemySlots[tenthSlotIndex].champion
+                val tenthChamp = if (actualTenthIsAlly) allySlots[actualTenthSlotIndex].champion else enemySlots[actualTenthSlotIndex].champion
                 if (tenthChamp != null) {
                     "10/10 Completo • 10º Pick por LiteRT (${tenthChamp.name})"
                 } else {

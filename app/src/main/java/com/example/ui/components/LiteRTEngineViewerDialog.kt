@@ -17,16 +17,21 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -48,11 +53,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.model.Champion
 import com.example.service.screen.LiteRTVisionClassifier
 
 @Composable
 fun LiteRTEngineViewerDialog(
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onSelectChampion: ((Champion) -> Unit)? = null
 ) {
     val report by LiteRTVisionClassifier.reportFlow.collectAsStateWithLifecycle()
 
@@ -277,20 +284,47 @@ fun LiteRTEngineViewerDialog(
                                             fontSize = 11.sp
                                         )
                                     }
+                                    if (onSelectChampion != null) {
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Button(
+                                            onClick = { onSelectChampion(champ) },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                                            shape = RoundedCornerShape(6.dp),
+                                            modifier = Modifier.height(30.dp),
+                                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Seleccionar a ${champ.name}",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
                                 } else {
+                                    val topCand = report.topCandidates.firstOrNull()
                                     Text(
-                                        text = when (report.status) {
-                                            LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9 -> "A la espera de picks 1 a 9"
-                                            LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> "Slot final en espera"
+                                        text = when {
+                                            topCand != null -> "Candidato #1: ${topCand.champion.name}"
+                                            report.status == LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9 -> "A la espera de picks 1 a 9"
+                                            report.status == LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> "Slot final en espera"
                                             else -> "Evaluando tensores..."
                                         },
-                                        color = Color(0xFF94A3B8),
-                                        fontWeight = FontWeight.Medium,
+                                        color = if (topCand != null) Color.White else Color(0xFF94A3B8),
+                                        fontWeight = if (topCand != null) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 14.sp
                                     )
                                     Text(
-                                        text = when (report.status) {
-                                            LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> {
+                                        text = when {
+                                            topCand != null -> "Similitud tensor: ${(topCand.similarityScore * 100).toInt()}% • ${topCand.champion.primaryRole.displayName}"
+                                            report.status == LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> {
                                                 if (report.slotDescription.contains("Aliado", ignoreCase = true)) {
                                                     "Mostrando icono de línea. Esperando Avatar."
                                                 } else {
@@ -302,6 +336,30 @@ fun LiteRTEngineViewerDialog(
                                         color = Color(0xFF64748B),
                                         fontSize = 11.sp
                                     )
+                                    if (topCand != null && onSelectChampion != null) {
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Button(
+                                            onClick = { onSelectChampion(topCand.champion) },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                                            shape = RoundedCornerShape(6.dp),
+                                            modifier = Modifier.height(30.dp),
+                                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Seleccionar a ${topCand.champion.name}",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -371,7 +429,12 @@ fun LiteRTEngineViewerDialog(
 
                 if (report.topCandidates.isNotEmpty()) {
                     report.topCandidates.forEach { candidate ->
-                        CandidateRowItem(candidate = candidate)
+                        CandidateRowItem(
+                            candidate = candidate,
+                            onSelect = if (onSelectChampion != null) {
+                                { onSelectChampion(candidate.champion) }
+                            } else null
+                        )
                         Spacer(modifier = Modifier.height(6.dp))
                     }
                 } else {
@@ -424,7 +487,10 @@ fun LiteRTEngineViewerDialog(
 }
 
 @Composable
-private fun CandidateRowItem(candidate: LiteRTVisionClassifier.LiteRTCandidateScore) {
+private fun CandidateRowItem(
+    candidate: LiteRTVisionClassifier.LiteRTCandidateScore,
+    onSelect: (() -> Unit)? = null
+) {
     val isWinner = candidate.rank == 1
     val borderColor = if (isWinner) Color(0xFF00E5FF) else Color(0xFF334155)
     val bgColor = if (isWinner) Color(0xFF1E293B) else Color(0xFF0F172A)
@@ -471,23 +537,45 @@ private fun CandidateRowItem(candidate: LiteRTVisionClassifier.LiteRTCandidateSc
             }
         }
 
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = "${(candidate.similarityScore * 100).toInt()}% Tensor",
-                color = if (isWinner) Color(0xFF10B981) else Color(0xFFCBD5E1),
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            LinearProgressIndicator(
-                progress = { candidate.similarityScore.coerceIn(0f, 1f) },
-                modifier = Modifier
-                    .width(64.dp)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp)),
-                color = if (isWinner) Color(0xFF00E5FF) else Color(0xFF64748B),
-                trackColor = Color(0xFF334155)
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${(candidate.similarityScore * 100).toInt()}% Tensor",
+                    color = if (isWinner) Color(0xFF10B981) else Color(0xFFCBD5E1),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                LinearProgressIndicator(
+                    progress = { candidate.similarityScore.coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .width(56.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                    color = if (isWinner) Color(0xFF00E5FF) else Color(0xFF64748B),
+                    trackColor = Color(0xFF334155)
+                )
+            }
+
+            if (onSelect != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                FilledTonalButton(
+                    onClick = onSelect,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = if (isWinner) Color(0xFF0284C7) else Color(0xFF334155),
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                    modifier = Modifier.height(28.dp)
+                ) {
+                    Text(
+                        text = if (isWinner) "Elegir" else "Usar",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }

@@ -2100,7 +2100,28 @@ private fun FloatingOverlayContent(
     // Modal del Visor Google MediaPipe / LiteRT para el 10º Pick
     if (showLiteRTViewer) {
         com.example.ui.components.LiteRTEngineViewerDialog(
-            onDismissRequest = { showLiteRTViewer = false }
+            onDismissRequest = { showLiteRTViewer = false },
+            onSelectChampion = { selectedChamp: com.example.model.Champion ->
+                val unpickedAllyIdx = allies.indexOfFirst { it == null }
+                val unpickedEnemyIdx = enemies.indexOfFirst { it == null }
+                val tenthIsAlly = when {
+                    unpickedAllyIdx != -1 && unpickedEnemyIdx == -1 -> true
+                    unpickedEnemyIdx != -1 && unpickedAllyIdx == -1 -> false
+                    else -> (isFirstPick != true)
+                }
+                val tenthSlotIdx = when {
+                    tenthIsAlly && unpickedAllyIdx != -1 -> unpickedAllyIdx
+                    !tenthIsAlly && unpickedEnemyIdx != -1 -> unpickedEnemyIdx
+                    else -> 4
+                }
+                if (tenthIsAlly) {
+                    assignAllySlot(tenthSlotIdx, selectedChamp)
+                } else {
+                    assignEnemySlot(tenthSlotIdx, selectedChamp, 100)
+                }
+                com.example.service.screen.LiteRTVisionClassifier.confirmManualSelection(selectedChamp)
+                showLiteRTViewer = false
+            }
         )
     }
 

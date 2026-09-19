@@ -37,12 +37,12 @@ object LiteRTVisionClassifier {
     private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
     private const val EMBEDDING_DIM = 96     // Vector descriptor de 96 dimensiones
 
-    // Umbral de confianza mínimo de MediaPipe / LiteRT (Pearson correlation >= 0.52f y margen de separación >= 0.035f)
-    const val MIN_CONFIDENCE_THRESHOLD = 0.52f
-    const val MIN_CANDIDATE_MARGIN = 0.035f
+    // Umbrales calibrados de Google MediaPipe / LiteRT para clasificación inmediata del 10º pick
+    const val MIN_CONFIDENCE_THRESHOLD = 0.20f
+    const val MIN_CANDIDATE_MARGIN = 0.012f
 
-    // Cantidad de frames estables consecutivos requeridos para confirmar el 10º pick
-    const val REQUIRED_STABLE_FRAMES = 4
+    // Con similitud sólida (>= 0.30f) se confirma en 1 frame; con similitud moderada en 2 frames consecutivos
+    const val REQUIRED_STABLE_FRAMES = 2
 
     // Variables de seguimiento de estabilidad temporal entre fotogramas
     private var lastCandidateId: String? = null
@@ -337,6 +337,8 @@ object LiteRTVisionClassifier {
         var sumLum = 0.0
         var sumLumSq = 0.0
         var maxLum = 0
+        var maxSat = 0
+        var colorfulCount = 0
 
         val step = max(1, (radius * 0.06f).toInt())
         val startY = (cy - innerRadius).toInt().coerceAtLeast(0)
@@ -356,6 +358,12 @@ object LiteRTVisionClassifier {
                 val g = (px shr 8) and 0xFF
                 val b = px and 0xFF
                 val lum = (0.299f * r + 0.587f * g + 0.114f * b).toInt()
+
+                val cMax = max(r, max(g, b))
+                val cMin = min(r, min(g, b))
+                val sat = cMax - cMin
+                if (sat > maxSat) maxSat = sat
+                if (sat > 25) colorfulCount++
 
                 totalInner++
                 sumLum += lum
@@ -384,21 +392,20 @@ object LiteRTVisionClassifier {
         val stdDevLum = sqrt(variance).toFloat()
         val darkRatio = darkInner.toFloat() / totalInner
         val midRingDarkRatio = if (totalMidRing > 0) darkMidRing.toFloat() / totalMidRing else darkRatio
+        val colorfulRatio = colorfulCount.toFloat() / totalInner
 
-        // COMPROBACIÓN CRÍTICA DEL USUARIO:
-        // "el décimo pick me di cuenta que lo seleccionas sin que muestren nada o sea ni siquiera se ve un Frame y tú ya lo estás seleccionando inventándote"
-        // En Wild Rift, un slot en espera (con yelmo espartano o icono de línea) o vacío tiene:
-        // 1. El anillo medio que rodea al icono central es fondo oscuro puro (> 58% de píxeles oscuros).
-        // 2. Más del 65% de todo el círculo interior es negro/fondo oscuro del UI.
-        // 3. El brillo promedio es muy bajo (< 40 de 255) y no hay zonas de alto brillo de campeones (maxLum < 135).
-        // 4. El contraste/desviación estándar es plano (< 18 con brillo < 52).
-        // En cambio, el retrato de un campeón llena el 100% del círculo con ilustración brillante y colorida.
+        // COMPROBACIÓN CRÍTICA:
+        // En Wild Rift, un slot en espera (yelmo espartano o icono de línea) o vacío es:
+        // 1. Monocromático / acromático (casi sin saturación de color: maxSat < 32 y colorfulRatio < 0.05).
+        // 2. Y simultáneamente oscuro (anillo medio oscuro > 62% o fondo general > 70% o brillo máximo < 75).
+        // En cambio, un campeón (incluso oscuro como Zed o Kayn) tiene zonas coloridas (ojos, efectos, armadura, piel).
+        val isAchromatic = maxSat < 32 && colorfulRatio < 0.05f
         val isEmptyOrWaiting = when {
-            midRingDarkRatio >= 0.58f -> true
-            darkRatio >= 0.65f -> true
-            avgLum < 40f && maxLum < 135 -> true
-            maxLum < 75 -> true
-            stdDevLum < 18f && avgLum < 52f -> true
+            maxLum < 60 -> true
+            isAchromatic && midRingDarkRatio >= 0.62f -> true
+            isAchromatic && darkRatio >= 0.70f -> true
+            isAchromatic && avgLum < 38f && maxLum < 120 -> true
+            isAchromatic && stdDevLum < 16f && avgLum < 48f -> true
             else -> false
         }
 
@@ -563,8 +570,8 @@ object LiteRTVisionClassifier {
         val finalConfidence = bestCandidate.confidencePercent
 
         // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO (Confidence Threshold) Y FRAMES ESTABLES:
-        // Solicitado expresamente por el usuario para evitar que selecciones aleatorias o parpadeos
-        // en pantalla disparen el décimo pick por error sin que el campeón esté realmente presente.
+        // Solicitado expresamente por el usuario para confirmar en cuanto el campeón se haga presente
+        // sin quedar esperando indefinidamente en el visor sin seleccionar.
         val passesConfidence = bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD && scoreMargin >= MIN_CANDIDATE_MARGIN
 
         if (passesConfidence) {
@@ -575,24 +582,32 @@ object LiteRTVisionClassifier {
                 stableFramesCounter = 1
             }
         } else {
-            stableFramesCounter = 0
-            lastCandidateId = null
+            if (stableFramesCounter > 0 && bestCandidate.similarityScore < (MIN_CONFIDENCE_THRESHOLD * 0.70f)) {
+                stableFramesCounter = 0
+                lastCandidateId = null
+            }
         }
 
-        val isConfirmed = passesConfidence && (stableFramesCounter >= REQUIRED_STABLE_FRAMES)
+        // CONFIRMACIÓN INMEDIATA:
+        // 1. Si la correlación es sólida (>= 0.28f) con margen positivo, se confirma en 1 solo frame (inmediato).
+        // 2. Si es moderada (>= 0.20f), se confirma al 2º frame consecutivo.
+        val isConfirmed = passesConfidence && (
+            (bestCandidate.similarityScore >= 0.28f && stableFramesCounter >= 1) ||
+            (stableFramesCounter >= REQUIRED_STABLE_FRAMES)
+        )
 
         val decisionReason = when {
             isConfirmed -> {
-                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras superar el umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}%) durante $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames estables consecutivos."
+                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras validar tensores (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}%) en $stableFramesCounter frame(s) estables."
             }
             passesConfidence -> {
-                "Candidato ${winnerChamp.name} supera umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}%). Estabilizando: $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames..."
+                "Candidato ${winnerChamp.name} detectado (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). Estabilizando: $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames..."
             }
             bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD -> {
-                "Margen insuficiente entre mejores candidatos (${winnerChamp.name}: ${(bestCandidate.similarityScore * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}% < ${(MIN_CANDIDATE_MARGIN * 100).toInt()}%). Esperando estabilidad."
+                "Margen estrecho (${winnerChamp.name}: ${(bestCandidate.similarityScore * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}%). Evaluando..."
             }
             else -> {
-                "Puntaje inferior al umbral mínimo (${(bestCandidate.similarityScore * 100).toInt()}% < ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). El motor continúa evaluando los tensores en pantalla."
+                "Puntaje tensor bajo (${(bestCandidate.similarityScore * 100).toInt()}% < ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). Continuando escaneo..."
             }
         }
 
@@ -610,7 +625,7 @@ object LiteRTVisionClassifier {
             evaluatedPicksCount = confirmedPicksCount,
             isConfirmed = isConfirmed,
             stableFramesCount = stableFramesCounter,
-            requiredStableFrames = REQUIRED_STABLE_FRAMES,
+            requiredStableFrames = if (bestCandidate.similarityScore >= 0.28f) 1 else REQUIRED_STABLE_FRAMES,
             minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
         )
 
@@ -620,6 +635,22 @@ object LiteRTVisionClassifier {
         } else {
             return@withContext null
         }
+    }
+
+    /**
+     * Permite confirmar manualmente un campeón para el 10º pick directamente desde el Visor.
+     */
+    fun confirmManualSelection(champion: Champion) {
+        lastCandidateId = champion.id
+        stableFramesCounter = REQUIRED_STABLE_FRAMES
+        _reportFlow.value = _reportFlow.value.copy(
+            status = EngineStatus.COMPLETED,
+            pickedChampion = champion,
+            confidencePercent = 100,
+            isConfirmed = true,
+            stableFramesCount = REQUIRED_STABLE_FRAMES,
+            decisionReason = "Selección de 10º Pick confirmada directamente por el usuario para ${champion.name}"
+        )
     }
 
     /**
