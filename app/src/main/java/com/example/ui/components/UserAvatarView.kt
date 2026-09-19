@@ -218,8 +218,8 @@ fun UserAvatarView(
                     contentDescription = "Marco de Administrador",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * 3.6f)
-                        .offset(y = size * 0.10f)
+                        .requiredSize(size * 3.32f)
+                        .offset(y = size * 0.14f)
                         .align(Alignment.Center)
                 )
             } else if (!adminFrameUrl.isNullOrBlank()) {
@@ -233,8 +233,8 @@ fun UserAvatarView(
                     contentDescription = "Marco de Administrador",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * 3.6f)
-                        .offset(y = size * 0.10f)
+                        .requiredSize(size * 3.32f)
+                        .offset(y = size * 0.14f)
                         .align(Alignment.Center)
                 )
             }

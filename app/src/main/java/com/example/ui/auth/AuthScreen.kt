@@ -504,8 +504,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             Box(
                 modifier = Modifier
                     .padding(
-                        top = if (isAdminUser) 36.dp else 6.dp,
-                        bottom = if (isAdminUser) 28.dp else 6.dp,
+                        top = if (isAdminUser) 42.dp else 6.dp,
+                        bottom = if (isAdminUser) 16.dp else 6.dp,
                         start = if (isAdminUser) 40.dp else 8.dp,
                         end = if (isAdminUser) 40.dp else 8.dp
                     )
@@ -550,29 +550,37 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser
                 )
+                // Botón interactivo de cambio de avatar (Lápiz)
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
                         .align(Alignment.BottomEnd)
                         .offset(
-                            x = if (isAdminUser) 18.dp else 0.dp,
-                            y = if (isAdminUser) 14.dp else 0.dp
+                            x = if (isAdminUser) 16.dp else 2.dp,
+                            y = if (isAdminUser) 12.dp else 2.dp
                         )
+                        .size(32.dp)
                         .clip(CircleShape)
                         .background(activeTheme.secondary)
-                        .border(1.5.dp, activeTheme.background, CircleShape),
+                        .border(1.5.dp, activeTheme.background, CircleShape)
+                        .clickable(
+                            role = androidx.compose.ui.semantics.Role.Button,
+                            onClick = {
+                                avatarTapped = true
+                                showAvatarDialog = true
+                            }
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Cambiar Avatar",
                         tint = activeTheme.background,
-                        modifier = Modifier.size(13.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(if (isAdminUser) 85.dp else 12.dp))
 
             Text(
                 text = finalUserName,
