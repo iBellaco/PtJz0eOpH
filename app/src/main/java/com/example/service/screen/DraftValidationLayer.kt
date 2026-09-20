@@ -279,6 +279,19 @@ object DraftValidationLayer {
             }
         }
 
+        // 6. Desprender letras o dígitos del icono de maestría pegados al inicio de nombres de campeones
+        // (ej: "vyuumi" -> "yuumi", "vzeri" -> "zeri", "vwukong" -> "wukong", "vpantheon" -> "pantheon", "vurgot" -> "urgot", "vsett" -> "sett", "7darius" -> "darius")
+        val cleanLower = clean.lowercase(Locale.ROOT)
+        for (pLen in 1..2) {
+            if (cleanLower.length > pLen + 2) {
+                val sub = cleanLower.substring(pLen)
+                if (ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(sub) || ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(sub.replace(" ", ""))) {
+                    clean = clean.substring(pLen).trim()
+                    break
+                }
+            }
+        }
+
         return clean
     }
 

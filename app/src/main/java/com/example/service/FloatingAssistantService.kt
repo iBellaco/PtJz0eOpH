@@ -1102,10 +1102,11 @@ private fun FloatingOverlayContent(
 
                                     val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
 
-                                    if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
-                                        activeRole = result.userExplicitlyDetectedRole
-                                        com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
-                                        scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
+                                    val targetUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
+                                    if (targetUserRole != null && activeRole != targetUserRole) {
+                                        activeRole = targetUserRole
+                                        com.example.util.UserPreferences.setActiveDraftRole(context, targetUserRole)
+                                        scanNoticeMessage = "Auto-Scan: Tu rol detectado (${targetUserRole.shortName})"
                                     } else if (isDraftFullyConfirmed) {
                                         autoScanEnabled = false
                                         scanNoticeMessage = "10/10 Campeones confirmados"
@@ -1427,6 +1428,8 @@ private fun FloatingOverlayContent(
                                                     }
                                                     context.startActivity(reqIntent)
                                                 } catch (_: Exception) {}
+                                            } else {
+                                                triggerManualScan()
                                             }
                                         }
                                     ) {

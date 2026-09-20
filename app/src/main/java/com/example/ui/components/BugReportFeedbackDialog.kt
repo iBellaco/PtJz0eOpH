@@ -2094,7 +2094,7 @@ internal fun ItemCatalogSelectionDialog(
                     matchesSearch && matchesCat && !isBootItem && !isBasicOrMidTier
                 }
             }
-        }.sortedBy { it.name.lowercase(Locale.ROOT) }
+        }.distinctBy { it.name.lowercase(Locale.ROOT).trim() }.sortedBy { it.name.lowercase(Locale.ROOT) }
     }
 
     AlertDialog(

@@ -27,7 +27,7 @@ object ChampionNameResolver {
     )
 
     // Mapa exhaustivo de nombres de Wild Rift a sus IDs canónicos
-    private val KNOWN_CHAMPIONS_MAP = mapOf(
+    val KNOWN_CHAMPIONS_MAP = mapOf(
         "aatrox" to "aatrox",
         "ahri" to "ahri",
         "akali" to "akali",

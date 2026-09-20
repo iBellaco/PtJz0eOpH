@@ -9,8 +9,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -1229,25 +1231,45 @@ fun ChampionBuildCreatorDialog(
     }
 
     // Modal Selector de Objetos (Core o Situacional)
+    var selectedItemCategoryTab by remember { mutableStateOf("Todos") }
     val showItemPicker = showItemPickerForCore || showItemPickerForSituational
     if (showItemPicker) {
         Dialog(onDismissRequest = {
             showItemPickerForCore = false
             showItemPickerForSituational = false
             searchFilterQuery = ""
+            selectedItemCategoryTab = "Todos"
         }) {
             Card(
-                modifier = Modifier.fillMaxWidth().height(500.dp),
+                modifier = Modifier.fillMaxWidth().height(520.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = HextechSurface)
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = if (showItemPickerForCore) "Seleccionar Objeto Core" else "Seleccionar Objeto Situacional",
-                        color = HextechGold,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (showItemPickerForCore) "Seleccionar Objeto Core" else "Seleccionar Objeto Situacional",
+                            color = HextechGold,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                        IconButton(
+                            onClick = {
+                                showItemPickerForCore = false
+                                showItemPickerForSituational = false
+                                searchFilterQuery = ""
+                                selectedItemCategoryTab = "Todos"
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextSecondary)
+                        }
+                    }
+
                     OutlinedTextField(
                         value = searchFilterQuery,
                         onValueChange = { searchFilterQuery = it },
@@ -1256,7 +1278,31 @@ fun ChampionBuildCreatorDialog(
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true
                     )
-                    val filteredItems = remember(searchFilterQuery, items, showItemPickerForCore, coreItems, situationalItems) {
+
+                    // Filtros por Categoría
+                    val categories = listOf("Todos", "Físico", "Mágico", "Defensa", "Apoyo")
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        items(categories) { cat ->
+                            val isSel = selectedItemCategoryTab == cat
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isSel) HextechGold.copy(alpha = 0.25f) else HextechDarkBg)
+                                    .border(1.dp, if (isSel) HextechGold else HextechCardBorder, RoundedCornerShape(6.dp))
+                                    .clickable { selectedItemCategoryTab = cat }
+                                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Text(
+                                    text = cat,
+                                    color = if (isSel) HextechGold else TextSecondary,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                        }
+                    }
+
+                    val filteredItems = remember(searchFilterQuery, items, showItemPickerForCore, coreItems, situationalItems, selectedItemCategoryTab) {
                         val base = if (searchFilterQuery.isBlank()) items else items.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
                         val nonBasicMid = base.filter { item ->
                             val cat = item.category.lowercase(Locale.ROOT)
@@ -1266,8 +1312,9 @@ fun ChampionBuildCreatorDialog(
                             !cat.contains("básico") && !cat.contains("basico") &&
                             !cat.contains("nivel medio") && !cat.contains("basic") &&
                             !cat.contains("mid tier") && !id.endsWith("_mid_tier") && !id.endsWith("_basic")
-                        }
-                        val result = if (showItemPickerForCore) {
+                        }.distinctBy { it.name.lowercase(Locale.ROOT).trim() }
+
+                        val unselected = if (showItemPickerForCore) {
                             nonBasicMid.filter { item -> coreItems.none { it.name.equals(item.name, ignoreCase = true) } }
                         } else {
                             nonBasicMid.filter { item -> 
@@ -1275,36 +1322,91 @@ fun ChampionBuildCreatorDialog(
                                 situationalItems.none { it.name.equals(item.name, ignoreCase = true) }
                             }
                         }
-                        result.sortedBy { it.name.lowercase(Locale.ROOT) }
+
+                        val catFiltered = unselected.filter { item ->
+                            val catLower = item.category.lowercase(Locale.ROOT)
+                            val statsLower = item.stats.lowercase(Locale.ROOT)
+                            when (selectedItemCategoryTab) {
+                                "Físico" -> catLower.contains("físico") || catLower.contains("fisico") || statsLower.contains("daño de ataque") || statsLower.contains("tasa crítica")
+                                "Mágico" -> catLower.contains("mágico") || catLower.contains("magico") || statsLower.contains("poder de habilidad")
+                                "Defensa" -> catLower.contains("defensa") || catLower.contains("tanque") || statsLower.contains("armadura") || statsLower.contains("resistencia mágica")
+                                "Apoyo" -> catLower.contains("apoyo") || catLower.contains("soporte")
+                                else -> true
+                            }
+                        }
+
+                        catFiltered.sortedBy { it.name.lowercase(Locale.ROOT) }
                     }
+
+                    fun getItemCategoryName(item: com.example.model.WildRiftItem): String {
+                        val catLower = item.category.lowercase(Locale.ROOT)
+                        val statsLower = item.stats.lowercase(Locale.ROOT)
+                        return when {
+                            catLower.contains("físico") || catLower.contains("fisico") || statsLower.contains("daño de ataque") || statsLower.contains("tasa crítica") -> "Daño Físico"
+                            catLower.contains("mágico") || catLower.contains("magico") || statsLower.contains("poder de habilidad") -> "Daño Mágico"
+                            catLower.contains("defensa") || catLower.contains("tanque") || statsLower.contains("armadura") || statsLower.contains("resistencia mágica") -> "Defensa / Tanque"
+                            catLower.contains("apoyo") || catLower.contains("soporte") -> "Apoyo / Utilidad"
+                            else -> "Otros Objetos"
+                        }
+                    }
+
+                    val groupedItems = remember(filteredItems, selectedItemCategoryTab, searchFilterQuery) {
+                        if (selectedItemCategoryTab == "Todos" && searchFilterQuery.isBlank()) {
+                            filteredItems.groupBy { getItemCategoryName(it) }
+                        } else {
+                            mapOf("" to filteredItems)
+                        }
+                    }
+
                     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        items(filteredItems) { item ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        if (showItemPickerForCore) {
-                                            coreItems.add(EditableItemEntry(item.name, item.iconUrl))
-                                            showItemPickerForCore = false
-                                        } else {
-                                            situationalItems.add(EditableItemEntry(item.name, item.iconUrl))
-                                            showItemPickerForSituational = false
+                        groupedItems.forEach { (groupTitle, groupList) ->
+                            if (groupTitle.isNotEmpty()) {
+                                item(key = "header_$groupTitle") {
+                                    Text(
+                                        text = groupTitle.uppercase(Locale.ROOT),
+                                        color = HextechGold,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp, start = 4.dp)
+                                    )
+                                }
+                            }
+                            items(groupList, key = { it.id }) { item ->
+                                val catName = getItemCategoryName(item)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(HextechDarkBg)
+                                        .clickable {
+                                            if (showItemPickerForCore) {
+                                                coreItems.add(EditableItemEntry(item.name, item.iconUrl))
+                                                showItemPickerForCore = false
+                                            } else {
+                                                situationalItems.add(EditableItemEntry(item.name, item.iconUrl))
+                                                showItemPickerForSituational = false
+                                            }
+                                            searchFilterQuery = ""
+                                            selectedItemCategoryTab = "Todos"
                                         }
-                                        searchFilterQuery = ""
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    AppAssetImage(
+                                        url = item.iconUrl,
+                                        contentDescription = item.name,
+                                        fallbackText = item.name.take(2),
+                                        modifier = Modifier.size(32.dp).clip(RoundedCornerShape(6.dp))
+                                    )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(item.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                            Text("Oro: ${item.goldCost}", color = HextechGold, fontSize = 10.sp)
+                                            Text("•", color = TextMuted, fontSize = 10.sp)
+                                            Text(catName, color = HextechCyan, fontSize = 10.sp)
+                                        }
                                     }
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                AppAssetImage(
-                                    url = item.iconUrl,
-                                    contentDescription = item.name,
-                                    fallbackText = item.name.take(2),
-                                    modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
-                                )
-                                Column {
-                                    Text(item.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                    Text("Oro: ${item.goldCost}", color = HextechGold, fontSize = 10.sp)
                                 }
                             }
                         }
@@ -1348,18 +1450,21 @@ fun ChampionBuildCreatorDialog(
                             base.filter { item ->
                                 val cat = item.category.lowercase(Locale.ROOT)
                                 val id = item.id.lowercase(Locale.ROOT)
-                                (cat.contains("botas nivel 2") || cat.contains("botas n2") || id.startsWith("boot_")) &&
-                                !cat.contains("básico") && !cat.contains("basico") && !cat.contains("nivel medio")
+                                (item.category.equals("Botas Nivel 2", ignoreCase = true) || cat.contains("botas nivel 2") || cat.contains("botas n2") || id.startsWith("boot_")) &&
+                                !cat.contains("básico") && !cat.contains("basico") && !cat.contains("nivel medio") &&
+                                !cat.contains("nivel 3") && !cat.contains("botas nivel 3") && !cat.contains("botas n3") &&
+                                !listOf("immortal_treds", "gunmetal_greaves", "chainlaced_crushers", "armored_advance", "crimson_lucidity", "spellslinger_s_shoes", "armorcrusher_boots").contains(id)
                             }
                         } else {
                             base.filter { item ->
                                 val cat = item.category.lowercase(Locale.ROOT)
                                 val id = item.id.lowercase(Locale.ROOT)
+                                item.category.equals("Botas Nivel 3", ignoreCase = true) ||
                                 cat.contains("botas nivel 3") || cat.contains("botas n3") ||
-                                cat.contains("objetos de hechizo activos") || cat.contains("activos") ||
-                                id.startsWith("enchantment_") || id.startsWith("boot_enchant_")
+                                (cat.contains("nivel 3") && (cat.contains("bota") || cat.contains("boot") || id.contains("boot") || id.contains("greave") || id.contains("tread") || id.contains("tred"))) ||
+                                listOf("immortal_treds", "gunmetal_greaves", "chainlaced_crushers", "armored_advance", "crimson_lucidity", "spellslinger_s_shoes", "armorcrusher_boots").contains(id)
                             }
-                        }
+                        }.distinctBy { it.name.lowercase(Locale.ROOT).trim() }
                         result.sortedBy { it.name.lowercase(Locale.ROOT) }
                     }
                     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {

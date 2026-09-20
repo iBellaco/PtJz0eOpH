@@ -643,7 +643,6 @@ fun AvatarSelectionBottomSheet(
             val msgNoSecRole = tr("No posees un marco de rol secundario asignado")
             val msgNoSpecialFrame = tr("No posees un marco especial de rango disponible")
             val msgFrameSuccess = tr("Marco de perfil actualizado correctamente")
-            val msgRankSuccess = tr("Marco de rango actualizado")
 
             var selectedFrameOption by remember(activeFramePrefState) { mutableStateOf(activeFramePrefState.uppercase()) }
             var isSavingFrame by remember { mutableStateOf(false) }
@@ -768,109 +767,6 @@ fun AvatarSelectionBottomSheet(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // MARCOS DE RANGO COMPETITIVO
-                    Text(
-                        text = tr("MARCOS COMPETITIVOS (RANGO)"),
-                        color = HextechGoldLight,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 6.dp)
-                    )
-
-                    val borders = listOf("NONE", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER", "SOVEREIGN")
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        borders.chunked(2).forEach { chunk ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                chunk.forEach { border ->
-                                    val isSelected = currentRankBorder == border
-                                    val isAvailable = isPremium || userRole == "admin" || border == "NONE"
-
-                                    Card(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable(enabled = isAvailable) {
-                                                SubscriptionManager.changeRankBorder(
-                                                    borderId = border,
-                                                    onSuccess = {
-                                                        Toast.makeText(context, msgRankSuccess, Toast.LENGTH_SHORT).show()
-                                                    },
-                                                    onError = { err ->
-                                                        Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                                    }
-                                                )
-                                            },
-                                        shape = RoundedCornerShape(10.dp),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = if (isSelected) HextechGold.copy(alpha = 0.15f) else HextechSurface
-                                        ),
-                                        border = BorderStroke(
-                                            width = if (isSelected) 1.5.dp else 1.dp,
-                                            color = if (isSelected) HextechGold else HextechCardBorder
-                                        )
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(10.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier.size(44.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                UserAvatarView(
-                                                    avatarId = currentAvatarId,
-                                                    size = 44.dp,
-                                                    rankBorder = border,
-                                                    showBorder = false,
-                                                    fitFrameToSize = true
-                                                )
-                                                if (!isAvailable) {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .fillMaxSize()
-                                                            .background(Color.Black.copy(alpha = 0.6f), CircleShape),
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        Icon(Icons.Filled.Lock, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-                                                    }
-                                                }
-                                            }
-                                            val borderDisplayName = when (border) {
-                                                "NONE" -> tr("Sin Rango")
-                                                "EMERALD" -> tr("Esmeralda")
-                                                "DIAMOND" -> tr("Diamante")
-                                                "MASTER" -> tr("Maestro")
-                                                "GRANDMASTER" -> tr("Gran Maestro")
-                                                "CHALLENGER" -> tr("Aspirante")
-                                                "SOVEREIGN" -> tr("Soberano")
-                                                else -> border
-                                            }
-                                            Text(
-                                                text = borderDisplayName,
-                                                color = if (isSelected) HextechGold else TextPrimary,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.sp
-                                            )
-                                        }
-                                    }
-                                }
-                                if (chunk.size == 1) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                }
-                            }
                         }
                     }
                 }

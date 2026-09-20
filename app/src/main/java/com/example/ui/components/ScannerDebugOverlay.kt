@@ -73,7 +73,7 @@ fun ScannerDebugOverlay(
             
             // Columna Rival (Derecha)
             val enemyY = h * currentConfig.enemySlotYRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }
-            val enemyX = w * currentConfig.enemyAvatarCenterX
+            val enemyX = w * if (sIdx == 4) currentConfig.enemyTenthAvatarCenterX else currentConfig.enemyAvatarCenterX
             
             drawCircle(
                 color = if (sIdx == 4) Color(0xFFFF5252) else Color(0x99FF1744),
