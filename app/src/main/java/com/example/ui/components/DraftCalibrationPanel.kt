@@ -38,7 +38,7 @@ import kotlin.math.roundToInt
 
 enum class CalibrationTarget(val title: String, val subtitle: String) {
     ALLY_SLOT_4("10º Pick Aliado (Slot 5)", "Ajuste milimétrico X e Y del slot 5 aliado (abajo izquierda)"),
-    ENEMY_SLOT_4("10º Pick Rival (Slot 5)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
+    ENEMY_SLOT_4("10º Pick Rival (Slot 5)", "Ajuste milimétrico X e Y del slot 5 rival (abajo derecha)"),
     GLOBAL_ALLY_X("Columna Aliados X", "Mover horizontalmente todos los avatares aliados verticales"),
     GLOBAL_ENEMY_X("Columna Rivales X", "Mover horizontalmente todos los avatares rivales verticales"),
     AVATAR_SIZE("Tamaño Avatar Slots (⌀)", "Agrandar o reducir radio de escaneo de retratos en slots"),
@@ -90,9 +90,15 @@ fun DraftCalibrationPanel(
                 allyAvatarCenterX = (cur.allyAvatarCenterX + effectiveDeltaX).coerceIn(0.01f, 0.40f),
                 allyTenthAvatarCenterX = (cur.allyTenthAvatarCenterX + effectiveDeltaX).coerceIn(0.01f, 0.40f)
             )
-            CalibrationTarget.GLOBAL_ENEMY_X -> cur.copy(enemyAvatarCenterX = (cur.enemyAvatarCenterX + effectiveDeltaX).coerceIn(0.60f, 0.99f))
+            CalibrationTarget.GLOBAL_ENEMY_X -> cur.copy(
+                enemyAvatarCenterX = (cur.enemyAvatarCenterX + effectiveDeltaX).coerceIn(0.60f, 0.99f),
+                enemyTenthAvatarCenterX = (cur.enemyTenthAvatarCenterX + effectiveDeltaX).coerceIn(0.60f, 0.99f)
+            )
             CalibrationTarget.AVATAR_SIZE -> cur.copy(avatarDiameterRatio = (cur.avatarDiameterRatio + effectiveDeltaSize).coerceIn(0.04f, 0.28f))
-            CalibrationTarget.ENEMY_SLOT_4 -> cur.copy(enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[4] = (it[4] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
+            CalibrationTarget.ENEMY_SLOT_4 -> cur.copy(
+                enemyTenthAvatarCenterX = (cur.enemyTenthAvatarCenterX + effectiveDeltaX).coerceIn(0.60f, 0.99f),
+                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[4] = (it[4] + effectiveDeltaY).coerceIn(0.05f, 0.95f) }
+            )
             CalibrationTarget.ALLY_SLOT_0 -> cur.copy(allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[0] = (it[0] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
             CalibrationTarget.ALLY_SLOT_1 -> cur.copy(allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[1] = (it[1] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
             CalibrationTarget.ALLY_SLOT_2 -> cur.copy(allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[2] = (it[2] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
@@ -251,15 +257,21 @@ fun DraftCalibrationPanel(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "10º Aliado X: ${(config.allyTenthAvatarCenterX * 100).format(1)}% | Y: ${(config.allySlotYRatios.getOrElse(4){0.739f} * 100).format(1)}%",
+                        text = "10º Aliado X: ${(config.allyTenthAvatarCenterX * 100).format(1)}% | Y: ${(config.allySlotYRatios.getOrElse(4){0.741f} * 100).format(1)}%",
                         color = HextechCyan,
+                        fontSize = 7.5.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Text(
+                        text = "10º Rival X: ${(config.enemyTenthAvatarCenterX * 100).format(1)}% | Y: ${(config.enemySlotYRatios.getOrElse(4){0.741f} * 100).format(1)}%",
+                        color = Color(0xFFFF6E6E),
                         fontSize = 7.5.sp,
                         fontFamily = FontFamily.Monospace
                     )
                     Text(
                         text = "Aliados X: ${(config.allyAvatarCenterX * 100).format(1)}% | Rivales X: ${(config.enemyAvatarCenterX * 100).format(1)}%",
                         color = TextSecondary,
-                        fontSize = 7.sp,
+                        fontSize = 6.5.sp,
                         fontFamily = FontFamily.Monospace
                     )
                     Spacer(modifier = Modifier.height(3.dp))

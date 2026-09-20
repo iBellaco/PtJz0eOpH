@@ -1349,9 +1349,9 @@ fun ChampionsCatalogTab(
                                     )
                                     val formattedWr = String.format(java.util.Locale.US, "%.2f", champion.winrate)
                                     val regionTag = when (currentRegion) {
-                                        "CN" -> "CN"
-                                        "NA" -> "🌎 NA"
-                                        else -> "🌍 Global"
+                                        "CN" -> "🇨🇳 CN"
+                                        "NA" -> "🇺🇸 NA"
+                                        else -> "🌐 Global"
                                     }
                                     Text(
                                         text = "$regionTag WR: $formattedWr%",
@@ -1698,6 +1698,7 @@ fun TierListTab(
                         tierName = if (isCn) "TIER S+ / T0 (${tr("Dominantes en")} ${tr(currentTier.displayName)})" else "TIER S+ (${tr("Dominantes / Prioridad Pick & Ban")})",
                         tierColor = TierSPlusColor,
                         champions = tierSPlus,
+                        currentRegion = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -1711,6 +1712,7 @@ fun TierListTab(
                         tierName = if (isCn) "TIER S / T1 (${tr("Meta Muy Fuerte / Alta Prioridad")})" else "TIER S (${tr("Meta Muy Fuerte / Alta Prioridad")})",
                         tierColor = TierSColor,
                         champions = tierS,
+                        currentRegion = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -1724,6 +1726,7 @@ fun TierListTab(
                         tierName = if (isCn) "TIER A / T2-T3 (${tr("Opciones Sólidas y Balanceadas")})" else "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
                         tierColor = TierAColor,
                         champions = tierA,
+                        currentRegion = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -1737,6 +1740,7 @@ fun TierListTab(
                         tierName = if (isCn) "TIER B / T4 (${tr("Opciones Viables")})" else "TIER B (${tr("Opciones Viables")})",
                         tierColor = com.example.ui.theme.TierBColor,
                         champions = tierB,
+                        currentRegion = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -1750,6 +1754,7 @@ fun TierListTab(
                         tierName = if (isCn) "TIER C / T5 (${tr("Situacionales")})" else "TIER C (${tr("Situacionales")})",
                         tierColor = com.example.ui.theme.TierCColor,
                         champions = tierC,
+                        currentRegion = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -1763,6 +1768,7 @@ fun TierListTab(
                         tierName = if (isCn) "TIER D / OTROS (${tr("Fuera del Meta")})" else "TIER D / OTROS",
                         tierColor = com.example.ui.theme.TierDColor,
                         champions = tierD,
+                        currentRegion = currentRegion,
                         onSelectChampion = onSelectChampion
                     )
                 }
@@ -1856,18 +1862,23 @@ fun TierListTab(
                                     modifier = Modifier.width(46.dp).height(22.dp)
                                 ) }
                                 Column(horizontalAlignment = Alignment.End) {
+                                    val serverEmoji = when (currentRegion) {
+                                        "CN" -> "🇨🇳"
+                                        "NA" -> "🇺🇸"
+                                        else -> "🌐"
+                                    }
                                     when (selectedSort) {
                                         TierSortOption.WIN_RATE -> {
-                                            Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Text("$serverEmoji WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                             Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp)
                                         }
                                         TierSortOption.PICK_RATE -> {
                                             Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp)
+                                            Text("$serverEmoji WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp)
                                         }
                                         TierSortOption.BAN_RATE -> {
                                             Text("Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = TextMuted, fontSize = 10.sp)
+                                            Text("$serverEmoji WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = TextMuted, fontSize = 10.sp)
                                         }
                                         else -> {}
                                     }
@@ -1890,8 +1901,14 @@ fun TierSectionCard(
     tierName: String,
     tierColor: Color,
     champions: List<Champion>,
+    currentRegion: String = "Global",
     onSelectChampion: (Champion) -> Unit
 ) {
+    val serverEmoji = when (currentRegion) {
+        "CN" -> "🇨🇳"
+        "NA" -> "🇺🇸"
+        else -> "🌐"
+    }
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -1963,7 +1980,7 @@ fun TierSectionCard(
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
-                                    Text(tr("WR") + ": ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
+                                    Text("$serverEmoji " + tr("WR") + ": ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
                                 }
                                 if (!isOverlay) {
                                     Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp)
@@ -5196,8 +5213,13 @@ fun TierSelectionPanel(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val activeServerEmoji = when (currentRegion) {
+                        "CN" -> "🇨🇳"
+                        "NA" -> "🇺🇸"
+                        else -> "🌐"
+                    }
                     Text(
-                        text = "🌐 " + tr("Servidor / Meta:"),
+                        text = "$activeServerEmoji " + tr("Servidor / Meta:"),
                         color = HextechGold,
                         fontSize = if (isOverlay) 11.5.sp else 13.5.sp,
                         fontWeight = FontWeight.Black
@@ -5236,21 +5258,27 @@ fun TierSelectionPanel(
                 horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
             ) {
                 val regionItems = listOf(
-                    Triple("CN", "" + tr("Servidor Chino"), "API Tencent"),
-                    Triple("Global", "🌍 " + tr("Global"), "Meta Live"),
-                    Triple("NA", "🌎 " + tr("América (NA)"), "Local Cache")
+                    Triple("CN", "🇨🇳 " + tr("China (CN)"), "API Tencent"),
+                    Triple("Global", "🌐 " + tr("Global"), "Meta Live"),
+                    Triple("NA", "🇺🇸 " + tr("América (NA)"), "Local Cache")
                 )
                 regionItems.forEach { (regionId, label, sub) ->
                     val isSelected = (regionId == "CN" && currentRegion == "CN") ||
                                      (regionId == "NA" && currentRegion == "NA") ||
                                      (regionId == "Global" && (currentRegion == "Global" || currentRegion == "BestBuildWR"))
+                    val emoji = when (regionId) {
+                        "CN" -> "🇨🇳"
+                        "NA" -> "🇺🇸"
+                        else -> "🌐"
+                    }
+                    val cleanLabel = label.replace(emoji, "").trim()
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
                             .background(
                                 if (isSelected) Brush.verticalGradient(
-                                    listOf(HextechGold.copy(alpha = 0.22f), HextechGold.copy(alpha = 0.08f))
+                                    listOf(HextechGold.copy(alpha = 0.25f), HextechGold.copy(alpha = 0.10f))
                                 ) else Brush.verticalGradient(
                                     listOf(HextechSurfaceVariant.copy(alpha = 0.35f), HextechSurfaceVariant.copy(alpha = 0.2f))
                                 )
@@ -5268,10 +5296,15 @@ fun TierSelectionPanel(
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                            verticalArrangement = Arrangement.spacedBy(1.5.dp)
                         ) {
                             Text(
-                                text = label,
+                                text = emoji,
+                                fontSize = if (isOverlay) 14.sp else 18.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                            Text(
+                                text = cleanLabel,
                                 color = if (isSelected) HextechGold else TextMuted,
                                 fontSize = if (isOverlay) 8.5.sp else 10.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,

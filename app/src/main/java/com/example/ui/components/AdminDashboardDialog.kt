@@ -5041,7 +5041,7 @@ private fun ServerScraperHealthCard() {
                     Icon(Icons.Default.CloudSync, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Monitoreo Multi-Servidor (CN, NA, Global)",
+                        text = "Monitoreo Multi-Servidor (🇨🇳 CN, 🇺🇸 NA, 🌐 Global)",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp

@@ -1019,19 +1019,32 @@ private fun FloatingOverlayContent(
                     withContext(Dispatchers.Main) {
                         scanNoticeMessage = "Permiso de captura inactivo. Toca aquí para activarlo."
                     }
-                } else if (!isScanning) {
-                    val bitmap = withContext(Dispatchers.IO) {
-                        screenCaptureManager?.captureCurrentFrame()
+                } else {
+                    if (scanNoticeMessage?.contains("Permiso", ignoreCase = true) == true) {
+                        withContext(Dispatchers.Main) {
+                            scanNoticeMessage = null
+                        }
                     }
-                    if (bitmap != null && !bitmap.isRecycled && bitmap.width > 0 && bitmap.height > 0) {
-                        try {
-                            val result = withContext(Dispatchers.IO) {
-                                DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
-                            }
-                            withContext(Dispatchers.Main) {
-                                if (result.isSuccessful) {
+                    if (!isScanning) {
+                        val bitmap = withContext(Dispatchers.IO) {
+                            screenCaptureManager?.captureCurrentFrame()
+                        }
+                        if (bitmap != null && !bitmap.isRecycled && bitmap.width > 0 && bitmap.height > 0) {
+                            try {
+                                val result = withContext(Dispatchers.IO) {
+                                    DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
+                                }
+                                withContext(Dispatchers.Main) {
+                                    if (result.isSuccessful) {
                                     if (result.detectedFirstPick != null) {
                                         isFirstPick = result.detectedFirstPick
+                                    }
+
+                                    // Sincronizar automáticamente la línea del usuario si fue detectada
+                                    val detectedUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
+                                    if (detectedUserRole != null && activeRole != detectedUserRole) {
+                                        activeRole = detectedUserRole
+                                        AppLogger.d("Overlay", "Línea del usuario sincronizada automáticamente a: ${detectedUserRole.shortName}")
                                     }
 
                                     var newAlliesAdded = 0
@@ -1039,12 +1052,8 @@ private fun FloatingOverlayContent(
                                     
                                     defaultRoles.forEachIndexed { idx, role ->
                                         if (manualLockedAllySlots[idx] != true) {
-                                            // ASIGNACIÓN DETERMINÍSTICA POR ROL:
-                                            // En Wild Rift cada slot aliado muestra primero qué línea va a ir (Top, Jungla, Mid, Dúo, Soporte)
-                                            // y luego esa línea se cambia por el nombre del campeón seleccionado.
-                                            // Cada índice `idx` en `allies` corresponde estricta y únicamente a `role` (defaultRoles[idx]).
-                                            // NUNCA caer en fallback de `alliesBySlot[idx]` porque el slot físico de pick puede tener un rol distinto.
-                                            val scannedAlly = result.alliesByRole[role]
+                                            // ASIGNACIÓN ROBUSTA: Prioridad por rol detectado, con respaldo al índice de slot físico
+                                            val scannedAlly = result.alliesByRole[role] ?: result.alliesBySlot[idx]
                                             if (scannedAlly != null) {
                                                 if (allies[idx] == null || allies[idx]?.id != scannedAlly.id) {
                                                     assignAllySlot(idx, scannedAlly)
@@ -1053,22 +1062,26 @@ private fun FloatingOverlayContent(
                                             }
                                         }
                                         if (manualLockedEnemySlots[idx] != true) {
-                                            val scannedEnemy = result.enemiesByRole[role]
+                                            val scannedEnemy = result.enemiesByRole[role] ?: result.enemiesBySlot[idx]
                                             if (scannedEnemy != null) {
                                                 if (enemies[idx] == null || enemies[idx]?.id != scannedEnemy.id) {
                                                     assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
-                                                    if (enemies[idx] == null) newEnemiesAdded++
+                                                    if (enemies[idx] != null) newEnemiesAdded++
                                                 }
                                             }
                                         }
                                     }
 
-                                    val currentAllyPicks = allies.count { it != null }
-                                    val currentEnemyPicks = enemies.count { it != null }
-                                    if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
-                                        isFirstPick = false
-                                    } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
-                                        isFirstPick = true
+                                    if (result.detectedFirstPick != null) {
+                                        isFirstPick = result.detectedFirstPick
+                                    } else {
+                                        val currentAllyPicks = allies.count { it != null }
+                                        val currentEnemyPicks = enemies.count { it != null }
+                                        if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
+                                            isFirstPick = false
+                                        } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
+                                            isFirstPick = true
+                                        }
                                     }
 
                                     if (result.isLegendaryRanked) {
@@ -1102,10 +1115,11 @@ private fun FloatingOverlayContent(
 
                                     val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
 
-                                    if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
-                                        activeRole = result.userExplicitlyDetectedRole
-                                        com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
-                                        scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
+                                    val targetUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
+                                    if (targetUserRole != null && activeRole != targetUserRole) {
+                                        activeRole = targetUserRole
+                                        com.example.util.UserPreferences.setActiveDraftRole(context, targetUserRole)
+                                        scanNoticeMessage = "Auto-Scan: Tu rol detectado (${targetUserRole.shortName})"
                                     } else if (isDraftFullyConfirmed) {
                                         autoScanEnabled = false
                                         scanNoticeMessage = "10/10 Campeones confirmados"
@@ -1131,6 +1145,7 @@ private fun FloatingOverlayContent(
                             } catch (_: Throwable) {}
                         }
                     }
+                }
                 }
             } catch (t: Throwable) {
                 AppLogger.e("FloatingService", "Error in auto-scan loop", t)
@@ -1168,16 +1183,23 @@ private fun FloatingOverlayContent(
                             isFirstPick = result.detectedFirstPick
                         }
 
+                        // Sincronizar automáticamente la línea del usuario si fue detectada
+                        val detectedUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
+                        if (detectedUserRole != null && activeRole != detectedUserRole) {
+                            activeRole = detectedUserRole
+                            AppLogger.d("Overlay", "Línea del usuario sincronizada automáticamente a: ${detectedUserRole.shortName}")
+                        }
+
                         // 1. Asignación directa y de alta precisión por rol (respetando selecciones manuales)
                         defaultRoles.forEachIndexed { idx, role ->
                             if (manualLockedAllySlots[idx] != true) {
-                                val scannedAlly = result.alliesByRole[role]
+                                val scannedAlly = result.alliesByRole[role] ?: result.alliesBySlot[idx]
                                 if (scannedAlly != null) {
                                     assignAllySlot(idx, scannedAlly)
                                 }
                             }
                             if (manualLockedEnemySlots[idx] != true) {
-                                val scannedEnemy = result.enemiesByRole[role]
+                                val scannedEnemy = result.enemiesByRole[role] ?: result.enemiesBySlot[idx]
                                 if (scannedEnemy != null) {
                                     assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
                                 }
@@ -1427,6 +1449,8 @@ private fun FloatingOverlayContent(
                                                     }
                                                     context.startActivity(reqIntent)
                                                 } catch (_: Exception) {}
+                                            } else {
+                                                triggerManualScan()
                                             }
                                         }
                                     ) {
