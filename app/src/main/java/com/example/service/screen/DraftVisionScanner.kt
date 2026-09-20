@@ -425,7 +425,7 @@ object DraftVisionScanner {
                     // 1.1 COLUMNA ALIADA (Texto a la derecha del avatar aliado)
                     if (isAllyCol) {
                         var bestSlot = -1
-                        var minDiff = 0.085f
+                        var minDiff = 0.095f
                         for (s in 0..4) {
                             val diff = kotlin.math.abs(yRatio - calib.allySlotYRatios[s])
                             if (diff < minDiff) {
@@ -450,7 +450,7 @@ object DraftVisionScanner {
                     // 1.2 COLUMNA ENEMIGA (Texto a la izquierda del avatar rival)
                     else if (isEnemyCol) {
                         var bestSlot = -1
-                        var minDiff = 0.085f
+                        var minDiff = 0.095f
                         for (s in 0..4) {
                             val diff = kotlin.math.abs(yRatio - calib.enemySlotYRatios[s])
                             if (diff < minDiff) {
@@ -512,46 +512,12 @@ object DraftVisionScanner {
                     // - Si el jugador aún no ha seleccionado: el valor es el NOMBRE DE LA LÍNEA (ej: "CALLE DEL BARÓN", "JUNGLA", "CALLE CENTRAL", "CALLE DEL DRAGÓN", "SOPORTE").
                     // - Si el jugador ya seleccionó su campeón: el nombre de la línea cambia por el NOMBRE DEL CAMPEÓN (ej: "YUUMI", "ZERI", "PANTHEON", "URGOT").
                     // El icono de maestría a la izquierda persiste siempre y se ignora como referencia.
+                    
+                    // Fase A: Buscar primero si alguna de las líneas o elementos corresponde a un campeón
                     for ((line, box) in entries) {
                         if (DraftValidationLayer.isNoiseText(line)) continue
                         val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
 
-                        // 1. ¿Es el nombre de la línea asignada (en espera de selección)?
-                        val detectedRole = DraftValidationLayer.parseRoleFromText(strippedLine)
-                            ?: DraftValidationLayer.parseRoleFromText(line)
-
-                        if (detectedRole != null) {
-                            detectedRoleInSlot = detectedRole
-                            slot.explicitRole = detectedRole
-                            slot.assignedRole = detectedRole
-                            allySlotRolesCache[i] = detectedRole
-                            
-                            // Si el slot YA tenía un campeón confirmado previamente (el usuario ya seleccionó su campeón),
-                            // NUNCA descartarlo ni borrarlo ("al seleccionar el campeón es porque has tomado su nombre lo cual es 100% correcto y no deberías quitarlo").
-                            // Únicamente marcar en espera si todavía no había ningún campeón confirmado.
-                            if (allySlotConfirmedChampions[i] == null) {
-                                detectedChampInSlot = null
-                                allyOcrChampions[i] = null
-                                slot.champion = null
-                                isSlotShowingLane = true
-                                allySlotShowingLane[i] = true
-                                allySlotHasConfirmedChampOcr[i] = false
-                                textDiagnosticsList.add(
-                                    TextBlockDiagnostic(
-                                        text = line,
-                                        rect = box ?: Rect(0, 0, 10, 10),
-                                        isAlly = true,
-                                        slotIndex = i,
-                                        tag = "LÍNEA: ${detectedRole.shortName} (Esperando)",
-                                        color = android.graphics.Color.CYAN
-                                    )
-                                )
-                                AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea: ${detectedRole.shortName} (Esperando selección)")
-                                break // Este slot muestra su línea, aún no hay campeón
-                            }
-                        }
-
-                        // 2. Si no es una línea, ¿es un campeón que ya cambió la línea por su nombre?
                         var matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
                             ?: ChampionNameResolver.findChampionInText(line, allChamps)
 
@@ -615,9 +581,35 @@ object DraftVisionScanner {
                                     color = android.graphics.Color.GREEN
                                 )
                             )
-                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Campeón confirmado tras icono: ${matchedChamp.name}")
-                            break // Campeón confirmado en este slot; la línea ya cambió
+                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Campeón confirmado: ${matchedChamp.name}")
+                            break
                         }
+                    }
+
+                    // Fase B: Buscar rol asignado al slot
+                    for ((line, box) in entries) {
+                        if (DraftValidationLayer.isNoiseText(line)) continue
+                        val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
+                        val detectedRole = DraftValidationLayer.parseRoleFromText(strippedLine)
+                            ?: DraftValidationLayer.parseRoleFromText(line)
+
+                        if (detectedRole != null) {
+                            detectedRoleInSlot = detectedRole
+                            slot.explicitRole = detectedRole
+                            slot.assignedRole = detectedRole
+                            allySlotRolesCache[i] = detectedRole
+                            break
+                        }
+                    }
+
+                    // Fase C: Si NO se detectó campeón y sí se detectó rol, y el slot no tenía campeón previo confirmado
+                    if (detectedChampInSlot == null && detectedRoleInSlot != null && allySlotConfirmedChampions[i] == null) {
+                        isSlotShowingLane = true
+                        allySlotShowingLane[i] = true
+                        allySlotHasConfirmedChampOcr[i] = false
+                        allyOcrChampions[i] = null
+                        slot.champion = null
+                        AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea: ${detectedRoleInSlot.shortName} (Esperando selección)")
                     }
 
                     if (detectedChampInSlot != null) {

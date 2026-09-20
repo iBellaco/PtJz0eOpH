@@ -47,13 +47,21 @@ object DraftValidationLayer {
         // Descartar números puros o temporizadores de draft (ej: "18", "25", "30", "0:15", "100%")
         if (norm.matches(Regex("^[0-9\\s:.,%#-]+$"))) return true
         if (norm.startsWith("jugador") || norm.startsWith("player") || norm.startsWith("jogador")) return true
+
+        // Si el texto coincide directamente o contiene un campeón oficial de Wild Rift, NUNCA es ruido
+        val compactNorm = norm.replace(" ", "")
+        if (ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(norm) ||
+            ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(compactNorm)) {
+            return false
+        }
         
         // Descartar frases compuestas o menciones de orden de selección o interfaz
         if (norm.contains("primera") || norm.contains("segunda") ||
             norm.contains("seleccion") || norm.contains("selecao") ||
             norm.contains("eleccion") || norm.contains("escolha") ||
-            norm.contains("pick") || norm.contains("orden") ||
-            norm.contains("primer") || norm.contains("segundo") ||
+            norm.contains("orden") ||
+            norm.contains("primer pick") || norm.contains("segundo pick") ||
+            norm.contains("first pick") || norm.contains("second pick") ||
             norm.contains("legendaria") || norm.contains("lendaria") ||
             norm.contains("legendary") ||
             norm.contains("buscando oponentes") || norm.contains("combatamos juntos")) {
@@ -203,6 +211,14 @@ object DraftValidationLayer {
         var clean = rawText.trim()
         if (clean.isBlank()) return ""
 
+        val rawLower = clean.lowercase(Locale.ROOT)
+        // Si el texto completo coincide directamente con un campeón conocido (ej: "varus", "vayne", "vi", "viego", "xayah", "irelia"),
+        // NO aplicar ningún recorte de prefijo para no corromper el nombre oficial.
+        if (ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(rawLower) ||
+            ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(rawLower.replace(" ", ""))) {
+            return clean
+        }
+
         var changed = true
         var loops = 0
         while (changed && loops < 6) {
@@ -216,15 +232,17 @@ object DraftValidationLayer {
                 changed = true
             }
 
-            // 2. Quitar etiquetas explícitas de maestría y números de nivel iniciales (ej: "M7 JINX", "M7JINX", "LV10 JINX", "LEVEL 7 JINX", "MAESTRIA 7 JINX", "7 JINX", "4 DARIUS")
+            // 2. Quitar etiquetas explícitas de maestría y números de nivel iniciales con espacio o puntuación (ej: "M7 JINX", "M7JINX", "LV10 JINX", "LEVEL 7 JINX", "MAESTRIA 7 JINX", "7 JINX", "4 DARIUS")
             val withoutMasteryTag = clean.replace(Regex("^(m[0-9]{1,2}|lv[0-9]{1,2}|lvl[0-9]{1,2}|level\\s*[0-9]{1,2}|maestria\\s*[0-9]*|maestría\\s*[0-9]*|mastery\\s*[0-9]*|elo|[0-9]{1,2})\\s*", RegexOption.IGNORE_CASE), "").trim()
             if (withoutMasteryTag != clean && withoutMasteryTag.isNotBlank()) {
                 clean = withoutMasteryTag
                 changed = true
             }
 
-            // 3. Quitar números romanos de maestría iniciales con o sin espacio (ej: "VII JINX" -> "JINX", "V YASUO" -> "YASUO", "VYUUMI" -> "YUUMI", "VIWUKONG" -> "WUKONG", "VZERI" -> "ZERI", "VPANTHEON" -> "PANTHEON")
-            val withoutRomanMastery = clean.replace(Regex("^(viii|vii|vi|v|iv|iii|ii|i|ix|x)\\s*", RegexOption.IGNORE_CASE), "").trim()
+            // 3. Quitar números romanos de maestría iniciales SEGUIDOS de espacio o puntuación
+            // (ej: "VII JINX" -> "JINX", "V YASUO" -> "YASUO", "VI DARIUS" -> "DARIUS", "IV JHIN" -> "JHIN")
+            // NUNCA recortar letras sin espacio que forman parte de nombres de campeones como Varus, Vayne, Viego, Xayah, Irelia!
+            val withoutRomanMastery = clean.replace(Regex("^(viii|vii|vi|v|iv|iii|ii|i|ix|x)(\\s+|[.:;\\-_/|~*•»>]+)\\s*", RegexOption.IGNORE_CASE), "").trim()
             if (withoutRomanMastery != clean && withoutRomanMastery.isNotBlank()) {
                 clean = withoutRomanMastery
                 changed = true
@@ -256,7 +274,7 @@ object DraftValidationLayer {
                     normLower.startsWith("xin ") || normLower.startsWith("jarvan ") ||
                     normLower.startsWith("miss ") || normLower.startsWith("twisted ") ||
                     normLower.startsWith("master ") || normLower.startsWith("aurelion ") ||
-                    normLower.startsWith("tahm ")
+                    normLower.startsWith("tahm ") || normLower.startsWith("nunu ")
                 if (!isKnownTwoWordChamp && remainder.isNotBlank()) {
                     clean = remainder
                     changed = true

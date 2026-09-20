@@ -1046,12 +1046,8 @@ private fun FloatingOverlayContent(
                                     
                                     defaultRoles.forEachIndexed { idx, role ->
                                         if (manualLockedAllySlots[idx] != true) {
-                                            // ASIGNACIÓN DETERMINÍSTICA POR ROL:
-                                            // En Wild Rift cada slot aliado muestra primero qué línea va a ir (Top, Jungla, Mid, Dúo, Soporte)
-                                            // y luego esa línea se cambia por el nombre del campeón seleccionado.
-                                            // Cada índice `idx` en `allies` corresponde estricta y únicamente a `role` (defaultRoles[idx]).
-                                            // NUNCA caer en fallback de `alliesBySlot[idx]` porque el slot físico de pick puede tener un rol distinto.
-                                            val scannedAlly = result.alliesByRole[role]
+                                            // ASIGNACIÓN ROBUSTA: Prioridad por rol detectado, con respaldo al índice de slot físico
+                                            val scannedAlly = result.alliesByRole[role] ?: result.alliesBySlot[idx]
                                             if (scannedAlly != null) {
                                                 if (allies[idx] == null || allies[idx]?.id != scannedAlly.id) {
                                                     assignAllySlot(idx, scannedAlly)
@@ -1060,7 +1056,7 @@ private fun FloatingOverlayContent(
                                             }
                                         }
                                         if (manualLockedEnemySlots[idx] != true) {
-                                            val scannedEnemy = result.enemiesByRole[role]
+                                            val scannedEnemy = result.enemiesByRole[role] ?: result.enemiesBySlot[idx]
                                             if (scannedEnemy != null) {
                                                 if (enemies[idx] == null || enemies[idx]?.id != scannedEnemy.id) {
                                                     assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])

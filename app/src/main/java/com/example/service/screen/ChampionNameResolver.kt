@@ -220,19 +220,39 @@ object ChampionNameResolver {
         val trimmed = text.trim()
         if (trimmed.isBlank() || trimmed.length < 2) return null
 
-        // REGLA CRÍTICA: Si el texto contiene o representa una línea/rol (ej: "Calle Central", "Jungla", "Soporte", "Barón"),
-        // bajo ninguna circunstancia debe interpretarse como un campeón.
+        val safeChamps = synchronized(WildRiftRepository) {
+            ArrayList(allChampions)
+        }
+
+        // Comprobación prioritaria directa: si el texto completo o normalizado coincide exactamente con un campeón
+        val directNorm = normalize(trimmed)
+        val directCompact = normalizeCompact(trimmed)
+        KNOWN_CHAMPIONS_MAP[directNorm]?.let { id ->
+            val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
+            if (found != null) return found
+        }
+        KNOWN_CHAMPIONS_MAP[directCompact]?.let { id ->
+            val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
+            if (found != null) return found
+        }
+
+        // Si el texto contiene indicación de línea/rol (ej: "CALLE CENTRAL YASUO", "MID AHRI", "TOP DARIUS"),
+        // verificamos si ADEMÁS contiene el nombre de un campeón. Solo si tras quitar los términos de rol no hay campeón, descartamos.
         if (DraftValidationLayer.parseRoleFromText(trimmed) != null) {
+            val textWithoutRoleWords = trimmed.replace(
+                Regex("(?i)\\b(calle|carril|linea|línea|central|baron|barón|dragon|dragón|duo|dúo|solo|top|mid|jungle|jungla|adc|bot|support|soporte|apoyo|roam|laner)\\b"),
+                ""
+            ).trim()
+            if (textWithoutRoleWords.length >= 2 && textWithoutRoleWords != trimmed) {
+                val candidate = findChampionInText(textWithoutRoleWords, safeChamps)
+                if (candidate != null) return candidate
+            }
             return null
         }
 
         // Si es ruido de interfaz o etiqueta genérica de jugador, descartar
         if (DraftValidationLayer.isNoiseText(trimmed)) {
             return null
-        }
-
-        val safeChamps = synchronized(WildRiftRepository) {
-            ArrayList(allChampions)
         }
 
         // Si la línea contiene paréntesis (ej: "XCS Junior (Jarvan IV): ¡Combatamos!"), extraer el contenido de los paréntesis
