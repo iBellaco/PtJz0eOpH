@@ -44,8 +44,8 @@ data class VisionCalibrationConfig(
 
     // Rango horizontal OCR para columnas de draft (cobertura integral de mitades de pantalla)
     val allyOcrMinX: Float = 0.000f,
-    val allyOcrMaxX: Float = 0.320f,
-    val enemyOcrMinX: Float = 0.680f,
+    val allyOcrMaxX: Float = 0.420f,
+    val enemyOcrMinX: Float = 0.580f,
     val enemyOcrMaxX: Float = 1.000f,
 
     // --- CÍRCULOS DE AVATARES SUPERIORES (10º PICK Y FASE DE PREPARACIÓN) ---

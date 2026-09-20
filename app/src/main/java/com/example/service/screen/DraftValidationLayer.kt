@@ -54,6 +54,11 @@ object DraftValidationLayer {
             ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(compactNorm)) {
             return false
         }
+
+        // Si el texto indica un rol o línea (ej: "baron", "calle central", "mid", "jungla"), NUNCA es ruido
+        if (parseRoleFromText(text) != null || parseRoleFromText(norm) != null) {
+            return false
+        }
         
         // Descartar frases compuestas o menciones de orden de selección o interfaz
         if (norm.contains("primera") || norm.contains("segunda") ||

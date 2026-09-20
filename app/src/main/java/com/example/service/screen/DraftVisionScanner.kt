@@ -312,9 +312,11 @@ object DraftVisionScanner {
                     val boxRightRatio = if (width > 0 && box != null) box.right.toFloat() / width.toFloat() else xRatio
 
                     val isAllyCol = (xRatio in calib.allyOcrMinX..calib.allyOcrMaxX) ||
-                                    (boxLeftRatio < calib.allyOcrMaxX && boxRightRatio > calib.allyOcrMinX)
+                                    (boxLeftRatio < calib.allyOcrMaxX && boxRightRatio > calib.allyOcrMinX) ||
+                                    (xRatio < 0.45f && boxLeftRatio < 0.48f)
                     val isEnemyCol = (xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX) ||
-                                     (boxLeftRatio < calib.enemyOcrMaxX && boxRightRatio > calib.enemyOcrMinX)
+                                     (boxLeftRatio < calib.enemyOcrMaxX && boxRightRatio > calib.enemyOcrMinX) ||
+                                     (xRatio > 0.55f && boxRightRatio > 0.52f)
                     val isDraftColumn = isAllyCol || isEnemyCol
 
                     // EXCLUSIÓN INTELIGENTE DEL OVERLAY FLOTANTE DEL ASISTENTE:
