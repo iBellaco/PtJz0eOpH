@@ -37,11 +37,11 @@ object LiteRTVisionClassifier {
     private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
     private const val EMBEDDING_DIM = 96     // Vector descriptor de 96 dimensiones
 
-    // Umbrales calibrados de Google MediaPipe / LiteRT para clasificación inmediata del 10º pick
-    const val MIN_CONFIDENCE_THRESHOLD = 0.20f
-    const val MIN_CANDIDATE_MARGIN = 0.012f
+    // Umbrales calibrados de Google MediaPipe / LiteRT para clasificación del 10º pick
+    const val MIN_CONFIDENCE_THRESHOLD = 0.38f
+    const val MIN_CANDIDATE_MARGIN = 0.025f
 
-    // Con similitud sólida (>= 0.30f) se confirma en 1 frame; con similitud moderada en 2 frames consecutivos
+    // Requiere al menos 2 frames consecutivos estables con similitud alta (>= 0.48f) o 3 frames con similitud >= 0.38f
     const val REQUIRED_STABLE_FRAMES = 2
 
     // Variables de seguimiento de estabilidad temporal entre fotogramas
@@ -396,16 +396,32 @@ object LiteRTVisionClassifier {
 
         // COMPROBACIÓN CRÍTICA:
         // En Wild Rift, un slot en espera (yelmo espartano o icono de línea) o vacío es:
-        // 1. Monocromático / acromático (casi sin saturación de color: maxSat < 32 y colorfulRatio < 0.05).
-        // 2. Y simultáneamente oscuro (anillo medio oscuro > 62% o fondo general > 70% o brillo máximo < 75).
-        // En cambio, un campeón (incluso oscuro como Zed o Kayn) tiene zonas coloridas (ojos, efectos, armadura, piel).
+        // 1. Predominantemente oscuro (el icono o yelmo ocupa un área pequeña central y deja > 55-60% del círculo como fondo oscuro).
+        // 2. En cambio, el retrato de un campeón cubre ampliamente el círculo interior (darkRatio < 45%).
         val isAchromatic = maxSat < 32 && colorfulRatio < 0.05f
         val isEmptyOrWaiting = when {
+            // 1. Prácticamente todo oscuro (slot apagado o fondo negro)
             maxLum < 60 -> true
-            isAchromatic && midRingDarkRatio >= 0.62f -> true
-            isAchromatic && darkRatio >= 0.70f -> true
-            isAchromatic && avgLum < 38f && maxLum < 120 -> true
-            isAchromatic && stdDevLum < 16f && avgLum < 48f -> true
+
+            // 2. Fondo oscuro predominante en el slot (icono de línea o yelmo espartano):
+            // En Wild Rift, los slots no elegidos tienen un fondo oscuro que cubre > 55-60% del círculo interior,
+            // mientras que el retrato de un campeón seleccionado llena la mayor parte del círculo (darkRatio < 45%).
+            darkRatio >= 0.58f -> true
+            midRingDarkRatio >= 0.54f && darkRatio >= 0.48f -> true
+
+            // 3. Luminancia global baja con fondo predominantemente oscuro:
+            avgLum < 45f && darkRatio >= 0.45f -> true
+            avgLum < 36f -> true
+
+            // 4. Caso acromático (yelmo espartano rival o silueta monocromática):
+            isAchromatic && (darkRatio >= 0.42f || avgLum < 50f) -> true
+            isAchromatic && stdDevLum < 20f && avgLum < 60f -> true
+
+            // 5. Firma de Icono de Línea o Resplandor de Turno Activo (pocas zonas de color/glifo sobre fondo oscuro):
+            // Un icono de carril o el anillo de selección tiene solo un pequeño porcentaje de píxeles brillantes
+            // (colorfulRatio < 0.28) y una gran extensión de fondo negro/azul oscuro (darkRatio >= 0.48f).
+            colorfulRatio < 0.28f && darkRatio >= 0.48f && avgLum < 68f -> true
+
             else -> false
         }
 
@@ -444,6 +460,8 @@ object LiteRTVisionClassifier {
      * @param confirmedChampionIds Campeones ya detectados y seleccionados en los picks 1 a 9 (para excluirlos).
      * @param confirmedPicksCount Cantidad de selecciones previas ya confirmadas en el draft.
      * @param slotIndex Índice del slot (típicamente 4 para el 5º jugador).
+     * @param isSlotShowingLaneOrEmpty Si es true, el slot textualmente sigue mostrando la línea asignada o no tiene campeón mientras la selección sigue activa.
+     * @param isActiveSelectionPhase Indica si la partida está en selección activa en pantalla.
      * @param context Contexto de la aplicación.
      */
     suspend fun executeTenthPickInference(
@@ -452,6 +470,8 @@ object LiteRTVisionClassifier {
         confirmedChampionIds: Set<String>,
         confirmedPicksCount: Int,
         slotIndex: Int = 4,
+        isSlotShowingLaneOrEmpty: Boolean = false,
+        isActiveSelectionPhase: Boolean = false,
         context: Context? = null
     ): Pair<Champion, Int>? = withContext(Dispatchers.Default) {
         val slotDesc = if (isAlly) "Aliado 5 (10º Pick)" else "Rival 5 (10º Pick)"
@@ -469,6 +489,30 @@ object LiteRTVisionClassifier {
                 evaluatedPicksCount = confirmedPicksCount,
                 cropBitmap = copiedCrop ?: _reportFlow.value.cropBitmap
             )
+            return@withContext null
+        }
+
+        // Si el slot aliado aún muestra el nombre de la línea asignada (ej. "APOYO", "JUNGLA", etc.)
+        // o no tiene campeón y la selección activa sigue en curso, el jugador aún no ha elegido
+        if (isSlotShowingLaneOrEmpty) {
+            resetStabilityTracker()
+            val persistentCrop = try { cropBitmap?.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
+            val reason = if (isAlly) {
+                "El 10º jugador (Aliado) se encuentra en su turno de selección; el slot aún muestra la línea asignada. Esperando a que elija y confirme a su campeón."
+            } else {
+                "El 10º jugador (Rival) se encuentra en su turno de selección. Esperando confirmación de campeón."
+            }
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.WAITING_FOR_TENTH_PICK,
+                pickedChampion = null,
+                confidencePercent = 0,
+                decisionReason = reason,
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                cropBitmap = persistentCrop ?: _reportFlow.value.cropBitmap,
+                isConfirmed = false
+            )
+            AppLogger.d(TAG, "LiteRT 10º Pick [EN ESPERA POR TEXTO/LÍNEA]: $reason")
             return@withContext null
         }
 
@@ -570,8 +614,7 @@ object LiteRTVisionClassifier {
         val finalConfidence = bestCandidate.confidencePercent
 
         // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO (Confidence Threshold) Y FRAMES ESTABLES:
-        // Solicitado expresamente por el usuario para confirmar en cuanto el campeón se haga presente
-        // sin quedar esperando indefinidamente en el visor sin seleccionar.
+        // Solicitado expresamente por el usuario para evitar selecciones accidentales o falsos positivos
         val passesConfidence = bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD && scoreMargin >= MIN_CANDIDATE_MARGIN
 
         if (passesConfidence) {
@@ -582,18 +625,18 @@ object LiteRTVisionClassifier {
                 stableFramesCounter = 1
             }
         } else {
-            if (stableFramesCounter > 0 && bestCandidate.similarityScore < (MIN_CONFIDENCE_THRESHOLD * 0.70f)) {
+            if (stableFramesCounter > 0 && bestCandidate.similarityScore < (MIN_CONFIDENCE_THRESHOLD * 0.80f)) {
                 stableFramesCounter = 0
                 lastCandidateId = null
             }
         }
 
-        // CONFIRMACIÓN INMEDIATA:
-        // 1. Si la correlación es sólida (>= 0.28f) con margen positivo, se confirma en 1 solo frame (inmediato).
-        // 2. Si es moderada (>= 0.20f), se confirma al 2º frame consecutivo.
+        // CONFIRMACIÓN ESTRICTA Y SEGURA:
+        // NUNCA confirmar en 1 solo fotograma. Requiere al menos 2 frames consecutivos estables
+        // con similitud alta (>= 0.48f) o 3 frames con similitud moderada (>= 0.38f).
         val isConfirmed = passesConfidence && (
-            (bestCandidate.similarityScore >= 0.28f && stableFramesCounter >= 1) ||
-            (stableFramesCounter >= REQUIRED_STABLE_FRAMES)
+            (bestCandidate.similarityScore >= 0.48f && stableFramesCounter >= REQUIRED_STABLE_FRAMES) ||
+            (stableFramesCounter >= 3)
         )
 
         val decisionReason = when {
@@ -625,7 +668,7 @@ object LiteRTVisionClassifier {
             evaluatedPicksCount = confirmedPicksCount,
             isConfirmed = isConfirmed,
             stableFramesCount = stableFramesCounter,
-            requiredStableFrames = if (bestCandidate.similarityScore >= 0.28f) 1 else REQUIRED_STABLE_FRAMES,
+            requiredStableFrames = if (bestCandidate.similarityScore >= 0.48f) REQUIRED_STABLE_FRAMES else 3,
             minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
         )
 

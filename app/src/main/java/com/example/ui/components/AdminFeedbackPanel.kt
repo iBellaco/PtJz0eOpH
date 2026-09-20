@@ -861,6 +861,7 @@ fun AdminFeedbackBottomSheet(
         val repId = rep.id ?: "${rep.title}_${rep.createdAt}"
         val localRep = SupportReplyManager.getLocalReply(context, repId)
         val curReply = if (!rep.adminReply.isNullOrBlank()) rep.adminReply else (localRep?.text ?: "")
+        val isSponsorItem = getFeedbackCategory(rep) == "PATROCINADOR" || rep.type.equals("sponsor", ignoreCase = true) || rep.type.equals("patrocinador", ignoreCase = true)
 
         SupportReplyDialog(
             reportId = repId,
@@ -869,6 +870,7 @@ fun AdminFeedbackBottomSheet(
             userEmail = rep.parsedEmail ?: "",
             userName = rep.parsedUserName ?: "",
             initialReply = curReply,
+            tag = if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
             isFirestoreDoc = false,
             onDismiss = { reportToReply = null },
             onReplySent = { newReply, markedAsRead ->
@@ -1677,7 +1679,7 @@ private fun ComprehensiveFeedbackCard(
                                 Icon(Icons.Default.QuestionAnswer, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                                 Text(text = tr("Respuesta de Soporte Coach:"), color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                             }
-                            if (onReply != null && itemCategory == "SUPPORT") {
+                            if (onReply != null && (itemCategory == "SUPPORT" || itemCategory == "PATROCINADOR" || itemCategory == "BUG")) {
                                 Text(
                                     text = tr("Editar"),
                                     color = HextechCyan,
@@ -1724,7 +1726,7 @@ private fun ComprehensiveFeedbackCard(
                         }
                     }
                 }
-            } else if (onReply != null && itemCategory == "SUPPORT") {
+            } else if (onReply != null && (itemCategory == "SUPPORT" || itemCategory == "PATROCINADOR" || itemCategory == "BUG")) {
                 Spacer(modifier = Modifier.height(6.dp))
                 OutlinedButton(
                     onClick = onReply,

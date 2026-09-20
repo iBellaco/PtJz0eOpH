@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.BorderStroke
@@ -180,13 +181,22 @@ fun UserInboxDialog(
                                 val isLastReplyFromSupport = lastRole == "SUPPORT" || lastRole == "ADMIN" || admRep.isNotBlank()
                                 val hasNewAdminReply = (data["hasNewAdminReply"] as? Boolean) == true || (data["hasNewReply"] as? Boolean) == true
 
+                                val rawDocTag = (data["tag"] as? String) ?: (data["type"] as? String) ?: "SUPPORT"
+                                val isSponsorTag = rawDocTag.equals("PATROCINADOR", ignoreCase = true) || rawDocTag.equals("SPONSOR", ignoreCase = true)
+                                val finalTag = if (isSponsorTag) "PATROCINADOR" else "SUPPORT"
+                                val displayTitle = if (isSponsorTag) {
+                                    if (title.startsWith("Patrocinio:", ignoreCase = true)) title else "Patrocinio: $title"
+                                } else {
+                                    if (title.startsWith("Soporte:", ignoreCase = true)) title else "Soporte: $title"
+                                }
+
                                 supportMap[doc.id] = mapOf(
                                     "id" to doc.id,
                                     "reportId" to doc.id,
-                                    "title" to "Soporte: $title",
+                                    "title" to displayTitle,
                                     "content" to desc,
                                     "description" to desc,
-                                    "tag" to "SUPPORT",
+                                    "tag" to finalTag,
                                     "timestamp" to ts,
                                     "status" to status,
                                     "conversation" to conv,
@@ -197,7 +207,7 @@ fun UserInboxDialog(
                                     "hasNewAdminReply" to hasNewAdminReply,
                                     "isLastReplyFromSupport" to isLastReplyFromSupport,
                                     "lastReplyTs" to (lastConvTs ?: ts),
-                                    "sender" to (data["userName"] as? String ?: "Soporte Coach")
+                                    "sender" to (data["userName"] as? String ?: (if (isSponsorTag) "Patrocinador" else "Soporte Coach"))
                                 )
                             }
                             updateSupportList()
@@ -247,13 +257,22 @@ fun UserInboxDialog(
                                 val isLastReplyFromSupport = lastRole == "SUPPORT" || lastRole == "ADMIN" || admRep.isNotBlank()
                                 val hasNewAdminReply = (data["hasNewAdminReply"] as? Boolean) == true || (data["hasNewReply"] as? Boolean) == true
 
+                                val rawDocTagEmail = (data["tag"] as? String) ?: (data["type"] as? String) ?: "SUPPORT"
+                                val isSponsorTagEmail = rawDocTagEmail.equals("PATROCINADOR", ignoreCase = true) || rawDocTagEmail.equals("SPONSOR", ignoreCase = true)
+                                val finalTagEmail = if (isSponsorTagEmail) "PATROCINADOR" else "SUPPORT"
+                                val displayTitleEmail = if (isSponsorTagEmail) {
+                                    if (title.startsWith("Patrocinio:", ignoreCase = true)) title else "Patrocinio: $title"
+                                } else {
+                                    if (title.startsWith("Soporte:", ignoreCase = true)) title else "Soporte: $title"
+                                }
+
                                 supportMap[doc.id] = mapOf(
                                     "id" to doc.id,
                                     "reportId" to doc.id,
-                                    "title" to "Soporte: $title",
+                                    "title" to displayTitleEmail,
                                     "content" to desc,
                                     "description" to desc,
-                                    "tag" to "SUPPORT",
+                                    "tag" to finalTagEmail,
                                     "timestamp" to ts,
                                     "status" to status,
                                     "conversation" to conv,
@@ -264,7 +283,7 @@ fun UserInboxDialog(
                                     "hasNewAdminReply" to hasNewAdminReply,
                                     "isLastReplyFromSupport" to isLastReplyFromSupport,
                                     "lastReplyTs" to (lastConvTs ?: ts),
-                                    "sender" to (data["userName"] as? String ?: "Soporte Coach")
+                                    "sender" to (data["userName"] as? String ?: (if (isSponsorTagEmail) "Patrocinador" else "Soporte Coach"))
                                 )
                             }
                             updateSupportList()
@@ -1611,14 +1630,19 @@ fun UserSupportThreadCard(
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.Top
                                 ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Row(
+                                        modifier = Modifier.weight(1f, fill = false),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
                                         Text(
                                             if (isUserMsg) "👤 ${msg.senderName} (Tú)" else "🛡️ ${msg.senderName}",
                                             color = if (isUserMsg) Color(0xFFD4AF37) else Color(0xFF38BDF8),
                                             fontSize = 10.5.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         if (msg.isGreeting || (!isUserMsg && SupportReplyManager.isDefaultGreeting(msg.text))) {
                                             Spacer(modifier = Modifier.width(4.dp))
@@ -1632,11 +1656,13 @@ fun UserSupportThreadCard(
                                                     color = Color(0xFF38BDF8),
                                                     fontSize = 7.5.sp,
                                                     fontWeight = FontWeight.Bold,
+                                                    maxLines = 1,
                                                     modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp)
                                                 )
                                             }
                                         }
                                     }
+                                    Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         timeFormatter.format(Date(msg.timestampMillis)),
                                         color = Color.Gray,

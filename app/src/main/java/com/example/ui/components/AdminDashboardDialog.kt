@@ -268,7 +268,7 @@ fun AdminDashboardDialog(
                         .fillMaxSize()
                         .weight(1f)
                 ) {
-                    if (userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()) {
+                    if (userRole == "admin" || userRole == "moderador" || com.example.util.AuthManager.isCurrentUserAdmin()) {
                         EnhancedUserManagementPanel(
                         isMinimized = isMonitoringMinimized,
                         onToggleMinimize = { isMonitoringMinimized = !isMonitoringMinimized }
@@ -2495,21 +2495,34 @@ fun EnhancedUserAdminCard(
                 Spacer(modifier = Modifier.width(10.dp))
 
                 // Datos de Usuario
+                val isVerifiedUser = (user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true || role == "admin" || role == "moderador"
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = name,
-                        fontWeight = FontWeight.Bold,
-                        color = if (role == "admin") HextechGold else TextPrimary,
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .clickable {
-                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                clipboard.setPrimaryClip(ClipData.newPlainText("Usuario", name))
-                                Toast.makeText(context, "Usuario copiado: $name", Toast.LENGTH_SHORT).show()
-                            }
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            clipboard.setPrimaryClip(ClipData.newPlainText("Usuario", name))
+                            Toast.makeText(context, "Usuario copiado: $name", Toast.LENGTH_SHORT).show()
+                        }
+                    ) {
+                        Text(
+                            text = name,
+                            fontWeight = FontWeight.Bold,
+                            color = if (role == "admin") HextechGold else TextPrimary,
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (isVerifiedUser) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Filled.Verified,
+                                contentDescription = "Verificado",
+                                tint = if (role == "admin") HextechGold else HextechCyan,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(3.dp))
 
@@ -2839,6 +2852,7 @@ fun UserDetailManagementDialog(
     var currentEmailInput by remember { mutableStateOf(email) }
     var currentRole by remember { mutableStateOf(user["role"] as? String ?: "free") }
     var currentBanned by remember { mutableStateOf((user["banned"] as? Boolean) == true || currentRole == "banned") }
+    var currentVerified by remember { mutableStateOf((user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true || currentRole == "admin" || currentRole == "moderador") }
     var currentPremiumUntil by remember { mutableStateOf((user["premiumUntil"] as? Number)?.toLong()) }
     val avatarId = user["avatarId"] as? String ?: "default_poro"
     val rankBorder = user["rankBorder"] as? String ?: "NONE"
@@ -3358,6 +3372,95 @@ fun UserDetailManagementDialog(
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+
+                    // SECCIÓN: VERIFICACIÓN OFICIAL DE CUENTA
+                    item {
+                        Surface(
+                            color = HextechSurfaceBg,
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (currentVerified) HextechCyan.copy(alpha = 0.5f) else HextechCardBorder)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Filled.Verified,
+                                            contentDescription = null,
+                                            tint = if (currentVerified) HextechCyan else TextMuted,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "Verificación Oficial de Cuenta",
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (currentVerified) HextechCyan else TextPrimary,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+
+                                    Surface(
+                                        color = if (currentVerified) HextechCyan.copy(alpha = 0.15f) else HextechDarkBg,
+                                        shape = RoundedCornerShape(4.dp),
+                                        border = androidx.compose.foundation.BorderStroke(0.5.dp, if (currentVerified) HextechCyan else HextechCardBorder)
+                                    ) {
+                                        Text(
+                                            text = if (currentVerified) "VERIFICADA" else "NO VERIFICADA",
+                                            color = if (currentVerified) HextechCyan else TextMuted,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "Otorga o revoca la insignia de cuenta verificada para este invocador. La insignia se muestra junto a su nombre en su perfil y en la gestión de comunidad.",
+                                    color = TextSecondary,
+                                    fontSize = 11.5.sp,
+                                    lineHeight = 15.sp
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                Button(
+                                    onClick = {
+                                        val newStatus = !currentVerified
+                                        updateUserVerification(context, uid, newStatus) {
+                                            currentVerified = newStatus
+                                            onUserUpdated(user.toMutableMap().apply {
+                                                put("isVerified", newStatus)
+                                                put("verified", newStatus)
+                                            })
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (currentVerified) DangerRed.copy(alpha = 0.18f) else HextechCyan,
+                                        contentColor = if (currentVerified) DangerRed else HextechDarkBg
+                                    ),
+                                    shape = RoundedCornerShape(6.dp),
+                                    border = if (currentVerified) androidx.compose.foundation.BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f)) else null
+                                ) {
+                                    Icon(
+                                        imageVector = if (currentVerified) Icons.Default.Close else Icons.Filled.Verified,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = if (currentVerified) "Revocar Estado de Verificado" else "Otorgar Estado de Verificado",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp
+                                    )
                                 }
                             }
                         }
@@ -4472,6 +4575,31 @@ private fun removePremiumFromUser(
         }
         .addOnFailureListener { e ->
             Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+}
+
+private fun updateUserVerification(
+    context: Context,
+    uid: String,
+    isVerified: Boolean,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val updatePayload = hashMapOf<String, Any>(
+        "isVerified" to isVerified,
+        "verified" to isVerified,
+        "lastModifiedByAdmin" to System.currentTimeMillis()
+    )
+
+    db.collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            val msg = if (isVerified) "Verificación otorgada exitosamente" else "Verificación revocada"
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, "Error al actualizar verificación: ${e.message}", Toast.LENGTH_LONG).show()
         }
 }
 

@@ -25,6 +25,9 @@ object SubscriptionManager {
     private val _isBanned = MutableStateFlow(false)
     val isBanned: StateFlow<Boolean> = _isBanned.asStateFlow()
 
+    private val _isVerified = MutableStateFlow(false)
+    val isVerified: StateFlow<Boolean> = _isVerified.asStateFlow()
+
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
 
@@ -86,6 +89,7 @@ object SubscriptionManager {
                 _userName.value = ""
                 _isPremium.value = false
                 _isBanned.value = false
+                _isVerified.value = false
                 _currentAvatarId.value = "default_poro"
                 _unlockedAvatars.value = emptyList()
                 _blueEssence.value = 0L
@@ -306,6 +310,9 @@ object SubscriptionManager {
                     _premiumUntil.value = until
                     _blueEssence.value = blueEs
                     
+                    val isVerifiedDoc = listenSnapshot.getBoolean("isVerified") ?: listenSnapshot.getBoolean("verified") ?: false
+                    _isVerified.value = isVerifiedDoc || isAdminClaim || role == "admin" || role == "moderador"
+
                     val isPrem = when {
                         isAdminClaim || role == "admin" || role == "moderador" -> true
                         role == "premium" || role == "creador_vip" || role == "streamer" -> {
@@ -334,6 +341,7 @@ object SubscriptionManager {
                     _userName.value = user.displayName?.takeIf { it.isNotBlank() } ?: user.email?.substringBefore("@") ?: ""
                     _userRole.value = if (isEmailAdmin) "admin" else "free"
                     _isPremium.value = isEmailAdmin
+                    _isVerified.value = isEmailAdmin
                     _premiumUntil.value = null
                     _currentAvatarId.value = "default_poro"
                     _unlockedAvatars.value = emptyList()

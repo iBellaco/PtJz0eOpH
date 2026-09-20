@@ -267,6 +267,8 @@ object DraftVisionScanner {
         val enemySlotTexts = Array(5) { mutableListOf<Pair<String, Rect?>>() }
         val allyOcrChampions = Array<Champion?>(5) { null }
         val enemyOcrChampions = Array<Champion?>(5) { null }
+        val allySlotShowingLane = BooleanArray(5) { false }
+        val allySlotHasConfirmedChampOcr = BooleanArray(5) { false }
         val textDiagnosticsList = mutableListOf<TextBlockDiagnostic>()
 
         // -----------------------------------------------------------------------------------------
@@ -532,8 +534,16 @@ object DraftVisionScanner {
 
                     if (detectedChampInSlot != null) {
                         isSlotShowingLane = false
+                        allySlotShowingLane[i] = false
+                        allySlotHasConfirmedChampOcr[i] = true
                     } else if (detectedRoleInSlot != null) {
                         isSlotShowingLane = true
+                        allySlotShowingLane[i] = true
+                        allySlotHasConfirmedChampOcr[i] = false
+                    } else {
+                        val hasConfirmedInCache = (allySlotConfirmedChampions[i] != null)
+                        allySlotShowingLane[i] = !hasConfirmedInCache
+                        allySlotHasConfirmedChampOcr[i] = hasConfirmedInCache
                     }
 
                     // 3. ANALIZAR NOMBRE DE INVOCADOR / TAG DE USUARIO:
@@ -941,10 +951,14 @@ object DraftVisionScanner {
                 slot.confidencePercent = 100
                 slot.explicitRole = roleForSlot
                 slot.assignedRole = roleForSlot
+                allySlotHasConfirmedChampOcr[i] = true
+                allySlotShowingLane[i] = false
             } else {
                 slot.champion = null
                 slot.confidencePercent = 0
                 slot.explicitRole = roleForSlot
+                allySlotHasConfirmedChampOcr[i] = false
+                allySlotShowingLane[i] = true
             }
 
             val diagStatus = if (finalChamp != null) DiagnosticStatus.CONFIRMADO else DiagnosticStatus.VACIO
@@ -1160,6 +1174,18 @@ object DraftVisionScanner {
         // Google MediaPipe / LiteRT se activa exclusivamente cuando las selecciones 1 al 9 ya están presentes
         // y apunta estrictamente al círculo del slot correspondiente.
         val targetSlot = if (actualTenthIsAlly) allySlots[actualTenthSlotIndex] else enemySlots[actualTenthSlotIndex]
+        val isTenthAwaitingPick = if (actualTenthIsAlly) {
+            allySlotShowingLane[actualTenthSlotIndex] || !allySlotHasConfirmedChampOcr[actualTenthSlotIndex]
+        } else {
+            enemyOcrChampions[actualTenthSlotIndex] == null && enemySlotConfirmedChampions[actualTenthSlotIndex] == null
+        }
+
+        // Si la partida está en selección activa y el slot aún está en espera / mostrando carril, no forzar pick
+        val shouldHoldForUserSelection = isTenthAwaitingPick && (
+            isActiveSelectionDetected ||
+            (actualTenthIsAlly && allySlotShowingLane[actualTenthSlotIndex])
+        )
+
         if (confirmedPicksCount == 9 && targetSlot.champion == null) {
             val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
                 cropBitmap = tenthCrop,
@@ -1167,6 +1193,8 @@ object DraftVisionScanner {
                 confirmedChampionIds = confirmedChampIds,
                 confirmedPicksCount = confirmedPicksCount,
                 slotIndex = actualTenthSlotIndex,
+                isSlotShowingLaneOrEmpty = shouldHoldForUserSelection,
+                isActiveSelectionPhase = isActiveSelectionDetected,
                 context = context
             )
 
@@ -1177,6 +1205,8 @@ object DraftVisionScanner {
                     allySlots[actualTenthSlotIndex].confidencePercent = confidence
                     allySlots[actualTenthSlotIndex].isLikelyUnpicked = false
                     allySlotConfirmedChampions[actualTenthSlotIndex] = champWinner
+                    allySlotHasConfirmedChampOcr[actualTenthSlotIndex] = true
+                    allySlotShowingLane[actualTenthSlotIndex] = false
                 } else {
                     enemySlots[actualTenthSlotIndex].champion = champWinner
                     enemySlots[actualTenthSlotIndex].confidencePercent = confidence
@@ -1193,6 +1223,8 @@ object DraftVisionScanner {
                 confirmedChampionIds = confirmedChampIds,
                 confirmedPicksCount = confirmedPicksCount,
                 slotIndex = actualTenthSlotIndex,
+                isSlotShowingLaneOrEmpty = shouldHoldForUserSelection,
+                isActiveSelectionPhase = isActiveSelectionDetected,
                 context = context
             )
         }

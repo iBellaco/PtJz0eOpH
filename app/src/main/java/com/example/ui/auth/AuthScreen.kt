@@ -191,6 +191,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val context = LocalContext.current
     val activeTheme = AppThemeManager.currentTheme
     val isPremium by SubscriptionManager.isPremium.collectAsState()
+    val isVerified by SubscriptionManager.isVerified.collectAsState()
     val userRole by SubscriptionManager.userRole.collectAsState()
     val premiumUntil by SubscriptionManager.premiumUntil.collectAsState()
     val savedUserName by SubscriptionManager.userName.collectAsState()
@@ -680,17 +681,19 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     letterSpacing = 0.3.sp
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                IconButton(
-                    onClick = { showVerifiedInfoDialog = true },
-                    modifier = Modifier.size(26.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Verified,
-                        contentDescription = "Cuenta Verificada - Toca para más información",
-                        tint = activeTheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
+                if (isVerified || isAdminUser || userRole == "moderador") {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    IconButton(
+                        onClick = { showVerifiedInfoDialog = true },
+                        modifier = Modifier.size(26.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Verified,
+                            contentDescription = "Cuenta Verificada - Toca para más información",
+                            tint = activeTheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 

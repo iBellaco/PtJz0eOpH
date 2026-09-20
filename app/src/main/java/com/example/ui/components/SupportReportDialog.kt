@@ -110,7 +110,7 @@ fun SupportReportDialog(
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val isSponsorUser = userRole.equals("patrocinador", ignoreCase = true) || userRole.equals("admin", ignoreCase = true) || AuthManager.isCurrentUserAdmin()
 
-    var selectedTag by remember(isSponsorUser) { mutableStateOf(if (isSponsorUser) "PATROCINADOR" else "SOPORTE") }
+    var selectedTag by remember { mutableStateOf("SOPORTE") }
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var titleError by remember { mutableStateOf(false) }

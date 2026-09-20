@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -369,10 +370,6 @@ fun SupportReplyDialog(
                                 val isFromSupport = msg.senderRole == "SUPPORT"
                                 val bubbleBorderColor = if (isFromSupport) HextechCyan.copy(alpha = 0.6f) else HextechGold.copy(alpha = 0.6f)
                                 val bubbleBg = if (isFromSupport) HextechDarkBg else HextechSurface
-                                val roleLabel = if (isFromSupport) {
-                                    val emailPart = if (!msg.senderEmail.isNullOrBlank()) " • ${msg.senderEmail}" else ""
-                                    "🛡️ Soporte Coach (${msg.senderName}$emailPart)"
-                                } else "👤 $displayUserName"
                                 val roleColor = if (isFromSupport) HextechCyan else HextechGold
 
                                 Surface(
@@ -385,38 +382,56 @@ fun SupportReplyDialog(
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
+                                            verticalAlignment = Alignment.Top
                                         ) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(
-                                                    text = roleLabel,
-                                                    color = roleColor,
-                                                    fontSize = 11.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                                if (msg.isGreeting || SupportReplyManager.isDefaultGreeting(msg.text)) {
-                                                    Spacer(modifier = Modifier.width(6.dp))
-                                                    Surface(
-                                                        shape = RoundedCornerShape(4.dp),
-                                                        color = HextechCyan.copy(alpha = 0.2f)
-                                                    ) {
-                                                        Text(
-                                                            text = "Saludo predeterminado",
-                                                            color = HextechCyan,
-                                                            fontSize = 8.5.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                                        )
+                                            Column(modifier = Modifier.weight(1f, fill = false)) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                ) {
+                                                    Text(
+                                                        text = if (isFromSupport) "🛡️ Soporte Coach (${msg.senderName})" else "👤 $displayUserName",
+                                                        color = roleColor,
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                    if (msg.isGreeting || SupportReplyManager.isDefaultGreeting(msg.text)) {
+                                                        Surface(
+                                                            shape = RoundedCornerShape(4.dp),
+                                                            color = HextechCyan.copy(alpha = 0.2f),
+                                                            border = BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.5f))
+                                                        ) {
+                                                            Text(
+                                                                text = "Saludo predeterminado",
+                                                                color = HextechCyan,
+                                                                fontSize = 8.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                maxLines = 1,
+                                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                            )
+                                                        }
                                                     }
                                                 }
+                                                if (isFromSupport && !msg.senderEmail.isNullOrBlank()) {
+                                                    Text(
+                                                        text = msg.senderEmail,
+                                                        color = TextMuted,
+                                                        fontSize = 9.sp,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                }
                                             }
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
                                                 text = dateFormat.format(Date(msg.timestampMillis)),
                                                 color = TextMuted,
                                                 fontSize = 9.5.sp
                                             )
                                         }
-                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Spacer(modifier = Modifier.height(6.dp))
                                         Text(
                                             text = msg.text,
                                             color = Color.White,
