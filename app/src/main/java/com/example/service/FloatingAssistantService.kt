@@ -1034,6 +1034,13 @@ private fun FloatingOverlayContent(
                                         isFirstPick = result.detectedFirstPick
                                     }
 
+                                    // Sincronizar automáticamente la línea del usuario si fue detectada
+                                    val detectedUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
+                                    if (detectedUserRole != null && activeRole != detectedUserRole) {
+                                        activeRole = detectedUserRole
+                                        AppLogger.d("Overlay", "Línea del usuario sincronizada automáticamente a: ${detectedUserRole.shortName}")
+                                    }
+
                                     var newAlliesAdded = 0
                                     var newEnemiesAdded = 0
                                     
@@ -1167,6 +1174,13 @@ private fun FloatingOverlayContent(
                         // Sincronizar primera selección si se detectó
                         if (result.detectedFirstPick != null) {
                             isFirstPick = result.detectedFirstPick
+                        }
+
+                        // Sincronizar automáticamente la línea del usuario si fue detectada
+                        val detectedUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
+                        if (detectedUserRole != null && activeRole != detectedUserRole) {
+                            activeRole = detectedUserRole
+                            AppLogger.d("Overlay", "Línea del usuario sincronizada automáticamente a: ${detectedUserRole.shortName}")
                         }
 
                         // 1. Asignación directa y de alta precisión por rol (respetando selecciones manuales)

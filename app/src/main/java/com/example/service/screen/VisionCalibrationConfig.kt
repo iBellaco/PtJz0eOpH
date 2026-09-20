@@ -12,9 +12,9 @@ data class VisionCalibrationConfig(
     val allyAvatarCenterX: Float = 0.075f,
     // 10º Pick Aliado: alineado de forma milimétrica con el centro del avatar circular
     val allyTenthAvatarCenterX: Float = 0.075f,
-    val enemyAvatarCenterX: Float = 0.960f,
-    // 10º Pick Rival: alineado milimétricamente con el centro del avatar circular del slot 5 rival
-    val enemyTenthAvatarCenterX: Float = 0.960f,
+    val enemyAvatarCenterX: Float = 0.925f,
+    // 10º Pick Rival: alineado milimétricamente con el centro del avatar circular del slot 5 rival (simétrico a 0.075f)
+    val enemyTenthAvatarCenterX: Float = 0.925f,
 
     // Diámetro del avatar relativo al alto de pantalla (0..1)
     val avatarDiameterRatio: Float = 0.122f,
@@ -44,9 +44,9 @@ data class VisionCalibrationConfig(
 
     // Rango horizontal OCR para columnas de draft (restringido estrictamente a las columnas de slots, sin tocar el centro)
     val allyOcrMinX: Float = 0.050f,
-    val allyOcrMaxX: Float = 0.320f,
-    val enemyOcrMinX: Float = 0.680f,
-    val enemyOcrMaxX: Float = 0.950f,
+    val allyOcrMaxX: Float = 0.350f,
+    val enemyOcrMinX: Float = 0.650f,
+    val enemyOcrMaxX: Float = 0.940f,
 
     // --- CÍRCULOS DE AVATARES SUPERIORES (10º PICK Y FASE DE PREPARACIÓN) ---
     // En la barra superior de Wild Rift durante selección final y fase de preparación:

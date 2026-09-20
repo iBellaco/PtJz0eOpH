@@ -248,7 +248,11 @@ object DraftVisionScanner {
 
         val width = bitmap.width
         val height = bitmap.height
-        val allChamps = WildRiftRepository.champions
+        val allChamps = if (WildRiftRepository.champions.isNotEmpty()) {
+            WildRiftRepository.champions
+        } else {
+            context?.let { WildRiftRepository.initChampions(it); WildRiftRepository.champions } ?: WildRiftRepository.champions
+        }
         val auditList = mutableListOf<String>()
         val defaultRolesList = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
 
@@ -299,16 +303,28 @@ object DraftVisionScanner {
                     if (text.isBlank() || text.length < 2) continue
 
                     val box = line.boundingBox
-                    if (box != null && overlayRect != null) {
-                        if (android.graphics.Rect.intersects(box, overlayRect!!)) {
-                            continue // Ignorar texto que cae dentro de la ventana flotante
-                        }
-                    }
-
                     val centerY = box?.centerY() ?: 0
                     val centerX = box?.centerX() ?: 0
                     val xRatio = if (width > 0) centerX.toFloat() / width.toFloat() else 0.5f
                     val yRatio = if (height > 0) centerY.toFloat() / height.toFloat() else 0.5f
+
+                    val boxLeftRatio = if (width > 0 && box != null) box.left.toFloat() / width.toFloat() else xRatio
+                    val boxRightRatio = if (width > 0 && box != null) box.right.toFloat() / width.toFloat() else xRatio
+
+                    val isAllyCol = (xRatio in calib.allyOcrMinX..calib.allyOcrMaxX) ||
+                                    (boxLeftRatio < calib.allyOcrMaxX && boxRightRatio > calib.allyOcrMinX)
+                    val isEnemyCol = (xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX) ||
+                                     (boxLeftRatio < calib.enemyOcrMaxX && boxRightRatio > calib.enemyOcrMinX)
+                    val isDraftColumn = isAllyCol || isEnemyCol
+
+                    // EXCLUSIÓN INTELIGENTE DEL OVERLAY FLOTANTE DEL ASISTENTE:
+                    // El overlay solo se excluye en el centro/resto de la pantalla.
+                    // JAMÁS se descarta texto dentro de las columnas de selección aliadas o rivales.
+                    if (box != null && overlayRect != null && !isDraftColumn) {
+                        if (android.graphics.Rect.intersects(box, overlayRect!!)) {
+                            continue
+                        }
+                    }
 
                     val lowerText = text.lowercase(Locale.ROOT)
                     val isAssistantOverlayText = lowerText.contains("campeones confirmados") || 
@@ -341,11 +357,6 @@ object DraftVisionScanner {
                         (textNormLine.contains("preparaci") && !textNormLine.contains("preselecci")) ||
                         (textNormLine.contains("preparaç") && !textNormLine.contains("pre-seleç")))) {
                         isPreparationBannerDetected = true
-                    }
-
-                    // EXCLUSIÓN DEL OVERLAY FLOTANTE DEL ASISTENTE
-                    if (box != null && overlayRect != null && android.graphics.Rect.intersects(box, overlayRect!!)) {
-                        continue
                     }
 
                     // Detección automática de Primera / Segunda Selección por texto y ubicación espacial superior
@@ -410,14 +421,6 @@ object DraftVisionScanner {
                     // Ignorar barra de bans superior (< 0.12f) y botones inferiores extremos (> 0.88f)
                     // Permitir todos los 5 slots (desde y=0.15 hasta y=0.85)
                     if (yRatio < 0.12f || yRatio > 0.880f) continue
-
-                    val boxLeftRatio = if (width > 0 && box != null) box.left.toFloat() / width.toFloat() else xRatio
-                    val boxRightRatio = if (width > 0 && box != null) box.right.toFloat() / width.toFloat() else xRatio
-
-                    val isAllyCol = (xRatio in calib.allyOcrMinX..calib.allyOcrMaxX) ||
-                                    (boxLeftRatio < calib.allyOcrMaxX && boxRightRatio > calib.allyOcrMinX)
-                    val isEnemyCol = (xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX) ||
-                                     (boxLeftRatio < calib.enemyOcrMaxX && boxRightRatio > calib.enemyOcrMinX)
 
                     // 1.1 COLUMNA ALIADA (Texto a la derecha del avatar aliado)
                     if (isAllyCol) {
@@ -522,26 +525,30 @@ object DraftVisionScanner {
                             slot.explicitRole = detectedRole
                             slot.assignedRole = detectedRole
                             allySlotRolesCache[i] = detectedRole
-                            // El jugador aún está esperando seleccionar; muestra la línea:
-                            detectedChampInSlot = null
-                            allySlotConfirmedChampions[i] = null
-                            allyOcrChampions[i] = null
-                            slot.champion = null
-                            isSlotShowingLane = true
-                            allySlotShowingLane[i] = true
-                            allySlotHasConfirmedChampOcr[i] = false
-                            textDiagnosticsList.add(
-                                TextBlockDiagnostic(
-                                    text = line,
-                                    rect = box ?: Rect(0, 0, 10, 10),
-                                    isAlly = true,
-                                    slotIndex = i,
-                                    tag = "LÍNEA: ${detectedRole.shortName} (Esperando)",
-                                    color = android.graphics.Color.CYAN
+                            
+                            // Si el slot YA tenía un campeón confirmado previamente (el usuario ya seleccionó su campeón),
+                            // NUNCA descartarlo ni borrarlo ("al seleccionar el campeón es porque has tomado su nombre lo cual es 100% correcto y no deberías quitarlo").
+                            // Únicamente marcar en espera si todavía no había ningún campeón confirmado.
+                            if (allySlotConfirmedChampions[i] == null) {
+                                detectedChampInSlot = null
+                                allyOcrChampions[i] = null
+                                slot.champion = null
+                                isSlotShowingLane = true
+                                allySlotShowingLane[i] = true
+                                allySlotHasConfirmedChampOcr[i] = false
+                                textDiagnosticsList.add(
+                                    TextBlockDiagnostic(
+                                        text = line,
+                                        rect = box ?: Rect(0, 0, 10, 10),
+                                        isAlly = true,
+                                        slotIndex = i,
+                                        tag = "LÍNEA: ${detectedRole.shortName} (Esperando)",
+                                        color = android.graphics.Color.CYAN
+                                    )
                                 )
-                            )
-                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea: ${detectedRole.shortName} (Esperando selección)")
-                            break // Este slot muestra su línea, aún no hay campeón
+                                AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea: ${detectedRole.shortName} (Esperando selección)")
+                                break // Este slot muestra su línea, aún no hay campeón
+                            }
                         }
 
                         // 2. Si no es una línea, ¿es un campeón que ya cambió la línea por su nombre?
@@ -867,25 +874,34 @@ object DraftVisionScanner {
             } else if (cachedUserSlotIndex != null) {
                 userSlotIndex = cachedUserSlotIndex
                 userExplicitlyConfirmed = true
-            } else if (currentActiveRole != null) {
-                val matchingSlot = allySlots.indexOfFirst { it.explicitRole == currentActiveRole || allySlotRolesCache[it.slotIndex] == currentActiveRole }
-                if (matchingSlot != -1) {
-                    userSlotIndex = matchingSlot
-                    cachedUserSlotIndex = matchingSlot
-                    userExplicitlyConfirmed = false
+            } else {
+                // Deducción lógica del usuario: si 4 slots aliados ya seleccionaron campeón o 1 único slot
+                // muestra la línea en espera de selección, ese slot corresponde al usuario:
+                val waitingSlots = (0..4).filter { allySlotShowingLane[it] || (allySlotConfirmedChampions[it] == null && allySlots[it].champion == null) }
+                if (waitingSlots.size == 1) {
+                    val singleWaiting = waitingSlots.first()
+                    userSlotIndex = singleWaiting
+                    cachedUserSlotIndex = singleWaiting
+                    userExplicitlyConfirmed = true
+                    AppLogger.d(TAG, "Deducción de slot del usuario: Único slot en espera de selección -> Slot $singleWaiting")
+                } else if (currentActiveRole != null) {
+                    val matchingSlot = allySlots.indexOfFirst { it.explicitRole == currentActiveRole || allySlotRolesCache[it.slotIndex] == currentActiveRole }
+                    if (matchingSlot != -1) {
+                        userSlotIndex = matchingSlot
+                        cachedUserSlotIndex = matchingSlot
+                        userExplicitlyConfirmed = false
+                    }
                 }
             }
 
             val uIdx = userSlotIndex
             if (uIdx != null && uIdx in 0..4) {
-                val assignedRole = assignedAllyRoles[uIdx] ?: allySlotRolesCache[uIdx] ?: allySlots[uIdx].champion?.primaryRole
+                val assignedRole = assignedAllyRoles[uIdx] ?: allySlotRolesCache[uIdx] ?: allySlots[uIdx].explicitRole ?: allySlots[uIdx].assignedRole ?: allySlots[uIdx].champion?.primaryRole
                 if (assignedRole != null) {
                     userDetectedLane = assignedRole
                     userExplicitlyConfirmed = true
                     AppLogger.d(TAG, "Rol de usuario confirmado en Slot Aliado $uIdx -> ${assignedRole.shortName}")
                 }
-            } else if (currentActiveRole != null) {
-                userDetectedLane = currentActiveRole
             }
 
             // Para el lado rival: Analizamos el texto de cada slot.

@@ -223,8 +223,8 @@ object DraftValidationLayer {
                 changed = true
             }
 
-            // 3. Quitar números romanos de maestría iniciales seguidos de espacio (ej: "VII JINX" -> "JINX", "V YASUO" -> "YASUO", "VI DARIUS" -> "DARIUS", "IV DARIUS" -> "DARIUS")
-            val withoutRomanMastery = clean.replace(Regex("^(viii|vii|vi|v|iv|iii|ii|i|ix|x)\\s+", RegexOption.IGNORE_CASE), "").trim()
+            // 3. Quitar números romanos de maestría iniciales con o sin espacio (ej: "VII JINX" -> "JINX", "V YASUO" -> "YASUO", "VYUUMI" -> "YUUMI", "VIWUKONG" -> "WUKONG", "VZERI" -> "ZERI", "VPANTHEON" -> "PANTHEON")
+            val withoutRomanMastery = clean.replace(Regex("^(viii|vii|vi|v|iv|iii|ii|i|ix|x)\\s*", RegexOption.IGNORE_CASE), "").trim()
             if (withoutRomanMastery != clean && withoutRomanMastery.isNotBlank()) {
                 clean = withoutRomanMastery
                 changed = true
@@ -264,11 +264,11 @@ object DraftValidationLayer {
             }
         }
 
-        // 5. Desprender prefijos pegados de 1 a 3 letras a palabras clave de líneas (ej: "vcalle" -> "calle", "vapoyo" -> "apoyo", "vjungla" -> "jungla")
+        // 5. Desprender prefijos pegados de 1 a 4 letras a palabras clave de líneas (ej: "vcalle" -> "calle", "vapoyo" -> "apoyo", "vjungla" -> "jungla", "m7calle" -> "calle")
         val lower = clean.lowercase(Locale.ROOT)
-        val rolePrefixes = listOf("calle", "carril", "linea", "apoyo", "soporte", "jungla", "baron", "central", "dragon", "dragón", "duo", "dúo")
+        val rolePrefixes = listOf("calle", "carril", "linea", "apoyo", "soporte", "jungla", "baron", "central", "dragon", "dragón", "duo", "dúo", "solo", "top", "mid", "adc")
         for (rp in rolePrefixes) {
-            for (pLen in 1..3) {
+            for (pLen in 1..4) {
                 if (lower.length >= rp.length + pLen && lower.substring(pLen).startsWith(rp)) {
                     val candidate = clean.substring(pLen).trim()
                     if (candidate.isNotBlank()) {
@@ -280,9 +280,9 @@ object DraftValidationLayer {
         }
 
         // 6. Desprender letras o dígitos del icono de maestría pegados al inicio de nombres de campeones
-        // (ej: "vyuumi" -> "yuumi", "vzeri" -> "zeri", "vwukong" -> "wukong", "vpantheon" -> "pantheon", "vurgot" -> "urgot", "vsett" -> "sett", "7darius" -> "darius")
+        // (ej: "vyuumi" -> "yuumi", "vzeri" -> "zeri", "vwukong" -> "wukong", "vpantheon" -> "pantheon", "vurgot" -> "urgot", "vsett" -> "sett", "7darius" -> "darius", "viiwukong" -> "wukong", "m7zeri" -> "zeri")
         val cleanLower = clean.lowercase(Locale.ROOT)
-        for (pLen in 1..2) {
+        for (pLen in 1..4) {
             if (cleanLower.length > pLen + 2) {
                 val sub = cleanLower.substring(pLen)
                 if (ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(sub) || ChampionNameResolver.KNOWN_CHAMPIONS_MAP.containsKey(sub.replace(" ", ""))) {
