@@ -593,11 +593,23 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             )
 
             val secRoleForAvatar = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
+            val rankRoleForAvatar = com.example.model.AppUserSecondaryRole.fromId(currentRankBorder)
+            val hasSecFrame = secRoleForAvatar != com.example.model.AppUserSecondaryRole.NONE && secRoleForAvatar.frameDrawableRes != null
+            val hasRankFrame = rankRoleForAvatar != com.example.model.AppUserSecondaryRole.NONE && rankRoleForAvatar.frameDrawableRes != null
+            val hasSpecialFrameEquipped = when (activeFramePref.uppercase()) {
+                "NONE" -> false
+                "SECONDARY" -> hasSecFrame
+                "SPECIAL", "RANK" -> isAdminUser || hasRankFrame
+                else -> isAdminUser || hasSecFrame || hasRankFrame
+            }
+
+            val avatarBoxSize = if (hasSpecialFrameEquipped) 130.dp else 84.dp
+            val haloSize = if (hasSpecialFrameEquipped) 50.dp else 84.dp
 
             // Avatar in center
             Box(
                 modifier = Modifier
-                    .padding(top = 6.dp, bottom = 6.dp, start = 8.dp, end = 8.dp)
+                    .padding(top = 4.dp, bottom = 4.dp, start = 8.dp, end = 8.dp)
                     .graphicsLayer {
                         scaleX = avatarScale
                         scaleY = avatarScale
@@ -610,7 +622,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             ) {
                 Box(
                     modifier = Modifier
-                        .size(86.dp)
+                        .size(haloSize)
                         .graphicsLayer {
                             scaleX = haloPulse
                             scaleY = haloPulse
@@ -635,17 +647,20 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     rankBorder = currentRankBorder,
                     secondaryRole = currentSecRoleVal,
                     equippedFrame = activeFramePref,
-                    size = 74.dp,
+                    size = avatarBoxSize,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser,
-                    fitFrameToSize = false
+                    fitFrameToSize = true
                 )
                 // Botón interactivo de cambio de avatar (Lápiz)
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .offset(x = 2.dp, y = 2.dp)
-                        .size(32.dp)
+                        .offset(
+                            x = if (hasSpecialFrameEquipped) (-10).dp else 2.dp,
+                            y = if (hasSpecialFrameEquipped) (-10).dp else 2.dp
+                        )
+                        .size(30.dp)
                         .clip(CircleShape)
                         .background(activeTheme.secondary)
                         .border(1.5.dp, activeTheme.background, CircleShape)
@@ -662,12 +677,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Cambiar Avatar",
                         tint = activeTheme.background,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(15.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

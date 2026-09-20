@@ -83,18 +83,18 @@ fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
 
         LanguageOption(
-            title = "Español",
-            subtitle = "Español Oficial (Latinoamérica / España) • 100% Activo",
-            flagEmoji = "",
+            title = "Español (Latinoamérica)",
+            subtitle = "Español Oficial (Latinoamérica) • 100% Activo",
+            flagEmoji = "🇲🇽",
             isSelected = selectedLang == "es",
             isEnabled = true,
             onClick = { selectedLang = "es" }
         )
 
         LanguageOption(
-            title = "Português",
-            subtitle = "Português (Brasil / Portugal) • Em Manutenção",
-            flagEmoji = "",
+            title = "Português (Brasil)",
+            subtitle = "Português (Brasil) • Em Manutenção",
+            flagEmoji = "🇧🇷",
             isSelected = false,
             isEnabled = false,
             onClick = { }

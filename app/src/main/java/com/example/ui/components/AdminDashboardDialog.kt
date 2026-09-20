@@ -4483,6 +4483,7 @@ fun AdminBroadcastAnnouncementDialog(
     var message by remember { mutableStateOf("") }
     var isUrgent by remember { mutableStateOf(false) }
     var sendNotification by remember { mutableStateOf(false) }
+    var isNotificationOnly by remember { mutableStateOf(false) }
     var isPublishing by remember { mutableStateOf(false) }
     var isDeactivating by remember { mutableStateOf(false) }
 
@@ -4633,15 +4634,44 @@ fun AdminBroadcastAnnouncementDialog(
                 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { sendNotification = !sendNotification }
+                    modifier = Modifier.clickable { 
+                        sendNotification = !sendNotification 
+                        if (!sendNotification) isNotificationOnly = false
+                    }
                 ) {
                     Checkbox(
                         checked = sendNotification,
-                        onCheckedChange = { sendNotification = it },
+                        onCheckedChange = { 
+                            sendNotification = it 
+                            if (!it) isNotificationOnly = false
+                        },
                         colors = CheckboxDefaults.colors(checkedColor = HextechGold)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Enviar notificación a los dispositivos", color = if (sendNotification) HextechGold else TextSecondary, fontSize = 12.sp)
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { 
+                        isNotificationOnly = !isNotificationOnly
+                        if (isNotificationOnly) {
+                            sendNotification = true
+                        }
+                    }
+                ) {
+                    Checkbox(
+                        checked = isNotificationOnly,
+                        onCheckedChange = { 
+                            isNotificationOnly = it
+                            if (it) {
+                                sendNotification = true
+                            }
+                        },
+                        colors = CheckboxDefaults.colors(checkedColor = HextechCyan)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Solo notificación (sin cuadro emergente en la app)", color = if (isNotificationOnly) HextechCyan else TextSecondary, fontSize = 12.sp)
                 }
             }
         },
@@ -4658,11 +4688,13 @@ fun AdminBroadcastAnnouncementDialog(
                         title = title,
                         message = message,
                         isUrgent = isUrgent,
-                        sendNotification = sendNotification
+                        sendNotification = sendNotification,
+                        notificationOnly = isNotificationOnly
                     ) { success, err ->
                         isPublishing = false
                         if (success) {
-                            Toast.makeText(context, "¡Anuncio global publicado a todos los dispositivos!", Toast.LENGTH_SHORT).show()
+                            val toastMsg = if (isNotificationOnly) "¡Notificación enviada a los dispositivos!" else "¡Anuncio global publicado a todos los dispositivos!"
+                            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
                             onDismiss()
                         } else {
                             Toast.makeText(context, "Error al publicar: $err", Toast.LENGTH_LONG).show()

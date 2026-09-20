@@ -195,7 +195,7 @@ fun AvatarSelectionBottomSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
-                        modifier = Modifier.size(60.dp),
+                        modifier = Modifier.size(68.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         UserAvatarView(
@@ -203,9 +203,9 @@ fun AvatarSelectionBottomSheet(
                             rankBorder = currentRankBorder,
                             secondaryRole = currentSecondaryRole,
                             equippedFrame = activeFramePref,
-                            size = 52.dp,
+                            size = 68.dp,
                             isAdmin = isAdmin,
-                            fitFrameToSize = false
+                            fitFrameToSize = true
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
@@ -827,14 +827,15 @@ fun AvatarSelectionBottomSheet(
                                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
                                             Box(
-                                                modifier = Modifier.size(38.dp),
+                                                modifier = Modifier.size(44.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 UserAvatarView(
                                                     avatarId = currentAvatarId,
-                                                    size = 32.dp,
+                                                    size = 44.dp,
                                                     rankBorder = border,
-                                                    showBorder = false
+                                                    showBorder = false,
+                                                    fitFrameToSize = true
                                                 )
                                                 if (!isAvailable) {
                                                     Box(

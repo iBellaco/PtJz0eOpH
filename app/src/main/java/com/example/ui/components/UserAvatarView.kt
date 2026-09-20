@@ -60,7 +60,7 @@ fun UserAvatarView(
     adminFrameResId: Int = com.example.R.drawable.ic_frame_admin,
     adminFrameUrl: String? = null,
     equippedFrame: String = "AUTO",
-    fitFrameToSize: Boolean = false
+    fitFrameToSize: Boolean = true
 ) {
     val secRoleObj = remember(secondaryRole) {
         if (!secondaryRole.isNullOrBlank() && secondaryRole != "none") {
@@ -104,8 +104,7 @@ fun UserAvatarView(
 
     val hasSpecialFrame = activeFrameRes != null || (effectiveFrameType == "ADMIN" && !adminFrameUrl.isNullOrBlank())
 
-    // Relación de escala del PNG de marco (el anillo interno donde se ubica el avatar es del ~35.7% del ancho total del PNG, es decir 1 / 2.80)
-    val frameScaleFactor = 2.80f
+    val frameScaleFactor = 2.60f
 
     // Dimensiones internas del círculo del avatar y del marco exterior
     val avatarCircleSize: Dp = if (hasSpecialFrame && fitFrameToSize) {
@@ -115,11 +114,17 @@ fun UserAvatarView(
     }
 
     val frameImageSize: Dp = if (hasSpecialFrame && fitFrameToSize) {
-        size * 1.08f
+        size * 1.02f
     } else if (hasSpecialFrame) {
         size * frameScaleFactor
     } else {
         0.dp
+    }
+
+    val totalComponentSize: Dp = if (hasSpecialFrame && !fitFrameToSize) {
+        frameImageSize
+    } else {
+        size
     }
 
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
@@ -201,7 +206,7 @@ fun UserAvatarView(
 
     Box(
         modifier = modifier
-            .size(size)
+            .size(totalComponentSize)
             .graphicsLayer {
                 scaleX = scaleAnim.value
                 scaleY = scaleAnim.value
