@@ -68,8 +68,10 @@ object AdaptiveScreenLayoutEngine {
 
         // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla:
         // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.076f
+        // - 10º Pick Aliado: ubicado ligeramente más a la izquierda (x ≈ 0.068f) para centrado exacto
         // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.960f
         val adaptiveAllyCenterX = if (geometry.isUltrawide) 0.076f else baseConfig.allyAvatarCenterX
+        val adaptiveAllyTenthCenterX = if (geometry.isUltrawide) 0.068f else baseConfig.allyTenthAvatarCenterX
         val adaptiveEnemyCenterX = if (geometry.isUltrawide) 0.960f else baseConfig.enemyAvatarCenterX
 
         // Rango de búsqueda OCR adaptativo:
@@ -100,6 +102,7 @@ object AdaptiveScreenLayoutEngine {
 
         return baseConfig.copy(
             allyAvatarCenterX = adaptiveAllyCenterX,
+            allyTenthAvatarCenterX = adaptiveAllyTenthCenterX,
             enemyAvatarCenterX = adaptiveEnemyCenterX,
             avatarDiameterRatio = 0.114f,
             allyOcrMinX = allyOcrMinX,
@@ -121,10 +124,16 @@ object AdaptiveScreenLayoutEngine {
         height: Int,
         isAlly: Boolean,
         slotIndex: Int,
-        config: VisionCalibrationConfig
+        config: VisionCalibrationConfig,
+        isTenthPick: Boolean = false
     ): Rect {
         val sIdx = slotIndex.coerceIn(0, 4)
-        val cx = if (isAlly) (width * config.allyAvatarCenterX).toInt() else (width * config.enemyAvatarCenterX).toInt()
+        val cx = if (isAlly) {
+            if (sIdx == 4 || isTenthPick) (width * config.allyTenthAvatarCenterX).toInt()
+            else (width * config.allyAvatarCenterX).toInt()
+        } else {
+            (width * config.enemyAvatarCenterX).toInt()
+        }
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cy = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
         val diam = (height * config.avatarDiameterRatio).toInt().coerceAtLeast(32)
@@ -149,10 +158,16 @@ object AdaptiveScreenLayoutEngine {
         height: Int,
         isAlly: Boolean,
         slotIndex: Int,
-        config: VisionCalibrationConfig
+        config: VisionCalibrationConfig,
+        isTenthPick: Boolean = false
     ): android.graphics.Bitmap? {
         val sIdx = slotIndex.coerceIn(0, 4)
-        val cxNominal = if (isAlly) (width * config.allyAvatarCenterX).toInt() else (width * config.enemyAvatarCenterX).toInt()
+        val cxNominal = if (isAlly) {
+            if (sIdx == 4 || isTenthPick) (width * config.allyTenthAvatarCenterX).toInt()
+            else (width * config.allyAvatarCenterX).toInt()
+        } else {
+            (width * config.enemyAvatarCenterX).toInt()
+        }
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cyNominal = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
 
@@ -167,7 +182,7 @@ object AdaptiveScreenLayoutEngine {
         val searchBottom = (cyNominal + radius + margin).coerceIn(0, height)
 
         if (searchRight <= searchLeft + 16 || searchBottom <= searchTop + 16) {
-            val baseRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config)
+            val baseRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config, isTenthPick)
             return try {
                 android.graphics.Bitmap.createBitmap(sourceBitmap, baseRect.left, baseRect.top, baseRect.width(), baseRect.height())
             } catch (_: Throwable) { null }
@@ -226,7 +241,7 @@ object AdaptiveScreenLayoutEngine {
         return try {
             android.graphics.Bitmap.createBitmap(sourceBitmap, cropLeft, cropTop, finalW, finalH)
         } catch (_: Throwable) {
-            val fallbackRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config)
+            val fallbackRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config, isTenthPick)
             try {
                 android.graphics.Bitmap.createBitmap(sourceBitmap, fallbackRect.left, fallbackRect.top, fallbackRect.width(), fallbackRect.height())
             } catch (_: Throwable) { null }

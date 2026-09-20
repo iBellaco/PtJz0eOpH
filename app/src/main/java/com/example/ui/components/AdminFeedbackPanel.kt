@@ -109,6 +109,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import com.example.data.SupportReplyManager
 import com.example.ui.components.SupportReplyDialog
 import androidx.compose.runtime.LaunchedEffect
@@ -121,6 +122,10 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -250,22 +255,26 @@ fun AdminFeedbackBottomSheet(
         }
     }
 
-    fun loadReports() {
-        isLoading = true
-        errorMessage = null
+    fun loadReports(silent: Boolean = false) {
+        if (!silent) {
+            isLoading = true
+            errorMessage = null
+        }
         scope.launch {
-            // Auto-purga de 30 días para reportes leídos/solucionados y 60 días para pendientes
-            try {
-                SupportReplyManager.autoPurgeAllExpired(context)
-            } catch (_: Exception) {}
+            if (!silent) {
+                // Auto-purga de 30 días para reportes leídos/solucionados y 60 días para pendientes
+                try {
+                    SupportReplyManager.autoPurgeAllExpired(context)
+                } catch (_: Exception) {}
+            }
 
             val result = FeedbackRepository.getAllFeedbacks()
-            isLoading = false
+            if (!silent) isLoading = false
             if (result.isSuccess) {
                 val list = result.getOrDefault(emptyList())
                 reports = list
                 refreshStatusMap(list)
-            } else {
+            } else if (!silent) {
                 errorMessage = result.exceptionOrNull()?.message ?: "Error al cargar reportes"
             }
         }
@@ -273,6 +282,67 @@ fun AdminFeedbackBottomSheet(
 
     LaunchedEffect(Unit) {
         loadReports()
+        // Polling periódico silencioso en segundo plano para sincronizar cambios de Supabase
+        while (isActive) {
+            delay(10000)
+            loadReports(silent = true)
+        }
+    }
+
+    // Escucha en tiempo real de Firestore para sincronización instantánea multidispositivo de estados y respuestas
+    DisposableEffect(Unit) {
+        val listenerReg = FirebaseFirestore.getInstance()
+            .collection("support_reports")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(100)
+            .addSnapshotListener { snapshot, error ->
+                if (error == null && snapshot != null) {
+                    for (doc in snapshot.documents) {
+                        val docId = doc.id
+                        val docTitle = doc.getString("title") ?: ""
+                        val rawStatus = doc.getString("status") ?: "PENDIENTE"
+                        val normalizedStatus = when (rawStatus.uppercase()) {
+                            "SOLVED", "SOLUCIONADO", "RESUELTO" -> FeedbackRepository.STATUS_SOLVED
+                            "READ", "LEIDO", "LEÍDO" -> FeedbackRepository.STATUS_READ
+                            "ACCEPTED", "ACEPTADA", "ACEPTADO" -> FeedbackRepository.STATUS_ACCEPTED
+                            "REJECTED", "RECHAZADA", "RECHAZADO" -> FeedbackRepository.STATUS_REJECTED
+                            else -> FeedbackRepository.STATUS_PENDING
+                        }
+                        val docReply = doc.getString("adminReply") ?: ""
+                        val docRepliedBy = doc.getString("repliedBy") ?: ""
+                        val docRepliedEmail = doc.getString("repliedEmail") ?: ""
+
+                        // Actualizar en statusMap inmediatamente
+                        statusMap[docId] = normalizedStatus
+                        if (docTitle.isNotBlank()) {
+                            statusMap[docTitle] = normalizedStatus
+                        }
+
+                        // Actualizar en la lista de reportes en memoria
+                        val existingIdx = reports.indexOfFirst { 
+                            it.id == docId || (docTitle.isNotBlank() && it.title.trim().equals(docTitle.trim(), ignoreCase = true)) 
+                        }
+                        if (existingIdx != -1) {
+                            val cur = reports[existingIdx]
+                            val key = cur.id ?: "${cur.title}_${cur.createdAt}"
+                            statusMap[key] = normalizedStatus
+                            if (cur.status != normalizedStatus || cur.adminReply != docReply) {
+                                val updatedList = reports.toMutableList()
+                                updatedList[existingIdx] = cur.copy(
+                                    status = normalizedStatus,
+                                    adminReply = if (docReply.isNotBlank()) docReply else cur.adminReply,
+                                    repliedBy = if (docRepliedBy.isNotBlank()) docRepliedBy else cur.repliedBy,
+                                    repliedEmail = if (docRepliedEmail.isNotBlank()) docRepliedEmail else cur.repliedEmail
+                                )
+                                reports = updatedList
+                            }
+                        }
+                    }
+                }
+            }
+        onDispose {
+            listenerReg.remove()
+        }
     }
 
     val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
@@ -814,19 +884,27 @@ fun AdminFeedbackBottomSheet(
                                 onSelectStatus = { newStatus ->
                                     statusMap[key] = newStatus
                                     FeedbackRepository.setFeedbackStatus(context, report, newStatus)
-                                    val reportId = report.id
-                                    if (!reportId.isNullOrBlank()) {
-                                        scope.launch {
-                                            FeedbackRepository.updateFeedbackStatusInCloud(reportId, newStatus)
-                                            SupportReplyManager.updateReportStatus(context, reportId, newStatus)
+                                    val effectiveId = report.id ?: key
+                                    scope.launch {
+                                        if (!report.id.isNullOrBlank()) {
+                                            FeedbackRepository.updateFeedbackStatusInCloud(report.id, newStatus)
                                         }
+                                        SupportReplyManager.updateReportStatus(
+                                            context = context,
+                                            reportId = effectiveId,
+                                            newStatus = newStatus,
+                                            userId = null,
+                                            userEmail = report.parsedEmail,
+                                            reportTitle = report.title,
+                                            supabaseId = report.id
+                                        )
                                     }
                                     val msg = when (newStatus) {
-                                        FeedbackRepository.STATUS_SOLVED -> " Marcado como Solucionado"
-                                        FeedbackRepository.STATUS_READ -> "️ Marcado como Leído"
-                                        FeedbackRepository.STATUS_ACCEPTED -> " Sugerencia Aceptada"
-                                        FeedbackRepository.STATUS_REJECTED -> " Sugerencia Rechazada"
-                                        else -> "⏳ Marcado como Pendiente"
+                                        FeedbackRepository.STATUS_SOLVED -> "Marcado como Solucionado"
+                                        FeedbackRepository.STATUS_READ -> "Marcado como Leído"
+                                        FeedbackRepository.STATUS_ACCEPTED -> "Sugerencia Aceptada"
+                                        FeedbackRepository.STATUS_REJECTED -> "Sugerencia Rechazada"
+                                        else -> "Marcado como Pendiente"
                                     }
                                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                 },

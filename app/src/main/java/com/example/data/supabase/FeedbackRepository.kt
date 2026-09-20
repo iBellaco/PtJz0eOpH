@@ -125,15 +125,16 @@ object FeedbackRepository {
         val id = report.id
         val compositeKey = if (report.createdAt != null) "${report.title}_${report.createdAt}" else null
 
-        // 1. Revisar campo status de Supabase (Cloud-First Multi-Device Sync)
+        // 1. Revisar campo status de Supabase/Firestore (Cloud-First Multi-Device Sync)
         val remoteStatus = report.status?.trim()?.uppercase(Locale.US)
-        if (!remoteStatus.isNullOrBlank() && remoteStatus != STATUS_PENDING) {
+        if (!remoteStatus.isNullOrBlank()) {
             val normalized = when (remoteStatus) {
-                "SOLVED", "SOLUCIONADO" -> STATUS_SOLVED
+                "SOLVED", "SOLUCIONADO", "RESUELTO" -> STATUS_SOLVED
                 "READ", "LEIDO", "LEÍDO" -> STATUS_READ
                 "ACCEPTED", "ACEPTADA", "ACEPTADO" -> STATUS_ACCEPTED
                 "REJECTED", "RECHAZADA", "RECHAZADO" -> STATUS_REJECTED
                 "COMPLETED", "COMPLETADO" -> if (report.type.equals("SUGGESTION", ignoreCase = true)) STATUS_ACCEPTED else STATUS_SOLVED
+                "PENDING", "PENDIENTE" -> STATUS_PENDING
                 else -> remoteStatus
             }
             if (!id.isNullOrBlank()) {
@@ -575,6 +576,36 @@ object FeedbackRepository {
                             (doc.getString("status") ?: "").uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
                     if (isDeleted) continue
 
+                    val rawStatus = doc.getString("status") ?: "PENDIENTE"
+                    val normalizedStatus = when (rawStatus.uppercase(Locale.US)) {
+                        "SOLVED", "SOLUCIONADO", "RESUELTO" -> STATUS_SOLVED
+                        "READ", "LEIDO", "LEÍDO" -> STATUS_READ
+                        "ACCEPTED", "ACEPTADA", "ACEPTADO" -> STATUS_ACCEPTED
+                        "REJECTED", "RECHAZADA", "RECHAZADO" -> STATUS_REJECTED
+                        else -> STATUS_PENDING
+                    }
+                    val adminReply = doc.getString("adminReply")
+                    val repliedBy = doc.getString("repliedBy")
+                    val repliedEmail = doc.getString("repliedEmail")
+
+                    // Si ya existe en combinedList (desde Supabase), sincronizar su estado y respuesta más recientes de Firestore
+                    val existingIdx = combinedList.indexOfFirst {
+                        it.id == docId || (title.isNotBlank() && it.title.trim().equals(title.trim(), ignoreCase = true))
+                    }
+                    if (existingIdx != -1) {
+                        val existing = combinedList[existingIdx]
+                        val finalReply = if (!adminReply.isNullOrBlank()) adminReply else existing.adminReply
+                        val finalRepliedBy = if (!repliedBy.isNullOrBlank()) repliedBy else existing.repliedBy
+                        val finalRepliedEmail = if (!repliedEmail.isNullOrBlank()) repliedEmail else existing.repliedEmail
+                        combinedList[existingIdx] = existing.copy(
+                            status = normalizedStatus,
+                            adminReply = finalReply,
+                            repliedBy = finalRepliedBy,
+                            repliedEmail = finalRepliedEmail
+                        )
+                        continue
+                    }
+
                     if (seenIds.contains(docId) || (title.isNotBlank() && seenTitles.contains(title.trim()))) {
                         continue
                     }
@@ -584,10 +615,6 @@ object FeedbackRepository {
                     val userName = doc.getString("userName") ?: ""
                     val appVer = doc.getString("appVersion") ?: ""
                     val dev = doc.getString("device") ?: ""
-                    val status = doc.getString("status") ?: "PENDIENTE"
-                    val adminReply = doc.getString("adminReply")
-                    val repliedBy = doc.getString("repliedBy")
-                    val repliedEmail = doc.getString("repliedEmail")
                     val ts = doc.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis()
                     val isoDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
                         timeZone = TimeZone.getTimeZone("UTC")
@@ -601,7 +628,7 @@ object FeedbackRepository {
                         appVersion = appVer,
                         deviceInfo = dev,
                         createdAt = isoDate,
-                        status = status,
+                        status = normalizedStatus,
                         adminReply = adminReply,
                         repliedBy = repliedBy,
                         repliedEmail = repliedEmail

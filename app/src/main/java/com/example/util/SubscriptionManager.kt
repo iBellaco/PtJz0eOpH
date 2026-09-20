@@ -49,24 +49,43 @@ object SubscriptionManager {
     private val _unreadMessagesCount = MutableStateFlow(0)
     val unreadMessagesCount: StateFlow<Int> = _unreadMessagesCount.asStateFlow()
 
+    private val _unreadModeratorSupportCount = MutableStateFlow(0)
+    val unreadModeratorSupportCount: StateFlow<Int> = _unreadModeratorSupportCount.asStateFlow()
+
     private var roleListener: ListenerRegistration? = null
     private var messagesListener: ListenerRegistration? = null
     private var supportReportsListener: ListenerRegistration? = null
     private var supportReportsEmailListener: ListenerRegistration? = null
+    private var moderatorSupportReportsListener: ListenerRegistration? = null
     private var heartbeatJob: kotlinx.coroutines.Job? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private var unreadMessagesSubcollection = 0
     private var unreadSupportReports = 0
     private var unreadPrivateArray = 0
+    private var unreadModeratorSupportReports = 0
     private var hasUnreadFromDoc = false
     private var docUnreadCount = 0
 
     private fun recalculateUnreadCount() {
-        val total = if (hasUnreadFromDoc && docUnreadCount > 0) {
+        val auth = AuthManager.getAuth()
+        val user = auth?.currentUser
+        if (user == null || AuthManager.isGuestOrUnauthenticated(user)) {
+            _unreadMessagesCount.value = 0
+            _unreadModeratorSupportCount.value = 0
+            return
+        }
+
+        val userSpecificUnread = if (hasUnreadFromDoc && docUnreadCount > 0) {
             maxOf(docUnreadCount, unreadMessagesSubcollection + unreadSupportReports + unreadPrivateArray)
         } else {
             maxOf(unreadMessagesSubcollection + unreadSupportReports, unreadPrivateArray)
+        }
+
+        val total = if (_userRole.value == "moderador" || _userRole.value == "admin" || AuthManager.isCurrentUserAdmin()) {
+            userSpecificUnread + unreadModeratorSupportReports
+        } else {
+            userSpecificUnread
         }
         _unreadMessagesCount.value = total.coerceAtLeast(0)
     }
@@ -78,7 +97,7 @@ object SubscriptionManager {
         unreadPrivateArray = clean
         docUnreadCount = clean
         hasUnreadFromDoc = (clean > 0)
-        _unreadMessagesCount.value = clean
+        recalculateUnreadCount()
     }
 
     init {
@@ -94,9 +113,11 @@ object SubscriptionManager {
                 _unlockedAvatars.value = emptyList()
                 _blueEssence.value = 0L
                 _unreadMessagesCount.value = 0
+                _unreadModeratorSupportCount.value = 0
                 unreadMessagesSubcollection = 0
                 unreadSupportReports = 0
                 unreadPrivateArray = 0
+                unreadModeratorSupportReports = 0
                 hasUnreadFromDoc = false
                 docUnreadCount = 0
                 roleListener?.remove()
@@ -107,6 +128,8 @@ object SubscriptionManager {
                 supportReportsListener = null
                 supportReportsEmailListener?.remove()
                 supportReportsEmailListener = null
+                moderatorSupportReportsListener?.remove()
+                moderatorSupportReportsListener = null
                 heartbeatJob?.cancel()
                 heartbeatJob = null
             }
@@ -335,18 +358,68 @@ object SubscriptionManager {
                     hasUnreadFromDoc = hasUnread
                     docUnreadCount = remoteDocCount
                     unreadPrivateArray = unreadInArray
+                    updateModeratorSupportListener(db, role)
                     recalculateUnreadCount()
                 } else {
                     val isEmailAdmin = AuthManager.isCurrentUserAdmin()
+                    val fallbackRole = if (isEmailAdmin) "admin" else "free"
                     _userName.value = user.displayName?.takeIf { it.isNotBlank() } ?: user.email?.substringBefore("@") ?: ""
-                    _userRole.value = if (isEmailAdmin) "admin" else "free"
+                    _userRole.value = fallbackRole
                     _isPremium.value = isEmailAdmin
                     _isVerified.value = isEmailAdmin
                     _premiumUntil.value = null
                     _currentAvatarId.value = "default_poro"
                     _unlockedAvatars.value = emptyList()
+                    updateModeratorSupportListener(db, fallbackRole)
+                    recalculateUnreadCount()
                 }
             }
+        }
+    }
+
+    private fun updateModeratorSupportListener(db: FirebaseFirestore, currentRole: String) {
+        val auth = AuthManager.getAuth()
+        val user = auth?.currentUser
+        if (user == null || AuthManager.isGuestOrUnauthenticated(user)) {
+            moderatorSupportReportsListener?.remove()
+            moderatorSupportReportsListener = null
+            unreadModeratorSupportReports = 0
+            _unreadModeratorSupportCount.value = 0
+            return
+        }
+
+        if (currentRole.equals("moderador", ignoreCase = true) || currentRole.equals("admin", ignoreCase = true) || AuthManager.isCurrentUserAdmin()) {
+            if (moderatorSupportReportsListener == null) {
+                moderatorSupportReportsListener = db.collection("support_reports")
+                    .addSnapshotListener { snapshot, error ->
+                        if (error == null && snapshot != null) {
+                            val activeRole = _userRole.value
+                            val pendingDocs = snapshot.documents.filter { doc ->
+                                val tag = doc.getString("tag") ?: doc.getString("type") ?: ""
+                                val isSponsor = tag.equals("PATROCINADOR", ignoreCase = true) || doc.getBoolean("isSponsor") == true
+                                if (activeRole.equals("moderador", ignoreCase = true) && isSponsor) {
+                                    return@filter false
+                                }
+                                val status = doc.getString("status") ?: "PENDIENTE"
+                                val isRead = doc.getBoolean("isRead") ?: false
+                                val hasNewUserReply = doc.getBoolean("hasNewUserReply") ?: false
+                                val isResolved = status.equals("SOLUCIONADO", true) || 
+                                                 status.equals("CERRADO", true) || 
+                                                 status.equals("CLOSED", true) ||
+                                                 status.equals("RESUELTO", true)
+                                !isResolved && (status.equals("PENDIENTE", true) || status.equals("UNREAD", true) || !isRead || hasNewUserReply)
+                            }
+                            unreadModeratorSupportReports = pendingDocs.size
+                            _unreadModeratorSupportCount.value = unreadModeratorSupportReports
+                            recalculateUnreadCount()
+                        }
+                    }
+            }
+        } else {
+            moderatorSupportReportsListener?.remove()
+            moderatorSupportReportsListener = null
+            unreadModeratorSupportReports = 0
+            _unreadModeratorSupportCount.value = 0
         }
     }
 

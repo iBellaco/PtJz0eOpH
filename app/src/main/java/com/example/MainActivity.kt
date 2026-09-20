@@ -558,9 +558,17 @@ fun DashboardScreen(
                         icon = { 
                             val unreadCount by com.example.util.SubscriptionManager.unreadMessagesCount.collectAsStateWithLifecycle(0)
                             val allNotices by com.example.data.AppNoticeManager.notices.collectAsStateWithLifecycle(com.example.data.AppNoticeManager.notices.value)
-                            val hasPendingSponsors = remember(allNotices) {
-                                allNotices.any { (it.tag.equals("Publicidad", true) || it.sponsorEmail.isNotBlank()) && !it.isApproved }
+                            val userRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
+                            val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                            val isLogged = authUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(authUser)
+
+                            val hasPendingSponsors = remember(allNotices, isLogged, userRole) {
+                                isLogged && (userRole == "admin" || userRole == "patrocinador" || com.example.util.AuthManager.isCurrentUserAdmin()) &&
+                                    allNotices.any { (it.tag.equals("Publicidad", true) || it.sponsorEmail.isNotBlank()) && !it.isApproved }
                             }
+
+                            val effectiveUnreadCount = if (isLogged) unreadCount else 0
+                            val showBadge = isLogged && (effectiveUnreadCount > 0 || hasPendingSponsors)
 
                             val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "nav_sponsor_pulse")
                             val scale by infiniteTransition.animateFloat(
@@ -575,19 +583,19 @@ fun DashboardScreen(
 
                             BadgedBox(
                                 badge = {
-                                    if (unreadCount > 0 || hasPendingSponsors) {
+                                    if (showBadge) {
                                         Badge(
                                             containerColor = if (hasPendingSponsors) Color(0xFFEF4444) else com.example.ui.theme.DangerRed,
                                             contentColor = Color.White,
                                             modifier = if (hasPendingSponsors) Modifier.graphicsLayer(scaleX = scale, scaleY = scale) else Modifier
                                         ) {
-                                            Text(if (hasPendingSponsors) "!" else unreadCount.toString())
+                                            Text(if (hasPendingSponsors) "!" else effectiveUnreadCount.toString())
                                         }
                                     }
                                 }
                             ) {
-                                Box(modifier = if (hasPendingSponsors) Modifier.graphicsLayer(scaleX = scale, scaleY = scale) else Modifier) {
-                                    Icon(Icons.Default.Person, contentDescription = "Usuario", tint = if (hasPendingSponsors) Color(0xFFF97316) else LocalContentColor.current)
+                                Box(modifier = if (showBadge && hasPendingSponsors) Modifier.graphicsLayer(scaleX = scale, scaleY = scale) else Modifier) {
+                                    Icon(Icons.Default.Person, contentDescription = "Usuario", tint = if (showBadge && hasPendingSponsors) Color(0xFFF97316) else LocalContentColor.current)
                                 }
                             }
                         },

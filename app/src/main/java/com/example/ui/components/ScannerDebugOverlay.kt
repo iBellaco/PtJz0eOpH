@@ -30,9 +30,6 @@ fun ScannerDebugOverlay(
         val h = size.height
         
         val avatarDiameter = h * currentConfig.avatarDiameterRatio
-        val topDiameter = h * currentConfig.topAvatarDiameterRatio
-        val topRadius = topDiameter / 2f
-        val topY = h * currentConfig.topAvatarYRatio
         
         val allyTextPaint = android.graphics.Paint().apply {
             color = android.graphics.Color.parseColor("#00E5FF")
@@ -54,13 +51,14 @@ fun ScannerDebugOverlay(
         for (sIdx in 0..4) {
             // Columna Aliada (Izquierda)
             val allyY = h * currentConfig.allySlotYRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }
-            val allyX = w * currentConfig.allyAvatarCenterX
+            // Para el 10º pick del lado aliado (Slot 5 / sIdx == 4), se ubica desplazado un poco a la izquierda
+            val allyX = w * if (sIdx == 4) currentConfig.allyTenthAvatarCenterX else currentConfig.allyAvatarCenterX
             
             drawCircle(
-                color = Color(0x9900B0FF),
+                color = if (sIdx == 4) Color(0xCC00E5FF) else Color(0x9900B0FF),
                 center = Offset(allyX, allyY),
                 radius = avatarDiameter / 2f,
-                style = Stroke(width = 2.0f)
+                style = Stroke(width = if (sIdx == 4) 2.5f else 2.0f)
             )
             
             val allyMatch = debugMatches["ally_$sIdx"]
@@ -78,10 +76,10 @@ fun ScannerDebugOverlay(
             val enemyX = w * currentConfig.enemyAvatarCenterX
             
             drawCircle(
-                color = Color(0x99FF1744),
+                color = if (sIdx == 4) Color(0xFFFF5252) else Color(0x99FF1744),
                 center = Offset(enemyX, enemyY),
                 radius = avatarDiameter / 2f,
-                style = Stroke(width = 2.0f)
+                style = Stroke(width = if (sIdx == 4) 2.5f else 2.0f)
             )
             
             val enemyMatch = debugMatches["enemy_$sIdx"]
@@ -94,53 +92,8 @@ fun ScannerDebugOverlay(
                 )
             }
         }
-
-        // 2. CÍRCULOS SUPERIORES DIRECTOS EN PANTALLA (LOS 10 CAMPEONES EN LA BARRA SUPERIOR)
-        // Aliados Superiores (5 Círculos en Top-Left: Índices 0..4)
-        for (idx in 0..4) {
-            val topAllyX = w * currentConfig.topAllyXRatios.getOrElse(idx) { 0.028f + idx * 0.035f }
-            
-            drawCircle(
-                color = Color(0xCC00B0FF),
-                center = Offset(topAllyX, topY),
-                radius = topRadius,
-                style = Stroke(width = 2.0f)
-            )
-
-            val match = debugMatches["top_ally_$idx"]
-            if (match != null) {
-                drawContext.canvas.nativeCanvas.drawText(
-                    match,
-                    topAllyX,
-                    topY + topRadius + 14f,
-                    allyTextPaint
-                )
-            }
-        }
-
-        // Rivales Superiores (5 Círculos en Top-Right: Índices 0..4)
-        for (idx in 0..4) {
-            val topEnemyX = w * currentConfig.topEnemyXRatios.getOrElse(idx) { 0.832f + idx * 0.035f }
-            
-            drawCircle(
-                color = Color(0xCCFF1744),
-                center = Offset(topEnemyX, topY),
-                radius = topRadius,
-                style = Stroke(width = 2.0f)
-            )
-
-            val match = debugMatches["top_enemy_$idx"]
-            if (match != null) {
-                drawContext.canvas.nativeCanvas.drawText(
-                    match,
-                    topEnemyX,
-                    topY + topRadius + 14f,
-                    enemyTextPaint
-                )
-            }
-        }
         
-        // 3. Límites del Asistente Flotante
+        // 2. Límites del Asistente Flotante
         if (overlayRect != null) {
             drawRect(
                 color = Color(0x55C89B3C),

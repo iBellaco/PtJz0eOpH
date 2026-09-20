@@ -39,6 +39,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
@@ -271,6 +272,8 @@ fun AdminSupportReportsDialog(
                                 val normalizedStatus = when (rawStatus.uppercase()) {
                                     "SOLVED", "SOLUCIONADO", "RESUELTO" -> FeedbackRepository.STATUS_SOLVED
                                     "READ", "LEIDO", "LEÍDO" -> FeedbackRepository.STATUS_READ
+                                    "ACCEPTED", "ACEPTADA", "ACEPTADO" -> FeedbackRepository.STATUS_ACCEPTED
+                                    "REJECTED", "RECHAZADA", "RECHAZADO" -> FeedbackRepository.STATUS_REJECTED
                                     else -> FeedbackRepository.STATUS_PENDING
                                 }
 
@@ -389,6 +392,8 @@ fun AdminSupportReportsDialog(
                         val normalizedStatus = when (rawStatus.uppercase()) {
                             "SOLVED", "SOLUCIONADO", "RESUELTO" -> FeedbackRepository.STATUS_SOLVED
                             "READ", "LEIDO", "LEÍDO" -> FeedbackRepository.STATUS_READ
+                            "ACCEPTED", "ACEPTADA", "ACEPTADO" -> FeedbackRepository.STATUS_ACCEPTED
+                            "REJECTED", "RECHAZADA", "RECHAZADO" -> FeedbackRepository.STATUS_REJECTED
                             else -> FeedbackRepository.STATUS_PENDING
                         }
                         val docReply = doc.getString("adminReply") ?: ""
@@ -1114,10 +1119,13 @@ private fun UnifiedReportAdminCard(
     val context = LocalContext.current
     val isPending = report.status == FeedbackRepository.STATUS_PENDING || report.status.equals("PENDIENTE", ignoreCase = true)
     val isRead = report.status == FeedbackRepository.STATUS_READ || report.status.equals("LEIDO", ignoreCase = true) || report.status.equals("LEÍDO", ignoreCase = true)
-    val isSolved = report.status == FeedbackRepository.STATUS_SOLVED || report.status.equals("SOLUCIONADO", ignoreCase = true) || report.status.equals("RESUELTO", ignoreCase = true) || report.status.equals("ACCEPTED", ignoreCase = true)
+    val isSolved = report.status == FeedbackRepository.STATUS_SOLVED || report.status.equals("SOLUCIONADO", ignoreCase = true) || report.status.equals("RESUELTO", ignoreCase = true)
+    val isAccepted = report.status == FeedbackRepository.STATUS_ACCEPTED || report.status.equals("ACEPTADO", ignoreCase = true) || report.status.equals("ACEPTADA", ignoreCase = true)
+    val isRejected = report.status == FeedbackRepository.STATUS_REJECTED || report.status.equals("RECHAZADO", ignoreCase = true) || report.status.equals("RECHAZADA", ignoreCase = true)
+    val isSuggestionOrSponsor = report.type.equals("SUGGESTION", ignoreCase = true) || report.type.equals("SUGERENCIA", ignoreCase = true) || report.type.equals("PATROCINADOR", ignoreCase = true)
 
-    val countdown = remember(report.createdAtMillis, isRead, isSolved) {
-        SupportReplyManager.calculateCountdown(report.createdAtMillis, isRead || isSolved)
+    val countdown = remember(report.createdAtMillis, isRead, isSolved, isAccepted, isRejected) {
+        SupportReplyManager.calculateCountdown(report.createdAtMillis, isRead || isSolved || isAccepted || isRejected)
     }
 
     val dateStr = remember(report.createdAtMillis) {
@@ -1130,6 +1138,8 @@ private fun UnifiedReportAdminCard(
     }
 
     val borderColor = when {
+        isAccepted -> HextechGold.copy(alpha = 0.7f)
+        isRejected -> DangerRed.copy(alpha = 0.6f)
         isSolved -> HextechGreen.copy(alpha = 0.6f)
         isRead -> HextechCyan.copy(alpha = 0.6f)
         else -> HextechGold.copy(alpha = 0.6f)
@@ -1182,6 +1192,8 @@ private fun UnifiedReportAdminCard(
 
                     // Badge de Estado Actual
                     val (statusText, statusBg, statusTextColor) = when {
+                        isAccepted -> Triple("✓ ACEPTADA", HextechGold.copy(alpha = 0.2f), HextechGold)
+                        isRejected -> Triple("✗ RECHAZADA", DangerRed.copy(alpha = 0.2f), DangerRed)
                         isSolved -> Triple("✓ SOLUCIONADO", HextechGreen.copy(alpha = 0.2f), HextechGreen)
                         isRead -> Triple("👁️ LEÍDO", HextechCyan.copy(alpha = 0.2f), HextechCyan)
                         else -> Triple("⏳ PENDIENTE", HextechGold.copy(alpha = 0.2f), HextechGold)
@@ -1393,7 +1405,7 @@ private fun UnifiedReportAdminCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // 🎯 BOTONES DE ACCIÓN: PENDIENTE | LEÍDO | SOLUCIONADO
+            // 🎯 BOTONES DE ACCIÓN (Sincronización multidispositivo en tiempo real)
             Text(
                 text = "Cambiar estado del reporte:",
                 color = TextMuted,
@@ -1401,101 +1413,201 @@ private fun UnifiedReportAdminCard(
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                // Botón Pendiente
-                Button(
-                    onClick = { onSetStatus(FeedbackRepository.STATUS_PENDING) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(32.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isPending) HextechGold.copy(alpha = 0.25f) else HextechDarkBg
-                    ),
-                    border = BorderStroke(
-                        1.dp,
-                        if (isPending) HextechGold else HextechCardBorder
-                    ),
-                    shape = RoundedCornerShape(6.dp),
-                    contentPadding = PaddingValues(0.dp)
+            if (isSuggestionOrSponsor) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Icon(
-                        Icons.Default.HourglassEmpty,
-                        contentDescription = null,
-                        tint = if (isPending) HextechGold else TextMuted,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                        text = "Pendiente",
-                        color = if (isPending) HextechGold else TextSecondary,
-                        fontSize = 10.sp,
-                        fontWeight = if (isPending) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
+                    // Botón Pendiente
+                    Button(
+                        onClick = { onSetStatus(FeedbackRepository.STATUS_PENDING) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(32.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isPending) HextechGold.copy(alpha = 0.25f) else HextechDarkBg
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isPending) HextechGold else HextechCardBorder
+                        ),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.HourglassEmpty,
+                            contentDescription = null,
+                            tint = if (isPending) HextechGold else TextMuted,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "Pendiente",
+                            color = if (isPending) HextechGold else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isPending) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
 
-                // Botón Leído
-                Button(
-                    onClick = { onSetStatus(FeedbackRepository.STATUS_READ) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(32.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isRead) HextechCyan.copy(alpha = 0.25f) else HextechDarkBg
-                    ),
-                    border = BorderStroke(
-                        1.dp,
-                        if (isRead) HextechCyan else HextechCardBorder
-                    ),
-                    shape = RoundedCornerShape(6.dp),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Visibility,
-                        contentDescription = null,
-                        tint = if (isRead) HextechCyan else TextMuted,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                        text = "Leído",
-                        color = if (isRead) HextechCyan else TextSecondary,
-                        fontSize = 10.sp,
-                        fontWeight = if (isRead) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
+                    // Botón Aceptada
+                    Button(
+                        onClick = { onSetStatus(FeedbackRepository.STATUS_ACCEPTED) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(32.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isAccepted) HextechGold.copy(alpha = 0.25f) else HextechDarkBg
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isAccepted) HextechGold else HextechCardBorder
+                        ),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = null,
+                            tint = if (isAccepted) HextechGold else TextMuted,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "Aceptada",
+                            color = if (isAccepted) HextechGold else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isAccepted) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
 
-                // Botón Solucionado
-                Button(
-                    onClick = { onSetStatus(FeedbackRepository.STATUS_SOLVED) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(32.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isSolved) HextechGreen.copy(alpha = 0.25f) else HextechDarkBg
-                    ),
-                    border = BorderStroke(
-                        1.dp,
-                        if (isSolved) HextechGreen else HextechCardBorder
-                    ),
-                    shape = RoundedCornerShape(6.dp),
-                    contentPadding = PaddingValues(0.dp)
+                    // Botón Rechazada
+                    Button(
+                        onClick = { onSetStatus(FeedbackRepository.STATUS_REJECTED) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(32.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isRejected) DangerRed.copy(alpha = 0.25f) else HextechDarkBg
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isRejected) DangerRed else HextechCardBorder
+                        ),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = null,
+                            tint = if (isRejected) DangerRed else TextMuted,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "Rechazada",
+                            color = if (isRejected) DangerRed else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isRejected) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = if (isSolved) HextechGreen else TextMuted,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                        text = "Solucionado",
-                        color = if (isSolved) HextechGreen else TextSecondary,
-                        fontSize = 10.sp,
-                        fontWeight = if (isSolved) FontWeight.Bold else FontWeight.Normal
-                    )
+                    // Botón Pendiente
+                    Button(
+                        onClick = { onSetStatus(FeedbackRepository.STATUS_PENDING) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(32.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isPending) HextechGold.copy(alpha = 0.25f) else HextechDarkBg
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isPending) HextechGold else HextechCardBorder
+                        ),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.HourglassEmpty,
+                            contentDescription = null,
+                            tint = if (isPending) HextechGold else TextMuted,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "Pendiente",
+                            color = if (isPending) HextechGold else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isPending) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+
+                    // Botón Leído
+                    Button(
+                        onClick = { onSetStatus(FeedbackRepository.STATUS_READ) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(32.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isRead) HextechCyan.copy(alpha = 0.25f) else HextechDarkBg
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isRead) HextechCyan else HextechCardBorder
+                        ),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Visibility,
+                            contentDescription = null,
+                            tint = if (isRead) HextechCyan else TextMuted,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "Leído",
+                            color = if (isRead) HextechCyan else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isRead) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+
+                    // Botón Solucionado
+                    Button(
+                        onClick = { onSetStatus(FeedbackRepository.STATUS_SOLVED) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(32.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isSolved) HextechGreen.copy(alpha = 0.25f) else HextechDarkBg
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isSolved) HextechGreen else HextechCardBorder
+                        ),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = if (isSolved) HextechGreen else TextMuted,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "Solucionado",
+                            color = if (isSolved) HextechGreen else TextSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = if (isSolved) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
                 }
             }
 

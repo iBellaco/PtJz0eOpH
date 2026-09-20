@@ -37,15 +37,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.roundToInt
 
 enum class CalibrationTarget(val title: String, val subtitle: String) {
-    TOP_ENEMY_5("⭐ 10º Pick Rival Superior (Top 5)", "Calibrar círculo superior derecho del 10º pick rival"),
-    TOP_ALLY_5("⭐ 10º Pick Aliado Superior (Top 5)", "Calibrar círculo superior izquierdo del 10º pick aliado"),
-    TOP_AVATAR_Y("Altura Y Círculos Superiores", "Mover arriba/abajo la barra superior de avatares"),
-    TOP_AVATAR_SIZE("Tamaño Círculos Superiores (⌀)", "Ajustar diámetro de los 10 avatares de la barra superior"),
-    AVATAR_SIZE("Tamaño Avatar Slots (⌀)", "Agrandar o reducir radio de escaneo de retratos en slots"),
+    ALLY_SLOT_4("⭐ 10º Pick Aliado (Slot 5)", "Mover en X (izq/der) e Y (arriba/abajo) el 10º pick aliado"),
+    ENEMY_SLOT_4("⭐ 10º Pick Rival (Slot 5)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
     GLOBAL_ALLY_X("Columna Aliados X", "Mover horizontalmente todos los avatares aliados verticales"),
     GLOBAL_ENEMY_X("Columna Rivales X", "Mover horizontalmente todos los avatares rivales verticales"),
-    ENEMY_SLOT_4("10º Pick Rival Inferior (Slot 5)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
-    ALLY_SLOT_4("10º Pick Aliado Inferior (Slot 5)", "Ajuste vertical Y del slot 5 aliado (abajo izquierda)"),
+    AVATAR_SIZE("Tamaño Avatar Slots (⌀)", "Agrandar o reducir radio de escaneo de retratos en slots"),
     ALLY_SLOT_0("Aliado 1 (TOP)", "Ajuste vertical Y del carril de Barón"),
     ALLY_SLOT_1("Aliado 2 (JG)", "Ajuste vertical Y de la Jungla"),
     ALLY_SLOT_2("Aliado 3 (MID)", "Ajuste vertical Y del carril Central"),
@@ -69,7 +65,7 @@ fun DraftCalibrationPanel(
     LaunchedEffect(currentConfig) {
         config = currentConfig
     }
-    var selectedTarget by remember { mutableStateOf(CalibrationTarget.TOP_ENEMY_5) }
+    var selectedTarget by remember { mutableStateOf(CalibrationTarget.ALLY_SLOT_4) }
     var stepFactor by remember { mutableStateOf(0.005f) } // 0.5% paso normal
 
     fun updateAndApply(newConfig: VisionCalibrationConfig) {
@@ -84,25 +80,19 @@ fun DraftCalibrationPanel(
         val effectiveDeltaY = deltaY
 
         val updated = when (selectedTarget) {
-            CalibrationTarget.TOP_ENEMY_5 -> cur.copy(
-                topEnemy5XRatio = (cur.topEnemy5XRatio + effectiveDeltaX).coerceIn(0.70f, 0.99f),
-                topEnemyXRatios = cur.topEnemyXRatios.toMutableList().also {
-                    it[4] = (it[4] + effectiveDeltaX).coerceIn(0.70f, 0.99f)
+            CalibrationTarget.ALLY_SLOT_4 -> cur.copy(
+                allyTenthAvatarCenterX = (cur.allyTenthAvatarCenterX + effectiveDeltaX).coerceIn(0.01f, 0.40f),
+                allySlotYRatios = cur.allySlotYRatios.toMutableList().also {
+                    it[4] = (it[4] + effectiveDeltaY).coerceIn(0.05f, 0.95f)
                 }
             )
-            CalibrationTarget.TOP_ALLY_5 -> cur.copy(
-                topAlly5XRatio = (cur.topAlly5XRatio + effectiveDeltaX).coerceIn(0.05f, 0.35f),
-                topAllyXRatios = cur.topAllyXRatios.toMutableList().also {
-                    it[4] = (it[4] + effectiveDeltaX).coerceIn(0.05f, 0.35f)
-                }
+            CalibrationTarget.GLOBAL_ALLY_X -> cur.copy(
+                allyAvatarCenterX = (cur.allyAvatarCenterX + effectiveDeltaX).coerceIn(0.01f, 0.40f),
+                allyTenthAvatarCenterX = (cur.allyTenthAvatarCenterX + effectiveDeltaX).coerceIn(0.01f, 0.40f)
             )
-            CalibrationTarget.TOP_AVATAR_Y -> cur.copy(topAvatarYRatio = (cur.topAvatarYRatio + effectiveDeltaY).coerceIn(0.01f, 0.30f))
-            CalibrationTarget.TOP_AVATAR_SIZE -> cur.copy(topAvatarDiameterRatio = (cur.topAvatarDiameterRatio + effectiveDeltaSize).coerceIn(0.02f, 0.20f))
-            CalibrationTarget.GLOBAL_ALLY_X -> cur.copy(allyAvatarCenterX = (cur.allyAvatarCenterX + effectiveDeltaX).coerceIn(0.01f, 0.40f))
             CalibrationTarget.GLOBAL_ENEMY_X -> cur.copy(enemyAvatarCenterX = (cur.enemyAvatarCenterX + effectiveDeltaX).coerceIn(0.60f, 0.99f))
             CalibrationTarget.AVATAR_SIZE -> cur.copy(avatarDiameterRatio = (cur.avatarDiameterRatio + effectiveDeltaSize).coerceIn(0.04f, 0.28f))
             CalibrationTarget.ENEMY_SLOT_4 -> cur.copy(enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[4] = (it[4] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
-            CalibrationTarget.ALLY_SLOT_4 -> cur.copy(allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[4] = (it[4] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
             CalibrationTarget.ALLY_SLOT_0 -> cur.copy(allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[0] = (it[0] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
             CalibrationTarget.ALLY_SLOT_1 -> cur.copy(allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[1] = (it[1] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
             CalibrationTarget.ALLY_SLOT_2 -> cur.copy(allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[2] = (it[2] + effectiveDeltaY).coerceIn(0.05f, 0.95f) })
@@ -211,106 +201,68 @@ fun DraftCalibrationPanel(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp)
+                    .height(118.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(0xFF07121E))
                     .border(1.dp, HextechCardBorder.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
-                    .padding(4.dp)
+                    .padding(horizontal = 6.dp, vertical = 4.dp)
             ) {
-                // Barra Superior (Top Avatars)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Top 5 Aliados
-                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        (0..4).forEach { idx ->
-                            val is10thAlly = idx == 4 && selectedTarget == CalibrationTarget.TOP_ALLY_5
-                            val isTopActive = is10thAlly || selectedTarget == CalibrationTarget.TOP_AVATAR_Y || selectedTarget == CalibrationTarget.TOP_AVATAR_SIZE
-                            Box(
-                                modifier = Modifier
-                                    .size(13.dp)
-                                    .clip(CircleShape)
-                                    .background(if (isTopActive) HextechCyan else Color(0xFF0F3B56))
-                                    .border(0.8.dp, if (isTopActive) Color.White else HextechCyan.copy(alpha = 0.5f), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("${idx + 1}", color = if (isTopActive) Color.Black else HextechCyan, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-
-                    // Título Top Bar
-                    Text("BARRA SUPERIOR", color = HextechGold.copy(alpha = 0.7f), fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
-
-                    // Top 5 Rivales
-                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        (0..4).forEach { idx ->
-                            val is10thEnemy = idx == 4 && selectedTarget == CalibrationTarget.TOP_ENEMY_5
-                            val isTopActive = is10thEnemy || selectedTarget == CalibrationTarget.TOP_AVATAR_Y || selectedTarget == CalibrationTarget.TOP_AVATAR_SIZE
-                            Box(
-                                modifier = Modifier
-                                    .size(13.dp)
-                                    .clip(CircleShape)
-                                    .background(if (is10thEnemy) HextechGold else if (isTopActive) DangerRed else Color(0xFF4A1A22))
-                                    .border(0.8.dp, if (is10thEnemy) Color.White else DangerRed.copy(alpha = 0.5f), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("${idx + 1}", color = if (is10thEnemy) Color.Black else Color.White, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
-
-                // Slots Verticales Aliados
-                val allyRoles = listOf("TOP", "JG", "MID", "ADC", "SUP")
+                // Slots Verticales Aliados (Izquierda)
+                val allyRoles = listOf("TOP", "JG", "MID", "ADC", "10º")
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
                         .align(Alignment.CenterStart)
-                        .padding(start = 6.dp, top = 20.dp, bottom = 4.dp),
+                        .padding(start = 4.dp, top = 2.dp, bottom = 2.dp),
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     config.allySlotYRatios.forEachIndexed { i, _ ->
                         val isTargeted = selectedTarget == CalibrationTarget.GLOBAL_ALLY_X ||
                                 (selectedTarget == CalibrationTarget.ALLY_SLOT_4 && i == 4) ||
-                                (selectedTarget == CalibrationTarget.ALLY_SLOT_0 && i == 0)
+                                (selectedTarget == CalibrationTarget.ALLY_SLOT_0 && i == 0) ||
+                                (selectedTarget == CalibrationTarget.ALLY_SLOT_1 && i == 1) ||
+                                (selectedTarget == CalibrationTarget.ALLY_SLOT_2 && i == 2) ||
+                                (selectedTarget == CalibrationTarget.ALLY_SLOT_3 && i == 3)
+                        val is10thAlly = i == 4
                         Box(
                             modifier = Modifier
-                                .size(16.dp)
+                                .size(17.dp)
                                 .clip(CircleShape)
-                                .background(if (isTargeted) AllyBlue.copy(alpha = 0.5f) else Color(0xFF13273D))
-                                .border(0.8.dp, if (isTargeted) HextechCyan else AllyBlue.copy(alpha = 0.5f), CircleShape),
+                                .background(if (isTargeted) AllyBlue.copy(alpha = 0.6f) else if (is10thAlly) HextechCyan.copy(alpha = 0.25f) else Color(0xFF13273D))
+                                .border(1.dp, if (isTargeted) HextechGold else if (is10thAlly) HextechCyan else AllyBlue.copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(allyRoles.getOrElse(i) { "$i" }, color = if (isTargeted) HextechCyan else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                            Text(allyRoles.getOrElse(i) { "$i" }, color = if (isTargeted) HextechGold else if (is10thAlly) HextechCyan else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
 
                 // Centro Informativo del Escáner
                 Column(
-                    modifier = Modifier.align(Alignment.Center).padding(top = 10.dp),
+                    modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "DETECCIÓN 10º PICK & SLOTS",
                         color = HextechGold.copy(alpha = 0.85f),
-                        fontSize = 8.sp,
+                        fontSize = 8.5.sp,
                         fontWeight = FontWeight.Black
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "10º Rival Top: ${(config.topEnemy5XRatio * 100).format(1)}% | Top Y: ${(config.topAvatarYRatio * 100).format(1)}%",
+                        text = "10º Aliado X: ${(config.allyTenthAvatarCenterX * 100).format(1)}% | Y: ${(config.allySlotYRatios.getOrElse(4){0.739f} * 100).format(1)}%",
                         color = HextechCyan,
                         fontSize = 7.5.sp,
                         fontFamily = FontFamily.Monospace
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Aliados X: ${(config.allyAvatarCenterX * 100).format(1)}% | Rivales X: ${(config.enemyAvatarCenterX * 100).format(1)}%",
+                        color = TextSecondary,
+                        fontSize = 7.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
@@ -327,28 +279,33 @@ fun DraftCalibrationPanel(
                     }
                 }
 
-                // Slots Verticales Rivales
+                // Slots Verticales Rivales (Derecha)
+                val enemyLabels = listOf("R1", "R2", "R3", "R4", "10º")
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
                         .align(Alignment.CenterEnd)
-                        .padding(end = 6.dp, top = 20.dp, bottom = 4.dp),
+                        .padding(end = 4.dp, top = 2.dp, bottom = 2.dp),
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     config.enemySlotYRatios.forEachIndexed { i, _ ->
                         val isTargeted = selectedTarget == CalibrationTarget.GLOBAL_ENEMY_X ||
                                 (selectedTarget == CalibrationTarget.ENEMY_SLOT_4 && i == 4) ||
-                                (selectedTarget == CalibrationTarget.ENEMY_SLOT_0 && i == 0)
+                                (selectedTarget == CalibrationTarget.ENEMY_SLOT_0 && i == 0) ||
+                                (selectedTarget == CalibrationTarget.ENEMY_SLOT_1 && i == 1) ||
+                                (selectedTarget == CalibrationTarget.ENEMY_SLOT_2 && i == 2) ||
+                                (selectedTarget == CalibrationTarget.ENEMY_SLOT_3 && i == 3)
+                        val is10thEnemy = i == 4
                         Box(
                             modifier = Modifier
-                                .size(16.dp)
+                                .size(17.dp)
                                 .clip(CircleShape)
-                                .background(if (isTargeted) DangerRed.copy(alpha = 0.5f) else Color(0xFF38141B))
-                                .border(0.8.dp, if (isTargeted) Color(0xFFFF5252) else DangerRed.copy(alpha = 0.5f), CircleShape),
+                                .background(if (isTargeted) DangerRed.copy(alpha = 0.6f) else if (is10thEnemy) DangerRed.copy(alpha = 0.3f) else Color(0xFF38141B))
+                                .border(1.dp, if (isTargeted) HextechGold else if (is10thEnemy) DangerRed else Color(0xFFFF5252).copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("R${i + 1}", color = if (isTargeted) Color(0xFFFF5252) else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                            Text(enemyLabels.getOrElse(i) { "R${i + 1}" }, color = if (isTargeted) HextechGold else if (is10thEnemy) Color(0xFFFF5252) else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

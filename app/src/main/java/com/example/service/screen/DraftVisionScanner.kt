@@ -1164,7 +1164,8 @@ object DraftVisionScanner {
                 height = height,
                 isAlly = actualTenthIsAlly,
                 slotIndex = actualTenthSlotIndex,
-                config = calib
+                config = calib,
+                isTenthPick = true
             )
         } catch (_: Throwable) { null }
 

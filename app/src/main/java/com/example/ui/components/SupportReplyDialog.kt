@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.runtime.collectAsState
 import com.example.data.SupportReplyManager
 import com.example.ui.theme.*
 import kotlinx.coroutines.launch
@@ -57,8 +58,33 @@ fun SupportReplyDialog(
     var isSending by remember { mutableStateOf(false) }
 
     val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-    val responderName = authUser?.displayName?.takeIf { it.isNotBlank() && !it.contains("@") }
-        ?: "Administrador"
+    val currentUserRole by com.example.util.SubscriptionManager.userRole.collectAsState()
+    val currentUserName by com.example.util.SubscriptionManager.userName.collectAsState()
+
+    val responderRoleLabel = remember(currentUserRole) {
+        when {
+            currentUserRole.equals("moderador", ignoreCase = true) -> "Moderador"
+            currentUserRole.equals("admin", ignoreCase = true) || com.example.util.AuthManager.isCurrentUserAdmin() -> "Administrador"
+            else -> "Soporte Coach"
+        }
+    }
+
+    val senderCleanName = remember(currentUserName, authUser) {
+        val nick = currentUserName
+        if (nick.isNotBlank() && !nick.contains("@") && !nick.equals("Invocador", ignoreCase = true)) {
+            nick
+        } else {
+            authUser?.displayName?.takeIf { it.isNotBlank() && !it.contains("@") } ?: ""
+        }
+    }
+
+    val responderName = remember(senderCleanName, responderRoleLabel) {
+        if (senderCleanName.isNotBlank()) {
+            "$senderCleanName ($responderRoleLabel)"
+        } else {
+            responderRoleLabel
+        }
+    }
 
     // Resolver el nombre de usuario exacto (NUNCA usar iniciales de email)
     var resolvedUserName by remember {
@@ -168,9 +194,13 @@ fun SupportReplyDialog(
 
     val displayUserName = resolvedUserName.ifBlank { "Invocador" }
 
-    val quickTemplates = remember(displayUserName, responderName) {
+    val greetingIntro = remember(senderCleanName, responderRoleLabel) {
+        if (senderCleanName.isNotBlank()) "soy $senderCleanName ($responderRoleLabel)" else "soy $responderRoleLabel"
+    }
+
+    val quickTemplates = remember(displayUserName, greetingIntro) {
         listOf(
-            "👋 Hola $displayUserName, soy $responderName del equipo de soporte de Coach. Gracias por escribirnos, hemos recibido tu mensaje y estamos para ayudarte a la brevedad.",
+            "👋 Hola $displayUserName, $greetingIntro del equipo de soporte de Coach. Gracias por escribirnos, hemos recibido tu mensaje y estamos para ayudarte a la brevedad.",
             "✅ ¡Problema solucionado! Esta incidencia fue corregida en la última actualización de Coach. Te sugerimos actualizar tu app.",
             "🔄 Te sugerimos cerrar sesión, reiniciar la app y volver a ingresar para sincronizar tus configuraciones de forma óptima.",
             "🛡️ Hemos verificado la configuración de tu cuenta y optimizado tus datos. Por favor confirma si el problema persiste.",
@@ -384,7 +414,7 @@ fun SupportReplyDialog(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.Top
                                         ) {
-                                            Column(modifier = Modifier.weight(1f, fill = false)) {
+                                            Column(modifier = Modifier.weight(1f)) {
                                                 Row(
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -395,7 +425,8 @@ fun SupportReplyDialog(
                                                         fontSize = 11.sp,
                                                         fontWeight = FontWeight.Bold,
                                                         maxLines = 1,
-                                                        overflow = TextOverflow.Ellipsis
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        modifier = Modifier.weight(1f, fill = false)
                                                     )
                                                     if (msg.isGreeting || SupportReplyManager.isDefaultGreeting(msg.text)) {
                                                         Surface(
@@ -409,7 +440,8 @@ fun SupportReplyDialog(
                                                                 fontSize = 8.sp,
                                                                 fontWeight = FontWeight.Bold,
                                                                 maxLines = 1,
-                                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                                softWrap = false,
+                                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                                             )
                                                         }
                                                     }

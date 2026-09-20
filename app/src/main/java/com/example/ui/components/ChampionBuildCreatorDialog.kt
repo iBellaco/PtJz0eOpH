@@ -40,6 +40,7 @@ import com.example.data.local.ItemBuildEntry
 import com.example.data.local.RuneBuildEntry
 import com.example.data.local.SpellBuildEntry
 import com.example.model.Champion
+import com.example.util.AuthManager
 import com.example.model.WildRiftItem
 import com.example.model.RuneItem
 import com.example.model.SummonerSpellItem
@@ -82,6 +83,10 @@ fun ChampionBuildCreatorDialog(
     val runes = remember { WildRiftRepository.runes }
     val spells = remember { WildRiftRepository.summonerSpells }
     val creatorName by SubscriptionManager.userName.collectAsStateWithLifecycle()
+    val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsStateWithLifecycle()
+    val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsStateWithLifecycle()
+    val userRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val authUser = remember { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }
 
     var selectedChampion by remember { 
         mutableStateOf(
@@ -939,7 +944,11 @@ fun ChampionBuildCreatorDialog(
                                 coreSpells = coreSpells.map { SpellBuildEntry(it.name, it.iconUrl, it.description.trim()) },
                                 situationalSpells = situationalSpells.map { SpellBuildEntry(it.name, it.iconUrl, it.description.trim()) },
                                 gameplayVideoUri = gameplayVideoUri,
-                                creatorName = existingRecord?.creatorName ?: if (creatorName.isBlank()) "Creador Oficial" else creatorName
+                                creatorName = existingRecord?.creatorName ?: if (creatorName.isBlank()) "Creador Oficial" else creatorName,
+                                creatorAvatarId = existingRecord?.creatorAvatarId ?: currentAvatarId,
+                                creatorRankBorder = existingRecord?.creatorRankBorder ?: currentRankBorder,
+                                creatorIsAdmin = existingRecord?.creatorIsAdmin ?: (userRole == "admin" || AuthManager.isCurrentUserAdmin()),
+                                creatorUserId = existingRecord?.creatorUserId ?: (authUser?.uid ?: "")
                             )
 
                             if (existingRecord != null) {

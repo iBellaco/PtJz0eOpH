@@ -57,6 +57,10 @@ data class CustomChampionBuildRecord(
     val situationalSpells: List<SpellBuildEntry> = emptyList(),
     val gameplayVideoUri: String? = null,
     val creatorName: String = "Creador Oficial",
+    val creatorAvatarId: String? = null,
+    val creatorRankBorder: String = "NONE",
+    val creatorIsAdmin: Boolean = false,
+    val creatorUserId: String = "",
     val ratingSum: Double = 0.0,
     val voteCount: Int = 0,
     val timestamp: Long = System.currentTimeMillis()

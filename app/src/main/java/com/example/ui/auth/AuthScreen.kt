@@ -1262,6 +1262,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             } else if (userRole == "moderador") {
+                val unreadSupportForMod by com.example.util.SubscriptionManager.unreadModeratorSupportCount.collectAsState()
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showSupportPanel = true },
                     backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
@@ -1274,19 +1275,40 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     enableShimmer = true,
-                    enablePulse = true
+                    enablePulse = (unreadSupportForMod > 0)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.SupportAgent,
-                        contentDescription = null,
-                        tint = com.example.ui.theme.HextechDarkBg
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Panel de Soporte",
-                        color = com.example.ui.theme.HextechDarkBg,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SupportAgent,
+                            contentDescription = null,
+                            tint = com.example.ui.theme.HextechDarkBg
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Panel de Soporte",
+                            color = com.example.ui.theme.HextechDarkBg,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                        if (unreadSupportForMod > 0) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = com.example.ui.theme.DangerRed
+                            ) {
+                                Text(
+                                    text = "$unreadSupportForMod",
+                                    color = Color.White,
+                                    fontSize = 11.sp,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
