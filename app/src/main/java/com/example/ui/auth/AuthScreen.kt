@@ -453,11 +453,97 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             val isAdminUser = userRole == "admin" || AuthManager.isCurrentUserAdmin()
             var showPurchaseHistoryDialog by remember { mutableStateOf(false) }
+            var showVerifiedInfoDialog by remember { mutableStateOf(false) }
 
             if (showPurchaseHistoryDialog) {
                 com.example.ui.components.PurchaseHistoryDialog(
                     isAdmin = isAdminUser,
                     onDismiss = { showPurchaseHistoryDialog = false }
+                )
+            }
+
+            if (showVerifiedInfoDialog) {
+                AlertDialog(
+                    onDismissRequest = { showVerifiedInfoDialog = false },
+                    icon = {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(activeTheme.primary.copy(alpha = 0.15f))
+                                .border(1.5.dp, activeTheme.primary, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Verified,
+                                contentDescription = "Verificado",
+                                tint = activeTheme.primary,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    },
+                    title = {
+                        Text(
+                            text = "Cuenta Verificada",
+                            color = activeTheme.secondary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    },
+                    text = {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = "Esta cuenta de invocador se encuentra verificada y autenticada oficialmente en el sistema.",
+                                color = TextPrimary,
+                                fontSize = 14.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = activeTheme.primary.copy(alpha = 0.10f),
+                                border = BorderStroke(1.dp, activeTheme.primary.copy(alpha = 0.35f)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Verified,
+                                        contentDescription = null,
+                                        tint = activeTheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "Estado: Perfil auténtico, protegido y sincronizado.",
+                                        color = activeTheme.primary,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = { showVerifiedInfoDialog = false },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = activeTheme.primary,
+                                contentColor = activeTheme.background
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Entendido", fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    containerColor = activeTheme.surface,
+                    shape = RoundedCornerShape(16.dp),
+                    tonalElevation = 6.dp
                 )
             }
 
@@ -582,13 +668,31 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(if (isAdminUser) 54.dp else 12.dp))
 
-            Text(
-                text = finalUserName,
-                color = activeTheme.secondary,
-                fontSize = 20.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                letterSpacing = 0.3.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = finalUserName,
+                    color = activeTheme.secondary,
+                    fontSize = 20.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    letterSpacing = 0.3.sp
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                IconButton(
+                    onClick = { showVerifiedInfoDialog = true },
+                    modifier = Modifier.size(26.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Verified,
+                        contentDescription = "Cuenta Verificada - Toca para más información",
+                        tint = activeTheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
