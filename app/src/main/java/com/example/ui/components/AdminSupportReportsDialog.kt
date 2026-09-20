@@ -871,7 +871,7 @@ fun AdminSupportReportsDialog(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "📭 No hay reportes de soporte en esta categoría",
+                                    text = "No hay reportes de soporte en esta categoría",
                                     color = TextMuted,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium
@@ -932,7 +932,7 @@ fun AdminSupportReportsDialog(
                                         .background(if (pendingCount > 0) DangerRed else Color(0xFF10B981))
                                 )
                                 Text(
-                                    text = if (pendingCount > 0) "⚠️ $pendingCount ticket(s) pendientes" else "✅ Buzón al día",
+                                    text = if (pendingCount > 0) "$pendingCount ticket(s) pendientes" else "Buzón al día",
                                     color = if (pendingCount > 0) HextechGold else Color(0xFF10B981),
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -1165,9 +1165,9 @@ private fun UnifiedReportAdminCard(
                     // Badge de Tipo
                     val isSponsor = report.type.equals("PATROCINADOR", ignoreCase = true)
                     val typeLabel = when {
-                        isSponsor -> "⭐ PATROCINADOR"
-                        report.type.equals("SOPORTE", ignoreCase = true) -> "🎧 SOPORTE"
-                        report.type.equals("BUG", ignoreCase = true) -> "🐛 BUG"
+                        isSponsor -> "PATROCINADOR"
+                        report.type.equals("SOPORTE", ignoreCase = true) -> "SOPORTE"
+                        report.type.equals("BUG", ignoreCase = true) -> "BUG"
                         report.type.equals("SUGGESTION", ignoreCase = true) -> "💡 SUGERENCIA"
                         else -> "📝 ${report.type}"
                     }
@@ -1192,11 +1192,11 @@ private fun UnifiedReportAdminCard(
 
                     // Badge de Estado Actual
                     val (statusText, statusBg, statusTextColor) = when {
-                        isAccepted -> Triple("✓ ACEPTADA", HextechGold.copy(alpha = 0.2f), HextechGold)
-                        isRejected -> Triple("✗ RECHAZADA", DangerRed.copy(alpha = 0.2f), DangerRed)
-                        isSolved -> Triple("✓ SOLUCIONADO", HextechGreen.copy(alpha = 0.2f), HextechGreen)
+                        isAccepted -> Triple("ACEPTADA", HextechGold.copy(alpha = 0.2f), HextechGold)
+                        isRejected -> Triple("RECHAZADA", DangerRed.copy(alpha = 0.2f), DangerRed)
+                        isSolved -> Triple("SOLUCIONADO", HextechGreen.copy(alpha = 0.2f), HextechGreen)
                         isRead -> Triple("👁️ LEÍDO", HextechCyan.copy(alpha = 0.2f), HextechCyan)
-                        else -> Triple("⏳ PENDIENTE", HextechGold.copy(alpha = 0.2f), HextechGold)
+                        else -> Triple("PENDIENTE", HextechGold.copy(alpha = 0.2f), HextechGold)
                     }
 
                     Box(
@@ -1405,7 +1405,7 @@ private fun UnifiedReportAdminCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // 🎯 BOTONES DE ACCIÓN (Sincronización multidispositivo en tiempo real)
+            // BOTONES DE ACCIÓN (Sincronización multidispositivo en tiempo real)
             Text(
                 text = "Cambiar estado del reporte:",
                 color = TextMuted,
@@ -1613,7 +1613,7 @@ private fun UnifiedReportAdminCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // 💬 SECCIÓN DE RESPUESTA DE SOPORTE AL USUARIO
+            // SECCIÓN DE RESPUESTA DE SOPORTE AL USUARIO
             if (report.adminReply.isNotBlank()) {
                 Box(
                     modifier = Modifier

@@ -373,7 +373,7 @@ object GlobalAnnouncementManager {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-            val prefix = if (announcement.isUrgent) "🚨 COMUNICADO URGENTE: " else "📢 COMUNICADO OFICIAL: "
+            val prefix = if (announcement.isUrgent) "COMUNICADO URGENTE: " else "COMUNICADO OFICIAL: "
 
             val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)

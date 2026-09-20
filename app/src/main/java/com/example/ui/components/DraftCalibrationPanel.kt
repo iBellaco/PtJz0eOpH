@@ -37,8 +37,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.roundToInt
 
 enum class CalibrationTarget(val title: String, val subtitle: String) {
-    ALLY_SLOT_4("⭐ 10º Pick Aliado (Slot 5)", "Ajuste milimétrico X e Y del slot 5 aliado (abajo izquierda)"),
-    ENEMY_SLOT_4("⭐ 10º Pick Rival (Slot 5)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
+    ALLY_SLOT_4("10º Pick Aliado (Slot 5)", "Ajuste milimétrico X e Y del slot 5 aliado (abajo izquierda)"),
+    ENEMY_SLOT_4("10º Pick Rival (Slot 5)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
     GLOBAL_ALLY_X("Columna Aliados X", "Mover horizontalmente todos los avatares aliados verticales"),
     GLOBAL_ENEMY_X("Columna Rivales X", "Mover horizontalmente todos los avatares rivales verticales"),
     AVATAR_SIZE("Tamaño Avatar Slots (⌀)", "Agrandar o reducir radio de escaneo de retratos en slots"),
@@ -539,7 +539,7 @@ fun DraftCalibrationPanel(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "🎯 Alinear Slot 5 con Columna Aliada",
+                                text = "Alinear Slot 5 con Columna Aliada",
                                 color = HextechCyan,
                                 fontSize = 7.5.sp,
                                 fontWeight = FontWeight.Bold

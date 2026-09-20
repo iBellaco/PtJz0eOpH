@@ -64,6 +64,7 @@ data class CreatorListItem(
     val avatarId: String = "default_poro",
     val rankBorder: String = "NONE",
     val secondaryRole: String = "none",
+    val equippedFrame: String = "AUTO",
     val isAdmin: Boolean = false,
     val isVerified: Boolean = false,
     val buildsCount: Int = 0
@@ -75,6 +76,7 @@ data class CreatorPodiumEntry(
     val avatarId: String? = null,
     val rankBorder: String = "NONE",
     val secondaryRole: String = "none",
+    val equippedFrame: String = "AUTO",
     val isAdmin: Boolean = false,
     val role: String = "creador",
     val buildsCount: Int = 0,
@@ -93,6 +95,7 @@ fun AdminCreatorBuildsDialog(
     var buildToEdit by remember { mutableStateOf<CustomChampionBuildRecord?>(null) }
     var selectedBuildForDetail by remember { mutableStateOf<CustomChampionBuildRecord?>(null) }
     var selectedCreatorFilter by remember { mutableStateOf<String?>(null) }
+    var creatorToViewProfile by remember { mutableStateOf<CreatorListItem?>(null) }
 
     val favoriteDao = remember { AppDatabase.getDatabase(context).favoriteBuildsDao() }
     val favorites by favoriteDao.getAllFavorites().collectAsStateWithLifecycle(initialValue = emptyList())
@@ -146,7 +149,8 @@ fun AdminCreatorBuildsDialog(
             if (cleanName.isNotBlank() && seenNames.add(cleanName.lowercase(Locale.ROOT))) {
                 val avatarId = u["avatarId"] as? String ?: "default_poro"
                 val rankBorder = u["rankBorder"] as? String ?: "NONE"
-                val secondaryRole = u["secondaryRole"] as? String ?: "none"
+                val secondaryRole = (u["secondaryRole"] as? String) ?: (u["secondary_role"] as? String) ?: "none"
+                val equippedFrame = (u["activeFramePreference"] as? String) ?: (u["equippedFrame"] as? String) ?: "AUTO"
                 val isAdmin = (u["isAdmin"] as? Boolean) == true || normalizedRole == "admin"
                 val isVerified = (u["isVerified"] as? Boolean) == true ||
                     (u["verified"] as? Boolean) == true ||
@@ -160,6 +164,7 @@ fun AdminCreatorBuildsDialog(
                         avatarId = avatarId,
                         rankBorder = rankBorder,
                         secondaryRole = secondaryRole,
+                        equippedFrame = equippedFrame,
                         isAdmin = isAdmin,
                         isVerified = isVerified,
                         buildsCount = count
@@ -209,6 +214,14 @@ fun AdminCreatorBuildsDialog(
                 ?: firstRecord?.creatorRankBorder
                 ?: "NONE"
 
+            val secondaryRole = (matchedUser?.get("secondaryRole") as? String)
+                ?: (matchedUser?.get("secondary_role") as? String)
+                ?: "none"
+
+            val equippedFrame = (matchedUser?.get("activeFramePreference") as? String)
+                ?: (matchedUser?.get("equippedFrame") as? String)
+                ?: "AUTO"
+
             val role = (matchedUser?.get("role") as? String) ?: "creador"
             val isAdmin = role == "admin" || (matchedUser?.get("isAdmin") as? Boolean) == true || (firstRecord?.creatorIsAdmin == true)
 
@@ -218,6 +231,8 @@ fun AdminCreatorBuildsDialog(
                     name = creatorName,
                     avatarId = avatarId,
                     rankBorder = rankBorder,
+                    secondaryRole = secondaryRole,
+                    equippedFrame = equippedFrame,
                     isAdmin = isAdmin,
                     role = role,
                     buildsCount = buildsCount,
@@ -235,12 +250,16 @@ fun AdminCreatorBuildsDialog(
             if (uName.isNotBlank() && (uRole == "creador_vip" || uRole == "creador" || uRole == "streamer" || uRole == "admin")) {
                 val alreadyAdded = rankingList.any { it.name.equals(uName, ignoreCase = true) }
                 if (!alreadyAdded) {
+                    val secRole = (u["secondaryRole"] as? String) ?: (u["secondary_role"] as? String) ?: "none"
+                    val eqFrame = (u["activeFramePreference"] as? String) ?: (u["equippedFrame"] as? String) ?: "AUTO"
                     rankingList.add(
                         CreatorPodiumEntry(
                             userId = u["uid"] as? String ?: "",
                             name = uName,
                             avatarId = u["avatarId"] as? String ?: "default_poro",
                             rankBorder = u["rankBorder"] as? String ?: "NONE",
+                            secondaryRole = secRole,
+                            equippedFrame = eqFrame,
                             isAdmin = uRole == "admin",
                             role = uRole,
                             buildsCount = 0,
@@ -410,9 +429,21 @@ fun AdminCreatorBuildsDialog(
                     third = podiumCreators[2],
                     selectedCreator = selectedCreatorFilter,
                     onSelectCreator = { creatorName ->
-                        selectedCreatorFilter = if (selectedCreatorFilter == creatorName) null else creatorName
-                        if (selectedFilter == BuildsFilterTab.CREATORS) {
-                            selectedFilter = BuildsFilterTab.ALL
+                        val entry = podiumCreators.find { it.name.equals(creatorName, ignoreCase = true) }
+                        if (entry != null) {
+                            val matchedCreatorItem = allCreators.find { it.name.equals(entry.name, ignoreCase = true) }
+                                ?: CreatorListItem(
+                                    uid = entry.userId,
+                                    name = entry.name,
+                                    avatarId = entry.avatarId ?: "default_poro",
+                                    rankBorder = entry.rankBorder,
+                                    secondaryRole = entry.secondaryRole,
+                                    equippedFrame = entry.equippedFrame,
+                                    isAdmin = entry.isAdmin,
+                                    isVerified = true,
+                                    buildsCount = entry.buildsCount
+                                )
+                            creatorToViewProfile = matchedCreatorItem
                         }
                     }
                 )
@@ -493,7 +524,7 @@ fun AdminCreatorBuildsDialog(
                     FilterChip(
                         selected = true,
                         onClick = { selectedCreatorFilter = null },
-                        label = { Text("Creador: $selectedCreatorFilter ✕") },
+                        label = { Text("Creador: $selectedCreatorFilter ") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = HextechCyan.copy(alpha = 0.25f),
                             selectedLabelColor = HextechCyan
@@ -570,8 +601,7 @@ fun AdminCreatorBuildsDialog(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            selectedCreatorFilter = creator.name
-                                            selectedFilter = BuildsFilterTab.ALL
+                                            creatorToViewProfile = creator
                                         }
                                 ) {
                                     Row(
@@ -597,6 +627,7 @@ fun AdminCreatorBuildsDialog(
                                                     fallbackInitial = creator.name.take(1).uppercase(Locale.ROOT),
                                                     rankBorder = creator.rankBorder,
                                                     secondaryRole = creator.secondaryRole,
+                                                    equippedFrame = creator.equippedFrame,
                                                     isAdmin = creator.isAdmin
                                                 )
                                             }
@@ -685,10 +716,13 @@ fun AdminCreatorBuildsDialog(
                                         Surface(
                                             shape = RoundedCornerShape(6.dp),
                                             color = HextechGold.copy(alpha = 0.12f),
-                                            border = BorderStroke(0.6.dp, HextechGold.copy(alpha = 0.35f))
+                                            border = BorderStroke(0.6.dp, HextechGold.copy(alpha = 0.35f)),
+                                            modifier = Modifier.clickable {
+                                                creatorToViewProfile = creator
+                                            }
                                         ) {
                                             Text(
-                                                text = "Ver Builds",
+                                                text = "Ver Perfil",
                                                 color = HextechGold,
                                                 fontSize = 10.5.sp,
                                                 fontWeight = FontWeight.SemiBold,
@@ -838,6 +872,30 @@ fun AdminCreatorBuildsDialog(
                 }
             }
         }
+
+        if (creatorToViewProfile != null) {
+            val creator = creatorToViewProfile!!
+            val creatorBuilds = remember(customBuilds, creator.name) {
+                customBuilds.filter { it.creatorName.trim().equals(creator.name.trim(), ignoreCase = true) }
+            }
+            CreatorProfileDialog(
+                creatorName = creator.name,
+                creatorUid = creator.uid,
+                avatarId = creator.avatarId,
+                rankBorder = creator.rankBorder,
+                secondaryRole = creator.secondaryRole,
+                equippedFrame = creator.equippedFrame,
+                isAdmin = creator.isAdmin,
+                isVerified = creator.isVerified,
+                creatorBuilds = creatorBuilds,
+                onSelectBuild = { build ->
+                    selectedBuildForDetail = build
+                },
+                onDismiss = {
+                    creatorToViewProfile = null
+                }
+            )
+        }
     }
 }
 
@@ -915,11 +973,11 @@ fun CreatorPodiumCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
-                // 🥈 2DO LUGAR (Izquierda)
+                // 2DO LUGAR (Izquierda)
                 PodiumColumn(
                     entry = second,
                     rank = 2,
-                    rankBadgeText = "🥈 2° Lugar",
+                    rankBadgeText = "2° Lugar",
                     badgeColor = Color(0xFFE2E8F0),
                     badgeBgColor = Color(0xFF334155).copy(alpha = 0.7f),
                     avatarSize = 40.dp,
@@ -937,11 +995,11 @@ fun CreatorPodiumCard(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
-                // 👑 1ER LUGAR (Centro - Elevado y Destacado)
+                // 1ER LUGAR (Centro - Elevado y Destacado)
                 PodiumColumn(
                     entry = first,
                     rank = 1,
-                    rankBadgeText = "👑 1° Lugar",
+                    rankBadgeText = "1° Lugar",
                     badgeColor = HextechGold,
                     badgeBgColor = HextechGold.copy(alpha = 0.22f),
                     avatarSize = 48.dp,
@@ -959,11 +1017,11 @@ fun CreatorPodiumCard(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
-                // 🥉 3ER LUGAR (Derecha)
+                // 3ER LUGAR (Derecha)
                 PodiumColumn(
                     entry = third,
                     rank = 3,
-                    rankBadgeText = "🥉 3° Lugar",
+                    rankBadgeText = "3° Lugar",
                     badgeColor = Color(0xFFFDBA74),
                     badgeBgColor = Color(0xFF7C2D12).copy(alpha = 0.45f),
                     avatarSize = 38.dp,
@@ -1047,6 +1105,7 @@ private fun PodiumColumn(
                 fallbackInitial = entry.name.take(1).uppercase(Locale.ROOT),
                 rankBorder = entry.rankBorder,
                 secondaryRole = entry.secondaryRole,
+                equippedFrame = entry.equippedFrame,
                 isAdmin = entry.isAdmin
             )
         }
@@ -1066,7 +1125,7 @@ private fun PodiumColumn(
 
         // Resumen de estadísticas del creador
         Text(
-            text = "${entry.buildsCount} builds • ⭐ ${String.format(Locale.US, "%.1f", entry.averageRating)}",
+            text = "${entry.buildsCount} builds • ${String.format(Locale.US, "%.1f", entry.averageRating)}",
             color = if (rank == 1) HextechGoldLight else TextSecondary,
             fontSize = if (rank == 1) 9.sp else 8.sp,
             fontWeight = if (rank == 1) FontWeight.SemiBold else FontWeight.Normal,

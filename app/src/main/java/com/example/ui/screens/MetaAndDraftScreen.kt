@@ -1142,7 +1142,7 @@ fun ChampionsCatalogTab(
                         },
                         label = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("⭐ " + tr("Favoritos"), fontSize = if (isOverlay) 10.sp else 11.sp)
+                                Text("" + tr("Favoritos"), fontSize = if (isOverlay) 10.sp else 11.sp)
                                 Spacer(modifier = Modifier.width(3.dp))
                                 Text(
                                     text = "($favCount)",
@@ -1262,7 +1262,7 @@ fun ChampionsCatalogTab(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = if (showOnlyFavorites)
-                            tr("Toca la estrella ⭐ en cualquier campeón de la lista para añadirlo a tus favoritos y tener acceso directo.")
+                            tr("Toca la estrella en cualquier campeón de la lista para añadirlo a tus favoritos y tener acceso directo.")
                         else
                             tr("Prueba a buscar con otro nombre o restablece los filtros."),
                         color = TextMuted,
@@ -1349,7 +1349,7 @@ fun ChampionsCatalogTab(
                                     )
                                     val formattedWr = String.format(java.util.Locale.US, "%.2f", champion.winrate)
                                     val regionTag = when (currentRegion) {
-                                        "CN" -> "🇨🇳 CN"
+                                        "CN" -> "CN"
                                         "NA" -> "🌎 NA"
                                         else -> "🌍 Global"
                                     }
@@ -1377,7 +1377,7 @@ fun ChampionsCatalogTab(
                                             .padding(horizontal = 5.dp, vertical = 1.dp)
                                     ) {
                                         Text(
-                                            text = "⭐ " + tr("Flex en ") + tr(roleFilter.shortName),
+                                            text = "" + tr("Flex en ") + tr(roleFilter.shortName),
                                             color = HextechGold,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold
@@ -4288,7 +4288,7 @@ fun DraftAnalysisTab(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = tr("⚔️ Cara a Cara 1v1 (Matchup Preview)"),
+                                text = tr("Cara a Cara 1v1 (Matchup Preview)"),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 12.sp
                             )
@@ -4443,7 +4443,7 @@ fun DraftAnalysisTab(
                             if (topPick.synergyDetails.isNotBlank()) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "🤝 " + tr("Sinergia / Combo:"),
+                                        text = "" + tr("Sinergia / Combo:"),
                                         color = HextechCyan,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold
@@ -4460,7 +4460,7 @@ fun DraftAnalysisTab(
                             if (topPick.counterDetails.isNotBlank()) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "🛡️ " + tr("Ventaja / Counter:"),
+                                        text = "" + tr("Ventaja / Counter:"),
                                         color = HextechGold,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold
@@ -4576,7 +4576,7 @@ fun DraftAnalysisTab(
                             ) {
                                 if (rec.synergyDetails.isNotBlank()) {
                                     Text(
-                                        text = "🤝 " + rec.synergyDetails,
+                                        text = "" + rec.synergyDetails,
                                         color = HextechCyan,
                                         fontSize = 10.sp,
                                         maxLines = 1,
@@ -4586,7 +4586,7 @@ fun DraftAnalysisTab(
                                 }
                                 if (rec.counterDetails.isNotBlank()) {
                                     Text(
-                                        text = "🛡️ " + rec.counterDetails,
+                                        text = "" + rec.counterDetails,
                                         color = HextechGoldLight,
                                         fontSize = 10.sp,
                                         maxLines = 1,
@@ -5218,7 +5218,7 @@ fun TierSelectionPanel(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                text = "📊 " + tr("Estadísticas"),
+                                text = "" + tr("Estadísticas"),
                                 color = HextechGold,
                                 fontSize = if (isOverlay) 8.5.sp else 9.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -5236,7 +5236,7 @@ fun TierSelectionPanel(
                 horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
             ) {
                 val regionItems = listOf(
-                    Triple("CN", "🇨🇳 " + tr("Servidor Chino"), "API Tencent"),
+                    Triple("CN", "" + tr("Servidor Chino"), "API Tencent"),
                     Triple("Global", "🌍 " + tr("Global"), "Meta Live"),
                     Triple("NA", "🌎 " + tr("América (NA)"), "Local Cache")
                 )
@@ -5372,10 +5372,10 @@ fun TierSelectionPanel(
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (isOnline) {
-                                if (isSyncing) "⏳ " + tr("Sincronizando...")
-                                else "⚡ " + tr("Actualizado:") + " $lastSyncFormattedTime"
+                                if (isSyncing) "" + tr("Sincronizando...")
+                                else "" + tr("Actualizado:") + " $lastSyncFormattedTime"
                             } else {
-                                "⚠️ " + tr("Sin conexión • Última estadística:") + " $lastSyncFormattedTime"
+                                "" + tr("Sin conexión • Última estadística:") + " $lastSyncFormattedTime"
                             },
                             color = if (isOnline) (if (isSyncing) HextechCyan else Color(0xFF81C784)) else Color(0xFFFFB74D),
                             fontSize = if (isOverlay) 8.sp else 9.5.sp,

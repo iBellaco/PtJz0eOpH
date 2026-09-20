@@ -300,7 +300,7 @@
     "name": "Fuente de Vida",
     "tree": "Valor",
     "type": "Secundaria",
-    "description": "Cuando tus ataques o habilidades golpean a un campeón enemigo, te curas a ti y al campeón aliado cercano con menos vida.\nAliado: Se cura un 1,5% de tu ♥ máx. + 5% de tu 🪄.\nTú: Te curas un 1% de tu ♥ máx. + 5% de tu 🪄.\nEnfriamiento: 20 s\nLa curación tiene un 130% de efectividad si eres un campeón cuerpo a cuerpo. (No se activa si tú o algún aliado cercano tenéis la vida al máximo o si no hay aliados cerca).",
+    "description": "Cuando tus ataques o habilidades golpean a un campeón enemigo, te curas a ti y al campeón aliado cercano con menos vida.\nAliado: Se cura un 1,5% de tu máx. + 5% de tu 🪄.\nTú: Te curas un 1% de tu máx. + 5% de tu 🪄.\nEnfriamiento: 20 s\nLa curación tiene un 130% de efectividad si eres un campeón cuerpo a cuerpo. (No se activa si tú o algún aliado cercano tenéis la vida al máximo o si no hay aliados cerca).",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/fontoflife/fontoflife.png"
   },
   {
@@ -308,7 +308,7 @@
     "name": "Coraje del Coloso",
     "tree": "Valor",
     "type": "Secundaria",
-    "description": "Otorga un escudo que absorbe de 25 a 45 (🔺) + 1% del daño por vida máxima ♥ durante 3 s al inmovilizar a un campeón enemigo (18 s de enfriamiento).",
+    "description": "Otorga un escudo que absorbe de 25 a 45 () + 1% del daño por vida máxima durante 3 s al inmovilizar a un campeón enemigo (18 s de enfriamiento).",
     "iconUrl": "https://i.postimg.cc/MZmsgySX/courage-of-the-colossus.webp"
   },
   {
@@ -316,7 +316,7 @@
     "name": "Orbe Anulador",
     "tree": "Valor",
     "type": "Secundaria",
-    "description": "Si un campeón te inflige daño suficiente para hacerte bajar del 35% de tu vida máxima, obtienes un escudo que absorbe de 60 a 180 (🔺) de daño durante 4 s (60 s de enfriamiento).",
+    "description": "Si un campeón te inflige daño suficiente para hacerte bajar del 35% de tu vida máxima, obtienes un escudo que absorbe de 60 a 180 () de daño durante 4 s (60 s de enfriamiento).",
     "iconUrl": "https://i.postimg.cc/3JrLhd8h/nullifying-orb.webp"
   },
   {
@@ -324,7 +324,7 @@
     "name": "Revestimiento de Huesos",
     "tree": "Valor",
     "type": "Secundaria",
-    "description": "Al recibir daño de un campeón, el ataque o habilidad actual y los 3 siguientes ataques o habilidades de campeones que te golpeen en los próximos 1,5 s te infligen 30 - 60 (🔺) menos de daño (40 s de enfriamiento).",
+    "description": "Al recibir daño de un campeón, el ataque o habilidad actual y los 3 siguientes ataques o habilidades de campeones que te golpeen en los próximos 1,5 s te infligen 30 - 60 () menos de daño (40 s de enfriamiento).",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/boneplating/boneplating.png"
   },
   {
@@ -332,7 +332,7 @@
     "name": "Fuerzas Renovadas",
     "tree": "Valor",
     "type": "Secundaria",
-    "description": "Otorga 5 de vida ♥ cada 5 s.\nAl recibir daño de un campeón enemigo, regenera 3 + (un 1,5% de la vida que te falte) ♥ durante 5 s. Este efecto se duplica para los campeones cuerpo a cuerpo.",
+    "description": "Otorga 5 de vida cada 5 s.\nAl recibir daño de un campeón enemigo, regenera 3 + (un 1,5% de la vida que te falte) durante 5 s. Este efecto se duplica para los campeones cuerpo a cuerpo.",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/secondwind/secondwind.png"
   },
   {
@@ -364,7 +364,7 @@
     "name": "Perseverancia",
     "tree": "Valor",
     "type": "Secundaria",
-    "description": "Otorga 10% de tenacidad. Otorga de 10 a 15 de armadura y resistencia mágica (🔺) durante 1,5 s cuando te inmovilizan. La duración se reinicia cuando te inmovilizan múltiples veces.",
+    "description": "Otorga 10% de tenacidad. Otorga de 10 a 15 de armadura y resistencia mágica () durante 1,5 s cuando te inmovilizan. La duración se reinicia cuando te inmovilizan múltiples veces.",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/perseverance/perseverance.png"
   },
   {
@@ -372,7 +372,7 @@
     "name": "Demoler",
     "tree": "Valor",
     "type": "Secundaria",
-    "description": "Al estar a 550 de distancia de una torreta enemiga, obtienes una carga cada 0,5 s, hasta un máximo de 6 veces. Con el máximo de cargas, el siguiente ataque que asestes a la torreta inflige (100 + 22% de la vida máxima ♥) de daño físico adicional (30 s de enfriamiento).",
+    "description": "Al estar a 550 de distancia de una torreta enemiga, obtienes una carga cada 0,5 s, hasta un máximo de 6 veces. Con el máximo de cargas, el siguiente ataque que asestes a la torreta inflige (100 + 22% de la vida máxima ) de daño físico adicional (30 s de enfriamiento).",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/demolish/demolish.png"
   }
 ]

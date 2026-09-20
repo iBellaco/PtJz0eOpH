@@ -264,7 +264,7 @@ fun MultiServerStatsDialog(
 
                     // Server 1: China Tencent
                     ServerStatCard(
-                        flag = "🇨🇳",
+                        flag = "",
                         serverName = tr("API China Tencent (lolm.qq.com)"),
                         matchesText = String.format(java.util.Locale.US, "%.1fM", chinaMatches / 1_000_000.0),
                         topChampions = topCn,
@@ -288,7 +288,7 @@ fun MultiServerStatsDialog(
 
                     // Server 3: Norteamérica NA
                     ServerStatCard(
-                        flag = "🇺🇸",
+                        flag = "",
                         serverName = tr("Servidor Norteamérica (NA)"),
                         matchesText = String.format(java.util.Locale.US, "%.1fM", naMatches / 1_000_000.0),
                         topChampions = topNa,

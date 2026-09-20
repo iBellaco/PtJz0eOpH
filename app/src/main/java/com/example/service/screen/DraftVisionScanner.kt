@@ -401,7 +401,7 @@ object DraftVisionScanner {
                         text.contains("LÍNEA", ignoreCase = true) || text.contains("LINEA", ignoreCase = true) ||
                         text.contains("RIVAL", ignoreCase = true) || text.contains("VACÍO", ignoreCase = true) ||
                         text.contains("VACIO", ignoreCase = true) || text.contains("CONFIRMADO", ignoreCase = true) ||
-                        text.contains("AMBIGUO", ignoreCase = true) || text.contains("⚡") || text.contains("🐛") ||
+                        text.contains("AMBIGUO", ignoreCase = true) || text.contains("") || text.contains("") ||
                         text.contains("Diagnóstico", ignoreCase = true) || text.contains("Diagnostico", ignoreCase = true) ||
                         text.contains("Score", ignoreCase = true)) continue
                     

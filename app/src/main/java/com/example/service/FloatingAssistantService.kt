@@ -850,7 +850,7 @@ private fun FloatingCloseTarget(
                 border = BorderStroke(1.dp, if (isTargeted) Color.White else DangerRed.copy(alpha = 0.4f))
             ) {
                 Text(
-                    text = if (isTargeted) "✕ Soltar para desactivar" else "Arrastra aquí para cerrar",
+                    text = if (isTargeted) "Soltar para desactivar" else "Arrastra aquí para cerrar",
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -1938,7 +1938,7 @@ private fun FloatingOverlayContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "✕ " + tr("Detener Asistente"),
+                                text = "" + tr("Detener Asistente"),
                                 color = DangerRed,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,

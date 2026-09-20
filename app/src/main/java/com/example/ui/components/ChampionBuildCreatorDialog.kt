@@ -815,7 +815,7 @@ fun ChampionBuildCreatorDialog(
                         Icon(Icons.Default.Videocam, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (gameplayVideoUri != null) "✓ Gameplay MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)",
+                            text = if (gameplayVideoUri != null) "Gameplay MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)",
                             color = if (gameplayVideoUri != null) HextechGold else Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp

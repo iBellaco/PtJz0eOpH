@@ -203,7 +203,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
     val activeFramePref by SubscriptionManager.activeFramePreference.collectAsState()
     var showAvatarDialog by remember { mutableStateOf(false) }
-    var showSecondaryRoleDialog by remember { mutableStateOf(false) }
     var showFrameSelectionDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
@@ -252,11 +251,20 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
         )
     }
 
-    if (showSecondaryRoleDialog) {
+    if (showFrameSelectionDialog) {
+        val activeFramePref by SubscriptionManager.activeFramePreference.collectAsState()
+        val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
+        val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
         val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
-        com.example.ui.components.SecondaryRoleSelectionDialog(
+        val isAdminUser = userRole == "admin" || user.email == "barbadiego695@gmail.com"
+
+        com.example.ui.components.FrameSelectionDialog(
+            currentAvatarId = currentAvatarId,
+            currentRankBorder = currentRankBorder,
             currentSecondaryRole = currentSecRoleVal,
-            onDismiss = { showSecondaryRoleDialog = false }
+            isAdmin = isAdminUser,
+            currentActivePreference = activeFramePref,
+            onDismiss = { showFrameSelectionDialog = false }
         )
     }
 
@@ -818,95 +826,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     }
             }
 
-            // Rol Secundario / Rango Competitivo Selector Card
             val secRoleObj = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
-            val canAssignSecRole = isAdminUser || userRole == "moderador"
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (canAssignSecRole) {
-                            Modifier.tactileClickable { showSecondaryRoleDialog = true }
-                        } else {
-                            Modifier.clickable {
-                                Toast.makeText(
-                                    context,
-                                    "Los roles secundarios son asignados exclusivamente por Moderadores y Administradores",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    ),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = activeTheme.surfaceVariant.copy(alpha = 0.55f)),
-                border = BorderStroke(1.dp, if (secRoleObj != com.example.model.AppUserSecondaryRole.NONE) secRoleObj.primaryColor.copy(alpha = 0.55f) else activeTheme.cardBorder)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(secRoleObj.primaryColor.copy(alpha = 0.18f))
-                                .border(1.dp, secRoleObj.primaryColor.copy(alpha = 0.6f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Shield,
-                                contentDescription = null,
-                                tint = secRoleObj.primaryColor,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = "Rol Secundario / Rango:",
-                                color = activeTheme.secondary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) {
-                                    if (canAssignSecRole) "Toca para asignar tu rango (Esmeralda a Soberano)" else "Sin rol secundario (Asignado por Mod/Admin)"
-                                } else {
-                                    secRoleObj.displayName
-                                },
-                                color = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) activeTheme.textSecondary else secRoleObj.primaryColor,
-                                fontSize = 11.5.sp,
-                                fontWeight = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) FontWeight.Normal else FontWeight.Bold
-                            )
-                        }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (secRoleObj != com.example.model.AppUserSecondaryRole.NONE) {
-                            SecondaryRoleBadge(
-                                secondaryRole = currentSecRoleVal,
-                                size = RoleBadgeSize.COMPACT
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                        }
-                        if (canAssignSecRole) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = "Cambiar",
-                                tint = activeTheme.secondary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
 
             // Marco de Perfil Customization Selector Card
             Card(
@@ -997,7 +917,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "📱 Dispositivos Conectados:",
+                                text = "Dispositivos Conectados:",
                                 color = activeTheme.secondary,
                                 fontSize = 12.5.sp,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
@@ -1027,14 +947,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     AnimatedVisibility(visible = isSecurityExpanded) {
                         Column(modifier = Modifier.padding(top = 10.dp)) {
                             Text(
-                                text = "🔒 " + com.example.util.tr("Por seguridad de tu cuenta, la liberación y reasignación de slots de hardware es gestionada exclusivamente por los Administradores desde el panel de soporte."),
+                                text = com.example.util.tr("Por seguridad de tu cuenta, la liberación y reasignación de slots de hardware es gestionada exclusivamente por los Administradores desde el panel de soporte."),
                                 color = activeTheme.textSecondary,
                                 fontSize = 10.5.sp,
                                 lineHeight = 14.sp
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "⚠️ " + com.example.util.tr("Recomendación: Se recomienda no cerrar sesión para evitar un mal funcionamiento o problemas a futuro con tu cuenta, sincronización de licencias y el acceso fluido a tus herramientas de drafting."),
+                                text = com.example.util.tr("Recomendación: Se recomienda no cerrar sesión para evitar un mal funcionamiento o problemas a futuro con tu cuenta, sincronización de licencias y el acceso fluido a tus herramientas de drafting."),
                                 color = activeTheme.textMuted,
                                 fontSize = 10.5.sp,
                                 lineHeight = 14.sp
@@ -1173,7 +1093,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Text("💡", fontSize = 22.sp)
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = activeTheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
                         Column {
                             Text(
                                 text = "Consejo del Coach Soberano",

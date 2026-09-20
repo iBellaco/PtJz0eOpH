@@ -149,7 +149,7 @@ fun SupportReportDialog(
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 context,
-                                "⚠️ Una foto supera el límite de 2 MB y fue descartada.",
+                                "Una foto supera el límite de 2 MB y fue descartada.",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -644,7 +644,7 @@ fun SupportReportDialog(
                                         isSubmitting = false
                                         Toast.makeText(
                                             context,
-                                            "✅ Reporte de soporte enviado exitosamente. ¡Gracias!",
+                                            "Reporte de soporte enviado exitosamente. ¡Gracias!",
                                             Toast.LENGTH_LONG
                                         ).show()
                                         onDismiss()

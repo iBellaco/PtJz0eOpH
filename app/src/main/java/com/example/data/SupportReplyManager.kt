@@ -60,9 +60,9 @@ object SupportReplyManager {
      */
     fun isDefaultGreeting(text: String): Boolean {
         val clean = text.trim()
-        val isGreetingPrefix = clean.startsWith("👋 Hola", ignoreCase = true) || 
+        val isGreetingPrefix = clean.startsWith("Hola", ignoreCase = true) || 
                                clean.startsWith("Hola", ignoreCase = true) ||
-                               clean.startsWith("👋 Saludo", ignoreCase = true)
+                               clean.startsWith("Saludo", ignoreCase = true)
         val hasSupportMention = clean.contains("equipo de soporte", ignoreCase = true) ||
                                 clean.contains("soporte de Coach", ignoreCase = true)
         val hasReceivedMention = clean.contains("recibido tu mensaje", ignoreCase = true) ||

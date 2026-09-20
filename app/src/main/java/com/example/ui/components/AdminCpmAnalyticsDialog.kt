@@ -221,7 +221,7 @@ fun AdminCpmAnalyticsDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("📅 Proyección de Precios Fijos (Sponsor):", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Proyección de Precios Fijos (Sponsor):", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         IconButton(
                             onClick = {
                                 val presentationText = """
@@ -1063,7 +1063,7 @@ Métricas de Tráfico y Rendimiento:
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("CPM Actual: $${String.format(Locale.US, "%.2f", baseCpmRate)}/1k ✎", color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                    Text("CPM Actual: $${String.format(Locale.US, "%.2f", baseCpmRate)}/1k ", color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -1320,12 +1320,12 @@ Métricas de Tráfico y Rendimiento:
                                                 fontSize = 9.sp
                                             )
                                             Text(
-                                                text = "🖱️ $tagTotalClicks clics (${String.format(Locale.US, "%.1f", tagCtr)}%)",
+                                                text = "$tagTotalClicks clics (${String.format(Locale.US, "%.1f", tagCtr)}%)",
                                                 color = HextechGold,
                                                 fontSize = 9.sp
                                             )
                                             Text(
-                                                text = "📱 $tagTotalFullscreen full",
+                                                text = "$tagTotalFullscreen full",
                                                 color = Color(0xFFCC66FF),
                                                 fontSize = 9.sp
                                             )
@@ -1737,7 +1737,7 @@ private fun NoticeAnalyticsItemCard(
                 // Ingresos Generados
                 Column(horizontalAlignment = Alignment.End) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        val label = if (metrics.customCpmRate != null) "Tarifa (CPM ★)" else "Tarifa CPM"
+                        val label = if (metrics.customCpmRate != null) "Tarifa (CPM )" else "Tarifa CPM"
                         val multLabel = if (mediaMultiplier > 1.0) " [x${mediaMultiplier}]" else ""
                         Text(label + multLabel, color = TextMuted, fontSize = 9.sp)
                         Spacer(modifier = Modifier.width(4.dp))

@@ -375,7 +375,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 if (isGift) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "🎁 Concesión Oficial de Administrador",
+                        text = "Concesión Oficial de Administrador",
                         color = HextechCyan,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold

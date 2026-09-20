@@ -427,9 +427,9 @@ fun PersonalTierListView(
                     ) {
                         Text(
                             text = if (selectedRoleFilter != null) {
-                                "🏆 Tier List Personal: ${selectedRoleFilter?.displayName}"
+                                "Tier List Personal: ${selectedRoleFilter?.displayName}"
                             } else {
-                                "🏆 Tier List Personal (Todos los Campeones)"
+                                "Tier List Personal (Todos los Campeones)"
                             },
                             color = HextechGold,
                             fontSize = 13.5.sp,

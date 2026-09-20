@@ -662,7 +662,7 @@ fun AdminFeedbackBottomSheet(
 
                 item {
                     StatusFilterChip(
-                        label = tr("⏳ Pendientes"),
+                        label = tr("Pendientes"),
                         count = pendingCount,
                         isSelected = selectedSubFilter == "PENDING",
                         color = Color(0xFFFFB300),
@@ -1733,7 +1733,7 @@ private fun ComprehensiveFeedbackCard(
                 }
             }
 
-            // 💬 Sección de Respuesta de Soporte
+            // Sección de Respuesta de Soporte
             val reportKey = report.id ?: "${report.title}_${report.createdAt}"
             val localReply = remember(reportKey) { SupportReplyManager.getLocalReply(context, reportKey) }
             val finalReplyText = if (!report.adminReply.isNullOrBlank()) report.adminReply else (localReply?.text ?: "")

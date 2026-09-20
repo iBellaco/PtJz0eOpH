@@ -144,7 +144,7 @@ fun BuyEssenceDialog(
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.4f))
                     ) {
                         Text(
-                            text = "👑 Modo Administrador Activo: Acceso de compra y recarga sin restricciones.",
+                            text = "Modo Administrador Activo: Acceso de compra y recarga sin restricciones.",
                             color = HextechGold,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold,

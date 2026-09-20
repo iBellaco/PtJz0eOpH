@@ -623,7 +623,7 @@ fun DraftHistoryScreen(
                             )
                             profiles.forEach { prof ->
                                 DropdownMenuItem(
-                                    text = { Text("👤 ${prof.name}${if (prof.tag.isNotBlank()) " #${prof.tag}" else ""}") },
+                                    text = { Text("${prof.name}${if (prof.tag.isNotBlank()) " #${prof.tag}" else ""}") },
                                     onClick = {
                                         selectedProfileIdFilter = prof.id
                                         AccountProfileManager.setActiveProfile(context, prof.id)
@@ -814,7 +814,7 @@ fun DraftHistoryScreen(
                                     },
                                     label = {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text("👤 ${prof.name}", fontSize = 10.5.sp)
+                                            Text("${prof.name}", fontSize = 10.5.sp)
                                             if (prof.tag.isNotBlank()) {
                                                 Text(" #${prof.tag}", fontSize = 9.sp, color = if (isSelected) HextechDarkBg else HextechCyan)
                                             }
@@ -1036,7 +1036,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedQueueFilter == "NORMAL",
                             onClick = { selectedQueueFilter = if (selectedQueueFilter == "NORMAL") null else "NORMAL" },
-                            label = { Text("⚔️ " + tr("Partidas Normales"), fontSize = 11.sp) },
+                            label = { Text("" + tr("Partidas Normales"), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = HextechGold,
                                 selectedLabelColor = HextechDarkBg
@@ -1045,7 +1045,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedQueueFilter == "LEGENDARY",
                             onClick = { selectedQueueFilter = if (selectedQueueFilter == "LEGENDARY") null else "LEGENDARY" },
-                            label = { Text("🏆 " + tr("Legendarias"), fontSize = 11.sp) },
+                            label = { Text("" + tr("Legendarias"), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = Color(0xFFE040FB),
                                 selectedLabelColor = Color.White
@@ -1072,7 +1072,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedResultFilter == "PENDING",
                             onClick = { selectedResultFilter = if (selectedResultFilter == "PENDING") null else "PENDING" },
-                            label = { Text("⏳ " + tr("En espera") + " ($pendingCount)", fontSize = 11.sp) },
+                            label = { Text("" + tr("En espera") + " ($pendingCount)", fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = HextechGold,
                                 selectedLabelColor = HextechDarkBg
@@ -1081,7 +1081,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedResultFilter == "VICTORY",
                             onClick = { selectedResultFilter = if (selectedResultFilter == "VICTORY") null else "VICTORY" },
-                            label = { Text("👑 " + tr("Victorias") + " ($victoriesCount)", fontSize = 11.sp) },
+                            label = { Text("" + tr("Victorias") + " ($victoriesCount)", fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = Color(0xFF81C784),
                                 selectedLabelColor = Color.Black
@@ -1090,7 +1090,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedResultFilter == "DEFEAT",
                             onClick = { selectedResultFilter = if (selectedResultFilter == "DEFEAT") null else "DEFEAT" },
-                            label = { Text("💔 " + tr("Derrotas") + " ($defeatsCount)", fontSize = 11.sp) },
+                            label = { Text("" + tr("Derrotas") + " ($defeatsCount)", fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = DangerRed,
                                 selectedLabelColor = Color.White
@@ -1901,9 +1901,9 @@ private fun SavedDraftCard(
         else -> HextechGold
     }
     val resultLabel = when (draft.matchResult.uppercase()) {
-        "VICTORY" -> "👑 " + tr("Victoria")
-        "DEFEAT" -> "💔 " + tr("Derrota")
-        else -> "⏳ " + tr("En espera")
+        "VICTORY" -> "" + tr("Victoria")
+        "DEFEAT" -> "" + tr("Derrota")
+        else -> "" + tr("En espera")
     }
 
     Card(
@@ -1944,7 +1944,7 @@ private fun SavedDraftCard(
                             border = BorderStroke(0.8.dp, Color(0xFFC084FC))
                         ) {
                             Text(
-                                text = "🏆 " + tr("Legendaria"),
+                                text = "" + tr("Legendaria"),
                                 color = Color(0xFFE9D5FF),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.ExtraBold,
@@ -1960,7 +1960,7 @@ private fun SavedDraftCard(
                             border = BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.5f))
                         ) {
                             Text(
-                                text = "👤 ${draft.accountProfileName}",
+                                text = "${draft.accountProfileName}",
                                 color = HextechCyan,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -1999,14 +1999,14 @@ private fun SavedDraftCard(
                         modifier = Modifier.background(HextechSurface)
                     ) {
                         DropdownMenuItem(
-                            text = { Text("👑 " + tr("Victoria"), color = Color(0xFF81C784), fontWeight = FontWeight.Bold) },
+                            text = { Text("" + tr("Victoria"), color = Color(0xFF81C784), fontWeight = FontWeight.Bold) },
                             onClick = {
                                 onUpdateResult("VICTORY")
                                 resultMenuExpanded = false
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("💔 " + tr("Derrota"), color = DangerRed, fontWeight = FontWeight.Bold) },
+                            text = { Text("" + tr("Derrota"), color = DangerRed, fontWeight = FontWeight.Bold) },
                             onClick = {
                                 onUpdateResult("DEFEAT")
                                 resultMenuExpanded = false
@@ -2060,7 +2060,7 @@ private fun SavedDraftCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "🔵",
+                            text = "",
                             fontSize = 9.sp,
                             modifier = Modifier.width(18.dp)
                         )
@@ -2076,7 +2076,7 @@ private fun SavedDraftCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "🔴",
+                            text = "",
                             fontSize = 9.sp,
                             modifier = Modifier.width(18.dp)
                         )
@@ -2325,7 +2325,7 @@ private fun DraftDetailInnerContent(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = tr("Línea:") + " ${com.example.util.tr(roleObj.displayName)} • " + (if (draft.isFirstPick) tr("Primer Pick") else tr("Counter Pick")) + (if (draft.isLegendary) " • 🏆 " + tr("Legendaria") else " • ⚔️ " + tr("Clasificatoria")),
+                        text = tr("Línea:") + " ${com.example.util.tr(roleObj.displayName)} • " + (if (draft.isFirstPick) tr("Primer Pick") else tr("Counter Pick")) + (if (draft.isLegendary) " • " + tr("Legendaria") else " • " + tr("Clasificatoria")),
                         color = if (draft.isLegendary) Color(0xFFC084FC) else HextechGold,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium

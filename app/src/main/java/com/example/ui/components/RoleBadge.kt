@@ -124,7 +124,7 @@ fun RoleBadge(
             RoleBadgeSize.LARGE -> BadgeMetrics(13.5.sp, 13.dp, 6.dp, 15.sp)
         }
 
-        val badgeEmoji = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) "⚠️" else currentRoleState.emoji
+        val badgeEmoji = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) "" else currentRoleState.emoji
         val badgeText = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) "EXPIRA PRONTO" else currentRoleState.displayName.uppercase()
         val badgeColor = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) Color(0xFFEF4444) else currentRoleState.primaryColor
 

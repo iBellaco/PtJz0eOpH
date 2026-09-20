@@ -979,7 +979,7 @@ fun NoticeCategoryCard(
                                 onClick = {
                                     isPinned = !isPinned
                                     if (isPinned) {
-                                        Toast.makeText(context, "📌 Publicación fijada. No rotará automáticamente.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Publicación fijada. No rotará automáticamente.", Toast.LENGTH_SHORT).show()
                                     } else {
                                         Toast.makeText(context, "Rotación automática activada.", Toast.LENGTH_SHORT).show()
                                     }

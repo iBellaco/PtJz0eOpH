@@ -200,11 +200,11 @@ fun SupportReplyDialog(
 
     val quickTemplates = remember(displayUserName, greetingIntro) {
         listOf(
-            "👋 Hola $displayUserName, $greetingIntro del equipo de soporte de Coach. Gracias por escribirnos, hemos recibido tu mensaje y estamos para ayudarte a la brevedad.",
-            "✅ ¡Problema solucionado! Esta incidencia fue corregida en la última actualización de Coach. Te sugerimos actualizar tu app.",
-            "🔄 Te sugerimos cerrar sesión, reiniciar la app y volver a ingresar para sincronizar tus configuraciones de forma óptima.",
-            "🛡️ Hemos verificado la configuración de tu cuenta y optimizado tus datos. Por favor confirma si el problema persiste.",
-            "🔍 Tu reporte está siendo analizado detalladamente por nuestro equipo técnico prioritario. Te notificaremos cualquier avance.",
+            "Hola $displayUserName, $greetingIntro del equipo de soporte de Coach. Gracias por escribirnos, hemos recibido tu mensaje y estamos para ayudarte a la brevedad.",
+            "¡Problema solucionado! Esta incidencia fue corregida en la última actualización de Coach. Te sugerimos actualizar tu app.",
+            "Te sugerimos cerrar sesión, reiniciar la app y volver a ingresar para sincronizar tus configuraciones de forma óptima.",
+            "Hemos verificado la configuración de tu cuenta y optimizado tus datos. Por favor confirma si el problema persiste.",
+            "Tu reporte está siendo analizado detalladamente por nuestro equipo técnico prioritario. Te notificaremos cualquier avance.",
             "💡 Recuerda que puedes consultar la sección de guías y optimización en el menú principal para aprovechar al máximo las funciones de Coach."
         )
     }
@@ -420,7 +420,7 @@ fun SupportReplyDialog(
                                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                                 ) {
                                                     Text(
-                                                        text = if (isFromSupport) "🛡️ Soporte Coach (${msg.senderName})" else "👤 $displayUserName",
+                                                        text = if (isFromSupport) "Soporte Coach (${msg.senderName})" else "$displayUserName",
                                                         color = roleColor,
                                                         fontSize = 11.sp,
                                                         fontWeight = FontWeight.Bold,
@@ -508,11 +508,11 @@ fun SupportReplyDialog(
                     ) {
                         quickTemplates.forEachIndexed { index, tpl ->
                             val label = when (index) {
-                                0 -> "👋 Saludo"
-                                1 -> "✅ Solucionado"
-                                2 -> "🔄 Reinicio"
-                                3 -> "🛡️ Cuenta"
-                                4 -> "🔍 Revisión"
+                                0 -> "Saludo"
+                                1 -> "Solucionado"
+                                2 -> "Reinicio"
+                                3 -> "Cuenta"
+                                4 -> "Revisión"
                                 5 -> "💡 Guía"
                                 else -> "Mensaje"
                             }

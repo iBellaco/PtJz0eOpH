@@ -1202,7 +1202,7 @@ fun UserInboxDialog(
                                     ) {
                                         if (sender.isNotBlank()) {
                                             Text(
-                                                if (isSponsorMessage) "💼 Patrocinador: $sender" else "Remitente: $sender",
+                                                if (isSponsorMessage) "Patrocinador: $sender" else "Remitente: $sender",
                                                 color = if (isSponsorMessage) Color(0xFFF59E0B) else Color(0xFF94A3B8),
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Medium
@@ -1543,7 +1543,7 @@ fun UserSupportThreadCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                if (isSponsor) "💼 Mensaje de Patrocinador" else "🎧 Soporte Técnico / Reporte",
+                if (isSponsor) "Mensaje de Patrocinador" else "Soporte Técnico / Reporte",
                 color = headerColor,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
@@ -1679,7 +1679,7 @@ fun UserSupportThreadCard(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            if (isUserMsg) "👤 ${msg.senderName} (Tú)" else if (isSponsor) "💼 ${msg.senderName}" else "🛡️ ${msg.senderName}",
+                                            if (isUserMsg) "${msg.senderName} (Tú)" else if (isSponsor) "${msg.senderName}" else "${msg.senderName}",
                                             color = if (isUserMsg) Color(0xFFD4AF37) else if (isSponsor) Color(0xFFFBBF24) else Color(0xFF38BDF8),
                                             fontSize = 10.5.sp,
                                             fontWeight = FontWeight.Bold,

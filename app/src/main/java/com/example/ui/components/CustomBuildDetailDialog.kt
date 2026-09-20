@@ -60,13 +60,13 @@ fun CustomBuildDetailDialog(
 
     val shareBuild = {
         val shareText = buildString {
-            appendLine("🛡️ Build: ${record.buildTitle} para ${record.championName}")
-            appendLine("👤 Rol: ${record.role}")
-            appendLine("⚔️ Core: ${record.coreItems.joinToString(", ")}")
-            if (record.situationalItems.isNotEmpty()) appendLine("🔄 Situacionales: ${record.situationalItems.joinToString(", ")}")
-            appendLine("💎 Runas: ${record.runes}")
-            if (record.coreSpells.isNotEmpty()) appendLine("✨ Hechizos: ${record.coreSpells.joinToString(", ") { it.spellName }}")
-            appendLine("🔥 ¡Creada por ${record.creatorName} en Coach App!")
+            appendLine("Build: ${record.buildTitle} para ${record.championName}")
+            appendLine("Rol: ${record.role}")
+            appendLine("Core: ${record.coreItems.joinToString(", ")}")
+            if (record.situationalItems.isNotEmpty()) appendLine("Situacionales: ${record.situationalItems.joinToString(", ")}")
+            appendLine("Runas: ${record.runes}")
+            if (record.coreSpells.isNotEmpty()) appendLine("Hechizos: ${record.coreSpells.joinToString(", ") { it.spellName }}")
+            appendLine("¡Creada por ${record.creatorName} en Coach App!")
         }
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"

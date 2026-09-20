@@ -155,7 +155,7 @@ object BestBuildWrScraper {
                 _lastSyncTimestamp.value = lastTime
                 _lastSyncFormattedTime.value = lastFormatted
 
-                _globalSyncStatus.value = "🔴 Sin conexión a Internet • Última estadística guardada: $lastFormatted"
+                _globalSyncStatus.value = "Sin conexión a Internet • Última estadística guardada: $lastFormatted"
                 
                 // Asegurar que las estadísticas por región reflejen el último snapshot conocido
                 WildRiftRepository.simulateRegionStatsChange(region)
@@ -238,7 +238,7 @@ object BestBuildWrScraper {
                 // Loguear o ignorar fallo en prefs
             }
 
-            _globalSyncStatus.value = "🟢 En vivo • Actualizado: $formattedDate [$successCount/${sources.size} fuentes]"
+            _globalSyncStatus.value = "En vivo • Actualizado: $formattedDate [$successCount/${sources.size} fuentes]"
             _isSyncing.value = false
         }
     }
