@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import java.util.Locale
 import com.example.ui.theme.HextechGoldLight
 import android.os.Build
 import android.widget.Toast
@@ -2072,6 +2073,12 @@ internal fun ItemCatalogSelectionDialog(
             
             val isBootT2 = (item.category.equals("Botas Nivel 2", ignoreCase = true) || (isBootItem && !isBootT3 && !id.contains("speed")))
 
+            val isBasicOrMidTier = item.category.equals("Artículos Básicos", ignoreCase = true) ||
+                item.category.equals("Objetos de Nivel Medio", ignoreCase = true) ||
+                cat.contains("básico") || cat.contains("basico") ||
+                cat.contains("nivel medio") || cat.contains("basic") ||
+                cat.contains("mid tier") || id.endsWith("_mid_tier") || id.endsWith("_basic")
+
             when (type) {
                 "boots_t2" -> matchesSearch && isBootT2
                 "boots_t3" -> matchesSearch && (isBootT3 || item.category.contains("Nivel 3", ignoreCase = true))
@@ -2084,10 +2091,10 @@ internal fun ItemCatalogSelectionDialog(
                         "Apoyo" -> item.category.contains("apoyo", ignoreCase = true) || item.category.contains("soporte", ignoreCase = true)
                         else -> true
                     }
-                    matchesSearch && matchesCat && !isBootItem
+                    matchesSearch && matchesCat && !isBootItem && !isBasicOrMidTier
                 }
             }
-        }
+        }.sortedBy { it.name.lowercase(Locale.ROOT) }
     }
 
     AlertDialog(

@@ -145,12 +145,13 @@ fun CreatorProfileDialog(
                     ) {
                         UserAvatarView(
                             avatarId = avatarId,
-                            size = 68.dp,
+                            size = 72.dp,
                             fallbackInitial = creatorName.take(1).uppercase(Locale.ROOT),
                             rankBorder = rankBorder,
                             secondaryRole = secondaryRole,
                             equippedFrame = equippedFrame,
-                            isAdmin = isAdmin
+                            isAdmin = isAdmin,
+                            fitFrameToSize = true
                         )
                     }
 

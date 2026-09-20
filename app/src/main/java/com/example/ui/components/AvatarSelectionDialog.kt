@@ -182,29 +182,22 @@ fun AvatarSelectionBottomSheet(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp, vertical = if (isAdmin) 6.dp else 10.dp),
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val secRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
-                    val secRoleObj = com.example.model.AppUserSecondaryRole.fromId(secRoleVal)
-                    val hasSpecialFrame = isAdmin || secRoleObj.frameDrawableRes != null
-
                     Box(
-                        modifier = Modifier.size(
-                            width = if (hasSpecialFrame) 116.dp else 60.dp,
-                            height = if (hasSpecialFrame) 120.dp else 60.dp
-                        ),
+                        modifier = Modifier.size(60.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         UserAvatarView(
                             avatarId = currentAvatarId,
                             rankBorder = currentRankBorder,
-                            secondaryRole = secRoleVal,
-                            size = if (hasSpecialFrame) 46.dp else 54.dp,
-                            isAdmin = isAdmin
+                            equippedFrame = "NONE",
+                            size = 56.dp,
+                            isAdmin = false
                         )
                     }
-                    Spacer(modifier = Modifier.width(if (hasSpecialFrame) 8.dp else 12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(

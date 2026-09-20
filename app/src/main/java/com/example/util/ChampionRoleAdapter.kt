@@ -29,7 +29,8 @@ data class ChampionBuildOption(
     val situationalRunes: List<com.example.data.local.RuneBuildEntry> = emptyList(),
     val coreSpells: List<com.example.data.local.SpellBuildEntry> = emptyList(),
     val situationalSpells: List<com.example.data.local.SpellBuildEntry> = emptyList(),
-    val gameplayVideoUri: String? = null
+    val gameplayVideoUri: String? = null,
+    val comboVideoUri: String? = null
 )
 
 data class ChampionRoleProfile(

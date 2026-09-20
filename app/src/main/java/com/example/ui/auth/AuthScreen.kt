@@ -611,22 +611,11 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             )
 
             val secRoleForAvatar = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
-            val hasSpecialFrame = when (activeFramePref.uppercase()) {
-                "NONE" -> false
-                "SECONDARY" -> secRoleForAvatar.frameDrawableRes != null
-                "SPECIAL", "RANK" -> isAdminUser || currentRankBorder != "NONE"
-                else -> isAdminUser || secRoleForAvatar.frameDrawableRes != null || currentRankBorder != "NONE"
-            }
 
             // Avatar in center
             Box(
                 modifier = Modifier
-                    .padding(
-                        top = if (hasSpecialFrame) 24.dp else 6.dp,
-                        bottom = if (hasSpecialFrame) 10.dp else 6.dp,
-                        start = if (hasSpecialFrame) 24.dp else 8.dp,
-                        end = if (hasSpecialFrame) 24.dp else 8.dp
-                    )
+                    .padding(top = 6.dp, bottom = 6.dp, start = 8.dp, end = 8.dp)
                     .graphicsLayer {
                         scaleX = avatarScale
                         scaleY = avatarScale
@@ -637,47 +626,42 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     },
                 contentAlignment = Alignment.Center
             ) {
-                if (!isAdminUser && secRoleForAvatar.frameDrawableRes == null) {
-                    Box(
-                        modifier = Modifier
-                            .size(86.dp)
-                            .graphicsLayer {
-                                scaleX = haloPulse
-                                scaleY = haloPulse
-                            }
-                            .rotate(haloRotation)
-                            .border(
-                                width = 2.dp,
-                                brush = Brush.sweepGradient(
-                                    listOf(
-                                        activeTheme.primary,
-                                        activeTheme.secondary,
-                                        activeTheme.primaryGlow,
-                                        activeTheme.primary
-                                    )
-                                ),
-                                shape = CircleShape
-                            )
-                    )
-                }
+                Box(
+                    modifier = Modifier
+                        .size(86.dp)
+                        .graphicsLayer {
+                            scaleX = haloPulse
+                            scaleY = haloPulse
+                        }
+                        .rotate(haloRotation)
+                        .border(
+                            width = 2.dp,
+                            brush = Brush.sweepGradient(
+                                listOf(
+                                    activeTheme.primary,
+                                    activeTheme.secondary,
+                                    activeTheme.primaryGlow,
+                                    activeTheme.primary
+                                )
+                            ),
+                            shape = CircleShape
+                        )
+                )
 
                 UserAvatarView(
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
-                    secondaryRole = currentSecRoleVal,
-                    equippedFrame = activeFramePref,
-                    size = if (hasSpecialFrame) 74.dp else 72.dp,
+                    equippedFrame = "NONE",
+                    size = 74.dp,
                     fallbackInitial = finalUserName,
-                    isAdmin = isAdminUser
+                    isAdmin = false,
+                    fitFrameToSize = false
                 )
                 // Botón interactivo de cambio de avatar (Lápiz)
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .offset(
-                            x = if (hasSpecialFrame) 8.dp else 2.dp,
-                            y = if (hasSpecialFrame) 6.dp else 2.dp
-                        )
+                        .offset(x = 2.dp, y = 2.dp)
                         .size(32.dp)
                         .clip(CircleShape)
                         .background(activeTheme.secondary)
@@ -700,7 +684,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 }
             }
 
-            Spacer(modifier = Modifier.height(if (hasSpecialFrame) 54.dp else 12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

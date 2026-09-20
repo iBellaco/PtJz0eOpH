@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +16,7 @@ import java.util.Locale
 /**
  * Gestor de suscripciones a perfiles de Creadores y Streamers.
  * Permite a los usuarios suscribirse a creadores oficiales, streamers y VIP.
- * Mantiene sincronización local instantánea en SharedPreferences y sincronización en la nube en tiempo real.
+ * Mantiene sincronización local instantánea en SharedPreferences y sincronización en la nube en tiempo real multi-dispositivo.
  */
 object CreatorSubscriptionManager {
     private const val TAG = "CreatorSubManager"
@@ -25,38 +26,68 @@ object CreatorSubscriptionManager {
     private val _subscribedCreatorKeys = MutableStateFlow<Set<String>>(emptySet())
     val subscribedCreatorKeys: StateFlow<Set<String>> = _subscribedCreatorKeys.asStateFlow()
 
+    private var userDocListener: ListenerRegistration? = null
+    private var authStateListener: FirebaseAuth.AuthStateListener? = null
     private var initialized = false
 
     fun init(context: Context) {
-        if (initialized) return
-        initialized = true
+        val appContext = context.applicationContext
+        if (!initialized) {
+            initialized = true
+            val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val saved = prefs.getStringSet(KEY_SUBS, emptySet()) ?: emptySet()
+            _subscribedCreatorKeys.value = saved.map { it.lowercase(Locale.ROOT) }.toSet()
 
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val saved = prefs.getStringSet(KEY_SUBS, emptySet()) ?: emptySet()
-        _subscribedCreatorKeys.value = saved.map { it.lowercase(Locale.ROOT) }.toSet()
+            setupAuthStateListener(appContext)
+        }
 
-        // Sincronizar desde Firestore si hay un usuario autenticado
+        attachUserListener(appContext)
+    }
+
+    private fun setupAuthStateListener(context: Context) {
+        if (authStateListener != null) return
+        try {
+            val auth = FirebaseAuth.getInstance()
+            authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+                val user = firebaseAuth.currentUser
+                Log.d(TAG, "Cambio de usuario detectado en CreatorSubscriptionManager (uid=${user?.uid})")
+                attachUserListener(context)
+            }
+            auth.addAuthStateListener(authStateListener!!)
+        } catch (e: Exception) {
+            Log.w(TAG, "Error escuchando authState: ${e.message}")
+        }
+    }
+
+    private fun attachUserListener(context: Context) {
+        val appContext = context.applicationContext
+        userDocListener?.remove()
+        userDocListener = null
+
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             try {
-                FirebaseFirestore.getInstance().collection("users").document(user.uid)
-                    .get()
-                    .addOnSuccessListener { doc ->
-                        if (doc.exists()) {
-                            val cloudSubs = doc.get("subscribedCreators") as? List<*> ?: emptyList<Any>()
+                userDocListener = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(user.uid)
+                    .addSnapshotListener { snapshot, error ->
+                        if (error != null) {
+                            Log.w(TAG, "Error en listener de suscripciones: ${error.message}")
+                            return@addSnapshotListener
+                        }
+                        if (snapshot != null && snapshot.exists()) {
+                            val cloudSubs = snapshot.get("subscribedCreators") as? List<*> ?: emptyList<Any>()
                             val setCloud = cloudSubs.mapNotNull { it?.toString()?.lowercase(Locale.ROOT) }.toSet()
-                            if (setCloud.isNotEmpty()) {
-                                val merged = _subscribedCreatorKeys.value + setCloud
-                                _subscribedCreatorKeys.value = merged
-                                saveLocal(context, merged)
-                            }
+                            _subscribedCreatorKeys.value = setCloud
+                            saveLocal(appContext, setCloud)
                         }
                     }
-                    .addOnFailureListener { e ->
-                        Log.w(TAG, "No se pudieron sincronizar suscripciones de la nube", e)
-                    }
             } catch (e: Exception) {
-                Log.e(TAG, "Error iniciando CreatorSubscriptionManager", e)
+                Log.e(TAG, "Error adjuntando listener de suscripciones en la nube", e)
+            }
+        } else {
+            GuestAuthHelper.ensureAuth {
+                attachUserListener(appContext)
             }
         }
     }
@@ -69,6 +100,7 @@ object CreatorSubscriptionManager {
 
     fun toggleSubscription(creatorKey: String, creatorName: String, context: Context, onResult: (Boolean) -> Unit = {}) {
         if (creatorKey.isBlank()) return
+        val appContext = context.applicationContext
         val cleanKey = creatorKey.trim().lowercase(Locale.ROOT)
         val currentSet = _subscribedCreatorKeys.value.toMutableSet()
         val willBeSubscribed = !currentSet.contains(cleanKey)
@@ -80,7 +112,7 @@ object CreatorSubscriptionManager {
         }
 
         _subscribedCreatorKeys.value = currentSet
-        saveLocal(context, currentSet)
+        saveLocal(appContext, currentSet)
 
         // Sincronizar con la nube
         val user = FirebaseAuth.getInstance().currentUser

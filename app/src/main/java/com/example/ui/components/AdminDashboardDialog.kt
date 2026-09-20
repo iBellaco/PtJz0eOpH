@@ -2475,18 +2475,19 @@ fun EnhancedUserAdminCard(
                 val hasSpecialFrameRow = (role == "admin") || (secRoleObjRow.frameDrawableRes != null)
                 Box(
                     modifier = Modifier.padding(
-                        horizontal = if (hasSpecialFrameRow) 6.dp else 0.dp,
-                        vertical = if (hasSpecialFrameRow) 4.dp else 0.dp
+                        horizontal = if (hasSpecialFrameRow) 4.dp else 0.dp,
+                        vertical = if (hasSpecialFrameRow) 2.dp else 0.dp
                     ),
                     contentAlignment = Alignment.BottomEnd
                 ) {
                     UserAvatarView(
                         avatarId = avatarId,
-                        size = if (hasSpecialFrameRow) 34.dp else 46.dp,
+                        size = 46.dp,
                         fallbackInitial = name.take(1).uppercase(),
                         rankBorder = rankBorder,
                         secondaryRole = secRoleStr,
-                        isAdmin = (role == "admin")
+                        isAdmin = (role == "admin"),
+                        fitFrameToSize = true
                     )
                     // Indicador de conexión verde/gris
                     Box(
@@ -2941,17 +2942,18 @@ fun UserDetailManagementDialog(
                         val hasSpecialFrameDetail = (currentRole == "admin") || (secRoleDetailObj.frameDrawableRes != null)
                         Box(
                             modifier = Modifier.padding(
-                                horizontal = if (hasSpecialFrameDetail) 6.dp else 0.dp,
-                                vertical = if (hasSpecialFrameDetail) 4.dp else 0.dp
+                                horizontal = if (hasSpecialFrameDetail) 4.dp else 0.dp,
+                                vertical = if (hasSpecialFrameDetail) 2.dp else 0.dp
                             )
                         ) {
                             UserAvatarView(
                                 avatarId = avatarId,
-                                size = if (hasSpecialFrameDetail) 38.dp else 48.dp,
+                                size = 48.dp,
                                 fallbackInitial = currentName.take(1).uppercase(),
                                 rankBorder = rankBorder,
                                 secondaryRole = currentSecondaryRole,
-                                isAdmin = (currentRole == "admin")
+                                isAdmin = (currentRole == "admin"),
+                                fitFrameToSize = true
                             )
                         }
                         Spacer(modifier = Modifier.width(10.dp))

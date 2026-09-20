@@ -67,7 +67,8 @@ data class CreatorListItem(
     val equippedFrame: String = "AUTO",
     val isAdmin: Boolean = false,
     val isVerified: Boolean = false,
-    val buildsCount: Int = 0
+    val buildsCount: Int = 0,
+    val subscribersCount: Int = 0
 )
 
 data class CreatorPodiumEntry(
@@ -82,6 +83,7 @@ data class CreatorPodiumEntry(
     val buildsCount: Int = 0,
     val totalVotes: Int = 0,
     val averageRating: Double = 0.0,
+    val subscribersCount: Int = 0,
     val score: Double = 0.0
 )
 
@@ -104,9 +106,11 @@ fun AdminCreatorBuildsDialog(
 
     // Lista de usuarios registrados en la nube para sincronizar avatares y marcos de creadores
     var registeredUsers by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    val subscribedSet by com.example.util.CreatorSubscriptionManager.subscribedCreatorKeys.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         CustomChampionBuildsManager.init(context)
+        com.example.util.CreatorSubscriptionManager.init(context)
         try {
             FirebaseFirestore.getInstance().collection("users").get()
                 .addOnSuccessListener { snapshot ->
@@ -122,8 +126,38 @@ fun AdminCreatorBuildsDialog(
         } catch (_: Exception) {}
     }
 
+    // Helper para calcular la cantidad de suscriptores reales de un creador
+    fun countSubscribersForCreator(creatorUid: String, creatorName: String, matchedUser: Map<String, Any>?): Int {
+        val cUidClean = creatorUid.trim().lowercase(Locale.ROOT)
+        val cNameClean = creatorName.trim().lowercase(Locale.ROOT)
+        val uniqueSubs = mutableSetOf<String>()
+
+        for (u in registeredUsers) {
+            val uUid = (u["uid"] as? String ?: "").ifBlank { "anon_${uniqueSubs.size}" }
+            val rawSubs = u["subscribedCreators"] as? List<*>
+            val uSubs = rawSubs?.mapNotNull { it?.toString()?.trim()?.lowercase(Locale.ROOT) } ?: emptyList()
+
+            if ((cUidClean.isNotBlank() && uSubs.contains(cUidClean)) ||
+                (cNameClean.isNotBlank() && uSubs.contains(cNameClean))) {
+                uniqueSubs.add(uUid)
+            }
+        }
+
+        val currentAuthUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "current_device_user"
+        if ((cUidClean.isNotBlank() && subscribedSet.contains(cUidClean)) ||
+            (cNameClean.isNotBlank() && subscribedSet.contains(cNameClean))) {
+            uniqueSubs.add(currentAuthUid)
+        }
+
+        val baseFromDoc = ((matchedUser?.get("subscribersCount") as? Number)
+            ?: (matchedUser?.get("subsCount") as? Number)
+            ?: (matchedUser?.get("followersCount") as? Number))?.toInt() ?: 0
+
+        return maxOf(uniqueSubs.size, baseFromDoc)
+    }
+
     // Listado filtrado ESTRICTAMENTE a usuarios que poseen el rol de creador
-    val allCreators = remember(registeredUsers, customBuilds) {
+    val allCreators = remember(registeredUsers, customBuilds, subscribedSet) {
         val list = mutableListOf<CreatorListItem>()
         val seenNames = mutableSetOf<String>()
 
@@ -157,9 +191,11 @@ fun AdminCreatorBuildsDialog(
                     isAdmin ||
                     normalizedRole == "moderador"
                 val count = customBuilds.count { it.creatorName.trim().equals(cleanName, ignoreCase = true) }
+                val uUid = u["uid"] as? String ?: ""
+                val subsCount = countSubscribersForCreator(uUid, cleanName, u)
                 list.add(
                     CreatorListItem(
-                        uid = u["uid"] as? String ?: "",
+                        uid = uUid,
                         name = cleanName,
                         avatarId = avatarId,
                         rankBorder = rankBorder,
@@ -167,7 +203,8 @@ fun AdminCreatorBuildsDialog(
                         equippedFrame = equippedFrame,
                         isAdmin = isAdmin,
                         isVerified = isVerified,
-                        buildsCount = count
+                        buildsCount = count,
+                        subscribersCount = subsCount
                     )
                 )
             }
@@ -184,8 +221,8 @@ fun AdminCreatorBuildsDialog(
         }
     }
 
-    // Cálculo dinámico del Top 3 de Creadores para el Podio
-    val podiumCreators = remember(customBuilds, registeredUsers) {
+    // Cálculo dinámico del Top 3 de Creadores para el Podio (Ordenado por Cantidad de Suscriptores)
+    val podiumCreators = remember(customBuilds, registeredUsers, subscribedSet) {
         val userMapByName = registeredUsers.associateBy { (it["name"] as? String ?: "").trim().lowercase(Locale.ROOT) }
         val userMapByUid = registeredUsers.associateBy { (it["uid"] as? String ?: "") }
 
@@ -203,8 +240,11 @@ fun AdminCreatorBuildsDialog(
 
             // Buscar datos de avatar y marco del usuario
             val firstRecord = builds.firstOrNull()
-            val matchedUser = (if (!firstRecord?.creatorUserId.isNullOrBlank()) userMapByUid[firstRecord?.creatorUserId] else null)
+            val creatorUid = firstRecord?.creatorUserId ?: ""
+            val matchedUser = (if (creatorUid.isNotBlank()) userMapByUid[creatorUid] else null)
                 ?: userMapByName[creatorName.lowercase(Locale.ROOT)]
+
+            val subsCount = countSubscribersForCreator(creatorUid, creatorName, matchedUser)
 
             val avatarId = (matchedUser?.get("avatarId") as? String)
                 ?: firstRecord?.creatorAvatarId
@@ -227,7 +267,7 @@ fun AdminCreatorBuildsDialog(
 
             rankingList.add(
                 CreatorPodiumEntry(
-                    userId = (matchedUser?.get("uid") as? String) ?: firstRecord?.creatorUserId ?: "",
+                    userId = (matchedUser?.get("uid") as? String) ?: creatorUid,
                     name = creatorName,
                     avatarId = avatarId,
                     rankBorder = rankBorder,
@@ -238,6 +278,7 @@ fun AdminCreatorBuildsDialog(
                     buildsCount = buildsCount,
                     totalVotes = totalVotes,
                     averageRating = avgRating,
+                    subscribersCount = subsCount,
                     score = score
                 )
             )
@@ -247,14 +288,16 @@ fun AdminCreatorBuildsDialog(
         for (u in registeredUsers) {
             val uRole = u["role"] as? String ?: "free"
             val uName = (u["name"] as? String ?: "").trim()
+            val uUid = u["uid"] as? String ?: ""
             if (uName.isNotBlank() && (uRole == "creador_vip" || uRole == "creador" || uRole == "streamer" || uRole == "admin")) {
-                val alreadyAdded = rankingList.any { it.name.equals(uName, ignoreCase = true) }
+                val alreadyAdded = rankingList.any { it.name.equals(uName, ignoreCase = true) || (uUid.isNotBlank() && it.userId == uUid) }
                 if (!alreadyAdded) {
                     val secRole = (u["secondaryRole"] as? String) ?: (u["secondary_role"] as? String) ?: "none"
                     val eqFrame = (u["activeFramePreference"] as? String) ?: (u["equippedFrame"] as? String) ?: "AUTO"
+                    val subsCount = countSubscribersForCreator(uUid, uName, u)
                     rankingList.add(
                         CreatorPodiumEntry(
-                            userId = u["uid"] as? String ?: "",
+                            userId = uUid,
                             name = uName,
                             avatarId = u["avatarId"] as? String ?: "default_poro",
                             rankBorder = u["rankBorder"] as? String ?: "NONE",
@@ -265,6 +308,7 @@ fun AdminCreatorBuildsDialog(
                             buildsCount = 0,
                             totalVotes = 0,
                             averageRating = 5.0,
+                            subscribersCount = subsCount,
                             score = if (uRole == "creador_vip") 50.0 else if (uRole == "admin") 40.0 else 30.0
                         )
                     )
@@ -283,6 +327,7 @@ fun AdminCreatorBuildsDialog(
                 buildsCount = 6,
                 totalVotes = 84,
                 averageRating = 5.0,
+                subscribersCount = 150,
                 score = 300.0
             ),
             CreatorPodiumEntry(
@@ -294,6 +339,7 @@ fun AdminCreatorBuildsDialog(
                 buildsCount = 4,
                 totalVotes = 52,
                 averageRating = 4.9,
+                subscribersCount = 110,
                 score = 220.0
             ),
             CreatorPodiumEntry(
@@ -305,21 +351,32 @@ fun AdminCreatorBuildsDialog(
                 buildsCount = 3,
                 totalVotes = 31,
                 averageRating = 4.8,
+                subscribersCount = 85,
                 score = 160.0
             )
         )
 
-        val finalList = rankingList.sortedByDescending { it.score }.toMutableList()
+        // Clasificación ESTRICTA por la cantidad de suscriptores (Subscribers Count)
+        val sortedList = rankingList.sortedWith(
+            compareByDescending<CreatorPodiumEntry> { it.subscribersCount }
+                .thenByDescending { it.score }
+                .thenByDescending { it.totalVotes }
+        ).toMutableList()
+
         var fallbackIdx = 0
-        while (finalList.size < 3 && fallbackIdx < defaultLegends.size) {
+        while (sortedList.size < 3 && fallbackIdx < defaultLegends.size) {
             val fallback = defaultLegends[fallbackIdx]
-            if (finalList.none { it.name.equals(fallback.name, ignoreCase = true) }) {
-                finalList.add(fallback)
+            if (sortedList.none { it.name.equals(fallback.name, ignoreCase = true) }) {
+                sortedList.add(fallback)
             }
             fallbackIdx++
         }
 
-        finalList.take(3)
+        // Re-ordenar por suscriptores tras agregar fallbacks
+        sortedList.sortedWith(
+            compareByDescending<CreatorPodiumEntry> { it.subscribersCount }
+                .thenByDescending { it.score }
+        ).take(3)
     }
 
     val filteredBuilds = remember(customBuilds, favorites, selectedFilter, selectedCreatorFilter) {
@@ -623,12 +680,13 @@ fun AdminCreatorBuildsDialog(
                                             ) {
                                                 UserAvatarView(
                                                     avatarId = creator.avatarId,
-                                                    size = 36.dp,
+                                                    size = 42.dp,
                                                     fallbackInitial = creator.name.take(1).uppercase(Locale.ROOT),
                                                     rankBorder = creator.rankBorder,
                                                     secondaryRole = creator.secondaryRole,
                                                     equippedFrame = creator.equippedFrame,
-                                                    isAdmin = creator.isAdmin
+                                                    isAdmin = creator.isAdmin,
+                                                    fitFrameToSize = true
                                                 )
                                             }
 
@@ -1106,7 +1164,8 @@ private fun PodiumColumn(
                 rankBorder = entry.rankBorder,
                 secondaryRole = entry.secondaryRole,
                 equippedFrame = entry.equippedFrame,
-                isAdmin = entry.isAdmin
+                isAdmin = entry.isAdmin,
+                fitFrameToSize = true
             )
         }
 
@@ -1123,9 +1182,9 @@ private fun PodiumColumn(
             textAlign = TextAlign.Center
         )
 
-        // Resumen de estadísticas del creador
+        // Resumen de estadísticas del creador (Suscriptores principales)
         Text(
-            text = "${entry.buildsCount} builds • ${String.format(Locale.US, "%.1f", entry.averageRating)}",
+            text = "${entry.subscribersCount} subs • ${entry.buildsCount} builds",
             color = if (rank == 1) HextechGoldLight else TextSecondary,
             fontSize = if (rank == 1) 9.sp else 8.sp,
             fontWeight = if (rank == 1) FontWeight.SemiBold else FontWeight.Normal,

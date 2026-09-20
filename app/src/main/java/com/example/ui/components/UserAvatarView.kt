@@ -59,7 +59,8 @@ fun UserAvatarView(
     isAdmin: Boolean = false,
     adminFrameResId: Int = com.example.R.drawable.ic_frame_admin,
     adminFrameUrl: String? = null,
-    equippedFrame: String = "AUTO"
+    equippedFrame: String = "AUTO",
+    fitFrameToSize: Boolean = false
 ) {
     val secRoleObj = remember(secondaryRole) {
         if (!secondaryRole.isNullOrBlank() && secondaryRole != "none") {
@@ -84,6 +85,26 @@ fun UserAvatarView(
         }
     }
 
+    val hasSpecialFrame = effectiveFrameType == "ADMIN" || (effectiveFrameType == "SECONDARY" && secFrameRes != null)
+
+    // Relación de escala del PNG de marco (el anillo interno donde se ubica el avatar es del ~35.7% del ancho total del PNG, es decir 1 / 2.80)
+    val frameScaleFactor = 2.80f
+
+    // Dimensiones internas del círculo del avatar y del marco exterior
+    val avatarCircleSize: Dp = if (hasSpecialFrame && fitFrameToSize) {
+        size * 0.385f
+    } else {
+        size
+    }
+
+    val frameImageSize: Dp = if (hasSpecialFrame && fitFrameToSize) {
+        size * 1.08f
+    } else if (hasSpecialFrame) {
+        size * frameScaleFactor
+    } else {
+        0.dp
+    }
+
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
     val parsedBorderColor = customBorderColor ?: try {
         Color(android.graphics.Color.parseColor(avatar.borderHex))
@@ -93,10 +114,10 @@ fun UserAvatarView(
     
     val rarityLower = avatar.rarity.lowercase()
     val borderWidth = when {
-        rarityLower.contains("mítico") || rarityLower.contains("mitico") -> if (size > 60.dp) 3.5.dp else 2.5.dp
-        rarityLower.contains("legendario") -> if (size > 60.dp) 3.dp else 2.dp
-        rarityLower.contains("épico") || rarityLower.contains("epico") -> if (size > 60.dp) 2.5.dp else 1.5.dp
-        rarityLower.contains("raro") -> if (size > 60.dp) 2.dp else 1.5.dp
+        rarityLower.contains("mítico") || rarityLower.contains("mitico") -> if (avatarCircleSize > 60.dp) 3.5.dp else 2.5.dp
+        rarityLower.contains("legendario") -> if (avatarCircleSize > 60.dp) 3.dp else 2.dp
+        rarityLower.contains("épico") || rarityLower.contains("epico") -> if (avatarCircleSize > 60.dp) 2.5.dp else 1.5.dp
+        rarityLower.contains("raro") -> if (avatarCircleSize > 60.dp) 2.dp else 1.5.dp
         else -> 1.dp
     }
     
@@ -175,7 +196,7 @@ fun UserAvatarView(
         // Círculo base del Avatar
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .size(avatarCircleSize)
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
@@ -214,7 +235,7 @@ fun UserAvatarView(
                 text = fallbackInitial.take(1).uppercase(),
                 color = HextechGoldLight,
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = (size.value * 0.38f).sp,
+                fontSize = (avatarCircleSize.value * 0.38f).sp,
                 fontFamily = FontFamily.Serif
             )
             if (avatar.imageUrl.isNotBlank()) {
@@ -243,8 +264,7 @@ fun UserAvatarView(
                     contentDescription = "Marco de Administrador",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * 2.48f)
-                        .offset(y = size * 0.09f)
+                        .requiredSize(frameImageSize)
                         .align(Alignment.Center)
                 )
             } else if (!adminFrameUrl.isNullOrBlank()) {
@@ -258,8 +278,7 @@ fun UserAvatarView(
                     contentDescription = "Marco de Administrador",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * 2.48f)
-                        .offset(y = size * 0.09f)
+                        .requiredSize(frameImageSize)
                         .align(Alignment.Center)
                 )
             }
@@ -269,8 +288,7 @@ fun UserAvatarView(
                 contentDescription = "Marco de Rol Secundario (${secRoleObj.displayName})",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .requiredSize(size * 2.48f)
-                    .offset(y = size * 0.09f)
+                    .requiredSize(frameImageSize)
                     .align(Alignment.Center)
             )
         }

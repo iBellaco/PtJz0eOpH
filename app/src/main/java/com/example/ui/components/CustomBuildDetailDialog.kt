@@ -23,12 +23,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.WildRiftRepository
 import com.example.data.local.CustomChampionBuildRecord
 import com.example.data.local.CustomChampionBuildsManager
 import com.example.ui.theme.*
 
 import android.content.Intent
+import android.net.Uri
+import android.widget.VideoView
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
@@ -47,8 +51,9 @@ fun CustomBuildDetailDialog(
         WildRiftRepository.champions.find { it.id.equals(record.championId, ignoreCase = true) }
     }
 
-    var userRating by remember { mutableStateOf(0) }
-    var hasVoted by remember { mutableStateOf(false) }
+    val userVotedMap by CustomChampionBuildsManager.userVotedBuilds.collectAsStateWithLifecycle()
+    val hasVoted = userVotedMap.containsKey(record.id)
+    val userRating = userVotedMap[record.id] ?: 0
 
     val avgRating = if (record.voteCount > 0) record.ratingSum / record.voteCount else 0.0
 
@@ -234,6 +239,88 @@ fun CustomBuildDetailDialog(
                     }
                 }
 
+                // Botas Core (Nivel 2 + Evolución Nivel 3)
+                if (record.bootsT2Item != null || record.bootsT3Item != null) {
+                    item {
+                        Text("Botas y Evolución (Opcional)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            record.bootsT2Item?.let { boot ->
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                                    border = BorderStroke(1.dp, HextechGold),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        val iconUrl = com.example.data.WildRiftItemsData.getItemIconByName(boot.itemName)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(HextechSurfaceVariant)
+                                                .border(1.dp, HextechGold, RoundedCornerShape(6.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AppAssetImage(
+                                                url = iconUrl,
+                                                contentDescription = boot.itemName,
+                                                fallbackText = boot.itemName,
+                                                modifier = Modifier.size(28.dp),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text("[Botas N2] ${boot.itemName}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (boot.description.isNotBlank()) Text(boot.description, color = TextSecondary, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                            }
+                            record.bootsT3Item?.let { enchant ->
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                                    border = BorderStroke(1.dp, HextechCyan),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        val iconUrl = com.example.data.WildRiftItemsData.getItemIconByName(enchant.itemName)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(HextechSurfaceVariant)
+                                                .border(1.dp, HextechCyan, RoundedCornerShape(6.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AppAssetImage(
+                                                url = iconUrl,
+                                                contentDescription = enchant.itemName,
+                                                fallbackText = enchant.itemName,
+                                                modifier = Modifier.size(28.dp),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text("[Evolución N3] ${enchant.itemName}", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (enchant.description.isNotBlank()) Text(enchant.description, color = TextSecondary, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Situational Items
                 if (record.situationalItemsWithDesc.isNotEmpty()) {
                     item {
@@ -375,6 +462,54 @@ fun CustomBuildDetailDialog(
                         }
                     }
                 }
+
+                // Video de Introducción / Gameplay
+                if (!record.gameplayVideoUri.isNullOrBlank()) {
+                    item {
+                        Text("Video de Introducción", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth().height(180.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                            border = BorderStroke(1.dp, HextechGold)
+                        ) {
+                            AndroidView(
+                                factory = { ctx ->
+                                    VideoView(ctx).apply {
+                                        setVideoURI(Uri.parse(record.gameplayVideoUri))
+                                        setOnPreparedListener { mp -> mp.isLooping = true; start() }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
+
+                // Video de Combos
+                if (!record.comboVideoUri.isNullOrBlank()) {
+                    item {
+                        Text("Video de Combos / Demostración", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth().height(180.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                            border = BorderStroke(1.dp, HextechCyan)
+                        ) {
+                            AndroidView(
+                                factory = { ctx ->
+                                    VideoView(ctx).apply {
+                                        setVideoURI(Uri.parse(record.comboVideoUri))
+                                        setOnPreparedListener { mp -> mp.isLooping = true; start() }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -407,8 +542,6 @@ fun CustomBuildDetailDialog(
                             IconButton(
                                 onClick = {
                                     if (!hasVoted) {
-                                        userRating = i
-                                        hasVoted = true
                                         CustomChampionBuildsManager.rateBuild(context, record.id, i)
                                         Toast.makeText(context, "¡Calificación de $i estrellas enviada!", Toast.LENGTH_SHORT).show()
                                     }
