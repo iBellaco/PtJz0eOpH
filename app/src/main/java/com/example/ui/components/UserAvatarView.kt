@@ -71,21 +71,38 @@ fun UserAvatarView(
     }
     val secFrameRes = secRoleObj.frameDrawableRes
 
-    val effectiveFrameType = remember(equippedFrame, isAdmin, secFrameRes, rankBorder) {
+    val rankRoleObj = remember(rankBorder) {
+        if (!rankBorder.isNullOrBlank() && rankBorder != "NONE") {
+            com.example.model.AppUserSecondaryRole.fromId(rankBorder)
+        } else {
+            com.example.model.AppUserSecondaryRole.NONE
+        }
+    }
+    val rankFrameRes = rankRoleObj.frameDrawableRes
+
+    val effectiveFrameType = remember(equippedFrame, isAdmin, secFrameRes, rankFrameRes, rankBorder) {
         when (equippedFrame.uppercase()) {
             "NONE" -> "NONE"
             "SECONDARY" -> if (secFrameRes != null) "SECONDARY" else "NONE"
-            "SPECIAL", "RANK" -> if (isAdmin) "ADMIN" else if (rankBorder != "NONE" && rankBorder.isNotBlank()) "RANK" else "NONE"
+            "SPECIAL", "RANK" -> if (isAdmin) "ADMIN" else if (rankFrameRes != null) "RANK_PNG" else if (rankBorder != "NONE" && rankBorder.isNotBlank()) "RANK" else "NONE"
             else -> { // "AUTO"
                 if (isAdmin) "ADMIN"
                 else if (secFrameRes != null) "SECONDARY"
+                else if (rankFrameRes != null) "RANK_PNG"
                 else if (rankBorder != "NONE" && rankBorder.isNotBlank()) "RANK"
                 else "NONE"
             }
         }
     }
 
-    val hasSpecialFrame = effectiveFrameType == "ADMIN" || (effectiveFrameType == "SECONDARY" && secFrameRes != null)
+    val activeFrameRes: Int? = when (effectiveFrameType) {
+        "ADMIN" -> if (adminFrameResId != 0) adminFrameResId else null
+        "SECONDARY" -> secFrameRes
+        "RANK_PNG" -> rankFrameRes
+        else -> null
+    }
+
+    val hasSpecialFrame = activeFrameRes != null || (effectiveFrameType == "ADMIN" && !adminFrameUrl.isNullOrBlank())
 
     // Relación de escala del PNG de marco (el anillo interno donde se ubica el avatar es del ~35.7% del ancho total del PNG, es decir 1 / 2.80)
     val frameScaleFactor = 2.80f
@@ -256,36 +273,25 @@ fun UserAvatarView(
             }
         }
 
-        // Marco exclusivo de Administrador o Rol Secundario (rodeando el avatar por fuera)
-        if (effectiveFrameType == "ADMIN") {
-            if (adminFrameResId != 0) {
-                Image(
-                    painter = painterResource(id = adminFrameResId),
-                    contentDescription = "Marco de Administrador",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .requiredSize(frameImageSize)
-                        .align(Alignment.Center)
-                )
-            } else if (!adminFrameUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(adminFrameUrl)
-                        .crossfade(true)
-                        .diskCachePolicy(CachePolicy.ENABLED)
-                        .memoryCachePolicy(CachePolicy.ENABLED)
-                        .build(),
-                    contentDescription = "Marco de Administrador",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .requiredSize(frameImageSize)
-                        .align(Alignment.Center)
-                )
-            }
-        } else if (effectiveFrameType == "SECONDARY" && secFrameRes != null) {
+        // Marco exclusivo (Administrador, Rol Secundario o Rango)
+        if (activeFrameRes != null && activeFrameRes != 0) {
             Image(
-                painter = painterResource(id = secFrameRes),
-                contentDescription = "Marco de Rol Secundario (${secRoleObj.displayName})",
+                painter = painterResource(id = activeFrameRes),
+                contentDescription = "Marco de Perfil",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .requiredSize(frameImageSize)
+                    .align(Alignment.Center)
+            )
+        } else if (effectiveFrameType == "ADMIN" && !adminFrameUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(adminFrameUrl)
+                    .crossfade(true)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build(),
+                contentDescription = "Marco de Administrador",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .requiredSize(frameImageSize)

@@ -1985,7 +1985,7 @@ fun EnhancedUserManagementPanel(
     val modUsers = users.count { (it["role"] as? String) == "moderador" }
     val sponsorUsers = users.count { (it["role"] as? String) == "patrocinador" }
     val streamerUsers = users.count { (it["role"] as? String) == "streamer" }
-    val creatorUsers = users.count { (it["role"] as? String) == "creador_vip" || (it["role"] as? String) == "creador" }
+    val creatorUsers = users.count { (it["role"] as? String) == "creador" || (it["role"] as? String) == "creador_vip" }
     val freeUsers = users.count { u ->
         val role = u["role"] as? String ?: "free"
         val until = (u["premiumUntil"] as? Number)?.toLong()
@@ -2015,13 +2015,13 @@ fun EnhancedUserManagementPanel(
             val matchesTab = when (selectedFilter) {
                 UserFilterTab.ALL -> true
                 UserFilterTab.PREMIUM -> isPrem
-                UserFilterTab.FREE -> role == "free" || (!isPrem && role != "admin" && role != "moderador" && role != "patrocinador" && role != "streamer" && role != "creador_vip" && role != "creador")
+                UserFilterTab.FREE -> role == "free" || (!isPrem && role != "admin" && role != "moderador" && role != "patrocinador" && role != "streamer" && role != "creador" && role != "creador_vip")
                 UserFilterTab.ONLINE -> isOnline
                 UserFilterTab.ADMINS -> role == "admin"
                 UserFilterTab.MODS -> role == "moderador"
                 UserFilterTab.SPONSORS -> role == "patrocinador"
                 UserFilterTab.STREAMERS -> role == "streamer"
-                UserFilterTab.CREATORS -> role == "creador_vip" || role == "creador"
+                UserFilterTab.CREATORS -> role == "creador" || role == "creador_vip"
                 UserFilterTab.BANNED -> isBanned
             }
 
@@ -2443,7 +2443,7 @@ fun EnhancedUserAdminCard(
 
     val isPremiumActive = when {
         role == "admin" || role == "moderador" -> true
-        role in listOf("premium", "creador_vip", "streamer") -> premiumUntil == null || premiumUntil == 0L || premiumUntil > now
+        role in listOf("premium", "creador", "creador_vip", "streamer") -> premiumUntil == null || premiumUntil == 0L || premiumUntil > now
         else -> false
     }
 
@@ -2451,7 +2451,7 @@ fun EnhancedUserAdminCard(
         role == "admin" -> HextechGold.copy(alpha = 0.6f)
         isBanned -> DangerRed.copy(alpha = 0.5f)
         role == "moderador" -> Color(0xFF10B981).copy(alpha = 0.5f)
-        role == "creador_vip" -> Color(0xFFA855F7).copy(alpha = 0.5f)
+        role == "creador" || role == "creador_vip" -> Color(0xFFF59E0B).copy(alpha = 0.5f)
         role == "streamer" -> Color(0xFFEC4899).copy(alpha = 0.5f)
         isPremiumActive -> HextechCyan.copy(alpha = 0.4f)
         else -> HextechCardBorder
@@ -2888,7 +2888,7 @@ fun UserDetailManagementDialog(
 
     val isPremiumActive = when {
         currentRole == "admin" || currentRole == "moderador" -> true
-        currentRole in listOf("premium", "creador_vip", "streamer") -> currentPremiumUntil == null || currentPremiumUntil == 0L || currentPremiumUntil!! > System.currentTimeMillis()
+        currentRole in listOf("premium", "creador", "creador_vip", "streamer") -> currentPremiumUntil == null || currentPremiumUntil == 0L || currentPremiumUntil!! > System.currentTimeMillis()
         else -> false
     }
 
@@ -4035,7 +4035,7 @@ fun UserDetailManagementDialog(
                             Spacer(modifier = Modifier.height(6.dp))
                             RoleBadge(
                                 role = target.id,
-                                isPremiumActive = target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.CREATOR_VIP, AppUserRole.STREAMER, AppUserRole.CREATOR),
+                                isPremiumActive = target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.STREAMER, AppUserRole.CREATOR),
                                 isBanned = (target == AppUserRole.BANNED),
                                 size = RoleBadgeSize.LARGE
                             )
@@ -4057,7 +4057,7 @@ fun UserDetailManagementDialog(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
-                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.PATROCINADOR, AppUserRole.CREATOR_VIP, AppUserRole.STREAMER)) {
+                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.PATROCINADOR, AppUserRole.STREAMER, AppUserRole.CREATOR)) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = "Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech.",
@@ -4925,8 +4925,7 @@ private fun updateUserRoleInCloud(
         updatePayload["subscriptionPlan"] = when (targetRoleId) {
             "moderador" -> "Moderador (Vitalicio)"
             "patrocinador" -> "Patrocinador (Vitalicio)"
-            "creador_vip" -> "Creador VIP (Vitalicio)"
-            "creador" -> "Creador (Vitalicio)"
+            "creador", "creador_vip" -> "Creador (Vitalicio)"
             "streamer" -> "Streamer (Vitalicio)"
             else -> "Premium Vitalicio"
         }

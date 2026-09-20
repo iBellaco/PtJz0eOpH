@@ -457,9 +457,9 @@ fun ChampionBuildCreatorDialog(
                         }
                     }
 
-                    // 4. Botas Core (Nivel 2 + Evolución Nivel 3) (Opcional)
+                    // 4. Botas Nivel 2 y Botas Nivel 3 (Evolución) (Opcional)
                     Text(
-                        text = "4. Botas Core (N2) y Evolución (N3) (Opcional)",
+                        text = "4. Botas Nivel 2 y Botas Nivel 3 (Evolución) (Opcional)",
                         color = HextechCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -519,15 +519,15 @@ fun ChampionBuildCreatorDialog(
 
                             Divider(color = HextechSurfaceVariant)
 
-                            // Evolución Nivel 3 (Encantamiento)
-                            Text("Evolución Nivel 3 (Encantamiento / Activa)", color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            // Botas Nivel 3 (Evolución / Encantamiento)
+                            Text("Botas Nivel 3 (Evolución / Encantamiento)", color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             if (bootT3Entry == null) {
                                 Button(
                                     onClick = { showItemPickerForBootT3 = true },
                                     colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
                                     border = BorderStroke(1.dp, HextechCyan)
                                 ) {
-                                    Text("+ Seleccionar Evolución Nivel 3", color = HextechCyan, fontSize = 11.sp)
+                                    Text("+ Seleccionar Botas Nivel 3", color = HextechCyan, fontSize = 11.sp)
                                 }
                             } else {
                                 val entry = bootT3Entry!!
@@ -553,7 +553,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = entry.description,
                                         onValueChange = { entry.description = it },
-                                        placeholder = { Text("Descripción opcional de la evolución N3...", color = TextSecondary) },
+                                        placeholder = { Text("Descripción opcional de las Botas Nivel 3...", color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechCyan,
@@ -825,14 +825,14 @@ fun ChampionBuildCreatorDialog(
                         }
                     }
 
-                    // 6. Hechizos Core (Imágenes con descripción obligatoria)
+                    // 6. Hechizos Core (con descripción obligatoria)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "6. Hechizos Core (Imágenes) *Desc. Obligatoria",
+                            text = "6. Hechizos Core *Desc. Obligatoria",
                             color = HextechCyan,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -1329,7 +1329,7 @@ fun ChampionBuildCreatorDialog(
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = if (showItemPickerForBootT2) "Seleccionar Botas Nivel 2" else "Seleccionar Evolución Nivel 3 / Encantamiento",
+                        text = if (showItemPickerForBootT2) "Seleccionar Botas Nivel 2" else "Seleccionar Botas Nivel 3 (Evolución)",
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -1519,11 +1519,8 @@ fun ChampionBuildCreatorDialog(
                     )
                     val filteredSpells = remember(searchFilterQuery, spells, showSpellPickerForCore, coreSpells, situationalSpells) {
                         val base = if (searchFilterQuery.isBlank()) spells else spells.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
-                        if (showSpellPickerForCore) {
-                            base.filter { spell -> coreSpells.none { it.name.equals(spell.name, ignoreCase = true) } }
-                        } else {
-                            base.filter { spell -> situationalSpells.none { it.name.equals(spell.name, ignoreCase = true) } }
-                        }
+                        val alreadySelectedNames = (coreSpells.map { it.name.lowercase() } + situationalSpells.map { it.name.lowercase() }).toSet()
+                        base.filter { spell -> !alreadySelectedNames.contains(spell.name.lowercase()) }
                     }
                     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         items(filteredSpells) { spell ->

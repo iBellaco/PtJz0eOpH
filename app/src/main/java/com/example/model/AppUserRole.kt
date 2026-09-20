@@ -26,13 +26,13 @@ enum class AppUserRole(
         secondaryColor = Color(0xFF059669),
         description = "Moderación de OCR, reportes y soporte comunitario"
     ),
-    CREATOR_VIP(
-        id = "creador_vip",
-        displayName = "Creador VIP",
+    CREATOR(
+        id = "creador",
+        displayName = "Creador",
         emoji = "",
-        primaryColor = Color(0xFFA855F7),
-        secondaryColor = Color(0xFF7C3AED),
-        description = "Creador destacado con acceso preferencial y distintivo"
+        primaryColor = Color(0xFFF59E0B),
+        secondaryColor = Color(0xFFD97706),
+        description = "Creador de contenido oficial con todos los beneficios y ventajas Premium"
     ),
     STREAMER(
         id = "streamer",
@@ -41,14 +41,6 @@ enum class AppUserRole(
         primaryColor = Color(0xFFEC4899),
         secondaryColor = Color(0xFFDB2777),
         description = "Creador de directos, transmisiones y difusión de Coach"
-    ),
-    CREATOR(
-        id = "creador",
-        displayName = "Creador",
-        emoji = "",
-        primaryColor = Color(0xFFF59E0B),
-        secondaryColor = Color(0xFFD97706),
-        description = "Colaborador de contenido, diseño y tácticas"
     ),
     PATROCINADOR(
         id = "patrocinador",
@@ -89,9 +81,8 @@ enum class AppUserRole(
             return values().firstOrNull { it.id == normalized } ?: when (normalized) {
                 "admin", "administrator" -> ADMIN
                 "mod", "moderador", "moderator" -> MODERATOR
-                "vip", "creador_vip", "creator_vip" -> CREATOR_VIP
+                "vip", "creador_vip", "creator_vip", "creador", "creator" -> CREATOR
                 "streamer", "live" -> STREAMER
-                "creador", "creator" -> CREATOR
                 "patrocinador", "sponsor" -> PATROCINADOR
                 "premium", "pro" -> PREMIUM
                 "banned", "suspendido", "bloqueado" -> BANNED
@@ -106,7 +97,6 @@ enum class AppUserRole(
             PATROCINADOR,
             PREMIUM,
             MODERATOR,
-            CREATOR_VIP,
             STREAMER,
             CREATOR,
             BANNED

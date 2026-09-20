@@ -340,7 +340,7 @@ object SubscriptionManager {
 
                     val isPrem = when {
                         isAdminClaim || role == "admin" || role == "moderador" -> true
-                        role == "premium" || role == "creador_vip" || role == "streamer" -> {
+                        role == "premium" || role == "creador" || role == "creador_vip" || role == "streamer" -> {
                             until == null || until == 0L || until > System.currentTimeMillis()
                         }
                         else -> false

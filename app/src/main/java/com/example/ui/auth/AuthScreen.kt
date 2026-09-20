@@ -203,7 +203,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
     val activeFramePref by SubscriptionManager.activeFramePreference.collectAsState()
     var showAvatarDialog by remember { mutableStateOf(false) }
-    var showFrameSelectionDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
     var showHistoryDialog by remember { mutableStateOf(false) }
@@ -248,23 +247,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 showAvatarDialog = false
                 showPlansDialog = true
             }
-        )
-    }
-
-    if (showFrameSelectionDialog) {
-        val activeFramePref by SubscriptionManager.activeFramePreference.collectAsState()
-        val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
-        val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
-        val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
-        val isAdminUser = userRole == "admin" || user.email == "barbadiego695@gmail.com"
-
-        com.example.ui.components.FrameSelectionDialog(
-            currentAvatarId = currentAvatarId,
-            currentRankBorder = currentRankBorder,
-            currentSecondaryRole = currentSecRoleVal,
-            isAdmin = isAdminUser,
-            currentActivePreference = activeFramePref,
-            onDismiss = { showFrameSelectionDialog = false }
         )
     }
 
@@ -651,10 +633,11 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 UserAvatarView(
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
-                    equippedFrame = "NONE",
+                    secondaryRole = currentSecRoleVal,
+                    equippedFrame = activeFramePref,
                     size = 74.dp,
                     fallbackInitial = finalUserName,
-                    isAdmin = false,
+                    isAdmin = isAdminUser,
                     fitFrameToSize = false
                 )
                 // Botón interactivo de cambio de avatar (Lápiz)
@@ -812,74 +795,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             val secRoleObj = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
 
-            // Marco de Perfil Customization Selector Card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .tactileClickable { showFrameSelectionDialog = true },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = activeTheme.surfaceVariant.copy(alpha = 0.55f)),
-                border = BorderStroke(1.dp, activeTheme.cardBorder)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(HextechGold.copy(alpha = 0.18f))
-                                .border(1.dp, HextechGold.copy(alpha = 0.6f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = HextechGold,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = "Marco de Perfil:",
-                                color = activeTheme.secondary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = when (activeFramePref.uppercase()) {
-                                    "NONE" -> "Desactivado (Sin marco)"
-                                    "SECONDARY" -> "Marco de ${secRoleForAvatar.displayName}"
-                                    "SPECIAL", "RANK" -> if (isAdminUser) "Marco de Administrador" else "Marco de Rango $currentRankBorder"
-                                    else -> "Automático (Mayor jerarquía)"
-                                },
-                                color = activeTheme.textPrimary,
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Personalizar Marco",
-                            tint = activeTheme.secondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -950,7 +865,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            val isUserPremium = isPremium || userRole == "admin" || userRole == "moderador" || userRole == "creador_vip" || userRole == "streamer" || AuthManager.isCurrentUserAdmin()
+            val isUserPremium = isPremium || userRole == "admin" || userRole == "moderador" || userRole == "creador" || userRole == "creador_vip" || userRole == "streamer" || AuthManager.isCurrentUserAdmin()
             if (isUserPremium) {
                 // Quick Theme Selector Strip: Instant 1-tap live theme transformation with horizontal scroll!
                 Column(

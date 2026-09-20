@@ -289,7 +289,7 @@ fun AdminCreatorBuildsDialog(
             val uRole = u["role"] as? String ?: "free"
             val uName = (u["name"] as? String ?: "").trim()
             val uUid = u["uid"] as? String ?: ""
-            if (uName.isNotBlank() && (uRole == "creador_vip" || uRole == "creador" || uRole == "streamer" || uRole == "admin")) {
+            if (uName.isNotBlank() && (uRole == "creador" || uRole == "creador_vip" || uRole == "streamer" || uRole == "admin")) {
                 val alreadyAdded = rankingList.any { it.name.equals(uName, ignoreCase = true) || (uUid.isNotBlank() && it.userId == uUid) }
                 if (!alreadyAdded) {
                     val secRole = (u["secondaryRole"] as? String) ?: (u["secondary_role"] as? String) ?: "none"
@@ -304,12 +304,12 @@ fun AdminCreatorBuildsDialog(
                             secondaryRole = secRole,
                             equippedFrame = eqFrame,
                             isAdmin = uRole == "admin",
-                            role = uRole,
+                            role = if (uRole == "creador_vip") "creador" else uRole,
                             buildsCount = 0,
                             totalVotes = 0,
                             averageRating = 5.0,
                             subscribersCount = subsCount,
-                            score = if (uRole == "creador_vip") 50.0 else if (uRole == "admin") 40.0 else 30.0
+                            score = if (uRole == "admin") 40.0 else 30.0
                         )
                     )
                 }
@@ -335,7 +335,7 @@ fun AdminCreatorBuildsDialog(
                 avatarId = "avatar_kaisa",
                 rankBorder = "GRANDMASTER",
                 isAdmin = false,
-                role = "creador_vip",
+                role = "creador",
                 buildsCount = 4,
                 totalVotes = 52,
                 averageRating = 4.9,

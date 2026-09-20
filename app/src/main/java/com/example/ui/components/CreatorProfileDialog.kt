@@ -190,13 +190,11 @@ fun CreatorProfileDialog(
                     ) {
                         val roleTagText = when (role.lowercase(Locale.ROOT)) {
                             "admin" -> "ADMINISTRADOR"
-                            "creador_vip" -> "CREADOR VIP"
                             "streamer" -> "STREAMER OFICIAL"
                             else -> "CREADOR OFICIAL"
                         }
                         val roleTagColor = when (role.lowercase(Locale.ROOT)) {
                             "admin" -> Color(0xFFFF4655)
-                            "creador_vip" -> Color(0xFFA855F7)
                             "streamer" -> Color(0xFF3B82F6)
                             else -> HextechGold
                         }

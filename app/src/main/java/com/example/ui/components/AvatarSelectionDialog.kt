@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -36,6 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import com.example.model.AppUserSecondaryRole
 import com.example.data.AvatarCatalog
 import com.example.model.AvatarItem
 import com.example.ui.theme.*
@@ -63,6 +70,8 @@ fun AvatarSelectionBottomSheet(
     val isPremium by SubscriptionManager.isPremium.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
+    val activeFramePref by SubscriptionManager.activeFramePreference.collectAsState()
+    val currentSecondaryRole by SubscriptionManager.currentSecondaryRole.collectAsState()
     val unlockedAvatars by SubscriptionManager.unlockedAvatars.collectAsState()
     val userRole by SubscriptionManager.userRole.collectAsState()
     val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
@@ -192,9 +201,11 @@ fun AvatarSelectionBottomSheet(
                         UserAvatarView(
                             avatarId = currentAvatarId,
                             rankBorder = currentRankBorder,
-                            equippedFrame = "NONE",
-                            size = 56.dp,
-                            isAdmin = false
+                            secondaryRole = currentSecondaryRole,
+                            equippedFrame = activeFramePref,
+                            size = 52.dp,
+                            isAdmin = isAdmin,
+                            fitFrameToSize = false
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
@@ -237,7 +248,69 @@ fun AvatarSelectionBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Selector de Categoría (Avatares vs Marcos de Perfil)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(HextechSurface)
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (selectedCategory == "Avatares") HextechGold else Color.Transparent)
+                        .clickable { selectedCategory = "Avatares" },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Diamond,
+                            contentDescription = null,
+                            tint = if (selectedCategory == "Avatares") HextechDarkBg else TextSecondary,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Text(
+                            text = tr("Avatares"),
+                            color = if (selectedCategory == "Avatares") HextechDarkBg else TextSecondary,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (selectedCategory == "Marcos") HextechGold else Color.Transparent)
+                        .clickable { selectedCategory = "Marcos" },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = null,
+                            tint = if (selectedCategory == "Marcos") HextechDarkBg else TextSecondary,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Text(
+                            text = tr("Marcos de Perfil"),
+                            color = if (selectedCategory == "Marcos") HextechDarkBg else TextSecondary,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             if (selectedCategory == "Avatares") {
             // Search Bar
@@ -556,139 +629,252 @@ fun AvatarSelectionBottomSheet(
             } // End of forEach
             } // End of LazyVerticalGrid
         } else {
-                    // MARCOS (BORDERS) SECTION
-                    val borders = listOf("NONE", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER", "SOVEREIGN")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    if (!isPremium && userRole != "admin") {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(HextechGold.copy(alpha = 0.1f))
-                                .border(1.dp, HextechGold, RoundedCornerShape(12.dp))
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = Icons.Filled.Diamond,
-                                    contentDescription = null,
-                                    tint = HextechGold,
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Desbloquea Marcos Dinámicos",
-                                    color = HextechGold,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Sube de nivel tu perfil con los impresionantes marcos animados de Soberano, Aspirante, Gran Maestro, Maestro, Diamante y Esmeralda. Exclusivo para usuarios Premium.",
-                                    color = TextSecondary,
-                                    fontSize = 13.sp,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
-                                HextechAnimatedButton(
-                                    onClick = onOpenPremiumPlans,
-                                    backgroundColor = HextechGold,
-                                    borderColor = HextechCyan,
-                                    glowColor = HextechGold,
-                                    enableShimmer = true
-                                ) {
-                                    Text("Ver Planes Premium", color = HextechDarkBg, fontWeight = FontWeight.Bold)
+            // SECCIÓN DE MARCOS DE PERFIL Y DE RANGO
+            val activeFramePrefState by SubscriptionManager.activeFramePreference.collectAsState()
+            val currentSecondaryRoleState by SubscriptionManager.currentSecondaryRole.collectAsState()
+            val secRoleObj = remember(currentSecondaryRoleState) {
+                if (currentSecondaryRoleState.isNotBlank() && currentSecondaryRoleState != "none") {
+                    AppUserSecondaryRole.fromId(currentSecondaryRoleState)
+                } else AppUserSecondaryRole.NONE
+            }
+            val hasSecRoleFrame = secRoleObj != AppUserSecondaryRole.NONE && secRoleObj.frameDrawableRes != null
+            val hasSpecialFrame = isAdmin || (currentRankBorder != "NONE" && currentRankBorder.isNotBlank())
+
+            val msgNoSecRole = tr("No posees un marco de rol secundario asignado")
+            val msgNoSpecialFrame = tr("No posees un marco especial de rango disponible")
+            val msgFrameSuccess = tr("Marco de perfil actualizado correctamente")
+            val msgRankSuccess = tr("Marco de rango actualizado")
+
+            var selectedFrameOption by remember(activeFramePrefState) { mutableStateOf(activeFramePrefState.uppercase()) }
+            var isSavingFrame by remember { mutableStateOf(false) }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(bottom = 12.dp)
+            ) {
+                val scrollState = rememberScrollState()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                ) {
+                    Text(
+                        text = tr("PREFERENCIA DE MARCO VISUAL"),
+                        color = HextechGoldLight,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FrameOptionCardInAvatar(
+                            title = tr("Sin Marco (Desactivado)"),
+                            subtitle = tr("Oculta el marco exterior y muestra solo el avatar."),
+                            icon = Icons.Default.VisibilityOff,
+                            iconTint = TextSecondary,
+                            isSelected = selectedFrameOption == "NONE",
+                            isEnabled = true,
+                            onClick = { selectedFrameOption = "NONE" }
+                        )
+
+                        FrameOptionCardInAvatar(
+                            title = tr("Automático (Recomendado)"),
+                            subtitle = tr("Muestra el marco disponible de mayor jerarquía."),
+                            icon = Icons.Default.Star,
+                            iconTint = HextechGold,
+                            isSelected = selectedFrameOption == "AUTO",
+                            isEnabled = true,
+                            onClick = { selectedFrameOption = "AUTO" }
+                        )
+
+                        val secRoleTitle = if (hasSecRoleFrame) "Marco de ${secRoleObj.displayName}" else tr("Marco de Rol Secundario")
+                        val secRoleSubtitle = if (hasSecRoleFrame) tr("Marco exclusivo otorgado por Moderación/Administración.") else tr("Requiere un rol secundario asignado.")
+                        FrameOptionCardInAvatar(
+                            title = secRoleTitle,
+                            subtitle = secRoleSubtitle,
+                            icon = Icons.Default.Shield,
+                            iconTint = if (hasSecRoleFrame) secRoleObj.primaryColor else TextSecondary.copy(alpha = 0.5f),
+                            isSelected = selectedFrameOption == "SECONDARY",
+                            isEnabled = hasSecRoleFrame,
+                            onClick = {
+                                if (hasSecRoleFrame) {
+                                    selectedFrameOption = "SECONDARY"
+                                } else {
+                                    Toast.makeText(context, msgNoSecRole, Toast.LENGTH_SHORT).show()
                                 }
                             }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        )
+
+                        val specialTitle = if (isAdmin) tr("Marco de Administrador") else if (currentRankBorder != "NONE") "Marco de Rango $currentRankBorder" else tr("Marco Especial / Rango")
+                        val specialSubtitle = if (hasSpecialFrame) tr("Marco de estatus especial o rango competitivo.") else tr("No posees un marco especial de rango disponible.")
+                        FrameOptionCardInAvatar(
+                            title = specialTitle,
+                            subtitle = specialSubtitle,
+                            icon = Icons.Default.Star,
+                            iconTint = if (hasSpecialFrame) HextechGold else TextSecondary.copy(alpha = 0.5f),
+                            isSelected = selectedFrameOption == "SPECIAL" || selectedFrameOption == "RANK",
+                            isEnabled = hasSpecialFrame,
+                            onClick = {
+                                if (hasSpecialFrame) {
+                                    selectedFrameOption = "SPECIAL"
+                                } else {
+                                    Toast.makeText(context, msgNoSpecialFrame, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
                     }
 
-                    androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
-                        columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
-                        contentPadding = PaddingValues(vertical = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.weight(1f, fill = false)
-                    ) {
-                        items(borders.size) { index ->
-                            val border = borders[index]
-                            val isSelected = currentRankBorder == border
-                            val isAvailable = isPremium || userRole == "admin" || border == "NONE"
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(0.85f)
-                                    .clickable(enabled = isAvailable) {
-                                        SubscriptionManager.changeRankBorder(
-                                            borderId = border,
-                                            onSuccess = {
-                                                android.widget.Toast.makeText(context, "Marco actualizado", android.widget.Toast.LENGTH_SHORT).show()
-                                            },
-                                            onError = { err ->
-                                                android.widget.Toast.makeText(context, err, android.widget.Toast.LENGTH_LONG).show()
-                                            }
-                                        )
-                                    },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) HextechGold.copy(alpha = 0.1f) else HextechDarkBg
-                                ),
-                                border = BorderStroke(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) HextechGold else HextechCardBorder
-                                )
+                    Button(
+                        onClick = {
+                            isSavingFrame = true
+                            SubscriptionManager.changeActiveFramePreference(
+                                preference = selectedFrameOption,
+                                onSuccess = {
+                                    isSavingFrame = false
+                                    Toast.makeText(context, msgFrameSuccess, Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { err ->
+                                    isSavingFrame = false
+                                    Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        },
+                        enabled = !isSavingFrame && selectedFrameOption != activeFramePrefState.uppercase(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(42.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = HextechGold,
+                            contentColor = HextechDarkBg
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        if (isSavingFrame) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = HextechDarkBg,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = if (selectedFrameOption == activeFramePrefState.uppercase()) tr("Marco Preferido Actual") else tr("Guardar Preferencia de Marco"),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // MARCOS DE RANGO COMPETITIVO
+                    Text(
+                        text = tr("MARCOS COMPETITIVOS (RANGO)"),
+                        color = HextechGoldLight,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
+
+                    val borders = listOf("NONE", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER", "SOVEREIGN")
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        borders.chunked(2).forEach { chunk ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(12.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Box(
-                                        modifier = Modifier.size(80.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        UserAvatarView(
-                                            avatarId = currentAvatarId,
-                                    size = 64.dp,
-                                            rankBorder = border,
-                                            showBorder = false
+                                chunk.forEach { border ->
+                                    val isSelected = currentRankBorder == border
+                                    val isAvailable = isPremium || userRole == "admin" || border == "NONE"
+
+                                    Card(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clickable(enabled = isAvailable) {
+                                                SubscriptionManager.changeRankBorder(
+                                                    borderId = border,
+                                                    onSuccess = {
+                                                        Toast.makeText(context, msgRankSuccess, Toast.LENGTH_SHORT).show()
+                                                    },
+                                                    onError = { err ->
+                                                        Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                                    }
+                                                )
+                                            },
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = if (isSelected) HextechGold.copy(alpha = 0.15f) else HextechSurface
+                                        ),
+                                        border = BorderStroke(
+                                            width = if (isSelected) 1.5.dp else 1.dp,
+                                            color = if (isSelected) HextechGold else HextechCardBorder
                                         )
-                                        if (!isAvailable) {
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(10.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
                                             Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .background(Color.Black.copy(alpha = 0.6f), CircleShape),
+                                                modifier = Modifier.size(38.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                Icon(Icons.Filled.Lock, contentDescription = null, tint = Color.White)
+                                                UserAvatarView(
+                                                    avatarId = currentAvatarId,
+                                                    size = 32.dp,
+                                                    rankBorder = border,
+                                                    showBorder = false
+                                                )
+                                                if (!isAvailable) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxSize()
+                                                            .background(Color.Black.copy(alpha = 0.6f), CircleShape),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Icon(Icons.Filled.Lock, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                                    }
+                                                }
                                             }
+                                            val borderDisplayName = when (border) {
+                                                "NONE" -> tr("Sin Rango")
+                                                "EMERALD" -> tr("Esmeralda")
+                                                "DIAMOND" -> tr("Diamante")
+                                                "MASTER" -> tr("Maestro")
+                                                "GRANDMASTER" -> tr("Gran Maestro")
+                                                "CHALLENGER" -> tr("Aspirante")
+                                                "SOVEREIGN" -> tr("Soberano")
+                                                else -> border
+                                            }
+                                            Text(
+                                                text = borderDisplayName,
+                                                color = if (isSelected) HextechGold else TextPrimary,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp
+                                            )
                                         }
                                     }
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    val borderDisplayName = when (border) {
-                                        "NONE" -> "Sin Marco"
-                                        "EMERALD" -> "Esmeralda"
-                                        "DIAMOND" -> "Diamante"
-                                        "MASTER" -> "Maestro"
-                                        "GRANDMASTER" -> "Gran Maestro"
-                                        "CHALLENGER" -> "Aspirante"
-                                        "SOVEREIGN" -> "Soberano"
-                                        else -> border
-                                    }
-                                    Text(
-                                        text = borderDisplayName,
-                                        color = if (isSelected) HextechGold else TextPrimary,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                }
+                                if (chunk.size == 1) {
+                                    Spacer(modifier = Modifier.weight(1f))
                                 }
                             }
                         }
                     }
                 }
+            }
+        }
         } // End of Column
     } // End of ModalBottomSheet
 
@@ -779,5 +965,71 @@ fun getRarityBorderBrush(rarity: String): Brush {
         rarityLower.contains("épico") || rarityLower.contains("epico") -> Brush.sweepGradient(listOf(Color(0xFFE9D5FF), Color(0xFF9333EA), Color(0xFFE9D5FF)))
         rarityLower.contains("raro") -> Brush.linearGradient(listOf(Color(0xFF93C5FD), Color(0xFF2563EB), Color(0xFF93C5FD)))
         else -> Brush.linearGradient(listOf(HextechCardBorder, HextechCardBorder))
+    }
+}
+
+@Composable
+private fun FrameOptionCardInAvatar(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: Color,
+    isSelected: Boolean,
+    isEnabled: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = isEnabled, onClick = onClick),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) HextechGold.copy(alpha = 0.15f) else HextechSurface.copy(alpha = if (isEnabled) 0.65f else 0.3f)
+        ),
+        border = BorderStroke(
+            width = if (isSelected) 1.5.dp else 1.dp,
+            color = if (isSelected) HextechGold else HextechCardBorder.copy(alpha = if (isEnabled) 1f else 0.4f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isEnabled) iconTint else TextSecondary.copy(alpha = 0.4f),
+                    modifier = Modifier.size(20.dp)
+                )
+                Column {
+                    Text(
+                        text = title,
+                        color = if (isEnabled) TextPrimary else TextSecondary.copy(alpha = 0.5f),
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = subtitle,
+                        color = if (isEnabled) TextSecondary else TextSecondary.copy(alpha = 0.4f),
+                        fontSize = 10.5.sp
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(6.dp))
+            Icon(
+                imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                contentDescription = null,
+                tint = if (isSelected) HextechGold else TextSecondary.copy(alpha = 0.4f),
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }
