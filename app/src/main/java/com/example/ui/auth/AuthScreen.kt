@@ -201,8 +201,10 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
     val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
+    val activeFramePref by SubscriptionManager.activeFramePreference.collectAsState()
     var showAvatarDialog by remember { mutableStateOf(false) }
     var showSecondaryRoleDialog by remember { mutableStateOf(false) }
+    var showFrameSelectionDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
     var showHistoryDialog by remember { mutableStateOf(false) }
@@ -601,7 +603,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             )
 
             val secRoleForAvatar = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
-            val hasSpecialFrame = isAdminUser || secRoleForAvatar.frameDrawableRes != null
+            val hasSpecialFrame = when (activeFramePref.uppercase()) {
+                "NONE" -> false
+                "SECONDARY" -> secRoleForAvatar.frameDrawableRes != null
+                "SPECIAL", "RANK" -> isAdminUser || currentRankBorder != "NONE"
+                else -> isAdminUser || secRoleForAvatar.frameDrawableRes != null || currentRankBorder != "NONE"
+            }
 
             // Avatar in center
             Box(
@@ -650,6 +657,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
                     secondaryRole = currentSecRoleVal,
+                    equippedFrame = activeFramePref,
                     size = if (hasSpecialFrame) 74.dp else 72.dp,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser
@@ -684,7 +692,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 }
             }
 
-            Spacer(modifier = Modifier.height(if (isAdminUser) 54.dp else 12.dp))
+            Spacer(modifier = Modifier.height(if (hasSpecialFrame) 54.dp else 12.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -812,10 +820,23 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             // Rol Secundario / Rango Competitivo Selector Card
             val secRoleObj = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
+            val canAssignSecRole = isAdminUser || userRole == "moderador"
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .tactileClickable { showSecondaryRoleDialog = true },
+                    .then(
+                        if (canAssignSecRole) {
+                            Modifier.tactileClickable { showSecondaryRoleDialog = true }
+                        } else {
+                            Modifier.clickable {
+                                Toast.makeText(
+                                    context,
+                                    "Los roles secundarios son asignados exclusivamente por Moderadores y Administradores",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    ),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = activeTheme.surfaceVariant.copy(alpha = 0.55f)),
                 border = BorderStroke(1.dp, if (secRoleObj != com.example.model.AppUserSecondaryRole.NONE) secRoleObj.primaryColor.copy(alpha = 0.55f) else activeTheme.cardBorder)
@@ -854,7 +875,11 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) "Toca para asignar tu rango (Esmeralda a Soberano)" else secRoleObj.displayName,
+                                text = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) {
+                                    if (canAssignSecRole) "Toca para asignar tu rango (Esmeralda a Soberano)" else "Sin rol secundario (Asignado por Mod/Admin)"
+                                } else {
+                                    secRoleObj.displayName
+                                },
                                 color = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) activeTheme.textSecondary else secRoleObj.primaryColor,
                                 fontSize = 11.5.sp,
                                 fontWeight = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) FontWeight.Normal else FontWeight.Bold
@@ -869,9 +894,79 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                         }
+                        if (canAssignSecRole) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Cambiar",
+                                tint = activeTheme.secondary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Marco de Perfil Customization Selector Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tactileClickable { showFrameSelectionDialog = true },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = activeTheme.surfaceVariant.copy(alpha = 0.55f)),
+                border = BorderStroke(1.dp, activeTheme.cardBorder)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(HextechGold.copy(alpha = 0.18f))
+                                .border(1.dp, HextechGold.copy(alpha = 0.6f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = HextechGold,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Marco de Perfil:",
+                                color = activeTheme.secondary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = when (activeFramePref.uppercase()) {
+                                    "NONE" -> "Desactivado (Sin marco)"
+                                    "SECONDARY" -> "Marco de ${secRoleForAvatar.displayName}"
+                                    "SPECIAL", "RANK" -> if (isAdminUser) "Marco de Administrador" else "Marco de Rango $currentRankBorder"
+                                    else -> "Automático (Mayor jerarquía)"
+                                },
+                                color = activeTheme.textPrimary,
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Cambiar",
+                            contentDescription = "Personalizar Marco",
                             tint = activeTheme.secondary,
                             modifier = Modifier.size(18.dp)
                         )

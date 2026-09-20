@@ -58,18 +58,31 @@ fun UserAvatarView(
     secondaryRole: String? = null,
     isAdmin: Boolean = false,
     adminFrameResId: Int = com.example.R.drawable.ic_frame_admin,
-    adminFrameUrl: String? = null
+    adminFrameUrl: String? = null,
+    equippedFrame: String = "AUTO"
 ) {
-    val secRoleObj = remember(secondaryRole, rankBorder) {
+    val secRoleObj = remember(secondaryRole) {
         if (!secondaryRole.isNullOrBlank() && secondaryRole != "none") {
             com.example.model.AppUserSecondaryRole.fromId(secondaryRole)
-        } else if (rankBorder != "NONE" && rankBorder.isNotBlank()) {
-            com.example.model.AppUserSecondaryRole.fromId(rankBorder)
         } else {
             com.example.model.AppUserSecondaryRole.NONE
         }
     }
-    val secFrameRes = if (!isAdmin) secRoleObj.frameDrawableRes else null
+    val secFrameRes = secRoleObj.frameDrawableRes
+
+    val effectiveFrameType = remember(equippedFrame, isAdmin, secFrameRes, rankBorder) {
+        when (equippedFrame.uppercase()) {
+            "NONE" -> "NONE"
+            "SECONDARY" -> if (secFrameRes != null) "SECONDARY" else "NONE"
+            "SPECIAL", "RANK" -> if (isAdmin) "ADMIN" else if (rankBorder != "NONE" && rankBorder.isNotBlank()) "RANK" else "NONE"
+            else -> { // "AUTO"
+                if (isAdmin) "ADMIN"
+                else if (secFrameRes != null) "SECONDARY"
+                else if (rankBorder != "NONE" && rankBorder.isNotBlank()) "RANK"
+                else "NONE"
+            }
+        }
+    }
 
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
     val parsedBorderColor = customBorderColor ?: try {
@@ -174,13 +187,13 @@ fun UserAvatarView(
                     )
                 )
                 .then(
-                    if (rankBorder != "NONE" && !isAdmin && secFrameRes == null) {
+                    if (effectiveFrameType == "RANK") {
                         Modifier.rankedBorderPainter(
                             rank = rankBorder,
                             glowPulse = glowPulse,
                             rotation = rotation
                         )
-                    } else if (actualShowBorder && !isAdmin && secFrameRes == null) {
+                    } else if (actualShowBorder && effectiveFrameType == "NONE") {
                         val isCom = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
                         if (!isCom) {
                             Modifier.premiumBorderPainter(
@@ -223,7 +236,7 @@ fun UserAvatarView(
         }
 
         // Marco exclusivo de Administrador o Rol Secundario (rodeando el avatar por fuera)
-        if (isAdmin) {
+        if (effectiveFrameType == "ADMIN") {
             if (adminFrameResId != 0) {
                 Image(
                     painter = painterResource(id = adminFrameResId),
@@ -250,7 +263,7 @@ fun UserAvatarView(
                         .align(Alignment.Center)
                 )
             }
-        } else if (secFrameRes != null) {
+        } else if (effectiveFrameType == "SECONDARY" && secFrameRes != null) {
             Image(
                 painter = painterResource(id = secFrameRes),
                 contentDescription = "Marco de Rol Secundario (${secRoleObj.displayName})",

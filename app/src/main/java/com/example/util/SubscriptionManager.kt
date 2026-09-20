@@ -43,6 +43,9 @@ object SubscriptionManager {
     private val _currentSecondaryRole = MutableStateFlow("none")
     val currentSecondaryRole: StateFlow<String> = _currentSecondaryRole.asStateFlow()
 
+    private val _activeFramePreference = MutableStateFlow("AUTO")
+    val activeFramePreference: StateFlow<String> = _activeFramePreference.asStateFlow()
+
     private val _unlockedAvatars = MutableStateFlow<List<String>>(emptyList())
     val unlockedAvatars: StateFlow<List<String>> = _unlockedAvatars.asStateFlow()
 
@@ -79,18 +82,8 @@ object SubscriptionManager {
             return
         }
 
-        val userSpecificUnread = if (hasUnreadFromDoc && docUnreadCount > 0) {
-            maxOf(docUnreadCount, unreadMessagesSubcollection + unreadSupportReports + unreadPrivateArray)
-        } else {
-            maxOf(unreadMessagesSubcollection + unreadSupportReports, unreadPrivateArray)
-        }
-
-        val total = if (_userRole.value == "moderador" || _userRole.value == "admin" || AuthManager.isCurrentUserAdmin()) {
-            userSpecificUnread + unreadModeratorSupportReports
-        } else {
-            userSpecificUnread
-        }
-        _unreadMessagesCount.value = total.coerceAtLeast(0)
+        val userSpecificUnread = maxOf(unreadMessagesSubcollection + unreadSupportReports, unreadPrivateArray)
+        _unreadMessagesCount.value = userSpecificUnread.coerceAtLeast(0)
     }
 
     fun setUnreadMessagesCount(count: Int) {
@@ -231,8 +224,10 @@ object SubscriptionManager {
                     val dbAvatarId = snapshot.getString("avatarId") ?: "default_poro"
                     val dbRankBorder = snapshot.getString("rankBorder") ?: "NONE"
                     val dbSecondaryRole = snapshot.getString("secondaryRole") ?: "none"
+                    val dbFramePref = snapshot.getString("activeFramePreference") ?: "AUTO"
                     _currentRankBorder.value = dbRankBorder
                     _currentSecondaryRole.value = dbSecondaryRole
+                    _activeFramePreference.value = dbFramePref
                     _currentAvatarId.value = dbAvatarId
                     @Suppress("UNCHECKED_CAST")
                     val dbUnlocked = snapshot.get("unlockedAvatars") as? List<String> ?: listOf("default_poro")
@@ -273,11 +268,11 @@ object SubscriptionManager {
                 .addSnapshotListener { snapshot, error ->
                     if (error == null && snapshot != null) {
                         for (doc in snapshot.documents) {
-                            val isRead = doc.getBoolean("isRead")
                             val userRead = doc.getBoolean("userRead")
                             val hasNewAdminReply = doc.getBoolean("hasNewAdminReply") == true
                             val hasNewReply = doc.getBoolean("hasNewReply") == true
-                            val isUnread = (isRead == false || userRead == false || hasNewAdminReply || hasNewReply)
+                            val isLastReplyFromSupport = doc.getBoolean("isLastReplyFromSupport") == true
+                            val isUnread = (userRead == false) || hasNewAdminReply || (hasNewReply && isLastReplyFromSupport)
                             unreadSupportMap[doc.id] = isUnread
                         }
                         checkAndUpdateSupportUnread()
@@ -291,11 +286,11 @@ object SubscriptionManager {
                     .addSnapshotListener { snapshot, error ->
                         if (error == null && snapshot != null) {
                             for (doc in snapshot.documents) {
-                                val isRead = doc.getBoolean("isRead")
                                 val userRead = doc.getBoolean("userRead")
                                 val hasNewAdminReply = doc.getBoolean("hasNewAdminReply") == true
                                 val hasNewReply = doc.getBoolean("hasNewReply") == true
-                                val isUnread = (isRead == false || userRead == false || hasNewAdminReply || hasNewReply)
+                                val isLastReplyFromSupport = doc.getBoolean("isLastReplyFromSupport") == true
+                                val isUnread = (userRead == false) || hasNewAdminReply || (hasNewReply && isLastReplyFromSupport)
                                 unreadSupportMap[doc.id] = isUnread
                             }
                             checkAndUpdateSupportUnread()
@@ -326,6 +321,7 @@ object SubscriptionManager {
                     val avatarId = listenSnapshot.getString("avatarId") ?: "default_poro"
                     val rankBorder = listenSnapshot.getString("rankBorder") ?: "NONE"
                     val secondaryRole = listenSnapshot.getString("secondaryRole") ?: "none"
+                    val framePref = listenSnapshot.getString("activeFramePreference") ?: "AUTO"
                     val blueEs = listenSnapshot.getLong("blueEssence") ?: 0L
                     val until = listenSnapshot.getLong("premiumUntil")
                     @Suppress("UNCHECKED_CAST")
@@ -352,6 +348,7 @@ object SubscriptionManager {
                     _isPremium.value = isPrem
                     _currentAvatarId.value = avatarId
                     _currentSecondaryRole.value = secondaryRole
+                    _activeFramePreference.value = framePref
                     
                     _unlockedAvatars.value = unlocked
 
@@ -500,6 +497,23 @@ object SubscriptionManager {
                 onSuccess()
             }
             .addOnFailureListener { onError("Error al actualizar rol secundario: ${it.message}") }
+    }
+
+    fun changeActiveFramePreference(preference: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
+        val user = AuthManager.getAuth()?.currentUser
+        if (AuthManager.isGuestOrUnauthenticated(user)) {
+            onError("Inicia sesión para cambiar la preferencia de marco")
+            return
+        }
+        val db = FirebaseFirestore.getInstance()
+        val userRef = db.collection("users").document(user!!.uid)
+        val normalized = preference.trim().uppercase()
+        userRef.set(hashMapOf("activeFramePreference" to normalized), SetOptions.merge())
+            .addOnSuccessListener {
+                _activeFramePreference.value = normalized
+                onSuccess()
+            }
+            .addOnFailureListener { onError("Error al actualizar preferencia de marco: ${it.message}") }
     }
 
     fun purchaseSubscription(durationMillis: Long, planName: String, price: String, onSuccess: () -> Unit, onError: (String) -> Unit) {

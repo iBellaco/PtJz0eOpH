@@ -45,6 +45,9 @@ fun SecondaryRoleSelectionDialog(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isSaving by remember { mutableStateOf(false) }
 
+    val userRole by SubscriptionManager.userRole.collectAsState()
+    val canAssign = userRole == "moderador" || userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -171,6 +174,11 @@ fun SecondaryRoleSelectionDialog(
                             .fillMaxWidth()
                             .clickable(enabled = !isSaving) {
                                 if (isSelected) return@clickable
+                                if (!canAssign) {
+                                    Toast.makeText(context, "Los roles secundarios son asignados exclusivamente por Moderadores y Administradores", Toast.LENGTH_SHORT).show()
+                                    onDismiss()
+                                    return@clickable
+                                }
                                 isSaving = true
                                 SubscriptionManager.changeSecondaryRole(
                                     roleId = roleItem.id,
