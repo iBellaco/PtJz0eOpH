@@ -44,8 +44,8 @@ data class VisionCalibrationConfig(
 
     // Rango horizontal OCR para columnas de draft (cobertura integral de mitades de pantalla)
     val allyOcrMinX: Float = 0.000f,
-    val allyOcrMaxX: Float = 0.480f,
-    val enemyOcrMinX: Float = 0.520f,
+    val allyOcrMaxX: Float = 0.320f,
+    val enemyOcrMinX: Float = 0.680f,
     val enemyOcrMaxX: Float = 1.000f,
 
     // --- CÍRCULOS DE AVATARES SUPERIORES (10º PICK Y FASE DE PREPARACIÓN) ---
@@ -128,7 +128,7 @@ VisionCalibrationConfig(
     }
 
     companion object {
-        private const val CURRENT_CALIBRATION_VERSION = 9
+        private const val CURRENT_CALIBRATION_VERSION = 10
 
         fun resetToDefaults(context: Context): VisionCalibrationConfig {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)

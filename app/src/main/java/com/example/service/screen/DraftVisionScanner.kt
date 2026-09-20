@@ -422,8 +422,8 @@ object DraftVisionScanner {
                     // Permitir todos los 5 slots (desde y=0.10 hasta y=0.90)
                     if (yRatio < 0.10f || yRatio > 0.90f) continue
 
-                    // 1.1 COLUMNA ALIADA (Mitad izquierda de la pantalla, slots 0..4)
-                    if (isAllyCol || xRatio < 0.50f) {
+                    // 1.1 COLUMNA ALIADA (Extremo izquierdo de la pantalla, slots 0..4)
+                    if (isAllyCol) {
                         val bestSlot = (0..4).minByOrNull { kotlin.math.abs(yRatio - calib.allySlotYRatios[it]) } ?: 0
                         allySlotTexts[bestSlot].add(Pair(text, box))
                         // Agregar tokens individuales para captura rápida de campeones con glifos/maestría
@@ -442,8 +442,8 @@ object DraftVisionScanner {
                             }
                         }
                     }
-                    // 1.2 COLUMNA ENEMIGA (Mitad derecha de la pantalla, slots 0..4)
-                    else if (isEnemyCol || xRatio >= 0.50f) {
+                    // 1.2 COLUMNA ENEMIGA (Extremo derecho de la pantalla, slots 0..4)
+                    else if (isEnemyCol) {
                         val bestSlot = (0..4).minByOrNull { kotlin.math.abs(yRatio - calib.enemySlotYRatios[it]) } ?: 0
                         enemySlotTexts[bestSlot].add(Pair(text, box))
                         val words = text.split(Regex("\\s+")).filter { it.length >= 2 }
