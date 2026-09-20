@@ -406,17 +406,9 @@ object DraftVisionScanner {
                         continue
                     }
 
-                    // Ignorar cualquier texto generado por el overlay de depuración
-                    if (text.contains("[") || text.contains("]") ||
-                        text.contains("VISUAL", ignoreCase = true) || text.contains("VIS:", ignoreCase = true) ||
-                        text.contains("OCR", ignoreCase = true) || text.contains("INVOCADOR", ignoreCase = true) ||
-                        text.contains("CAMPEÓN", ignoreCase = true) || text.contains("CAMPEON", ignoreCase = true) ||
-                        text.contains("LÍNEA", ignoreCase = true) || text.contains("LINEA", ignoreCase = true) ||
-                        text.contains("RIVAL", ignoreCase = true) || text.contains("VACÍO", ignoreCase = true) ||
-                        text.contains("VACIO", ignoreCase = true) || text.contains("CONFIRMADO", ignoreCase = true) ||
-                        text.contains("AMBIGUO", ignoreCase = true) || text.contains("") || text.contains("") ||
-                        text.contains("Diagnóstico", ignoreCase = true) || text.contains("Diagnostico", ignoreCase = true) ||
-                        text.contains("Score", ignoreCase = true)) continue
+                    // Ignorar texto exclusivo de cajas de depuración
+                    if (text.startsWith("[Aliado Slot") || text.startsWith("[Enemigo Slot") ||
+                        text.contains("VISUAL:", ignoreCase = true) || text.contains("ROI:", ignoreCase = true)) continue
                     
                     detectedWords.add(text)
 
