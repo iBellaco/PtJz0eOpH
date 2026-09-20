@@ -1059,10 +1059,14 @@ private fun FloatingOverlayContent(
                                                         assignAllySlot(idx, scannedAlly)
                                                         newAlliesAdded++
                                                     }
+                                                } else if (result.alliesBySlot[idx] == null) {
+                                                    if (allies[idx] != null) {
+                                                        allies[idx] = null
+                                                    }
                                                 }
                                             }
                                         }
-                                    } else if (result.alliesBySlot.isNotEmpty()) {
+                                    } else {
                                         for (idx in 0 until 5) {
                                             if (manualLockedAllySlots[idx] != true) {
                                                 val scannedAlly = result.alliesBySlot[idx]
@@ -1070,6 +1074,10 @@ private fun FloatingOverlayContent(
                                                     if (allies[idx]?.id != scannedAlly.id) {
                                                         assignAllySlot(idx, scannedAlly)
                                                         newAlliesAdded++
+                                                    }
+                                                } else {
+                                                    if (allies[idx] != null) {
+                                                        allies[idx] = null
                                                     }
                                                 }
                                             }
@@ -1085,10 +1093,15 @@ private fun FloatingOverlayContent(
                                                         assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
                                                         newEnemiesAdded++
                                                     }
+                                                } else if (result.enemiesBySlot[idx] == null) {
+                                                    if (enemies[idx] != null) {
+                                                        enemies[idx] = null
+                                                        state.enemyConfidences.remove(role)
+                                                    }
                                                 }
                                             }
                                         }
-                                    } else if (result.enemiesBySlot.isNotEmpty()) {
+                                    } else {
                                         for (idx in 0 until 5) {
                                             if (manualLockedEnemySlots[idx] != true) {
                                                 val scannedEnemy = result.enemiesBySlot[idx]
@@ -1096,6 +1109,11 @@ private fun FloatingOverlayContent(
                                                     if (enemies[idx]?.id != scannedEnemy.id) {
                                                         assignEnemySlot(idx, scannedEnemy, 85)
                                                         newEnemiesAdded++
+                                                    }
+                                                } else {
+                                                    if (enemies[idx] != null) {
+                                                        enemies[idx] = null
+                                                        defaultRoles.getOrNull(idx)?.let { state.enemyConfidences.remove(it) }
                                                     }
                                                 }
                                             }

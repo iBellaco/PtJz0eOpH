@@ -42,10 +42,10 @@ data class VisionCalibrationConfig(
     val spellSizeRatio: Float = 0.041f,
     val spellYOffsetRatio: Float = 0.0f,
 
-    // Rango horizontal OCR para columnas de draft (cobertura integral de mitades de pantalla)
+    // Rango horizontal OCR para columnas de draft (estrictamente los laterales de selección)
     val allyOcrMinX: Float = 0.000f,
-    val allyOcrMaxX: Float = 0.420f,
-    val enemyOcrMinX: Float = 0.580f,
+    val allyOcrMaxX: Float = 0.250f,
+    val enemyOcrMinX: Float = 0.750f,
     val enemyOcrMaxX: Float = 1.000f,
 
     // --- CÍRCULOS DE AVATARES SUPERIORES (10º PICK Y FASE DE PREPARACIÓN) ---

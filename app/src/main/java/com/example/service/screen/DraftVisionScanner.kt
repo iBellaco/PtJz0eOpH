@@ -188,14 +188,14 @@ object DraftVisionScanner {
         private var lastConfirmedChampion: Champion? = null
 
         fun process(candidate: Champion?, isUnpicked: Boolean, persistentCache: Champion?): Champion? {
+            if (isUnpicked) {
+                lastConfirmedChampion = null
+                return null
+            }
             val champ = candidate ?: persistentCache ?: lastConfirmedChampion
             if (champ != null) {
                 lastConfirmedChampion = champ
                 return champ
-            }
-            if (isUnpicked) {
-                lastConfirmedChampion = null
-                return null
             }
             return null
         }
@@ -312,11 +312,9 @@ object DraftVisionScanner {
                     val boxRightRatio = if (width > 0 && box != null) box.right.toFloat() / width.toFloat() else xRatio
 
                     val isAllyCol = (xRatio in calib.allyOcrMinX..calib.allyOcrMaxX) ||
-                                    (boxLeftRatio < calib.allyOcrMaxX && boxRightRatio > calib.allyOcrMinX) ||
-                                    (xRatio < 0.45f && boxLeftRatio < 0.48f)
+                                    (boxLeftRatio <= calib.allyOcrMaxX && boxRightRatio >= calib.allyOcrMinX && xRatio < 0.28f)
                     val isEnemyCol = (xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX) ||
-                                     (boxLeftRatio < calib.enemyOcrMaxX && boxRightRatio > calib.enemyOcrMinX) ||
-                                     (xRatio > 0.55f && boxRightRatio > 0.52f)
+                                     (boxLeftRatio <= calib.enemyOcrMaxX && boxRightRatio >= calib.enemyOcrMinX && xRatio > 0.72f)
                     val isDraftColumn = isAllyCol || isEnemyCol
 
                     // EXCLUSIÓN INTELIGENTE DEL OVERLAY FLOTANTE DEL ASISTENTE:
@@ -587,13 +585,16 @@ object DraftVisionScanner {
                         }
                     }
 
-                    // Fase C: Si NO se detectó campeón y sí se detectó rol, y el slot no tenía campeón previo confirmado
-                    if (detectedChampInSlot == null && detectedRoleInSlot != null && allySlotConfirmedChampions[i] == null) {
+                    // Fase C: Si NO se detectó campeón y sí se detectó rol, el slot está en espera de selección
+                    if (detectedChampInSlot == null && detectedRoleInSlot != null) {
+                        allySlotConfirmedChampions[i] = null
                         isSlotShowingLane = true
                         allySlotShowingLane[i] = true
                         allySlotHasConfirmedChampOcr[i] = false
                         allyOcrChampions[i] = null
                         slot.champion = null
+                        slot.confidencePercent = 0
+                        slot.isLikelyUnpicked = true
                         AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea: ${detectedRoleInSlot.shortName} (Esperando selección)")
                     }
 
@@ -602,6 +603,7 @@ object DraftVisionScanner {
                         allySlotShowingLane[i] = false
                         allySlotHasConfirmedChampOcr[i] = true
                     } else if (detectedRoleInSlot != null) {
+                        allySlotConfirmedChampions[i] = null
                         isSlotShowingLane = true
                         allySlotShowingLane[i] = true
                         allySlotHasConfirmedChampOcr[i] = false
@@ -984,9 +986,14 @@ object DraftVisionScanner {
                     }
                 }
 
+                val isExplicitUnpickedEnemy = enemyEntries.any { 
+                    val lower = it.first.lowercase(Locale.ROOT)
+                    lower.contains("jugador") || lower.contains("jogador") || lower.contains("player")
+                }
+
                 // REGLAS ESTRICTAS DEL USUARIO:
                 // Si el OCR detecta un campeón en el slot rival, se confirma al 100% y se guarda en memoria.
-                // Si en fotogramas posteriores no se detecta nuevo texto, se MANTIENE intacto el campeón ya confirmado.
+                // Si el slot muestra "Jugador X", se descarta cualquier campeón fantasma y se marca como no seleccionado.
                 // Si el campeón pertenece al equipo aliado, jamás se asigna al rival.
                 if (detectedEnemyChamp != null && !currentAllyChampIds.contains(detectedEnemyChamp.id)) {
                     enemySlotConfirmedChampions[i] = detectedEnemyChamp
@@ -994,6 +1001,12 @@ object DraftVisionScanner {
                     enemySlots[i].champion = detectedEnemyChamp
                     enemySlots[i].confidencePercent = 100
                     enemySlots[i].isLikelyUnpicked = false
+                } else if (isExplicitUnpickedEnemy) {
+                    enemySlotConfirmedChampions[i] = null
+                    enemyOcrChampions[i] = null
+                    enemySlots[i].champion = null
+                    enemySlots[i].confidencePercent = 0
+                    enemySlots[i].isLikelyUnpicked = true
                 } else if (enemySlotConfirmedChampions[i] != null) {
                     val existingEnemy = enemySlotConfirmedChampions[i]
                     if (existingEnemy != null && !currentAllyChampIds.contains(existingEnemy.id)) {
