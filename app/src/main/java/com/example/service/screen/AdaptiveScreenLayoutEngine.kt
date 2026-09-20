@@ -70,7 +70,6 @@ object AdaptiveScreenLayoutEngine {
         val adaptiveAllyCenterX = baseConfig.allyAvatarCenterX
         val adaptiveAllyTenthCenterX = baseConfig.allyTenthAvatarCenterX
         val adaptiveEnemyCenterX = baseConfig.enemyAvatarCenterX
-        val adaptiveEnemyTenthCenterX = baseConfig.enemyTenthAvatarCenterX
 
         // Rango de búsqueda OCR adaptativo
         val allyOcrMinX = baseConfig.allyOcrMinX
@@ -97,7 +96,6 @@ object AdaptiveScreenLayoutEngine {
             allyAvatarCenterX = adaptiveAllyCenterX,
             allyTenthAvatarCenterX = adaptiveAllyTenthCenterX,
             enemyAvatarCenterX = adaptiveEnemyCenterX,
-            enemyTenthAvatarCenterX = adaptiveEnemyTenthCenterX,
             avatarDiameterRatio = baseConfig.avatarDiameterRatio,
             allyOcrMinX = allyOcrMinX,
             allyOcrMaxX = allyOcrMaxX,
@@ -126,8 +124,7 @@ object AdaptiveScreenLayoutEngine {
             if (sIdx == 4 || isTenthPick) (width * config.allyTenthAvatarCenterX).toInt()
             else (width * config.allyAvatarCenterX).toInt()
         } else {
-            if (sIdx == 4 || isTenthPick) (width * config.enemyTenthAvatarCenterX).toInt()
-            else (width * config.enemyAvatarCenterX).toInt()
+            (width * config.enemyAvatarCenterX).toInt()
         }
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cy = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
@@ -161,8 +158,7 @@ object AdaptiveScreenLayoutEngine {
             if (sIdx == 4 || isTenthPick) (width * config.allyTenthAvatarCenterX).toInt()
             else (width * config.allyAvatarCenterX).toInt()
         } else {
-            if (sIdx == 4 || isTenthPick) (width * config.enemyTenthAvatarCenterX).toInt()
-            else (width * config.enemyAvatarCenterX).toInt()
+            (width * config.enemyAvatarCenterX).toInt()
         }
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cyNominal = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()

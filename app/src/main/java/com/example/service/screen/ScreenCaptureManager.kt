@@ -70,15 +70,12 @@ class ScreenCaptureManager(private val context: Context) {
         return try {
             val planes = img.planes
             if (planes.isNullOrEmpty()) return null
-            val plane = planes[0]
-            val buffer = plane.buffer ?: return null
-            val pixelStride = plane.pixelStride
-            val rowStride = plane.rowStride
+            val buffer = planes[0].buffer ?: return null
+            val pixelStride = planes[0].pixelStride
+            val rowStride = planes[0].rowStride
             val width = img.width
             val height = img.height
             if (width <= 0 || height <= 0 || pixelStride <= 0 || rowStride <= 0) return null
-
-            buffer.rewind()
 
             val rowPadding = rowStride - pixelStride * width
             val bitmapWidth = width + rowPadding / pixelStride
@@ -96,7 +93,7 @@ class ScreenCaptureManager(private val context: Context) {
             )
             bmp.copyPixelsFromBuffer(buffer)
 
-            if (rowPadding != 0 || bitmapWidth != width) {
+            if (rowPadding != 0) {
                 val cropped = Bitmap.createBitmap(bmp, 0, 0, width, height)
                 bmp.recycle()
                 cropped
@@ -116,22 +113,6 @@ class ScreenCaptureManager(private val context: Context) {
     fun initializeProjection(resultCode: Int, data: Intent): Boolean {
         synchronized(projectionLock) {
             try {
-                // Limpieza preventiva de proyecciones y virtual displays previos
-                try {
-                    virtualDisplay?.release()
-                } catch (_: Throwable) {}
-                virtualDisplay = null
-
-                try {
-                    imageReader?.close()
-                } catch (_: Throwable) {}
-                imageReader = null
-
-                try {
-                    mediaProjection?.stop()
-                } catch (_: Throwable) {}
-                mediaProjection = null
-
                 val projectionManager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                 mediaProjection = projectionManager.getMediaProjection(resultCode, data)
 

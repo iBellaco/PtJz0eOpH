@@ -400,21 +400,22 @@ object LiteRTVisionClassifier {
         // 2. En cambio, el retrato de un campeón cubre ampliamente el círculo interior (darkRatio < 45%).
         val isAchromatic = maxSat < 32 && colorfulRatio < 0.05f
         val isEmptyOrWaiting = when {
-            // 1. Prácticamente todo oscuro (slot completamente apagado o fondo negro)
-            maxLum < 45 -> true
+            // 1. Prácticamente todo oscuro (slot apagado o fondo negro)
+            maxLum < 60 -> true
 
-            // 2. Fondo oscuro predominante en el slot (icono de línea sobre fondo negro o yelmo espartano):
-            // En Wild Rift, los slots sin elegir tienen fondo negro con más del 72% de píxeles oscuros
-            darkRatio >= 0.72f -> true
-            midRingDarkRatio >= 0.68f && darkRatio >= 0.62f -> true
+            // 2. Fondo oscuro predominante en el slot (icono de línea o yelmo espartano):
+            // En Wild Rift, los slots no elegidos tienen un fondo oscuro que cubre > 55-60% del círculo interior,
+            // mientras que el retrato de un campeón seleccionado llena la mayor parte del círculo (darkRatio < 45%).
+            darkRatio >= 0.58f -> true
+            midRingDarkRatio >= 0.54f && darkRatio >= 0.48f -> true
 
-            // 3. Luminancia global extremadamente baja:
-            avgLum < 25f && darkRatio >= 0.60f -> true
-            avgLum < 20f -> true
+            // 3. Luminancia global baja con fondo predominantemente oscuro:
+            avgLum < 45f && darkRatio >= 0.45f -> true
+            avgLum < 36f -> true
 
-            // 4. Caso acromático (yelmo espartano rival sin color):
-            isAchromatic && (darkRatio >= 0.58f || avgLum < 32f) -> true
-            isAchromatic && stdDevLum < 16f && avgLum < 42f -> true
+            // 4. Caso acromático (yelmo espartano rival o silueta monocromática):
+            isAchromatic && (darkRatio >= 0.42f || avgLum < 50f) -> true
+            isAchromatic && stdDevLum < 20f && avgLum < 60f -> true
 
             // 5. Firma de Icono de Línea o Resplandor de Turno Activo (pocas zonas de color/glifo sobre fondo oscuro):
             // Un icono de carril o el anillo de selección tiene solo un pequeño porcentaje de píxeles brillantes
