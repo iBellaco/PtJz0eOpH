@@ -411,8 +411,13 @@ object DraftVisionScanner {
                     // Permitir todos los 5 slots (desde y=0.15 hasta y=0.85)
                     if (yRatio < 0.12f || yRatio > 0.880f) continue
 
-                    val isAllyCol = xRatio in calib.allyOcrMinX..calib.allyOcrMaxX
-                    val isEnemyCol = xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX
+                    val boxLeftRatio = if (width > 0 && box != null) box.left.toFloat() / width.toFloat() else xRatio
+                    val boxRightRatio = if (width > 0 && box != null) box.right.toFloat() / width.toFloat() else xRatio
+
+                    val isAllyCol = (xRatio in calib.allyOcrMinX..calib.allyOcrMaxX) ||
+                                    (boxLeftRatio < calib.allyOcrMaxX && boxRightRatio > calib.allyOcrMinX)
+                    val isEnemyCol = (xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX) ||
+                                     (boxLeftRatio < calib.enemyOcrMaxX && boxRightRatio > calib.enemyOcrMinX)
 
                     // 1.1 COLUMNA ALIADA (Texto a la derecha del avatar aliado)
                     if (isAllyCol) {
@@ -427,6 +432,16 @@ object DraftVisionScanner {
                         }
                         if (bestSlot != -1) {
                             allySlotTexts[bestSlot].add(Pair(text, box))
+                            // Si la línea contiene múltiples palabras/elementos (ej: icono de maestría separado de campeón),
+                            // agregar los elementos individuales para detección inmediata en 0ms
+                            if (line.elements.size > 1) {
+                                for (el in line.elements) {
+                                    val elTxt = el.text.trim()
+                                    if (elTxt.length >= 2 && !DraftValidationLayer.isNoiseText(elTxt)) {
+                                        allySlotTexts[bestSlot].add(Pair(elTxt, el.boundingBox))
+                                    }
+                                }
+                            }
                         }
                     }
                     // 1.2 COLUMNA ENEMIGA (Texto a la izquierda del avatar rival)
@@ -442,6 +457,14 @@ object DraftVisionScanner {
                         }
                         if (bestSlot != -1) {
                             enemySlotTexts[bestSlot].add(Pair(text, box))
+                            if (line.elements.size > 1) {
+                                for (el in line.elements) {
+                                    val elTxt = el.text.trim()
+                                    if (elTxt.length >= 2 && !DraftValidationLayer.isNoiseText(elTxt)) {
+                                        enemySlotTexts[bestSlot].add(Pair(elTxt, el.boundingBox))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -491,8 +514,56 @@ object DraftVisionScanner {
                         val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
 
                         // 1. ¿Es un campeón seleccionado?
-                        val matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
+                        var matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
                             ?: ChampionNameResolver.findChampionInText(line, allChamps)
+
+                        if (matchedChamp == null) {
+                            // Separar tokens si la línea tiene glifos o iconos de maestría (ej: "V YASUO", "M7 DARIUS", "VII JINX", "4 KAI'SA")
+                            val cleanLine = line.replace(Regex("^[^a-zA-Z0-9]+"), "").trim()
+                            val tokens = cleanLine.split(Regex("\\s+")).filter { it.isNotBlank() }
+
+                            // Probar tokens individuales de derecha a izquierda (el campeón siempre va al final tras el icono)
+                            for (t in tokens.reversed()) {
+                                if (t.length >= 2 && !DraftValidationLayer.isNoiseText(t)) {
+                                    val tStripped = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(t)
+                                    val c = ChampionNameResolver.findChampionInText(tStripped, allChamps)
+                                        ?: ChampionNameResolver.findChampionInText(t, allChamps)
+                                    if (c != null) {
+                                        matchedChamp = c
+                                        break
+                                    }
+                                }
+                            }
+
+                            // Probar pares de tokens consecutivos (ej: "Lee Sin", "Jarvan IV", "Miss Fortune", "Twisted Fate", "Master Yi")
+                            if (matchedChamp == null && tokens.size >= 2) {
+                                for (idx in 0 until tokens.size - 1) {
+                                    val pair = "${tokens[idx]} ${tokens[idx + 1]}"
+                                    val c = ChampionNameResolver.findChampionInText(pair, allChamps)
+                                    if (c != null) {
+                                        matchedChamp = c
+                                        break
+                                    }
+                                }
+                            }
+
+                            // Probar prefijos de maestría pegados al nombre sin espacio (ej: "VYASUO", "4DARIUS", "7JINX", "VJINX", "M7ZED")
+                            if (matchedChamp == null) {
+                                for (token in tokens) {
+                                    for (pLen in 1..3) {
+                                        if (token.length > pLen + 1) {
+                                            val candidate = token.substring(pLen).trim()
+                                            val c = ChampionNameResolver.findChampionInText(candidate, allChamps)
+                                            if (c != null) {
+                                                matchedChamp = c
+                                                break
+                                            }
+                                        }
+                                    }
+                                    if (matchedChamp != null) break
+                                }
+                            }
+                        }
 
                         if (matchedChamp != null) {
                             detectedChampInSlot = matchedChamp
@@ -610,7 +681,9 @@ object DraftVisionScanner {
                 }
 
                 // Si el OCR global no detectó campeón por ruido o icono de maestría, aplicar preprocesamiento adaptativo
-                if (detectedChampInSlot == null && allySlotConfirmedChampions[i] == null && recognizer != null) {
+                // OPTIMIZACIÓN: Solo ejecutar si el slot NO está mostrando explícitamente su carril (no sigue en espera)
+                // y si se detectó algún texto en la región para evitar retrasos innecesarios en slots vacíos.
+                if (detectedChampInSlot == null && detectedRoleInSlot == null && allySlotConfirmedChampions[i] == null && recognizer != null && entries.isNotEmpty()) {
                     try {
                         val slotCenterY = calib.allySlotYRatios[i]
                         val startYRatio = (slotCenterY - 0.050f).coerceIn(0f, 0.90f)
@@ -630,7 +703,7 @@ object DraftVisionScanner {
                             if (preprocBitmap != null) {
                                 val inputImg = com.google.mlkit.vision.common.InputImage.fromBitmap(preprocBitmap, 0)
                                 val task = recognizer.process(inputImg)
-                                val preprocRes = com.google.android.gms.tasks.Tasks.await(task, 400, java.util.concurrent.TimeUnit.MILLISECONDS)
+                                val preprocRes = com.google.android.gms.tasks.Tasks.await(task, 120, java.util.concurrent.TimeUnit.MILLISECONDS)
                                 for (blk in preprocRes.textBlocks) {
                                     for (ln in blk.lines) {
                                         val lnTxt = ln.text.trim()
@@ -826,7 +899,7 @@ object DraftVisionScanner {
                 }
 
                 // Si el OCR global no detectó campeón en slot rival, aplicar preprocesamiento adaptativo
-                if (detectedEnemyChamp == null && enemySlotConfirmedChampions[i] == null && recognizer != null) {
+                if (detectedEnemyChamp == null && enemySlotConfirmedChampions[i] == null && recognizer != null && enemyEntries.isNotEmpty()) {
                     try {
                         val slotCenterY = calib.enemySlotYRatios[i]
                         val startYRatio = (slotCenterY - 0.050f).coerceIn(0f, 0.90f)
@@ -846,7 +919,7 @@ object DraftVisionScanner {
                             if (preprocBitmap != null) {
                                 val inputImg = com.google.mlkit.vision.common.InputImage.fromBitmap(preprocBitmap, 0)
                                 val task = recognizer.process(inputImg)
-                                val preprocRes = com.google.android.gms.tasks.Tasks.await(task, 400, java.util.concurrent.TimeUnit.MILLISECONDS)
+                                val preprocRes = com.google.android.gms.tasks.Tasks.await(task, 120, java.util.concurrent.TimeUnit.MILLISECONDS)
                                 for (blk in preprocRes.textBlocks) {
                                     for (ln in blk.lines) {
                                         val lnTxt = ln.text.trim()

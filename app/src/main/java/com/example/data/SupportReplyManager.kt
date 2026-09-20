@@ -72,19 +72,15 @@ object SupportReplyManager {
 
     /**
      * Determina si el usuario tiene permiso para responder.
-     * Al enviar un reporte de soporte se inicia una conversación activa,
-     * permitiendo al usuario aportar más información o responder en cualquier momento.
+     * Permite al usuario responder a reportes, mensajes de soporte, patrocinadores y DMs en cualquier momento
+     * mientras no se encuentre marcado como cerrado o solucionado.
      */
     fun canUserReply(messages: List<SupportMessageEntry>, ticketStatus: String = "PENDIENTE"): Boolean {
         val normStatus = ticketStatus.uppercase()
         if (normStatus == "SOLUCIONADO" || normStatus == "CERRADO" || normStatus == "CLOSED" || normStatus == "RESUELTO") {
             return false
         }
-        val supportReplies = messages.filter { 
-            (it.senderRole.equals("SUPPORT", ignoreCase = true) || it.senderRole.equals("ADMIN", ignoreCase = true)) &&
-            !it.isGreeting && !isDefaultGreeting(it.text)
-        }
-        return supportReplies.isNotEmpty()
+        return true
     }
 
     /**
@@ -94,7 +90,7 @@ object SupportReplyManager {
         val supportMessages = messages.filter { 
             it.senderRole.equals("SUPPORT", ignoreCase = true) || it.senderRole.equals("ADMIN", ignoreCase = true)
         }
-        if (supportMessages.isEmpty()) return true
+        if (supportMessages.isEmpty()) return false
         return supportMessages.all { it.isGreeting || isDefaultGreeting(it.text) }
     }
 

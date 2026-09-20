@@ -88,6 +88,7 @@ import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -1757,17 +1758,27 @@ private fun ComprehensiveFeedbackCard(
                                 Icon(Icons.Default.QuestionAnswer, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                                 Text(text = tr("Respuesta de Soporte Coach:"), color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                             }
-                            if (onReply != null && (itemCategory == "SUPPORT" || itemCategory == "PATROCINADOR" || itemCategory == "BUG")) {
-                                Text(
-                                    text = tr("Editar"),
-                                    color = HextechCyan,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .clickable { onReply() }
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
+                            if (onReply != null) {
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = HextechCyan.copy(alpha = 0.15f),
+                                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.6f)),
+                                    modifier = Modifier.clickable { onReply() }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(Icons.Default.Reply, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(11.dp))
+                                        Text(
+                                            text = tr("Responder"),
+                                            color = HextechCyan,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.height(3.dp))
@@ -1804,7 +1815,7 @@ private fun ComprehensiveFeedbackCard(
                         }
                     }
                 }
-            } else if (onReply != null && (itemCategory == "SUPPORT" || itemCategory == "PATROCINADOR" || itemCategory == "BUG")) {
+            } else if (onReply != null) {
                 Spacer(modifier = Modifier.height(6.dp))
                 OutlinedButton(
                     onClick = onReply,

@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -171,6 +173,82 @@ fun RoleBadge(
                     letterSpacing = 0.5.sp
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun SecondaryRoleBadge(
+    secondaryRole: String,
+    size: RoleBadgeSize = RoleBadgeSize.COMPACT,
+    modifier: Modifier = Modifier
+) {
+    val secRole = com.example.model.AppUserSecondaryRole.fromId(secondaryRole)
+    if (secRole == com.example.model.AppUserSecondaryRole.NONE) return
+
+    val infiniteTransition = rememberInfiniteTransition(label = "secRoleBadgeAnim_${secRole.id}")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.60f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "secPulseAlpha"
+    )
+
+    val metrics = when (size) {
+        RoleBadgeSize.COMPACT -> BadgeMetrics(9.sp, 6.dp, 2.dp, 10.sp)
+        RoleBadgeSize.NORMAL -> BadgeMetrics(11.sp, 8.dp, 3.5.dp, 12.sp)
+        RoleBadgeSize.LARGE -> BadgeMetrics(13.sp, 12.dp, 5.dp, 14.5.sp)
+    }
+
+    val badgeColor = secRole.primaryColor
+    val baseBg = badgeColor.copy(alpha = 0.16f)
+    val highlightBg = badgeColor.copy(alpha = (0.32f * pulseAlpha).coerceIn(0.18f, 0.45f))
+    val ambientBorderColor = secRole.borderColor.copy(alpha = (0.5f + 0.45f * pulseAlpha).coerceIn(0.5f, 0.95f))
+
+    val bgBrush = Brush.linearGradient(
+        colors = listOf(
+            baseBg,
+            highlightBg,
+            secRole.secondaryColor.copy(alpha = 0.25f),
+            baseBg
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(120f, 60f)
+    )
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(bgBrush)
+            .border(
+                width = if (size == RoleBadgeSize.LARGE) 1.5.dp else 1.dp,
+                color = ambientBorderColor,
+                shape = RoundedCornerShape(6.dp)
+            )
+            .padding(horizontal = metrics.hPad, vertical = metrics.vPad),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(end = 4.dp)
+                    .size(if (size == RoleBadgeSize.COMPACT) 6.dp else 7.dp)
+                    .clip(CircleShape)
+                    .background(badgeColor)
+            )
+            Text(
+                text = secRole.displayName.uppercase(),
+                color = badgeColor,
+                fontSize = metrics.fontSize,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.5.sp
+            )
         }
     }
 }

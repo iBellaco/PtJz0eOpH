@@ -37,7 +37,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.roundToInt
 
 enum class CalibrationTarget(val title: String, val subtitle: String) {
-    ALLY_SLOT_4("⭐ 10º Pick Aliado (Slot 5)", "Mover en X (izq/der) e Y (arriba/abajo) el 10º pick aliado"),
+    ALLY_SLOT_4("⭐ 10º Pick Aliado (Slot 5)", "Ajuste milimétrico X e Y del slot 5 aliado (abajo izquierda)"),
     ENEMY_SLOT_4("⭐ 10º Pick Rival (Slot 5)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
     GLOBAL_ALLY_X("Columna Aliados X", "Mover horizontalmente todos los avatares aliados verticales"),
     GLOBAL_ENEMY_X("Columna Rivales X", "Mover horizontalmente todos los avatares rivales verticales"),
@@ -499,7 +499,8 @@ fun DraftCalibrationPanel(
                         val steps = listOf(
                             Pair("0.1%", 0.001f),
                             Pair("0.5%", 0.005f),
-                            Pair("1.0%", 0.010f)
+                            Pair("1.0%", 0.010f),
+                            Pair("2.0%", 0.020f)
                         )
                         steps.forEach { (label, value) ->
                             val isSel = stepFactor == value
@@ -520,6 +521,29 @@ fun DraftCalibrationPanel(
                                     fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
+                        }
+                    }
+
+                    if (selectedTarget == CalibrationTarget.ALLY_SLOT_4) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(HextechCyan.copy(alpha = 0.15f))
+                                .border(0.6.dp, HextechCyan, RoundedCornerShape(4.dp))
+                                .clickable {
+                                    updateAndApply(config.copy(allyTenthAvatarCenterX = config.allyAvatarCenterX))
+                                    Toast.makeText(context, "Slot 5 alineado con la columna aliada", Toast.LENGTH_SHORT).show()
+                                }
+                                .padding(vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🎯 Alinear Slot 5 con Columna Aliada",
+                                color = HextechCyan,
+                                fontSize = 7.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

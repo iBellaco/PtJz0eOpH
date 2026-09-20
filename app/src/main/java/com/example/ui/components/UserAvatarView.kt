@@ -55,10 +55,22 @@ fun UserAvatarView(
     showBorder: Boolean = true,
     customBorderColor: Color? = null,
     rankBorder: String = "NONE",
+    secondaryRole: String? = null,
     isAdmin: Boolean = false,
     adminFrameResId: Int = com.example.R.drawable.ic_frame_admin,
     adminFrameUrl: String? = null
 ) {
+    val secRoleObj = remember(secondaryRole, rankBorder) {
+        if (!secondaryRole.isNullOrBlank() && secondaryRole != "none") {
+            com.example.model.AppUserSecondaryRole.fromId(secondaryRole)
+        } else if (rankBorder != "NONE" && rankBorder.isNotBlank()) {
+            com.example.model.AppUserSecondaryRole.fromId(rankBorder)
+        } else {
+            com.example.model.AppUserSecondaryRole.NONE
+        }
+    }
+    val secFrameRes = if (!isAdmin) secRoleObj.frameDrawableRes else null
+
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
     val parsedBorderColor = customBorderColor ?: try {
         Color(android.graphics.Color.parseColor(avatar.borderHex))
@@ -162,13 +174,13 @@ fun UserAvatarView(
                     )
                 )
                 .then(
-                    if (rankBorder != "NONE" && !isAdmin) {
+                    if (rankBorder != "NONE" && !isAdmin && secFrameRes == null) {
                         Modifier.rankedBorderPainter(
                             rank = rankBorder,
                             glowPulse = glowPulse,
                             rotation = rotation
                         )
-                    } else if (actualShowBorder && !isAdmin) {
+                    } else if (actualShowBorder && !isAdmin && secFrameRes == null) {
                         val isCom = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
                         if (!isCom) {
                             Modifier.premiumBorderPainter(
@@ -210,7 +222,7 @@ fun UserAvatarView(
             }
         }
 
-        // Marco exclusivo de Administrador (rodeando el avatar por fuera)
+        // Marco exclusivo de Administrador o Rol Secundario (rodeando el avatar por fuera)
         if (isAdmin) {
             if (adminFrameResId != 0) {
                 Image(
@@ -238,6 +250,16 @@ fun UserAvatarView(
                         .align(Alignment.Center)
                 )
             }
+        } else if (secFrameRes != null) {
+            Image(
+                painter = painterResource(id = secFrameRes),
+                contentDescription = "Marco de Rol Secundario (${secRoleObj.displayName})",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .requiredSize(size * 2.48f)
+                    .offset(y = size * 0.09f)
+                    .align(Alignment.Center)
+            )
         }
     }
 }
@@ -250,7 +272,35 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
         val r = size.width / 2
         
         when (rank.uppercase()) {
-            "MASTER" -> {
+            "ESMERALDA", "EMERALD" -> {
+                drawCircle(
+                    brush = Brush.sweepGradient(listOf(Color(0xFF10B981), Color(0xFF047857), Color(0xFF34D399), Color(0xFF065F46), Color(0xFF10B981))),
+                    radius = r - 2.dp.toPx(),
+                    center = Offset(cx, cy),
+                    style = Stroke(width = 3.8.dp.toPx())
+                )
+                drawCircle(
+                    color = Color(0xFF34D399).copy(alpha = 0.45f + (0.35f * glowPulse)),
+                    radius = r,
+                    center = Offset(cx, cy),
+                    style = Stroke(width = 1.2.dp.toPx())
+                )
+            }
+            "DIAMANTE", "DIAMOND" -> {
+                drawCircle(
+                    brush = Brush.sweepGradient(listOf(Color(0xFF38BDF8), Color(0xFF0284C7), Color(0xFFE0F2FE), Color(0xFF0284C7), Color(0xFF38BDF8))),
+                    radius = r - 2.dp.toPx(),
+                    center = Offset(cx, cy),
+                    style = Stroke(width = 4.2.dp.toPx())
+                )
+                drawCircle(
+                    color = Color(0xFF7DD3FC).copy(alpha = 0.5f),
+                    radius = r - 4.5.dp.toPx(),
+                    center = Offset(cx, cy),
+                    style = Stroke(width = 1.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f)))
+                )
+            }
+            "MASTER", "MAESTRO" -> {
                 drawCircle(
                     brush = Brush.sweepGradient(listOf(Color(0xFFFF00FF), Color(0xFF8A2BE2), Color(0xFF4B0082), Color(0xFFFF00FF))),
                     radius = r - 2.dp.toPx(),
@@ -264,7 +314,7 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
                     style = Stroke(width = 1.dp.toPx())
                 )
             }
-            "GRANDMASTER" -> {
+            "GRANDMASTER", "GRAN_MAESTRO", "GRAN MAESTRO" -> {
                 drawCircle(
                     brush = Brush.sweepGradient(listOf(Color(0xFFFF4500), Color(0xFFDC143C), Color(0xFFFFD700), Color(0xFFFF4500))),
                     radius = r - 2.5.dp.toPx(),
@@ -278,7 +328,7 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
                     style = Stroke(width = 1.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f)))
                 )
             }
-            "CHALLENGER" -> {
+            "CHALLENGER", "ASPIRANTE" -> {
                 rotate(rotation) {
                     drawCircle(
                         brush = Brush.sweepGradient(listOf(Color(0xFF00FFFF), Color(0xFFFFD700), Color(0xFF00BFFF), Color(0xFFFFD700), Color(0xFF00FFFF))),
@@ -316,6 +366,46 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
                     path = gemPath,
                     color = Color(0xFFFFD700),
                     style = Stroke(width = 1.5.dp.toPx())
+                )
+            }
+            "SOBERANO", "SOVEREIGN" -> {
+                rotate(rotation * 1.25f) {
+                    drawCircle(
+                        brush = Brush.sweepGradient(listOf(Color(0xFF00F0FF), Color(0xFF818CF8), Color(0xFFFFD700), Color(0xFF38BDF8), Color(0xFF00F0FF))),
+                        radius = r - 3.2.dp.toPx(),
+                        center = Offset(cx, cy),
+                        style = Stroke(width = 6.5.dp.toPx())
+                    )
+                }
+                drawCircle(
+                    color = Color(0xFF00F0FF).copy(alpha = 0.4f + (0.5f * glowPulse)),
+                    radius = r,
+                    center = Offset(cx, cy),
+                    style = Stroke(width = 9.dp.toPx())
+                )
+                val gemPath = Path().apply {
+                    val gemR = 9.dp.toPx()
+                    val gemY = size.height - 2.dp.toPx()
+                    moveTo(cx, gemY - gemR)
+                    lineTo(cx + gemR * 0.866f, gemY - gemR/2)
+                    lineTo(cx + gemR * 0.866f, gemY + gemR/2)
+                    lineTo(cx, gemY + gemR)
+                    lineTo(cx - gemR * 0.866f, gemY + gemR/2)
+                    lineTo(cx - gemR * 0.866f, gemY - gemR/2)
+                    close()
+                }
+                drawPath(
+                    path = gemPath,
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color(0xFFFFD700), Color(0xFF00F0FF)),
+                        center = Offset(cx, size.height - 2.dp.toPx()),
+                        radius = 9.dp.toPx()
+                    )
+                )
+                drawPath(
+                    path = gemPath,
+                    color = Color(0xFF00F0FF),
+                    style = Stroke(width = 1.8.dp.toPx())
                 )
             }
         }

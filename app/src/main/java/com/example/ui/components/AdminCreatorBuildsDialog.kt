@@ -22,9 +22,12 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -51,14 +54,27 @@ import java.util.Locale
 
 enum class BuildsFilterTab {
     ALL,
+    CREATORS,
     FAVORITES
 }
+
+data class CreatorListItem(
+    val uid: String = "",
+    val name: String,
+    val avatarId: String = "default_poro",
+    val rankBorder: String = "NONE",
+    val secondaryRole: String = "none",
+    val isAdmin: Boolean = false,
+    val isVerified: Boolean = false,
+    val buildsCount: Int = 0
+)
 
 data class CreatorPodiumEntry(
     val userId: String = "",
     val name: String,
     val avatarId: String? = null,
     val rankBorder: String = "NONE",
+    val secondaryRole: String = "none",
     val isAdmin: Boolean = false,
     val role: String = "creador",
     val buildsCount: Int = 0,
@@ -81,6 +97,7 @@ fun AdminCreatorBuildsDialog(
     val favoriteDao = remember { AppDatabase.getDatabase(context).favoriteBuildsDao() }
     val favorites by favoriteDao.getAllFavorites().collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedFilter by remember { mutableStateOf(BuildsFilterTab.ALL) }
+    var userSearchQuery by remember { mutableStateOf("") }
 
     // Lista de usuarios registrados en la nube para sincronizar avatares y marcos de creadores
     var registeredUsers by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
@@ -100,6 +117,66 @@ fun AdminCreatorBuildsDialog(
                     registeredUsers = list
                 }
         } catch (_: Exception) {}
+    }
+
+    // Listado filtrado ESTRICTAMENTE a usuarios que poseen el rol de creador
+    val allCreators = remember(registeredUsers, customBuilds) {
+        val list = mutableListOf<CreatorListItem>()
+        val seenNames = mutableSetOf<String>()
+
+        for (u in registeredUsers) {
+            val rawRole = (u["role"] as? String)
+                ?: (u["userRole"] as? String)
+                ?: (u["roleId"] as? String)
+                ?: ""
+            val normalizedRole = rawRole.trim().lowercase(Locale.ROOT)
+            val isCreatorRole = normalizedRole in listOf("creador", "creador_vip", "creator", "creator_vip", "streamer") ||
+                (u["isCreator"] as? Boolean) == true ||
+                (u["creator"] as? Boolean) == true ||
+                (u["isVipCreator"] as? Boolean) == true
+
+            // Regla estricta: Solo incluir usuarios con rol de creador
+            if (!isCreatorRole) continue
+
+            val rawName = (u["name"] as? String)
+                ?: (u["userName"] as? String)
+                ?: (u["username"] as? String)
+                ?: ""
+            val cleanName = rawName.trim()
+            if (cleanName.isNotBlank() && seenNames.add(cleanName.lowercase(Locale.ROOT))) {
+                val avatarId = u["avatarId"] as? String ?: "default_poro"
+                val rankBorder = u["rankBorder"] as? String ?: "NONE"
+                val secondaryRole = u["secondaryRole"] as? String ?: "none"
+                val isAdmin = (u["isAdmin"] as? Boolean) == true || normalizedRole == "admin"
+                val isVerified = (u["isVerified"] as? Boolean) == true ||
+                    (u["verified"] as? Boolean) == true ||
+                    isAdmin ||
+                    normalizedRole == "moderador"
+                val count = customBuilds.count { it.creatorName.trim().equals(cleanName, ignoreCase = true) }
+                list.add(
+                    CreatorListItem(
+                        uid = u["uid"] as? String ?: "",
+                        name = cleanName,
+                        avatarId = avatarId,
+                        rankBorder = rankBorder,
+                        secondaryRole = secondaryRole,
+                        isAdmin = isAdmin,
+                        isVerified = isVerified,
+                        buildsCount = count
+                    )
+                )
+            }
+        }
+
+        list.sortedBy { it.name.lowercase(Locale.ROOT) }
+    }
+
+    val filteredCreators = remember(allCreators, userSearchQuery) {
+        if (userSearchQuery.isBlank()) {
+            allCreators
+        } else {
+            allCreators.filter { it.name.contains(userSearchQuery.trim(), ignoreCase = true) }
+        }
     }
 
     // Cálculo dinámico del Top 3 de Creadores para el Podio
@@ -228,7 +305,7 @@ fun AdminCreatorBuildsDialog(
 
     val filteredBuilds = remember(customBuilds, favorites, selectedFilter, selectedCreatorFilter) {
         val base = when (selectedFilter) {
-            BuildsFilterTab.ALL -> customBuilds
+            BuildsFilterTab.ALL, BuildsFilterTab.CREATORS -> customBuilds
             BuildsFilterTab.FAVORITES -> {
                 val favIds = favorites.map { it.buildId }.toSet()
                 customBuilds.filter { it.id in favIds }
@@ -277,7 +354,7 @@ fun AdminCreatorBuildsDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // Header
             Row(
@@ -325,7 +402,7 @@ fun AdminCreatorBuildsDialog(
 
             HorizontalDivider(color = HextechCardBorder)
 
-            // Podio de Creadores (1er, 2do y 3er Lugar con Avatar, Nombre y Marco)
+            // Podio de Creadores (1er, 2do y 3er Lugar con Avatar, Nombre y Marco adaptado)
             if (podiumCreators.size >= 3) {
                 CreatorPodiumCard(
                     first = podiumCreators[0],
@@ -334,6 +411,9 @@ fun AdminCreatorBuildsDialog(
                     selectedCreator = selectedCreatorFilter,
                     onSelectCreator = { creatorName ->
                         selectedCreatorFilter = if (selectedCreatorFilter == creatorName) null else creatorName
+                        if (selectedFilter == BuildsFilterTab.CREATORS) {
+                            selectedFilter = BuildsFilterTab.ALL
+                        }
                     }
                 )
             }
@@ -350,7 +430,7 @@ fun AdminCreatorBuildsDialog(
                 Text("Crear Nueva Build Oficial", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
 
-            // Filtros de categoría y creador activo
+            // Filtros de categoría, creadores y creador activo
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -372,8 +452,33 @@ fun AdminCreatorBuildsDialog(
                 )
 
                 FilterChip(
+                    selected = selectedFilter == BuildsFilterTab.CREATORS,
+                    onClick = {
+                        selectedFilter = BuildsFilterTab.CREATORS
+                        selectedCreatorFilter = null
+                    },
+                    label = { Text("Creadores (${allCreators.size})") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.WorkspacePremium,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = if (selectedFilter == BuildsFilterTab.CREATORS) HextechCyan else TextSecondary
+                        )
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = HextechCyan.copy(alpha = 0.25f),
+                        selectedLabelColor = HextechCyan
+                    ),
+                    border = if (selectedFilter == BuildsFilterTab.CREATORS) BorderStroke(1.dp, HextechCyan) else null
+                )
+
+                FilterChip(
                     selected = selectedFilter == BuildsFilterTab.FAVORITES,
-                    onClick = { selectedFilter = BuildsFilterTab.FAVORITES },
+                    onClick = {
+                        selectedFilter = BuildsFilterTab.FAVORITES
+                        selectedCreatorFilter = null
+                    },
                     label = { Text("Mis Favoritos (${favorites.size})") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = DangerRed.copy(alpha = 0.2f),
@@ -398,135 +503,335 @@ fun AdminCreatorBuildsDialog(
                 }
             }
 
-            // Builds List
-            if (filteredBuilds.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        if (selectedCreatorFilter != null) "No hay builds para el creador \"$selectedCreatorFilter\"."
-                        else if (selectedFilter == BuildsFilterTab.FAVORITES) "No tienes builds favoritas guardadas."
-                        else "No hay builds creadas todavía.",
-                        color = TextSecondary,
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            } else {
-                LazyColumn(
+            // Contenido dinámico según la pestaña seleccionada
+            if (selectedFilter == BuildsFilterTab.CREATORS) {
+                // VISTA: LISTADO EXCLUSIVO DE CREADORES (Nombre de invocador, avatar con marco y estado de verificación)
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(filteredBuilds) { record ->
-                        val champObj = remember(record.championId) {
-                            WildRiftRepository.champions.find { it.id.equals(record.championId, ignoreCase = true) }
-                        }
-                        val avgRating = if (record.voteCount > 0) record.ratingSum / record.voteCount else 0.0
+                    OutlinedTextField(
+                        value = userSearchQuery,
+                        onValueChange = { userSearchQuery = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Buscar creador por nombre...", color = TextSecondary, fontSize = 12.sp) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = "Buscar", tint = HextechGold, modifier = Modifier.size(18.dp))
+                        },
+                        trailingIcon = {
+                            if (userSearchQuery.isNotBlank()) {
+                                IconButton(onClick = { userSearchQuery = "" }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Limpiar", tint = TextSecondary, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = HextechGold,
+                            unfocusedBorderColor = HextechCardBorder,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            cursorColor = HextechGold
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    )
 
-                        Card(
-                            shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
-                            border = BorderStroke(1.dp, HextechCardBorder),
+                    if (filteredCreators.isEmpty()) {
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { selectedBuildForDetail = record }
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                            Text(
+                                text = if (userSearchQuery.isNotBlank()) "No se encontraron creadores para \"$userSearchQuery\"" else "No hay usuarios con rol de creador registrados.",
+                                color = TextSecondary,
+                                fontSize = 13.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            items(filteredCreators, key = { it.name }) { creator ->
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (selectedCreatorFilter.equals(creator.name, ignoreCase = true)) HextechCyan else HextechCardBorder
+                                    ),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            selectedCreatorFilter = creator.name
+                                            selectedFilter = BuildsFilterTab.ALL
+                                        }
                                 ) {
                                     Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 12.dp, vertical = 10.dp),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                        modifier = Modifier.weight(1f)
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        if (champObj != null) {
-                                            ChampionAvatar(champion = champObj, size = 40.dp, showTierBadge = false)
-                                        }
-                                        Column {
-                                            Text(
-                                                text = "${record.championName} - ${record.buildTitle}",
-                                                color = Color.White,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 13.sp,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            // Avatar con su respectivo marco
+                                            Box(
+                                                modifier = Modifier.size(46.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                UserAvatarView(
+                                                    avatarId = creator.avatarId,
+                                                    size = 36.dp,
+                                                    fallbackInitial = creator.name.take(1).uppercase(Locale.ROOT),
+                                                    rankBorder = creator.rankBorder,
+                                                    secondaryRole = creator.secondaryRole,
+                                                    isAdmin = creator.isAdmin
+                                                )
+                                            }
+
+                                            // Nombre de invocador y Estado de Verificación
+                                            Column(
+                                                verticalArrangement = Arrangement.spacedBy(3.dp)
                                             ) {
                                                 Text(
-                                                    text = "Creador: ${record.creatorName} • ${record.role}",
-                                                    color = HextechGold,
-                                                    fontSize = 11.sp,
+                                                    text = creator.name,
+                                                    color = Color.White,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 13.5.sp,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis
                                                 )
-                                            }
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                Icon(Icons.Default.Star, contentDescription = null, tint = HextechGold, modifier = Modifier.size(12.dp))
-                                                Text(
-                                                    text = "${String.format(Locale.US, "%.1f", avgRating)} (${record.voteCount} votos)",
-                                                    color = TextSecondary,
-                                                    fontSize = 10.sp
-                                                )
-                                            }
-                                        }
-                                    }
 
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        IconButton(
-                                            onClick = { buildToEdit = record },
-                                            modifier = Modifier.size(32.dp)
-                                        ) {
-                                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = HextechGold, modifier = Modifier.size(16.dp))
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                ) {
+                                                    // Indicador si está verificado o no
+                                                    if (creator.isVerified) {
+                                                        Surface(
+                                                            shape = RoundedCornerShape(4.dp),
+                                                            color = HextechCyan.copy(alpha = 0.15f),
+                                                            border = BorderStroke(0.6.dp, HextechCyan.copy(alpha = 0.6f))
+                                                        ) {
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                                                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                                            ) {
+                                                                Icon(
+                                                                    Icons.Filled.Verified,
+                                                                    contentDescription = "Verificado",
+                                                                    tint = HextechCyan,
+                                                                    modifier = Modifier.size(11.dp)
+                                                                )
+                                                                Text(
+                                                                    text = "Verificado",
+                                                                    color = HextechCyan,
+                                                                    fontSize = 9.5.sp,
+                                                                    fontWeight = FontWeight.SemiBold
+                                                                )
+                                                            }
+                                                        }
+                                                    } else {
+                                                        Surface(
+                                                            shape = RoundedCornerShape(4.dp),
+                                                            color = HextechCardBorder.copy(alpha = 0.35f),
+                                                            border = BorderStroke(0.6.dp, HextechCardBorder)
+                                                        ) {
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                                                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                                            ) {
+                                                                Icon(
+                                                                    Icons.Default.Close,
+                                                                    contentDescription = "No Verificado",
+                                                                    tint = TextSecondary,
+                                                                    modifier = Modifier.size(10.dp)
+                                                                )
+                                                                Text(
+                                                                    text = "No Verificado",
+                                                                    color = TextSecondary,
+                                                                    fontSize = 9.5.sp,
+                                                                    fontWeight = FontWeight.Normal
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+
+                                                    if (creator.buildsCount > 0) {
+                                                        Text(
+                                                            text = "• ${creator.buildsCount} builds",
+                                                            color = HextechGold,
+                                                            fontSize = 10.5.sp
+                                                        )
+                                                    }
+                                                }
+                                            }
                                         }
-                                        IconButton(
-                                            onClick = {
-                                                CustomChampionBuildsManager.deleteBuild(context, record.id)
-                                                Toast.makeText(context, "Build eliminada", Toast.LENGTH_SHORT).show()
-                                            },
-                                            modifier = Modifier.size(32.dp)
+
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = HextechGold.copy(alpha = 0.12f),
+                                            border = BorderStroke(0.6.dp, HextechGold.copy(alpha = 0.35f))
                                         ) {
-                                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Text(
+                                                text = "Ver Builds",
+                                                color = HextechGold,
+                                                fontSize = 10.5.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            )
                                         }
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // VISTA: LISTA DE BUILDS (Todas / Favoritos / Creador seleccionado)
+                if (filteredBuilds.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            if (selectedCreatorFilter != null) "No hay builds para el creador \"$selectedCreatorFilter\"."
+                            else if (selectedFilter == BuildsFilterTab.FAVORITES) "No tienes builds favoritas guardadas."
+                            else "No hay builds creadas todavía.",
+                            color = TextSecondary,
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filteredBuilds) { record ->
+                            val champObj = remember(record.championId) {
+                                WildRiftRepository.champions.find { it.id.equals(record.championId, ignoreCase = true) }
+                            }
+                            val avgRating = if (record.voteCount > 0) record.ratingSum / record.voteCount else 0.0
 
-                                // Texto animado para ver completo
-                                val infiniteTransition = rememberInfiniteTransition(label = "tapPrompt")
-                                val alpha by infiniteTransition.animateFloat(
-                                    initialValue = 0.3f,
-                                    targetValue = 1f,
-                                    animationSpec = infiniteRepeatable(
-                                        animation = tween(1000),
-                                        repeatMode = RepeatMode.Reverse
-                                    ),
-                                    label = "alpha"
-                                )
-                                Text(
-                                    text = "Presiona para ver completo",
-                                    color = HextechGold.copy(alpha = alpha),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp)
-                                )
+                            Card(
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                                border = BorderStroke(1.dp, HextechCardBorder),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { selectedBuildForDetail = record }
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            if (champObj != null) {
+                                                ChampionAvatar(champion = champObj, size = 40.dp, showTierBadge = false)
+                                            }
+                                            Column {
+                                                Text(
+                                                    text = "${record.championName} - ${record.buildTitle}",
+                                                    color = Color.White,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 13.sp,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                ) {
+                                                    Text(
+                                                        text = "Creador: ${record.creatorName}",
+                                                        color = HextechGold,
+                                                        fontSize = 11.sp,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                }
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    Icon(Icons.Default.Star, contentDescription = null, tint = HextechGold, modifier = Modifier.size(12.dp))
+                                                    Text(
+                                                        text = "${String.format(Locale.US, "%.1f", avgRating)} (${record.voteCount} votos)",
+                                                        color = TextSecondary,
+                                                        fontSize = 10.sp
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            IconButton(
+                                                onClick = { buildToEdit = record },
+                                                modifier = Modifier.size(32.dp)
+                                            ) {
+                                                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = HextechGold, modifier = Modifier.size(16.dp))
+                                            }
+                                            IconButton(
+                                                onClick = {
+                                                    CustomChampionBuildsManager.deleteBuild(context, record.id)
+                                                    Toast.makeText(context, "Build eliminada", Toast.LENGTH_SHORT).show()
+                                                },
+                                                modifier = Modifier.size(32.dp)
+                                            ) {
+                                                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            }
+                                        }
+                                    }
+
+                                    // Texto animado para ver completo
+                                    val infiniteTransition = rememberInfiniteTransition(label = "tapPrompt")
+                                    val alpha by infiniteTransition.animateFloat(
+                                        initialValue = 0.3f,
+                                        targetValue = 1f,
+                                        animationSpec = infiniteRepeatable(
+                                            animation = tween(1000),
+                                            repeatMode = RepeatMode.Reverse
+                                        ),
+                                        label = "alpha"
+                                    )
+                                    Text(
+                                        text = "Presiona para ver completo",
+                                        color = HextechGold.copy(alpha = alpha),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -539,7 +844,7 @@ fun AdminCreatorBuildsDialog(
 /**
  * Podio oficial para los 3 mejores creadores de la comunidad.
  * Visualiza el 1er lugar (centro, más alto), 2do lugar (izquierda) y 3er lugar (derecha)
- * mostrando Avatar, Nombre de Usuario y Marco correspondiente.
+ * con espaciado vertical reservado para que los marcos no se sobrepongan a las insignias de lugar.
  */
 @Composable
 fun CreatorPodiumCard(
@@ -558,7 +863,7 @@ fun CreatorPodiumCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(horizontal = 10.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Encabezado del podio
@@ -606,7 +911,7 @@ fun CreatorPodiumCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp),
+                    .padding(horizontal = 2.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
@@ -615,10 +920,11 @@ fun CreatorPodiumCard(
                     entry = second,
                     rank = 2,
                     rankBadgeText = "🥈 2° Lugar",
-                    badgeColor = Color(0xFF94A3B8),
-                    badgeBgColor = Color(0xFF64748B).copy(alpha = 0.25f),
-                    avatarSize = 52.dp,
-                    pedestalHeight = 60.dp,
+                    badgeColor = Color(0xFFE2E8F0),
+                    badgeBgColor = Color(0xFF334155).copy(alpha = 0.7f),
+                    avatarSize = 40.dp,
+                    avatarContainerHeight = 78.dp,
+                    pedestalHeight = 52.dp,
                     pedestalBrush = Brush.verticalGradient(
                         listOf(Color(0xFF475569), Color(0xFF1E293B))
                     ),
@@ -629,7 +935,7 @@ fun CreatorPodiumCard(
                     modifier = Modifier.weight(1f)
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
 
                 // 👑 1ER LUGAR (Centro - Elevado y Destacado)
                 PodiumColumn(
@@ -637,20 +943,21 @@ fun CreatorPodiumCard(
                     rank = 1,
                     rankBadgeText = "👑 1° Lugar",
                     badgeColor = HextechGold,
-                    badgeBgColor = HextechGold.copy(alpha = 0.25f),
-                    avatarSize = 64.dp,
-                    pedestalHeight = 82.dp,
+                    badgeBgColor = HextechGold.copy(alpha = 0.22f),
+                    avatarSize = 48.dp,
+                    avatarContainerHeight = 90.dp,
+                    pedestalHeight = 74.dp,
                     pedestalBrush = Brush.verticalGradient(
-                        listOf(HextechGold.copy(alpha = 0.5f), Color(0xFF854D0E), HextechDarkBg)
+                        listOf(HextechGold.copy(alpha = 0.55f), Color(0xFF854D0E), HextechDarkBg)
                     ),
                     pedestalBorderColor = HextechGold,
                     numeralColor = HextechGold,
                     isSelected = selectedCreator.equals(first.name, ignoreCase = true),
                     onClick = { onSelectCreator(first.name) },
-                    modifier = Modifier.weight(1.15f)
+                    modifier = Modifier.weight(1.18f)
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
 
                 // 🥉 3ER LUGAR (Derecha)
                 PodiumColumn(
@@ -658,9 +965,10 @@ fun CreatorPodiumCard(
                     rank = 3,
                     rankBadgeText = "🥉 3° Lugar",
                     badgeColor = Color(0xFFFDBA74),
-                    badgeBgColor = Color(0xFF9A3412).copy(alpha = 0.25f),
-                    avatarSize = 48.dp,
-                    pedestalHeight = 46.dp,
+                    badgeBgColor = Color(0xFF7C2D12).copy(alpha = 0.45f),
+                    avatarSize = 38.dp,
+                    avatarContainerHeight = 76.dp,
+                    pedestalHeight = 40.dp,
                     pedestalBrush = Brush.verticalGradient(
                         listOf(Color(0xFF78350F), Color(0xFF451A03))
                     ),
@@ -677,7 +985,8 @@ fun CreatorPodiumCard(
 
 /**
  * Columna individual de cada posición en el podio.
- * Muestra insignia, Avatar + Marco con UserAvatarView, Nombre de Usuario, Stats y Pedestal metálico.
+ * Mantiene una zona reservada y holgada para el avatar con su marco,
+ * evitando colisiones con la insignia superior o el nombre inferior.
  */
 @Composable
 private fun PodiumColumn(
@@ -687,6 +996,7 @@ private fun PodiumColumn(
     badgeColor: Color,
     badgeBgColor: Color,
     avatarSize: androidx.compose.ui.unit.Dp,
+    avatarContainerHeight: androidx.compose.ui.unit.Dp,
     pedestalHeight: androidx.compose.ui.unit.Dp,
     pedestalBrush: Brush,
     pedestalBorderColor: Color,
@@ -707,26 +1017,28 @@ private fun PodiumColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
-        // Insignia del lugar
+        // Insignia del lugar (Siempre visible y separada por encima del marco)
         Surface(
             shape = RoundedCornerShape(4.dp),
             color = badgeBgColor,
-            border = BorderStroke(0.6.dp, badgeColor.copy(alpha = 0.7f))
+            border = BorderStroke(0.8.dp, badgeColor.copy(alpha = 0.8f))
         ) {
             Text(
                 text = rankBadgeText,
                 color = badgeColor,
                 fontSize = if (rank == 1) 9.5.sp else 8.5.sp,
                 fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.5.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Avatar de usuario con marco integrado (UserAvatarView)
+        // Contenedor con altura reservada para Avatar + Marco sin colisiones
         Box(
-            modifier = Modifier.padding(horizontal = if (entry.isAdmin) 4.dp else 0.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(avatarContainerHeight),
             contentAlignment = Alignment.Center
         ) {
             UserAvatarView(
@@ -734,18 +1046,19 @@ private fun PodiumColumn(
                 size = avatarSize,
                 fallbackInitial = entry.name.take(1).uppercase(Locale.ROOT),
                 rankBorder = entry.rankBorder,
+                secondaryRole = entry.secondaryRole,
                 isAdmin = entry.isAdmin
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
-        // Nombre de usuario
+        // Nombre de usuario / Invocador
         Text(
             text = entry.name,
             color = if (rank == 1) HextechGold else Color.White,
             fontWeight = if (rank == 1) FontWeight.ExtraBold else FontWeight.Bold,
-            fontSize = if (rank == 1) 12.5.sp else 11.sp,
+            fontSize = if (rank == 1) 12.sp else 10.5.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
@@ -755,7 +1068,7 @@ private fun PodiumColumn(
         Text(
             text = "${entry.buildsCount} builds • ⭐ ${String.format(Locale.US, "%.1f", entry.averageRating)}",
             color = if (rank == 1) HextechGoldLight else TextSecondary,
-            fontSize = if (rank == 1) 9.5.sp else 8.5.sp,
+            fontSize = if (rank == 1) 9.sp else 8.sp,
             fontWeight = if (rank == 1) FontWeight.SemiBold else FontWeight.Normal,
             maxLines = 1,
             textAlign = TextAlign.Center

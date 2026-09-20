@@ -1999,9 +1999,10 @@ fun EnhancedUserManagementPanel(
             val name = (user["name"] as? String ?: "").lowercase()
             val email = (user["email"] as? String ?: "").lowercase()
             val uid = (user["uid"] as? String ?: "").lowercase()
+            val secRole = (user["secondaryRole"] as? String ?: "").lowercase()
             val query = searchQuery.trim().lowercase()
 
-            val matchesQuery = query.isEmpty() || name.contains(query) || email.contains(query) || uid.contains(query)
+            val matchesQuery = query.isEmpty() || name.contains(query) || email.contains(query) || uid.contains(query) || secRole.contains(query)
 
             val role = user["role"] as? String ?: "free"
             val until = (user["premiumUntil"] as? Number)?.toLong()
@@ -2426,6 +2427,7 @@ fun EnhancedUserAdminCard(
     val isBanned = (user["banned"] as? Boolean) == true || role == "banned"
     val avatarId = user["avatarId"] as? String ?: "default_poro"
     val rankBorder = user["rankBorder"] as? String ?: "NONE"
+    val secondaryRole = user["secondaryRole"] as? String ?: "none"
     val premiumUntil = (user["premiumUntil"] as? Number)?.toLong()
 
     val registeredDevices = (user["registeredDevices"] as? List<*>) ?: emptyList<Any>()
@@ -2468,18 +2470,22 @@ fun EnhancedUserAdminCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Avatar con badge de estado online
+                val secRoleStr = user["secondaryRole"] as? String ?: "none"
+                val secRoleObjRow = com.example.model.AppUserSecondaryRole.fromId(secRoleStr)
+                val hasSpecialFrameRow = (role == "admin") || (secRoleObjRow.frameDrawableRes != null)
                 Box(
                     modifier = Modifier.padding(
-                        horizontal = if (role == "admin") 6.dp else 0.dp,
-                        vertical = if (role == "admin") 4.dp else 0.dp
+                        horizontal = if (hasSpecialFrameRow) 6.dp else 0.dp,
+                        vertical = if (hasSpecialFrameRow) 4.dp else 0.dp
                     ),
                     contentAlignment = Alignment.BottomEnd
                 ) {
                     UserAvatarView(
                         avatarId = avatarId,
-                        size = if (role == "admin") 34.dp else 46.dp,
+                        size = if (hasSpecialFrameRow) 34.dp else 46.dp,
                         fallbackInitial = name.take(1).uppercase(),
                         rankBorder = rankBorder,
+                        secondaryRole = secRoleStr,
                         isAdmin = (role == "admin")
                     )
                     // Indicador de conexión verde/gris
@@ -2527,7 +2533,15 @@ fun EnhancedUserAdminCard(
                     Spacer(modifier = Modifier.height(3.dp))
 
                     // Role Badge debajo del usuario
-                    RoleBadge(role = role, isPremiumActive = isPremiumActive, isBanned = isBanned)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        RoleBadge(role = role, isPremiumActive = isPremiumActive, isBanned = isBanned)
+                        if (secondaryRole != "none" && secondaryRole.isNotBlank()) {
+                            SecondaryRoleBadge(secondaryRole = secondaryRole, size = RoleBadgeSize.COMPACT)
+                        }
+                    }
 
                     if (email.isNotBlank()) {
                         Spacer(modifier = Modifier.height(2.dp))
@@ -2851,6 +2865,7 @@ fun UserDetailManagementDialog(
     val email = user["email"] as? String ?: ""
     var currentEmailInput by remember { mutableStateOf(email) }
     var currentRole by remember { mutableStateOf(user["role"] as? String ?: "free") }
+    var currentSecondaryRole by remember { mutableStateOf(user["secondaryRole"] as? String ?: "none") }
     var currentBanned by remember { mutableStateOf((user["banned"] as? Boolean) == true || currentRole == "banned") }
     var currentVerified by remember { mutableStateOf((user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true || currentRole == "admin" || currentRole == "moderador") }
     var currentPremiumUntil by remember { mutableStateOf((user["premiumUntil"] as? Number)?.toLong()) }
@@ -2922,13 +2937,23 @@ fun UserDetailManagementDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        UserAvatarView(
-                            avatarId = avatarId,
-                            size = 48.dp,
-                            fallbackInitial = currentName.take(1).uppercase(),
-                            rankBorder = rankBorder,
-                            isAdmin = (currentRole == "admin")
-                        )
+                        val secRoleDetailObj = com.example.model.AppUserSecondaryRole.fromId(currentSecondaryRole)
+                        val hasSpecialFrameDetail = (currentRole == "admin") || (secRoleDetailObj.frameDrawableRes != null)
+                        Box(
+                            modifier = Modifier.padding(
+                                horizontal = if (hasSpecialFrameDetail) 6.dp else 0.dp,
+                                vertical = if (hasSpecialFrameDetail) 4.dp else 0.dp
+                            )
+                        ) {
+                            UserAvatarView(
+                                avatarId = avatarId,
+                                size = if (hasSpecialFrameDetail) 38.dp else 48.dp,
+                                fallbackInitial = currentName.take(1).uppercase(),
+                                rankBorder = rankBorder,
+                                secondaryRole = currentSecondaryRole,
+                                isAdmin = (currentRole == "admin")
+                            )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -2938,12 +2963,23 @@ fun UserDetailManagementDialog(
                                 color = HextechGold
                             )
                             Spacer(modifier = Modifier.height(3.dp))
-                            RoleBadge(
-                                role = currentRole,
-                                isPremiumActive = isPremiumActive,
-                                isBanned = currentBanned,
-                                size = RoleBadgeSize.NORMAL
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                RoleBadge(
+                                    role = currentRole,
+                                    isPremiumActive = isPremiumActive,
+                                    isBanned = currentBanned,
+                                    size = RoleBadgeSize.NORMAL
+                                )
+                                if (currentSecondaryRole != "none" && currentSecondaryRole.isNotBlank()) {
+                                    SecondaryRoleBadge(
+                                        secondaryRole = currentSecondaryRole,
+                                        size = RoleBadgeSize.NORMAL
+                                    )
+                                }
+                            }
                             Text(
                                 text = email.ifBlank { "UID: $uid" },
                                 style = MaterialTheme.typography.bodySmall,
@@ -3367,6 +3403,136 @@ fun UserDetailManagementDialog(
                                                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                                             )
                                                         }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // SECCIÓN: ROL SECUNDARIO (RANGO COMPETITIVO)
+                    item {
+                        var isSecRolesExpanded by remember { mutableStateOf(false) }
+                        val activeSecRoleObj = com.example.model.AppUserSecondaryRole.fromId(currentSecondaryRole)
+
+                        Surface(
+                            color = HextechSurfaceBg,
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (activeSecRoleObj != com.example.model.AppUserSecondaryRole.NONE) activeSecRoleObj.primaryColor.copy(alpha = 0.5f) else HextechCardBorder)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { isSecRolesExpanded = !isSecRolesExpanded },
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Filled.Shield,
+                                            contentDescription = null,
+                                            tint = if (activeSecRoleObj != com.example.model.AppUserSecondaryRole.NONE) activeSecRoleObj.primaryColor else HextechGold,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Column {
+                                            Text(
+                                                text = "Rol Secundario (Rango)",
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (activeSecRoleObj != com.example.model.AppUserSecondaryRole.NONE) activeSecRoleObj.primaryColor else TextPrimary,
+                                                fontSize = 13.sp
+                                            )
+                                            Text(
+                                                text = "Actual: ${activeSecRoleObj.displayName}",
+                                                color = TextSecondary,
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
+
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (activeSecRoleObj != com.example.model.AppUserSecondaryRole.NONE) {
+                                            SecondaryRoleBadge(
+                                                secondaryRole = currentSecondaryRole,
+                                                size = RoleBadgeSize.COMPACT
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                        }
+                                        Icon(
+                                            imageVector = if (isSecRolesExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                            contentDescription = null,
+                                            tint = TextSecondary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+
+                                AnimatedVisibility(visible = isSecRolesExpanded) {
+                                    Column(
+                                        modifier = Modifier.padding(top = 10.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Text(
+                                            text = "Asignar rol secundario / rango competitivo al usuario:",
+                                            color = TextMuted,
+                                            fontSize = 11.sp
+                                        )
+                                        com.example.model.AppUserSecondaryRole.assignableSecondaryRoles.forEach { targetSecRole ->
+                                            val isTargetActive = activeSecRoleObj == targetSecRole
+                                            Surface(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        if (isTargetActive) return@clickable
+                                                        val db = FirebaseFirestore.getInstance()
+                                                        db.collection("users").document(uid)
+                                                            .set(hashMapOf("secondaryRole" to targetSecRole.id), SetOptions.merge())
+                                                            .addOnSuccessListener {
+                                                                currentSecondaryRole = targetSecRole.id
+                                                                Toast.makeText(context, "Rol secundario actualizado a ${targetSecRole.displayName}", Toast.LENGTH_SHORT).show()
+                                                            }
+                                                            .addOnFailureListener { e ->
+                                                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                                            }
+                                                    },
+                                                shape = RoundedCornerShape(8.dp),
+                                                color = if (isTargetActive) targetSecRole.primaryColor.copy(alpha = 0.15f) else HextechDarkBg,
+                                                border = androidx.compose.foundation.BorderStroke(
+                                                    width = if (isTargetActive) 1.5.dp else 0.5.dp,
+                                                    color = if (isTargetActive) targetSecRole.primaryColor else HextechCardBorder.copy(alpha = 0.5f)
+                                                )
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .size(8.dp)
+                                                                .clip(CircleShape)
+                                                                .background(targetSecRole.primaryColor)
+                                                        )
+                                                        Spacer(modifier = Modifier.width(8.dp))
+                                                        Text(
+                                                            text = targetSecRole.displayName,
+                                                            color = if (isTargetActive) targetSecRole.primaryColor else TextPrimary,
+                                                            fontSize = 12.5.sp,
+                                                            fontWeight = if (isTargetActive) FontWeight.Bold else FontWeight.Normal
+                                                        )
+                                                    }
+                                                    if (targetSecRole != com.example.model.AppUserSecondaryRole.NONE) {
+                                                        SecondaryRoleBadge(
+                                                            secondaryRole = targetSecRole.id,
+                                                            size = RoleBadgeSize.COMPACT
+                                                        )
                                                     }
                                                 }
                                             }

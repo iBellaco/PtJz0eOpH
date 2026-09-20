@@ -77,6 +77,9 @@ import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechSurface
 import com.example.util.AuthManager
+import com.example.ui.components.SecondaryRoleBadge
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -197,7 +200,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
+    val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
     var showAvatarDialog by remember { mutableStateOf(false) }
+    var showSecondaryRoleDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
     var showHistoryDialog by remember { mutableStateOf(false) }
@@ -242,6 +247,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 showAvatarDialog = false
                 showPlansDialog = true
             }
+        )
+    }
+
+    if (showSecondaryRoleDialog) {
+        val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
+        com.example.ui.components.SecondaryRoleSelectionDialog(
+            currentSecondaryRole = currentSecRoleVal,
+            onDismiss = { showSecondaryRoleDialog = false }
         )
     }
 
@@ -587,14 +600,17 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 finishedListener = { avatarTapped = false }
             )
 
+            val secRoleForAvatar = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
+            val hasSpecialFrame = isAdminUser || secRoleForAvatar.frameDrawableRes != null
+
             // Avatar in center
             Box(
                 modifier = Modifier
                     .padding(
-                        top = if (isAdminUser) 24.dp else 6.dp,
-                        bottom = if (isAdminUser) 10.dp else 6.dp,
-                        start = if (isAdminUser) 24.dp else 8.dp,
-                        end = if (isAdminUser) 24.dp else 8.dp
+                        top = if (hasSpecialFrame) 24.dp else 6.dp,
+                        bottom = if (hasSpecialFrame) 10.dp else 6.dp,
+                        start = if (hasSpecialFrame) 24.dp else 8.dp,
+                        end = if (hasSpecialFrame) 24.dp else 8.dp
                     )
                     .graphicsLayer {
                         scaleX = avatarScale
@@ -606,7 +622,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     },
                 contentAlignment = Alignment.Center
             ) {
-                if (!isAdminUser) {
+                if (!isAdminUser && secRoleForAvatar.frameDrawableRes == null) {
                     Box(
                         modifier = Modifier
                             .size(86.dp)
@@ -633,7 +649,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 UserAvatarView(
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
-                    size = if (isAdminUser) 74.dp else 72.dp,
+                    secondaryRole = currentSecRoleVal,
+                    size = if (hasSpecialFrame) 74.dp else 72.dp,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser
                 )
@@ -642,8 +659,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .offset(
-                            x = if (isAdminUser) 8.dp else 2.dp,
-                            y = if (isAdminUser) 6.dp else 2.dp
+                            x = if (hasSpecialFrame) 8.dp else 2.dp,
+                            y = if (hasSpecialFrame) 6.dp else 2.dp
                         )
                         .size(32.dp)
                         .clip(CircleShape)
@@ -699,14 +716,28 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
+
             // Rol visualizado directamente debajo del usuario, únicamente el rol sin tanto contexto
-            RoleBadge(
-                role = userRole,
-                isPremiumActive = isPremium,
-                isBanned = (userRole == "banned"),
-                isExpiringSoon = isExpiringSoon,
-                size = RoleBadgeSize.NORMAL
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                RoleBadge(
+                    role = userRole,
+                    isPremiumActive = isPremium,
+                    isBanned = (userRole == "banned"),
+                    isExpiringSoon = isExpiringSoon,
+                    size = RoleBadgeSize.NORMAL
+                )
+                if (currentSecRoleVal != "none" && currentSecRoleVal.isNotBlank()) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    SecondaryRoleBadge(
+                        secondaryRole = currentSecRoleVal,
+                        size = RoleBadgeSize.NORMAL
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -778,6 +809,77 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         registeredDevicesCount = devs.size.coerceAtLeast(1)
                     }
             }
+
+            // Rol Secundario / Rango Competitivo Selector Card
+            val secRoleObj = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tactileClickable { showSecondaryRoleDialog = true },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = activeTheme.surfaceVariant.copy(alpha = 0.55f)),
+                border = BorderStroke(1.dp, if (secRoleObj != com.example.model.AppUserSecondaryRole.NONE) secRoleObj.primaryColor.copy(alpha = 0.55f) else activeTheme.cardBorder)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(secRoleObj.primaryColor.copy(alpha = 0.18f))
+                                .border(1.dp, secRoleObj.primaryColor.copy(alpha = 0.6f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Shield,
+                                contentDescription = null,
+                                tint = secRoleObj.primaryColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Rol Secundario / Rango:",
+                                color = activeTheme.secondary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) "Toca para asignar tu rango (Esmeralda a Soberano)" else secRoleObj.displayName,
+                                color = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) activeTheme.textSecondary else secRoleObj.primaryColor,
+                                fontSize = 11.5.sp,
+                                fontWeight = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) FontWeight.Normal else FontWeight.Bold
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (secRoleObj != com.example.model.AppUserSecondaryRole.NONE) {
+                            SecondaryRoleBadge(
+                                secondaryRole = currentSecRoleVal,
+                                size = RoleBadgeSize.COMPACT
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "Cambiar",
+                            tint = activeTheme.secondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             Card(
                 modifier = Modifier
@@ -1263,6 +1365,42 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 Spacer(modifier = Modifier.height(12.dp))
             } else if (userRole == "moderador") {
                 val unreadSupportForMod by com.example.util.SubscriptionManager.unreadModeratorSupportCount.collectAsState()
+                
+                // Botón de Gestión de Usuarios y Asignación de Roles Secundarios para Moderadores
+                com.example.ui.components.HextechAnimatedButton(
+                    onClick = { showAdminDashboard = true },
+                    backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        listOf(Color(0xFF10B981), Color(0xFF047857))
+                    ),
+                    borderColor = com.example.ui.theme.HextechGold,
+                    glowColor = Color(0xFF10B981),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    enableShimmer = true,
+                    enablePulse = true
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Gestión de Usuarios y Roles Secundarios",
+                            color = Color.White,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showSupportPanel = true },
                     backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
