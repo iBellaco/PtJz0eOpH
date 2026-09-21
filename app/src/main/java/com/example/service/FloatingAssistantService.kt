@@ -872,6 +872,7 @@ class OverlayState {
     var activeRole by androidx.compose.runtime.mutableStateOf(LaneRole.MID)
     var isRoleManuallySelected by androidx.compose.runtime.mutableStateOf(false)
     var isFirstPick by androidx.compose.runtime.mutableStateOf(false)
+    var isFirstPickManuallySelected by androidx.compose.runtime.mutableStateOf(false)
     var isLegendaryQueue by androidx.compose.runtime.mutableStateOf(false)
     var isCompactBubble by androidx.compose.runtime.mutableStateOf(false)
     var isScanning by androidx.compose.runtime.mutableStateOf(false)
@@ -1109,7 +1110,7 @@ private fun FloatingOverlayContent(
                                 }
                                 withContext(Dispatchers.Main) {
                                     if (result.isSuccessful) {
-                                        if (result.detectedFirstPick != null) {
+                                        if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
                                             isFirstPick = result.detectedFirstPick
                                         }
 
@@ -1142,28 +1143,37 @@ private fun FloatingOverlayContent(
                                             }
                                         }
 
-                                        // Asignación directa y garantizada del 10º Pick cuando 9 picks ya están presentes
+                                        // Asignación directa y garantizada del 10º Pick según el bando del draft:
+                                        // Si los aliados tienen 1ª selección -> el 10º pick pertenece al equipo RIVAL.
+                                        // Si el rival tiene 1ª selección -> el 10º pick pertenece al equipo ALIADO.
                                         val tenthChamp = result.lastPickChampion
                                         if (tenthChamp != null) {
-                                            val unpickedAllyIdx = allies.indexOfFirst { it == null }
-                                            val unpickedEnemyIdx = enemies.indexOfFirst { it == null }
-                                            if (unpickedAllyIdx != -1 && unpickedEnemyIdx == -1 && manualLockedAllySlots[unpickedAllyIdx] != true) {
-                                                assignAllySlot(unpickedAllyIdx, tenthChamp)
-                                                newAlliesAdded++
-                                                AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $unpickedAllyIdx: ${tenthChamp.name}")
-                                            } else if (unpickedEnemyIdx != -1 && unpickedAllyIdx == -1 && manualLockedEnemySlots[unpickedEnemyIdx] != true) {
-                                                assignEnemySlot(unpickedEnemyIdx, tenthChamp, 100)
-                                                newEnemiesAdded++
-                                                AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $unpickedEnemyIdx: ${tenthChamp.name}")
+                                            val isTenthAlly = result.tenthPickIsAlly ?: (!isFirstPick)
+                                            if (isTenthAlly) {
+                                                val targetIdx = (result.tenthPickSlotIndex ?: allies.indexOfFirst { it == null }).let { if (it in 0..4) it else 4 }
+                                                if (manualLockedAllySlots[targetIdx] != true) {
+                                                    assignAllySlot(targetIdx, tenthChamp)
+                                                    newAlliesAdded++
+                                                    AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $targetIdx: ${tenthChamp.name}")
+                                                }
+                                            } else {
+                                                val targetIdx = (result.tenthPickSlotIndex ?: enemies.indexOfFirst { it == null }).let { if (it in 0..4) it else 4 }
+                                                if (manualLockedEnemySlots[targetIdx] != true) {
+                                                    assignEnemySlot(targetIdx, tenthChamp, 100)
+                                                    newEnemiesAdded++
+                                                    AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $targetIdx: ${tenthChamp.name}")
+                                                }
                                             }
                                         }
 
                                         val currentAllyPicks = allies.count { it != null }
                                         val currentEnemyPicks = enemies.count { it != null }
-                                        if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
-                                            isFirstPick = false
-                                        } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
-                                            isFirstPick = true
+                                        if (!state.isFirstPickManuallySelected) {
+                                            if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
+                                                isFirstPick = false
+                                            } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
+                                                isFirstPick = true
+                                            }
                                         }
 
                                         if (result.isLegendaryRanked) {
@@ -1259,8 +1269,8 @@ private fun FloatingOverlayContent(
                 val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
                 withContext(Dispatchers.Main) {
                     if (result.isSuccessful) {
-                        // Sincronizar primera selección si se detectó
-                        if (result.detectedFirstPick != null) {
+                        // Sincronizar primera selección si se detectó y no ha sido fijada manualmente
+                        if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
                             isFirstPick = result.detectedFirstPick
                         }
 
@@ -1280,27 +1290,34 @@ private fun FloatingOverlayContent(
                             }
                         }
 
-                        // Asignación directa y garantizada del 10º Pick cuando 9 picks ya están presentes
+                        // Asignación directa y garantizada del 10º Pick respetando el bando
                         val tenthChamp = result.lastPickChampion
                         if (tenthChamp != null) {
-                            val unpickedAllyIdx = allies.indexOfFirst { it == null }
-                            val unpickedEnemyIdx = enemies.indexOfFirst { it == null }
-                            if (unpickedAllyIdx != -1 && unpickedEnemyIdx == -1 && manualLockedAllySlots[unpickedAllyIdx] != true) {
-                                assignAllySlot(unpickedAllyIdx, tenthChamp)
-                                AppLogger.d(TAG, "10º Pick asignado manualmente/directo a Aliado Slot $unpickedAllyIdx: ${tenthChamp.name}")
-                            } else if (unpickedEnemyIdx != -1 && unpickedAllyIdx == -1 && manualLockedEnemySlots[unpickedEnemyIdx] != true) {
-                                assignEnemySlot(unpickedEnemyIdx, tenthChamp, 100)
-                                AppLogger.d(TAG, "10º Pick asignado manualmente/directo a Rival Slot $unpickedEnemyIdx: ${tenthChamp.name}")
+                            val isTenthAlly = result.tenthPickIsAlly ?: (!isFirstPick)
+                            if (isTenthAlly) {
+                                val targetIdx = (result.tenthPickSlotIndex ?: allies.indexOfFirst { it == null }).let { if (it in 0..4) it else 4 }
+                                if (manualLockedAllySlots[targetIdx] != true) {
+                                    assignAllySlot(targetIdx, tenthChamp)
+                                    AppLogger.d(TAG, "10º Pick asignado manualmente/directo a Aliado Slot $targetIdx: ${tenthChamp.name}")
+                                }
+                            } else {
+                                val targetIdx = (result.tenthPickSlotIndex ?: enemies.indexOfFirst { it == null }).let { if (it in 0..4) it else 4 }
+                                if (manualLockedEnemySlots[targetIdx] != true) {
+                                    assignEnemySlot(targetIdx, tenthChamp, 100)
+                                    AppLogger.d(TAG, "10º Pick asignado manualmente/directo a Rival Slot $targetIdx: ${tenthChamp.name}")
+                                }
                             }
                         }
 
                         // Verificación complementaria: si el rival ya tiene picks y aliados no, rival eligió 1º
                         val currentAllyPicks = allies.count { it != null }
                         val currentEnemyPicks = enemies.count { it != null }
-                        if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
-                            isFirstPick = false
-                        } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
-                            isFirstPick = true
+                        if (!state.isFirstPickManuallySelected) {
+                            if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
+                                isFirstPick = false
+                            } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
+                                isFirstPick = true
+                            }
                         }
 
                         // Sincronizar nombres de invocador aliados y hechizos
@@ -1896,11 +1913,8 @@ private fun FloatingOverlayContent(
                                             },
                                             isFirstPick = isFirstPick,
                                             onFirstPickToggle = { 
-                                                if (!state.isRoleManuallySelected) {
-                                                    android.widget.Toast.makeText(context, "Selecciona tu línea primero", android.widget.Toast.LENGTH_SHORT).show()
-                                                } else {
-                                                    isFirstPick = !isFirstPick 
-                                                }
+                                                state.isFirstPickManuallySelected = true
+                                                isFirstPick = !isFirstPick 
                                             },
                                             isLegendaryQueue = isLegendaryQueue,
                                             onToggleLegendaryQueue = { isLegendaryQueue = !isLegendaryQueue },
@@ -1947,6 +1961,7 @@ private fun FloatingOverlayContent(
                                                 state.allySpells.clear()
                                                 state.enemySpells.clear()
                                                 state.isRoleManuallySelected = false
+                                                state.isFirstPickManuallySelected = false
                                                 DraftVisionScanner.resetSlotMemory()
                                                 android.widget.Toast.makeText(context, "Equipos vaciados", android.widget.Toast.LENGTH_SHORT).show()
                                             },

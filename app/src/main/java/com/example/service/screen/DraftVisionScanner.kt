@@ -98,6 +98,8 @@ data class DraftScanResult(
     val isLastPickImageRecognized: Boolean = false,
     val isLastPickConfirmed: Boolean = false,
     val lastPickChampion: Champion? = null,
+    val tenthPickIsAlly: Boolean? = null,
+    val tenthPickSlotIndex: Int? = null,
     val detectedRawWords: List<String> = emptyList(),
     val discrepancies: List<String> = emptyList(),
     val diagnostics: List<SlotDiagnostic> = emptyList(),
@@ -1402,7 +1404,7 @@ object DraftVisionScanner {
             }
         }
 
-        val effectiveFirstPick = detectedFirstPick ?: currentIsFirstPick ?: false
+        val effectiveFirstPick = currentIsFirstPick ?: detectedFirstPick ?: false
         val pickSequence = getDraftPickSequence(effectiveFirstPick)
 
         debugVisualMatches.value = emptyMap()
@@ -1418,22 +1420,19 @@ object DraftVisionScanner {
         val tenthIsAlly = tenthTurn.isAlly
         val tenthSlotIndex = tenthTurn.slotIndex
 
-        // Localizar el slot exacto correspondiente al 10º pick:
-        // Si hay 9 selecciones confirmadas en total, el 10º pick es determinísticamente el único slot
-        // restante entre aliados y rivales que aún no tiene campeón asignado (champion == null).
-        val unpickedAlly = allySlots.firstOrNull { it.champion == null }
-        val unpickedEnemy = enemySlots.firstOrNull { it.champion == null }
+        // REGLA DETERMINISTA E INMUTABLE DE DRAFT DE WILD RIFT:
+        // - Si los aliados tienen Primera Selección (effectiveFirstPick == true):
+        //   El 10º pick pertenece 100% de forma estricta e invariable al EQUIPO RIVAL (tenthIsAlly = false).
+        // - Si el rival tiene Primera Selección (effectiveFirstPick == false):
+        //   El 10º pick pertenece 100% de forma estricta e invariable al EQUIPO ALIADO (tenthIsAlly = true).
+        // Bajo NINGUNA circunstancia el 10º pick puede cruzarse ni asignarse al bando opuesto.
+        val actualTenthIsAlly = tenthIsAlly
 
-        val actualTenthIsAlly = when {
-            unpickedAlly != null && unpickedEnemy == null -> true
-            unpickedEnemy != null && unpickedAlly == null -> false
-            else -> tenthIsAlly
-        }
-        val actualTenthSlotIndex = when {
-            unpickedAlly != null && unpickedEnemy == null -> unpickedAlly.slotIndex
-            unpickedEnemy != null && unpickedAlly == null -> unpickedEnemy.slotIndex
-            else -> tenthSlotIndex
-        }
+        // Determinar el slot objetivo dentro del bando correspondiente al 10º pick:
+        // Por defecto corresponde al slot 4 (último jugador de dicho bando).
+        // Si dicho slot ya tuviese campeón (por OCR previo o ajuste), se localiza el slot sin campeón restante dentro de ese MISMO bando.
+        val targetSlots = if (actualTenthIsAlly) allySlots else enemySlots
+        val actualTenthSlotIndex = targetSlots.lastOrNull { it.champion == null }?.slotIndex ?: tenthSlotIndex
 
         val confirmedChampIds = (allySlots.mapNotNull { it.champion?.id } + enemySlots.mapNotNull { it.champion?.id }).toSet()
 
@@ -1611,6 +1610,8 @@ object DraftVisionScanner {
             isLastPickImageRecognized = lastPickRecognized,
             isLastPickConfirmed = (lastPickChamp != null),
             lastPickChampion = lastPickChamp,
+            tenthPickIsAlly = actualTenthIsAlly,
+            tenthPickSlotIndex = actualTenthSlotIndex,
             detectedRawWords = detectedWords,
             discrepancies = auditList,
             diagnostics = diagnosticsList,

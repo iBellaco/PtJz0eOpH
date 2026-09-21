@@ -5,6 +5,7 @@ import com.example.model.Champion
 import com.example.model.LaneRole
 import com.example.service.screen.ChampionNameResolver
 import com.example.service.screen.DraftValidationLayer
+import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.ScannedSlotInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -503,6 +504,24 @@ class DraftDetectionAndValidationTest {
         // El slot 1 debe ser JUNGLE independientemente de que Sett sea TOP
         assertEquals(LaneRole.JUNGLE, allySlotRolesCache[1])
         assertEquals(LaneRole.JUNGLE, allySlots[1].assignedRole)
+    }
+
+    @Test
+    fun testTenthPickTeamAllocationRule() {
+        // Regla de Draft:
+        // Si aliados tienen 1ª selección (isFirstPick = true), el 10º pick pertenece obligatoriamente al rival (isAlly = false)
+        val seqFirstPickAlly = DraftVisionScanner.getDraftPickSequence(isFirstPick = true)
+        val tenthWhenAllyFirst = seqFirstPickAlly.last()
+        assertEquals(10, tenthWhenAllyFirst.turnNumber)
+        assertFalse("Si aliados tienen 1ª selección, el 10º pick DEBE pertenecer al equipo rival", tenthWhenAllyFirst.isAlly)
+        assertEquals(4, tenthWhenAllyFirst.slotIndex)
+
+        // Si rivales tienen 1ª selección (isFirstPick = false), el 10º pick pertenece obligatoriamente al aliado (isAlly = true)
+        val seqFirstPickEnemy = DraftVisionScanner.getDraftPickSequence(isFirstPick = false)
+        val tenthWhenEnemyFirst = seqFirstPickEnemy.last()
+        assertEquals(10, tenthWhenEnemyFirst.turnNumber)
+        assertTrue("Si rivales tienen 1ª selección, el 10º pick DEBE pertenecer al equipo aliado", tenthWhenEnemyFirst.isAlly)
+        assertEquals(4, tenthWhenEnemyFirst.slotIndex)
     }
 }
 
