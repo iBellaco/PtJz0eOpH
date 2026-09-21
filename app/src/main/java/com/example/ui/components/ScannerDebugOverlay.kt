@@ -23,7 +23,6 @@ fun ScannerDebugOverlay(
 ) {
     val currentConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
-    val activelyReadingSlots by DraftVisionScanner.activelyReadingSlotsFlow.collectAsStateWithLifecycle()
     val density = LocalDensity.current
     
     Canvas(modifier = Modifier.fillMaxSize()) {
@@ -51,26 +50,17 @@ fun ScannerDebugOverlay(
             setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
         }
 
-        val activeReadingTextPaint = android.graphics.Paint().apply {
-            color = android.graphics.Color.parseColor("#00FF7F")
-            textSize = with(density) { 9.sp.toPx() }
-            isAntiAlias = true
-            textAlign = android.graphics.Paint.Align.CENTER
-            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
-        }
-
         // 1. SLOTS VERTICALES (LADO IZQUIERDO Y DERECHO)
         for (sIdx in 0..4) {
             // Columna Aliada (Izquierda)
             val allyY = h * currentConfig.allySlotYRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }
             val allyX = w * currentConfig.allyAvatarCenterX
-            val isAllyReading = activelyReadingSlots.contains(Pair(true, sIdx))
             
             drawCircle(
-                color = if (isAllyReading) Color(0xFF00FF7F) else Color(0x9900B0FF),
+                color = Color(0x9900B0FF),
                 center = Offset(allyX, allyY),
-                radius = if (isAllyReading) (avatarDiameter / 2f) + 4f else avatarDiameter / 2f,
-                style = Stroke(width = if (isAllyReading) 3.5f else 2.0f)
+                radius = avatarDiameter / 2f,
+                style = Stroke(width = 2.0f)
             )
             
             val allyMatch = debugMatches["ally_$sIdx"]
@@ -82,25 +72,16 @@ fun ScannerDebugOverlay(
                     allyTextPaint
                 )
             }
-            if (isAllyReading) {
-                drawContext.canvas.nativeCanvas.drawText(
-                    "[LEYENDO OCR]",
-                    allyX,
-                    allyY + avatarDiameter / 2 + 13f,
-                    activeReadingTextPaint
-                )
-            }
             
             // Columna Rival (Derecha)
             val enemyY = h * currentConfig.enemySlotYRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }
             val enemyX = w * currentConfig.enemyAvatarCenterX
-            val isEnemyReading = activelyReadingSlots.contains(Pair(false, sIdx))
             
             drawCircle(
-                color = if (isEnemyReading) Color(0xFF00FF7F) else Color(0x99FF1744),
+                color = Color(0x99FF1744),
                 center = Offset(enemyX, enemyY),
-                radius = if (isEnemyReading) (avatarDiameter / 2f) + 4f else avatarDiameter / 2f,
-                style = Stroke(width = if (isEnemyReading) 3.5f else 2.0f)
+                radius = avatarDiameter / 2f,
+                style = Stroke(width = 2.0f)
             )
             
             val enemyMatch = debugMatches["enemy_$sIdx"]
@@ -110,14 +91,6 @@ fun ScannerDebugOverlay(
                     enemyX,
                     enemyY - avatarDiameter / 2 - 6f,
                     enemyTextPaint
-                )
-            }
-            if (isEnemyReading) {
-                drawContext.canvas.nativeCanvas.drawText(
-                    "[LEYENDO OCR]",
-                    enemyX,
-                    enemyY + avatarDiameter / 2 + 13f,
-                    activeReadingTextPaint
                 )
             }
         }

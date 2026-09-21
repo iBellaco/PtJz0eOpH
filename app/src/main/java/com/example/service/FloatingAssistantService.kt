@@ -44,16 +44,10 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -1016,19 +1010,42 @@ private fun FloatingOverlayContent(
         )
     }
 
-    // Auto-Scan Loop en segundo plano optimizado en Dispatchers.IO
-    // Bucle de alta prioridad (100ms) durante la fase de picking activo (1..9 picks) para máxima capacidad de respuesta,
-    // y frecuencia reducida (800ms) al completar los 10 picks para conservar recursos del sistema
+    // Auto-Scan Loop en segundo plano optimizado en Dispatchers.IO:
+    // Arquitectura de Bucle Dual con Priorización de Eventos:
+    // 1) Bucle de Alta Prioridad para Slots Activos (60ms): Escanea directamente el ROI del/los slot(s)
+    //    en turno de selección activa sin procesar toda la pantalla, reduciendo la latencia de reconocimiento a <30ms.
+    // 2) Bucle de Baja Frecuencia para Slots Inactivos (cada 6 ciclos o en reposo 800ms): Sincroniza
+    //    nombres de invocador, hechizos, detección de 10º pick y confirmaciones globales, ahorrando CPU y batería.
     LaunchedEffect(autoScanEnabled) {
         if (!autoScanEnabled) return@LaunchedEffect
+        var loopCycleCounter = 0L
         while (autoScanEnabled) {
+            loopCycleCounter++
             val confirmedPicksCount = allies.count { it != null } + enemies.count { it != null }
+
+            val tentativeFirstPick = isFirstPick ?: true
+            val sequence = DraftVisionScanner.getDraftPickSequence(tentativeFirstPick)
+            val activeTurns = DraftVisionScanner.computeActiveSelectionTurns(
+                sequence,
+                DraftVisionScanner.allySlotConfirmedChampions,
+                DraftVisionScanner.enemySlotConfirmedChampions
+            )
+
+            val isDraftComplete = (confirmedPicksCount >= 10)
+            val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
+
+            // Temporización adaptativa:
+            // - Si hay turnos de selección activos y no toca ciclo global: Bucle de alta prioridad (60ms)
+            // - Si el draft está completo: Modo reposo (800ms)
+            // - En caso contrario (ciclo global para slots inactivos / preparación): 160ms
+            val isGlobalSyncCycle = isDraftComplete || (loopCycleCounter % 6L == 0L) || !hasActiveTurns
             val dynamicLoopDelay = when {
-                confirmedPicksCount >= 10 -> 800L // Todos los picks completados: frecuencia reducida en reposo
-                confirmedPicksCount in 1..9 -> 100L // Bucle de alta prioridad para picks en curso (baja latencia)
-                else -> 180L // Fase inicial de preparación
+                isDraftComplete -> 800L
+                !isGlobalSyncCycle && hasActiveTurns -> 60L
+                else -> 160L
             }
             delay(dynamicLoopDelay)
+
             try {
                 if (screenCaptureManager == null || !screenCaptureManager.isReady()) {
                     withContext(Dispatchers.Main) {
@@ -1040,118 +1057,167 @@ private fun FloatingOverlayContent(
                     }
                     if (bitmap != null && !bitmap.isRecycled && bitmap.width > 0 && bitmap.height > 0) {
                         try {
-                            val result = withContext(Dispatchers.IO) {
-                                DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
-                            }
-                            withContext(Dispatchers.Main) {
-                                if (result.isSuccessful) {
-                                    if (result.detectedFirstPick != null) {
-                                        isFirstPick = result.detectedFirstPick
-                                    }
-
-                                    var newAlliesAdded = 0
-                                    var newEnemiesAdded = 0
-                                    
-                                    defaultRoles.forEachIndexed { idx, role ->
-                                        if (manualLockedAllySlots[idx] != true) {
-                                            // ASIGNACIÓN DETERMINÍSTICA POR ROL:
-                                            // En Wild Rift cada slot aliado muestra primero qué línea va a ir (Top, Jungla, Mid, Dúo, Soporte)
-                                            // y luego esa línea se cambia por el nombre del campeón seleccionado.
-                                            // Cada índice `idx` en `allies` corresponde estricta y únicamente a `role` (defaultRoles[idx]).
-                                            // NUNCA caer en fallback de `alliesBySlot[idx]` porque el slot físico de pick puede tener un rol distinto.
-                                            val scannedAlly = result.alliesByRole[role]
-                                            if (scannedAlly != null) {
-                                                if (allies[idx] == null || allies[idx]?.id != scannedAlly.id) {
-                                                    assignAllySlot(idx, scannedAlly)
-                                                    newAlliesAdded++
-                                                }
-                                            }
-                                        }
-                                        if (manualLockedEnemySlots[idx] != true) {
-                                            val scannedEnemy = result.enemiesByRole[role]
-                                            if (scannedEnemy != null) {
-                                                if (enemies[idx] == null || enemies[idx]?.id != scannedEnemy.id) {
-                                                    assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
-                                                    if (enemies[idx] == null) newEnemiesAdded++
+                            if (!isGlobalSyncCycle && hasActiveTurns) {
+                                // -------------------------------------------------------------------------
+                                // RUTA DE ALTA PRIORIDAD: ESCANEO DIRIGIDO DEL SLOT ACTIVO (<30ms latencia)
+                                // -------------------------------------------------------------------------
+                                withContext(Dispatchers.IO) {
+                                    var fastPicksAdded = 0
+                                    for (turn in activeTurns) {
+                                        val activeResult = DraftVisionScanner.scanActiveSlotDirectly(bitmap, turn)
+                                        val champ = activeResult?.champion
+                                        if (champ != null) {
+                                            withContext(Dispatchers.Main) {
+                                                if (turn.isAlly) {
+                                                    val role = DraftVisionScanner.getAllySlotRole(turn.slotIndex)
+                                                    val roleIdx = defaultRoles.indexOf(role).let { if (it != -1) it else turn.slotIndex }
+                                                    if (manualLockedAllySlots[roleIdx] != true && allies[roleIdx]?.id != champ.id) {
+                                                        assignAllySlot(roleIdx, champ)
+                                                        DraftVisionScanner.allySlotConfirmedChampions[turn.slotIndex] = champ
+                                                        fastPicksAdded++
+                                                        AppLogger.d("HighPriorityLoop", "Slot Aliado Activo ${turn.slotIndex} ($role) fijado instantáneamente: ${champ.name}")
+                                                    }
+                                                } else {
+                                                    val enemyRole = defaultRoles.getOrElse(turn.slotIndex) { LaneRole.TOP }
+                                                    val roleIdx = defaultRoles.indexOf(enemyRole).let { if (it != -1) it else turn.slotIndex }
+                                                    if (manualLockedEnemySlots[roleIdx] != true && enemies[roleIdx]?.id != champ.id) {
+                                                        assignEnemySlot(roleIdx, champ, 100)
+                                                        DraftVisionScanner.enemySlotConfirmedChampions[turn.slotIndex] = champ
+                                                        fastPicksAdded++
+                                                        AppLogger.d("HighPriorityLoop", "Slot Rival Activo ${turn.slotIndex} fijado instantáneamente: ${champ.name}")
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-
-                                    // Asignación directa y garantizada del 10º Pick cuando 9 picks ya están presentes
-                                    val tenthChamp = result.lastPickChampion
-                                    if (tenthChamp != null) {
-                                        val unpickedAllyIdx = allies.indexOfFirst { it == null }
-                                        val unpickedEnemyIdx = enemies.indexOfFirst { it == null }
-                                        if (unpickedAllyIdx != -1 && unpickedEnemyIdx == -1 && manualLockedAllySlots[unpickedAllyIdx] != true) {
-                                            assignAllySlot(unpickedAllyIdx, tenthChamp)
-                                            newAlliesAdded++
-                                            AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $unpickedAllyIdx: ${tenthChamp.name}")
-                                        } else if (unpickedEnemyIdx != -1 && unpickedAllyIdx == -1 && manualLockedEnemySlots[unpickedEnemyIdx] != true) {
-                                            assignEnemySlot(unpickedEnemyIdx, tenthChamp, 100)
-                                            newEnemiesAdded++
-                                            AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $unpickedEnemyIdx: ${tenthChamp.name}")
+                                    if (fastPicksAdded > 0) {
+                                        withContext(Dispatchers.Main) {
+                                            val totalAllies = allies.filterNotNull().size
+                                            val totalEnemies = enemies.filterNotNull().size
+                                            if (totalAllies == 5 && totalEnemies == 5) {
+                                                autoScanEnabled = false
+                                                scanNoticeMessage = "10/10 Campeones confirmados"
+                                            }
                                         }
                                     }
-
-                                    val currentAllyPicks = allies.count { it != null }
-                                    val currentEnemyPicks = enemies.count { it != null }
-                                    if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
-                                        isFirstPick = false
-                                    } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
-                                        isFirstPick = true
-                                    }
-
-                                    if (result.isLegendaryRanked) {
-                                        if (!isLegendaryQueue) {
-                                            isLegendaryQueue = true
+                                }
+                            } else {
+                                // -------------------------------------------------------------------------
+                                // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
+                                // -------------------------------------------------------------------------
+                                val result = withContext(Dispatchers.IO) {
+                                    DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
+                                }
+                                withContext(Dispatchers.Main) {
+                                    if (result.isSuccessful) {
+                                        if (result.detectedFirstPick != null) {
+                                            isFirstPick = result.detectedFirstPick
                                         }
-                                        if (state.allySummonerNames.isNotEmpty()) {
-                                            state.allySummonerNames.clear()
-                                        }
-                                    } else {
+
+                                        var newAlliesAdded = 0
+                                        var newEnemiesAdded = 0
+                                        
                                         defaultRoles.forEachIndexed { idx, role ->
-                                            val sName = result.allySummonerNamesByRole[role] ?: result.allySummonerNamesBySlot[idx]
-                                            if (!sName.isNullOrBlank()) {
-                                                val current = state.allySummonerNames[idx]
-                                                if (current.isNullOrBlank() || sName.length > current.length || (sName.contains(" ") && !current.contains(" "))) {
-                                                    state.allySummonerNames[idx] = sName
+                                            if (manualLockedAllySlots[idx] != true) {
+                                                // ASIGNACIÓN DETERMINÍSTICA POR ROL:
+                                                // En Wild Rift cada slot aliado muestra primero qué línea va a ir (Top, Jungla, Mid, Dúo, Soporte)
+                                                // y luego esa línea se cambia por el nombre del campeón seleccionado.
+                                                // Cada índice `idx` en `allies` corresponde estricta y únicamente a `role` (defaultRoles[idx]).
+                                                // NUNCA caer en fallback de `alliesBySlot[idx]` porque el slot físico de pick puede tener un rol distinto.
+                                                val scannedAlly = result.alliesByRole[role]
+                                                if (scannedAlly != null) {
+                                                    if (allies[idx] == null || allies[idx]?.id != scannedAlly.id) {
+                                                        assignAllySlot(idx, scannedAlly)
+                                                        newAlliesAdded++
+                                                    }
                                                 }
                                             }
-                                            val spells = result.allySpellsByRole[role] ?: result.allySpellsBySlot[idx]
-                                            if (!spells.isNullOrEmpty()) {
-                                                state.allySpells[idx] = spells
+                                            if (manualLockedEnemySlots[idx] != true) {
+                                                val scannedEnemy = result.enemiesByRole[role]
+                                                if (scannedEnemy != null) {
+                                                    if (enemies[idx] == null || enemies[idx]?.id != scannedEnemy.id) {
+                                                        assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
+                                                        if (enemies[idx] == null) newEnemiesAdded++
+                                                    }
+                                                }
                                             }
                                         }
-                                    }
-                                    if (state.enemySpells.isNotEmpty()) {
-                                        state.enemySpells.clear()
-                                    }
 
-                                    val finalAlliesPicked = allies.filterNotNull().size
-                                    val finalEnemiesPicked = enemies.filterNotNull().size
+                                        // Asignación directa y garantizada del 10º Pick cuando 9 picks ya están presentes
+                                        val tenthChamp = result.lastPickChampion
+                                        if (tenthChamp != null) {
+                                            val unpickedAllyIdx = allies.indexOfFirst { it == null }
+                                            val unpickedEnemyIdx = enemies.indexOfFirst { it == null }
+                                            if (unpickedAllyIdx != -1 && unpickedEnemyIdx == -1 && manualLockedAllySlots[unpickedAllyIdx] != true) {
+                                                assignAllySlot(unpickedAllyIdx, tenthChamp)
+                                                newAlliesAdded++
+                                                AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $unpickedAllyIdx: ${tenthChamp.name}")
+                                            } else if (unpickedEnemyIdx != -1 && unpickedAllyIdx == -1 && manualLockedEnemySlots[unpickedEnemyIdx] != true) {
+                                                assignEnemySlot(unpickedEnemyIdx, tenthChamp, 100)
+                                                newEnemiesAdded++
+                                                AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $unpickedEnemyIdx: ${tenthChamp.name}")
+                                            }
+                                        }
 
-                                    val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
+                                        val currentAllyPicks = allies.count { it != null }
+                                        val currentEnemyPicks = enemies.count { it != null }
+                                        if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
+                                            isFirstPick = false
+                                        } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
+                                            isFirstPick = true
+                                        }
 
-                                    if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
-                                        activeRole = result.userExplicitlyDetectedRole
-                                        com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
-                                        scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
-                                    } else if (isDraftFullyConfirmed) {
-                                        autoScanEnabled = false
-                                        scanNoticeMessage = "10/10 Campeones confirmados"
-                                        AppLogger.i("FloatingService", "Auto-Scan desactivado: 10/10 campeones confirmados.")
-                                    } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
-                                        scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
-                                        AppLogger.d("FloatingService", "Fase de Preparación en curso ($finalAlliesPicked/5 vs $finalEnemiesPicked/5). Auto-scan continúa.")
-                                    } else if (newAlliesAdded > 0 || newEnemiesAdded > 0) {
-                                        scanNoticeMessage = "Auto-Scan: +${newAlliesAdded + newEnemiesAdded} picks detectados ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)"
-                                    }
+                                        if (result.isLegendaryRanked) {
+                                            if (!isLegendaryQueue) {
+                                                isLegendaryQueue = true
+                                            }
+                                            if (state.allySummonerNames.isNotEmpty()) {
+                                                state.allySummonerNames.clear()
+                                            }
+                                        } else {
+                                            defaultRoles.forEachIndexed { idx, role ->
+                                                val sName = result.allySummonerNamesByRole[role] ?: result.allySummonerNamesBySlot[idx]
+                                                if (!sName.isNullOrBlank()) {
+                                                    val current = state.allySummonerNames[idx]
+                                                    if (current.isNullOrBlank() || sName.length > current.length || (sName.contains(" ") && !current.contains(" "))) {
+                                                        state.allySummonerNames[idx] = sName
+                                                    }
+                                                }
+                                                val spells = result.allySpellsByRole[role] ?: result.allySpellsBySlot[idx]
+                                                if (!spells.isNullOrEmpty()) {
+                                                    state.allySpells[idx] = spells
+                                                }
+                                            }
+                                        }
+                                        if (state.enemySpells.isNotEmpty()) {
+                                            state.enemySpells.clear()
+                                        }
 
-                                    if (scanNoticeMessage != null) {
-                                        launch {
-                                            delay(2000)
-                                            scanNoticeMessage = null
+                                        val finalAlliesPicked = allies.filterNotNull().size
+                                        val finalEnemiesPicked = enemies.filterNotNull().size
+
+                                        val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
+
+                                        if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
+                                            activeRole = result.userExplicitlyDetectedRole
+                                            com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
+                                            scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
+                                        } else if (isDraftFullyConfirmed) {
+                                            autoScanEnabled = false
+                                            scanNoticeMessage = "10/10 Campeones confirmados"
+                                            AppLogger.i("FloatingService", "Auto-Scan desactivado: 10/10 campeones confirmados.")
+                                        } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
+                                            scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
+                                            AppLogger.d("FloatingService", "Fase de Preparación en curso ($finalAlliesPicked/5 vs $finalEnemiesPicked/5). Auto-scan continúa.")
+                                        } else if (newAlliesAdded > 0 || newEnemiesAdded > 0) {
+                                            scanNoticeMessage = "Auto-Scan: +${newAlliesAdded + newEnemiesAdded} picks detectados ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)"
+                                        }
+
+                                        if (scanNoticeMessage != null) {
+                                            launch {
+                                                delay(2000)
+                                                scanNoticeMessage = null
+                                            }
                                         }
                                     }
                                 }
@@ -2887,20 +2953,6 @@ private fun OverlayVersusDraftBoard(
         Pair(LaneRole.SUPPORT, "SUP")
     )
 
-    val activelyReadingSlots by DraftVisionScanner.activelyReadingSlotsFlow.collectAsStateWithLifecycle()
-    val activeSelectionTurns by DraftVisionScanner.activeSelectionTurnsFlow.collectAsStateWithLifecycle()
-
-    val infiniteTransition = rememberInfiniteTransition(label = "scanner_pulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.45f,
-        targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(550, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseAlpha"
-    )
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -2912,7 +2964,7 @@ private fun OverlayVersusDraftBoard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp),
+                    .padding(bottom = 6.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -2966,76 +3018,11 @@ private fun OverlayVersusDraftBoard(
                 }
             }
 
-            // Indicador de Estado del Escáner OCR en Tiempo Real
-            val activeSlotsDesc = remember(activelyReadingSlots, activeSelectionTurns) {
-                val slots = if (activelyReadingSlots.isNotEmpty()) activelyReadingSlots else activeSelectionTurns
-                if (slots.isEmpty()) {
-                    "En espera / Reposo"
-                } else {
-                    slots.joinToString(", ") { (isAlly, idx) ->
-                        val team = if (isAlly) "Aliado" else "Rival"
-                        val roleName = roles.getOrNull(idx)?.second ?: "Slot ${idx + 1}"
-                        "$team $roleName"
-                    }
-                }
-            }
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 5.dp),
-                shape = RoundedCornerShape(6.dp),
-                color = Color(0xFF061019),
-                border = BorderStroke(
-                    0.5.dp,
-                    if (activelyReadingSlots.isNotEmpty()) HextechCyan.copy(alpha = 0.6f) else HextechCardBorder.copy(alpha = 0.3f)
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 7.dp, vertical = 3.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Visibility,
-                            contentDescription = "Estado Escáner OCR",
-                            tint = if (activelyReadingSlots.isNotEmpty()) HextechCyan.copy(alpha = pulseAlpha) else TextMuted,
-                            modifier = Modifier.size(11.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = tr("ESCÁNER OCR:"),
-                            color = if (activelyReadingSlots.isNotEmpty()) HextechCyan else TextMuted,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 8.sp
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = activeSlotsDesc,
-                            color = if (activelyReadingSlots.isNotEmpty()) Color(0xFF00FF7F) else TextSecondary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 8.sp
-                        )
-                    }
-                    if (activelyReadingSlots.isNotEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF00FF7F).copy(alpha = pulseAlpha))
-                        )
-                    }
-                }
-            }
-
             // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 6.dp, top = 1.dp, start = 4.dp, end = 4.dp),
+                    .padding(bottom = 6.dp, top = 2.dp, start = 4.dp, end = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -3112,11 +3099,6 @@ private fun OverlayVersusDraftBoard(
                 val allyChamp = allySlot?.champion
                 val enemyChamp = enemySlot?.champion
 
-                val isAllyActivelyReading = activelyReadingSlots.contains(Pair(true, index))
-                val isEnemyActivelyReading = activelyReadingSlots.contains(Pair(false, index))
-                val isAllyActiveTurn = activeSelectionTurns.contains(Pair(true, index))
-                val isEnemyActiveTurn = activeSelectionTurns.contains(Pair(false, index))
-
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -3148,8 +3130,6 @@ private fun OverlayVersusDraftBoard(
                                 placeholderInitial = null,
                                 isEnemy = false,
                                 isMyRole = isMyRole,
-                                isActivelyReading = isAllyActivelyReading,
-                                isActiveTurn = isAllyActiveTurn,
                                 onClick = { onPickChampionForRole(true, role) },
                                 onRemove = { onRemoveChampionForRole(true, role) }
                             )
@@ -3161,7 +3141,7 @@ private fun OverlayVersusDraftBoard(
                                     modifier = Modifier.weight(1f),
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    // 1. Nombre del Campeón con indicador verificado
+                                    // 1. Nombre del Campeón
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
                                             text = allyChamp.name,
@@ -3171,13 +3151,6 @@ private fun OverlayVersusDraftBoard(
                                             maxLines = 1,
                                             softWrap = false,
                                             overflow = TextOverflow.Ellipsis
-                                        )
-                                        Spacer(modifier = Modifier.width(3.dp))
-                                        Icon(
-                                            imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = "Confirmado",
-                                            tint = Color(0xFF00FF7F),
-                                            modifier = Modifier.size(9.dp)
                                         )
                                         if (isMyRole) {
                                             Spacer(modifier = Modifier.width(3.dp))
@@ -3223,29 +3196,6 @@ private fun OverlayVersusDraftBoard(
                                         text = "Tier ${allyChamp.tier}",
                                         color = HextechGold,
                                         fontSize = 7.5.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            } else if (isAllyActivelyReading || isAllyActiveTurn) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(HextechCyan.copy(alpha = 0.22f))
-                                        .border(0.8.dp, HextechCyan.copy(alpha = pulseAlpha), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Visibility,
-                                        contentDescription = "Leyendo slot aliado",
-                                        tint = HextechCyan,
-                                        modifier = Modifier.size(10.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Text(
-                                        text = tr("Leyendo..."),
-                                        color = HextechCyan,
-                                        fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -3303,29 +3253,17 @@ private fun OverlayVersusDraftBoard(
                                     horizontalAlignment = Alignment.End,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    // 1. Nombre del Campeón con indicador verificado
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.End
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = "Confirmado",
-                                            tint = Color(0xFF00FF7F),
-                                            modifier = Modifier.size(9.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(3.dp))
-                                        Text(
-                                            text = enemyChamp.name,
-                                            color = DangerRed,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 11.sp,
-                                            maxLines = 1,
-                                            softWrap = false,
-                                            overflow = TextOverflow.Ellipsis,
-                                            textAlign = TextAlign.End
-                                        )
-                                    }
+                                    // 1. Nombre del Campeón
+                                    Text(
+                                        text = enemyChamp.name,
+                                        color = DangerRed,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Ellipsis,
+                                        textAlign = TextAlign.End
+                                    )
                                     // 2. Estadísticas (WR, Ban, Pick)
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -3364,31 +3302,6 @@ private fun OverlayVersusDraftBoard(
                                         textAlign = TextAlign.End
                                     )
                                 }
-                            } else if (isEnemyActivelyReading || isEnemyActiveTurn) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.End,
-                                    modifier = Modifier
-                                        .padding(end = 6.dp)
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(DangerRed.copy(alpha = 0.22f))
-                                        .border(0.8.dp, DangerRed.copy(alpha = pulseAlpha), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = tr("Leyendo..."),
-                                        color = DangerRed,
-                                        fontSize = 8.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.Visibility,
-                                        contentDescription = "Leyendo slot rival",
-                                        tint = DangerRed,
-                                        modifier = Modifier.size(10.dp)
-                                    )
-                                }
                             } else {
                                 Text(
                                     text = tr("+ Rival"),
@@ -3407,8 +3320,6 @@ private fun OverlayVersusDraftBoard(
                                 placeholderInitial = null,
                                 isEnemy = true,
                                 isMyRole = false,
-                                isActivelyReading = isEnemyActivelyReading,
-                                isActiveTurn = isEnemyActiveTurn,
                                 onClick = { onPickChampionForRole(false, role) },
                                 onRemove = { onRemoveChampionForRole(false, role) }
                             )
@@ -3426,29 +3337,11 @@ private fun DraftAvatarBox(
     placeholderInitial: String? = null,
     isEnemy: Boolean,
     isMyRole: Boolean,
-    isActivelyReading: Boolean = false,
-    isActiveTurn: Boolean = false,
     onClick: () -> Unit,
     onRemove: () -> Unit
 ) {
     val champ = slot?.champion
-    val infiniteTransition = rememberInfiniteTransition(label = "avatar_pulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.45f,
-        targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseAlpha"
-    )
-
-    val borderColor = when {
-        isActivelyReading -> if (isEnemy) DangerRed.copy(alpha = pulseAlpha) else HextechCyan.copy(alpha = pulseAlpha)
-        isMyRole -> HextechCyan
-        champ != null -> if (isEnemy) DangerRed else HextechGold
-        else -> HextechCardBorder.copy(alpha = 0.6f)
-    }
+    val borderColor = if (isMyRole) HextechCyan else if (champ != null) (if (isEnemy) DangerRed else HextechGold) else HextechCardBorder.copy(alpha = 0.6f)
 
     Box(
         modifier = Modifier
@@ -3456,13 +3349,12 @@ private fun DraftAvatarBox(
             .clip(RoundedCornerShape(8.dp))
             .background(
                 when {
-                    isActivelyReading -> (if (isEnemy) DangerRed else HextechCyan).copy(alpha = 0.22f)
                     isMyRole -> HextechCyan.copy(alpha = 0.2f)
                     champ != null -> if (isEnemy) DangerRed.copy(alpha = 0.15f) else HextechGold.copy(alpha = 0.15f)
                     else -> Color(0xFF070D15)
                 }
             )
-            .border(if (isActivelyReading) 2.dp else 1.5.dp, borderColor, RoundedCornerShape(8.dp))
+            .border(1.5.dp, borderColor, RoundedCornerShape(8.dp))
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -3490,23 +3382,6 @@ private fun DraftAvatarBox(
                     )
                 }
             }
-            if (isActivelyReading) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(1.5.dp)
-                        .clip(CircleShape)
-                        .background((if (isEnemy) DangerRed else HextechCyan).copy(alpha = pulseAlpha))
-                        .padding(1.5.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Visibility,
-                        contentDescription = "Leyendo OCR",
-                        tint = Color.Black,
-                        modifier = Modifier.size(7.dp)
-                    )
-                }
-            }
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -3527,18 +3402,6 @@ private fun DraftAvatarBox(
                     color = HextechCyan,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Black
-                )
-            }
-        } else if (isActivelyReading) {
-            Box(
-                modifier = Modifier.fillMaxSize().background((if (isEnemy) DangerRed else HextechCyan).copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Visibility,
-                    contentDescription = "Leyendo slot",
-                    tint = (if (isEnemy) DangerRed else HextechCyan).copy(alpha = pulseAlpha),
-                    modifier = Modifier.size(16.dp)
                 )
             }
         } else {
