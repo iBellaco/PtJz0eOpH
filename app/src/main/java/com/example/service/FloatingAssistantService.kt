@@ -44,10 +44,16 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -2881,6 +2887,20 @@ private fun OverlayVersusDraftBoard(
         Pair(LaneRole.SUPPORT, "SUP")
     )
 
+    val activelyReadingSlots by DraftVisionScanner.activelyReadingSlotsFlow.collectAsStateWithLifecycle()
+    val activeSelectionTurns by DraftVisionScanner.activeSelectionTurnsFlow.collectAsStateWithLifecycle()
+
+    val infiniteTransition = rememberInfiniteTransition(label = "scanner_pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.45f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(550, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -2892,7 +2912,7 @@ private fun OverlayVersusDraftBoard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 6.dp),
+                    .padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -2946,11 +2966,76 @@ private fun OverlayVersusDraftBoard(
                 }
             }
 
+            // Indicador de Estado del Escáner OCR en Tiempo Real
+            val activeSlotsDesc = remember(activelyReadingSlots, activeSelectionTurns) {
+                val slots = if (activelyReadingSlots.isNotEmpty()) activelyReadingSlots else activeSelectionTurns
+                if (slots.isEmpty()) {
+                    "En espera / Reposo"
+                } else {
+                    slots.joinToString(", ") { (isAlly, idx) ->
+                        val team = if (isAlly) "Aliado" else "Rival"
+                        val roleName = roles.getOrNull(idx)?.second ?: "Slot ${idx + 1}"
+                        "$team $roleName"
+                    }
+                }
+            }
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 5.dp),
+                shape = RoundedCornerShape(6.dp),
+                color = Color(0xFF061019),
+                border = BorderStroke(
+                    0.5.dp,
+                    if (activelyReadingSlots.isNotEmpty()) HextechCyan.copy(alpha = 0.6f) else HextechCardBorder.copy(alpha = 0.3f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 7.dp, vertical = 3.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Visibility,
+                            contentDescription = "Estado Escáner OCR",
+                            tint = if (activelyReadingSlots.isNotEmpty()) HextechCyan.copy(alpha = pulseAlpha) else TextMuted,
+                            modifier = Modifier.size(11.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = tr("ESCÁNER OCR:"),
+                            color = if (activelyReadingSlots.isNotEmpty()) HextechCyan else TextMuted,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 8.sp
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = activeSlotsDesc,
+                            color = if (activelyReadingSlots.isNotEmpty()) Color(0xFF00FF7F) else TextSecondary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 8.sp
+                        )
+                    }
+                    if (activelyReadingSlots.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00FF7F).copy(alpha = pulseAlpha))
+                        )
+                    }
+                }
+            }
+
             // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 6.dp, top = 2.dp, start = 4.dp, end = 4.dp),
+                    .padding(bottom = 6.dp, top = 1.dp, start = 4.dp, end = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -3027,6 +3112,11 @@ private fun OverlayVersusDraftBoard(
                 val allyChamp = allySlot?.champion
                 val enemyChamp = enemySlot?.champion
 
+                val isAllyActivelyReading = activelyReadingSlots.contains(Pair(true, index))
+                val isEnemyActivelyReading = activelyReadingSlots.contains(Pair(false, index))
+                val isAllyActiveTurn = activeSelectionTurns.contains(Pair(true, index))
+                val isEnemyActiveTurn = activeSelectionTurns.contains(Pair(false, index))
+
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -3058,6 +3148,8 @@ private fun OverlayVersusDraftBoard(
                                 placeholderInitial = null,
                                 isEnemy = false,
                                 isMyRole = isMyRole,
+                                isActivelyReading = isAllyActivelyReading,
+                                isActiveTurn = isAllyActiveTurn,
                                 onClick = { onPickChampionForRole(true, role) },
                                 onRemove = { onRemoveChampionForRole(true, role) }
                             )
@@ -3069,7 +3161,7 @@ private fun OverlayVersusDraftBoard(
                                     modifier = Modifier.weight(1f),
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    // 1. Nombre del Campeón
+                                    // 1. Nombre del Campeón con indicador verificado
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
                                             text = allyChamp.name,
@@ -3079,6 +3171,13 @@ private fun OverlayVersusDraftBoard(
                                             maxLines = 1,
                                             softWrap = false,
                                             overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(modifier = Modifier.width(3.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = "Confirmado",
+                                            tint = Color(0xFF00FF7F),
+                                            modifier = Modifier.size(9.dp)
                                         )
                                         if (isMyRole) {
                                             Spacer(modifier = Modifier.width(3.dp))
@@ -3124,6 +3223,29 @@ private fun OverlayVersusDraftBoard(
                                         text = "Tier ${allyChamp.tier}",
                                         color = HextechGold,
                                         fontSize = 7.5.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            } else if (isAllyActivelyReading || isAllyActiveTurn) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(HextechCyan.copy(alpha = 0.22f))
+                                        .border(0.8.dp, HextechCyan.copy(alpha = pulseAlpha), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Visibility,
+                                        contentDescription = "Leyendo slot aliado",
+                                        tint = HextechCyan,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                    Text(
+                                        text = tr("Leyendo..."),
+                                        color = HextechCyan,
+                                        fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -3181,17 +3303,29 @@ private fun OverlayVersusDraftBoard(
                                     horizontalAlignment = Alignment.End,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    // 1. Nombre del Campeón
-                                    Text(
-                                        text = enemyChamp.name,
-                                        color = DangerRed,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.sp,
-                                        maxLines = 1,
-                                        softWrap = false,
-                                        overflow = TextOverflow.Ellipsis,
-                                        textAlign = TextAlign.End
-                                    )
+                                    // 1. Nombre del Campeón con indicador verificado
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.End
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = "Confirmado",
+                                            tint = Color(0xFF00FF7F),
+                                            modifier = Modifier.size(9.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(3.dp))
+                                        Text(
+                                            text = enemyChamp.name,
+                                            color = DangerRed,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp,
+                                            maxLines = 1,
+                                            softWrap = false,
+                                            overflow = TextOverflow.Ellipsis,
+                                            textAlign = TextAlign.End
+                                        )
+                                    }
                                     // 2. Estadísticas (WR, Ban, Pick)
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -3230,6 +3364,31 @@ private fun OverlayVersusDraftBoard(
                                         textAlign = TextAlign.End
                                     )
                                 }
+                            } else if (isEnemyActivelyReading || isEnemyActiveTurn) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.End,
+                                    modifier = Modifier
+                                        .padding(end = 6.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(DangerRed.copy(alpha = 0.22f))
+                                        .border(0.8.dp, DangerRed.copy(alpha = pulseAlpha), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = tr("Leyendo..."),
+                                        color = DangerRed,
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.Visibility,
+                                        contentDescription = "Leyendo slot rival",
+                                        tint = DangerRed,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                }
                             } else {
                                 Text(
                                     text = tr("+ Rival"),
@@ -3248,6 +3407,8 @@ private fun OverlayVersusDraftBoard(
                                 placeholderInitial = null,
                                 isEnemy = true,
                                 isMyRole = false,
+                                isActivelyReading = isEnemyActivelyReading,
+                                isActiveTurn = isEnemyActiveTurn,
                                 onClick = { onPickChampionForRole(false, role) },
                                 onRemove = { onRemoveChampionForRole(false, role) }
                             )
@@ -3265,11 +3426,29 @@ private fun DraftAvatarBox(
     placeholderInitial: String? = null,
     isEnemy: Boolean,
     isMyRole: Boolean,
+    isActivelyReading: Boolean = false,
+    isActiveTurn: Boolean = false,
     onClick: () -> Unit,
     onRemove: () -> Unit
 ) {
     val champ = slot?.champion
-    val borderColor = if (isMyRole) HextechCyan else if (champ != null) (if (isEnemy) DangerRed else HextechGold) else HextechCardBorder.copy(alpha = 0.6f)
+    val infiniteTransition = rememberInfiniteTransition(label = "avatar_pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.45f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+
+    val borderColor = when {
+        isActivelyReading -> if (isEnemy) DangerRed.copy(alpha = pulseAlpha) else HextechCyan.copy(alpha = pulseAlpha)
+        isMyRole -> HextechCyan
+        champ != null -> if (isEnemy) DangerRed else HextechGold
+        else -> HextechCardBorder.copy(alpha = 0.6f)
+    }
 
     Box(
         modifier = Modifier
@@ -3277,12 +3456,13 @@ private fun DraftAvatarBox(
             .clip(RoundedCornerShape(8.dp))
             .background(
                 when {
+                    isActivelyReading -> (if (isEnemy) DangerRed else HextechCyan).copy(alpha = 0.22f)
                     isMyRole -> HextechCyan.copy(alpha = 0.2f)
                     champ != null -> if (isEnemy) DangerRed.copy(alpha = 0.15f) else HextechGold.copy(alpha = 0.15f)
                     else -> Color(0xFF070D15)
                 }
             )
-            .border(1.5.dp, borderColor, RoundedCornerShape(8.dp))
+            .border(if (isActivelyReading) 2.dp else 1.5.dp, borderColor, RoundedCornerShape(8.dp))
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -3310,6 +3490,23 @@ private fun DraftAvatarBox(
                     )
                 }
             }
+            if (isActivelyReading) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(1.5.dp)
+                        .clip(CircleShape)
+                        .background((if (isEnemy) DangerRed else HextechCyan).copy(alpha = pulseAlpha))
+                        .padding(1.5.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Visibility,
+                        contentDescription = "Leyendo OCR",
+                        tint = Color.Black,
+                        modifier = Modifier.size(7.dp)
+                    )
+                }
+            }
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -3330,6 +3527,18 @@ private fun DraftAvatarBox(
                     color = HextechCyan,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Black
+                )
+            }
+        } else if (isActivelyReading) {
+            Box(
+                modifier = Modifier.fillMaxSize().background((if (isEnemy) DangerRed else HextechCyan).copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Visibility,
+                    contentDescription = "Leyendo slot",
+                    tint = (if (isEnemy) DangerRed else HextechCyan).copy(alpha = pulseAlpha),
+                    modifier = Modifier.size(16.dp)
                 )
             }
         } else {

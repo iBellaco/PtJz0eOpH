@@ -111,6 +111,19 @@ object DraftVisionScanner {
     val showCalibrationBoxes = kotlinx.coroutines.flow.MutableStateFlow(false)
     val debugVisualMatches = kotlinx.coroutines.flow.MutableStateFlow<Map<String, String>>(emptyMap())
 
+    // Slots que el escáner OCR está leyendo activamente en tiempo real (Pair(isAlly, slotIndex))
+    val activelyReadingSlotsFlow = kotlinx.coroutines.flow.MutableStateFlow<Set<Pair<Boolean, Int>>>(emptySet())
+    // Slots en turno activo de selección según el orden de picks de Wild Rift
+    val activeSelectionTurnsFlow = kotlinx.coroutines.flow.MutableStateFlow<Set<Pair<Boolean, Int>>>(emptySet())
+
+    fun isSlotActivelyReading(isAlly: Boolean, slotIndex: Int): Boolean {
+        return activelyReadingSlotsFlow.value.contains(Pair(isAlly, slotIndex))
+    }
+
+    fun isSlotInActiveTurn(isAlly: Boolean, slotIndex: Int): Boolean {
+        return activeSelectionTurnsFlow.value.contains(Pair(isAlly, slotIndex))
+    }
+
     
     /**
      * Devuelve la secuencia real de los 10 turnos del Draft de Wild Rift:
@@ -512,6 +525,10 @@ object DraftVisionScanner {
             val activeTurns = computeActiveSelectionTurns(currentPickSequence, allySlotConfirmedChampions, enemySlotConfirmedChampions)
             val activeSelectionSlots = activeTurns.map { Pair(it.isAlly, it.slotIndex) }.toSet()
             val confirmedCountSoFar = allySlotConfirmedChampions.count { it != null } + enemySlotConfirmedChampions.count { it != null }
+
+            // Actualizar flujos observables de lectura de slots activos en tiempo real para la interfaz
+            activeSelectionTurnsFlow.value = activeSelectionSlots
+            activelyReadingSlotsFlow.value = activeSelectionSlots
 
             // Registrar cabecera del ciclo con los turnos activos en este instante
             DraftOcrLogger.logCycleHeader(
@@ -1469,6 +1486,25 @@ object DraftVisionScanner {
         val allyChampsList = alliesMap.values.toList()
         val enemyChampsList = finalEnemiesMap.values.toList()
         val total = allyChampsList.size + enemyChampsList.size
+
+        // Si la fase de draft completó los 10 picks, vaciar los slots activos; si no, proyectar el siguiente turno
+        if (total >= 10) {
+            activelyReadingSlotsFlow.value = emptySet()
+            activeSelectionTurnsFlow.value = emptySet()
+        } else {
+            val finalFirstPick = detectedFirstPick ?: currentIsFirstPick ?: false
+            val pickSeq = getDraftPickSequence(finalFirstPick)
+            val allyArr = Array<Champion?>(5) { alliesBySlotMap[it] }
+            val enemyArr = Array<Champion?>(5) { enemiesBySlotMap[it] }
+            val nextActiveTurns = computeActiveSelectionTurns(
+                pickSeq,
+                allyArr,
+                enemyArr
+            )
+            val nextActiveSlots = nextActiveTurns.map { Pair(it.isAlly, it.slotIndex) }.toSet()
+            activeSelectionTurnsFlow.value = nextActiveSlots
+            activelyReadingSlotsFlow.value = nextActiveSlots
+        }
 
         val hasDraftActivity = total > 0 || allySummonerNamesCache.isNotEmpty() || userDetectedLane != null || detectedFirstPick != null || isLegendaryRanked || isPreparationPhase
 
