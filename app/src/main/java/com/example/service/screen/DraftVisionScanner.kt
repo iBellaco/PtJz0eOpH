@@ -183,6 +183,42 @@ object DraftVisionScanner {
     val allySlotConfirmedChampions = arrayOfNulls<Champion>(5)
     val enemySlotConfirmedChampions = arrayOfNulls<Champion>(5)
 
+    // Contador de ciclos para optimización de frecuencia entre slots activos y no activos
+    var scanCycleCounter: Long = 0L
+
+    /**
+     * Identifica los turnos de selección que están activos en este momento exacto según la secuencia oficial de 10 picks de Wild Rift.
+     * En Wild Rift los turnos se ejecutan en:
+     * - Turno 1 (1 jugador)
+     * - Turnos 2 y 3 (2 jugadores simultáneos)
+     * - Turnos 4 y 5 (2 jugadores simultáneos)
+     * - Turnos 6 y 7 (2 jugadores simultáneos)
+     * - Turnos 8 y 9 (2 jugadores simultáneos)
+     * - Turno 10 (1 jugador)
+     */
+    fun computeActiveSelectionTurns(
+        pickSequence: List<DraftPickTurn>,
+        confirmedAllySlots: Array<Champion?>,
+        confirmedEnemySlots: Array<Champion?>
+    ): List<DraftPickTurn> {
+        val uncompletedTurns = pickSequence.filter { turn ->
+            val champ = if (turn.isAlly) confirmedAllySlots[turn.slotIndex] else confirmedEnemySlots[turn.slotIndex]
+            champ == null
+        }
+        if (uncompletedTurns.isEmpty()) return emptyList()
+
+        val firstUncompleted = uncompletedTurns.first()
+        return when (firstUncompleted.turnNumber) {
+            1 -> listOf(firstUncompleted)
+            2, 3 -> uncompletedTurns.filter { it.turnNumber in 2..3 }
+            4, 5 -> uncompletedTurns.filter { it.turnNumber in 4..5 }
+            6, 7 -> uncompletedTurns.filter { it.turnNumber in 6..7 }
+            8, 9 -> uncompletedTurns.filter { it.turnNumber in 8..9 }
+            10 -> listOf(firstUncompleted)
+            else -> listOf(firstUncompleted)
+        }
+    }
+
     // Filtros de estabilización temporal (anti-parpadeo y anti-oscilación)
     private class SlotTemporalFilter {
         private var lastConfirmedChampion: Champion? = null
@@ -242,6 +278,8 @@ object DraftVisionScanner {
         if (bitmap.isRecycled || bitmap.width < bitmap.height) {
             return DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Orientación no horizontal")
         }
+
+        scanCycleCounter++
 
         return try {
             val recognizer = getRecognizer() ?: return DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "OCR no disponible")
@@ -470,11 +508,37 @@ object DraftVisionScanner {
             }
 
             val tentativeFirstPick = detectedFirstPick ?: currentIsFirstPick ?: false
+            val currentPickSequence = getDraftPickSequence(tentativeFirstPick)
+            val activeTurns = computeActiveSelectionTurns(currentPickSequence, allySlotConfirmedChampions, enemySlotConfirmedChampions)
+            val activeSelectionSlots = activeTurns.map { Pair(it.isAlly, it.slotIndex) }.toSet()
+            val confirmedCountSoFar = allySlotConfirmedChampions.count { it != null } + enemySlotConfirmedChampions.count { it != null }
+
+            // Registrar cabecera del ciclo con los turnos activos en este instante
+            DraftOcrLogger.logCycleHeader(
+                cycle = scanCycleCounter,
+                confirmedCount = confirmedCountSoFar,
+                activeTurns = activeTurns,
+                isFirstPick = detectedFirstPick ?: currentIsFirstPick
+            )
 
             // Procesar textos aliados: Detección estricta de Línea 1 (Rol o Campeón) y Línea 2 (Nombre de Invocador)
             for (i in 0..4) {
                 val slot = allySlots[i]
                 val entries = allySlotTexts[i]
+                val isCurrentSelectionSlot = activeSelectionSlots.contains(Pair(true, i))
+                val previousStateDesc = when {
+                    allySlotConfirmedChampions[i] != null -> "CAMPEÓN FIJADO: ${allySlotConfirmedChampions[i]?.name}"
+                    allySlotRolesCache[i] != null -> "LÍNEA ASIGNADA: ${allySlotRolesCache[i]?.shortName}"
+                    else -> "VACÍO / EN ESPERA"
+                }
+
+                // Registrar en consola el texto crudo del slot para auditoría
+                DraftOcrLogger.logSlotRawText(
+                    slotIndex = i,
+                    isAlly = true,
+                    isCurrentSelection = isCurrentSelectionSlot,
+                    rawEntries = entries.map { it.first }
+                )
 
                 var detectedRoleInSlot: LaneRole? = null
                 var detectedChampInSlot: Champion? = null
@@ -490,7 +554,9 @@ object DraftVisionScanner {
                     // FASE 1: Verificación estricta de transición a campeón (filtrando patrones conocidos de iconos de maestría y rol)
                     for ((line, box) in entries) {
                         if (DraftValidationLayer.isNoiseText(line)) continue
-                        val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
+                        val audit = DraftValidationLayer.stripLeadingMasteryOrRoleIconWithAudit(line)
+                        DraftOcrLogger.logMasteryRemoval(slotIndex = i, isAlly = true, audit = audit)
+                        val strippedLine = audit.cleanText
 
                         val matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
                             ?: ChampionNameResolver.findChampionInText(line, allChamps)
@@ -506,6 +572,14 @@ object DraftVisionScanner {
                                     tag = "CAMPEÓN: ${matchedChamp.name}",
                                     color = android.graphics.Color.GREEN
                                 )
+                            )
+                            DraftOcrLogger.logTransitionSuccess(
+                                slotIndex = i,
+                                previousState = previousStateDesc,
+                                rawText = line,
+                                strippedText = strippedLine,
+                                champion = matchedChamp,
+                                viaPreprocessing = false
                             )
                             AppLogger.d(TAG, "OCR Aliado Slot $i -> Transición completada: Campeón confirmado tras icono: ${matchedChamp.name}")
                             break // Transición a nombre de campeón confirmada
@@ -535,9 +609,34 @@ object DraftVisionScanner {
                                         color = android.graphics.Color.CYAN
                                     )
                                 )
+                                DraftOcrLogger.logTransitionWaiting(
+                                    slotIndex = i,
+                                    previousState = previousStateDesc,
+                                    rawText = line,
+                                    strippedText = strippedLine,
+                                    role = role
+                                )
                                 AppLogger.d(TAG, "OCR Aliado Slot $i -> Estado previo a selección: Línea: ${role.shortName}")
                                 break
                             }
+                        }
+                    }
+
+                    // FASE 2.5: Si hay texto pero falló tanto campeón como rol, auditar candidatos cercanos
+                    if (detectedChampInSlot == null && detectedRoleInSlot == null) {
+                        for ((line, _) in entries) {
+                            if (DraftValidationLayer.isNoiseText(line)) continue
+                            val audit = DraftValidationLayer.stripLeadingMasteryOrRoleIconWithAudit(line)
+                            val candidates = ChampionNameResolver.getClosestCandidates(audit.cleanText)
+                            DraftOcrLogger.logDetectionFailure(
+                                slotIndex = i,
+                                isAlly = true,
+                                previousState = previousStateDesc,
+                                rawText = line,
+                                strippedText = audit.cleanText,
+                                closestCandidates = candidates
+                            )
+                            break
                         }
                     }
 
@@ -618,8 +717,17 @@ object DraftVisionScanner {
                     }
                 }
 
-                // Si el OCR global no detectó campeón por ruido o icono de maestría, aplicar preprocesamiento adaptativo
-                if (detectedChampInSlot == null && allySlotConfirmedChampions[i] == null && recognizer != null) {
+                // OPTIMIZACIÓN DE FRECUENCIA PARA RESOLVER LATENCIA:
+                // - Si el slot está en SELECCIÓN ACTIVA (turno actual): BUCLE DE ALTA PRIORIDAD inmediato.
+                // - Si el slot es INACTIVO (turnos futuros o ya confirmados): Frecuencia reducida (cada 6 ciclos) o se omite,
+                //   eliminando la sobrecarga de OCR que ralentizaba la selección.
+                val shouldRunPreprocForAlly = when {
+                    allySlotConfirmedChampions[i] != null -> false
+                    isCurrentSelectionSlot -> true
+                    else -> (scanCycleCounter % 6L == 0L)
+                }
+
+                if (detectedChampInSlot == null && shouldRunPreprocForAlly && recognizer != null) {
                     try {
                         val slotCenterY = calib.allySlotYRatios[i]
                         val startYRatio = (slotCenterY - 0.050f).coerceIn(0f, 0.90f)
@@ -643,11 +751,21 @@ object DraftVisionScanner {
                                 for (blk in preprocRes.textBlocks) {
                                     for (ln in blk.lines) {
                                         val lnTxt = ln.text.trim()
-                                        val strippedLn = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(lnTxt)
+                                        val audit = DraftValidationLayer.stripLeadingMasteryOrRoleIconWithAudit(lnTxt)
+                                        val strippedLn = audit.cleanText
                                         val cMatched = ChampionNameResolver.findChampionInText(strippedLn, allChamps)
                                             ?: ChampionNameResolver.findChampionInText(lnTxt, allChamps)
                                         if (cMatched != null) {
                                             detectedChampInSlot = cMatched
+                                            DraftOcrLogger.logMasteryRemoval(slotIndex = i, isAlly = true, audit = audit)
+                                            DraftOcrLogger.logTransitionSuccess(
+                                                slotIndex = i,
+                                                previousState = previousStateDesc,
+                                                rawText = lnTxt,
+                                                strippedText = strippedLn,
+                                                champion = cMatched,
+                                                viaPreprocessing = true
+                                            )
                                             AppLogger.d(TAG, "OCR Aliado Slot $i -> Campeón detectado con Pre-Procesamiento (Anti-Maestría): ${cMatched.name}")
                                             break
                                         }
@@ -790,12 +908,24 @@ object DraftVisionScanner {
             for (i in 0..4) {
                 var detectedEnemyChamp: Champion? = null
                 val enemyEntries = enemySlotTexts[i]
+                val isEnemyCurrentSelection = activeSelectionSlots.contains(Pair(false, i))
+
+                // Registrar en consola el texto crudo del slot rival
+                DraftOcrLogger.logSlotRawText(
+                    slotIndex = i,
+                    isAlly = false,
+                    isCurrentSelection = isEnemyCurrentSelection,
+                    rawEntries = enemyEntries.map { it.first }
+                )
 
                 for ((line, box) in enemyEntries) {
                     val safeBox = box ?: Rect(0, 0, 10, 10)
                     if (DraftValidationLayer.isNoiseText(line)) continue
 
-                    val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
+                    val audit = DraftValidationLayer.stripLeadingMasteryOrRoleIconWithAudit(line)
+                    DraftOcrLogger.logMasteryRemoval(slotIndex = i, isAlly = false, audit = audit)
+                    val strippedLine = audit.cleanText
+
                     val cleanLine = line.replace(Regex("^[^a-zA-Z0-9]+"), "").trim()
                     val lineWithoutLeadingArtifact = if (cleanLine.length > 2 && (cleanLine[1] == ' ' || cleanLine[2] == ' ')) {
                         cleanLine.dropWhile { it != ' ' }.trim()
@@ -829,13 +959,29 @@ object DraftVisionScanner {
                                 color = android.graphics.Color.RED
                             )
                         )
+                        DraftOcrLogger.logEnemySlotEvaluation(
+                            slotIndex = i,
+                            rawText = line,
+                            strippedText = strippedLine,
+                            champion = matched,
+                            isPlayerWaiting = false
+                        )
                         AppLogger.d(TAG, "OCR Rival Slot $i -> Campeón 100%: ${matched.name}")
                         break
                     }
                 }
 
-                // Si el OCR global no detectó campeón en slot rival, aplicar preprocesamiento adaptativo
-                if (detectedEnemyChamp == null && enemySlotConfirmedChampions[i] == null && recognizer != null) {
+                // OPTIMIZACIÓN DE FRECUENCIA PARA RESOLVER LATENCIA:
+                // - Si el slot rival está en SELECCIÓN ACTIVA (turno actual): BUCLE DE ALTA PRIORIDAD inmediato.
+                // - Si el slot es INACTIVO (turnos futuros o ya confirmados): Frecuencia reducida (cada 6 ciclos) o se omite,
+                //   eliminando la lentitud y latencia durante la fase de picking.
+                val shouldRunPreprocForEnemy = when {
+                    enemySlotConfirmedChampions[i] != null -> false
+                    isEnemyCurrentSelection -> true
+                    else -> (scanCycleCounter % 6L == 0L)
+                }
+
+                if (detectedEnemyChamp == null && shouldRunPreprocForEnemy && recognizer != null) {
                     try {
                         val slotCenterY = calib.enemySlotYRatios[i]
                         val startYRatio = (slotCenterY - 0.050f).coerceIn(0f, 0.90f)
@@ -859,7 +1005,8 @@ object DraftVisionScanner {
                                 for (blk in preprocRes.textBlocks) {
                                     for (ln in blk.lines) {
                                         val lnTxt = ln.text.trim()
-                                        val strippedLn = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(lnTxt)
+                                        val audit = DraftValidationLayer.stripLeadingMasteryOrRoleIconWithAudit(lnTxt)
+                                        val strippedLn = audit.cleanText
                                         val cMatched = ChampionNameResolver.findChampionInText(strippedLn, allChamps)
                                             ?: ChampionNameResolver.findChampionInText(lnTxt, allChamps)
                                         if (cMatched != null) {
@@ -867,6 +1014,14 @@ object DraftVisionScanner {
                                                 AppLogger.d(TAG, "OCR Rival Preproc Slot $i -> Ignorado ${cMatched.name}: ya seleccionado por el equipo aliado")
                                             } else {
                                                 detectedEnemyChamp = cMatched
+                                                DraftOcrLogger.logMasteryRemoval(slotIndex = i, isAlly = false, audit = audit)
+                                                DraftOcrLogger.logEnemySlotEvaluation(
+                                                    slotIndex = i,
+                                                    rawText = lnTxt,
+                                                    strippedText = strippedLn,
+                                                    champion = cMatched,
+                                                    isPlayerWaiting = false
+                                                )
                                                 AppLogger.d(TAG, "OCR Rival Slot $i -> Campeón detectado con Pre-Procesamiento: ${cMatched.name}")
                                                 break
                                             }
@@ -881,6 +1036,17 @@ object DraftVisionScanner {
                     } catch (e: Throwable) {
                         AppLogger.d(TAG, "Pre-procesamiento slot rival $i skipped: ${e.message}")
                     }
+                }
+
+                if (detectedEnemyChamp == null && enemySlotConfirmedChampions[i] == null) {
+                    val rawFirst = enemyEntries.firstOrNull()?.first ?: "<esperando selección>"
+                    DraftOcrLogger.logEnemySlotEvaluation(
+                        slotIndex = i,
+                        rawText = rawFirst,
+                        strippedText = "",
+                        champion = null,
+                        isPlayerWaiting = true
+                    )
                 }
 
                 // REGLAS ESTRICTAS DEL USUARIO:

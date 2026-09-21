@@ -214,9 +214,19 @@ object DraftValidationLayer {
      *    Tanto si están separados por espacio ('V JINX', '7 JINX', '• JINX')
      *    como si están concatenados ('VJINX', '7JINX', 'M7JINX', '•JINX', 'WJINX', 'YAHRI', 'VAATROX', etc.)
      */
-    fun stripLeadingMasteryOrRoleIcon(rawText: String): String {
+    data class MasteryRemovalAudit(
+        val rawText: String,
+        val cleanText: String,
+        val stepsApplied: List<String>
+    )
+
+    /**
+     * Versión con auditoría que devuelve cada transformación paso a paso para el mecanismo de logging.
+     */
+    fun stripLeadingMasteryOrRoleIconWithAudit(rawText: String): MasteryRemovalAudit {
         var clean = rawText.trim()
-        if (clean.isBlank()) return ""
+        val steps = mutableListOf<String>()
+        if (clean.isBlank()) return MasteryRemovalAudit(rawText, "", emptyList())
 
         var changed = true
         var loops = 0
@@ -227,6 +237,8 @@ object DraftValidationLayer {
             // 1. Quitar símbolos no alfanuméricos y delimitadores iniciales (ej: "• JINX", "> APOYO", "» CAITLYN", "[7] JINX", "(M7) JINX")
             val withoutSymbols = clean.replace(Regex("^[\\W_]+"), "").trim()
             if (withoutSymbols != clean) {
+                val removed = clean.substring(0, clean.length - withoutSymbols.length)
+                steps.add("Quitar símbolos/viñetas no alfanuméricas iniciales ('$removed')")
                 clean = withoutSymbols
                 changed = true
             }
@@ -237,6 +249,8 @@ object DraftValidationLayer {
                 ""
             ).trim()
             if (withoutMasteryTag != clean && withoutMasteryTag.isNotBlank()) {
+                val removed = clean.substring(0, clean.length - withoutMasteryTag.length).trim()
+                steps.add("Quitar etiqueta explícita de maestría/nivel ('$removed')")
                 clean = withoutMasteryTag
                 changed = true
             }
@@ -247,6 +261,8 @@ object DraftValidationLayer {
                 ""
             ).trim()
             if (withoutRomanMastery != clean && withoutRomanMastery.isNotBlank()) {
+                val removed = clean.substring(0, clean.length - withoutRomanMastery.length).trim()
+                steps.add("Quitar número romano de insignia de maestría ('$removed')")
                 clean = withoutRomanMastery
                 changed = true
             }
@@ -255,6 +271,7 @@ object DraftValidationLayer {
             if (clean.length > 3 && clean.startsWith("VI ", ignoreCase = true)) {
                 val remainder = clean.substring(3).trim()
                 if (remainder.isNotBlank()) {
+                    steps.add("Quitar prefijo de maestría 6 'VI '")
                     clean = remainder
                     changed = true
                 }
@@ -272,6 +289,8 @@ object DraftValidationLayer {
                     normLower.startsWith("master ") || normLower.startsWith("aurelion ") ||
                     normLower.startsWith("tahm ")
                 if (!isKnownTwoWordChamp && remainder.isNotBlank()) {
+                    val removed = clean.substring(0, spaceIndex + 1)
+                    steps.add("Quitar letra/glifo de escudo de maestría aislado con espacio ('$removed')")
                     clean = remainder
                     changed = true
                 }
@@ -285,6 +304,8 @@ object DraftValidationLayer {
                 if (lower.length >= rp.length + pLen && lower.substring(pLen).startsWith(rp)) {
                     val candidate = clean.substring(pLen).trim()
                     if (candidate.isNotBlank()) {
+                        val removed = clean.substring(0, pLen)
+                        steps.add("Desprender prefijo pegado de $pLen letra(s) de palabra de carril ('$removed')")
                         clean = candidate
                         break
                     }
@@ -298,13 +319,19 @@ object DraftValidationLayer {
             if (cleanCompact.length > pLen + 2) {
                 val sub = cleanCompact.substring(pLen)
                 if (ChampionNameResolver.isKnownChampionKey(sub)) {
+                    val removed = clean.substring(0, pLen)
+                    steps.add("Desprender prefijo pegado de $pLen letra(s) de nombre de campeón ('$removed')")
                     clean = clean.substring(pLen).trim()
                     break
                 }
             }
         }
 
-        return clean
+        return MasteryRemovalAudit(rawText, clean, steps)
+    }
+
+    fun stripLeadingMasteryOrRoleIcon(rawText: String): String {
+        return stripLeadingMasteryOrRoleIconWithAudit(rawText).cleanText
     }
 
     /**

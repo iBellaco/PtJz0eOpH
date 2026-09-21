@@ -374,4 +374,35 @@ object ChampionNameResolver {
 
         return null
     }
+
+    /**
+     * Devuelve los candidatos más cercanos por distancia de edición (Levenshtein)
+     * para diagnóstico y explicación de por qué falla la detección de un texto.
+     */
+    fun getClosestCandidates(query: String, maxResults: Int = 3): List<Pair<String, Int>> {
+        val qNorm = normalizeCompact(query)
+        if (qNorm.isBlank()) return emptyList()
+        val allKeys = KNOWN_CHAMPIONS_MAP.keys.distinct()
+        return allKeys.map { key ->
+            val dist = levenshteinDistance(qNorm, normalizeCompact(key))
+            Pair(key, dist)
+        }.sortedBy { it.second }.take(maxResults)
+    }
+
+    private fun levenshteinDistance(s1: String, s2: String): Int {
+        val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }
+        for (i in 0..s1.length) dp[i][0] = i
+        for (j in 0..s2.length) dp[0][j] = j
+        for (i in 1..s1.length) {
+            for (j in 1..s2.length) {
+                val cost = if (s1[i - 1] == s2[j - 1]) 0 else 1
+                dp[i][j] = minOf(
+                    dp[i - 1][j] + 1,
+                    dp[i][j - 1] + 1,
+                    dp[i - 1][j - 1] + cost
+                )
+            }
+        }
+        return dp[s1.length][s2.length]
+    }
 }

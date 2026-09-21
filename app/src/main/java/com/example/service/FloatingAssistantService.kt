@@ -1010,12 +1010,19 @@ private fun FloatingOverlayContent(
         )
     }
 
-    // Auto-Scan Loop en segundo plano optimizado en Dispatchers.IO (cada 200ms)
-    // Se desactiva automáticamente al completar los 10 picks (5 aliados + 5 rivales) para evitar falsos positivos
+    // Auto-Scan Loop en segundo plano optimizado en Dispatchers.IO
+    // Bucle de alta prioridad (100ms) durante la fase de picking activo (1..9 picks) para máxima capacidad de respuesta,
+    // y frecuencia reducida (800ms) al completar los 10 picks para conservar recursos del sistema
     LaunchedEffect(autoScanEnabled) {
         if (!autoScanEnabled) return@LaunchedEffect
         while (autoScanEnabled) {
-            delay(200)
+            val confirmedPicksCount = allies.count { it != null } + enemies.count { it != null }
+            val dynamicLoopDelay = when {
+                confirmedPicksCount >= 10 -> 800L // Todos los picks completados: frecuencia reducida en reposo
+                confirmedPicksCount in 1..9 -> 100L // Bucle de alta prioridad para picks en curso (baja latencia)
+                else -> 180L // Fase inicial de preparación
+            }
+            delay(dynamicLoopDelay)
             try {
                 if (screenCaptureManager == null || !screenCaptureManager.isReady()) {
                     withContext(Dispatchers.Main) {
