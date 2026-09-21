@@ -12,29 +12,29 @@ data class VisionCalibrationConfig(
     val allyAvatarCenterX: Float = 0.075f,
     // 10º Pick Aliado: alineado de forma milimétrica con el centro del avatar circular
     val allyTenthAvatarCenterX: Float = 0.075f,
-    val enemyAvatarCenterX: Float = 0.925f,
-    // 10º Pick Rival: alineado milimétricamente con el centro del avatar circular del slot 5 rival (simétrico a 0.075f)
-    val enemyTenthAvatarCenterX: Float = 0.925f,
+    val enemyAvatarCenterX: Float = 0.958f,
+    // 10º Pick Rival: alineado milimétricamente con el centro del avatar circular del slot 5 rival (95.8% de la pantalla)
+    val enemyTenthAvatarCenterX: Float = 0.958f,
 
     // Diámetro del avatar relativo al alto de pantalla (0..1)
-    val avatarDiameterRatio: Float = 0.122f,
+    val avatarDiameterRatio: Float = 0.118f,
 
     // Ratios verticales Y para los 5 slots aliados (0..4)
     val allySlotYRatios: List<Float> = listOf(
-        0.190f,
-        0.327f,
-        0.465f,
-        0.603f,
-        0.741f
+        0.188f,
+        0.324f,
+        0.460f,
+        0.596f,
+        0.730f
     ),
 
     // Ratios verticales Y para los 5 slots enemigos (0..4)
     val enemySlotYRatios: List<Float> = listOf(
-        0.190f,
-        0.327f,
-        0.465f,
-        0.603f,
-        0.741f
+        0.188f,
+        0.324f,
+        0.460f,
+        0.596f,
+        0.730f
     ),
 
     // Hechizos de invocador aliados
@@ -128,7 +128,7 @@ VisionCalibrationConfig(
     }
 
     companion object {
-        private const val CURRENT_CALIBRATION_VERSION = 10
+        private const val CURRENT_CALIBRATION_VERSION = 11
 
         fun resetToDefaults(context: Context): VisionCalibrationConfig {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)

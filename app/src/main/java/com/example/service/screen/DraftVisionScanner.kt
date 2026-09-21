@@ -98,6 +98,8 @@ data class DraftScanResult(
     val enemySpellsBySlot: Map<Int, List<String>> = emptyMap(),
     val allySummonerNamesByRole: Map<LaneRole, String> = emptyMap(),
     val allySpellsByRole: Map<LaneRole, List<String>> = emptyMap(),
+    val allySlotShowingLaneMap: Map<Int, Boolean> = emptyMap(),
+    val enemySlotShowingJugadorMap: Map<Int, Boolean> = emptyMap(),
     val isLegendaryRanked: Boolean = false,
     val isPreparationPhase: Boolean = false,
     val hasDraftActivity: Boolean = false,
@@ -572,15 +574,25 @@ object DraftVisionScanner {
                         isSlotShowingLane = false
                         allySlotShowingLane[i] = false
                         allySlotHasConfirmedChampOcr[i] = true
+                        allySlotConfirmedChampions[i] = detectedChampInSlot
+                        allyOcrChampions[i] = detectedChampInSlot
                     } else if (detectedRoleInSlot != null) {
                         allySlotConfirmedChampions[i] = null
+                        allyOcrChampions[i] = null
                         isSlotShowingLane = true
                         allySlotShowingLane[i] = true
                         allySlotHasConfirmedChampOcr[i] = false
                     } else {
-                        val hasConfirmedInCache = (allySlotConfirmedChampions[i] != null)
-                        allySlotShowingLane[i] = !hasConfirmedInCache
-                        allySlotHasConfirmedChampOcr[i] = hasConfirmedInCache
+                        val cached = allySlotConfirmedChampions[i]
+                        if (cached != null) {
+                            allyOcrChampions[i] = cached
+                            allySlotShowingLane[i] = false
+                            allySlotHasConfirmedChampOcr[i] = true
+                            isSlotShowingLane = false
+                        } else {
+                            allySlotShowingLane[i] = true
+                            allySlotHasConfirmedChampOcr[i] = false
+                        }
                     }
 
                     // 3. ANALIZAR NOMBRE DE INVOCADOR / TAG DE USUARIO:
@@ -1032,7 +1044,7 @@ object DraftVisionScanner {
             val startY = (yCenter - avatarDiameter / 2).coerceIn(0, height - avatarDiameter)
             val roiRect = Rect(startX, startY, startX + avatarDiameter, startY + avatarDiameter)
 
-            val ocrChamp = allyOcrChampions[i]
+            val ocrChamp = allySlotConfirmedChampions[i] ?: allyOcrChampions[i]
             val roleForSlot = allySlotRolesCache[i] ?: defaultRolesList[i]
             val finalChamp = ocrChamp
             
@@ -1045,7 +1057,6 @@ object DraftVisionScanner {
                 allySlotHasConfirmedChampOcr[i] = true
                 allySlotShowingLane[i] = false
             } else {
-                allySlotConfirmedChampions[i] = null
                 slot.champion = null
                 slot.confidencePercent = 0
                 slot.explicitRole = roleForSlot
@@ -1086,7 +1097,7 @@ object DraftVisionScanner {
             val startY = (yCenter - avatarDiameter / 2).coerceIn(0, height - avatarDiameter)
             val roiRect = Rect(startX, startY, startX + avatarDiameter, startY + avatarDiameter)
 
-            val ocrChamp = enemyOcrChampions[i]
+            val ocrChamp = enemySlotConfirmedChampions[i] ?: enemyOcrChampions[i]
             val finalChamp = ocrChamp
 
             if (finalChamp != null) {
@@ -1094,7 +1105,6 @@ object DraftVisionScanner {
                 slot.champion = finalChamp
                 slot.confidencePercent = 100
             } else {
-                enemySlotConfirmedChampions[i] = null
                 slot.champion = null
                 slot.confidencePercent = 0
             }
@@ -1443,6 +1453,8 @@ object DraftVisionScanner {
             enemySpellsBySlot = emptyMap(),
             allySummonerNamesByRole = allySummonerNamesByRole,
             allySpellsByRole = allySpellsByRole,
+            allySlotShowingLaneMap = (0..4).associateWith { allySlotShowingLane[it] },
+            enemySlotShowingJugadorMap = (0..4).associateWith { i -> enemySlotConfirmedChampions[i] == null && enemySlots[i].isLikelyUnpicked },
             isLegendaryRanked = isLegendaryRanked,
             isPreparationPhase = isPreparationPhase,
             hasDraftActivity = hasDraftActivity,

@@ -1053,13 +1053,13 @@ private fun FloatingOverlayContent(
                                     if (result.alliesByRole.isNotEmpty()) {
                                         defaultRoles.forEachIndexed { idx, role ->
                                             if (manualLockedAllySlots[idx] != true) {
-                                                val scannedAlly = result.alliesByRole[role]
+                                                val scannedAlly = result.alliesByRole[role] ?: result.alliesBySlot[idx]
                                                 if (scannedAlly != null) {
                                                     if (allies[idx]?.id != scannedAlly.id) {
                                                         assignAllySlot(idx, scannedAlly)
                                                         newAlliesAdded++
                                                     }
-                                                } else if (result.alliesBySlot[idx] == null) {
+                                                } else if (result.allySlotShowingLaneMap[idx] == true) {
                                                     if (allies[idx] != null) {
                                                         allies[idx] = null
                                                     }
@@ -1075,7 +1075,7 @@ private fun FloatingOverlayContent(
                                                         assignAllySlot(idx, scannedAlly)
                                                         newAlliesAdded++
                                                     }
-                                                } else {
+                                                } else if (result.allySlotShowingLaneMap[idx] == true) {
                                                     if (allies[idx] != null) {
                                                         allies[idx] = null
                                                     }
@@ -1087,13 +1087,13 @@ private fun FloatingOverlayContent(
                                     if (result.enemiesByRole.isNotEmpty()) {
                                         defaultRoles.forEachIndexed { idx, role ->
                                             if (manualLockedEnemySlots[idx] != true) {
-                                                val scannedEnemy = result.enemiesByRole[role]
+                                                val scannedEnemy = result.enemiesByRole[role] ?: result.enemiesBySlot[idx]
                                                 if (scannedEnemy != null) {
                                                     if (enemies[idx]?.id != scannedEnemy.id) {
                                                         assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
                                                         newEnemiesAdded++
                                                     }
-                                                } else if (result.enemiesBySlot[idx] == null) {
+                                                } else if (result.enemySlotShowingJugadorMap[idx] == true) {
                                                     if (enemies[idx] != null) {
                                                         enemies[idx] = null
                                                         state.enemyConfidences.remove(role)
@@ -1110,7 +1110,7 @@ private fun FloatingOverlayContent(
                                                         assignEnemySlot(idx, scannedEnemy, 85)
                                                         newEnemiesAdded++
                                                     }
-                                                } else {
+                                                } else if (result.enemySlotShowingJugadorMap[idx] == true) {
                                                     if (enemies[idx] != null) {
                                                         enemies[idx] = null
                                                         defaultRoles.getOrNull(idx)?.let { state.enemyConfidences.remove(it) }
