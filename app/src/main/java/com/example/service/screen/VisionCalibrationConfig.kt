@@ -9,28 +9,28 @@ import android.content.SharedPreferences
  */
 data class VisionCalibrationConfig(
     // Posición horizontal X central de avatares en columnas verticales de draft (0..1)
-    val allyAvatarCenterX: Float = 0.076f,
+    val allyAvatarCenterX: Float = 0.073f,
     val enemyAvatarCenterX: Float = 0.960f,
 
     // Diámetro del avatar relativo al alto de pantalla (0..1)
-    val avatarDiameterRatio: Float = 0.114f,
+    val avatarDiameterRatio: Float = 0.110f,
 
     // Ratios verticales Y para los 5 slots aliados (0..4)
     val allySlotYRatios: List<Float> = listOf(
-        0.196f,
-        0.329f,
-        0.465f,
-        0.603f,
-        0.739f
+        0.188f,
+        0.324f,
+        0.458f,
+        0.596f,
+        0.732f
     ),
 
     // Ratios verticales Y para los 5 slots enemigos (0..4)
     val enemySlotYRatios: List<Float> = listOf(
-        0.196f,
-        0.329f,
-        0.465f,
-        0.603f,
-        0.739f
+        0.188f,
+        0.324f,
+        0.458f,
+        0.596f,
+        0.732f
     ),
 
     // Hechizos de invocador aliados
@@ -39,9 +39,9 @@ data class VisionCalibrationConfig(
     val spellYOffsetRatio: Float = 0.0f,
 
     // Rango horizontal OCR para columnas de draft (restringido estrictamente a las columnas de slots, sin tocar el centro)
-    val allyOcrMinX: Float = 0.08f,
-    val allyOcrMaxX: Float = 0.225f,
-    val enemyOcrMinX: Float = 0.78f,
+    val allyOcrMinX: Float = 0.098f,
+    val allyOcrMaxX: Float = 0.240f,
+    val enemyOcrMinX: Float = 0.775f,
     val enemyOcrMaxX: Float = 0.935f,
 
     // --- CÍRCULOS DE AVATARES SUPERIORES (10º PICK Y FASE DE PREPARACIÓN) ---

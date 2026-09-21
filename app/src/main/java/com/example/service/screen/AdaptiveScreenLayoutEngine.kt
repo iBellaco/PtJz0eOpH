@@ -67,19 +67,20 @@ object AdaptiveScreenLayoutEngine {
         val ratio = geometry.aspectRatio
 
         // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla:
-        // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.076f
+        // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.073f
         // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.960f
-        val adaptiveAllyCenterX = if (geometry.isUltrawide) 0.076f else baseConfig.allyAvatarCenterX
+        val adaptiveAllyCenterX = if (geometry.isUltrawide) 0.073f else baseConfig.allyAvatarCenterX
         val adaptiveEnemyCenterX = if (geometry.isUltrawide) 0.960f else baseConfig.enemyAvatarCenterX
 
         // Rango de búsqueda OCR adaptativo:
-        // El texto del slot aliado está estrictamente a la derecha del avatar (entre x ≈ 0.08 y x ≈ 0.225).
-        // JAMÁS debe invadir el carrusel central de selección de campeones (x >= 0.26).
-        val allyOcrMinX = 0.082f
-        val allyOcrMaxX = 0.225f
+        // El texto del slot aliado está estrictamente a la derecha del avatar (entre x ≈ 0.098 y x ≈ 0.240).
+        // Inicia justo después del aro del avatar aliado para no recortar fotos ni maestrías,
+        // y JAMÁS debe invadir el carrusel central de selección de campeones (x >= 0.26).
+        val allyOcrMinX = 0.098f
+        val allyOcrMaxX = 0.240f
 
-        // El texto del slot rival está estrictamente a la izquierda del avatar rival (entre x ≈ 0.78 y x ≈ 0.935).
-        val enemyOcrMinX = 0.78f
+        // El texto del slot rival está estrictamente a la izquierda del avatar rival (entre x ≈ 0.775 y x ≈ 0.935).
+        val enemyOcrMinX = 0.775f
         val enemyOcrMaxX = 0.935f
 
         // Ajuste de las posiciones horizontales de la barra superior (los 10 avatares de la cabecera)
@@ -101,7 +102,7 @@ object AdaptiveScreenLayoutEngine {
         return baseConfig.copy(
             allyAvatarCenterX = adaptiveAllyCenterX,
             enemyAvatarCenterX = adaptiveEnemyCenterX,
-            avatarDiameterRatio = 0.114f,
+            avatarDiameterRatio = 0.110f,
             allyOcrMinX = allyOcrMinX,
             allyOcrMaxX = allyOcrMaxX,
             enemyOcrMinX = enemyOcrMinX,

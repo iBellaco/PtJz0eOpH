@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Folder
@@ -83,7 +84,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BookmarkAdd
-import com.example.ui.components.DraftCalibrationPanel
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
@@ -940,7 +940,6 @@ private fun FloatingOverlayContent(
     var isFirstPick by state::isFirstPick
     var isLegendaryQueue by state::isLegendaryQueue
     var isCompactBubble by state::isCompactBubble
-    var showCalibrationPanel by remember { mutableStateOf(false) }
     var showLiteRTViewer by remember { mutableStateOf(false) }
 
     val defaultRoles = remember { listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT) }
@@ -1584,37 +1583,35 @@ private fun FloatingOverlayContent(
                                     }
                                 }
 
-                                if (isAdmin) {
-                                    // Botón de Depurado / Calibrador (EXCLUSIVO ADMINISTRADORES)
-                                    Surface(
-                                        modifier = Modifier
-                                            .height(28.dp)
-                                            .clickable {
-                                                showCalibrationPanel = !showCalibrationPanel
-                                                DraftVisionScanner.showCalibrationBoxes.value = showCalibrationPanel
-                                            },
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = if (showCalibrationPanel) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
-                                        border = BorderStroke(1.dp, if (showCalibrationPanel) HextechCyan else HextechGold)
+                                // Botón para Ver Círculos de Escaneo directamente en pantalla
+                                val showScanCircles by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+                                Surface(
+                                    modifier = Modifier
+                                        .height(28.dp)
+                                        .clickable {
+                                            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !showScanCircles
+                                        },
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (showScanCircles) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
+                                    border = BorderStroke(1.dp, if (showScanCircles) HextechCyan else HextechGold.copy(alpha = 0.5f))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(3.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(3.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.BugReport,
-                                                contentDescription = "Depuración y Calibrador",
-                                                tint = if (showCalibrationPanel) HextechCyan else HextechGold,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                            Text(
-                                                text = "Depurar",
-                                                color = if (showCalibrationPanel) HextechCyan else HextechGold,
-                                                fontSize = 8.5.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
+                                        Icon(
+                                            imageVector = if (showScanCircles) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = "Ver círculos de escaneo",
+                                            tint = if (showScanCircles) HextechCyan else HextechGold,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Text(
+                                            text = if (showScanCircles) "Círculos ON" else "Círculos",
+                                            color = if (showScanCircles) HextechCyan else HextechGold,
+                                            fontSize = 8.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
                                 }
 
@@ -1812,46 +1809,6 @@ private fun FloatingOverlayContent(
                                     }
                                 }
                             }
-
-                            // Pestaña 5: Depurar / Calibrador (Exclusivo Administrador en el Overlay Hub)
-                            if (isAdmin) {
-                                val isDebugActive = showCalibrationPanel
-                                Box(
-                                    modifier = Modifier
-                                        .weight(0.95f)
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(if (isDebugActive) HextechCyan.copy(alpha = 0.25f) else HextechSurface)
-                                        .border(
-                                            1.dp,
-                                            if (isDebugActive) HextechCyan else HextechCardBorder.copy(alpha = 0.5f),
-                                            RoundedCornerShape(6.dp)
-                                        )
-                                        .clickable {
-                                            showCalibrationPanel = !showCalibrationPanel
-                                            DraftVisionScanner.showCalibrationBoxes.value = showCalibrationPanel
-                                        }
-                                        .padding(vertical = 5.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.BugReport,
-                                            contentDescription = "Depuración y Calibrador",
-                                            tint = if (isDebugActive) HextechCyan else HextechGold,
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                        Text(
-                                            text = "Depurar",
-                                            color = if (isDebugActive) HextechCyan else HextechGold,
-                                            fontSize = 9.5.sp,
-                                            fontWeight = if (isDebugActive) FontWeight.Bold else FontWeight.Medium
-                                        )
-                                    }
-                                }
-                            }
                         }
                         }
 
@@ -1920,15 +1877,7 @@ private fun FloatingOverlayContent(
 
                         // Contenido Principal del Hub según la Pestaña Activa o Detalle de Campeón
                         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                            if (showCalibrationPanel) {
-                                DraftCalibrationPanel(
-                                    onDismiss = {
-                                        showCalibrationPanel = false
-                                        DraftVisionScanner.showCalibrationBoxes.value = false
-                                    },
-                                    onDragDelta = onDragDelta
-                                )
-                            } else if (selectedChampionDetail != null) {
+                            if (selectedChampionDetail != null) {
                                 com.example.ui.screens.ChampionDetailSheet(
                                     isOverlay = true,
                                     champion = selectedChampionDetail,

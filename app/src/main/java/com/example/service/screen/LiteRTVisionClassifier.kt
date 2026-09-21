@@ -504,6 +504,23 @@ object LiteRTVisionClassifier {
             return@withContext null
         }
 
+        // Analizar si el slot está en espera (yelmo espartano, icono de línea o fondo negro)
+        val slotAnalysis = analyzeSlotContent(cropBitmap, isAlly)
+        if (slotAnalysis.isEmptyOrWaiting) {
+            resetStabilityTracker()
+            val copiedCrop = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.WAITING_FOR_TENTH_PICK,
+                pickedChampion = null,
+                confidencePercent = 0,
+                decisionReason = slotAnalysis.reason,
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                cropBitmap = copiedCrop ?: _reportFlow.value.cropBitmap
+            )
+            return@withContext null
+        }
+
         val startTime = System.currentTimeMillis()
         ensureIndexed(context)
 
