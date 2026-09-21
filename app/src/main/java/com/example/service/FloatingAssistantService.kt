@@ -214,6 +214,8 @@ import kotlin.math.roundToInt
 
 enum class OverlayHubTab { DRAFT, TIER_LIST, CHAMPIONS, HISTORY }
 
+private const val TAG = "FloatingAssistantService"
+
 class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner, ComponentCallbacks2 {
     private val overlayState = OverlayState()
     private var screenCaptureManager: ScreenCaptureManager? = null
@@ -1063,6 +1065,22 @@ private fun FloatingOverlayContent(
                                         }
                                     }
 
+                                    // Asignación directa y garantizada del 10º Pick cuando 9 picks ya están presentes
+                                    val tenthChamp = result.lastPickChampion
+                                    if (tenthChamp != null) {
+                                        val unpickedAllyIdx = allies.indexOfFirst { it == null }
+                                        val unpickedEnemyIdx = enemies.indexOfFirst { it == null }
+                                        if (unpickedAllyIdx != -1 && unpickedEnemyIdx == -1 && manualLockedAllySlots[unpickedAllyIdx] != true) {
+                                            assignAllySlot(unpickedAllyIdx, tenthChamp)
+                                            newAlliesAdded++
+                                            AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $unpickedAllyIdx: ${tenthChamp.name}")
+                                        } else if (unpickedEnemyIdx != -1 && unpickedAllyIdx == -1 && manualLockedEnemySlots[unpickedEnemyIdx] != true) {
+                                            assignEnemySlot(unpickedEnemyIdx, tenthChamp, 100)
+                                            newEnemiesAdded++
+                                            AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $unpickedEnemyIdx: ${tenthChamp.name}")
+                                        }
+                                    }
+
                                     val currentAllyPicks = allies.count { it != null }
                                     val currentEnemyPicks = enemies.count { it != null }
                                     if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
@@ -1181,6 +1199,20 @@ private fun FloatingOverlayContent(
                                 if (scannedEnemy != null) {
                                     assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
                                 }
+                            }
+                        }
+
+                        // Asignación directa y garantizada del 10º Pick cuando 9 picks ya están presentes
+                        val tenthChamp = result.lastPickChampion
+                        if (tenthChamp != null) {
+                            val unpickedAllyIdx = allies.indexOfFirst { it == null }
+                            val unpickedEnemyIdx = enemies.indexOfFirst { it == null }
+                            if (unpickedAllyIdx != -1 && unpickedEnemyIdx == -1 && manualLockedAllySlots[unpickedAllyIdx] != true) {
+                                assignAllySlot(unpickedAllyIdx, tenthChamp)
+                                AppLogger.d(TAG, "10º Pick asignado manualmente/directo a Aliado Slot $unpickedAllyIdx: ${tenthChamp.name}")
+                            } else if (unpickedEnemyIdx != -1 && unpickedAllyIdx == -1 && manualLockedEnemySlots[unpickedEnemyIdx] != true) {
+                                assignEnemySlot(unpickedEnemyIdx, tenthChamp, 100)
+                                AppLogger.d(TAG, "10º Pick asignado manualmente/directo a Rival Slot $unpickedEnemyIdx: ${tenthChamp.name}")
                             }
                         }
 

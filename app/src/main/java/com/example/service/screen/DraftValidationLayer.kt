@@ -188,16 +188,31 @@ object DraftValidationLayer {
         return false
     }
 
+    // Prefijos de líneas y roles reconocidos para desprendimiento de icono
+    private val KNOWN_ROLE_PREFIXES = listOf(
+        "calle", "carril", "linea", "línea", "apoyo", "soporte", "jungla", "baron", "barón",
+        "central", "dragon", "dragón", "duo", "dúo", "solo", "mid", "adc", "top", "jg", "sup",
+        "rota", "selva", "topo", "meio", "dupla", "suporte", "atirador", "cacador", "caçador"
+    )
+
     /**
-     * Limpia cualquier icono de maestría, insignia de elo o glifo de carril al inicio del texto.
-     * En Wild Rift, cada slot muestra: [ICONO_MAESTRIA_O_ROL] + [NOMBRE_DE_LINEA o NOMBRE_DE_CAMPEON].
-     * El icono siempre se mantiene a la izquierda y debe ignorarse.
-     * Casos soportados:
-     * - Símbolos y puntuación: • JINX, > JINX, » JINX, * JINX, # JINX, ~ JINX, / JINX, \ JINX, etc.
-     * - Letras y glifos aislados del icono: V JINX, W JINX, Y JINX, M JINX, I JINX, T JINX, X JINX, K JINX
-     * - Niveles de maestría o rango: LV7 JINX, M7 JINX, 7 JINX, 1 JINX, VII JINX, M6 JINX
-     * - Lo mismo para líneas: • APOYO, > CALLE CENTRAL, V DÚO, M7 APOYO, V CALLE DEL BARÓN
-     * - Prefijos pegados sin espacio: VJINX -> JINX, VCALLE -> CALLE, VAPOYO -> APOYO, VJUNGLA -> JUNGLA
+     * Filtra y elimina de forma consistente todos los patrones conocidos de iconos de maestría y rol
+     * presentes en el texto OCR de selección de campeones de Wild Rift.
+     *
+     * Patrones reconocidos y eliminados:
+     * 1. Glifos, viñetas y símbolos decorativos: '•', '·', '°', '●', '○', '■', '◆', '▲', '▼', '►', '◄', '★', '☆', '✦', '✧', '♦', '>', '<', '»', '«', '*', '#', '~', '/', '\', '|', '(', ')', '[', ']', '{', '}'
+     * 2. Etiquetas explícitas de maestría y nivel:
+     *    - 'M1' a 'M10' (ej: 'M7 JINX', 'M7JINX')
+     *    - 'LV1' a 'LV10', 'LVL1' a 'LVL10', 'L1' a 'L10'
+     *    - 'LEVEL 1..10', 'NIVEL 1..10', 'MAESTRIA 1..10', 'MAESTRÍA 1..10', 'MASTERY 1..10'
+     *    - 'PTS', 'PUNTOS', 'EXP', 'TIER', 'RANK', 'ELO'
+     * 3. Números romanos de insignias de maestría al inicio:
+     *    - 'VIII', 'VII', 'VI', 'IV', 'III', 'II', 'IX', 'X', 'V', 'I' (cuando van seguidos de espacio o de un nombre de campeón/línea, distinguiendo al campeón 'Vi')
+     * 4. Letras o dígitos aislados procedentes de la silueta del icono/alas del escudo de maestría:
+     *    - 'V', 'W', 'Y', 'M', 'I', 'T', 'X', 'K', 'U', 'N', 'H', 'A', 'O', 'D', 'C', 'L', 'J', 'F', 'P', 'S', 'Z', '0'..'9'
+     *    - Dígrafos de escudo: 'VR', 'VL', 'VI', 'VT', 'VV', 'LV', 'MR', 'MC', 'XP', 'PT'
+     *    Tanto si están separados por espacio ('V JINX', '7 JINX', '• JINX')
+     *    como si están concatenados ('VJINX', '7JINX', 'M7JINX', '•JINX', 'WJINX', 'YAHRI', 'VAATROX', etc.)
      */
     fun stripLeadingMasteryOrRoleIcon(rawText: String): String {
         var clean = rawText.trim()
@@ -205,7 +220,7 @@ object DraftValidationLayer {
 
         var changed = true
         var loops = 0
-        while (changed && loops < 6) {
+        while (changed && loops < 8) {
             changed = false
             loops++
 
@@ -217,14 +232,20 @@ object DraftValidationLayer {
             }
 
             // 2. Quitar etiquetas explícitas de maestría (ej: "M7 JINX", "M7JINX", "LV10 JINX", "LEVEL 7 JINX", "MAESTRIA 7 JINX")
-            val withoutMasteryTag = clean.replace(Regex("^(m[0-9]{1,2}|lv[0-9]{1,2}|lvl[0-9]{1,2}|level\\s*[0-9]{1,2}|maestria\\s*[0-9]*|maestría\\s*[0-9]*|mastery\\s*[0-9]*|elo)\\s*", RegexOption.IGNORE_CASE), "").trim()
+            val withoutMasteryTag = clean.replace(
+                Regex("^(m[0-9]{1,2}|lv[0-9]{1,2}|lvl[0-9]{1,2}|l[0-9]{1,2}|level\\s*[0-9]{1,2}|nivel\\s*[0-9]{1,2}|maestria\\s*[0-9]*|maestría\\s*[0-9]*|mastery\\s*[0-9]*|pts|puntos|tier|rank|elo)\\s*", RegexOption.IGNORE_CASE),
+                ""
+            ).trim()
             if (withoutMasteryTag != clean && withoutMasteryTag.isNotBlank()) {
                 clean = withoutMasteryTag
                 changed = true
             }
 
             // 3. Quitar números romanos de maestría iniciales seguidos de espacio (ej: "VII JINX" -> "JINX", "IV DARIUS" -> "DARIUS")
-            val withoutRomanMastery = clean.replace(Regex("^(viii|vii|iv|iii|ii|ix|x)\\s+", RegexOption.IGNORE_CASE), "").trim()
+            val withoutRomanMastery = clean.replace(
+                Regex("^(viii|vii|iv|iii|ii|ix|x)\\s+", RegexOption.IGNORE_CASE),
+                ""
+            ).trim()
             if (withoutRomanMastery != clean && withoutRomanMastery.isNotBlank()) {
                 clean = withoutRomanMastery
                 changed = true
@@ -240,7 +261,7 @@ object DraftValidationLayer {
             }
 
             // 4. Quitar glifos o letras aisladas del icono separadas por espacio (de 1 a 3 caracteres)
-            // Ejemplos: "V JINX" -> "JINX", "W JINX" -> "JINX", "7 JINX" -> "JINX", "• APOYO" -> "APOYO"
+            // Ejemplos: "V JINX" -> "JINX", "W JINX" -> "JINX", "7 JINX" -> "JINX", "• APOYO" -> "APOYO", "Y AHRI" -> "AHRI"
             val spaceIndex = clean.indexOf(' ')
             if (spaceIndex in 1..3) {
                 val remainder = clean.substring(spaceIndex + 1).trim()
@@ -257,10 +278,9 @@ object DraftValidationLayer {
             }
         }
 
-        // 5. Desprender prefijos pegados de 1 a 3 letras a palabras clave de líneas (ej: "vcalle" -> "calle", "vapoyo" -> "apoyo", "vjungla" -> "jungla")
+        // 5. Desprender prefijos pegados de 1 a 3 letras a palabras clave de líneas (ej: "vcalle" -> "calle", "vapoyo" -> "apoyo", "vjungla" -> "jungla", "vmid" -> "mid")
         val lower = clean.lowercase(Locale.ROOT)
-        val rolePrefixes = listOf("calle", "carril", "linea", "apoyo", "soporte", "jungla", "baron", "central", "dragon", "dragón", "duo", "dúo")
-        for (rp in rolePrefixes) {
+        for (rp in KNOWN_ROLE_PREFIXES) {
             for (pLen in 1..3) {
                 if (lower.length >= rp.length + pLen && lower.substring(pLen).startsWith(rp)) {
                     val candidate = clean.substring(pLen).trim()
@@ -268,6 +288,18 @@ object DraftValidationLayer {
                         clean = candidate
                         break
                     }
+                }
+            }
+        }
+
+        // 5.1 Desprender prefijos pegados de 1 a 3 letras a nombres de campeones (ej: "vjinx" -> "jinx", "7jinx" -> "jinx", "yahri" -> "ahri")
+        val cleanCompact = normalize(clean).replace(" ", "")
+        for (pLen in 1..3) {
+            if (cleanCompact.length > pLen + 2) {
+                val sub = cleanCompact.substring(pLen)
+                if (ChampionNameResolver.isKnownChampionKey(sub)) {
+                    clean = clean.substring(pLen).trim()
+                    break
                 }
             }
         }

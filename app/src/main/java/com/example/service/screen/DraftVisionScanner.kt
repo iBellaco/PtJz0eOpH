@@ -486,11 +486,12 @@ object DraftVisionScanner {
                     // - Si el jugador ya seleccionó su campeón: el nombre de la línea cambia por el NOMBRE DEL CAMPEÓN (ej: "• JINX", "V JARVAN IV").
                     // - Si el jugador aún no ha seleccionado: el valor sigue siendo el NOMBRE DE LA LÍNEA (ej: "CALLE CENTRAL", "• APOYO", "JUNGLA").
                     // El icono a la izquierda siempre se mantiene y debe ignorarse.
+
+                    // FASE 1: Verificación estricta de transición a campeón (filtrando patrones conocidos de iconos de maestría y rol)
                     for ((line, box) in entries) {
                         if (DraftValidationLayer.isNoiseText(line)) continue
                         val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
 
-                        // 1. ¿Es un campeón seleccionado?
                         val matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
                             ?: ChampionNameResolver.findChampionInText(line, allChamps)
 
@@ -506,29 +507,37 @@ object DraftVisionScanner {
                                     color = android.graphics.Color.GREEN
                                 )
                             )
-                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Campeón confirmado tras icono: ${matchedChamp.name}")
-                            break // Campeón confirmado en este slot; la línea ya cambió
+                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Transición completada: Campeón confirmado tras icono: ${matchedChamp.name}")
+                            break // Transición a nombre de campeón confirmada
                         }
+                    }
 
-                        // 2. ¿Es el nombre de la línea asignada (en espera de selección)?
-                        val role = DraftValidationLayer.parseRoleFromText(strippedLine)
-                            ?: DraftValidationLayer.parseRoleFromText(line)
+                    // FASE 2: Si no hubo transición a campeón, verificar si el slot aún muestra la cadena del nombre de línea asignada
+                    if (detectedChampInSlot == null) {
+                        for ((line, box) in entries) {
+                            if (DraftValidationLayer.isNoiseText(line)) continue
+                            val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
 
-                        if (role != null) {
-                            detectedRoleInSlot = role
-                            slot.explicitRole = role
-                            allySlotRolesCache[i] = role
-                            textDiagnosticsList.add(
-                                TextBlockDiagnostic(
-                                    text = line,
-                                    rect = box ?: Rect(0, 0, 10, 10),
-                                    isAlly = true,
-                                    slotIndex = i,
-                                    tag = "LÍNEA: ${role.shortName} (Esperando)",
-                                    color = android.graphics.Color.CYAN
+                            val role = DraftValidationLayer.parseRoleFromText(strippedLine)
+                                ?: DraftValidationLayer.parseRoleFromText(line)
+
+                            if (role != null) {
+                                detectedRoleInSlot = role
+                                slot.explicitRole = role
+                                allySlotRolesCache[i] = role
+                                textDiagnosticsList.add(
+                                    TextBlockDiagnostic(
+                                        text = line,
+                                        rect = box ?: Rect(0, 0, 10, 10),
+                                        isAlly = true,
+                                        slotIndex = i,
+                                        tag = "LÍNEA: ${role.shortName} (Esperando)",
+                                        color = android.graphics.Color.CYAN
+                                    )
                                 )
-                            )
-                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea: ${role.shortName} (Esperando selección)")
+                                AppLogger.d(TAG, "OCR Aliado Slot $i -> Estado previo a selección: Línea: ${role.shortName}")
+                                break
+                            }
                         }
                     }
 
@@ -1170,21 +1179,12 @@ object DraftVisionScanner {
 
         // REGLA CRÍTICA DEL USUARIO:
         // "únicamente la Selección del décimo pick este pues de haber seleccionado las otras 9"
-        // "el escaneo del décimo pick tienes que apuntar al slot final se ve con el yelmo espartano o icono de línea"
+        // "The tenth selection isn't actually selecting it, but the area being checked is correct; it just needs to be selected."
         // Google MediaPipe / LiteRT se activa exclusivamente cuando las selecciones 1 al 9 ya están presentes
-        // y apunta estrictamente al círculo del slot correspondiente.
+        // y apunta estrictamente al círculo del slot correspondiente para seleccionar al campeón.
         val targetSlot = if (actualTenthIsAlly) allySlots[actualTenthSlotIndex] else enemySlots[actualTenthSlotIndex]
-        val isTenthAwaitingPick = if (actualTenthIsAlly) {
-            allySlotShowingLane[actualTenthSlotIndex] || !allySlotHasConfirmedChampOcr[actualTenthSlotIndex]
-        } else {
-            enemyOcrChampions[actualTenthSlotIndex] == null && enemySlotConfirmedChampions[actualTenthSlotIndex] == null
-        }
-
-        // Si la partida está en selección activa y el slot aún está en espera / mostrando carril, no forzar pick
-        val shouldHoldForUserSelection = isTenthAwaitingPick && (
-            isActiveSelectionDetected ||
-            (actualTenthIsAlly && allySlotShowingLane[actualTenthSlotIndex])
-        )
+        var lastPickChamp: Champion? = targetSlot.champion
+        var lastPickRecognized = (lastPickChamp != null)
 
         if (confirmedPicksCount == 9 && targetSlot.champion == null) {
             val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
@@ -1193,7 +1193,7 @@ object DraftVisionScanner {
                 confirmedChampionIds = confirmedChampIds,
                 confirmedPicksCount = confirmedPicksCount,
                 slotIndex = actualTenthSlotIndex,
-                isSlotShowingLaneOrEmpty = shouldHoldForUserSelection,
+                isSlotShowingLaneOrEmpty = false,
                 isActiveSelectionPhase = isActiveSelectionDetected,
                 context = context
             )
@@ -1213,7 +1213,9 @@ object DraftVisionScanner {
                     enemySlots[actualTenthSlotIndex].isLikelyUnpicked = false
                     enemySlotConfirmedChampions[actualTenthSlotIndex] = champWinner
                 }
-                AppLogger.d(TAG, "Google MediaPipe / LiteRT decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
+                lastPickChamp = champWinner
+                lastPickRecognized = true
+                AppLogger.d(TAG, "Google MediaPipe / LiteRT seleccionó el 10º Pick -> ${champWinner.name} ($confidence%)")
             }
         } else {
             // Notificar al motor LiteRT suministrando el recorte capturado para que el Visor informe en vivo
@@ -1223,7 +1225,7 @@ object DraftVisionScanner {
                 confirmedChampionIds = confirmedChampIds,
                 confirmedPicksCount = confirmedPicksCount,
                 slotIndex = actualTenthSlotIndex,
-                isSlotShowingLaneOrEmpty = shouldHoldForUserSelection,
+                isSlotShowingLaneOrEmpty = (confirmedPicksCount < 9),
                 isActiveSelectionPhase = isActiveSelectionDetected,
                 context = context
             )
@@ -1333,6 +1335,9 @@ object DraftVisionScanner {
             detectedRole = userDetectedLane,
             userExplicitlyDetectedRole = if (userExplicitlyConfirmed) userDetectedLane else null,
             detectedFirstPick = detectedFirstPick,
+            isLastPickImageRecognized = lastPickRecognized,
+            isLastPickConfirmed = (lastPickChamp != null),
+            lastPickChampion = lastPickChamp,
             detectedRawWords = detectedWords,
             discrepancies = auditList,
             diagnostics = diagnosticsList,

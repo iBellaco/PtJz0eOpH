@@ -199,6 +199,8 @@ object ChampionNameResolver {
         "zyra" to "zyra"
     )
 
+    fun isKnownChampionKey(key: String): Boolean = KNOWN_CHAMPIONS_MAP.containsKey(key.lowercase(Locale.ROOT))
+
     fun normalize(input: String): String {
         return Normalizer.normalize(input, Normalizer.Form.NFD)
             .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
@@ -286,6 +288,23 @@ object ChampionNameResolver {
                 val champNorm = normalize(champ.name)
                 if (strippedClean == champNorm || normalizeCompact(strippedClean) == normalizeCompact(champ.name)) {
                     return champ
+                }
+            }
+        }
+
+        // 3.1 Coincidencia desprendiendo prefijos de icono de 1 a 3 caracteres pegados al nombre
+        // (ej: "vjinx" -> "jinx", "7jinx" -> "jinx", "m7jinx" -> "jinx", "yahri" -> "ahri", "wleesin" -> "leesin")
+        for (candidateText in listOf(compactStripped, compact)) {
+            for (pLen in 1..3) {
+                if (candidateText.length > pLen + 2) {
+                    val sub = candidateText.substring(pLen)
+                    KNOWN_CHAMPIONS_MAP[sub]?.let { id ->
+                        val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
+                        if (found != null && !DraftValidationLayer.isLikelySummonerName(sub, championName = found.name)) return found
+                    }
+                    for (champ in safeChamps) {
+                        if (sub == normalizeCompact(champ.name)) return champ
+                    }
                 }
             }
         }

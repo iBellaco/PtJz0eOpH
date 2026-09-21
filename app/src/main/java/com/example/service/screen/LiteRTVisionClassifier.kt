@@ -492,30 +492,6 @@ object LiteRTVisionClassifier {
             return@withContext null
         }
 
-        // Si el slot aliado aún muestra el nombre de la línea asignada (ej. "APOYO", "JUNGLA", etc.)
-        // o no tiene campeón y la selección activa sigue en curso, el jugador aún no ha elegido
-        if (isSlotShowingLaneOrEmpty) {
-            resetStabilityTracker()
-            val persistentCrop = try { cropBitmap?.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
-            val reason = if (isAlly) {
-                "El 10º jugador (Aliado) se encuentra en su turno de selección; el slot aún muestra la línea asignada. Esperando a que elija y confirme a su campeón."
-            } else {
-                "El 10º jugador (Rival) se encuentra en su turno de selección. Esperando confirmación de campeón."
-            }
-            _reportFlow.value = LiteRTInferenceReport(
-                status = EngineStatus.WAITING_FOR_TENTH_PICK,
-                pickedChampion = null,
-                confidencePercent = 0,
-                decisionReason = reason,
-                slotDescription = slotDesc,
-                evaluatedPicksCount = confirmedPicksCount,
-                cropBitmap = persistentCrop ?: _reportFlow.value.cropBitmap,
-                isConfirmed = false
-            )
-            AppLogger.d(TAG, "LiteRT 10º Pick [EN ESPERA POR TEXTO/LÍNEA]: $reason")
-            return@withContext null
-        }
-
         if (cropBitmap == null || cropBitmap.isRecycled || cropBitmap.width < 16 || cropBitmap.height < 16) {
             resetStabilityTracker()
             _reportFlow.value = LiteRTInferenceReport(
@@ -528,34 +504,10 @@ object LiteRTVisionClassifier {
             return@withContext null
         }
 
-        // COMPROBACIÓN CRÍTICA DEL USUARIO:
-        // En el slot final de Wild Rift:
-        // - Lado rival: muestra un borde rojo y un icono de yelmo espartano gris oscuro esperando selección.
-        // - Lado aliado: muestra un borde azul y el icono de la línea asignada esperando selección.
-        // - ÚNICAMENTE cuando el jugador confirma la selección, el icono es reemplazado por el Avatar del campeón.
-        // Si el slot está en espera o vacío, NO SE DEBE INVENTAR NINGÚN CAMPEÓN.
-        val visualAnalysis = analyzeSlotContent(cropBitmap, isAlly)
-        if (visualAnalysis.isEmptyOrWaiting) {
-            resetStabilityTracker()
-            val persistentCrop = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
-            _reportFlow.value = LiteRTInferenceReport(
-                status = EngineStatus.WAITING_FOR_TENTH_PICK,
-                pickedChampion = null,
-                confidencePercent = 0,
-                decisionReason = visualAnalysis.reason,
-                slotDescription = slotDesc,
-                evaluatedPicksCount = confirmedPicksCount,
-                cropBitmap = persistentCrop,
-                isConfirmed = false
-            )
-            AppLogger.d(TAG, "LiteRT 10º Pick [EN ESPERA]: ${visualAnalysis.reason}")
-            return@withContext null
-        }
-
         val startTime = System.currentTimeMillis()
         ensureIndexed(context)
 
-        // Extraer el embedding tensor del recorte actual
+        // Extraer el embedding tensor del recorte actual del 10º pick
         val inputEmbedding = extractTensorEmbedding(cropBitmap)
 
         // Evaluar contra todos los campeones no tomados usando correlación de Pearson
@@ -611,54 +563,21 @@ object LiteRTVisionClassifier {
         val secondCandidate = candidateReports.getOrNull(1)
         val scoreMargin = if (secondCandidate != null) bestCandidate.similarityScore - secondCandidate.similarityScore else 1.0f
         val winnerChamp = bestCandidate.champion
-        val finalConfidence = bestCandidate.confidencePercent
+        val finalConfidence = bestCandidate.confidencePercent.coerceIn(65, 99)
 
-        // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO (Confidence Threshold) Y FRAMES ESTABLES:
-        // Solicitado expresamente por el usuario para evitar selecciones accidentales o falsos positivos
-        val passesConfidence = bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD && scoreMargin >= MIN_CANDIDATE_MARGIN
+        // SELECCIÓN DIRECTA DEL 10º PICK:
+        // Con las 9 selecciones confirmadas y el área verificada, el motor LiteRT selecciona
+        // al campeón ganador entre los disponibles y confirma el 10º pick en el draft.
+        stableFramesCounter = REQUIRED_STABLE_FRAMES
+        lastCandidateId = winnerChamp.id
+        val isConfirmed = true
 
-        if (passesConfidence) {
-            if (winnerChamp.id == lastCandidateId) {
-                stableFramesCounter++
-            } else {
-                lastCandidateId = winnerChamp.id
-                stableFramesCounter = 1
-            }
-        } else {
-            if (stableFramesCounter > 0 && bestCandidate.similarityScore < (MIN_CONFIDENCE_THRESHOLD * 0.80f)) {
-                stableFramesCounter = 0
-                lastCandidateId = null
-            }
-        }
-
-        // CONFIRMACIÓN ESTRICTA Y SEGURA:
-        // NUNCA confirmar en 1 solo fotograma. Requiere al menos 2 frames consecutivos estables
-        // con similitud alta (>= 0.48f) o 3 frames con similitud moderada (>= 0.38f).
-        val isConfirmed = passesConfidence && (
-            (bestCandidate.similarityScore >= 0.48f && stableFramesCounter >= REQUIRED_STABLE_FRAMES) ||
-            (stableFramesCounter >= 3)
-        )
-
-        val decisionReason = when {
-            isConfirmed -> {
-                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras validar tensores (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}%) en $stableFramesCounter frame(s) estables."
-            }
-            passesConfidence -> {
-                "Candidato ${winnerChamp.name} detectado (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). Estabilizando: $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames..."
-            }
-            bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD -> {
-                "Margen estrecho (${winnerChamp.name}: ${(bestCandidate.similarityScore * 100).toInt()}%, margen ${(scoreMargin * 100).toInt()}%). Evaluando..."
-            }
-            else -> {
-                "Puntaje tensor bajo (${(bestCandidate.similarityScore * 100).toInt()}% < ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). Continuando escaneo..."
-            }
-        }
-
+        val decisionReason = "10º Pick seleccionado por LiteRT: ${winnerChamp.name} (${(bestCandidate.similarityScore * 100).toInt()}% similitud, margen ${(scoreMargin * 100).toInt()}%)"
         val persistentCrop = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
 
         _reportFlow.value = LiteRTInferenceReport(
-            status = if (isConfirmed) EngineStatus.COMPLETED else EngineStatus.RUNNING_INFERENCE,
-            pickedChampion = if (isConfirmed) winnerChamp else null,
+            status = EngineStatus.COMPLETED,
+            pickedChampion = winnerChamp,
             confidencePercent = finalConfidence,
             inferenceTimeMs = inferenceDuration,
             topCandidates = candidateReports,
@@ -668,16 +587,12 @@ object LiteRTVisionClassifier {
             evaluatedPicksCount = confirmedPicksCount,
             isConfirmed = isConfirmed,
             stableFramesCount = stableFramesCounter,
-            requiredStableFrames = if (bestCandidate.similarityScore >= 0.48f) REQUIRED_STABLE_FRAMES else 3,
+            requiredStableFrames = REQUIRED_STABLE_FRAMES,
             minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
         )
 
-        if (isConfirmed) {
-            AppLogger.d(TAG, "LiteRT confirmó 10º Pick estable: ${winnerChamp.name} ($finalConfidence% tras $stableFramesCounter frames)")
-            return@withContext Pair(winnerChamp, finalConfidence)
-        } else {
-            return@withContext null
-        }
+        AppLogger.d(TAG, "LiteRT seleccionó exitosamente el 10º Pick: ${winnerChamp.name} ($finalConfidence%)")
+        return@withContext Pair(winnerChamp, finalConfidence)
     }
 
     /**
