@@ -77,9 +77,6 @@ import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechSurface
 import com.example.util.AuthManager
-import com.example.ui.components.SecondaryRoleBadge
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -201,7 +198,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
     var showAvatarDialog by remember { mutableStateOf(false) }
-    var showSecondaryRoleDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
     var showHistoryDialog by remember { mutableStateOf(false) }
@@ -246,14 +242,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 showAvatarDialog = false
                 showPlansDialog = true
             }
-        )
-    }
-
-    if (showSecondaryRoleDialog) {
-        val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
-        com.example.ui.components.SecondaryRoleSelectionDialog(
-            currentSecondaryRole = currentSecRoleVal,
-            onDismiss = { showSecondaryRoleDialog = false }
         )
     }
 
@@ -711,28 +699,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            val currentSecRoleVal by SubscriptionManager.currentSecondaryRole.collectAsState()
-
             // Rol visualizado directamente debajo del usuario, únicamente el rol sin tanto contexto
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                RoleBadge(
-                    role = userRole,
-                    isPremiumActive = isPremium,
-                    isBanned = (userRole == "banned"),
-                    isExpiringSoon = isExpiringSoon,
-                    size = RoleBadgeSize.NORMAL
-                )
-                if (currentSecRoleVal != "none" && currentSecRoleVal.isNotBlank()) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    SecondaryRoleBadge(
-                        secondaryRole = currentSecRoleVal,
-                        size = RoleBadgeSize.NORMAL
-                    )
-                }
-            }
+            RoleBadge(
+                role = userRole,
+                isPremiumActive = isPremium,
+                isBanned = (userRole == "banned"),
+                isExpiringSoon = isExpiringSoon,
+                size = RoleBadgeSize.NORMAL
+            )
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -804,77 +778,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         registeredDevicesCount = devs.size.coerceAtLeast(1)
                     }
             }
-
-            // Rol Secundario / Rango Competitivo Selector Card
-            val secRoleObj = com.example.model.AppUserSecondaryRole.fromId(currentSecRoleVal)
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .tactileClickable { showSecondaryRoleDialog = true },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = activeTheme.surfaceVariant.copy(alpha = 0.55f)),
-                border = BorderStroke(1.dp, if (secRoleObj != com.example.model.AppUserSecondaryRole.NONE) secRoleObj.primaryColor.copy(alpha = 0.55f) else activeTheme.cardBorder)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(secRoleObj.primaryColor.copy(alpha = 0.18f))
-                                .border(1.dp, secRoleObj.primaryColor.copy(alpha = 0.6f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Shield,
-                                contentDescription = null,
-                                tint = secRoleObj.primaryColor,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = "Rol Secundario / Rango:",
-                                color = activeTheme.secondary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) "Toca para asignar tu rango (Esmeralda a Soberano)" else secRoleObj.displayName,
-                                color = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) activeTheme.textSecondary else secRoleObj.primaryColor,
-                                fontSize = 11.5.sp,
-                                fontWeight = if (secRoleObj == com.example.model.AppUserSecondaryRole.NONE) FontWeight.Normal else FontWeight.Bold
-                            )
-                        }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (secRoleObj != com.example.model.AppUserSecondaryRole.NONE) {
-                            SecondaryRoleBadge(
-                                secondaryRole = currentSecRoleVal,
-                                size = RoleBadgeSize.COMPACT
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                        }
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Cambiar",
-                            tint = activeTheme.secondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
 
             Card(
                 modifier = Modifier

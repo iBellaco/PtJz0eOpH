@@ -10,8 +10,6 @@ import android.content.SharedPreferences
 data class VisionCalibrationConfig(
     // Posición horizontal X central de avatares en columnas verticales de draft (0..1)
     val allyAvatarCenterX: Float = 0.076f,
-    // 10º Pick Aliado: desplazado un poco a la izquierda respecto a la columna general para alineación milimétrica
-    val allyTenthAvatarCenterX: Float = 0.068f,
     val enemyAvatarCenterX: Float = 0.960f,
 
     // Diámetro del avatar relativo al alto de pantalla (0..1)
@@ -41,10 +39,10 @@ data class VisionCalibrationConfig(
     val spellYOffsetRatio: Float = 0.0f,
 
     // Rango horizontal OCR para columnas de draft (restringido estrictamente a las columnas de slots, sin tocar el centro)
-    val allyOcrMinX: Float = 0.065f,
-    val allyOcrMaxX: Float = 0.265f,
-    val enemyOcrMinX: Float = 0.735f,
-    val enemyOcrMaxX: Float = 0.940f,
+    val allyOcrMinX: Float = 0.08f,
+    val allyOcrMaxX: Float = 0.225f,
+    val enemyOcrMinX: Float = 0.78f,
+    val enemyOcrMaxX: Float = 0.935f,
 
     // --- CÍRCULOS DE AVATARES SUPERIORES (10º PICK Y FASE DE PREPARACIÓN) ---
     // En la barra superior de Wild Rift durante selección final y fase de preparación:
@@ -63,12 +61,17 @@ data class VisionCalibrationConfig(
         val sb = StringBuilder()
         sb.append("=== COORDENADAS DE CALIBRACIÓN VISION DRAFT ===\n")
         sb.append("• Diámetro Avatar Slots (⌀): ${(avatarDiameterRatio * 100).format(2)}% (${avatarDiameterRatio}f)\n")
-        sb.append("• Centro X Aliados (Slots 1-4): ${(allyAvatarCenterX * 100).format(2)}% (${allyAvatarCenterX}f)\n")
-        sb.append("• Centro X 10º Pick Aliado (Slot 5): ${(allyTenthAvatarCenterX * 100).format(2)}% (${allyTenthAvatarCenterX}f)\n")
+        sb.append("• Centro X Aliados (Slots): ${(allyAvatarCenterX * 100).format(2)}% (${allyAvatarCenterX}f)\n")
         sb.append("• Centro X Rivales (Slots): ${(enemyAvatarCenterX * 100).format(2)}% (${enemyAvatarCenterX}f)\n\n")
+        
+        sb.append("• Círculos Superiores (Top Bar / 10º Pick):\n")
+        sb.append("  - Altura Y: ${(topAvatarYRatio * 100).format(2)}% (${topAvatarYRatio}f)\n")
+        sb.append("  - Diámetro (⌀): ${(topAvatarDiameterRatio * 100).format(2)}% (${topAvatarDiameterRatio}f)\n")
+        sb.append("  - Top 10º Pick Rival (5º Rival X): ${(topEnemy5XRatio * 100).format(2)}% (${topEnemy5XRatio}f)\n")
+        sb.append("  - Top 10º Pick Aliado (5º Aliado X): ${(topAlly5XRatio * 100).format(2)}% (${topAlly5XRatio}f)\n\n")
 
         sb.append("• Slots Aliados Verticales Y:\n")
-        val roles = listOf("TOP", "JUNGLE", "MID", "ADC", "10º / SUPPORT")
+        val roles = listOf("TOP", "JUNGLE", "MID", "ADC", "SUPPORT")
         allySlotYRatios.forEachIndexed { i, y ->
             val roleName = roles.getOrElse(i) { "Slot $i" }
             sb.append("  - Slot ${i + 1} ($roleName): ${(y * 100).format(2)}% (${y}f)\n")
@@ -86,7 +89,6 @@ data class VisionCalibrationConfig(
         return """
 VisionCalibrationConfig(
     allyAvatarCenterX = ${allyAvatarCenterX}f,
-    allyTenthAvatarCenterX = ${allyTenthAvatarCenterX}f,
     enemyAvatarCenterX = ${enemyAvatarCenterX}f,
     avatarDiameterRatio = ${avatarDiameterRatio}f,
     allySlotYRatios = listOf(${allySlotYRatios.joinToString(", ") { "${it}f" }}),
@@ -94,7 +96,13 @@ VisionCalibrationConfig(
     allyOcrMinX = ${allyOcrMinX}f,
     allyOcrMaxX = ${allyOcrMaxX}f,
     enemyOcrMinX = ${enemyOcrMinX}f,
-    enemyOcrMaxX = ${enemyOcrMaxX}f
+    enemyOcrMaxX = ${enemyOcrMaxX}f,
+    topAvatarYRatio = ${topAvatarYRatio}f,
+    topAvatarDiameterRatio = ${topAvatarDiameterRatio}f,
+    topAlly5XRatio = ${topAlly5XRatio}f,
+    topEnemy5XRatio = ${topEnemy5XRatio}f,
+    topAllyXRatios = listOf(${topAllyXRatios.joinToString(", ") { "${it}f" }}),
+    topEnemyXRatios = listOf(${topEnemyXRatios.joinToString(", ") { "${it}f" }})
 )
         """.trimIndent()
     }
@@ -103,7 +111,6 @@ VisionCalibrationConfig(
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
             putFloat("allyAvatarCenterX", allyAvatarCenterX)
-            putFloat("allyTenthAvatarCenterX", allyTenthAvatarCenterX)
             putFloat("enemyAvatarCenterX", enemyAvatarCenterX)
             putFloat("avatarDiameterRatio", avatarDiameterRatio)
             allySlotYRatios.forEachIndexed { idx, v -> putFloat("ally_slot_y_$idx", v) }
@@ -123,7 +130,7 @@ VisionCalibrationConfig(
     }
 
     companion object {
-        private const val CURRENT_CALIBRATION_VERSION = 7
+        private const val CURRENT_CALIBRATION_VERSION = 6
 
         fun resetToDefaults(context: Context): VisionCalibrationConfig {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
@@ -140,13 +147,12 @@ VisionCalibrationConfig(
             val default = VisionCalibrationConfig()
 
             if (!prefs.contains("avatarDiameterRatio") || version < CURRENT_CALIBRATION_VERSION) {
-                // Actualizar automáticamente a la calibración oficial Wild Rift 1:1 con 10º pick a la izquierda
+                // Actualizar automáticamente a la calibración oficial Wild Rift 1:1
                 val allyY = (0..4).map { idx -> prefs.getFloat("ally_slot_y_$idx", default.allySlotYRatios[idx]) }
                 val enemyY = (0..4).map { idx -> prefs.getFloat("enemy_slot_y_$idx", default.enemySlotYRatios[idx]) }
                 
                 val migrated = VisionCalibrationConfig(
                     allyAvatarCenterX = prefs.getFloat("allyAvatarCenterX", default.allyAvatarCenterX),
-                    allyTenthAvatarCenterX = default.allyTenthAvatarCenterX,
                     enemyAvatarCenterX = prefs.getFloat("enemyAvatarCenterX", default.enemyAvatarCenterX),
                     avatarDiameterRatio = prefs.getFloat("avatarDiameterRatio", default.avatarDiameterRatio),
                     allySlotYRatios = allyY,
@@ -174,7 +180,6 @@ VisionCalibrationConfig(
 
             return VisionCalibrationConfig(
                 allyAvatarCenterX = prefs.getFloat("allyAvatarCenterX", default.allyAvatarCenterX),
-                allyTenthAvatarCenterX = prefs.getFloat("allyTenthAvatarCenterX", default.allyTenthAvatarCenterX),
                 enemyAvatarCenterX = prefs.getFloat("enemyAvatarCenterX", default.enemyAvatarCenterX),
                 avatarDiameterRatio = prefs.getFloat("avatarDiameterRatio", default.avatarDiameterRatio),
                 allySlotYRatios = allyY,

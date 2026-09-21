@@ -40,9 +40,6 @@ object SubscriptionManager {
     private val _currentRankBorder = MutableStateFlow("NONE")
     val currentRankBorder: StateFlow<String> = _currentRankBorder.asStateFlow()
 
-    private val _currentSecondaryRole = MutableStateFlow("none")
-    val currentSecondaryRole: StateFlow<String> = _currentSecondaryRole.asStateFlow()
-
     private val _unlockedAvatars = MutableStateFlow<List<String>>(emptyList())
     val unlockedAvatars: StateFlow<List<String>> = _unlockedAvatars.asStateFlow()
 
@@ -230,9 +227,7 @@ object SubscriptionManager {
                     }
                     val dbAvatarId = snapshot.getString("avatarId") ?: "default_poro"
                     val dbRankBorder = snapshot.getString("rankBorder") ?: "NONE"
-                    val dbSecondaryRole = snapshot.getString("secondaryRole") ?: "none"
                     _currentRankBorder.value = dbRankBorder
-                    _currentSecondaryRole.value = dbSecondaryRole
                     _currentAvatarId.value = dbAvatarId
                     @Suppress("UNCHECKED_CAST")
                     val dbUnlocked = snapshot.get("unlockedAvatars") as? List<String> ?: listOf("default_poro")
@@ -325,7 +320,6 @@ object SubscriptionManager {
                     val name = listenSnapshot.getString("name") ?: ""
                     val avatarId = listenSnapshot.getString("avatarId") ?: "default_poro"
                     val rankBorder = listenSnapshot.getString("rankBorder") ?: "NONE"
-                    val secondaryRole = listenSnapshot.getString("secondaryRole") ?: "none"
                     val blueEs = listenSnapshot.getLong("blueEssence") ?: 0L
                     val until = listenSnapshot.getLong("premiumUntil")
                     @Suppress("UNCHECKED_CAST")
@@ -351,7 +345,6 @@ object SubscriptionManager {
                     }
                     _isPremium.value = isPrem
                     _currentAvatarId.value = avatarId
-                    _currentSecondaryRole.value = secondaryRole
                     
                     _unlockedAvatars.value = unlocked
 
@@ -483,23 +476,6 @@ object SubscriptionManager {
         userRef.set(hashMapOf("rankBorder" to borderId), SetOptions.merge())
             .addOnSuccessListener { _currentRankBorder.value = borderId; onSuccess() }
             .addOnFailureListener { onError("Error al actualizar el marco: ${it.message}") }
-    }
-
-    fun changeSecondaryRole(roleId: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
-        val user = AuthManager.getAuth()?.currentUser
-        if (AuthManager.isGuestOrUnauthenticated(user)) {
-            onError("Inicia sesión para cambiar tu rol secundario")
-            return
-        }
-        val db = FirebaseFirestore.getInstance()
-        val userRef = db.collection("users").document(user!!.uid)
-        val normalizedId = roleId.trim().lowercase()
-        userRef.set(hashMapOf("secondaryRole" to normalizedId), SetOptions.merge())
-            .addOnSuccessListener {
-                _currentSecondaryRole.value = normalizedId
-                onSuccess()
-            }
-            .addOnFailureListener { onError("Error al actualizar rol secundario: ${it.message}") }
     }
 
     fun purchaseSubscription(durationMillis: Long, planName: String, price: String, onSuccess: () -> Unit, onError: (String) -> Unit) {

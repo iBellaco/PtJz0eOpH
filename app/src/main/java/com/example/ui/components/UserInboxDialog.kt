@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.Reply
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.text.font.FontWeight
@@ -1052,20 +1051,7 @@ fun UserInboxDialog(
                                         } else emptyList()
                                     }
 
-                                    val isSponsorMessage = rawTag.equals("PATROCINADOR", ignoreCase = true) ||
-                                        rawTag.equals("SPONSOR", ignoreCase = true) ||
-                                        rawTag.equals("PUBLICIDAD", ignoreCase = true) ||
-                                        messageTag == MessageTag.PATROCINADOR ||
-                                        title.contains("Patrocin", ignoreCase = true) ||
-                                        sender.contains("Patrocin", ignoreCase = true)
-
-                                    val isDirectMessage = rawTag.equals("DM", ignoreCase = true) ||
-                                        rawTag.equals("PRIVADO", ignoreCase = true) ||
-                                        rawTag.equals("DIRECT", ignoreCase = true) ||
-                                        (msg["type"] as? String)?.equals("DM", ignoreCase = true) == true
-
-                                    val isSupportTicket = isSponsorMessage || isDirectMessage ||
-                                        rawTag.equals("SUPPORT", ignoreCase = true) ||
+                                    val isSupportTicket = rawTag.equals("SUPPORT", ignoreCase = true) ||
                                         (msg["reportId"] as? String)?.isNotBlank() == true ||
                                         (msg["ticketId"] as? String)?.isNotBlank() == true ||
                                         messageTag == MessageTag.SUPPORT ||
@@ -1079,7 +1065,7 @@ fun UserInboxDialog(
                                         (msg["category"] as? String)?.isNotBlank() == true ||
                                         (msg["isSupport"] as? Boolean) == true
 
-                                    // Badge de Estado para reportes de soporte y mensajes (sincronizado multidispositivo)
+                                    // Badge de Estado para reportes de soporte (sincronizado multidispositivo)
                                     val rawStatus = (msg["status"] as? String)?.uppercase() ?: "PENDIENTE"
                                     val normalizedStatus = when (rawStatus) {
                                         "SOLVED", "SOLUCIONADO", "RESUELTO" -> "SOLUCIONADO"
@@ -1117,7 +1103,7 @@ fun UserInboxDialog(
                                                 }
                                             }
 
-                                            // Badge de Etiqueta del Mensaje (Patrocinador, Soporte, Mantenimiento, etc.)
+                                            // Badge de Etiqueta del Mensaje (Mantenimiento, Importante, Oferta, etc.)
                                             Surface(
                                                 shape = RoundedCornerShape(4.dp),
                                                 color = messageTag.badgeBg.copy(alpha = 0.2f),
@@ -1133,7 +1119,7 @@ fun UserInboxDialog(
                                                 )
                                             }
 
-                                            if (rawTag.equals("SUPPORT", ignoreCase = true) || isSponsorMessage || (msg["reportId"] as? String)?.isNotBlank() == true) {
+                                            if (rawTag.equals("SUPPORT", ignoreCase = true) || (msg["reportId"] as? String)?.isNotBlank() == true) {
                                                 Surface(
                                                     shape = RoundedCornerShape(4.dp),
                                                     color = statusBg,
@@ -1167,7 +1153,7 @@ fun UserInboxDialog(
                                                 Spacer(modifier = Modifier.width(4.dp))
                                             }
                                             // Los reportes de soporte solo pueden ser eliminados por el administrador
-                                            if (!isSupportTicket || isDirectMessage) {
+                                            if (!isSupportTicket) {
                                                 HextechAnimatedIconButton(
                                                     onClick = { deleteMessage(id) },
                                                     size = 30.dp,
@@ -1183,6 +1169,7 @@ fun UserInboxDialog(
                                     Text(dateStr, color = Color.Gray, fontSize = 11.sp)
                                     Spacer(modifier = Modifier.height(8.dp))
 
+                                if (isSupportTicket) {
                                     var showSupportPopup by remember(id) { mutableStateOf(false) }
 
                                     Column(
@@ -1193,96 +1180,87 @@ fun UserInboxDialog(
                                                 showSupportPopup = true
                                             }
                                     ) {
-                                        if (sender.isNotBlank()) {
+                                            if (sender.isNotBlank()) {
+                                                Text("Remitente: $sender", color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                            }
                                             Text(
-                                                if (isSponsorMessage) "💼 Patrocinador: $sender" else "Remitente: $sender",
-                                                color = if (isSponsorMessage) Color(0xFFF59E0B) else Color(0xFF94A3B8),
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Medium
+                                                text = if (content.length > 90) content.substring(0, 90) + "..." else content,
+                                                color = Color.LightGray,
+                                                fontSize = 13.sp,
+                                                maxLines = 2
                                             )
-                                            Spacer(modifier = Modifier.height(2.dp))
-                                        }
-                                        Text(
-                                            text = if (content.length > 90) content.substring(0, 90) + "..." else content,
-                                            color = Color.LightGray,
-                                            fontSize = 13.sp,
-                                            maxLines = 2
-                                        )
-                                        Spacer(modifier = Modifier.height(6.dp))
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            val actionLabel = when {
-                                                isSponsorMessage -> "Toca para abrir y responder al patrocinador"
-                                                isDirectMessage -> "Toca para abrir y responder DM"
-                                                isSupportTicket -> "Toca para abrir conversación y responder"
-                                                else -> "Toca para ver mensaje completo"
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text("Toca para abrir pop-up de soporte", color = HextechCyan.copy(alpha = pulseAlpha), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                                Icon(Icons.Default.OpenInNew, contentDescription = null, tint = HextechCyan.copy(alpha = pulseAlpha), modifier = Modifier.size(14.dp))
                                             }
-                                            val actionColor = if (isSponsorMessage) Color(0xFFF59E0B) else HextechCyan
-                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                                Icon(Icons.Default.Reply, contentDescription = null, tint = actionColor.copy(alpha = pulseAlpha), modifier = Modifier.size(14.dp))
-                                                Text(actionLabel, color = actionColor.copy(alpha = pulseAlpha), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                                            }
-                                            Icon(Icons.Default.OpenInNew, contentDescription = null, tint = actionColor.copy(alpha = pulseAlpha), modifier = Modifier.size(14.dp))
                                         }
-                                    }
 
-                                    if (showSupportPopup) {
-                                        Dialog(
-                                            onDismissRequest = { showSupportPopup = false },
-                                            properties = DialogProperties(usePlatformDefaultWidth = false)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .background(Color.Black.copy(alpha = 0.8f))
-                                                    .clickable { showSupportPopup = false },
-                                                contentAlignment = Alignment.Center
+                                        if (showSupportPopup) {
+                                            Dialog(
+                                                onDismissRequest = { showSupportPopup = false },
+                                                properties = DialogProperties(usePlatformDefaultWidth = false)
                                             ) {
                                                 Box(
                                                     modifier = Modifier
-                                                        .fillMaxWidth(0.95f)
-                                                        .fillMaxHeight(0.85f)
-                                                        .background(HextechDarkBg, RoundedCornerShape(16.dp))
-                                                        .border(1.dp, if (isSponsorMessage) Color(0xFFF59E0B) else HextechCyan, RoundedCornerShape(16.dp))
-                                                        .padding(16.dp)
-                                                        .clickable(enabled = false) {}
+                                                        .fillMaxSize()
+                                                        .background(Color.Black.copy(alpha = 0.8f))
+                                                        .clickable { showSupportPopup = false },
+                                                    contentAlignment = Alignment.Center
                                                 ) {
-                                                    Column(modifier = Modifier.fillMaxSize()) {
-                                                        Row(
-                                                            modifier = Modifier.fillMaxWidth(),
-                                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                                            verticalAlignment = Alignment.CenterVertically
-                                                        ) {
-                                                            Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                                            IconButton(onClick = { showSupportPopup = false }) {
-                                                                Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.Gray)
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth(0.95f)
+                                                            .fillMaxHeight(0.85f)
+                                                            .background(HextechDarkBg, RoundedCornerShape(16.dp))
+                                                            .border(1.dp, HextechCyan, RoundedCornerShape(16.dp))
+                                                            .padding(16.dp)
+                                                            .clickable(enabled = false) {}
+                                                    ) {
+                                                        Column(modifier = Modifier.fillMaxSize()) {
+                                                            Row(
+                                                                modifier = Modifier.fillMaxWidth(),
+                                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                                verticalAlignment = Alignment.CenterVertically
+                                                            ) {
+                                                                Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                                                IconButton(onClick = { showSupportPopup = false }) {
+                                                                    Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.Gray)
+                                                                }
                                                             }
-                                                        }
-                                                        Spacer(modifier = Modifier.height(8.dp))
-                                                        Divider(color = Color(0xFF334155))
-                                                        Spacer(modifier = Modifier.height(8.dp))
-                                                        Box(modifier = Modifier.weight(1f)) {
-                                                            UserSupportThreadCard(
-                                                                reportId = reportId,
-                                                                originalContent = content,
-                                                                initialConversation = conversationEntries,
-                                                                adminReply = adminReply,
-                                                                repliedBy = repliedBy,
-                                                                timestamp = timestamp,
-                                                                userName = resolvedUserName,
-                                                                userUid = userUid,
-                                                                userEmail = userEmail,
-                                                                ticketStatus = normalizedStatus,
-                                                                messageTag = messageTag
-                                                            )
+                                                            Spacer(modifier = Modifier.height(8.dp))
+                                                            Divider(color = Color(0xFF334155))
+                                                            Spacer(modifier = Modifier.height(8.dp))
+                                                            Box(modifier = Modifier.weight(1f)) {
+                                                                UserSupportThreadCard(
+                                                                    reportId = reportId,
+                                                                    originalContent = content,
+                                                                    initialConversation = conversationEntries,
+                                                                    adminReply = adminReply,
+                                                                    repliedBy = repliedBy,
+                                                                    timestamp = timestamp,
+                                                                    userName = resolvedUserName,
+                                                                    userUid = userUid,
+                                                                    userEmail = userEmail,
+                                                                    ticketStatus = normalizedStatus
+                                                                )
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
                                         }
+                                    } else {
+                                        if (sender.isNotBlank()) {
+                                            Text("Enviado por: $sender", color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                        }
+                                        Text(content, color = Color.LightGray, fontSize = 13.sp)
                                     }
                                 }
                             }
@@ -1367,8 +1345,7 @@ fun UserSupportThreadCard(
     userName: String,
     userUid: String,
     userEmail: String,
-    ticketStatus: String = "PENDIENTE",
-    messageTag: MessageTag = MessageTag.SUPPORT
+    ticketStatus: String = "PENDIENTE"
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -1524,23 +1501,16 @@ fun UserSupportThreadCard(
     val canReply = remember(conversation, liveStatus) { SupportReplyManager.canUserReply(conversation, liveStatus) }
     val isOnlyGreeting = remember(conversation) { SupportReplyManager.isOnlyGreeting(conversation) }
     val isClosed = liveStatus.uppercase() == "SOLUCIONADO" || liveStatus.uppercase() == "CERRADO" || liveStatus.uppercase() == "CLOSED" || liveStatus.uppercase() == "RESUELTO"
-    val isSponsor = messageTag == MessageTag.PATROCINADOR
-    val headerColor = if (isSponsor) Color(0xFFF59E0B) else Color(0xFF38BDF8)
     val timeFormatter = remember { SimpleDateFormat("HH:mm - dd/MM", Locale.getDefault()) }
 
     Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-        // Etiqueta de cabecera y estado
+        // Etiqueta de soporte y estado
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                if (isSponsor) "💼 Mensaje de Patrocinador" else "🎧 Soporte Técnico / Reporte",
-                color = headerColor,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Soporte Técnico / Reporte", color = Color(0xFF38BDF8), fontSize = 11.sp, fontWeight = FontWeight.Bold)
             Surface(
                 shape = RoundedCornerShape(4.dp),
                 color = when (liveStatus.uppercase()) {
@@ -1566,7 +1536,7 @@ fun UserSupportThreadCard(
         }
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Mensaje original (Descripción o Mensaje de Patrocinador)
+        // Mensaje original (Descripción)
         if (originalContent.isNotBlank()) {
             Surface(
                 shape = RoundedCornerShape(6.dp),
@@ -1575,12 +1545,7 @@ fun UserSupportThreadCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
-                    Text(
-                        if (isSponsor) "Mensaje del Patrocinador:" else "Descripción:",
-                        color = Color(0xFF94A3B8),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("Descripción:", color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(originalContent, color = Color.LightGray, fontSize = 12.sp)
                 }
@@ -1635,7 +1600,7 @@ fun UserSupportThreadCard(
         if (conversation.isNotEmpty()) {
             Text(
                 "Historial de Respuestas (${conversation.size})",
-                color = if (isSponsor) Color(0xFFF59E0B) else Color(0xFF38BDF8),
+                color = Color(0xFF38BDF8),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -1647,9 +1612,9 @@ fun UserSupportThreadCard(
             ) {
                 conversation.forEach { msg ->
                     val isUserMsg = msg.senderRole.equals("USER", ignoreCase = true)
-                    val bubbleBg = if (isUserMsg) Color(0xFF1E293B) else (if (isSponsor) Color(0xFF2E2009) else Color(0xFF0F2B48))
+                    val bubbleBg = if (isUserMsg) Color(0xFF1E293B) else Color(0xFF0F2B48)
                     val bubbleBorder = if (isUserMsg) BorderStroke(1.dp, Color(0xFFD4AF37).copy(alpha = 0.5f))
-                                       else BorderStroke(1.dp, (if (isSponsor) Color(0xFFF59E0B) else Color(0xFF0EA5E9)).copy(alpha = 0.6f))
+                                       else BorderStroke(1.dp, Color(0xFF0EA5E9).copy(alpha = 0.6f))
 
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -1672,8 +1637,8 @@ fun UserSupportThreadCard(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            if (isUserMsg) "👤 ${msg.senderName} (Tú)" else if (isSponsor) "💼 ${msg.senderName}" else "🛡️ ${msg.senderName}",
-                                            color = if (isUserMsg) Color(0xFFD4AF37) else if (isSponsor) Color(0xFFFBBF24) else Color(0xFF38BDF8),
+                                            if (isUserMsg) "👤 ${msg.senderName} (Tú)" else "🛡️ ${msg.senderName}",
+                                            color = if (isUserMsg) Color(0xFFD4AF37) else Color(0xFF38BDF8),
                                             fontSize = 10.5.sp,
                                             fontWeight = FontWeight.Bold,
                                             maxLines = 1,
@@ -1715,7 +1680,7 @@ fun UserSupportThreadCard(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Validación de respuesta (Cerrado o responder libremente)
+        // Validación de respuesta (Cerrado, solo saludo, o esperando respuesta)
         when {
             isClosed -> {
                 Surface(
@@ -1728,8 +1693,26 @@ fun UserSupportThreadCard(
                         Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            "Esta conversación ha sido finalizada o marcada como cerrada.",
+                            "Este reporte ha sido marcado como cerrado. Ya no es posible enviar más respuestas.",
                             color = Color(0xFFFCA5A5),
+                            fontSize = 10.5.sp
+                        )
+                    }
+                }
+            }
+            !canReply || isOnlyGreeting -> {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFF0F172A),
+                    border = BorderStroke(1.dp, Color(0xFFF59E0B).copy(alpha = 0.4f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            "Esperando respuesta del equipo de soporte. La opción de responder se habilitará cuando soporte responda formalmente a tu ticket.",
+                            color = Color(0xFFFDE68A),
                             fontSize = 10.5.sp
                         )
                     }
@@ -1737,92 +1720,89 @@ fun UserSupportThreadCard(
             }
             else -> {
                 // Sección para que el usuario responda
-                val replyBorderColor = if (isSponsor) Color(0xFFF59E0B).copy(alpha = 0.6f) else Color(0xFF38BDF8).copy(alpha = 0.4f)
-                val replyBtnColor = if (isSponsor) Color(0xFFD97706) else Color(0xFF0EA5E9)
-
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = Color(0xFF0B132B),
-                    border = BorderStroke(1.dp, replyBorderColor),
+                    border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.4f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Text(
+                        "Responder a Soporte",
+                        color = Color(0xFF38BDF8),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = userReplyText,
+                        onValueChange = { userReplyText = SupportReplyManager.sanitizePlainText(it, 500) },
+                        placeholder = { Text("Escribe tu respuesta aquí...", color = Color.Gray, fontSize = 11.5.sp) },
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 3,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFF38BDF8),
+                            unfocusedBorderColor = Color(0xFF334155),
+                            focusedContainerColor = Color(0xFF0F172A),
+                            unfocusedContainerColor = Color(0xFF0F172A)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
-                            if (isSponsor) "Responder a Patrocinador" else "Responder a Soporte",
-                            color = if (isSponsor) Color(0xFFFBBF24) else Color(0xFF38BDF8),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "${userReplyText.length}/500",
+                            color = Color.Gray,
+                            fontSize = 10.sp
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        OutlinedTextField(
-                            value = userReplyText,
-                            onValueChange = { userReplyText = SupportReplyManager.sanitizePlainText(it, 500) },
-                            placeholder = { Text(if (isSponsor) "Escribe tu respuesta al patrocinador..." else "Escribe tu respuesta aquí...", color = Color.Gray, fontSize = 11.5.sp) },
-                            modifier = Modifier.fillMaxWidth(),
-                            maxLines = 3,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedBorderColor = if (isSponsor) Color(0xFFF59E0B) else Color(0xFF38BDF8),
-                                unfocusedBorderColor = Color(0xFF334155),
-                                focusedContainerColor = Color(0xFF0F172A),
-                                unfocusedContainerColor = Color(0xFF0F172A)
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "${userReplyText.length}/500",
-                                color = Color.Gray,
-                                fontSize = 10.sp
-                            )
-                            Button(
-                                onClick = {
-                                    if (userReplyText.trim().isBlank()) return@Button
-                                    isSending = true
-                                    coroutineScope.launch {
-                                        val success = SupportReplyManager.sendUserReply(
-                                            context = context,
-                                            reportId = reportId,
-                                            userReplyText = userReplyText.trim(),
-                                            userName = userName,
-                                            userId = userUid,
-                                            userEmail = userEmail
-                                        )
-                                        if (success) {
-                                            userReplyText = ""
-                                            conversation = SupportReplyManager.getConversation(context, reportId)
-                                            Toast.makeText(context, "Respuesta enviada con éxito", Toast.LENGTH_SHORT).show()
-                                        } else {
-                                            Toast.makeText(context, "Error al enviar respuesta", Toast.LENGTH_SHORT).show()
-                                        }
-                                        isSending = false
+                        Button(
+                            onClick = {
+                                if (userReplyText.trim().isBlank()) return@Button
+                                isSending = true
+                                coroutineScope.launch {
+                                    val success = SupportReplyManager.sendUserReply(
+                                        context = context,
+                                        reportId = reportId,
+                                        userReplyText = userReplyText.trim(),
+                                        userName = userName,
+                                        userId = userUid,
+                                        userEmail = userEmail
+                                    )
+                                    if (success) {
+                                        userReplyText = ""
+                                        conversation = SupportReplyManager.getConversation(context, reportId)
+                                        Toast.makeText(context, "Respuesta enviada a soporte", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, "Error al enviar respuesta", Toast.LENGTH_SHORT).show()
                                     }
-                                },
-                                enabled = !isSending && userReplyText.trim().isNotBlank(),
-                                colors = ButtonDefaults.buttonColors(containerColor = replyBtnColor),
-                                shape = RoundedCornerShape(6.dp),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                if (isSending) {
-                                    CircularProgressIndicator(modifier = Modifier.size(14.dp), color = Color.White, strokeWidth = 2.dp)
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                } else {
-                                    Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.White)
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                    isSending = false
                                 }
-                                Text("Enviar", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            },
+                            enabled = !isSending && userReplyText.trim().isNotBlank(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0EA5E9)),
+                            shape = RoundedCornerShape(6.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            if (isSending) {
+                                CircularProgressIndicator(modifier = Modifier.size(14.dp), color = Color.White, strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(6.dp))
+                            } else {
+                                Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.White)
+                                Spacer(modifier = Modifier.width(6.dp))
                             }
+                            Text("Enviar", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
                 }
             }
         }
     }
+}
 }
 
 

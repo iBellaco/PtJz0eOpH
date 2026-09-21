@@ -68,21 +68,19 @@ object AdaptiveScreenLayoutEngine {
 
         // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla:
         // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.076f
-        // - 10º Pick Aliado: ubicado ligeramente más a la izquierda (x ≈ 0.068f) para centrado exacto
         // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.960f
         val adaptiveAllyCenterX = if (geometry.isUltrawide) 0.076f else baseConfig.allyAvatarCenterX
-        val adaptiveAllyTenthCenterX = if (geometry.isUltrawide) 0.068f else baseConfig.allyTenthAvatarCenterX
         val adaptiveEnemyCenterX = if (geometry.isUltrawide) 0.960f else baseConfig.enemyAvatarCenterX
 
         // Rango de búsqueda OCR adaptativo:
-        // El texto del slot aliado está a la derecha del avatar (entre x ≈ 0.065 y x ≈ 0.265).
-        // Abarca holgadamente el texto desplazado por insignias e iconos de maestría.
-        val allyOcrMinX = 0.065f
-        val allyOcrMaxX = 0.265f
+        // El texto del slot aliado está estrictamente a la derecha del avatar (entre x ≈ 0.08 y x ≈ 0.225).
+        // JAMÁS debe invadir el carrusel central de selección de campeones (x >= 0.26).
+        val allyOcrMinX = 0.082f
+        val allyOcrMaxX = 0.225f
 
-        // El texto del slot rival está a la izquierda del avatar rival (entre x ≈ 0.735 y x ≈ 0.940).
-        val enemyOcrMinX = 0.735f
-        val enemyOcrMaxX = 0.940f
+        // El texto del slot rival está estrictamente a la izquierda del avatar rival (entre x ≈ 0.78 y x ≈ 0.935).
+        val enemyOcrMinX = 0.78f
+        val enemyOcrMaxX = 0.935f
 
         // Ajuste de las posiciones horizontales de la barra superior (los 10 avatares de la cabecera)
         // En tablets los avatares superiores están ligeramente más comprimidos hacia el centro; en ultrawide hacia los bordes.
@@ -102,7 +100,6 @@ object AdaptiveScreenLayoutEngine {
 
         return baseConfig.copy(
             allyAvatarCenterX = adaptiveAllyCenterX,
-            allyTenthAvatarCenterX = adaptiveAllyTenthCenterX,
             enemyAvatarCenterX = adaptiveEnemyCenterX,
             avatarDiameterRatio = 0.114f,
             allyOcrMinX = allyOcrMinX,
@@ -124,16 +121,10 @@ object AdaptiveScreenLayoutEngine {
         height: Int,
         isAlly: Boolean,
         slotIndex: Int,
-        config: VisionCalibrationConfig,
-        isTenthPick: Boolean = false
+        config: VisionCalibrationConfig
     ): Rect {
         val sIdx = slotIndex.coerceIn(0, 4)
-        val cx = if (isAlly) {
-            if (sIdx == 4 || isTenthPick) (width * config.allyTenthAvatarCenterX).toInt()
-            else (width * config.allyAvatarCenterX).toInt()
-        } else {
-            (width * config.enemyAvatarCenterX).toInt()
-        }
+        val cx = if (isAlly) (width * config.allyAvatarCenterX).toInt() else (width * config.enemyAvatarCenterX).toInt()
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cy = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
         val diam = (height * config.avatarDiameterRatio).toInt().coerceAtLeast(32)
@@ -158,16 +149,10 @@ object AdaptiveScreenLayoutEngine {
         height: Int,
         isAlly: Boolean,
         slotIndex: Int,
-        config: VisionCalibrationConfig,
-        isTenthPick: Boolean = false
+        config: VisionCalibrationConfig
     ): android.graphics.Bitmap? {
         val sIdx = slotIndex.coerceIn(0, 4)
-        val cxNominal = if (isAlly) {
-            if (sIdx == 4 || isTenthPick) (width * config.allyTenthAvatarCenterX).toInt()
-            else (width * config.allyAvatarCenterX).toInt()
-        } else {
-            (width * config.enemyAvatarCenterX).toInt()
-        }
+        val cxNominal = if (isAlly) (width * config.allyAvatarCenterX).toInt() else (width * config.enemyAvatarCenterX).toInt()
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cyNominal = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
 
@@ -182,7 +167,7 @@ object AdaptiveScreenLayoutEngine {
         val searchBottom = (cyNominal + radius + margin).coerceIn(0, height)
 
         if (searchRight <= searchLeft + 16 || searchBottom <= searchTop + 16) {
-            val baseRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config, isTenthPick)
+            val baseRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config)
             return try {
                 android.graphics.Bitmap.createBitmap(sourceBitmap, baseRect.left, baseRect.top, baseRect.width(), baseRect.height())
             } catch (_: Throwable) { null }
@@ -241,7 +226,7 @@ object AdaptiveScreenLayoutEngine {
         return try {
             android.graphics.Bitmap.createBitmap(sourceBitmap, cropLeft, cropTop, finalW, finalH)
         } catch (_: Throwable) {
-            val fallbackRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config, isTenthPick)
+            val fallbackRect = calculateSlotCropRect(width, height, isAlly, slotIndex, config)
             try {
                 android.graphics.Bitmap.createBitmap(sourceBitmap, fallbackRect.left, fallbackRect.top, fallbackRect.width(), fallbackRect.height())
             } catch (_: Throwable) { null }

@@ -559,7 +559,7 @@ fun AvatarSelectionBottomSheet(
             } // End of LazyVerticalGrid
         } else {
                     // MARCOS (BORDERS) SECTION
-                    val borders = listOf("NONE", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER", "SOVEREIGN")
+                    val borders = listOf("NONE", "MASTER", "GRANDMASTER", "CHALLENGER")
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     if (!isPremium && userRole != "admin") {
@@ -587,7 +587,7 @@ fun AvatarSelectionBottomSheet(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Sube de nivel tu perfil con los impresionantes marcos animados de Soberano, Aspirante, Gran Maestro, Maestro, Diamante y Esmeralda. Exclusivo para usuarios Premium.",
+                                    text = "Sube de nivel tu perfil con los impresionantes marcos animados de Retador, Gran Maestro y Maestro. Exclusivo para usuarios Premium.",
                                     color = TextSecondary,
                                     fontSize = 13.sp,
                                     textAlign = TextAlign.Center
@@ -671,18 +671,8 @@ fun AvatarSelectionBottomSheet(
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))
-                                    val borderDisplayName = when (border) {
-                                        "NONE" -> "Sin Marco"
-                                        "EMERALD" -> "Esmeralda"
-                                        "DIAMOND" -> "Diamante"
-                                        "MASTER" -> "Maestro"
-                                        "GRANDMASTER" -> "Gran Maestro"
-                                        "CHALLENGER" -> "Aspirante"
-                                        "SOVEREIGN" -> "Soberano"
-                                        else -> border
-                                    }
                                     Text(
-                                        text = borderDisplayName,
+                                        text = if (border == "NONE") "Sin Marco" else border,
                                         color = if (isSelected) HextechGold else TextPrimary,
                                         fontWeight = FontWeight.Bold
                                     )
