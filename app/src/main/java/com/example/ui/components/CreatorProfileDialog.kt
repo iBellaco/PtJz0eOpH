@@ -311,17 +311,23 @@ fun CreatorProfileDialog(
                     // BOTÓN PRINCIPAL DE SUSCRIPCIÓN AL CREADOR / STREAMER
                     Button(
                         onClick = {
-                            CreatorSubscriptionManager.toggleSubscription(
-                                creatorKey,
-                                creatorName,
-                                context
-                            ) { newlySubscribed ->
-                                val msg = if (newlySubscribed) {
-                                    "Te has suscrito a $creatorName"
-                                } else {
-                                    "Has cancelado la suscripcion a $creatorName"
+                            if (isSubscribed) {
+                                CreatorSubscriptionManager.toggleSubscription(
+                                    creatorKey,
+                                    creatorName,
+                                    context
+                                ) {
+                                    Toast.makeText(context, "Suscripción cancelada a $creatorName", Toast.LENGTH_SHORT).show()
                                 }
-                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            } else {
+                                CreatorSubscriptionManager.subscribeWithBlueEssence(
+                                    creatorKey = creatorKey,
+                                    creatorName = creatorName,
+                                    creatorUid = creatorUid,
+                                    context = context
+                                ) { _, msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                         modifier = Modifier
@@ -347,7 +353,7 @@ fun CreatorProfileDialog(
                                 modifier = Modifier.size(18.dp)
                             )
                             Text(
-                                text = if (isSubscribed) "Suscrito" else "Suscribirse al Creador",
+                                text = if (isSubscribed) "Suscrito" else "Suscribirse (${CreatorSubscriptionManager.SUBSCRIPTION_EA_COST} EA)",
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 13.sp
                             )

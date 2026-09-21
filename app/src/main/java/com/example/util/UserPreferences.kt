@@ -73,4 +73,14 @@ object UserPreferences {
         val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, PREFS_NAME + "_enc")
         prefs.edit().putString(KEY_ACTIVE_DRAFT_ROLE, role.name).apply()
     }
+
+    fun getLanguage(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString("selected_language", "es") ?: "es"
+    }
+
+    fun setLanguage(context: Context, lang: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString("selected_language", lang).apply()
+    }
 }

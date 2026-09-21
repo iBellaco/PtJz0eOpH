@@ -76,6 +76,26 @@ fun AvatarSelectionBottomSheet(
     val userRole by SubscriptionManager.userRole.collectAsState()
     val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
 
+    val secRoleObjForInit = remember(currentSecondaryRole) {
+        if (!currentSecondaryRole.isNullOrBlank() && currentSecondaryRole != "none") {
+            com.example.model.AppUserSecondaryRole.fromId(currentSecondaryRole)
+        } else com.example.model.AppUserSecondaryRole.NONE
+    }
+    val hasSecRoleFrameInit = secRoleObjForInit != com.example.model.AppUserSecondaryRole.NONE && secRoleObjForInit.frameDrawableRes != null
+    val hasSpecialFrameInit = isAdmin || (currentRankBorder != "NONE" && currentRankBorder.isNotBlank())
+
+    var selectedFrameOption by remember(activeFramePref, currentRankBorder, currentSecondaryRole, isAdmin) {
+        val upper = activeFramePref.uppercase()
+        val initial = if (upper == "AUTO") {
+            if (hasSpecialFrameInit) "SPECIAL"
+            else if (hasSecRoleFrameInit) "SECONDARY"
+            else "NONE"
+        } else {
+            upper
+        }
+        mutableStateOf(initial)
+    }
+
     val validRegions = remember {
         setOf("Aguas Esturbias", "Ciudad de Bandle", "Demacia", "El Vacío", "Freljord", "Islas de la Sombra", "Jonia", "Ixtal", "Noxus", "Piltóver", "Runaterra", "Shurima", "Targon", "Zaun", "Poro")
     }
@@ -202,7 +222,7 @@ fun AvatarSelectionBottomSheet(
                             avatarId = currentAvatarId,
                             rankBorder = currentRankBorder,
                             secondaryRole = currentSecondaryRole,
-                            equippedFrame = activeFramePref,
+                            equippedFrame = selectedFrameOption,
                             size = 68.dp,
                             isAdmin = isAdmin,
                             fitFrameToSize = true
@@ -644,7 +664,6 @@ fun AvatarSelectionBottomSheet(
             val msgNoSpecialFrame = tr("No posees un marco especial de rango disponible")
             val msgFrameSuccess = tr("Marco de perfil actualizado correctamente")
 
-            var selectedFrameOption by remember(activeFramePrefState) { mutableStateOf(activeFramePrefState.uppercase()) }
             var isSavingFrame by remember { mutableStateOf(false) }
 
             Column(
@@ -679,16 +698,6 @@ fun AvatarSelectionBottomSheet(
                             isSelected = selectedFrameOption == "NONE",
                             isEnabled = true,
                             onClick = { selectedFrameOption = "NONE" }
-                        )
-
-                        FrameOptionCardInAvatar(
-                            title = tr("Automático (Recomendado)"),
-                            subtitle = tr("Muestra el marco disponible de mayor jerarquía."),
-                            icon = Icons.Default.Star,
-                            iconTint = HextechGold,
-                            isSelected = selectedFrameOption == "AUTO",
-                            isEnabled = true,
-                            onClick = { selectedFrameOption = "AUTO" }
                         )
 
                         val secRoleTitle = if (hasSecRoleFrame) "Marco de ${secRoleObj.displayName}" else tr("Marco de Rol Secundario")

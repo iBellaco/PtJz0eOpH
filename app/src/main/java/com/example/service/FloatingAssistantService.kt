@@ -203,6 +203,7 @@ import android.content.res.Configuration
 import com.example.util.LocalLanguage
 import com.example.util.SubscriptionManager
 import com.example.util.tr
+import com.example.util.trStr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -1059,7 +1060,7 @@ private fun FloatingOverlayContent(
                                                         assignAllySlot(idx, scannedAlly)
                                                         newAlliesAdded++
                                                     }
-                                                } else if (result.allySlotShowingLaneMap[idx] == true) {
+                                                } else if (result.allyShowingLaneByRole[role] == true || (result.alliesByRole.isEmpty() && result.allySlotShowingLaneMap[idx] == true)) {
                                                     if (allies[idx] != null) {
                                                         allies[idx] = null
                                                     }
@@ -1163,20 +1164,21 @@ private fun FloatingOverlayContent(
 
                                     val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
 
+                                    val currentLang = com.example.util.UserPreferences.getLanguage(context)
                                     val targetUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
                                     if (targetUserRole != null && activeRole != targetUserRole) {
                                         activeRole = targetUserRole
                                         com.example.util.UserPreferences.setActiveDraftRole(context, targetUserRole)
-                                        scanNoticeMessage = "Auto-Scan: Tu rol detectado (${targetUserRole.shortName})"
+                                        scanNoticeMessage = trStr(currentLang, "Auto-Scan: Tu rol detectado") + " (${targetUserRole.shortName})"
                                     } else if (isDraftFullyConfirmed) {
                                         autoScanEnabled = false
-                                        scanNoticeMessage = "10/10 Campeones confirmados"
+                                        scanNoticeMessage = trStr(currentLang, "10/10 Campeones confirmados")
                                         AppLogger.i("FloatingService", "Auto-Scan desactivado: 10/10 campeones confirmados.")
                                     } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
-                                        scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
+                                        scanNoticeMessage = trStr(currentLang, "Fase de Preparación: completando selección") + " ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
                                         AppLogger.d("FloatingService", "Fase de Preparación en curso ($finalAlliesPicked/5 vs $finalEnemiesPicked/5). Auto-scan continúa.")
                                     } else if (newAlliesAdded > 0 || newEnemiesAdded > 0) {
-                                        scanNoticeMessage = "Auto-Scan: +${newAlliesAdded + newEnemiesAdded} picks detectados ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)"
+                                        scanNoticeMessage = trStr(currentLang, "Auto-Scan:") + " +${newAlliesAdded + newEnemiesAdded} picks ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)"
                                     }
 
                                     if (scanNoticeMessage != null) {
@@ -1918,6 +1920,7 @@ private fun FloatingOverlayContent(
                                             onToggleLegendaryQueue = { isLegendaryQueue = !isLegendaryQueue },
                                             isLoadingScreenMode = isLoadingScreenMode,
                                             onLoadingScreenModeToggle = { isLoadingScreenMode = !isLoadingScreenMode },
+                                            autoScanEnabled = autoScanEnabled,
                                             allies = allies,
                                             enemies = enemies,
                                             enemyConfidences = state.enemyConfidences,
@@ -2779,6 +2782,7 @@ private fun FloatingDraftCoachView(
     onToggleLegendaryQueue: (() -> Unit)? = null,
     isLoadingScreenMode: Boolean,
     onLoadingScreenModeToggle: () -> Unit,
+    autoScanEnabled: Boolean = false,
     allies: androidx.compose.runtime.snapshots.SnapshotStateList<Champion?>,
     enemies: androidx.compose.runtime.snapshots.SnapshotStateList<Champion?>,
     enemyConfidences: androidx.compose.runtime.snapshots.SnapshotStateMap<LaneRole, Int>,
@@ -2851,6 +2855,7 @@ private fun FloatingDraftCoachView(
             isLegendary = isLegendaryQueue,
             onToggleLegendary = onToggleLegendaryQueue,
             onOpenLiteRTViewer = onOpenLiteRTViewer,
+            isAutoScanning = autoScanEnabled,
             onPickChampionForRole = { isAlly, role ->
                 val index = defaultRoles.indexOf(role).coerceAtLeast(0)
                 onOpenChampionPicker(isAlly, index)
@@ -2903,6 +2908,7 @@ private fun OverlayVersusDraftBoard(
     isLegendary: Boolean = false,
     onToggleLegendary: (() -> Unit)? = null,
     onOpenLiteRTViewer: (() -> Unit)? = null,
+    isAutoScanning: Boolean = false,
     onPickChampionForRole: (isAlly: Boolean, LaneRole) -> Unit,
     onRemoveChampionForRole: (isAlly: Boolean, LaneRole) -> Unit
 ) {
@@ -3161,13 +3167,39 @@ private fun OverlayVersusDraftBoard(
                                     )
                                 }
                             } else {
-                                Text(
-                                    text = tr("+ Elegir"),
-                                    color = AllyBlue.copy(alpha = 0.8f),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    maxLines = 1
-                                )
+                                if (isAutoScanning) {
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(start = 6.dp),
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = tr(role.displayName),
+                                            color = HextechCyan,
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = tr("Esperando pick..."),
+                                            color = TextSecondary.copy(alpha = 0.8f),
+                                            fontSize = 7.5.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            maxLines = 1
+                                        )
+                                    }
+                                } else {
+                                    Text(
+                                        text = tr("+ Elegir"),
+                                        color = AllyBlue.copy(alpha = 0.8f),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        maxLines = 1,
+                                        modifier = Modifier.padding(start = 6.dp)
+                                    )
+                                }
                             }
                         }
 

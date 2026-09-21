@@ -35,11 +35,17 @@ import android.widget.VideoView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.NotificationsActive
 import com.example.data.local.AppDatabase
 import com.example.data.local.entity.FavoriteBuildEntity
+import com.example.util.AuthManager
+import com.example.util.CreatorSubscriptionManager
+import com.example.util.SubscriptionManager
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import androidx.compose.ui.text.style.TextOverflow
+import java.util.Locale
 
 @Composable
 fun CustomBuildDetailDialog(
@@ -61,24 +67,35 @@ fun CustomBuildDetailDialog(
     val favoriteDao = remember { AppDatabase.getDatabase(context).favoriteBuildsDao() }
     val isFavorite by favoriteDao.isFavorite(record.id).collectAsState(initial = false)
 
-    androidx.activity.compose.BackHandler { onDismiss() }
+    val subscribedSet by CreatorSubscriptionManager.subscribedCreatorKeys.collectAsStateWithLifecycle()
+    val userRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val currentBlueEssence by SubscriptionManager.blueEssence.collectAsStateWithLifecycle()
 
-    val shareBuild = {
-        val shareText = buildString {
-            appendLine("Build: ${record.buildTitle} para ${record.championName}")
-            appendLine("Rol: ${record.role}")
-            appendLine("Core: ${record.coreItems.joinToString(", ")}")
-            if (record.situationalItems.isNotEmpty()) appendLine("Situacionales: ${record.situationalItems.joinToString(", ")}")
-            appendLine("Runas: ${record.runes}")
-            if (record.coreSpells.isNotEmpty()) appendLine("Hechizos: ${record.coreSpells.joinToString(", ") { it.spellName }}")
-            appendLine("¡Creada por ${record.creatorName} en Coach App!")
-        }
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, shareText)
-        }
-        context.startActivity(Intent.createChooser(intent, "Compartir Build"))
+    val currentAuthUser = remember { FirebaseAuth.getInstance().currentUser }
+    val currentUserId = currentAuthUser?.uid ?: ""
+    val currentUserName = (currentAuthUser?.displayName ?: "").trim()
+
+    val creatorUidClean = record.creatorUserId.trim().lowercase(Locale.ROOT)
+    val creatorNameClean = record.creatorName.trim().lowercase(Locale.ROOT)
+
+    val isSystemBuild = record.creatorIsAdmin ||
+        creatorNameClean.contains("coach system") ||
+        creatorNameClean == "system" ||
+        record.creatorName.isBlank()
+
+    val isOwnBuild = (currentUserId.isNotBlank() && currentUserId.lowercase(Locale.ROOT) == creatorUidClean) ||
+        (currentUserName.isNotBlank() && currentUserName.lowercase(Locale.ROOT) == creatorNameClean)
+
+    val isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin()
+
+    val isSubscribedToCreator = remember(subscribedSet, creatorUidClean, creatorNameClean) {
+        (creatorUidClean.isNotBlank() && subscribedSet.contains(creatorUidClean)) ||
+        (creatorNameClean.isNotBlank() && subscribedSet.contains(creatorNameClean))
     }
+
+    val canViewBuild = isSystemBuild || isOwnBuild || isAdmin || isSubscribedToCreator
+
+    androidx.activity.compose.BackHandler { onDismiss() }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -122,9 +139,6 @@ fun CustomBuildDetailDialog(
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = shareBuild) {
-                        Icon(Icons.Default.Share, contentDescription = "Compartir", tint = HextechCyan)
-                    }
                     IconButton(onClick = {
                         scope.launch {
                             if (isFavorite) {
@@ -187,7 +201,118 @@ fun CustomBuildDetailDialog(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
+            if (!canViewBuild) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                    border = BorderStroke(1.5.dp, HextechGold),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(HextechGold.copy(alpha = 0.15f))
+                                .border(1.5.dp, HextechGold, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Protegida",
+                                tint = HextechGold,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+
+                        Text(
+                            text = "Build Protegida para Suscriptores",
+                            color = Color.White,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 17.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+
+                        Text(
+                            text = "Esta build fue creada por ${record.creatorName}. Debes estar suscrito a este creador para desbloquear y ver sus objetos, runas y estrategias completas.",
+                            color = TextSecondary,
+                            fontSize = 13.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            lineHeight = 18.sp
+                        )
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = HextechDarkBg,
+                            border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "Tu saldo:",
+                                    color = TextSecondary,
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    text = "$currentBlueEssence EA",
+                                    color = HextechCyan,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                CreatorSubscriptionManager.subscribeWithBlueEssence(
+                                    creatorKey = if (record.creatorUserId.isNotBlank()) record.creatorUserId else record.creatorName,
+                                    creatorName = record.creatorName,
+                                    creatorUid = record.creatorUserId,
+                                    context = context
+                                ) { _, msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(46.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = HextechGold,
+                                contentColor = Color.Black
+                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.NotificationsActive,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "Suscribirse al Creador (${CreatorSubscriptionManager.SUBSCRIPTION_EA_COST} EA)",
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 13.5.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -558,6 +683,7 @@ fun CustomBuildDetailDialog(
                         }
                     }
                 }
+            }
             }
         }
     }

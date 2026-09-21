@@ -8,6 +8,9 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ListenerRegistration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -92,10 +95,89 @@ object CreatorSubscriptionManager {
         }
     }
 
+    const val SUBSCRIPTION_EA_COST = 1000L
+
     fun isSubscribed(creatorKey: String?): Boolean {
         if (creatorKey.isNullOrBlank()) return false
         val cleanKey = creatorKey.trim().lowercase(Locale.ROOT)
         return _subscribedCreatorKeys.value.contains(cleanKey)
+    }
+
+    fun subscribeWithBlueEssence(
+        creatorKey: String,
+        creatorName: String,
+        creatorUid: String = "",
+        cost: Long = SUBSCRIPTION_EA_COST,
+        context: Context,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        val cleanKey = creatorKey.trim().lowercase(Locale.ROOT)
+        if (cleanKey.isBlank()) {
+            onResult(false, "Clave de creador inválida")
+            return
+        }
+
+        val isAlreadySub = isSubscribed(cleanKey) || (creatorName.isNotBlank() && isSubscribed(creatorName))
+
+        if (isAlreadySub) {
+            toggleSubscription(cleanKey, creatorName, context) {
+                onResult(false, "Suscripción cancelada a $creatorName")
+            }
+            return
+        }
+
+        val currentEA = SubscriptionManager.blueEssence.value
+        if (currentEA < cost) {
+            onResult(false, "No tienes suficiente Esencia Azul (Requieres ${cost} EA). Tu saldo: ${currentEA} EA.")
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                SubscriptionManager.addBlueEssence(-cost)
+
+                val db = FirebaseFirestore.getInstance()
+                if (creatorUid.isNotBlank()) {
+                    db.collection("users").document(creatorUid)
+                        .update("blueEssence", FieldValue.increment(cost))
+                } else if (creatorName.isNotBlank()) {
+                    val query = com.google.android.gms.tasks.Tasks.await(
+                        db.collection("users").whereEqualTo("name", creatorName.trim()).get()
+                    )
+                    if (!query.isEmpty) {
+                        for (doc in query.documents) {
+                            doc.reference.update("blueEssence", FieldValue.increment(cost))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error transfiriendo Esencia Azul al creador", e)
+            }
+        }
+
+        val appContext = context.applicationContext
+        val currentSet = _subscribedCreatorKeys.value.toMutableSet()
+        currentSet.add(cleanKey)
+        if (creatorName.isNotBlank()) {
+            currentSet.add(creatorName.trim().lowercase(Locale.ROOT))
+        }
+
+        _subscribedCreatorKeys.value = currentSet
+        saveLocal(appContext, currentSet)
+
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            try {
+                val userRef = FirebaseFirestore.getInstance().collection("users").document(user.uid)
+                val keysToAdd = listOfNotNull(cleanKey, creatorName.trim().lowercase(Locale.ROOT).ifBlank { null })
+                val updateData = hashMapOf("subscribedCreators" to FieldValue.arrayUnion(*keysToAdd.toTypedArray()))
+                userRef.set(updateData, SetOptions.merge())
+            } catch (e: Exception) {
+                Log.e(TAG, "Error guardando suscripcion en Firestore", e)
+            }
+        }
+
+        onResult(true, "¡Suscripción activada! Se transfirieron ${cost} EA a $creatorName.")
     }
 
     fun toggleSubscription(creatorKey: String, creatorName: String, context: Context, onResult: (Boolean) -> Unit = {}) {

@@ -156,7 +156,7 @@ fun AdminCreatorBuildsDialog(
         return maxOf(uniqueSubs.size, baseFromDoc)
     }
 
-    // Listado filtrado ESTRICTAMENTE a usuarios que poseen el rol de creador
+    // Listado filtrado ESTRICTAMENTE a usuarios que poseen rol relevante (creador, streamer, moderador, admin) Y que poseen AL MENOS 1 build creada
     val allCreators = remember(registeredUsers, customBuilds, subscribedSet) {
         val list = mutableListOf<CreatorListItem>()
         val seenNames = mutableSetOf<String>()
@@ -167,20 +167,32 @@ fun AdminCreatorBuildsDialog(
                 ?: (u["roleId"] as? String)
                 ?: ""
             val normalizedRole = rawRole.trim().lowercase(Locale.ROOT)
-            val isCreatorRole = normalizedRole in listOf("creador", "creador_vip", "creator", "creator_vip", "streamer") ||
+            val secRole = ((u["secondaryRole"] as? String) ?: (u["secondary_role"] as? String) ?: "").trim().lowercase(Locale.ROOT)
+
+            val isEligibleRole = normalizedRole in listOf("creador", "creador_vip", "creator", "creator_vip", "streamer", "moderador", "moderator", "admin") ||
+                secRole in listOf("creador", "creador_vip", "creator", "creator_vip", "streamer", "moderador", "moderator") ||
                 (u["isCreator"] as? Boolean) == true ||
                 (u["creator"] as? Boolean) == true ||
                 (u["isVipCreator"] as? Boolean) == true
 
-            // Regla estricta: Solo incluir usuarios con rol de creador
-            if (!isCreatorRole) continue
+            if (!isEligibleRole) continue
 
             val rawName = (u["name"] as? String)
                 ?: (u["userName"] as? String)
                 ?: (u["username"] as? String)
                 ?: ""
             val cleanName = rawName.trim()
+            val uUid = u["uid"] as? String ?: ""
+
             if (cleanName.isNotBlank() && seenNames.add(cleanName.lowercase(Locale.ROOT))) {
+                val count = customBuilds.count { 
+                    it.creatorName.trim().equals(cleanName, ignoreCase = true) || 
+                    (uUid.isNotBlank() && it.creatorUserId == uUid) 
+                }
+
+                // REGLA ESTRICTA: Solo visualizar si tiene al menos 1 build creada
+                if (count <= 0) continue
+
                 val avatarId = u["avatarId"] as? String ?: "default_poro"
                 val rankBorder = u["rankBorder"] as? String ?: "NONE"
                 val secondaryRole = (u["secondaryRole"] as? String) ?: (u["secondary_role"] as? String) ?: "none"
@@ -189,10 +201,9 @@ fun AdminCreatorBuildsDialog(
                 val isVerified = (u["isVerified"] as? Boolean) == true ||
                     (u["verified"] as? Boolean) == true ||
                     isAdmin ||
-                    normalizedRole == "moderador"
-                val count = customBuilds.count { it.creatorName.trim().equals(cleanName, ignoreCase = true) }
-                val uUid = u["uid"] as? String ?: ""
+                    normalizedRole in listOf("moderador", "moderator")
                 val subsCount = countSubscribersForCreator(uUid, cleanName, u)
+
                 list.add(
                     CreatorListItem(
                         uid = uUid,
@@ -210,6 +221,51 @@ fun AdminCreatorBuildsDialog(
             }
         }
 
+        // También agregar creadores presentes en customBuilds que no estuviesen en registeredUsers
+        val userMapByName = registeredUsers.associateBy { (it["name"] as? String ?: "").trim().lowercase(Locale.ROOT) }
+        val userMapByUid = registeredUsers.associateBy { (it["uid"] as? String ?: "") }
+
+        for (build in customBuilds) {
+            val cName = build.creatorName.trim()
+            if (cName.isNotBlank() && seenNames.add(cName.lowercase(Locale.ROOT))) {
+                val cUid = build.creatorUserId
+                val matchedUser = (if (cUid.isNotBlank()) userMapByUid[cUid] else null)
+                    ?: userMapByName[cName.lowercase(Locale.ROOT)]
+
+                val count = customBuilds.count { 
+                    it.creatorName.trim().equals(cName, ignoreCase = true) || 
+                    (cUid.isNotBlank() && it.creatorUserId == cUid) 
+                }
+
+                if (count > 0) {
+                    val avatarId = (matchedUser?.get("avatarId") as? String) ?: build.creatorAvatarId ?: "default_poro"
+                    val rankBorder = (matchedUser?.get("rankBorder") as? String) ?: build.creatorRankBorder ?: "NONE"
+                    val secondaryRole = (matchedUser?.get("secondaryRole") as? String) ?: (matchedUser?.get("secondary_role") as? String) ?: "none"
+                    val equippedFrame = (matchedUser?.get("activeFramePreference") as? String) ?: (matchedUser?.get("equippedFrame") as? String) ?: "AUTO"
+                    val rawRole = (matchedUser?.get("role") as? String) ?: ""
+                    val normalizedRole = rawRole.trim().lowercase(Locale.ROOT)
+                    val isAdmin = build.creatorIsAdmin || normalizedRole == "admin" || (matchedUser?.get("isAdmin") as? Boolean) == true
+                    val isVerified = (matchedUser?.get("isVerified") as? Boolean) == true || isAdmin || normalizedRole in listOf("moderador", "moderator")
+                    val subsCount = countSubscribersForCreator(cUid, cName, matchedUser)
+
+                    list.add(
+                        CreatorListItem(
+                            uid = cUid,
+                            name = cName,
+                            avatarId = avatarId,
+                            rankBorder = rankBorder,
+                            secondaryRole = secondaryRole,
+                            equippedFrame = equippedFrame,
+                            isAdmin = isAdmin,
+                            isVerified = isVerified,
+                            buildsCount = count,
+                            subscribersCount = subsCount
+                        )
+                    )
+                }
+            }
+        }
+
         list.sortedBy { it.name.lowercase(Locale.ROOT) }
     }
 
@@ -221,7 +277,7 @@ fun AdminCreatorBuildsDialog(
         }
     }
 
-    // Cálculo dinámico del Top 3 de Creadores para el Podio (Ordenado por Cantidad de Suscriptores)
+    // Cálculo dinámico del Top 3 de Creadores para el Podio (Solo creadores con builds creadas > 0)
     val podiumCreators = remember(customBuilds, registeredUsers, subscribedSet) {
         val userMapByName = registeredUsers.associateBy { (it["name"] as? String ?: "").trim().lowercase(Locale.ROOT) }
         val userMapByUid = registeredUsers.associateBy { (it["uid"] as? String ?: "") }
@@ -236,6 +292,8 @@ fun AdminCreatorBuildsDialog(
             val ratingSum = builds.sumOf { it.ratingSum }
             val avgRating = if (totalVotes > 0) ratingSum / totalVotes else if (builds.isNotEmpty()) 5.0 else 0.0
             val buildsCount = builds.size
+            if (buildsCount <= 0) continue
+
             val score = (totalVotes * 10.0) + (avgRating * 20.0) + (buildsCount * 15.0)
 
             // Buscar datos de avatar y marco del usuario
@@ -282,38 +340,6 @@ fun AdminCreatorBuildsDialog(
                     score = score
                 )
             )
-        }
-
-        // 2. Si hay creadores registrados en la plataforma que aún no han creado builds, incorporarlos
-        for (u in registeredUsers) {
-            val uRole = u["role"] as? String ?: "free"
-            val uName = (u["name"] as? String ?: "").trim()
-            val uUid = u["uid"] as? String ?: ""
-            if (uName.isNotBlank() && (uRole == "creador" || uRole == "creador_vip" || uRole == "streamer" || uRole == "admin")) {
-                val alreadyAdded = rankingList.any { it.name.equals(uName, ignoreCase = true) || (uUid.isNotBlank() && it.userId == uUid) }
-                if (!alreadyAdded) {
-                    val secRole = (u["secondaryRole"] as? String) ?: (u["secondary_role"] as? String) ?: "none"
-                    val eqFrame = (u["activeFramePreference"] as? String) ?: (u["equippedFrame"] as? String) ?: "AUTO"
-                    val subsCount = countSubscribersForCreator(uUid, uName, u)
-                    rankingList.add(
-                        CreatorPodiumEntry(
-                            userId = uUid,
-                            name = uName,
-                            avatarId = u["avatarId"] as? String ?: "default_poro",
-                            rankBorder = u["rankBorder"] as? String ?: "NONE",
-                            secondaryRole = secRole,
-                            equippedFrame = eqFrame,
-                            isAdmin = uRole == "admin",
-                            role = if (uRole == "creador_vip") "creador" else uRole,
-                            buildsCount = 0,
-                            totalVotes = 0,
-                            averageRating = 5.0,
-                            subscribersCount = subsCount,
-                            score = if (uRole == "admin") 40.0 else 30.0
-                        )
-                    )
-                }
-            }
         }
 
         // 3. Fallback en caso de que no haya creadores suficientes para completar el podio de 3

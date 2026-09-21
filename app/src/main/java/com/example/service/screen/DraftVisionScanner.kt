@@ -99,6 +99,7 @@ data class DraftScanResult(
     val allySummonerNamesByRole: Map<LaneRole, String> = emptyMap(),
     val allySpellsByRole: Map<LaneRole, List<String>> = emptyMap(),
     val allySlotShowingLaneMap: Map<Int, Boolean> = emptyMap(),
+    val allyShowingLaneByRole: Map<LaneRole, Boolean> = emptyMap(),
     val enemySlotShowingJugadorMap: Map<Int, Boolean> = emptyMap(),
     val isLegendaryRanked: Boolean = false,
     val isPreparationPhase: Boolean = false,
@@ -176,6 +177,8 @@ object DraftVisionScanner {
     // Memoria persistente de los carriles asignados a cada slot aliado (0..4)
     // En Wild Rift, el carril asignado a cada jugador es fijo durante toda la fase de selección
     private val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
+    // Memoria persistente del carril explícito detectado cuando el slot muestra el nombre de su línea
+    private val allySlotExplicitLaneCache = mutableMapOf<Int, LaneRole>()
     // Memoria persistente de los nombres de invocador aliados (0..4)
     private val allySummonerNamesCache = mutableMapOf<Int, String>()
     // Memoria persistente del slot asignado al usuario
@@ -215,6 +218,7 @@ object DraftVisionScanner {
         isLegendaryRankedCache = false
         cachedUserSlotIndex = null
         allySlotRolesCache.clear()
+        allySlotExplicitLaneCache.clear()
         allySummonerNamesCache.clear()
         allySlotConfirmedChampions.fill(null)
         enemySlotConfirmedChampions.fill(null)
@@ -412,9 +416,9 @@ object DraftVisionScanner {
                     
                     detectedWords.add(text)
 
-                    // Ignorar barra de bans superior (< 0.10f) y botones inferiores extremos (> 0.90f)
-                    // Permitir todos los 5 slots (desde y=0.10 hasta y=0.90)
-                    if (yRatio < 0.10f || yRatio > 0.90f) continue
+                    // Ignorar barra de bans superior (< 0.08f) y botones inferiores extremos (> 0.94f)
+                    // Permitir todos los 5 slots (desde y=0.08 hasta y=0.94)
+                    if (yRatio < 0.08f || yRatio > 0.94f) continue
 
                     // 1.1 COLUMNA ALIADA (Extremo izquierdo de la pantalla, slots 0..4)
                     if (isAllyCol) {
@@ -510,6 +514,7 @@ object DraftVisionScanner {
                             slot.explicitRole = detectedRole
                             slot.assignedRole = detectedRole
                             allySlotRolesCache[i] = detectedRole
+                            allySlotExplicitLaneCache[i] = detectedRole
                             break
                         }
                     }
@@ -531,14 +536,24 @@ object DraftVisionScanner {
                         for ((line, box) in entries) {
                             if (DraftValidationLayer.isNoiseText(line)) continue
                             val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
+                            val cleanLine = line.replace(Regex("^[^a-zA-Z0-9]+"), "").trim()
+                            val lineWithoutLeadingArtifact = if (cleanLine.length > 2 && (cleanLine[1] == ' ' || cleanLine[2] == ' ')) {
+                                cleanLine.dropWhile { it != ' ' }.trim()
+                            } else cleanLine
+                            val tokens = cleanLine.split(Regex("\\s+")).filter { it.isNotBlank() }
+                            val tokenAfter1 = if (tokens.size > 1) tokens.drop(1).joinToString(" ") else null
+                            val tokenAfter2 = if (tokens.size > 2) tokens.drop(2).joinToString(" ") else null
+                            val tokenLast = if (tokens.isNotEmpty()) tokens.last() else null
 
                             var matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
+                                ?: ChampionNameResolver.findChampionInText(cleanLine, allChamps)
+                                ?: ChampionNameResolver.findChampionInText(lineWithoutLeadingArtifact, allChamps)
                                 ?: ChampionNameResolver.findChampionInText(line, allChamps)
+                                ?: (if (tokenAfter1 != null) ChampionNameResolver.findChampionInText(tokenAfter1, allChamps) else null)
+                                ?: (if (tokenAfter2 != null) ChampionNameResolver.findChampionInText(tokenAfter2, allChamps) else null)
+                                ?: (if (tokenLast != null) ChampionNameResolver.findChampionInText(tokenLast, allChamps) else null)
 
                             if (matchedChamp == null) {
-                                val cleanLine = line.replace(Regex("^[^a-zA-Z0-9]+"), "").trim()
-                                val tokens = cleanLine.split(Regex("\\s+")).filter { it.isNotBlank() }
-
                                 for (t in tokens.reversed()) {
                                     if (t.length >= 2 && !DraftValidationLayer.isNoiseText(t)) {
                                         val tStripped = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(t)
@@ -664,58 +679,12 @@ object DraftVisionScanner {
                     }
                 }
 
-                // Si el OCR global no detectó campeón por ruido o icono de maestría, aplicar preprocesamiento adaptativo
-                // OPTIMIZACIÓN: Solo ejecutar si el slot NO está mostrando explícitamente su carril (no sigue en espera)
-                // y si se detectó algún texto en la región para evitar retrasos innecesarios en slots vacíos.
-                if (detectedChampInSlot == null && detectedRoleInSlot == null && allySlotConfirmedChampions[i] == null && recognizer != null && entries.isNotEmpty()) {
-                    try {
-                        val slotCenterY = calib.allySlotYRatios[i]
-                        val startYRatio = (slotCenterY - 0.050f).coerceIn(0f, 0.90f)
-                        val endYRatio = (slotCenterY + 0.050f).coerceIn(startYRatio + 0.02f, 1f)
-                        val cropX = (width * calib.allyOcrMinX).toInt().coerceIn(0, width - 10)
-                        val cropW = ((width * calib.allyOcrMaxX).toInt() - cropX).coerceIn(10, width - cropX)
-                        val cropY = (height * startYRatio).toInt().coerceIn(0, height - 10)
-                        val cropH = ((height * endYRatio).toInt() - cropY).coerceIn(10, height - cropY)
-
-                        if (cropW > 30 && cropH > 15) {
-                            val rawSlotCrop = Bitmap.createBitmap(bitmap, cropX, cropY, cropW, cropH)
-                            val preprocBitmap = SlotImagePreProcessor.preprocessSlotTextRegion(
-                                rawSlotCrop,
-                                isAlly = true,
-                                suppressLeadingMasteryIcon = true
-                            )
-                            if (preprocBitmap != null) {
-                                val inputImg = com.google.mlkit.vision.common.InputImage.fromBitmap(preprocBitmap, 0)
-                                val task = recognizer.process(inputImg)
-                                val preprocRes = com.google.android.gms.tasks.Tasks.await(task, 120, java.util.concurrent.TimeUnit.MILLISECONDS)
-                                for (blk in preprocRes.textBlocks) {
-                                    for (ln in blk.lines) {
-                                        val lnTxt = ln.text.trim()
-                                        val strippedLn = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(lnTxt)
-                                        val cMatched = ChampionNameResolver.findChampionInText(strippedLn, allChamps)
-                                            ?: ChampionNameResolver.findChampionInText(lnTxt, allChamps)
-                                        if (cMatched != null) {
-                                            detectedChampInSlot = cMatched
-                                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Campeón detectado con Pre-Procesamiento (Anti-Maestría): ${cMatched.name}")
-                                            break
-                                        }
-                                        val rMatched = DraftValidationLayer.parseRoleFromText(strippedLn)
-                                            ?: DraftValidationLayer.parseRoleFromText(lnTxt)
-                                        if (rMatched != null && detectedRoleInSlot == null) {
-                                            detectedRoleInSlot = rMatched
-                                            allySlotRolesCache[i] = rMatched
-                                            slot.explicitRole = rMatched
-                                        }
-                                    }
-                                    if (detectedChampInSlot != null) break
-                                }
-                                if (!preprocBitmap.isRecycled) preprocBitmap.recycle()
-                            }
-                            if (!rawSlotCrop.isRecycled) rawSlotCrop.recycle()
-                        }
-                    } catch (e: Throwable) {
-                        AppLogger.d(TAG, "Pre-procesamiento slot $i skipped: ${e.message}")
-                    }
+                // Si se detectó el hechizo Castigo / Smite, fijar determinísticamente la Jungla
+                if (slot.summonerSpells.any { it.equals("Castigo", ignoreCase = true) || it.equals("Smite", ignoreCase = true) }) {
+                    allySlotExplicitLaneCache[i] = LaneRole.JUNGLE
+                    allySlotRolesCache[i] = LaneRole.JUNGLE
+                    slot.explicitRole = LaneRole.JUNGLE
+                    slot.assignedRole = LaneRole.JUNGLE
                 }
 
                 // Guardar nombre de invocador detectado al instante
@@ -775,7 +744,7 @@ object DraftVisionScanner {
 
             // Paso 1: Roles con detección explícita directa de línea en el slot o en caché
             for (i in 0..4) {
-                val explicit = allySlots[i].explicitRole ?: allySlotRolesCache[i]
+                val explicit = allySlotExplicitLaneCache[i] ?: allySlots[i].explicitRole ?: allySlotRolesCache[i]
                 if (explicit != null && !assignedAllyRoles.values.contains(explicit)) {
                     assignedAllyRoles[i] = explicit
                 }
@@ -916,55 +885,6 @@ object DraftVisionScanner {
                         )
                         AppLogger.d(TAG, "OCR Rival Slot $i -> Campeón 100%: ${matched.name}")
                         break
-                    }
-                }
-
-                // Si el OCR global no detectó campeón en slot rival, aplicar preprocesamiento adaptativo
-                if (detectedEnemyChamp == null && enemySlotConfirmedChampions[i] == null && recognizer != null && enemyEntries.isNotEmpty()) {
-                    try {
-                        val slotCenterY = calib.enemySlotYRatios[i]
-                        val startYRatio = (slotCenterY - 0.050f).coerceIn(0f, 0.90f)
-                        val endYRatio = (slotCenterY + 0.050f).coerceIn(startYRatio + 0.02f, 1f)
-                        val cropX = (width * calib.enemyOcrMinX).toInt().coerceIn(0, width - 10)
-                        val cropW = ((width * calib.enemyOcrMaxX).toInt() - cropX).coerceIn(10, width - cropX)
-                        val cropY = (height * startYRatio).toInt().coerceIn(0, height - 10)
-                        val cropH = ((height * endYRatio).toInt() - cropY).coerceIn(10, height - cropY)
-
-                        if (cropW > 30 && cropH > 15) {
-                            val rawSlotCrop = Bitmap.createBitmap(bitmap, cropX, cropY, cropW, cropH)
-                            val preprocBitmap = SlotImagePreProcessor.preprocessSlotTextRegion(
-                                rawSlotCrop,
-                                isAlly = false,
-                                suppressLeadingMasteryIcon = false
-                            )
-                            if (preprocBitmap != null) {
-                                val inputImg = com.google.mlkit.vision.common.InputImage.fromBitmap(preprocBitmap, 0)
-                                val task = recognizer.process(inputImg)
-                                val preprocRes = com.google.android.gms.tasks.Tasks.await(task, 120, java.util.concurrent.TimeUnit.MILLISECONDS)
-                                for (blk in preprocRes.textBlocks) {
-                                    for (ln in blk.lines) {
-                                        val lnTxt = ln.text.trim()
-                                        val strippedLn = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(lnTxt)
-                                        val cMatched = ChampionNameResolver.findChampionInText(strippedLn, allChamps)
-                                            ?: ChampionNameResolver.findChampionInText(lnTxt, allChamps)
-                                        if (cMatched != null) {
-                                            if (currentAllyChampIds.contains(cMatched.id)) {
-                                                AppLogger.d(TAG, "OCR Rival Preproc Slot $i -> Ignorado ${cMatched.name}: ya seleccionado por el equipo aliado")
-                                            } else {
-                                                detectedEnemyChamp = cMatched
-                                                AppLogger.d(TAG, "OCR Rival Slot $i -> Campeón detectado con Pre-Procesamiento: ${cMatched.name}")
-                                                break
-                                            }
-                                        }
-                                    }
-                                    if (detectedEnemyChamp != null) break
-                                }
-                                if (!preprocBitmap.isRecycled) preprocBitmap.recycle()
-                            }
-                            if (!rawSlotCrop.isRecycled) rawSlotCrop.recycle()
-                        }
-                    } catch (e: Throwable) {
-                        AppLogger.d(TAG, "Pre-procesamiento slot rival $i skipped: ${e.message}")
                     }
                 }
 
@@ -1227,21 +1147,20 @@ object DraftVisionScanner {
         debugVisualMatches.value = emptyMap()
 
         // -----------------------------------------------------------------------------------------
-        // PASO 3.5: MOTOR GOOGLE MEDIAPIPE / LITER TENSOR CLASSIFIER PARA EL 10º PICK
-        // REGLA CRÍTICA: Se activa EXCLUSIVAMENTE cuando las selecciones del 1 al 9 ya están confirmadas.
-        // Google MediaPipe / LiteRT se encarga de realizar las comparaciones de tensores,
-        // decide de forma autónoma quién es el 10º pick y lo selecciona en el draft.
+        // PASO 3.5: MOTOR GOOGLE MEDIAPIPE / LITE RT PARA EL 10º PICK
+        // REGLA CRÍTICA: Se activa cuando las selecciones del 1 al 9 ya están confirmadas.
+        // Google MediaPipe / LiteRT se encarga de clasificar el recorte del 10º pick y confirmarlo.
         // -----------------------------------------------------------------------------------------
-        val confirmedPicksCount = allySlots.count { it.champion != null } + enemySlots.count { it.champion != null }
+        val totalAllyConfirmed = allySlots.count { it.champion != null || allySlotConfirmedChampions[it.slotIndex] != null }
+        val totalEnemyConfirmed = enemySlots.count { it.champion != null || enemySlotConfirmedChampions[it.slotIndex] != null }
+        val confirmedPicksCount = totalAllyConfirmed + totalEnemyConfirmed
         val tenthTurn = pickSequence.last()
         val tenthIsAlly = tenthTurn.isAlly
         val tenthSlotIndex = tenthTurn.slotIndex
 
         // Localizar el slot exacto correspondiente al 10º pick:
-        // Si hay 9 selecciones confirmadas en total, el 10º pick es determinísticamente el único slot
-        // restante entre aliados y rivales que aún no tiene campeón asignado (champion == null).
-        val unpickedAlly = allySlots.firstOrNull { it.champion == null }
-        val unpickedEnemy = enemySlots.firstOrNull { it.champion == null }
+        val unpickedAlly = allySlots.firstOrNull { it.champion == null && allySlotConfirmedChampions[it.slotIndex] == null }
+        val unpickedEnemy = enemySlots.firstOrNull { it.champion == null && enemySlotConfirmedChampions[it.slotIndex] == null }
 
         val actualTenthIsAlly = when {
             unpickedAlly != null && unpickedEnemy == null -> true
@@ -1254,10 +1173,13 @@ object DraftVisionScanner {
             else -> tenthSlotIndex
         }
 
-        val confirmedChampIds = (allySlots.mapNotNull { it.champion?.id } + enemySlots.mapNotNull { it.champion?.id }).toSet()
+        val confirmedChampIds = (
+            allySlots.mapNotNull { it.champion?.id } +
+            allySlotConfirmedChampions.filterNotNull().map { it.id } +
+            enemySlots.mapNotNull { it.champion?.id } +
+            enemySlotConfirmedChampions.filterNotNull().map { it.id }
+        ).toSet()
 
-        // Extraer SIEMPRE el recorte del avatar del slot del 10º pick para garantizar que el Visor
-        // y el motor LiteRT tengan la imagen disponible en tiempo real en todo momento durante el draft
         val tenthCrop: Bitmap? = try {
             AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
                 sourceBitmap = bitmap,
@@ -1270,22 +1192,13 @@ object DraftVisionScanner {
             )
         } catch (_: Throwable) { null }
 
-        // REGLA CRÍTICA DEL USUARIO:
-        // "únicamente la Selección del décimo pick este pues de haber seleccionado las otras 9"
-        // "el escaneo del décimo pick tienes que apuntar al slot final se ve con el yelmo espartano o icono de línea"
-        // Google MediaPipe / LiteRT se activa exclusivamente cuando las selecciones 1 al 9 ya están presentes
-        // y apunta estrictamente al círculo del slot correspondiente.
         val targetSlot = if (actualTenthIsAlly) allySlots[actualTenthSlotIndex] else enemySlots[actualTenthSlotIndex]
-        val isTenthAwaitingPick = if (actualTenthIsAlly) {
-            allySlotShowingLane[actualTenthSlotIndex] || !allySlotHasConfirmedChampOcr[actualTenthSlotIndex]
-        } else {
-            enemyOcrChampions[actualTenthSlotIndex] == null && enemySlotConfirmedChampions[actualTenthSlotIndex] == null
-        }
+        var liteRTDecision: Pair<Champion, Int>? = null
+        var champWinner: Champion? = null
 
-        // Si hay 9 picks confirmados y el 10º aún no tiene campeón, LiteRT analiza el recorte del avatar
-        // del slot del 10º pick para clasificarlo con alta precisión.
-        if (confirmedPicksCount == 9 && targetSlot.champion == null) {
-            val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
+        // Si hay al menos 9 picks confirmados y el 10º aún no tiene campeón, LiteRT analiza el recorte del avatar
+        if (confirmedPicksCount >= 9 && targetSlot.champion == null) {
+            liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
                 cropBitmap = tenthCrop,
                 isAlly = actualTenthIsAlly,
                 confirmedChampionIds = confirmedChampIds,
@@ -1297,7 +1210,8 @@ object DraftVisionScanner {
             )
 
             if (liteRTDecision != null) {
-                val (champWinner, confidence) = liteRTDecision
+                champWinner = liteRTDecision.first
+                val confidence = liteRTDecision.second
                 if (actualTenthIsAlly) {
                     allySlots[actualTenthSlotIndex].champion = champWinner
                     allySlots[actualTenthSlotIndex].confidencePercent = confidence
@@ -1314,7 +1228,6 @@ object DraftVisionScanner {
                 AppLogger.d(TAG, "Google MediaPipe / LiteRT decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
             }
         } else {
-            // Notificar al motor LiteRT suministrando el recorte capturado para que el Visor informe en vivo
             LiteRTVisionClassifier.executeTenthPickInference(
                 cropBitmap = tenthCrop,
                 isAlly = actualTenthIsAlly,
@@ -1338,7 +1251,7 @@ object DraftVisionScanner {
         for (i in 0..4) {
             val slot = allySlots[i]
             val champ = slot.champion ?: continue
-            val preferredRole = allySlotRolesCache[i] ?: slot.explicitRole ?: slot.assignedRole
+            val preferredRole = allySlotExplicitLaneCache[i] ?: allySlotRolesCache[i] ?: slot.explicitRole ?: slot.assignedRole
             val targetRole = if (preferredRole != null && !alliesMap.containsKey(preferredRole)) {
                 preferredRole
             } else {
@@ -1434,6 +1347,20 @@ object DraftVisionScanner {
             else -> "Detectados: $total picks con certeza"
         }
 
+        val allyShowingLaneByRoleMap = defaultRolesList.associateWith { role ->
+            if (alliesMap.containsKey(role)) {
+                false
+            } else {
+                (0..4).any { slotIdx ->
+                    val slotRole = allySlotExplicitLaneCache[slotIdx] ?: allySlotRolesCache[slotIdx] ?: allySlots[slotIdx].explicitRole
+                    slotRole == role && allySlotShowingLane[slotIdx]
+                }
+            }
+        }
+
+        val finalLastPickChamp = champWinner ?: (if (actualTenthIsAlly) allySlots[actualTenthSlotIndex].champion else enemySlots[actualTenthSlotIndex].champion)
+        val isLastPickConfirmed = liteRTDecision != null || total == 10
+
         return DraftScanResult(
             allies = allyChampsList,
             enemies = enemyChampsList,
@@ -1445,6 +1372,9 @@ object DraftVisionScanner {
             detectedRole = userDetectedLane,
             userExplicitlyDetectedRole = if (userExplicitlyConfirmed) userDetectedLane else null,
             detectedFirstPick = detectedFirstPick,
+            isLastPickImageRecognized = isLastPickConfirmed,
+            isLastPickConfirmed = isLastPickConfirmed,
+            lastPickChampion = finalLastPickChamp,
             detectedRawWords = detectedWords,
             discrepancies = auditList,
             diagnostics = diagnosticsList,
@@ -1454,6 +1384,7 @@ object DraftVisionScanner {
             allySummonerNamesByRole = allySummonerNamesByRole,
             allySpellsByRole = allySpellsByRole,
             allySlotShowingLaneMap = (0..4).associateWith { allySlotShowingLane[it] },
+            allyShowingLaneByRole = allyShowingLaneByRoleMap,
             enemySlotShowingJugadorMap = (0..4).associateWith { i -> enemySlotConfirmedChampions[i] == null && enemySlots[i].isLikelyUnpicked },
             isLegendaryRanked = isLegendaryRanked,
             isPreparationPhase = isPreparationPhase,
