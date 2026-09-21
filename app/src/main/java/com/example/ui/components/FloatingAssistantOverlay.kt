@@ -1,6 +1,5 @@
 package com.example.ui.components
 
-import java.util.Locale
 import com.example.utils.parseHtmlColorToAnnotatedString
 
 import androidx.compose.animation.*
@@ -221,7 +220,7 @@ private fun OverlayItemsTabContent(
                     item.getLocalizedPassive(lang).contains(searchQuery, ignoreCase = true) ||
                     item.getLocalizedStats(lang).contains(searchQuery, ignoreCase = true)
             matchCategory && matchQuery
-        }.sortedBy { it.getLocalizedName(lang).lowercase(Locale.ROOT) }
+        }
     }
     
     Column(modifier = Modifier.fillMaxSize()) {

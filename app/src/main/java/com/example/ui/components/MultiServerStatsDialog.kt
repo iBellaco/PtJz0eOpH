@@ -276,7 +276,7 @@ fun MultiServerStatsDialog(
 
                     // Server 2: Global
                     ServerStatCard(
-                        flag = "🌐",
+                        flag = "🌍",
                         serverName = tr("Servidor Global (Meta Live)"),
                         matchesText = String.format(java.util.Locale.US, "%.1fM", globalMatches / 1_000_000.0),
                         topChampions = topGlobal,

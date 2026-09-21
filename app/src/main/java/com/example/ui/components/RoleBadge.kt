@@ -65,8 +65,9 @@ fun RoleBadge(
         isBanned -> AppUserRole.BANNED
         role.equals("admin", ignoreCase = true) -> AppUserRole.ADMIN
         role.equals("moderador", ignoreCase = true) -> AppUserRole.MODERATOR
+        role.equals("creador_vip", ignoreCase = true) -> AppUserRole.CREATOR_VIP
         role.equals("streamer", ignoreCase = true) -> AppUserRole.STREAMER
-        role.equals("creador_vip", ignoreCase = true) || role.equals("creador", ignoreCase = true) -> AppUserRole.CREATOR
+        role.equals("creador", ignoreCase = true) -> AppUserRole.CREATOR
         role.equals("premium", ignoreCase = true) -> AppUserRole.PREMIUM
         isPremiumActive -> AppUserRole.PREMIUM
         else -> AppUserRole.fromId(role)
@@ -123,7 +124,7 @@ fun RoleBadge(
             RoleBadgeSize.LARGE -> BadgeMetrics(13.5.sp, 13.dp, 6.dp, 15.sp)
         }
 
-        val badgeEmoji = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) "" else currentRoleState.emoji
+        val badgeEmoji = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) "⚠️" else currentRoleState.emoji
         val badgeText = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) "EXPIRA PRONTO" else currentRoleState.displayName.uppercase()
         val badgeColor = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) Color(0xFFEF4444) else currentRoleState.primaryColor
 

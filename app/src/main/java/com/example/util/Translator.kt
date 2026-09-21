@@ -330,13 +330,7 @@ val translations = mapOf(
         "Dúo" to "Atirador",
         "Línea de Barón" to "Rota do Barão",
         "Línea de Medio" to "Rota do Meio",
-        "Línea Central" to "Rota do Meio",
         "Línea de Dragón" to "Rota do Dragão",
-        "Esperando pick..." to "Aguardando escolha...",
-        "Auto-Scan: Tu rol detectado" to "Auto-Scan: Sua rota detectada",
-        "10/10 Campeones confirmados" to "10/10 Campeões confirmados",
-        "Fase de Preparación: completando selección" to "Fase de Preparação: completando seleção",
-        "Auto-Scan:" to "Auto-Scan:",
         " Si tu dispositivo muestra 'conflicto con un paquete', desinstala la versión anterior de tu teléfono una sola vez e instala la nueva APK (ocurre por cambio de firma de depurado a producción)." to " Se o seu dispositivo mostrar 'conflito de pacote', desinstale a versão anterior do seu telefone uma vez e instale o novo APK (ocorre devido à alteração da assinatura de depuração para produção)."
 ,
         "Acerca De" to "Sobre",

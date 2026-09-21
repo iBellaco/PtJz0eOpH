@@ -38,11 +38,11 @@ object LiteRTVisionClassifier {
     private const val EMBEDDING_DIM = 96     // Vector descriptor de 96 dimensiones
 
     // Umbrales calibrados de Google MediaPipe / LiteRT para clasificación del 10º pick
-    const val MIN_CONFIDENCE_THRESHOLD = 0.35f
-    const val MIN_CANDIDATE_MARGIN = 0.015f
+    const val MIN_CONFIDENCE_THRESHOLD = 0.38f
+    const val MIN_CANDIDATE_MARGIN = 0.025f
 
-    // Permite confirmación rápida del 10º pick al final del draft (1 frame con alta confianza o 2 frames continuos)
-    const val REQUIRED_STABLE_FRAMES = 1
+    // Requiere al menos 2 frames consecutivos estables con similitud alta (>= 0.48f) o 3 frames con similitud >= 0.38f
+    const val REQUIRED_STABLE_FRAMES = 2
 
     // Variables de seguimiento de estabilidad temporal entre fotogramas
     private var lastCandidateId: String? = null
@@ -395,26 +395,32 @@ object LiteRTVisionClassifier {
         val colorfulRatio = colorfulCount.toFloat() / totalInner
 
         // COMPROBACIÓN CRÍTICA:
-        // En Wild Rift, un slot en espera (yelmo espartano o icono de línea) sin campeón seleccionado:
-        // Presenta un fondo negro casi total (> 84% de píxeles oscuros) con un contraste mínimo (stdDevLum < 14).
-        // En cambio, el retrato de cualquier campeón (incluso de temática oscura como Nocturne, Zed o Vayne)
-        // posee relieves faciales, brillos en armas y texturas vivas con contraste y áreas iluminadas.
-        val isAchromatic = maxSat < 28 && colorfulRatio < 0.035f
+        // En Wild Rift, un slot en espera (yelmo espartano o icono de línea) o vacío es:
+        // 1. Predominantemente oscuro (el icono o yelmo ocupa un área pequeña central y deja > 55-60% del círculo como fondo oscuro).
+        // 2. En cambio, el retrato de un campeón cubre ampliamente el círculo interior (darkRatio < 45%).
+        val isAchromatic = maxSat < 32 && colorfulRatio < 0.05f
         val isEmptyOrWaiting = when {
-            // 1. Prácticamente todo oscuro (slot completamente apagado o fondo negro)
-            maxLum < 35 -> true
+            // 1. Prácticamente todo oscuro (slot apagado o fondo negro)
+            maxLum < 60 -> true
 
-            // 2. Fondo negro liso predominante con glifo minúsculo central:
-            darkRatio >= 0.86f && stdDevLum < 14f -> true
-            darkRatio >= 0.92f -> true
+            // 2. Fondo oscuro predominante en el slot (icono de línea o yelmo espartano):
+            // En Wild Rift, los slots no elegidos tienen un fondo oscuro que cubre > 55-60% del círculo interior,
+            // mientras que el retrato de un campeón seleccionado llena la mayor parte del círculo (darkRatio < 45%).
+            darkRatio >= 0.58f -> true
+            midRingDarkRatio >= 0.54f && darkRatio >= 0.48f -> true
 
-            // 3. Luminancia global extremadamente baja:
-            avgLum < 16f -> true
-            avgLum < 22f && darkRatio >= 0.78f && stdDevLum < 12f -> true
+            // 3. Luminancia global baja con fondo predominantemente oscuro:
+            avgLum < 45f && darkRatio >= 0.45f -> true
+            avgLum < 36f -> true
 
-            // 4. Caso acromático (yelmo espartano o icono de carril plano en escala de grises):
-            isAchromatic && avgLum < 28f && stdDevLum < 10f -> true
-            isAchromatic && darkRatio >= 0.80f && stdDevLum < 12f -> true
+            // 4. Caso acromático (yelmo espartano rival o silueta monocromática):
+            isAchromatic && (darkRatio >= 0.42f || avgLum < 50f) -> true
+            isAchromatic && stdDevLum < 20f && avgLum < 60f -> true
+
+            // 5. Firma de Icono de Línea o Resplandor de Turno Activo (pocas zonas de color/glifo sobre fondo oscuro):
+            // Un icono de carril o el anillo de selección tiene solo un pequeño porcentaje de píxeles brillantes
+            // (colorfulRatio < 0.28) y una gran extensión de fondo negro/azul oscuro (darkRatio >= 0.48f).
+            colorfulRatio < 0.28f && darkRatio >= 0.48f && avgLum < 68f -> true
 
             else -> false
         }
@@ -625,13 +631,12 @@ object LiteRTVisionClassifier {
             }
         }
 
-        // CONFIRMACIÓN PRECISA Y DECISIVA DEL 10º PICK:
-        // Confirma de inmediato con similitud sólida (>= 0.42f y margen >= 0.015f),
-        // o tras 1-2 frames si la similitud supera el umbral base (>= 0.35f).
+        // CONFIRMACIÓN ESTRICTA Y SEGURA:
+        // NUNCA confirmar en 1 solo fotograma. Requiere al menos 2 frames consecutivos estables
+        // con similitud alta (>= 0.48f) o 3 frames con similitud moderada (>= 0.38f).
         val isConfirmed = passesConfidence && (
-            (bestCandidate.similarityScore >= 0.42f && scoreMargin >= 0.015f) ||
-            (bestCandidate.similarityScore >= 0.35f && stableFramesCounter >= REQUIRED_STABLE_FRAMES) ||
-            (stableFramesCounter >= 2)
+            (bestCandidate.similarityScore >= 0.48f && stableFramesCounter >= REQUIRED_STABLE_FRAMES) ||
+            (stableFramesCounter >= 3)
         )
 
         val decisionReason = when {

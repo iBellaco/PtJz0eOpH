@@ -13,7 +13,7 @@ data class SynergyTeammate(
     val winrate: Double,
     val synergyScore: Int, // e.g. 98%
     val category: String, // "Wombo Combo", "Iniciación & CC", "Peel & Buffer", "Sinergia de Dúo", "Gank Setup & Roam", "Dive & Flanqueo"
-    val badgeIcon: String, // "", "", "", "", "", ""
+    val badgeIcon: String, // "🌪️", "🛡️", "⚔️", "🎯", "⚡", "🏹"
     val synergyTitle: String, // e.g. "Combo Aéreo y Cadena de CC"
     val tacticalReason: String,
     val comboTips: String,
@@ -55,7 +55,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.TOP,
                 score = 99,
                 category = "Wombo Combo",
-                icon = "",
+                icon = "🌪️",
                 titleEs = "Iniciación Aérea Imparable",
                 titleEn = "Unstoppable Airborne Engage",
                 titlePt = "Iniciação Aérea Imparável",
@@ -87,7 +87,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.MID,
                 score = 95,
                 category = "Iniciación & CC",
-                icon = "",
+                icon = "🍺",
                 titleEs = "Barril Explosivo & Desplazamiento",
                 titleEn = "Explosive Cask Displacement",
                 titlePt = "Barril Explosivo e Deslocamento",
@@ -103,7 +103,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 96,
                 category = "Iniciación & CC",
-                icon = "",
+                icon = "🐂",
                 titleEs = "Combo Pulverizar en Cadena",
                 titleEn = "Pulverize Knockup Chain",
                 titlePt = "Combo Pulverizar em Cadeia",
@@ -121,7 +121,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 99,
                 category = "Sinergia de Dúo",
-                icon = "",
+                icon = "⚓",
                 titleEs = "Cadena de CC & Cargas de Estilo",
                 titleEn = "CC Chain & Style Rank Stacks",
                 titlePt = "Cadeia de CC e Cargas de Estilo",
@@ -137,7 +137,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 98,
                 category = "Iniciación & CC",
-                icon = "",
+                icon = "☀️",
                 titleEs = "All-In Letal a Nivel 2 y 5",
                 titleEn = "Lethal All-In at Level 2 & 5",
                 titlePt = "All-In Letal nos Níveis 2 e 5",
@@ -171,7 +171,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 99,
                 category = "Peel & Buffer",
-                icon = "",
+                icon = "🧚",
                 titleEs = "Hiperacreador Potenciado (Kog/Jinx Meta)",
                 titleEn = "Hypercarry Turbo Buff",
                 titlePt = "Hipercarregador Fortalecido",
@@ -187,7 +187,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 97,
                 category = "Peel & Iniciación",
-                icon = "",
+                icon = "⛓️",
                 titleEs = "Linterna de Rescate & Cadenas CC",
                 titleEn = "Lantern Escape & Hook Setup",
                 titlePt = "Lanterna de Fuga e Correntes",
@@ -221,7 +221,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 99,
                 category = "Sinergia de Dúo",
-                icon = "",
+                icon = "🌊",
                 titleEs = "Electrocutar & Ráfaga de Bendición",
                 titleEn = "Electrocute & Blessing Burst",
                 titlePt = "Explosão de Bênção e Eletrocutar",
@@ -237,7 +237,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 98,
                 category = "Sinergia de Dúo",
-                icon = "",
+                icon = "🛡️",
                 titleEs = "Aturdimiento Instantáneo de Pasiva",
                 titleEn = "Instant Concussive Blows Stun",
                 titlePt = "Atordoamento Instantâneo da Passiva",
@@ -271,7 +271,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.JUNGLE,
                 score = 97,
                 category = "Wombo Combo",
-                icon = "",
+                icon = "🚩",
                 titleEs = "Cataclismo & Jaula de Balas",
                 titleEn = "Cataclysm & Bullet Cage",
                 titlePt = "Cataclismo e Gaiola de Balas",
@@ -287,7 +287,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 96,
                 category = "Iniciación & CC",
-                icon = "",
+                icon = "🎤",
                 titleEs = "Nota Bis & Balacera Coral",
                 titleEn = "Encore Charm & Bullet Time",
                 titlePt = "Encanto Musical e Metralhadora",
@@ -339,7 +339,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.TOP,
                 score = 98,
                 category = "Dive & Flanqueo",
-                icon = "",
+                icon = "🥷",
                 titleEs = "Marca de la Muerte Blindada",
                 titleEn = "Shielded Death Mark Dive",
                 titlePt = "Marca Fatal com Escudo Ninja",
@@ -355,7 +355,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.MID,
                 score = 96,
                 category = "Dive & Flanqueo",
-                icon = "",
+                icon = "🏛️",
                 titleEs = "Entrada Heroica tras Asesinato",
                 titleEn = "Heroic Entrance Follow-up",
                 titlePt = "Entrada Heroica e Finalização",
@@ -373,7 +373,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 99,
                 category = "Peel & Buffer",
-                icon = "",
+                icon = "🧚",
                 titleEs = "Estrategia Funneling / Hipercarry Imparable",
                 titleEn = "Unstoppable Hypercarry Buff",
                 titlePt = "Hipercarregador Imparável",
@@ -389,7 +389,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 98,
                 category = "Peel & Buffer",
-                icon = "",
+                icon = "🐱",
                 titleEs = "Simbionte Letal & Sanación Continua",
                 titleEn = "Untargetable Symbiote Boost",
                 titlePt = "Simbionte Letal e Cura Contínua",
@@ -407,7 +407,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 97,
                 category = "Iniciación & Reposicionamiento",
-                icon = "",
+                icon = "⛓️",
                 titleEs = "Linterna de Alcance & Ganchos",
                 titleEn = "Lantern Delivery & Flay Lock",
                 titlePt = "Entrega por Lanterna e Puxão",
@@ -423,7 +423,7 @@ object SynergyAdvisor {
                 preferredRole = LaneRole.SUPPORT,
                 score = 96,
                 category = "Peel & Buffer",
-                icon = "",
+                icon = "🐱",
                 titleEs = "Velocidad de Cazador & Cargas Rápidas",
                 titleEn = "Apex Speed & Bleed Stacking",
                 titlePt = "Velocidade de Caça e Sangramento",
@@ -574,7 +574,7 @@ object SynergyAdvisor {
             champion.isFrontline -> {
                 Quadruple(
                     if (isEs) "Iniciador & Tanque Frontline" else if (isPt) "Iniciador e Linha de Frente" else "Engage & Frontline Tank",
-                    "FRONTLINE",
+                    "🛡️ FRONTLINE",
                     if (isEs) "Especialista en absorber daño masivo, aplicar control de masas duro y abrir espacio para los acarreadores aliados en Wild Rift."
                     else if (isPt) "Especialista em absorver dano massivo e criar espaço para os atiradores e magos da equipe."
                     else "Specialist in soaking damage and locking down targets to create space for team carries.",
@@ -586,7 +586,7 @@ object SynergyAdvisor {
             role == LaneRole.ADC -> {
                 Quadruple(
                     if (isEs) "Hiperacarreador de Daño Continuo (DPS)" else if (isPt) "Hipercarregador de DPS Contínuo" else "Sustained DPS Hypercarry",
-                    "DPS CARRY",
+                    "🏹 DPS CARRY",
                     if (isEs) "Principal fuente de daño físico a distancia del equipo. Escala exponencialmente con objetos y requiere protección y peel constante."
                     else if (isPt) "Principal fonte de dano físico à distância. Escala fortemente com itens e requer proteção contínua."
                     else "Primary ranged physical damage source. Scales heavily with items and thrives with peel and enchanter buffs.",
@@ -598,7 +598,7 @@ object SynergyAdvisor {
             role == LaneRole.SUPPORT -> {
                 Quadruple(
                     if (isEs) "Amplificador Táctico & Protector" else if (isPt) "Suporte Tático e Protetor" else "Tactical Buffer & Enabler",
-                    "UTILIDAD",
+                    "✨ UTILIDAD",
                     if (isEs) "Multiplica la eficacia de los carries mediante escudos, curaciones, visión estratégica y mitigación de amenazas."
                     else if (isPt) "Multiplica a eficácia dos carregadores através de escudos, curas e controle de visão."
                     else "Multiplies team carry efficacy through shields, healing, vision control, and peeling.",
@@ -610,7 +610,7 @@ object SynergyAdvisor {
             champion.damageType == DamageType.MAGIC -> {
                 Quadruple(
                     if (isEs) "Mago de Control & Ráfaga AP" else if (isPt) "Mago de Controle e Explosão AP" else "Control Mage & AP Burst",
-                    "BURST AP",
+                    "🔮 BURST AP",
                     if (isEs) "Capaz de borrar objetivos frágiles en segundos y zonificar áreas estrechas del mapa con daño mágico masivo."
                     else if (isPt) "Capaz de deletar alvos frágeis e controlar áreas estrechas com dano mágico massivo."
                     else "Deletes squishy champions and zones tight choke points with massive area-of-effect magic damage.",
@@ -622,7 +622,7 @@ object SynergyAdvisor {
             else -> {
                 Quadruple(
                     if (isEs) "Duelista de Impacto & Flanqueo" else if (isPt) "Duelista de Flanco e Impacto" else "Skirmisher & Flank Duelist",
-                    "DUELISTA",
+                    "⚔️ DUELISTA",
                     if (isEs) "Especialista en duelos 1vs1, aislamiento de objetivos y escaramuzas rápidas por el río y la jungla."
                     else if (isPt) "Especialista em lutas 1v1, isolamento de alvos e escaramuças rápidas."
                     else "Excels in 1v1 skirmishes, isolation plays, and aggressive river rotations.",
@@ -651,7 +651,7 @@ object SynergyAdvisor {
         return if (partner.isFrontline) {
             Quintuple(
                 "Iniciación & Frontline",
-                "",
+                "🛡️",
                 if (isEs) "Iniciación de Tanque & Espacio Seguro" else if (isPt) "Iniciação e Espaço Seguro" else "Frontline Engage & Safe Zone",
                 if (isEs) "${partner.name} absorbe las habilidades rivales e inicia con su $pUlt, permitiendo que ${source.name} conecte su $sSkill con total libertad."
                 else if (isPt) "${partner.name} absorve habilidades inimigas e inicia com $pUlt, permitindo que ${source.name} use $sSkill livremente."
@@ -663,7 +663,7 @@ object SynergyAdvisor {
         } else if (partnerRole == LaneRole.SUPPORT) {
             Quintuple(
                 "Peel & Sinergia de Dúo",
-                "",
+                "✨",
                 if (isEs) "Protección y Amplificación de Daño" else if (isPt) "Proteção e Amplificação de Dano" else "Peel & Damage Amp",
                 if (isEs) "El kit de utilidad de ${partner.name} protege a ${source.name} contra asesinos con escudos y control de masas, aumentando su supervivencia en teamfights."
                 else if (isPt) "O kit de utilidade de ${partner.name} protege ${source.name} contra assassinos e amplifica seu dano."
@@ -675,7 +675,7 @@ object SynergyAdvisor {
         } else if (partnerRole == LaneRole.JUNGLE) {
             Quintuple(
                 "Gank Setup & Emboscadas",
-                "",
+                "🎯",
                 if (isEs) "Control de Río y Emboscadas Letales" else if (isPt) "Controle de Rio e Ganks Letais" else "River Ganks & Objective Setup",
                 if (isEs) "La combinación de daño de ${partner.name} y el control de ${source.name} asegura bajas inmediatas en rotaciones al río y peleas de Heraldo/Dragón."
                 else if (isPt) "A rotação rápida de ${partner.name} na selva garante abates rápidos em emboscadas conjuntas."
@@ -687,7 +687,7 @@ object SynergyAdvisor {
         } else {
             Quintuple(
                 "Wombo Combo & Daño Mixto",
-                "",
+                "⚡",
                 if (isEs) "Cadena de Daño y Presión en Mapa" else if (isPt) "Cadeia de Dano e Pressão Global" else "Damage Chain & Map Pressure",
                 if (isEs) "${partner.name} equilibra el perfil de daño del equipo y combina sus tiempos de recarga con ${source.name} para ganar peleas grupales."
                 else if (isPt) "${partner.name} equilibra o dano da equipe e comita nas lutas de equipe junto com ${source.name}."

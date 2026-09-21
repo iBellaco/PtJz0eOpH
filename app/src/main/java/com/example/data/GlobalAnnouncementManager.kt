@@ -36,7 +36,6 @@ data class GlobalAnnouncement(
     val message: String = "",
     val isUrgent: Boolean = false,
     val sendNotification: Boolean = false,
-    val notificationOnly: Boolean = false,
     val timestamp: Long = 0L,
     val active: Boolean = false
 ) {
@@ -205,7 +204,6 @@ object GlobalAnnouncementManager {
             val message = snapshot.getString("message") ?: ""
             val isUrgent = snapshot.getBoolean("isUrgent") ?: false
             val sendNotification = snapshot.getBoolean("sendNotification") ?: isUrgent
-            val notificationOnly = snapshot.getBoolean("notificationOnly") ?: false
             val timestamp = snapshot.getLong("timestamp") ?: 0L
             val id = snapshot.getString("id") ?: "${title.hashCode()}_$timestamp"
 
@@ -220,7 +218,6 @@ object GlobalAnnouncementManager {
                 message = message,
                 isUrgent = isUrgent,
                 sendNotification = sendNotification,
-                notificationOnly = notificationOnly,
                 timestamp = timestamp,
                 active = true
             )
@@ -239,18 +236,13 @@ object GlobalAnnouncementManager {
             _currentAnnouncement.value = announcement
 
             if (isNewOrUpdated) {
-                if (announcement.notificationOnly) {
-                    // Si es solo notificación, NO mostrar el cuadro emergente en la app
-                    _isAnnouncementVisible.value = false
+                _isAnnouncementVisible.value = true
+                // Disparar notificación en la barra de estado del sistema si está habilitado
+                if (announcement.sendNotification) {
                     showSystemNotification(context, announcement)
-                } else {
-                    _isAnnouncementVisible.value = true
-                    if (announcement.sendNotification) {
-                        showSystemNotification(context, announcement)
-                    }
                 }
             } else {
-                // Ya fue descartado previamente por el usuario
+                // Ya fue descartado previamente por el usuario, mantener en memoria para banner secundario
                 _isAnnouncementVisible.value = false
             }
 
@@ -302,8 +294,6 @@ object GlobalAnnouncementManager {
                 put("title", announcement.title)
                 put("message", announcement.message)
                 put("isUrgent", announcement.isUrgent)
-                put("sendNotification", announcement.sendNotification)
-                put("notificationOnly", announcement.notificationOnly)
                 put("timestamp", announcement.timestamp)
                 put("active", announcement.active)
             }
@@ -326,8 +316,6 @@ object GlobalAnnouncementManager {
                 title = json.optString("title", ""),
                 message = json.optString("message", ""),
                 isUrgent = json.optBoolean("isUrgent", false),
-                sendNotification = json.optBoolean("sendNotification", false),
-                notificationOnly = json.optBoolean("notificationOnly", false),
                 timestamp = json.optLong("timestamp", 0L),
                 active = true
             )
@@ -385,7 +373,7 @@ object GlobalAnnouncementManager {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-            val prefix = if (announcement.isUrgent) "COMUNICADO URGENTE: " else "COMUNICADO OFICIAL: "
+            val prefix = if (announcement.isUrgent) "🚨 COMUNICADO URGENTE: " else "📢 COMUNICADO OFICIAL: "
 
             val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -419,7 +407,6 @@ object GlobalAnnouncementManager {
         message: String,
         isUrgent: Boolean,
         sendNotification: Boolean,
-        notificationOnly: Boolean = false,
         onComplete: (Boolean, String?) -> Unit
     ) {
         val newId = UUID.randomUUID().toString()
@@ -430,7 +417,6 @@ object GlobalAnnouncementManager {
             "message" to message.trim(),
             "isUrgent" to isUrgent,
             "sendNotification" to sendNotification,
-            "notificationOnly" to notificationOnly,
             "timestamp" to now,
             "active" to true
         )
@@ -447,7 +433,6 @@ object GlobalAnnouncementManager {
                         message = message.trim(),
                         isUrgent = isUrgent,
                         sendNotification = sendNotification,
-                        notificationOnly = notificationOnly,
                         timestamp = now,
                         active = true
                     )

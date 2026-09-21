@@ -411,7 +411,7 @@ fun ChampionDetailSheet(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "${tr("Estadísticas, hechizos, runas y build adaptadas a")} ${tr(selectedRole.displayName)}.",
+                                text = "⭐ ${tr("Estadísticas, hechizos, runas y build adaptadas a")} ${tr(selectedRole.displayName)}.",
                                 color = TextPrimary,
                                 fontSize = 11.sp
                             )
@@ -785,12 +785,12 @@ fun ChampionDetailSheet(
                             val context = androidx.compose.ui.platform.LocalContext.current
                             val shareBuild = {
                                 val shareText = buildString {
-                                    appendLine("Build: ${activeOption.title} para ${champion.name}")
-                                    appendLine("Rol: ${selectedRole.name}")
-                                    appendLine("Core: ${activeOption.items.joinToString(", ")}")
-                                    if (activeOption.situationalItems.isNotEmpty()) appendLine("Situacionales: ${activeOption.situationalItems.joinToString(", ")}")
-                                    appendLine("Runas: ${activeOption.runes.joinToString(", ")}")
-                                    appendLine("¡Comparte desde Coach App!")
+                                    appendLine("🛡️ Build: ${activeOption.title} para ${champion.name}")
+                                    appendLine("👤 Rol: ${selectedRole.name}")
+                                    appendLine("⚔️ Core: ${activeOption.items.joinToString(", ")}")
+                                    if (activeOption.situationalItems.isNotEmpty()) appendLine("🔄 Situacionales: ${activeOption.situationalItems.joinToString(", ")}")
+                                    appendLine("💎 Runas: ${activeOption.runes.joinToString(", ")}")
+                                    appendLine("🔥 ¡Comparte desde Coach App!")
                                 }
                                 val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                                     type = "text/plain"
@@ -853,7 +853,7 @@ fun ChampionDetailSheet(
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "OBJETIVO TÁCTICO & CUÁNDO USAR",
+                                    text = "🎯 OBJETIVO TÁCTICO & CUÁNDO USAR",
                                     color = HextechGold,
                                     fontSize = if (isCompact) 9.5.sp else 11.sp,
                                     fontWeight = FontWeight.Bold

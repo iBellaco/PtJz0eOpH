@@ -178,7 +178,7 @@ fun CooldownTrackerPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "" + tr("CD Tracker:") + " " + tr("Rival") + " " + tr(selectedRole.displayName),
+                text = "⏱️ " + tr("CD Tracker:") + " " + tr("Rival") + " " + tr(selectedRole.displayName),
                 color = TextPrimary,
                 fontSize = if (isCompactOverlay) 11.5.sp else 13.sp,
                 fontWeight = FontWeight.Bold

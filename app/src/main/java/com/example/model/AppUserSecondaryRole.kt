@@ -178,15 +178,4 @@ enum class AppUserSecondaryRole(
             HIERRO
         )
     }
-
-    val frameDrawableRes: Int?
-        get() = when (this) {
-            ESMERALDA -> com.example.R.drawable.ic_frame_esmeralda
-            DIAMANTE -> com.example.R.drawable.ic_frame_diamante
-            MAESTRO -> com.example.R.drawable.ic_frame_maestro
-            GRAN_MAESTRO -> com.example.R.drawable.ic_frame_gran_maestro
-            ASPIRANTE -> com.example.R.drawable.ic_frame_aspirante
-            SOBERANO -> com.example.R.drawable.ic_frame_soberano
-            else -> null
-        }
 }

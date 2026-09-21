@@ -55,10 +55,7 @@ data class CustomChampionBuildRecord(
     val situationalRunes: List<RuneBuildEntry> = emptyList(),
     val coreSpells: List<SpellBuildEntry> = emptyList(),
     val situationalSpells: List<SpellBuildEntry> = emptyList(),
-    val bootsT2Item: ItemBuildEntry? = null,
-    val bootsT3Item: ItemBuildEntry? = null,
     val gameplayVideoUri: String? = null,
-    val comboVideoUri: String? = null,
     val creatorName: String = "Creador Oficial",
     val creatorAvatarId: String? = null,
     val creatorRankBorder: String = "NONE",
@@ -77,7 +74,6 @@ object CustomChampionBuildsManager {
     private const val TAG = "CreatorBuildsManager"
     private const val PREFS_NAME = "wr_custom_champion_builds_prefs"
     private const val KEY_BUILDS_JSON = "custom_champion_builds_json"
-    private const val KEY_VOTED_BUILDS_JSON = "user_voted_builds_json"
 
     private const val REMOTE_CONFIG_COLLECTION = "system_config"
     private const val REMOTE_DOC_CREATOR_BUILDS = "creator_builds"
@@ -91,11 +87,7 @@ object CustomChampionBuildsManager {
     private val _customBuilds = MutableStateFlow<List<CustomChampionBuildRecord>>(emptyList())
     val customBuilds: StateFlow<List<CustomChampionBuildRecord>> = _customBuilds.asStateFlow()
 
-    private val _userVotedBuilds = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val userVotedBuilds: StateFlow<Map<String, Int>> = _userVotedBuilds.asStateFlow()
-
     private var firestoreListener: ListenerRegistration? = null
-    private var userVotesListener: ListenerRegistration? = null
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
     private var initialized = false
 
@@ -115,7 +107,6 @@ object CustomChampionBuildsManager {
 
         // 4. Conectar y sincronizar garantizando acceso inmediato multi-dispositivo
         ensureAuthAndSync(appContext)
-        attachUserVotesListener(appContext)
     }
 
     private fun loadFromLocalStorage(context: Context) {
@@ -126,21 +117,13 @@ object CustomChampionBuildsManager {
                 val list = json.decodeFromString<List<CustomChampionBuildRecord>>(rawJson)
                 if (list.isNotEmpty()) {
                     _customBuilds.value = list
+                    return
                 }
             } catch (_: Exception) {}
-        } else {
-            val defaults = getDefaultBuilds()
-            _customBuilds.value = defaults
-            saveToLocalStorage(context, defaults)
         }
-
-        val rawVoted = prefs.getString(KEY_VOTED_BUILDS_JSON, null)
-        if (!rawVoted.isNullOrBlank()) {
-            try {
-                val map = json.decodeFromString<Map<String, Int>>(rawVoted)
-                _userVotedBuilds.value = map
-            } catch (_: Exception) {}
-        }
+        val defaults = getDefaultBuilds()
+        _customBuilds.value = defaults
+        saveToLocalStorage(context, defaults)
     }
 
     private fun fetchFromCloudCache(appContext: Context) {
@@ -170,49 +153,12 @@ object CustomChampionBuildsManager {
                     ensureAuthAndSync(context)
                 } else {
                     attachCloudListener(context, force = true)
-                    attachUserVotesListener(context)
                     syncFromCloud(context)
                 }
             }
             auth.addAuthStateListener(authStateListener!!)
         } catch (e: Exception) {
             Log.w(TAG, "Error inicializando AuthStateListener: ${e.message}")
-        }
-    }
-
-    private fun attachUserVotesListener(context: Context) {
-        val appContext = context.applicationContext
-        userVotesListener?.remove()
-        userVotesListener = null
-
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            try {
-                userVotesListener = FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(user.uid)
-                    .addSnapshotListener { snapshot, error ->
-                        if (error != null) {
-                            Log.w(TAG, "Error en listener de votos de usuario: ${error.message}")
-                            return@addSnapshotListener
-                        }
-                        if (snapshot != null && snapshot.exists()) {
-                            val cloudVotes = snapshot.get("votedBuilds") as? Map<*, *>
-                            if (cloudVotes != null) {
-                                val mapResult = mutableMapOf<String, Int>()
-                                for ((k, v) in cloudVotes) {
-                                    val keyStr = k?.toString() ?: continue
-                                    val valInt = (v as? Number)?.toInt() ?: 0
-                                    mapResult[keyStr] = valInt
-                                }
-                                _userVotedBuilds.value = mapResult
-                                saveUserVotesLocal(appContext, mapResult)
-                            }
-                        }
-                    }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error escuchando votos del usuario en la nube", e)
-            }
         }
     }
 
@@ -487,7 +433,6 @@ object CustomChampionBuildsManager {
 
     fun rateBuild(context: Context, id: String, stars: Int) {
         init(context)
-        val appContext = context.applicationContext
         val current = _customBuilds.value.toMutableList()
         val index = current.indexOfFirst { it.id == id }
         if (index != -1) {
@@ -499,32 +444,8 @@ object CustomChampionBuildsManager {
                 ratingSum = newRatingSum
             )
             _customBuilds.value = current
-            saveToLocalStorage(appContext, current)
-            saveToCloud(appContext, current)
-        }
-
-        // Registrar el voto del usuario para sincronización multi-dispositivo
-        val updatedMap = _userVotedBuilds.value + (id to stars)
-        _userVotedBuilds.value = updatedMap
-        saveUserVotesLocal(appContext, updatedMap)
-        saveUserVotesCloud(updatedMap)
-    }
-
-    private fun saveUserVotesLocal(context: Context, map: Map<String, Int>) {
-        try {
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val encoded = json.encodeToString(map)
-            prefs.edit().putString(KEY_VOTED_BUILDS_JSON, encoded).apply()
-        } catch (_: Exception) {}
-    }
-
-    private fun saveUserVotesCloud(map: Map<String, Int>) {
-        val user = FirebaseAuth.getInstance().currentUser ?: return
-        try {
-            val userRef = FirebaseFirestore.getInstance().collection("users").document(user.uid)
-            userRef.set(mapOf("votedBuilds" to map), SetOptions.merge())
-        } catch (e: Exception) {
-            Log.e(TAG, "Error guardando voto de usuario en Firestore", e)
+            saveToLocalStorage(context, current)
+            saveToCloud(context, current)
         }
     }
 

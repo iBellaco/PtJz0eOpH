@@ -465,29 +465,29 @@ object PersonalTierListManager {
                 else "Aún no hay partidas finalizadas registradas. Marca victorias o derrotas para desbloquear tu calificación."
             }
             winRate >= 75.0 -> {
-                if (lang == "en") "God Tier Pick! Exceptional mastery in ${role.displayName}. Safe pick for climbing Soberano ranks."
-                else if (lang == "pt") "God Tier Pick! Maestria excepcional em ${role.displayName}. Pick seguro para subir elo."
-                else "¡Pick Imparable! Maestría absoluta en ${role.displayName}. Es tu mejor herramienta para subir a Soberano."
+                if (lang == "en") "⚡ God Tier Pick! Exceptional mastery in ${role.displayName}. Safe pick for climbing Soberano ranks."
+                else if (lang == "pt") "⚡ God Tier Pick! Maestria excepcional em ${role.displayName}. Pick seguro para subir elo."
+                else "⚡ ¡Pick Imparable! Maestría absoluta en ${role.displayName}. Es tu mejor herramienta para subir a Soberano."
             }
             winRate >= 60.0 -> {
-                if (lang == "en") "Elite Performance in ${role.displayName}. Strong lane pressure and high win condition conversion."
-                else if (lang == "pt") "Desempenho de elite em ${role.displayName}. Alta pressão de rota e conversão de vitórias."
-                else "Rendimiento de Élite en ${role.displayName}. Gran impacto en escaramuzas tempranas y peleas por Dragón."
+                if (lang == "en") "🔥 Elite Performance in ${role.displayName}. Strong lane pressure and high win condition conversion."
+                else if (lang == "pt") "🔥 Desempenho de elite em ${role.displayName}. Alta pressão de rota e conversão de vitórias."
+                else "🔥 Rendimiento de Élite en ${role.displayName}. Gran impacto en escaramuzas tempranas y peleas por Dragón."
             }
             winRate >= 50.0 -> {
-                if (lang == "en") "Solid & Competitive. Refine H1/H2 wave control and objective rotation timings to reach 65%+."
-                else if (lang == "pt") "Sólido e competitivo. Refine o controle de ondas com H1/H2 para superar 65%."
-                else "Rendimiento Sólido. Ajusta la gestión de oleadas con H1/H2 y rotaciones a Heraldo para elevar tu winrate al 65%+."
+                if (lang == "en") "🛡️ Solid & Competitive. Refine H1/H2 wave control and objective rotation timings to reach 65%+."
+                else if (lang == "pt") "🛡️ Sólido e competitivo. Refine o controle de ondas com H1/H2 para superar 65%."
+                else "🛡️ Rendimiento Sólido. Ajusta la gestión de oleadas con H1/H2 y rotaciones a Heraldo para elevar tu winrate al 65%+."
             }
             winRate >= 35.0 -> {
-                if (lang == "en") "Volatile Results. Needs deeper wave state awareness and match-specific situational items."
-                else if (lang == "pt") "Resultados instáveis. Requer atenção à itemização situacional e posicionamento."
-                else "Resultados Irregulares. Revisa tu itemización defensiva situacional y evita pelear antes de tu pico de poder con H4."
+                if (lang == "en") "⚠️ Volatile Results. Needs deeper wave state awareness and match-specific situational items."
+                else if (lang == "pt") "⚠️ Resultados instáveis. Requer atenção à itemização situacional e posicionamento."
+                else "⚠️ Resultados Irregulares. Revisa tu itemización defensiva situacional y evita pelear antes de tu pico de poder con H4."
             }
             else -> {
-                if (lang == "en") "Critical Struggle. High death count or negative matchups. Practice trading patterns in normal matches."
-                else if (lang == "pt") "Dificuldade alta. Pratique combos e trocas em partidas normais antes de ranquear."
-                else "Dificultad en Fase de Líneas. Evita enfrentamientos desfavorables sin visión y practica combos clave en partidas normales."
+                if (lang == "en") "❌ Critical Struggle. High death count or negative matchups. Practice trading patterns in normal matches."
+                else if (lang == "pt") "❌ Dificuldade alta. Pratique combos e trocas em partidas normais antes de ranquear."
+                else "❌ Dificultad en Fase de Líneas. Evita enfrentamientos desfavorables sin visión y practica combos clave en partidas normales."
             }
         }
     }

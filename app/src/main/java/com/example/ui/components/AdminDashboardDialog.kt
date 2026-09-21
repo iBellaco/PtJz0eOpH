@@ -695,7 +695,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.PhotoSizeSelectActual, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Medidas Recomendadas (Toca para Copiar)", color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                            Text("📐 Medidas Recomendadas (Toca para Copiar)", color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text("Utiliza estas resoluciones exactas para que tus imágenes y videos queden perfectamente encuadrados:", color = TextSecondary, fontSize = 10.sp)
@@ -718,7 +718,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("Horizontal (Panel de Inicio / Tarjeta):", color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                    Text("🖼️ Horizontal (Panel de Inicio / Tarjeta):", color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                     Text("1920 x 1080 px  (Relación 16:9)", color = TextPrimary, fontSize = 10.sp)
                                 }
                                 Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = HextechCyan, modifier = Modifier.size(16.dp))
@@ -744,7 +744,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("Vertical (Vista Ampliada / Fullscreen):", color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                    Text("📱 Vertical (Vista Ampliada / Fullscreen):", color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                     Text("1080 x 1920 px  (9:16 Pantalla Completa)", color = TextPrimary, fontSize = 10.sp)
                                 }
                                 Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = HextechGold, modifier = Modifier.size(16.dp))
@@ -762,7 +762,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
-                        Text("Intervalo de Rotación (Todos los Anuncios > 1)", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                        Text("⏱️ Intervalo de Rotación (Todos los Anuncios > 1)", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(4.dp))
                         Text("Si hay más de 1 anuncio en una categoría, rotarán automáticamente con este intervalo (si solo hay 1, se queda fijo):", color = TextSecondary, fontSize = 10.sp)
                         Spacer(modifier = Modifier.height(8.dp))
@@ -1029,7 +1029,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (editingIndex != null) "✏️ Editando Anuncio #${editingIndex!! + 1}" else "Agregar Nuevo Anuncio:",
+                        text = if (editingIndex != null) "✏️ Editando Anuncio #${editingIndex!! + 1}" else "➕ Agregar Nuevo Anuncio:",
                         color = HextechGold,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -1249,7 +1249,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = if (isVideo) "Video Horizontal Configurado" else "Imagen Horizontal Configurada",
+                                        text = if (isVideo) "🎬 Video Horizontal Configurado" else "🖼️ Imagen Horizontal Configurada",
                                         color = HextechCyan,
                                         fontSize = 11.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -1433,7 +1433,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = if (isVerticalVideo) "Video Vertical Configurado" else "Imagen Vertical Configurada",
+                                        text = if (isVerticalVideo) "🎬 Video Vertical Configurado" else "📱 Imagen Vertical Configurada",
                                         color = HextechGold,
                                         fontSize = 11.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -1557,7 +1557,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             Icon(Icons.Default.CloudSync, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "MULTIDISPOSITIVO ACTIVO (Sincronización en la nube)",
+                                text = "☁️ MULTIDISPOSITIVO ACTIVO (Sincronización en la nube)",
                                 color = HextechGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -1574,7 +1574,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("3. Enlace Web Externo (Opcional):", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                Text("3. 🔗 Enlace Web Externo (Opcional):", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
                     value = externalUrl,
@@ -1588,7 +1588,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("4. Presupuesto de Campaña / Anuncio (USD - Opcional):", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                Text("4. 💰 Presupuesto de Campaña / Anuncio (USD - Opcional):", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
                     value = budgetText,
@@ -1735,7 +1735,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Agregar a la Lista de Anuncios", fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                        Text("➕ Agregar a la Lista de Anuncios", fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                     }
                 }
 
@@ -1798,7 +1798,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         }
                         if (expandedImageUrl.isNotBlank()) {
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text("Vista previa (Media Ampliada):", color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                            Text("📱 Vista previa (Media Ampliada):", color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                             Spacer(modifier = Modifier.height(4.dp))
                             NoticeMediaViewer(
                                 mediaUrl = expandedImageUrl,
@@ -1857,10 +1857,10 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 ) { success, errorMsg ->
                                     isSavingCloud = false
                                     if (success) {
-                                        Toast.makeText(context, "¡Anuncios sincronizados correctamente!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "✅ ¡Anuncios sincronizados correctamente!", Toast.LENGTH_SHORT).show()
                                         onDismiss()
                                     } else {
-                                        Toast.makeText(context, "Guardado localmente con éxito", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "✅ Guardado localmente con éxito", Toast.LENGTH_SHORT).show()
                                         onDismiss()
                                     }
                                 }
@@ -1889,15 +1889,15 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
 enum class UserFilterTab(val label: String) {
     ALL("Todos"),
-    PREMIUM("Premium"),
-    FREE("Gratis"),
-    ONLINE("Online"),
-    ADMINS("Admins"),
-    MODS("Mods"),
-    SPONSORS("Patrocinador"),
-    BANNED("Baneados"),
-    STREAMERS("Streamers"),
-    CREATORS("Creadores")
+    PREMIUM("👑 Premium"),
+    FREE("🎮 Gratis"),
+    ONLINE("🟢 Online"),
+    ADMINS("🛡️ Admins"),
+    MODS("🛡️ Mods"),
+    SPONSORS("💎 Patrocinador"),
+    BANNED("⛔ Baneados"),
+    STREAMERS("🎥 Streamers"),
+    CREATORS("✨ Creadores")
 }
 
 @Composable
@@ -1985,7 +1985,7 @@ fun EnhancedUserManagementPanel(
     val modUsers = users.count { (it["role"] as? String) == "moderador" }
     val sponsorUsers = users.count { (it["role"] as? String) == "patrocinador" }
     val streamerUsers = users.count { (it["role"] as? String) == "streamer" }
-    val creatorUsers = users.count { (it["role"] as? String) == "creador" || (it["role"] as? String) == "creador_vip" }
+    val creatorUsers = users.count { (it["role"] as? String) == "creador_vip" || (it["role"] as? String) == "creador" }
     val freeUsers = users.count { u ->
         val role = u["role"] as? String ?: "free"
         val until = (u["premiumUntil"] as? Number)?.toLong()
@@ -2015,13 +2015,13 @@ fun EnhancedUserManagementPanel(
             val matchesTab = when (selectedFilter) {
                 UserFilterTab.ALL -> true
                 UserFilterTab.PREMIUM -> isPrem
-                UserFilterTab.FREE -> role == "free" || (!isPrem && role != "admin" && role != "moderador" && role != "patrocinador" && role != "streamer" && role != "creador" && role != "creador_vip")
+                UserFilterTab.FREE -> role == "free" || (!isPrem && role != "admin" && role != "moderador" && role != "patrocinador" && role != "streamer" && role != "creador_vip" && role != "creador")
                 UserFilterTab.ONLINE -> isOnline
                 UserFilterTab.ADMINS -> role == "admin"
                 UserFilterTab.MODS -> role == "moderador"
                 UserFilterTab.SPONSORS -> role == "patrocinador"
                 UserFilterTab.STREAMERS -> role == "streamer"
-                UserFilterTab.CREATORS -> role == "creador" || role == "creador_vip"
+                UserFilterTab.CREATORS -> role == "creador_vip" || role == "creador"
                 UserFilterTab.BANNED -> isBanned
             }
 
@@ -2443,7 +2443,7 @@ fun EnhancedUserAdminCard(
 
     val isPremiumActive = when {
         role == "admin" || role == "moderador" -> true
-        role in listOf("premium", "creador", "creador_vip", "streamer") -> premiumUntil == null || premiumUntil == 0L || premiumUntil > now
+        role in listOf("premium", "creador_vip", "streamer") -> premiumUntil == null || premiumUntil == 0L || premiumUntil > now
         else -> false
     }
 
@@ -2451,7 +2451,7 @@ fun EnhancedUserAdminCard(
         role == "admin" -> HextechGold.copy(alpha = 0.6f)
         isBanned -> DangerRed.copy(alpha = 0.5f)
         role == "moderador" -> Color(0xFF10B981).copy(alpha = 0.5f)
-        role == "creador" || role == "creador_vip" -> Color(0xFFF59E0B).copy(alpha = 0.5f)
+        role == "creador_vip" -> Color(0xFFA855F7).copy(alpha = 0.5f)
         role == "streamer" -> Color(0xFFEC4899).copy(alpha = 0.5f)
         isPremiumActive -> HextechCyan.copy(alpha = 0.4f)
         else -> HextechCardBorder
@@ -2470,24 +2470,19 @@ fun EnhancedUserAdminCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Avatar con badge de estado online
-                val secRoleStr = user["secondaryRole"] as? String ?: "none"
-                val secRoleObjRow = com.example.model.AppUserSecondaryRole.fromId(secRoleStr)
-                val hasSpecialFrameRow = (role == "admin") || (secRoleObjRow.frameDrawableRes != null)
                 Box(
                     modifier = Modifier.padding(
-                        horizontal = if (hasSpecialFrameRow) 4.dp else 0.dp,
-                        vertical = if (hasSpecialFrameRow) 2.dp else 0.dp
+                        horizontal = if (role == "admin") 6.dp else 0.dp,
+                        vertical = if (role == "admin") 4.dp else 0.dp
                     ),
                     contentAlignment = Alignment.BottomEnd
                 ) {
                     UserAvatarView(
                         avatarId = avatarId,
-                        size = 46.dp,
+                        size = if (role == "admin") 34.dp else 46.dp,
                         fallbackInitial = name.take(1).uppercase(),
                         rankBorder = rankBorder,
-                        secondaryRole = secRoleStr,
-                        isAdmin = (role == "admin"),
-                        fitFrameToSize = true
+                        isAdmin = (role == "admin")
                     )
                     // Indicador de conexión verde/gris
                     Box(
@@ -2819,7 +2814,7 @@ private fun getSubscriptionStatusText(role: String, premiumUntil: Long?, isPremi
     if (role == "admin") return "Acceso Administrador (Vitalicio)"
     if (role == "banned") return "Cuenta Suspendida"
     if (!isPremiumActive) return "Plan Gratuito"
-    if (premiumUntil == null || premiumUntil == 0L) return "Premium Vitalicio "
+    if (premiumUntil == null || premiumUntil == 0L) return "Premium Vitalicio ♾️"
 
     val diff = premiumUntil - currentTimestamp
     if (diff <= 0) return "Suscripción Expirada"
@@ -2888,7 +2883,7 @@ fun UserDetailManagementDialog(
 
     val isPremiumActive = when {
         currentRole == "admin" || currentRole == "moderador" -> true
-        currentRole in listOf("premium", "creador", "creador_vip", "streamer") -> currentPremiumUntil == null || currentPremiumUntil == 0L || currentPremiumUntil!! > System.currentTimeMillis()
+        currentRole in listOf("premium", "creador_vip", "streamer") -> currentPremiumUntil == null || currentPremiumUntil == 0L || currentPremiumUntil!! > System.currentTimeMillis()
         else -> false
     }
 
@@ -2938,24 +2933,13 @@ fun UserDetailManagementDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        val secRoleDetailObj = com.example.model.AppUserSecondaryRole.fromId(currentSecondaryRole)
-                        val hasSpecialFrameDetail = (currentRole == "admin") || (secRoleDetailObj.frameDrawableRes != null)
-                        Box(
-                            modifier = Modifier.padding(
-                                horizontal = if (hasSpecialFrameDetail) 4.dp else 0.dp,
-                                vertical = if (hasSpecialFrameDetail) 2.dp else 0.dp
-                            )
-                        ) {
-                            UserAvatarView(
-                                avatarId = avatarId,
-                                size = 48.dp,
-                                fallbackInitial = currentName.take(1).uppercase(),
-                                rankBorder = rankBorder,
-                                secondaryRole = currentSecondaryRole,
-                                isAdmin = (currentRole == "admin"),
-                                fitFrameToSize = true
-                            )
-                        }
+                        UserAvatarView(
+                            avatarId = avatarId,
+                            size = 48.dp,
+                            fallbackInitial = currentName.take(1).uppercase(),
+                            rankBorder = rankBorder,
+                            isAdmin = (currentRole == "admin")
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -3083,7 +3067,7 @@ fun UserDetailManagementDialog(
                                 ) {
                                     Column(modifier = Modifier.padding(8.dp)) {
                                         Text(
-                                            text = "Estado: ${if (isPremiumActive) "PREMIUM ACTIVO" else "GRATUITO"}",
+                                            text = "Estado: ${if (isPremiumActive) "⭐ PREMIUM ACTIVO" else "⚪ GRATUITO"}",
                                             color = if (isPremiumActive) HextechCyan else TextSecondary,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 12.sp
@@ -3185,7 +3169,7 @@ fun UserDetailManagementDialog(
                                         }
                                     )
                                     DurationButton(
-                                        label = "Vitalicio",
+                                        label = "♾️ Vitalicio",
                                         modifier = Modifier.weight(1f),
                                         accent = true,
                                         onClick = {
@@ -4035,7 +4019,7 @@ fun UserDetailManagementDialog(
                             Spacer(modifier = Modifier.height(6.dp))
                             RoleBadge(
                                 role = target.id,
-                                isPremiumActive = target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.STREAMER, AppUserRole.CREATOR),
+                                isPremiumActive = target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.CREATOR_VIP, AppUserRole.STREAMER, AppUserRole.CREATOR),
                                 isBanned = (target == AppUserRole.BANNED),
                                 size = RoleBadgeSize.LARGE
                             )
@@ -4052,15 +4036,15 @@ fun UserDetailManagementDialog(
                     if (target == AppUserRole.BANNED) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "Al asignar el rol Baneado, la cuenta del usuario será suspendida de inmediato y no podrá utilizar los servicios de la app.",
+                            text = "⚠️ Al asignar el rol Baneado, la cuenta del usuario será suspendida de inmediato y no podrá utilizar los servicios de la app.",
                             color = DangerRed,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
-                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.PATROCINADOR, AppUserRole.STREAMER, AppUserRole.CREATOR)) {
+                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.PATROCINADOR, AppUserRole.CREATOR_VIP, AppUserRole.STREAMER)) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech.",
+                            text = "✨ Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech.",
                             color = HextechCyan,
                             fontSize = 11.sp
                         )
@@ -4316,7 +4300,7 @@ fun AdminAvatarGiftDialog(
                     ) {
                         Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Regalar Todos (${allAvatars.size})", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.White)
+                        Text("🎁 Regalar Todos (${allAvatars.size})", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.White)
                     }
 
                     Button(
@@ -4432,7 +4416,7 @@ private fun AvatarGiftCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Desbloqueado",
+                        text = "✓ Desbloqueado",
                         color = Color(0xFF00FF7F),
                         fontSize = 9.5.sp,
                         fontWeight = FontWeight.Bold,
@@ -4483,7 +4467,6 @@ fun AdminBroadcastAnnouncementDialog(
     var message by remember { mutableStateOf("") }
     var isUrgent by remember { mutableStateOf(false) }
     var sendNotification by remember { mutableStateOf(false) }
-    var isNotificationOnly by remember { mutableStateOf(false) }
     var isPublishing by remember { mutableStateOf(false) }
     var isDeactivating by remember { mutableStateOf(false) }
 
@@ -4634,44 +4617,15 @@ fun AdminBroadcastAnnouncementDialog(
                 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { 
-                        sendNotification = !sendNotification 
-                        if (!sendNotification) isNotificationOnly = false
-                    }
+                    modifier = Modifier.clickable { sendNotification = !sendNotification }
                 ) {
                     Checkbox(
                         checked = sendNotification,
-                        onCheckedChange = { 
-                            sendNotification = it 
-                            if (!it) isNotificationOnly = false
-                        },
+                        onCheckedChange = { sendNotification = it },
                         colors = CheckboxDefaults.colors(checkedColor = HextechGold)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Enviar notificación a los dispositivos", color = if (sendNotification) HextechGold else TextSecondary, fontSize = 12.sp)
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { 
-                        isNotificationOnly = !isNotificationOnly
-                        if (isNotificationOnly) {
-                            sendNotification = true
-                        }
-                    }
-                ) {
-                    Checkbox(
-                        checked = isNotificationOnly,
-                        onCheckedChange = { 
-                            isNotificationOnly = it
-                            if (it) {
-                                sendNotification = true
-                            }
-                        },
-                        colors = CheckboxDefaults.colors(checkedColor = HextechCyan)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Solo notificación (sin cuadro emergente en la app)", color = if (isNotificationOnly) HextechCyan else TextSecondary, fontSize = 12.sp)
                 }
             }
         },
@@ -4688,13 +4642,11 @@ fun AdminBroadcastAnnouncementDialog(
                         title = title,
                         message = message,
                         isUrgent = isUrgent,
-                        sendNotification = sendNotification,
-                        notificationOnly = isNotificationOnly
+                        sendNotification = sendNotification
                     ) { success, err ->
                         isPublishing = false
                         if (success) {
-                            val toastMsg = if (isNotificationOnly) "¡Notificación enviada a los dispositivos!" else "¡Anuncio global publicado a todos los dispositivos!"
-                            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "¡Anuncio global publicado a todos los dispositivos!", Toast.LENGTH_SHORT).show()
                             onDismiss()
                         } else {
                             Toast.makeText(context, "Error al publicar: $err", Toast.LENGTH_LONG).show()
@@ -4957,7 +4909,8 @@ private fun updateUserRoleInCloud(
         updatePayload["subscriptionPlan"] = when (targetRoleId) {
             "moderador" -> "Moderador (Vitalicio)"
             "patrocinador" -> "Patrocinador (Vitalicio)"
-            "creador", "creador_vip" -> "Creador (Vitalicio)"
+            "creador_vip" -> "Creador VIP (Vitalicio)"
+            "creador" -> "Creador (Vitalicio)"
             "streamer" -> "Streamer (Vitalicio)"
             else -> "Premium Vitalicio"
         }
@@ -5041,7 +4994,7 @@ private fun ServerScraperHealthCard() {
                     Icon(Icons.Default.CloudSync, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Monitoreo Multi-Servidor (🇨🇳 CN, 🇺🇸 NA, 🌐 Global)",
+                        text = "Monitoreo Multi-Servidor (CN, NA, Global)",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -5082,7 +5035,7 @@ private fun ServerScraperHealthCard() {
             val allSources = sourceStatuses.values.toList()
             allSources.forEach { status ->
                 val regionPrefix = when (status.region) {
-                    "CN" -> "[CN]"
+                    "CN" -> "🇨🇳 [CN]"
                     "NA" -> "🌎 [NA]"
                     else -> "🌍 [Global]"
                 }

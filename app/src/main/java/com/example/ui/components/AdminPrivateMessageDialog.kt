@@ -30,13 +30,13 @@ enum class MessageTag(
     val badgeBg: Color,
     val textColor: Color
 ) {
-    SUPPORT("support", "Soporte", "", Color(0xFF0EA5E9), Color.White),
-    PATROCINADOR("patrocinador", "Patrocinador", "", Color(0xFFC89B3C), Color.Black),
-    AVISO("aviso", "Aviso", "", Color(0xFF3B82F6), Color.White),
-    IMPORTANTE("importante", "Importante", "", Color(0xFFEF4444), Color.White),
-    MANTENIMIENTO("mantenimiento", "Mantenimiento", "", Color(0xFFF97316), Color.White),
-    OFERTA("oferta", "Oferta", "", Color(0xFFEAB308), Color.Black),
-    PRUEBA("prueba", "Prueba", "", Color(0xFF06B6D4), Color.Black);
+    SUPPORT("support", "Soporte", "🎧", Color(0xFF0EA5E9), Color.White),
+    PATROCINADOR("patrocinador", "Patrocinador", "💼", Color(0xFFC89B3C), Color.Black),
+    AVISO("aviso", "Aviso", "📢", Color(0xFF3B82F6), Color.White),
+    IMPORTANTE("importante", "Importante", "🚨", Color(0xFFEF4444), Color.White),
+    MANTENIMIENTO("mantenimiento", "Mantenimiento", "🛠️", Color(0xFFF97316), Color.White),
+    OFERTA("oferta", "Oferta", "💎", Color(0xFFEAB308), Color.Black),
+    PRUEBA("prueba", "Prueba", "🧪", Color(0xFF06B6D4), Color.Black);
 
     companion object {
         fun fromId(id: String?): MessageTag {
@@ -578,7 +578,7 @@ fun AdminUserMessagesViewerDialog(
                                                 shape = RoundedCornerShape(4.dp)
                                             ) {
                                                 Text(
-                                                    text = if (msg.isRead) "Leído" else "Pendiente",
+                                                    text = if (msg.isRead) "✓ Leído" else "⏳ Pendiente",
                                                     color = if (msg.isRead) Color(0xFF00FF66) else Color(0xFFF59E0B),
                                                     fontSize = 8.5.sp,
                                                     fontWeight = FontWeight.SemiBold,
@@ -656,7 +656,7 @@ fun AdminUserMessagesViewerDialog(
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
-                                        text = "$dateStr",
+                                        text = "📅 $dateStr",
                                         color = Color.Gray,
                                         fontSize = 9.5.sp
                                     )

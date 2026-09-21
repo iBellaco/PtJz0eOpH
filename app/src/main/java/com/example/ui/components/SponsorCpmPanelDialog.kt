@@ -795,7 +795,7 @@ fun SponsorCpmPanelDialog(
                         }
 
                         if (hasOverlap) {
-                            Toast.makeText(context, "El horario o fechas seleccionadas ya están ocupadas por otro anuncio. No se puede publicar ni descontar esencias azules.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "⚠️ El horario o fechas seleccionadas ya están ocupadas por otro anuncio. No se puede publicar ni descontar esencias azules.", Toast.LENGTH_LONG).show()
                             return@Button
                         }
 
@@ -826,7 +826,7 @@ fun SponsorCpmPanelDialog(
         AlertDialog(
             onDismissRequest = { showConfirmReviewDialog = false },
             containerColor = HextechSurface,
-            title = { Text("Advertencia de Envío a Revisión", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold) },
+            title = { Text("⚠️ Advertencia de Envío a Revisión", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -1113,7 +1113,7 @@ fun SponsorNoticeCard(
                     IconButton(
                         onClick = {
                             val statsText = """
- Estadísticas del Anuncio:
+📊 Estadísticas del Anuncio:
 • Título: ${notice.title}
 • Estado: $statusText
 • Vistas (Impresiones): ${metrics.impressions}

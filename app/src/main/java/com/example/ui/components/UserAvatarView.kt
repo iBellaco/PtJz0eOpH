@@ -55,78 +55,10 @@ fun UserAvatarView(
     showBorder: Boolean = true,
     customBorderColor: Color? = null,
     rankBorder: String = "NONE",
-    secondaryRole: String? = null,
     isAdmin: Boolean = false,
     adminFrameResId: Int = com.example.R.drawable.ic_frame_admin,
-    adminFrameUrl: String? = null,
-    equippedFrame: String = "AUTO",
-    fitFrameToSize: Boolean = true
+    adminFrameUrl: String? = null
 ) {
-    val secRoleObj = remember(secondaryRole) {
-        if (!secondaryRole.isNullOrBlank() && secondaryRole != "none") {
-            com.example.model.AppUserSecondaryRole.fromId(secondaryRole)
-        } else {
-            com.example.model.AppUserSecondaryRole.NONE
-        }
-    }
-    val secFrameRes = secRoleObj.frameDrawableRes
-
-    val rankRoleObj = remember(rankBorder) {
-        if (!rankBorder.isNullOrBlank() && rankBorder != "NONE") {
-            com.example.model.AppUserSecondaryRole.fromId(rankBorder)
-        } else {
-            com.example.model.AppUserSecondaryRole.NONE
-        }
-    }
-    val rankFrameRes = rankRoleObj.frameDrawableRes
-
-    val effectiveFrameType = remember(equippedFrame, isAdmin, secFrameRes, rankFrameRes, rankBorder) {
-        when (equippedFrame.uppercase()) {
-            "NONE" -> "NONE"
-            "SECONDARY" -> if (secFrameRes != null) "SECONDARY" else "NONE"
-            "SPECIAL", "RANK" -> if (isAdmin) "ADMIN" else if (rankFrameRes != null) "RANK_PNG" else if (rankBorder != "NONE" && rankBorder.isNotBlank()) "RANK" else "NONE"
-            else -> { // "AUTO"
-                if (isAdmin) "ADMIN"
-                else if (secFrameRes != null) "SECONDARY"
-                else if (rankFrameRes != null) "RANK_PNG"
-                else if (rankBorder != "NONE" && rankBorder.isNotBlank()) "RANK"
-                else "NONE"
-            }
-        }
-    }
-
-    val activeFrameRes: Int? = when (effectiveFrameType) {
-        "ADMIN" -> if (adminFrameResId != 0) adminFrameResId else null
-        "SECONDARY" -> secFrameRes
-        "RANK_PNG" -> rankFrameRes
-        else -> null
-    }
-
-    val hasSpecialFrame = activeFrameRes != null || (effectiveFrameType == "ADMIN" && !adminFrameUrl.isNullOrBlank())
-
-    val frameScaleFactor = 2.60f
-
-    // Dimensiones internas del círculo del avatar y del marco exterior
-    val avatarCircleSize: Dp = if (hasSpecialFrame && fitFrameToSize) {
-        size * 0.385f
-    } else {
-        size
-    }
-
-    val frameImageSize: Dp = if (hasSpecialFrame && fitFrameToSize) {
-        size * 1.02f
-    } else if (hasSpecialFrame) {
-        size * frameScaleFactor
-    } else {
-        0.dp
-    }
-
-    val totalComponentSize: Dp = if (hasSpecialFrame && !fitFrameToSize) {
-        frameImageSize
-    } else {
-        size
-    }
-
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
     val parsedBorderColor = customBorderColor ?: try {
         Color(android.graphics.Color.parseColor(avatar.borderHex))
@@ -136,10 +68,10 @@ fun UserAvatarView(
     
     val rarityLower = avatar.rarity.lowercase()
     val borderWidth = when {
-        rarityLower.contains("mítico") || rarityLower.contains("mitico") -> if (avatarCircleSize > 60.dp) 3.5.dp else 2.5.dp
-        rarityLower.contains("legendario") -> if (avatarCircleSize > 60.dp) 3.dp else 2.dp
-        rarityLower.contains("épico") || rarityLower.contains("epico") -> if (avatarCircleSize > 60.dp) 2.5.dp else 1.5.dp
-        rarityLower.contains("raro") -> if (avatarCircleSize > 60.dp) 2.dp else 1.5.dp
+        rarityLower.contains("mítico") || rarityLower.contains("mitico") -> if (size > 60.dp) 3.5.dp else 2.5.dp
+        rarityLower.contains("legendario") -> if (size > 60.dp) 3.dp else 2.dp
+        rarityLower.contains("épico") || rarityLower.contains("epico") -> if (size > 60.dp) 2.5.dp else 1.5.dp
+        rarityLower.contains("raro") -> if (size > 60.dp) 2.dp else 1.5.dp
         else -> 1.dp
     }
     
@@ -206,7 +138,7 @@ fun UserAvatarView(
 
     Box(
         modifier = modifier
-            .size(totalComponentSize)
+            .size(size)
             .graphicsLayer {
                 scaleX = scaleAnim.value
                 scaleY = scaleAnim.value
@@ -218,7 +150,7 @@ fun UserAvatarView(
         // Círculo base del Avatar
         Box(
             modifier = Modifier
-                .size(avatarCircleSize)
+                .fillMaxSize()
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
@@ -230,13 +162,13 @@ fun UserAvatarView(
                     )
                 )
                 .then(
-                    if (effectiveFrameType == "RANK") {
+                    if (rankBorder != "NONE" && !isAdmin) {
                         Modifier.rankedBorderPainter(
                             rank = rankBorder,
                             glowPulse = glowPulse,
                             rotation = rotation
                         )
-                    } else if (actualShowBorder && effectiveFrameType == "NONE") {
+                    } else if (actualShowBorder && !isAdmin) {
                         val isCom = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
                         if (!isCom) {
                             Modifier.premiumBorderPainter(
@@ -257,7 +189,7 @@ fun UserAvatarView(
                 text = fallbackInitial.take(1).uppercase(),
                 color = HextechGoldLight,
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = (avatarCircleSize.value * 0.38f).sp,
+                fontSize = (size.value * 0.38f).sp,
                 fontFamily = FontFamily.Serif
             )
             if (avatar.imageUrl.isNotBlank()) {
@@ -278,30 +210,34 @@ fun UserAvatarView(
             }
         }
 
-        // Marco exclusivo (Administrador, Rol Secundario o Rango)
-        if (activeFrameRes != null && activeFrameRes != 0) {
-            Image(
-                painter = painterResource(id = activeFrameRes),
-                contentDescription = "Marco de Perfil",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .requiredSize(frameImageSize)
-                    .align(Alignment.Center)
-            )
-        } else if (effectiveFrameType == "ADMIN" && !adminFrameUrl.isNullOrBlank()) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(adminFrameUrl)
-                    .crossfade(true)
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .memoryCachePolicy(CachePolicy.ENABLED)
-                    .build(),
-                contentDescription = "Marco de Administrador",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .requiredSize(frameImageSize)
-                    .align(Alignment.Center)
-            )
+        // Marco exclusivo de Administrador (rodeando el avatar por fuera)
+        if (isAdmin) {
+            if (adminFrameResId != 0) {
+                Image(
+                    painter = painterResource(id = adminFrameResId),
+                    contentDescription = "Marco de Administrador",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .requiredSize(size * 2.48f)
+                        .offset(y = size * 0.09f)
+                        .align(Alignment.Center)
+                )
+            } else if (!adminFrameUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(adminFrameUrl)
+                        .crossfade(true)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build(),
+                    contentDescription = "Marco de Administrador",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .requiredSize(size * 2.48f)
+                        .offset(y = size * 0.09f)
+                        .align(Alignment.Center)
+                )
+            }
         }
     }
 }

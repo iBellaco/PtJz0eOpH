@@ -233,7 +233,7 @@ fun MatchupPreviewDialog(
 
                     // 1. Fase de Líneas (Niveles 1-5 y Power Spikes)
                     Text(
-                        text = "" + tr("Ventanas de Poder & Fase de Líneas"),
+                        text = "⏱️ " + tr("Ventanas de Poder & Fase de Líneas"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -318,7 +318,7 @@ fun MatchupPreviewDialog(
 
                     // 2. Cooldowns Clave & Habilidades a Esquivar
                     Text(
-                        text = "" + tr("Análisis Táctico del Rival"),
+                        text = "🎯 " + tr("Análisis Táctico del Rival"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -355,7 +355,7 @@ fun MatchupPreviewDialog(
                     Spacer(modifier = Modifier.height(12.dp))
                     // 3. Sinergias y Macro Wild Rift
                     Text(
-                        text = "" + tr("Sinergias y Macro (Wild Rift)"),
+                        text = "🤝 " + tr("Sinergias y Macro (Wild Rift)"),
                         color = HextechCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp

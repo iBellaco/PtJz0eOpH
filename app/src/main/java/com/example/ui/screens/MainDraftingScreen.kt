@@ -176,11 +176,8 @@ fun MainDraftingScreen(
     var showBugReportDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
-    var showLanguageDialog by remember { mutableStateOf(false) }
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
-    val currentSecondaryRole by SubscriptionManager.currentSecondaryRole.collectAsState()
-    val activeFramePref by SubscriptionManager.activeFramePreference.collectAsState()
 
     // Sincronizar estado del servicio cuando la app pasa a primer plano
     DisposableEffect(lifecycleOwner) {
@@ -251,10 +248,9 @@ fun MainDraftingScreen(
     }
 
     // Si hay un diálogo o modal abierto en la pantalla de inicio, el botón atrás lo cierra primero
-    BackHandler(enabled = showPermissionDialog || showBugReportDialog || showLanguageDialog) {
+    BackHandler(enabled = showPermissionDialog || showBugReportDialog) {
         if (showPermissionDialog) showPermissionDialog = false
         if (showBugReportDialog) showBugReportDialog = false
-        if (showLanguageDialog) showLanguageDialog = false
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -330,21 +326,6 @@ fun MainDraftingScreen(
                             ) {
                                 Text("🎨", fontSize = 18.sp)
                             }
-
-                            Spacer(modifier = Modifier.width(6.dp))
-
-                            IconButton(
-                                onClick = { showLanguageDialog = true },
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(HextechSurface)
-                                    .border(1.dp, HextechGold.copy(alpha = 0.6f), CircleShape)
-                                    .size(38.dp)
-                                    .testTag("nav_language_button")
-                            ) {
-                                val flagEmoji = if (currentLanguage == "pt") "🇧🇷" else "🇲🇽"
-                                Text(flagEmoji, fontSize = 18.sp)
-                            }
                         }
                     },
                     actions = {
@@ -380,12 +361,9 @@ fun MainDraftingScreen(
                                 UserAvatarView(
                                     avatarId = currentAvatarId,
                                     rankBorder = currentRankBorder,
-                                    secondaryRole = currentSecondaryRole,
-                                    equippedFrame = activeFramePref,
-                                    size = 36.dp,
+                                    size = if (isCurrentUserAdmin) 26.dp else 36.dp,
                                     fallbackInitial = authUser.displayName ?: authUser.email ?: "U",
-                                    isAdmin = isCurrentUserAdmin,
-                                    fitFrameToSize = true
+                                    isAdmin = isCurrentUserAdmin
                                 )
                             }
                         }
@@ -818,116 +796,6 @@ fun MainDraftingScreen(
             )
         }
 
-        if (showLanguageDialog) {
-            AlertDialog(
-                onDismissRequest = { showLanguageDialog = false },
-                containerColor = HextechSurface,
-                title = {
-                    Text(
-                        text = if (currentLanguage == "pt") "Idioma / Language" else "Seleccionar Idioma",
-                        color = HextechGold,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-                },
-                text = {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = if (currentLanguage == "pt") "Escolha o idioma do aplicativo:" else "Selecciona el idioma de la aplicación:",
-                            color = TextSecondary,
-                            fontSize = 13.sp
-                        )
-
-                        // Option 1: Español (México / Latinoamérica)
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = if (currentLanguage == "es") HextechCyan.copy(alpha = 0.15f) else HextechDarkBg,
-                            border = BorderStroke(1.5.dp, if (currentLanguage == "es") HextechCyan else HextechCardBorder),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onLanguageChange("es")
-                                    showLanguageDialog = false
-                                }
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Text("🇲🇽", fontSize = 24.sp)
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        "Español (Latinoamérica)",
-                                        color = TextPrimary,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp
-                                    )
-                                    Text(
-                                        if (currentLanguage == "pt") "Espanhol Oficial • 100% Ativo" else "Español Oficial • 100% Activo",
-                                        color = HextechCyan,
-                                        fontSize = 11.5.sp
-                                    )
-                                }
-                                if (currentLanguage == "es") {
-                                    Text("✓", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                }
-                            }
-                        }
-
-                        // Option 2: Português (Brasil)
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = if (currentLanguage == "pt") HextechCyan.copy(alpha = 0.15f) else HextechDarkBg,
-                            border = BorderStroke(1.5.dp, if (currentLanguage == "pt") HextechCyan else HextechCardBorder),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onLanguageChange("pt")
-                                    showLanguageDialog = false
-                                }
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Text("🇧🇷", fontSize = 24.sp)
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        "Português (Brasil)",
-                                        color = TextPrimary,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp
-                                    )
-                                    Text(
-                                        if (currentLanguage == "pt") "Português Oficial • 100% Ativo" else "Português Oficial • 100% Activo",
-                                        color = HextechCyan,
-                                        fontSize = 11.5.sp
-                                    )
-                                }
-                                if (currentLanguage == "pt") {
-                                    Text("✓", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                }
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showLanguageDialog = false }) {
-                        Text(if (currentLanguage == "pt") "Fechar" else "Cerrar", color = HextechGold)
-                    }
-                }
-            )
-        }
-
 
     }
 }
@@ -1111,7 +979,7 @@ fun NoticeCategoryCard(
                                 onClick = {
                                     isPinned = !isPinned
                                     if (isPinned) {
-                                        Toast.makeText(context, "Publicación fijada. No rotará automáticamente.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "📌 Publicación fijada. No rotará automáticamente.", Toast.LENGTH_SHORT).show()
                                     } else {
                                         Toast.makeText(context, "Rotación automática activada.", Toast.LENGTH_SHORT).show()
                                     }

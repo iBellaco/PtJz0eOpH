@@ -343,7 +343,7 @@ fun UserInboxDialog(
                 if (replyTs > lastReadTs && replyTs > 0L) {
                     return false // ¡Nueva respuesta de soporte posterior a la lectura previa!
                 }
-                if (lastReadTs == 0L && (m["userRead"] as? Boolean) == false) {
+                if (lastReadTs == 0L && ((m["isRead"] as? Boolean) == false || (m["userRead"] as? Boolean) == false)) {
                     return false
                 }
                 if (lastReadTs >= replyTs && lastReadTs > 0L) {
@@ -355,7 +355,7 @@ fun UserInboxDialog(
                 return true
             }
 
-            val rawRead = if (isSupport) ((m["userRead"] as? Boolean) != false) else ((m["isRead"] as? Boolean) == true || (m["userRead"] as? Boolean) == true)
+            val rawRead = (m["isRead"] as? Boolean) == true || (m["userRead"] as? Boolean) == true
             return rawRead
         }
 
@@ -557,14 +557,7 @@ fun UserInboxDialog(
             val mId = m["id"] as? String ?: ""
             val rId = m["reportId"] as? String ?: ""
             val isThisOne = (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId))
-            if (isThisOne) false else {
-                val isSupport = (m["tag"] as? String)?.equals("SUPPORT", ignoreCase = true) == true || (m["reportId"] as? String)?.isNotBlank() == true || (m["ticketId"] as? String)?.isNotBlank() == true
-                if (isSupport) {
-                    (m["userRead"] as? Boolean) == false || (m["hasNewAdminReply"] as? Boolean) == true
-                } else {
-                    (m["isRead"] as? Boolean) == false
-                }
-            }
+            if (isThisOne) false else ((m["isRead"] as? Boolean) == false)
         }
         SubscriptionManager.setUnreadMessagesCount(remainingUnread)
 
@@ -1202,7 +1195,7 @@ fun UserInboxDialog(
                                     ) {
                                         if (sender.isNotBlank()) {
                                             Text(
-                                                if (isSponsorMessage) "Patrocinador: $sender" else "Remitente: $sender",
+                                                if (isSponsorMessage) "💼 Patrocinador: $sender" else "Remitente: $sender",
                                                 color = if (isSponsorMessage) Color(0xFFF59E0B) else Color(0xFF94A3B8),
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Medium
@@ -1543,7 +1536,7 @@ fun UserSupportThreadCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                if (isSponsor) "Mensaje de Patrocinador" else "Soporte Técnico / Reporte",
+                if (isSponsor) "💼 Mensaje de Patrocinador" else "🎧 Soporte Técnico / Reporte",
                 color = headerColor,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
@@ -1679,7 +1672,7 @@ fun UserSupportThreadCard(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            if (isUserMsg) "${msg.senderName} (Tú)" else if (isSponsor) "${msg.senderName}" else "${msg.senderName}",
+                                            if (isUserMsg) "👤 ${msg.senderName} (Tú)" else if (isSponsor) "💼 ${msg.senderName}" else "🛡️ ${msg.senderName}",
                                             color = if (isUserMsg) Color(0xFFD4AF37) else if (isSponsor) Color(0xFFFBBF24) else Color(0xFF38BDF8),
                                             fontSize = 10.5.sp,
                                             fontWeight = FontWeight.Bold,

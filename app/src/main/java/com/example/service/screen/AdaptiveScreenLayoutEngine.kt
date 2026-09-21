@@ -66,19 +66,26 @@ object AdaptiveScreenLayoutEngine {
         val geometry = analyzeScreen(width, height)
         val ratio = geometry.aspectRatio
 
-        // Respetar fielmente la configuración base calibrada por el usuario
-        val adaptiveAllyCenterX = baseConfig.allyAvatarCenterX
-        val adaptiveAllyTenthCenterX = baseConfig.allyTenthAvatarCenterX
-        val adaptiveEnemyCenterX = baseConfig.enemyAvatarCenterX
-        val adaptiveEnemyTenthCenterX = baseConfig.enemyTenthAvatarCenterX
+        // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla:
+        // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.076f
+        // - 10º Pick Aliado: ubicado ligeramente más a la izquierda (x ≈ 0.068f) para centrado exacto
+        // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.960f
+        val adaptiveAllyCenterX = if (geometry.isUltrawide) 0.076f else baseConfig.allyAvatarCenterX
+        val adaptiveAllyTenthCenterX = if (geometry.isUltrawide) 0.068f else baseConfig.allyTenthAvatarCenterX
+        val adaptiveEnemyCenterX = if (geometry.isUltrawide) 0.960f else baseConfig.enemyAvatarCenterX
 
-        // Rango de búsqueda OCR adaptativo
-        val allyOcrMinX = baseConfig.allyOcrMinX
-        val allyOcrMaxX = baseConfig.allyOcrMaxX
-        val enemyOcrMinX = baseConfig.enemyOcrMinX
-        val enemyOcrMaxX = baseConfig.enemyOcrMaxX
+        // Rango de búsqueda OCR adaptativo:
+        // El texto del slot aliado está a la derecha del avatar (entre x ≈ 0.065 y x ≈ 0.265).
+        // Abarca holgadamente el texto desplazado por insignias e iconos de maestría.
+        val allyOcrMinX = 0.065f
+        val allyOcrMaxX = 0.265f
+
+        // El texto del slot rival está a la izquierda del avatar rival (entre x ≈ 0.735 y x ≈ 0.940).
+        val enemyOcrMinX = 0.735f
+        val enemyOcrMaxX = 0.940f
 
         // Ajuste de las posiciones horizontales de la barra superior (los 10 avatares de la cabecera)
+        // En tablets los avatares superiores están ligeramente más comprimidos hacia el centro; en ultrawide hacia los bordes.
         val topAllySpacing = 0.035f * (BASE_ASPECT_RATIO / ratio)
         val topEnemySpacing = 0.035f * (BASE_ASPECT_RATIO / ratio)
 
@@ -97,8 +104,7 @@ object AdaptiveScreenLayoutEngine {
             allyAvatarCenterX = adaptiveAllyCenterX,
             allyTenthAvatarCenterX = adaptiveAllyTenthCenterX,
             enemyAvatarCenterX = adaptiveEnemyCenterX,
-            enemyTenthAvatarCenterX = adaptiveEnemyTenthCenterX,
-            avatarDiameterRatio = baseConfig.avatarDiameterRatio,
+            avatarDiameterRatio = 0.114f,
             allyOcrMinX = allyOcrMinX,
             allyOcrMaxX = allyOcrMaxX,
             enemyOcrMinX = enemyOcrMinX,
@@ -126,8 +132,7 @@ object AdaptiveScreenLayoutEngine {
             if (sIdx == 4 || isTenthPick) (width * config.allyTenthAvatarCenterX).toInt()
             else (width * config.allyAvatarCenterX).toInt()
         } else {
-            if (sIdx == 4 || isTenthPick) (width * config.enemyTenthAvatarCenterX).toInt()
-            else (width * config.enemyAvatarCenterX).toInt()
+            (width * config.enemyAvatarCenterX).toInt()
         }
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cy = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
@@ -161,8 +166,7 @@ object AdaptiveScreenLayoutEngine {
             if (sIdx == 4 || isTenthPick) (width * config.allyTenthAvatarCenterX).toInt()
             else (width * config.allyAvatarCenterX).toInt()
         } else {
-            if (sIdx == 4 || isTenthPick) (width * config.enemyTenthAvatarCenterX).toInt()
-            else (width * config.enemyAvatarCenterX).toInt()
+            (width * config.enemyAvatarCenterX).toInt()
         }
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cyNominal = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()

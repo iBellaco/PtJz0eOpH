@@ -203,7 +203,6 @@ import android.content.res.Configuration
 import com.example.util.LocalLanguage
 import com.example.util.SubscriptionManager
 import com.example.util.tr
-import com.example.util.trStr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -851,7 +850,7 @@ private fun FloatingCloseTarget(
                 border = BorderStroke(1.dp, if (isTargeted) Color.White else DangerRed.copy(alpha = 0.4f))
             ) {
                 Text(
-                    text = if (isTargeted) "Soltar para desactivar" else "Arrastra aquí para cerrar",
+                    text = if (isTargeted) "✕ Soltar para desactivar" else "Arrastra aquí para cerrar",
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -1020,117 +1019,56 @@ private fun FloatingOverlayContent(
                     withContext(Dispatchers.Main) {
                         scanNoticeMessage = "Permiso de captura inactivo. Toca aquí para activarlo."
                     }
-                } else {
-                    if (scanNoticeMessage?.contains("Permiso", ignoreCase = true) == true) {
-                        withContext(Dispatchers.Main) {
-                            scanNoticeMessage = null
-                        }
+                } else if (!isScanning) {
+                    val bitmap = withContext(Dispatchers.IO) {
+                        screenCaptureManager?.captureCurrentFrame()
                     }
-                    if (!isScanning) {
-                        val bitmap = withContext(Dispatchers.IO) {
-                            screenCaptureManager?.captureCurrentFrame()
-                        }
-                        if (bitmap != null && !bitmap.isRecycled && bitmap.width > 0 && bitmap.height > 0) {
-                            try {
-                                val result = withContext(Dispatchers.IO) {
-                                    DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
-                                }
-                                withContext(Dispatchers.Main) {
-                                    if (result.isSuccessful) {
+                    if (bitmap != null && !bitmap.isRecycled && bitmap.width > 0 && bitmap.height > 0) {
+                        try {
+                            val result = withContext(Dispatchers.IO) {
+                                DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
+                            }
+                            withContext(Dispatchers.Main) {
+                                if (result.isSuccessful) {
                                     if (result.detectedFirstPick != null) {
                                         isFirstPick = result.detectedFirstPick
-                                    }
-
-                                    // Sincronizar automáticamente la línea del usuario si fue detectada
-                                    val detectedUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
-                                    if (detectedUserRole != null && activeRole != detectedUserRole) {
-                                        activeRole = detectedUserRole
-                                        AppLogger.d("Overlay", "Línea del usuario sincronizada automáticamente a: ${detectedUserRole.shortName}")
                                     }
 
                                     var newAlliesAdded = 0
                                     var newEnemiesAdded = 0
                                     
-                                    if (result.alliesByRole.isNotEmpty()) {
-                                        defaultRoles.forEachIndexed { idx, role ->
-                                            if (manualLockedAllySlots[idx] != true) {
-                                                val scannedAlly = result.alliesByRole[role] ?: result.alliesBySlot[idx]
-                                                if (scannedAlly != null) {
-                                                    if (allies[idx]?.id != scannedAlly.id) {
-                                                        assignAllySlot(idx, scannedAlly)
-                                                        newAlliesAdded++
-                                                    }
-                                                } else if (result.allyShowingLaneByRole[role] == true || (result.alliesByRole.isEmpty() && result.allySlotShowingLaneMap[idx] == true)) {
-                                                    if (allies[idx] != null) {
-                                                        allies[idx] = null
-                                                    }
+                                    defaultRoles.forEachIndexed { idx, role ->
+                                        if (manualLockedAllySlots[idx] != true) {
+                                            // ASIGNACIÓN DETERMINÍSTICA POR ROL:
+                                            // En Wild Rift cada slot aliado muestra primero qué línea va a ir (Top, Jungla, Mid, Dúo, Soporte)
+                                            // y luego esa línea se cambia por el nombre del campeón seleccionado.
+                                            // Cada índice `idx` en `allies` corresponde estricta y únicamente a `role` (defaultRoles[idx]).
+                                            // NUNCA caer en fallback de `alliesBySlot[idx]` porque el slot físico de pick puede tener un rol distinto.
+                                            val scannedAlly = result.alliesByRole[role]
+                                            if (scannedAlly != null) {
+                                                if (allies[idx] == null || allies[idx]?.id != scannedAlly.id) {
+                                                    assignAllySlot(idx, scannedAlly)
+                                                    newAlliesAdded++
                                                 }
                                             }
                                         }
-                                    } else {
-                                        for (idx in 0 until 5) {
-                                            if (manualLockedAllySlots[idx] != true) {
-                                                val scannedAlly = result.alliesBySlot[idx]
-                                                if (scannedAlly != null) {
-                                                    if (allies[idx]?.id != scannedAlly.id) {
-                                                        assignAllySlot(idx, scannedAlly)
-                                                        newAlliesAdded++
-                                                    }
-                                                } else if (result.allySlotShowingLaneMap[idx] == true) {
-                                                    if (allies[idx] != null) {
-                                                        allies[idx] = null
-                                                    }
+                                        if (manualLockedEnemySlots[idx] != true) {
+                                            val scannedEnemy = result.enemiesByRole[role]
+                                            if (scannedEnemy != null) {
+                                                if (enemies[idx] == null || enemies[idx]?.id != scannedEnemy.id) {
+                                                    assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
+                                                    if (enemies[idx] == null) newEnemiesAdded++
                                                 }
                                             }
                                         }
                                     }
 
-                                    if (result.enemiesByRole.isNotEmpty()) {
-                                        defaultRoles.forEachIndexed { idx, role ->
-                                            if (manualLockedEnemySlots[idx] != true) {
-                                                val scannedEnemy = result.enemiesByRole[role] ?: result.enemiesBySlot[idx]
-                                                if (scannedEnemy != null) {
-                                                    if (enemies[idx]?.id != scannedEnemy.id) {
-                                                        assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
-                                                        newEnemiesAdded++
-                                                    }
-                                                } else if (result.enemySlotShowingJugadorMap[idx] == true) {
-                                                    if (enemies[idx] != null) {
-                                                        enemies[idx] = null
-                                                        state.enemyConfidences.remove(role)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        for (idx in 0 until 5) {
-                                            if (manualLockedEnemySlots[idx] != true) {
-                                                val scannedEnemy = result.enemiesBySlot[idx]
-                                                if (scannedEnemy != null) {
-                                                    if (enemies[idx]?.id != scannedEnemy.id) {
-                                                        assignEnemySlot(idx, scannedEnemy, 85)
-                                                        newEnemiesAdded++
-                                                    }
-                                                } else if (result.enemySlotShowingJugadorMap[idx] == true) {
-                                                    if (enemies[idx] != null) {
-                                                        enemies[idx] = null
-                                                        defaultRoles.getOrNull(idx)?.let { state.enemyConfidences.remove(it) }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if (result.detectedFirstPick != null) {
-                                        isFirstPick = result.detectedFirstPick
-                                    } else {
-                                        val currentAllyPicks = allies.count { it != null }
-                                        val currentEnemyPicks = enemies.count { it != null }
-                                        if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
-                                            isFirstPick = false
-                                        } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
-                                            isFirstPick = true
-                                        }
+                                    val currentAllyPicks = allies.count { it != null }
+                                    val currentEnemyPicks = enemies.count { it != null }
+                                    if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
+                                        isFirstPick = false
+                                    } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
+                                        isFirstPick = true
                                     }
 
                                     if (result.isLegendaryRanked) {
@@ -1164,21 +1102,19 @@ private fun FloatingOverlayContent(
 
                                     val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
 
-                                    val currentLang = com.example.util.UserPreferences.getLanguage(context)
-                                    val targetUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
-                                    if (targetUserRole != null && activeRole != targetUserRole) {
-                                        activeRole = targetUserRole
-                                        com.example.util.UserPreferences.setActiveDraftRole(context, targetUserRole)
-                                        scanNoticeMessage = trStr(currentLang, "Auto-Scan: Tu rol detectado") + " (${targetUserRole.shortName})"
+                                    if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
+                                        activeRole = result.userExplicitlyDetectedRole
+                                        com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
+                                        scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
                                     } else if (isDraftFullyConfirmed) {
                                         autoScanEnabled = false
-                                        scanNoticeMessage = trStr(currentLang, "10/10 Campeones confirmados")
+                                        scanNoticeMessage = "10/10 Campeones confirmados"
                                         AppLogger.i("FloatingService", "Auto-Scan desactivado: 10/10 campeones confirmados.")
                                     } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
-                                        scanNoticeMessage = trStr(currentLang, "Fase de Preparación: completando selección") + " ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
+                                        scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
                                         AppLogger.d("FloatingService", "Fase de Preparación en curso ($finalAlliesPicked/5 vs $finalEnemiesPicked/5). Auto-scan continúa.")
                                     } else if (newAlliesAdded > 0 || newEnemiesAdded > 0) {
-                                        scanNoticeMessage = trStr(currentLang, "Auto-Scan:") + " +${newAlliesAdded + newEnemiesAdded} picks ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)"
+                                        scanNoticeMessage = "Auto-Scan: +${newAlliesAdded + newEnemiesAdded} picks detectados ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)"
                                     }
 
                                     if (scanNoticeMessage != null) {
@@ -1195,7 +1131,6 @@ private fun FloatingOverlayContent(
                             } catch (_: Throwable) {}
                         }
                     }
-                }
                 }
             } catch (t: Throwable) {
                 AppLogger.e("FloatingService", "Error in auto-scan loop", t)
@@ -1233,23 +1168,16 @@ private fun FloatingOverlayContent(
                             isFirstPick = result.detectedFirstPick
                         }
 
-                        // Sincronizar automáticamente la línea del usuario si fue detectada
-                        val detectedUserRole = result.userExplicitlyDetectedRole ?: result.detectedRole
-                        if (detectedUserRole != null && activeRole != detectedUserRole) {
-                            activeRole = detectedUserRole
-                            AppLogger.d("Overlay", "Línea del usuario sincronizada automáticamente a: ${detectedUserRole.shortName}")
-                        }
-
                         // 1. Asignación directa y de alta precisión por rol (respetando selecciones manuales)
                         defaultRoles.forEachIndexed { idx, role ->
                             if (manualLockedAllySlots[idx] != true) {
-                                val scannedAlly = result.alliesByRole[role] ?: result.alliesBySlot[idx]
+                                val scannedAlly = result.alliesByRole[role]
                                 if (scannedAlly != null) {
                                     assignAllySlot(idx, scannedAlly)
                                 }
                             }
                             if (manualLockedEnemySlots[idx] != true) {
-                                val scannedEnemy = result.enemiesByRole[role] ?: result.enemiesBySlot[idx]
+                                val scannedEnemy = result.enemiesByRole[role]
                                 if (scannedEnemy != null) {
                                     assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
                                 }
@@ -1499,8 +1427,6 @@ private fun FloatingOverlayContent(
                                                     }
                                                     context.startActivity(reqIntent)
                                                 } catch (_: Exception) {}
-                                            } else {
-                                                triggerManualScan()
                                             }
                                         }
                                     ) {
@@ -1920,7 +1846,6 @@ private fun FloatingOverlayContent(
                                             onToggleLegendaryQueue = { isLegendaryQueue = !isLegendaryQueue },
                                             isLoadingScreenMode = isLoadingScreenMode,
                                             onLoadingScreenModeToggle = { isLoadingScreenMode = !isLoadingScreenMode },
-                                            autoScanEnabled = autoScanEnabled,
                                             allies = allies,
                                             enemies = enemies,
                                             enemyConfidences = state.enemyConfidences,
@@ -2013,7 +1938,7 @@ private fun FloatingOverlayContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "" + tr("Detener Asistente"),
+                                text = "✕ " + tr("Detener Asistente"),
                                 color = DangerRed,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -2782,7 +2707,6 @@ private fun FloatingDraftCoachView(
     onToggleLegendaryQueue: (() -> Unit)? = null,
     isLoadingScreenMode: Boolean,
     onLoadingScreenModeToggle: () -> Unit,
-    autoScanEnabled: Boolean = false,
     allies: androidx.compose.runtime.snapshots.SnapshotStateList<Champion?>,
     enemies: androidx.compose.runtime.snapshots.SnapshotStateList<Champion?>,
     enemyConfidences: androidx.compose.runtime.snapshots.SnapshotStateMap<LaneRole, Int>,
@@ -2855,7 +2779,6 @@ private fun FloatingDraftCoachView(
             isLegendary = isLegendaryQueue,
             onToggleLegendary = onToggleLegendaryQueue,
             onOpenLiteRTViewer = onOpenLiteRTViewer,
-            isAutoScanning = autoScanEnabled,
             onPickChampionForRole = { isAlly, role ->
                 val index = defaultRoles.indexOf(role).coerceAtLeast(0)
                 onOpenChampionPicker(isAlly, index)
@@ -2908,7 +2831,6 @@ private fun OverlayVersusDraftBoard(
     isLegendary: Boolean = false,
     onToggleLegendary: (() -> Unit)? = null,
     onOpenLiteRTViewer: (() -> Unit)? = null,
-    isAutoScanning: Boolean = false,
     onPickChampionForRole: (isAlly: Boolean, LaneRole) -> Unit,
     onRemoveChampionForRole: (isAlly: Boolean, LaneRole) -> Unit
 ) {
@@ -3167,39 +3089,13 @@ private fun OverlayVersusDraftBoard(
                                     )
                                 }
                             } else {
-                                if (isAutoScanning) {
-                                    Column(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(start = 6.dp),
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text(
-                                            text = tr(role.displayName),
-                                            color = HextechCyan,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                        Text(
-                                            text = tr("Esperando pick..."),
-                                            color = TextSecondary.copy(alpha = 0.8f),
-                                            fontSize = 7.5.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            maxLines = 1
-                                        )
-                                    }
-                                } else {
-                                    Text(
-                                        text = tr("+ Elegir"),
-                                        color = AllyBlue.copy(alpha = 0.8f),
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        maxLines = 1,
-                                        modifier = Modifier.padding(start = 6.dp)
-                                    )
-                                }
+                                Text(
+                                    text = tr("+ Elegir"),
+                                    color = AllyBlue.copy(alpha = 0.8f),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1
+                                )
                             }
                         }
 

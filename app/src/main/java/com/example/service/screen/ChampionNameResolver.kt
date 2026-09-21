@@ -27,7 +27,7 @@ object ChampionNameResolver {
     )
 
     // Mapa exhaustivo de nombres de Wild Rift a sus IDs canónicos
-    val KNOWN_CHAMPIONS_MAP = mapOf(
+    private val KNOWN_CHAMPIONS_MAP = mapOf(
         "aatrox" to "aatrox",
         "ahri" to "ahri",
         "akali" to "akali",
@@ -215,84 +215,24 @@ object ChampionNameResolver {
             .lowercase(Locale.ROOT)
     }
 
-    private fun resolveChampionById(id: String, safeChamps: List<Champion>): Champion {
-        // 1. Direct match by id
-        safeChamps.find { it.id.equals(id, ignoreCase = true) }?.let { return it }
-        // 2. Direct match by name
-        safeChamps.find { it.name.equals(id.replace("_", " "), ignoreCase = true) }?.let { return it }
-        // 3. Match from WildRiftRepository
-        WildRiftRepository.getChampionById(id)?.let { return it }
-        WildRiftRepository.getChampionByName(id.replace("_", " "))?.let { return it }
-        // 4. Prefix match (e.g. ahri_mid...)
-        safeChamps.find { it.id.startsWith("${id}_", ignoreCase = true) }?.let { return it }
-        // 5. High-fidelity Fallback Champion
-        val displayName = id.replace("_", " ").split(" ").joinToString(" ") { token ->
-            token.lowercase(Locale.ROOT).replaceFirstChar { c -> c.uppercase() }
-        }
-        return Champion(
-            id = id,
-            name = displayName,
-            avatarUrl = "file:///android_asset/champions/$id.png",
-            primaryRole = LaneRole.MID,
-            secondaryRoles = listOf(LaneRole.TOP, LaneRole.ADC),
-            damageType = com.example.model.DamageType.PHYSICAL,
-            tier = "S",
-            winrate = 51.0,
-            winrateDelta = 0.0,
-            pickRate = 10.0,
-            banRate = 5.0
-        )
-    }
-
-    private fun levenshteinDistance(s1: String, s2: String): Int {
-        val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }
-        for (i in 0..s1.length) dp[i][0] = i
-        for (j in 0..s2.length) dp[0][j] = j
-        for (i in 1..s1.length) {
-            for (j in 1..s2.length) {
-                val cost = if (s1[i - 1] == s2[j - 1]) 0 else 1
-                dp[i][j] = minOf(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
-            }
-        }
-        return dp[s1.length][s2.length]
-    }
-
     // Encuentra el campeón correspondiente a una línea de texto OCR con validación anti-falsos positivos estricta
     fun findChampionInText(text: String, allChampions: List<Champion>): Champion? {
         val trimmed = text.trim()
         if (trimmed.isBlank() || trimmed.length < 2) return null
 
-        val safeChamps = synchronized(WildRiftRepository) {
-            ArrayList(allChampions)
-        }
-
-        // Comprobación prioritaria directa: si el texto completo o normalizado coincide exactamente con un campeón
-        val directNorm = normalize(trimmed)
-        val directCompact = normalizeCompact(trimmed)
-        KNOWN_CHAMPIONS_MAP[directNorm]?.let { id ->
-            return resolveChampionById(id, safeChamps)
-        }
-        KNOWN_CHAMPIONS_MAP[directCompact]?.let { id ->
-            return resolveChampionById(id, safeChamps)
-        }
-
-        // Si el texto contiene indicación de línea/rol (ej: "CALLE CENTRAL YASUO", "MID AHRI", "TOP DARIUS"),
-        // verificamos si ADEMÁS contiene el nombre de un campeón. Solo si tras quitar los términos de rol no hay campeón, descartamos.
+        // REGLA CRÍTICA: Si el texto contiene o representa una línea/rol (ej: "Calle Central", "Jungla", "Soporte", "Barón"),
+        // bajo ninguna circunstancia debe interpretarse como un campeón.
         if (DraftValidationLayer.parseRoleFromText(trimmed) != null) {
-            val textWithoutRoleWords = trimmed.replace(
-                Regex("(?i)\\b(calle|carril|linea|línea|central|baron|barón|dragon|dragón|duo|dúo|solo|top|mid|jungle|jungla|adc|bot|support|soporte|apoyo|roam|laner)\\b"),
-                ""
-            ).trim()
-            if (textWithoutRoleWords.length >= 2 && textWithoutRoleWords != trimmed) {
-                val candidate = findChampionInText(textWithoutRoleWords, safeChamps)
-                if (candidate != null) return candidate
-            }
             return null
         }
 
         // Si es ruido de interfaz o etiqueta genérica de jugador, descartar
         if (DraftValidationLayer.isNoiseText(trimmed)) {
             return null
+        }
+
+        val safeChamps = synchronized(WildRiftRepository) {
+            ArrayList(allChampions)
         }
 
         // Si la línea contiene paréntesis (ej: "XCS Junior (Jarvan IV): ¡Combatamos!"), extraer el contenido de los paréntesis
@@ -315,7 +255,8 @@ object ChampionNameResolver {
         for (c in listOf(cleanStripped, compactStripped, clean, compact)) {
             if (c.isNotBlank()) {
                 KNOWN_CHAMPIONS_MAP[c]?.let { id ->
-                    return resolveChampionById(id, safeChamps)
+                    val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
+                    if (found != null) return found
                 }
             }
         }
@@ -333,11 +274,13 @@ object ChampionNameResolver {
         }
 
         // 3. Coincidencia tras eliminar posibles prefijos de icono o números residuales iniciales
+        // (ej: "1 DARIUS", "# SETT", "• AHRI", "1DARIUS", "- JINX", "» CAITLYN", "> WUKONG")
         val strippedLeading = trimmed.replace(Regex("^[\\W_0-9]+"), "").trim()
         val strippedClean = normalize(strippedLeading)
         if (strippedClean.isNotBlank() && strippedClean != clean) {
             KNOWN_CHAMPIONS_MAP[strippedClean]?.let { id ->
-                return resolveChampionById(id, safeChamps)
+                val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
+                if (found != null) return found
             }
             for (champ in safeChamps) {
                 val champNorm = normalize(champ.name)
@@ -348,6 +291,7 @@ object ChampionNameResolver {
         }
 
         // 4. Coincidencia por tokens separados por espacio o símbolos (icono de elo/maestría antes del nombre del campeón)
+        // Ejemplo: "V JINX", "LV7 JINX", "• JINX", "W JINX", "1 JINX", "M7 JINX", "> WUKONG", "» CAITLYN", "10 GALIO", "V VI"
         val tokensToScan = if (cleanStripped.isNotBlank() && cleanStripped != clean) {
             cleanStripped.split(" ").filter { it.isNotBlank() }
         } else {
@@ -358,8 +302,8 @@ object ChampionNameResolver {
             for (token in tokensToScan.reversed()) {
                 if (token.length >= 2 && !UI_IGNORE_WORDS.contains(token)) {
                     KNOWN_CHAMPIONS_MAP[token]?.let { id ->
-                        val resolved = resolveChampionById(id, safeChamps)
-                        if (!DraftValidationLayer.isLikelySummonerName(token, championName = resolved.name)) return resolved
+                        val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
+                        if (found != null && !DraftValidationLayer.isLikelySummonerName(token, championName = found.name)) return found
                     }
                     for (champ in safeChamps) {
                         val champNorm = normalize(champ.name)
@@ -374,12 +318,14 @@ object ChampionNameResolver {
             for (i in 0 until tokensToScan.size - 1) {
                 val pair = "${tokensToScan[i]} ${tokensToScan[i + 1]}"
                 KNOWN_CHAMPIONS_MAP[pair]?.let { id ->
-                    return resolveChampionById(id, safeChamps)
+                    val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
+                    if (found != null) return found
                 }
             }
         }
 
-        // 5. Coincidencia con prefijo o sufijo de maestría pegado sin espacio
+        // 5. Coincidencia con prefijo o sufijo de maestría pegado sin espacio (ej: "vwukong", "1caitlyn", "oyuumi", "agalio", "vpantheon", "vjinx", "1jinx", "lv7jinx", "m7jinx", "viijinx", "wsett", "jinx7", "dariusm7")
+        // Típico cuando el OCR concatena el icono de rango/elo/maestría con la primera letra o final del nombre del campeón
         for (candCompact in listOf(compactStripped, compact)) {
             if (candCompact.length in 3..25) {
                 for (champ in safeChamps) {
@@ -388,6 +334,7 @@ object ChampionNameResolver {
                     for (target in listOf(champCompact, champIdCompact)) {
                         if (target.length >= 2 && candCompact.endsWith(target)) {
                             val prefixLen = candCompact.length - target.length
+                            // Si el prefijo sobrante al inicio es de 1 a 6 caracteres (la insignia/icono/maestría)
                             if (prefixLen in 1..6) {
                                 return champ
                             }
@@ -406,8 +353,6 @@ object ChampionNameResolver {
             }
         }
 
-        // 6. Validación estricta: NUNCA usar coincidencias difusas (Levenshtein) que confundan nombres de invocador (ej: 'DIEGO' -> 'VIEGO').
-        // La detección del 1 al 9 es 100% por nombre textual canónico exacto.
         return null
     }
 }

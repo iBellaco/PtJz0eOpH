@@ -4,7 +4,7 @@ import com.example.model.ItemCategory
 import com.example.model.WildRiftItem
 
 object WildRiftItemsData {
-    private val rawList: List<WildRiftItem> = listOf(
+    val list: List<WildRiftItem> = listOf(
         WildRiftItem(
             id = "bloodthirster",
             name = "La Sanguinaria",
@@ -2863,8 +2863,6 @@ object WildRiftItemsData {
             iconUrl = "file:///android_asset/offline_images/1aeafb7896806a2f556ff126daf52d91.webp"
         ),
     )
-
-    val list: List<WildRiftItem> = rawList.distinctBy { it.name.lowercase(java.util.Locale.ROOT).trim() }
 
     fun getItemsByCategory(category: String): List<WildRiftItem> =
         list.filter { it.category.equals(category, ignoreCase = true) }

@@ -101,7 +101,7 @@ object WildRiftLocalCache {
                             item
                         }
                     }
-                    WildRiftRepository.items = if (sanitizedItems.isNotEmpty()) sanitizedItems.distinctBy { it.name.lowercase(java.util.Locale.ROOT).trim() } else com.example.data.WildRiftItemsData.list
+                    WildRiftRepository.items = if (sanitizedItems.isNotEmpty()) sanitizedItems else com.example.data.WildRiftItemsData.list
                     hasLoadedAny = true
                 }
 

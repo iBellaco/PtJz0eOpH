@@ -1,6 +1,5 @@
 package com.example.ui.components
 
-import java.util.Locale
 import com.example.ui.theme.HextechGoldLight
 import android.os.Build
 import android.widget.Toast
@@ -305,11 +304,11 @@ fun BugReportFeedbackDialog(
                 )
                 isSubmitting = false
                 if (result.isSuccess) {
-                    Toast.makeText(context, "¡Sugerencia de Build enviada con éxito!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "✅ ¡Sugerencia de Build enviada con éxito!", Toast.LENGTH_LONG).show()
                     onDismiss()
                 } else {
                     val err = result.exceptionOrNull()?.message ?: "Error desconocido"
-                    statusMessage = "Error al enviar: $err"
+                    statusMessage = "❌ Error al enviar: $err"
                     Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
                 }
             }
@@ -451,7 +450,7 @@ fun BugReportFeedbackDialog(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                val champStatusText = if (selectedChampionObj != null) "" + tr("Seleccionado") else "* " + tr("Obligatorio")
+                                val champStatusText = if (selectedChampionObj != null) "✓ " + tr("Seleccionado") else "* " + tr("Obligatorio")
                                 val champStatusColor = if (selectedChampionObj != null) HextechGold else DangerRed
                                 Box(
                                     modifier = Modifier
@@ -569,7 +568,7 @@ fun BugReportFeedbackDialog(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                val roleStatusText = if (suggestedRole.isNotBlank()) "" + tr("Seleccionado") else "* " + tr("Obligatorio")
+                                val roleStatusText = if (suggestedRole.isNotBlank()) "✓ " + tr("Seleccionado") else "* " + tr("Obligatorio")
                                 val roleStatusColor = if (suggestedRole.isNotBlank()) HextechGold else DangerRed
                                 Box(
                                     modifier = Modifier
@@ -630,7 +629,7 @@ fun BugReportFeedbackDialog(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                val coreStatusText = if (selectedCoreItems.size == 5) "" + tr("Completo (5/5)") else "* " + tr("Obligatorio (${selectedCoreItems.size}/5)")
+                                val coreStatusText = if (selectedCoreItems.size == 5) "✓ " + tr("Completo (5/5)") else "* " + tr("Obligatorio (${selectedCoreItems.size}/5)")
                                 val coreStatusColor = if (selectedCoreItems.size == 5) HextechGold else DangerRed
                                 Box(
                                     modifier = Modifier
@@ -757,7 +756,7 @@ fun BugReportFeedbackDialog(
                                         .padding(horizontal = 5.dp, vertical = 1.dp)
                                 ) {
                                     Text(
-                                        text = if (selectedBootTier2 != null || selectedBootsItems.isNotEmpty()) "" + tr("Configuradas") else "* " + tr("Obligatorio (Nivel 2)"),
+                                        text = if (selectedBootTier2 != null || selectedBootsItems.isNotEmpty()) "✓ " + tr("Configuradas") else "* " + tr("Obligatorio (Nivel 2)"),
                                         color = if (selectedBootTier2 != null || selectedBootsItems.isNotEmpty()) HextechGold else DangerRed,
                                         fontSize = 9.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -825,13 +824,13 @@ fun BugReportFeedbackDialog(
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "" + tr("Bota Nivel 2: ") + effectiveT2.name,
+                                            text = "★ " + tr("Bota Nivel 2: ") + effectiveT2.name,
                                             color = TextPrimary,
                                             fontSize = 11.5.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Text(
-                                            text = "${effectiveT2.category} • ${effectiveT2.goldCost} (Toca para cambiar)",
+                                            text = "${effectiveT2.category} • ${effectiveT2.goldCost} 💰 (Toca para cambiar)",
                                             color = HextechCyan,
                                             fontSize = 9.5.sp
                                         )
@@ -897,13 +896,13 @@ fun BugReportFeedbackDialog(
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = "" + tr("Evolución Nivel 3: ") + effectiveT3.name,
+                                                text = "⚡ " + tr("Evolución Nivel 3: ") + effectiveT3.name,
                                                 color = TextPrimary,
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
                                             Text(
-                                                text = "${effectiveT3.category} • ${effectiveT3.goldCost} (Toca para cambiar)",
+                                                text = "${effectiveT3.category} • ${effectiveT3.goldCost} 💰 (Toca para cambiar)",
                                                 color = HextechCyan,
                                                 fontSize = 9.5.sp
                                             )
@@ -972,7 +971,7 @@ fun BugReportFeedbackDialog(
                                 )
                                 val sitStatusText = when {
                                     selectedSituationalItems.isEmpty() -> tr("(Opcional)")
-                                    situationalDescription.trim().isNotBlank() -> "" + tr("Completo")
+                                    situationalDescription.trim().isNotBlank() -> "✓ " + tr("Completo")
                                     else -> "* " + tr("Justificación requerida")
                                 }
                                 val sitStatusColor = when {
@@ -1109,7 +1108,7 @@ fun BugReportFeedbackDialog(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                val runeStatusText = if (selectedKeystoneRune != null && selectedSecondaryRunes.size == 4 && isOptionalRunesValid) "" + tr("Completo") else "* " + tr("Obligatorio")
+                                val runeStatusText = if (selectedKeystoneRune != null && selectedSecondaryRunes.size == 4 && isOptionalRunesValid) "✓ " + tr("Completo") else "* " + tr("Obligatorio")
                                 val runeStatusColor = if (selectedKeystoneRune != null && selectedSecondaryRunes.size == 4 && isOptionalRunesValid) HextechGold else DangerRed
                                 Box(
                                     modifier = Modifier
@@ -1335,7 +1334,7 @@ fun BugReportFeedbackDialog(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                val spellStatusText = if (selectedSpells.size == 2 && isOptionalSpellsValid) "" + tr("Completo (2/2)") else "* " + tr("Obligatorio")
+                                val spellStatusText = if (selectedSpells.size == 2 && isOptionalSpellsValid) "✓ " + tr("Completo (2/2)") else "* " + tr("Obligatorio")
                                 val spellStatusColor = if (selectedSpells.size == 2 && isOptionalSpellsValid) HextechGold else DangerRed
                                 Box(
                                     modifier = Modifier
@@ -2073,12 +2072,6 @@ internal fun ItemCatalogSelectionDialog(
             
             val isBootT2 = (item.category.equals("Botas Nivel 2", ignoreCase = true) || (isBootItem && !isBootT3 && !id.contains("speed")))
 
-            val isBasicOrMidTier = item.category.equals("Artículos Básicos", ignoreCase = true) ||
-                item.category.equals("Objetos de Nivel Medio", ignoreCase = true) ||
-                cat.contains("básico") || cat.contains("basico") ||
-                cat.contains("nivel medio") || cat.contains("basic") ||
-                cat.contains("mid tier") || id.endsWith("_mid_tier") || id.endsWith("_basic")
-
             when (type) {
                 "boots_t2" -> matchesSearch && isBootT2
                 "boots_t3" -> matchesSearch && (isBootT3 || item.category.contains("Nivel 3", ignoreCase = true))
@@ -2091,10 +2084,10 @@ internal fun ItemCatalogSelectionDialog(
                         "Apoyo" -> item.category.contains("apoyo", ignoreCase = true) || item.category.contains("soporte", ignoreCase = true)
                         else -> true
                     }
-                    matchesSearch && matchesCat && !isBootItem && !isBasicOrMidTier
+                    matchesSearch && matchesCat && !isBootItem
                 }
             }
-        }.distinctBy { it.name.lowercase(Locale.ROOT).trim() }.sortedBy { it.name.lowercase(Locale.ROOT) }
+        }
     }
 
     AlertDialog(
