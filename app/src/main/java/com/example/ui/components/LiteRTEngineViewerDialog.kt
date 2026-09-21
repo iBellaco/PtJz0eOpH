@@ -29,6 +29,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -42,6 +44,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.service.screen.DraftVisionScanner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,6 +90,8 @@ fun LiteRTEngineViewerDialog(
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
+                val showScanCircles by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+
                 // Cabecera
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -366,48 +372,37 @@ fun LiteRTEngineViewerDialog(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // Métricas técnicas del Tensor y Control de Estabilidad Temporal
-                        Column(
+                        // Botón para ver u ocultar los círculos de escaneo en pantalla
+                        Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFF0F172A), RoundedCornerShape(6.dp))
-                                .padding(8.dp)
+                                .clickable {
+                                    DraftVisionScanner.showCalibrationBoxes.value = !showScanCircles
+                                },
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (showScanCircles) Color(0xFF00E5FF).copy(alpha = 0.2f) else Color(0xFF0F172A),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (showScanCircles) Color(0xFF00E5FF) else Color(0xFF334155)
+                            )
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Text(
-                                    text = "Tensor: ${report.tensorDimensions}",
-                                    color = Color(0xFF64748B),
-                                    fontSize = 10.sp,
-                                    fontFamily = FontFamily.Monospace
+                                Icon(
+                                    imageVector = if (showScanCircles) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = "Ver círculos de escaneo",
+                                    tint = if (showScanCircles) Color(0xFF00E5FF) else Color(0xFF94A3B8),
+                                    modifier = Modifier.size(16.dp)
                                 )
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Umbral mín: ${(report.minConfidenceThreshold * 100).toInt()}%",
-                                    color = Color(0xFF38BDF8),
-                                    fontSize = 10.sp,
+                                    text = if (showScanCircles) "Ocultar Círculos de Escaneo en Pantalla" else "Ver Círculos de Escaneo en Pantalla",
+                                    color = if (showScanCircles) Color(0xFF00E5FF) else Color(0xFFE2E8F0),
                                     fontWeight = FontWeight.Bold,
-                                    fontFamily = FontFamily.Monospace
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Estabilidad: ${report.stableFramesCount}/${report.requiredStableFrames} frames",
-                                    color = if (report.isConfirmed) Color(0xFF10B981) else Color(0xFFF59E0B),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = FontFamily.Monospace
-                                )
-                                Text(
-                                    text = "Espacio: RGB [-1.0, 1.0]",
-                                    color = Color(0xFF64748B),
-                                    fontSize = 10.sp,
-                                    fontFamily = FontFamily.Monospace
+                                    fontSize = 11.5.sp
                                 )
                             }
                         }

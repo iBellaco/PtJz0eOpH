@@ -9,7 +9,7 @@ import android.content.SharedPreferences
  */
 data class VisionCalibrationConfig(
     // Posición horizontal X central de avatares en columnas verticales de draft (0..1)
-    val allyAvatarCenterX: Float = 0.073f,
+    val allyAvatarCenterX: Float = 0.076f,
     val enemyAvatarCenterX: Float = 0.960f,
 
     // Diámetro del avatar relativo al alto de pantalla (0..1)
@@ -39,8 +39,8 @@ data class VisionCalibrationConfig(
     val spellYOffsetRatio: Float = 0.0f,
 
     // Rango horizontal OCR para columnas de draft (restringido estrictamente a las columnas de slots, sin tocar el centro)
-    val allyOcrMinX: Float = 0.098f,
-    val allyOcrMaxX: Float = 0.240f,
+    val allyOcrMinX: Float = 0.105f,
+    val allyOcrMaxX: Float = 0.285f,
     val enemyOcrMinX: Float = 0.775f,
     val enemyOcrMaxX: Float = 0.935f,
 

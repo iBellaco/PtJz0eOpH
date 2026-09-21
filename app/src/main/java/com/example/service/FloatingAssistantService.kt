@@ -1143,6 +1143,20 @@ private fun FloatingOverlayContent(
                                             }
                                         }
 
+                                        // Garantizar que ningún campeón aliado detectado quede sin asignar a un carril
+                                        for (slotIdx in 0..4) {
+                                            val champ = result.alliesBySlot[slotIdx] ?: continue
+                                            val isAlreadyInAllies = allies.any { it?.id == champ.id }
+                                            if (!isAlreadyInAllies) {
+                                                val emptyIdx = allies.indices.firstOrNull { allies[it] == null && manualLockedAllySlots[it] != true }
+                                                if (emptyIdx != null) {
+                                                    assignAllySlot(emptyIdx, champ)
+                                                    newAlliesAdded++
+                                                    AppLogger.d(TAG, "Campeón aliado detectado asignado a slot vacío $emptyIdx: ${champ.name}")
+                                                }
+                                            }
+                                        }
+
                                         // Asignación directa y garantizada del 10º Pick según el bando del draft:
                                         // Si los aliados tienen 1ª selección -> el 10º pick pertenece al equipo RIVAL.
                                         // Si el rival tiene 1ª selección -> el 10º pick pertenece al equipo ALIADO.

@@ -497,13 +497,66 @@ class DraftDetectionAndValidationTest {
             allySlots[i].assignedRole = assignedRole
         }
 
-        // El slot 0 debe ser TOP independientemente de que Vayne sea ADC
+        // El slot 0 con rol explícito TOP debe mantener TOP
         assertEquals(LaneRole.TOP, allySlotRolesCache[0])
         assertEquals(LaneRole.TOP, allySlots[0].assignedRole)
 
-        // El slot 1 debe ser JUNGLE independientemente de que Sett sea TOP
+        // El slot 1 con rol explícito JUNGLE debe mantener JUNGLE
         assertEquals(LaneRole.JUNGLE, allySlotRolesCache[1])
         assertEquals(LaneRole.JUNGLE, allySlots[1].assignedRole)
+    }
+
+    @Test
+    fun testDynamicLaneAssignmentSupportOrJunglerFirst() {
+        // En Wild Rift, el orden de carriles varía partida a partida:
+        // Por ejemplo, el Soporte puede aparecer primero (Slot 0), o el Jungla puede estar en Slot 0.
+        val thresh = Champion(id = "thresh", name = "Thresh", primaryRole = LaneRole.SUPPORT)
+        val leeSin = Champion(id = "leesin", name = "Lee Sin", primaryRole = LaneRole.JUNGLE)
+        val ahri = Champion(id = "ahri", name = "Ahri", primaryRole = LaneRole.MID)
+        val caitlyn = Champion(id = "caitlyn", name = "Caitlyn", primaryRole = LaneRole.ADC)
+        val darius = Champion(id = "darius", name = "Darius", primaryRole = LaneRole.TOP)
+
+        val allChamps = listOf(thresh, leeSin, ahri, caitlyn, darius)
+
+        // Supongamos que en esta partida el orden de slots es:
+        // Slot 0: Soporte (Thresh)
+        // Slot 1: Jungla (Lee Sin con Castigo)
+        // Slot 2: Mid (Ahri)
+        // Slot 3: ADC (Caitlyn)
+        // Slot 4: Top (Darius)
+        val slots = listOf(
+            ScannedSlotInfo(slotIndex = 0, champion = thresh, explicitRole = LaneRole.SUPPORT, summonerSpells = listOf("flash", "ignite")),
+            ScannedSlotInfo(slotIndex = 1, champion = leeSin, explicitRole = LaneRole.JUNGLE, summonerSpells = listOf("flash", "smite")),
+            ScannedSlotInfo(slotIndex = 2, champion = ahri, explicitRole = LaneRole.MID, summonerSpells = listOf("flash", "ignite")),
+            ScannedSlotInfo(slotIndex = 3, champion = caitlyn, explicitRole = LaneRole.ADC, summonerSpells = listOf("flash", "heal")),
+            ScannedSlotInfo(slotIndex = 4, champion = darius, explicitRole = LaneRole.TOP, summonerSpells = listOf("flash", "ghost"))
+        )
+
+        val audit = mutableListOf<String>()
+        val resolved = DraftValidationLayer.resolveTeamRolesDetailed(slots, allChamps, audit, isAllyTeam = true)
+
+        assertEquals("Thresh en slot 0 debe asignarse como SUPPORT", "Thresh", resolved.assignments[LaneRole.SUPPORT]?.name)
+        assertEquals("Lee Sin en slot 1 debe asignarse como JUNGLE", "Lee Sin", resolved.assignments[LaneRole.JUNGLE]?.name)
+        assertEquals("Ahri en slot 2 debe asignarse como MID", "Ahri", resolved.assignments[LaneRole.MID]?.name)
+        assertEquals("Caitlyn en slot 3 debe asignarse como ADC", "Caitlyn", resolved.assignments[LaneRole.ADC]?.name)
+        assertEquals("Darius en slot 4 debe asignarse como TOP", "Darius", resolved.assignments[LaneRole.TOP]?.name)
+    }
+
+    @Test
+    fun testViChampionPreservationVsMasteryBadge() {
+        val vi = Champion(id = "vi", name = "Vi", primaryRole = LaneRole.JUNGLE)
+        val darius = Champion(id = "darius", name = "Darius", primaryRole = LaneRole.TOP)
+        val allChamps = listOf(vi, darius)
+
+        // Caso 1: "VI DARIUS" -> VI es maestría 6 de Darius, debe extraerse Darius
+        val clean1 = DraftValidationLayer.stripLeadingMasteryOrRoleIconWithAudit("VI DARIUS", allChamps).cleanText
+        assertEquals("DARIUS", clean1)
+
+        // Caso 2: "VI Akashy" -> VI es la campeona y Akashy es el invocador/texto adicional, NO debe borrarse VI
+        val clean2 = DraftValidationLayer.stripLeadingMasteryOrRoleIconWithAudit("VI Akashy", allChamps).cleanText
+        assertEquals("VI Akashy", clean2)
+        val detected = ChampionNameResolver.findChampionInText(clean2, allChamps)
+        assertEquals("Vi", detected?.name)
     }
 
     @Test

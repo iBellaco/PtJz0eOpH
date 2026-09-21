@@ -27,8 +27,6 @@ fun ScannerDebugOverlay(
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
     val density = LocalDensity.current
     
-    val allyRoles = listOf("TOP", "JUNGLE", "MID", "ADC", "SUPPORT")
-
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
@@ -99,10 +97,11 @@ fun ScannerDebugOverlay(
                 style = Stroke(width = 1.2f)
             )
 
-            // Etiqueta del slot / rol aliado
-            val allyRoleLabel = allyRoles.getOrElse(sIdx) { "S${sIdx + 1}" }
+            // Etiqueta del slot / rol aliado dinámico
+            val detectedRole = DraftVisionScanner.allySlotRolesCache[sIdx]?.shortName
+            val slotLabel = if (detectedRole != null) "Aliado ${sIdx + 1} ($detectedRole)" else "Aliado ${sIdx + 1}"
             drawContext.canvas.nativeCanvas.drawText(
-                "Slot ${sIdx + 1} ($allyRoleLabel)",
+                slotLabel,
                 allyX,
                 allyY - avatarRadius - 6f,
                 labelPaint

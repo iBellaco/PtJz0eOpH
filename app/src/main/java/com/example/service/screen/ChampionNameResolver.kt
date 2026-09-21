@@ -245,7 +245,7 @@ object ChampionNameResolver {
             if (insideChamp != null) return insideChamp
         }
 
-        val stripped = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(trimmed)
+        val stripped = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(trimmed, safeChamps)
         val clean = normalize(trimmed)
         val cleanStripped = normalize(stripped)
         if (clean.isBlank() || UI_IGNORE_WORDS.contains(clean)) return null

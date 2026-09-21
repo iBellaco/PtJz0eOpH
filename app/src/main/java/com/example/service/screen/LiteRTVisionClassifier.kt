@@ -476,15 +476,15 @@ object LiteRTVisionClassifier {
     ): Pair<Champion, Int>? = withContext(Dispatchers.Default) {
         val slotDesc = if (isAlly) "Aliado 5 (10º Pick)" else "Rival 5 (10º Pick)"
 
-        // REGLA FUNDAMENTAL: Requiere que las selecciones 1 a 9 estén presentes
-        if (confirmedPicksCount < 9) {
+        // REGLA: Requiere que las selecciones previas estén presentes (al menos 8 detectadas)
+        if (confirmedPicksCount < 8) {
             resetStabilityTracker()
             val copiedCrop = try { cropBitmap?.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
             _reportFlow.value = LiteRTInferenceReport(
                 status = EngineStatus.WAITING_FOR_PICKS_1_TO_9,
                 pickedChampion = null,
                 confidencePercent = 0,
-                decisionReason = "Esperando selecciones 1 al 9 completas ($confirmedPicksCount/9 detectados)",
+                decisionReason = "Esperando selecciones previas ($confirmedPicksCount/10 detectados)",
                 slotDescription = slotDesc,
                 evaluatedPicksCount = confirmedPicksCount,
                 cropBitmap = copiedCrop ?: _reportFlow.value.cropBitmap

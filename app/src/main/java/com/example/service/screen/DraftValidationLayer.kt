@@ -223,7 +223,7 @@ object DraftValidationLayer {
     /**
      * Versión con auditoría que devuelve cada transformación paso a paso para el mecanismo de logging.
      */
-    fun stripLeadingMasteryOrRoleIconWithAudit(rawText: String): MasteryRemovalAudit {
+    fun stripLeadingMasteryOrRoleIconWithAudit(rawText: String, allChampions: List<Champion> = emptyList()): MasteryRemovalAudit {
         var clean = rawText.trim()
         val steps = mutableListOf<String>()
         if (clean.isBlank()) return MasteryRemovalAudit(rawText, "", emptyList())
@@ -267,11 +267,17 @@ object DraftValidationLayer {
                 changed = true
             }
 
-            // Caso especial "VI <CAMPEON>" (ej: "VI DARIUS" -> "DARIUS"). Si va seguido de otro texto no vacío, es maestría 6
+            // Caso especial "VI <CAMPEON>" (ej: "VI DARIUS" -> "DARIUS"). Si va seguido de un campeón válido, es maestría 6.
+            // Si el texto restante no es un campeón (ej: "VI Akashy"), "VI" es el nombre de la campeona y no debe quitarse.
             if (clean.length > 3 && clean.startsWith("VI ", ignoreCase = true)) {
                 val remainder = clean.substring(3).trim()
-                if (remainder.isNotBlank()) {
-                    steps.add("Quitar prefijo de maestría 6 'VI '")
+                val isRemainderChamp = if (allChampions.isNotEmpty()) {
+                    ChampionNameResolver.findChampionInText(remainder, allChampions) != null
+                } else {
+                    true
+                }
+                if (isRemainderChamp) {
+                    steps.add("Quitar prefijo de maestría 6 'VI ' (campeón en resto: '$remainder')")
                     clean = remainder
                     changed = true
                 }
@@ -281,6 +287,7 @@ object DraftValidationLayer {
             // Ejemplos: "V JINX" -> "JINX", "W JINX" -> "JINX", "7 JINX" -> "JINX", "• APOYO" -> "APOYO", "Y AHRI" -> "AHRI"
             val spaceIndex = clean.indexOf(' ')
             if (spaceIndex in 1..3) {
+                val prefix = clean.substring(0, spaceIndex).trim()
                 val remainder = clean.substring(spaceIndex + 1).trim()
                 val normLower = clean.lowercase(Locale.ROOT)
                 val isKnownTwoWordChamp = normLower.startsWith("dr ") || normLower.startsWith("lee ") ||
@@ -288,7 +295,10 @@ object DraftValidationLayer {
                     normLower.startsWith("miss ") || normLower.startsWith("twisted ") ||
                     normLower.startsWith("master ") || normLower.startsWith("aurelion ") ||
                     normLower.startsWith("tahm ")
-                if (!isKnownTwoWordChamp && remainder.isNotBlank()) {
+                val isViChampion = prefix.equals("vi", ignoreCase = true) &&
+                    allChampions.isNotEmpty() &&
+                    ChampionNameResolver.findChampionInText(remainder, allChampions) == null
+                if (!isKnownTwoWordChamp && !isViChampion && remainder.isNotBlank()) {
                     val removed = clean.substring(0, spaceIndex + 1)
                     steps.add("Quitar letra/glifo de escudo de maestría aislado con espacio ('$removed')")
                     clean = remainder
@@ -330,8 +340,8 @@ object DraftValidationLayer {
         return MasteryRemovalAudit(rawText, clean, steps)
     }
 
-    fun stripLeadingMasteryOrRoleIcon(rawText: String): String {
-        return stripLeadingMasteryOrRoleIconWithAudit(rawText).cleanText
+    fun stripLeadingMasteryOrRoleIcon(rawText: String, allChampions: List<Champion> = emptyList()): String {
+        return stripLeadingMasteryOrRoleIconWithAudit(rawText, allChampions).cleanText
     }
 
     /**

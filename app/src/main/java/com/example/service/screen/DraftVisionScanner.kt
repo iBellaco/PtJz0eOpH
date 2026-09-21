@@ -183,7 +183,7 @@ object DraftVisionScanner {
 
     // Memoria persistente de los carriles asignados a cada slot aliado (0..4)
     // En Wild Rift, el carril asignado a cada jugador es fijo durante toda la fase de selección
-    private val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
+    val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
     // Memoria persistente de los nombres de invocador aliados (0..4)
     private val allySummonerNamesCache = mutableMapOf<Int, String>()
     // Memoria persistente del slot asignado al usuario
@@ -944,20 +944,16 @@ object DraftVisionScanner {
                 }
             }
 
-            // ASIGNACIÓN DETERMINÍSTICA DE ROLES ALIADOS (5 ROLES POR SLOT SEGÚN DISEÑO DE WILD RIFT)
-            // En Wild Rift, cada slot aliado muestra primero el carril que va a ir:
-            // Slot 0 -> TOP (Calle de Barón)
-            // Slot 1 -> JUNGLE (Jungla)
-            // Slot 2 -> MID (Calle Central)
-            // Slot 3 -> ADC (Calle del Dragón)
-            // Slot 4 -> SUPPORT (Soporte / Apoyo)
-            // Luego esa línea se cambia por el nombre del campeón al seleccionarlo.
-            // Por lo tanto, el carril del slot i es fijo determinístico según su posición o lectura explícita.
+            // Solo asignar rol si ya fue detectado explícitamente en el slot o en caché
+            // No forzar la lista de roles por defecto (TOP, JUG, MID, ADC, SUP) porque el orden de carriles
+            // en Wild Rift cambia dinámicamente según la partida.
             for (i in 0..4) {
-                val assignedRole = allySlots[i].explicitRole ?: allySlotRolesCache[i] ?: defaultRolesList[i]
-                allySlotRolesCache[i] = assignedRole
-                allySlots[i].explicitRole = assignedRole
-                allySlots[i].assignedRole = assignedRole
+                val assignedRole = allySlots[i].explicitRole ?: allySlotRolesCache[i]
+                if (assignedRole != null) {
+                    allySlotRolesCache[i] = assignedRole
+                    allySlots[i].explicitRole = assignedRole
+                    allySlots[i].assignedRole = assignedRole
+                }
             }
 
             // Si se detectó el slot del usuario (marcado con "(TÚ)", "Porcentaje de victorias" o nombre), asignar su rol; si no, preservar el rol activo del usuario
@@ -1458,7 +1454,7 @@ object DraftVisionScanner {
         var lastPickChamp: Champion? = targetSlot.champion
         var lastPickRecognized = (lastPickChamp != null)
 
-        if (confirmedPicksCount == 9 && targetSlot.champion == null) {
+        if (confirmedPicksCount >= 8 && targetSlot.champion == null) {
             val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
                 cropBitmap = tenthCrop,
                 isAlly = actualTenthIsAlly,
@@ -1497,7 +1493,7 @@ object DraftVisionScanner {
                 confirmedChampionIds = confirmedChampIds,
                 confirmedPicksCount = confirmedPicksCount,
                 slotIndex = actualTenthSlotIndex,
-                isSlotShowingLaneOrEmpty = (confirmedPicksCount < 9),
+                isSlotShowingLaneOrEmpty = (confirmedPicksCount < 8),
                 isActiveSelectionPhase = isActiveSelectionDetected,
                 context = context
             )
@@ -1505,25 +1501,41 @@ object DraftVisionScanner {
 
         try { tenthCrop?.recycle() } catch (_: Throwable) {}
         
-        // 4.1 Aliados: Cada slot aliado (0..4) mapea determinísticamente a su carril (allySlotRolesCache)
-        val alliesMap = mutableMapOf<LaneRole, Champion>()
-        val allyConfidences = mutableMapOf<LaneRole, Int>()
+        // 4.1 Aliados: Asignación dinámica e inteligente de roles aliados.
+        // Los slots aliados en Wild Rift cambian de orden partida tras partida (no son fijos TOP, JUG, MID, ADC, SUP).
+        // Se resuelven dinámicamente mediante DraftValidationLayer tomando en cuenta:
+        // - Hechizo Castigo (Smite) -> ROL JUNGLA 100%
+        // - Rol explícito detectado por OCR en el slot
+        // - Perfil de roles primarios y secundarios de los campeones seleccionados
+        val standardRoles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
+        val validAllySlots = allySlots.filter { it.champion != null }
+        val allyResolved = DraftValidationLayer.resolveTeamRolesDetailed(validAllySlots, allChamps, auditList, isAllyTeam = true)
+        val alliesMap = allyResolved.assignments.toMutableMap()
+        val allyConfidences = allyResolved.confidences.toMutableMap()
 
-        for (i in 0..4) {
-            val slot = allySlots[i]
-            val role = allySlotRolesCache[i] ?: slot.explicitRole ?: slot.assignedRole ?: defaultRolesList[i]
-            slot.assignedRole = role
-            slot.explicitRole = role
-            val champ = slot.champion
-            if (champ != null) {
-                alliesMap[role] = champ
-                allyConfidences[role] = slot.confidencePercent.coerceIn(1, 100)
-                AppLogger.d(TAG, "Aliado Slot $i (${role.shortName}) -> ${champ.name}")
+        // Preservar cualquier campeón aliado que no haya sido mapeado aún
+        val assignedAllyChamps = alliesMap.values.map { it.id }.toSet()
+        for (slot in validAllySlots) {
+            val champ = slot.champion ?: continue
+            if (!assignedAllyChamps.contains(champ.id)) {
+                val availableRoles = standardRoles.filter { !alliesMap.containsKey(it) }
+                val targetRole = availableRoles.firstOrNull() ?: defaultRolesList.getOrNull(slot.slotIndex) ?: LaneRole.TOP
+                alliesMap[targetRole] = champ
+                slot.assignedRole = targetRole
+                slot.explicitRole = targetRole
+                allySlotRolesCache[slot.slotIndex] = targetRole
+                AppLogger.d(TAG, "Aliado ${champ.name} preservado y asignado a ${targetRole.shortName}")
+            } else {
+                val resolvedRole = alliesMap.entries.find { it.value.id == champ.id }?.key
+                if (resolvedRole != null) {
+                    slot.assignedRole = resolvedRole
+                    slot.explicitRole = resolvedRole
+                    allySlotRolesCache[slot.slotIndex] = resolvedRole
+                }
             }
         }
 
         // 4.2 Enemigos: Asignación validada por roles primarios y secundarios de los picks seleccionados
-        val standardRoles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
         val validEnemySlots = enemySlots.filter { it.champion != null }
         val enemyResolved = DraftValidationLayer.resolveTeamRolesDetailed(validEnemySlots, allChamps, auditList, isAllyTeam = false)
         val enemiesMap = enemyResolved.assignments.toMutableMap()

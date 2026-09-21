@@ -37,23 +37,19 @@ import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.roundToInt
 
 enum class CalibrationTarget(val title: String, val subtitle: String) {
-    TOP_ENEMY_5("⭐ 10º Pick Rival Superior (Top 5)", "Calibrar círculo superior derecho del 10º pick rival"),
-    TOP_ALLY_5("⭐ 10º Pick Aliado Superior (Top 5)", "Calibrar círculo superior izquierdo del 10º pick aliado"),
-    TOP_AVATAR_Y("Altura Y Círculos Superiores", "Mover arriba/abajo la barra superior de avatares"),
-    TOP_AVATAR_SIZE("Tamaño Círculos Superiores (⌀)", "Ajustar diámetro de los 10 avatares de la barra superior"),
-    AVATAR_SIZE("Tamaño Avatar Slots (⌀)", "Agrandar o reducir radio de escaneo de retratos en slots"),
     GLOBAL_ALLY_X("Columna Aliados X", "Mover horizontalmente todos los avatares aliados verticales"),
     GLOBAL_ENEMY_X("Columna Rivales X", "Mover horizontalmente todos los avatares rivales verticales"),
-    ENEMY_SLOT_4("10º Pick Rival Inferior (Slot 5)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
-    ALLY_SLOT_4("10º Pick Aliado Inferior (Slot 5)", "Ajuste vertical Y del slot 5 aliado (abajo izquierda)"),
+    AVATAR_SIZE("Tamaño Avatar Slots (⌀)", "Agrandar o reducir radio de escaneo de retratos en slots"),
     ALLY_SLOT_0("Aliado 1 (TOP)", "Ajuste vertical Y del carril de Barón"),
     ALLY_SLOT_1("Aliado 2 (JG)", "Ajuste vertical Y de la Jungla"),
     ALLY_SLOT_2("Aliado 3 (MID)", "Ajuste vertical Y del carril Central"),
     ALLY_SLOT_3("Aliado 4 (ADC)", "Ajuste vertical Y del Tirador"),
+    ALLY_SLOT_4("Aliado 5 (Slot Inferior)", "Ajuste vertical Y del slot 5 aliado (abajo izquierda)"),
     ENEMY_SLOT_0("Rival 1", "Ajuste vertical Y del slot 1 rival"),
     ENEMY_SLOT_1("Rival 2", "Ajuste vertical Y del slot 2 rival"),
     ENEMY_SLOT_2("Rival 3", "Ajuste vertical Y del slot 3 rival"),
     ENEMY_SLOT_3("Rival 4", "Ajuste vertical Y del slot 4 rival"),
+    ENEMY_SLOT_4("Rival 5 (Slot Inferior)", "Ajuste vertical Y del slot 5 rival (abajo derecha)"),
     GLOBAL_Y("Mover Todos los Slots (Y)", "Desplazar verticalmente todas las casillas")
 }
 
@@ -69,7 +65,7 @@ fun DraftCalibrationPanel(
     LaunchedEffect(currentConfig) {
         config = currentConfig
     }
-    var selectedTarget by remember { mutableStateOf(CalibrationTarget.TOP_ENEMY_5) }
+    var selectedTarget by remember { mutableStateOf(CalibrationTarget.GLOBAL_ALLY_X) }
     var stepFactor by remember { mutableStateOf(0.005f) } // 0.5% paso normal
 
     fun updateAndApply(newConfig: VisionCalibrationConfig) {
@@ -84,20 +80,6 @@ fun DraftCalibrationPanel(
         val effectiveDeltaY = deltaY
 
         val updated = when (selectedTarget) {
-            CalibrationTarget.TOP_ENEMY_5 -> cur.copy(
-                topEnemy5XRatio = (cur.topEnemy5XRatio + effectiveDeltaX).coerceIn(0.70f, 0.99f),
-                topEnemyXRatios = cur.topEnemyXRatios.toMutableList().also {
-                    it[4] = (it[4] + effectiveDeltaX).coerceIn(0.70f, 0.99f)
-                }
-            )
-            CalibrationTarget.TOP_ALLY_5 -> cur.copy(
-                topAlly5XRatio = (cur.topAlly5XRatio + effectiveDeltaX).coerceIn(0.05f, 0.35f),
-                topAllyXRatios = cur.topAllyXRatios.toMutableList().also {
-                    it[4] = (it[4] + effectiveDeltaX).coerceIn(0.05f, 0.35f)
-                }
-            )
-            CalibrationTarget.TOP_AVATAR_Y -> cur.copy(topAvatarYRatio = (cur.topAvatarYRatio + effectiveDeltaY).coerceIn(0.01f, 0.30f))
-            CalibrationTarget.TOP_AVATAR_SIZE -> cur.copy(topAvatarDiameterRatio = (cur.topAvatarDiameterRatio + effectiveDeltaSize).coerceIn(0.02f, 0.20f))
             CalibrationTarget.GLOBAL_ALLY_X -> cur.copy(allyAvatarCenterX = (cur.allyAvatarCenterX + effectiveDeltaX).coerceIn(0.01f, 0.40f))
             CalibrationTarget.GLOBAL_ENEMY_X -> cur.copy(enemyAvatarCenterX = (cur.enemyAvatarCenterX + effectiveDeltaX).coerceIn(0.60f, 0.99f))
             CalibrationTarget.AVATAR_SIZE -> cur.copy(avatarDiameterRatio = (cur.avatarDiameterRatio + effectiveDeltaSize).coerceIn(0.04f, 0.28f))
@@ -229,17 +211,15 @@ fun DraftCalibrationPanel(
                     // Top 5 Aliados
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                         (0..4).forEach { idx ->
-                            val is10thAlly = idx == 4 && selectedTarget == CalibrationTarget.TOP_ALLY_5
-                            val isTopActive = is10thAlly || selectedTarget == CalibrationTarget.TOP_AVATAR_Y || selectedTarget == CalibrationTarget.TOP_AVATAR_SIZE
                             Box(
                                 modifier = Modifier
                                     .size(13.dp)
                                     .clip(CircleShape)
-                                    .background(if (isTopActive) HextechCyan else Color(0xFF0F3B56))
-                                    .border(0.8.dp, if (isTopActive) Color.White else HextechCyan.copy(alpha = 0.5f), CircleShape),
+                                    .background(Color(0xFF0F3B56))
+                                    .border(0.8.dp, HextechCyan.copy(alpha = 0.5f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("${idx + 1}", color = if (isTopActive) Color.Black else HextechCyan, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                                Text("${idx + 1}", color = HextechCyan, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -250,17 +230,15 @@ fun DraftCalibrationPanel(
                     // Top 5 Rivales
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                         (0..4).forEach { idx ->
-                            val is10thEnemy = idx == 4 && selectedTarget == CalibrationTarget.TOP_ENEMY_5
-                            val isTopActive = is10thEnemy || selectedTarget == CalibrationTarget.TOP_AVATAR_Y || selectedTarget == CalibrationTarget.TOP_AVATAR_SIZE
                             Box(
                                 modifier = Modifier
                                     .size(13.dp)
                                     .clip(CircleShape)
-                                    .background(if (is10thEnemy) HextechGold else if (isTopActive) DangerRed else Color(0xFF4A1A22))
-                                    .border(0.8.dp, if (is10thEnemy) Color.White else DangerRed.copy(alpha = 0.5f), CircleShape),
+                                    .background(Color(0xFF4A1A22))
+                                    .border(0.8.dp, DangerRed.copy(alpha = 0.5f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("${idx + 1}", color = if (is10thEnemy) Color.Black else Color.White, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                                Text("${idx + 1}", color = Color.White, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
