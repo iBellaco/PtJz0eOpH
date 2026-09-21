@@ -496,80 +496,7 @@ object DraftVisionScanner {
                     // - Si el jugador ya seleccionó su campeón: el nombre de la línea cambia por el NOMBRE DEL CAMPEÓN (ej: "YUUMI", "ZERI", "PANTHEON", "URGOT").
                     // El icono de maestría a la izquierda persiste siempre y se ignora como referencia.
                     
-                    // Fase A: Buscar primero si alguna de las líneas o elementos corresponde a un campeón
-                    for ((line, box) in entries) {
-                        if (DraftValidationLayer.isNoiseText(line)) continue
-                        val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
-
-                        var matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
-                            ?: ChampionNameResolver.findChampionInText(line, allChamps)
-
-                        if (matchedChamp == null) {
-                            // Separar tokens si la línea tiene glifos o iconos de maestría (ej: "V YASUO", "M7 DARIUS", "VII JINX", "4 KAI'SA")
-                            val cleanLine = line.replace(Regex("^[^a-zA-Z0-9]+"), "").trim()
-                            val tokens = cleanLine.split(Regex("\\s+")).filter { it.isNotBlank() }
-
-                            // Probar tokens individuales de derecha a izquierda (el campeón siempre va al final tras el icono)
-                            for (t in tokens.reversed()) {
-                                if (t.length >= 2 && !DraftValidationLayer.isNoiseText(t)) {
-                                    val tStripped = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(t)
-                                    val c = ChampionNameResolver.findChampionInText(tStripped, allChamps)
-                                        ?: ChampionNameResolver.findChampionInText(t, allChamps)
-                                    if (c != null) {
-                                        matchedChamp = c
-                                        break
-                                    }
-                                }
-                            }
-
-                            // Probar pares de tokens consecutivos (ej: "Lee Sin", "Jarvan IV", "Miss Fortune", "Twisted Fate", "Master Yi")
-                            if (matchedChamp == null && tokens.size >= 2) {
-                                for (idx in 0 until tokens.size - 1) {
-                                    val pair = "${tokens[idx]} ${tokens[idx + 1]}"
-                                    val c = ChampionNameResolver.findChampionInText(pair, allChamps)
-                                    if (c != null) {
-                                        matchedChamp = c
-                                        break
-                                    }
-                                }
-                            }
-
-                            // Probar prefijos de maestría pegados al nombre sin espacio (ej: "VYASUO", "4DARIUS", "7JINX", "VJINX", "M7ZED")
-                            if (matchedChamp == null) {
-                                for (token in tokens) {
-                                    for (pLen in 1..3) {
-                                        if (token.length > pLen + 1) {
-                                            val candidate = token.substring(pLen).trim()
-                                            val c = ChampionNameResolver.findChampionInText(candidate, allChamps)
-                                            if (c != null) {
-                                                matchedChamp = c
-                                                break
-                                            }
-                                        }
-                                    }
-                                    if (matchedChamp != null) break
-                                }
-                            }
-                        }
-
-                        if (matchedChamp != null) {
-                            detectedChampInSlot = matchedChamp
-                            textDiagnosticsList.add(
-                                TextBlockDiagnostic(
-                                    text = line,
-                                    rect = box ?: Rect(0, 0, 10, 10),
-                                    isAlly = true,
-                                    slotIndex = i,
-                                    tag = "CAMPEÓN: ${matchedChamp.name}",
-                                    color = android.graphics.Color.GREEN
-                                )
-                            )
-                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Campeón confirmado: ${matchedChamp.name}")
-                            break
-                        }
-                    }
-
-                    // Fase B: Buscar rol asignado al slot
+                    // Fase A: Buscar primero si el slot muestra el nombre de una línea (ej: "CALLE CENTRAL", "JUNGLA", "APOYO", "CALLE DEL BARÓN", "CALLE DEL DRAGÓN")
                     for ((line, box) in entries) {
                         if (DraftValidationLayer.isNoiseText(line)) continue
                         val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
@@ -585,8 +512,9 @@ object DraftVisionScanner {
                         }
                     }
 
-                    // Fase C: Si NO se detectó campeón y sí se detectó rol, el slot está en espera de selección
-                    if (detectedChampInSlot == null && detectedRoleInSlot != null) {
+                    // Fase B: Si el slot muestra la línea, ESTÁ EN ESPERA DE SELECCIÓN (Sin Campeón)
+                    if (detectedRoleInSlot != null) {
+                        detectedChampInSlot = null
                         allySlotConfirmedChampions[i] = null
                         isSlotShowingLane = true
                         allySlotShowingLane[i] = true
@@ -595,7 +523,49 @@ object DraftVisionScanner {
                         slot.champion = null
                         slot.confidencePercent = 0
                         slot.isLikelyUnpicked = true
-                        AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea: ${detectedRoleInSlot.shortName} (Esperando selección)")
+                        AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea visible: ${detectedRoleInSlot.shortName} (Esperando selección, sin campeón)")
+                    } else {
+                        // Fase C: Si NO muestra línea, buscar si muestra el nombre textual de un campeón
+                        for ((line, box) in entries) {
+                            if (DraftValidationLayer.isNoiseText(line)) continue
+                            val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
+
+                            var matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
+                                ?: ChampionNameResolver.findChampionInText(line, allChamps)
+
+                            if (matchedChamp == null) {
+                                val cleanLine = line.replace(Regex("^[^a-zA-Z0-9]+"), "").trim()
+                                val tokens = cleanLine.split(Regex("\\s+")).filter { it.isNotBlank() }
+
+                                for (t in tokens.reversed()) {
+                                    if (t.length >= 2 && !DraftValidationLayer.isNoiseText(t)) {
+                                        val tStripped = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(t)
+                                        val c = ChampionNameResolver.findChampionInText(tStripped, allChamps)
+                                            ?: ChampionNameResolver.findChampionInText(t, allChamps)
+                                        if (c != null) {
+                                            matchedChamp = c
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (matchedChamp != null) {
+                                detectedChampInSlot = matchedChamp
+                                textDiagnosticsList.add(
+                                    TextBlockDiagnostic(
+                                        text = line,
+                                        rect = box ?: Rect(0, 0, 10, 10),
+                                        isAlly = true,
+                                        slotIndex = i,
+                                        tag = "CAMPEÓN: ${matchedChamp.name}",
+                                        color = android.graphics.Color.GREEN
+                                    )
+                                )
+                                AppLogger.d(TAG, "OCR Aliado Slot $i -> Campeón confirmado: ${matchedChamp.name}")
+                                break
+                            }
+                        }
                     }
 
                     if (detectedChampInSlot != null) {
@@ -1064,9 +1034,7 @@ object DraftVisionScanner {
 
             val ocrChamp = allyOcrChampions[i]
             val roleForSlot = allySlotRolesCache[i] ?: defaultRolesList[i]
-            val isUnpicked = (slot.champion == null && allySlotConfirmedChampions[i] == null)
-
-            val finalChamp = allySlotFilters[i].process(ocrChamp, isUnpicked = isUnpicked, persistentCache = allySlotConfirmedChampions[i])
+            val finalChamp = ocrChamp
             
             if (finalChamp != null) {
                 allySlotConfirmedChampions[i] = finalChamp
@@ -1077,6 +1045,7 @@ object DraftVisionScanner {
                 allySlotHasConfirmedChampOcr[i] = true
                 allySlotShowingLane[i] = false
             } else {
+                allySlotConfirmedChampions[i] = null
                 slot.champion = null
                 slot.confidencePercent = 0
                 slot.explicitRole = roleForSlot
@@ -1118,15 +1087,14 @@ object DraftVisionScanner {
             val roiRect = Rect(startX, startY, startX + avatarDiameter, startY + avatarDiameter)
 
             val ocrChamp = enemyOcrChampions[i]
-            val isUnpicked = (slot.champion == null && enemySlotConfirmedChampions[i] == null)
-
-            val finalChamp = enemySlotFilters[i].process(ocrChamp, isUnpicked = isUnpicked, persistentCache = enemySlotConfirmedChampions[i])
+            val finalChamp = ocrChamp
 
             if (finalChamp != null) {
                 enemySlotConfirmedChampions[i] = finalChamp
                 slot.champion = finalChamp
                 slot.confidencePercent = 100
             } else {
+                enemySlotConfirmedChampions[i] = null
                 slot.champion = null
                 slot.confidencePercent = 0
             }

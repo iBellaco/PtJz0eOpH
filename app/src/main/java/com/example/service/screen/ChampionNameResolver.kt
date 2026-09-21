@@ -406,26 +406,8 @@ object ChampionNameResolver {
             }
         }
 
-        // 6. Tolerancia Difusa OCR (Fuzzy Matching Levenshtein) para caracteres confundidos por ML Kit
-        if (tokensToScan.isNotEmpty()) {
-            for (token in tokensToScan) {
-                if (token.length >= 4 && !UI_IGNORE_WORDS.contains(token)) {
-                    val maxAllowedDistance = if (token.length >= 7) 2 else 1
-                    for ((knownName, id) in KNOWN_CHAMPIONS_MAP) {
-                        if (knownName.length >= 4 && kotlin.math.abs(token.length - knownName.length) <= maxAllowedDistance) {
-                            val dist = levenshteinDistance(token, knownName)
-                            if (dist <= maxAllowedDistance) {
-                                val resolved = resolveChampionById(id, safeChamps)
-                                if (!DraftValidationLayer.isLikelySummonerName(token, championName = resolved.name)) {
-                                    return resolved
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
+        // 6. Validación estricta: NUNCA usar coincidencias difusas (Levenshtein) que confundan nombres de invocador (ej: 'DIEGO' -> 'VIEGO').
+        // La detección del 1 al 9 es 100% por nombre textual canónico exacto.
         return null
     }
 }
