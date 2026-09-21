@@ -1220,7 +1220,7 @@ object DraftVisionScanner {
             val roiRect = Rect(startX, startY, startX + avatarDiameter, startY + avatarDiameter)
 
             val ocrChamp = allyOcrChampions[i]
-            val roleForSlot = allySlotRolesCache[i] ?: defaultRolesList[i]
+            val roleForSlot = allySlotRolesCache[i]
             val isUnpicked = (slot.champion == null && allySlotConfirmedChampions[i] == null)
 
             val finalChamp = allySlotFilters[i].process(ocrChamp, isUnpicked = isUnpicked, persistentCache = allySlotConfirmedChampions[i])
@@ -1241,11 +1241,12 @@ object DraftVisionScanner {
                 allySlotShowingLane[i] = true
             }
 
+            val roleLabel = roleForSlot?.shortName ?: "Slot ${i + 1}"
             val diagStatus = if (finalChamp != null) DiagnosticStatus.CONFIRMADO else DiagnosticStatus.VACIO
             val diagReason = if (finalChamp != null) {
-                "Campeón confirmado por nombre OCR: ${finalChamp.name} -> ${roleForSlot.shortName}"
+                "Campeón confirmado por nombre OCR: ${finalChamp.name} -> $roleLabel"
             } else {
-                "Esperando selección en carril ${roleForSlot.shortName} (${allySummonerNamesCache[i] ?: "Invocador"})"
+                "Esperando selección en $roleLabel (${allySummonerNamesCache[i] ?: "Invocador"})"
             }
 
             val diagnostic = SlotDiagnostic(
@@ -1356,6 +1357,12 @@ object DraftVisionScanner {
                 allySpellsMap[i] = allySlotSpells
             }
             allySlots[i].summonerSpells = allySlotSpells
+            val hasSmite = allySlotSpells.any { it.equals("Castigo", ignoreCase = true) || it.equals("Smite", ignoreCase = true) }
+            if (hasSmite) {
+                allySlotRolesCache[i] = LaneRole.JUNGLE
+                allySlots[i].explicitRole = LaneRole.JUNGLE
+                allySlots[i].assignedRole = LaneRole.JUNGLE
+            }
         }
 
         // -----------------------------------------------------------------------------------------

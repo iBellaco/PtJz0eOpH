@@ -146,17 +146,21 @@ class ScreenCaptureManager(private val context: Context) {
                 // 2. El compositor de Android adapta de forma nativa y segura cualquier orientación (vertical/horizontal)
                 //    sin necesidad de destruir el VirtualDisplay ni el ImageReader.
                 // 3. Se previene de raíz la SecurityException de Android 14+ generada al reutilizar el token de MediaProjection.
-                val captureWidth = maxOf(screenWidth, screenHeight).coerceAtLeast(1280)
-                val captureHeight = minOf(screenWidth, screenHeight).coerceAtLeast(720)
+                val rawW = maxOf(screenWidth, screenHeight)
+                val rawH = minOf(screenWidth, screenHeight)
+                // En pantallas QHD+ (como Samsung Galaxy S24/S26 Ultra 3120x1440), limitar la resolución de captura
+                // a un máximo de 2340x1080 para evitar consumo excesivo de memoria en la cola nativa de ImageReader
+                // y prevenir cierres forzados por falta de memoria (OOM).
+                val scale = if (rawW > 2340) 2340f / rawW else 1.0f
+                val captureWidth = (((rawW * scale).toInt() / 2) * 2).coerceAtLeast(1280)
+                val captureHeight = (((rawH * scale).toInt() / 2) * 2).coerceAtLeast(720)
 
-                // ImageReader configurado para adquisición bajo demanda por frameLock.
-                // No se usa listener de 60fps continuo para evitar sobrecarga de CPU,
-                // miles de asignaciones de memoria innecesarias y conflictos nativos de buffers.
+                // ImageReader configurado con 2 buffers bajo demanda para reducir huella de memoria en segundo plano
                 imageReader = ImageReader.newInstance(
                     captureWidth,
                     captureHeight,
                     PixelFormat.RGBA_8888,
-                    4
+                    2
                 )
 
                 virtualDisplay = mediaProjection?.createVirtualDisplay(

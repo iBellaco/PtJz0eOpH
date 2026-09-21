@@ -396,31 +396,28 @@ object LiteRTVisionClassifier {
 
         // COMPROBACIÓN CRÍTICA:
         // En Wild Rift, un slot en espera (yelmo espartano o icono de línea) o vacío es:
-        // 1. Predominantemente oscuro (el icono o yelmo ocupa un área pequeña central y deja > 55-60% del círculo como fondo oscuro).
-        // 2. En cambio, el retrato de un campeón cubre ampliamente el círculo interior (darkRatio < 45%).
-        val isAchromatic = maxSat < 32 && colorfulRatio < 0.05f
+        // 1. Predominantemente oscuro (el icono o yelmo ocupa un área pequeña central y deja > 68-75% del círculo como fondo oscuro).
+        // 2. Muy baja desviación de luminancia (sin texturas complejas, pelo, ojos, reflejos de armadura, stdDevLum < 16f).
+        // 3. En cambio, el retrato de un campeón (incluso campeones oscuros o fríos como Volibear, Malphite, Viego, Nocturne)
+        //    cubre ampliamente el círculo interior y presenta contrastes/texturas marcadas (stdDevLum >= 16f, maxLum >= 90).
+        val isAchromatic = maxSat < 30 && colorfulRatio < 0.05f
         val isEmptyOrWaiting = when {
             // 1. Prácticamente todo oscuro (slot apagado o fondo negro)
-            maxLum < 60 -> true
+            maxLum < 45 -> true
 
-            // 2. Fondo oscuro predominante en el slot (icono de línea o yelmo espartano):
-            // En Wild Rift, los slots no elegidos tienen un fondo oscuro que cubre > 55-60% del círculo interior,
-            // mientras que el retrato de un campeón seleccionado llena la mayor parte del círculo (darkRatio < 45%).
-            darkRatio >= 0.58f -> true
-            midRingDarkRatio >= 0.54f && darkRatio >= 0.48f -> true
+            // 2. Fondo oscuro predominante con baja textura (icono de línea o yelmo espartano vacío):
+            darkRatio >= 0.72f && stdDevLum < 20f -> true
+            midRingDarkRatio >= 0.70f && darkRatio >= 0.65f && stdDevLum < 18f -> true
 
-            // 3. Luminancia global baja con fondo predominantemente oscuro:
-            avgLum < 45f && darkRatio >= 0.45f -> true
-            avgLum < 36f -> true
+            // 3. Luminancia global sumamente baja con fondo casi en su totalidad oscuro:
+            avgLum < 30f && stdDevLum < 15f -> true
 
-            // 4. Caso acromático (yelmo espartano rival o silueta monocromática):
-            isAchromatic && (darkRatio >= 0.42f || avgLum < 50f) -> true
-            isAchromatic && stdDevLum < 20f && avgLum < 60f -> true
+            // 4. Caso acromático (yelmo espartano rival sin texturas):
+            isAchromatic && darkRatio >= 0.62f && stdDevLum < 16f -> true
+            isAchromatic && stdDevLum < 12f && avgLum < 45f -> true
 
-            // 5. Firma de Icono de Línea o Resplandor de Turno Activo (pocas zonas de color/glifo sobre fondo oscuro):
-            // Un icono de carril o el anillo de selección tiene solo un pequeño porcentaje de píxeles brillantes
-            // (colorfulRatio < 0.28) y una gran extensión de fondo negro/azul oscuro (darkRatio >= 0.48f).
-            colorfulRatio < 0.28f && darkRatio >= 0.48f && avgLum < 68f -> true
+            // 5. Firma de Icono de Línea (glifo simple sobre fondo oscuro uniforme):
+            colorfulRatio < 0.15f && darkRatio >= 0.68f && stdDevLum < 18f -> true
 
             else -> false
         }

@@ -392,14 +392,14 @@ fun LiteRTEngineViewerDialog(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Icon(
-                                    imageVector = if (showScanCircles) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                    contentDescription = "Ver círculos de escaneo",
+                                    imageVector = if (showScanCircles) Icons.Default.Check else Icons.Default.Close,
+                                    contentDescription = if (showScanCircles) "Ocultar círculos de escaneo" else "Ver círculos de escaneo",
                                     tint = if (showScanCircles) Color(0xFF00E5FF) else Color(0xFF94A3B8),
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = if (showScanCircles) "Ocultar Círculos de Escaneo en Pantalla" else "Ver Círculos de Escaneo en Pantalla",
+                                    text = if (showScanCircles) "Círculos de Escaneo Activos [✓]" else "Mostrar Círculos de Escaneo [✕]",
                                     color = if (showScanCircles) Color(0xFF00E5FF) else Color(0xFFE2E8F0),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.5.sp

@@ -10,6 +10,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.BoxWithConstraints
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Science
@@ -657,7 +659,9 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                                 params.x = (startX + (targetX - startX) * fraction).toInt()
                                                 params.y = (startY + (targetY - startY) * fraction).toInt()
                                                 try {
-                                                    windowManager?.updateViewLayout(this@apply, params)
+                                                    if (this@apply.isAttachedToWindow) {
+                                                        windowManager?.updateViewLayout(this@apply, params)
+                                                    }
                                                 } catch (_: Exception) {}
                                             }
                                             animator.start()
@@ -669,7 +673,9 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 }
 
                                 try {
-                                    windowManager?.updateViewLayout(this@apply, params)
+                                    if (this@apply.isAttachedToWindow) {
+                                        windowManager?.updateViewLayout(this@apply, params)
+                                    }
                                 } catch (_: Exception) {}
                             },
                             onExpandedChange = { expanded ->
@@ -1632,13 +1638,13 @@ private fun FloatingOverlayContent(
                                         horizontalArrangement = Arrangement.spacedBy(3.dp)
                                     ) {
                                         Icon(
-                                            imageVector = if (showScanCircles) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = "Ver círculos de escaneo",
+                                            imageVector = if (showScanCircles) Icons.Default.Check else Icons.Default.Close,
+                                            contentDescription = if (showScanCircles) "Ocultar círculos de escaneo" else "Mostrar círculos de escaneo",
                                             tint = if (showScanCircles) HextechCyan else HextechGold,
                                             modifier = Modifier.size(14.dp)
                                         )
                                         Text(
-                                            text = if (showScanCircles) "Círculos ON" else "Círculos",
+                                            text = if (showScanCircles) "Círculos ✓" else "Círculos ✕",
                                             color = if (showScanCircles) HextechCyan else HextechGold,
                                             fontSize = 8.5.sp,
                                             fontWeight = FontWeight.Bold
