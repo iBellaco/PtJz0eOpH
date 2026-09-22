@@ -10,13 +10,13 @@ object WildRiftItemsData {
             name = "La Sanguinaria",
             nameEn = "Bloodthirster",
             category = "Objetos con Daños Físicos",
-            goldCost = 3000,
-            stats = "+55 daño de ataque • +250 salud máxima • +25% tasa crítica",
-            statsEn = "+55 Attack Damage • +250 Max Health • +25% Critical Rate",
-            passive = "Sangriento: +8% de vampiro físico, los ataques que golpean críticamente obtienen un 4% de vampiro físico adicional.",
-            passiveEn = "Bloody: +8% Physical Vamp, Attacks that Critically Strike gain an additional 4% Physical Vamp.",
-            coachTip = "Este objeto es un elemento básico para los portadores de ataques automáticos, ya que proporciona un fuerte aumento del daño, la probabilidad crítica y la velocidad de ataque. Su pasiva convierte los golpes críticos en robo de vida mejorado, lo que hace que los intercambios prolongados y las peleas sostenidas se inclinen a tu favor. Cuando tienes una salud crítica, se activa un escudo que salva vidas, lo que te otorga defensas adicionales y la oportunidad de sobrevivir en momentos difíciles. Ideal para tiradores y luchadores de ataque automático que necesitan un alto DPS y un mantenimiento fiable.",
-            coachTipEn = "This item is a staple for auto-attack carries, providing a strong boost to damage, critical chance, and attack speed. Its passive converts critical strikes into enhanced lifesteal, making extended trades and sustained fights lean in your favor. When you fall into critical health, a lifesaving shield activates, granting extra defenses and a chance to survive clutch moments. Ideal for marksmen and auto-attack fighters who need both high DPS and reliable sustain.",
+            goldCost = 3300,
+            stats = "+55 Daño de Ataque • +25% Tasa Crítica • +12% Robo de Vida",
+            statsEn = "+55 Attack Damage • +25% Critical Rate • +12% Life Steal",
+            passive = "Sed de Sangre: El robo de vida de los ataques básicos puede sobrecurarte y generar un escudo de hasta 180-380 de salud adicional.",
+            passiveEn = "Bloodward: Life steal from basic attacks can overheal, generating a shield that absorbs up to 180-380 damage.",
+            coachTip = "Objeto primordial de sustain para tiradores hiper-carry de críticos. Su escudo protector anticipa el daño en ráfaga enemigo y permite aguantar peleas largas.",
+            coachTipEn = "Primary sustain item for crit hyper-carries. Its overheal shield mitigates incoming burst and enables long teamfight skirmishes.",
             iconUrl = "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp"
         ),
         WildRiftItem(
@@ -2932,6 +2932,90 @@ object WildRiftItemsData {
             coachTipEn = "Ideal for marksmen who need to poke or initiate attacks from extreme safe range.",
             iconUrl = "file:///android_asset/offline_images/17b12d05612d9e67848fc60b16f961b5.webp"
         ),
+        WildRiftItem(
+            id = "fiendhunter_bolts",
+            name = "Pernos Cazamalignos",
+            nameEn = "Fiendhunter Bolts",
+            category = "Objetos con Daños Físicos",
+            goldCost = 2650,
+            stats = "+25% Tasa Crítica • +45% Velocidad de Ataque • +4% Vel. Movimiento • +20 Aceleración de Definitiva",
+            statsEn = "+25% Critical Rate • +45% Attack Speed • +4% Move Speed • +20 Ultimate Haste",
+            passive = "Caza Letal: Tras lanzar la habilidad Definitiva (H4), obtienes 3 ataques básicos potenciados durante 8 s con un 50% de velocidad de ataque adicional e impacto crítico garantizado (80% del daño crítico habitual, o +15% de daño verdadero adicional si el ataque ya asestaría un golpe crítico normal).",
+            passiveEn = "Fiend Hunt: After casting your Ultimate (H4), gain 3 empowered basic attacks for 8s with 50% bonus attack speed and guaranteed critical strikes (80% crit damage, or +15% bonus true damage if already a crit).",
+            coachTip = "Excelente para tiradores dependientes de su habilidad definitiva como Lucian, Miss Fortune, Kai'Sa o Ashe para desatar ráfagas de daño crítico devastadoras.",
+            coachTipEn = "Exceptional for ultimate-reliant marksmen like Lucian, Miss Fortune, Kai'Sa, or Ashe to burst down enemies right after activating their ultimate.",
+            iconUrl = "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp"
+        ),
+        WildRiftItem(
+            id = "yun_tal_wildarrows",
+            name = "Flechas Salvajes de Yun Tal",
+            nameEn = "Yun Tal Wildarrows",
+            category = "Objetos con Daños Físicos",
+            goldCost = 3200,
+            stats = "+50 Daño de Ataque • +25% Velocidad de Ataque",
+            statsEn = "+50 Attack Damage • +25% Attack Speed",
+            passive = "Hojasalvaje: Los ataques básicos a enemigos otorgan acumulación permanente de probabilidad crítica (hasta +25% tras 125 ataques). Además, golpear a campeones activa una ráfaga de velocidad de ataque que se reinicia con ataques continuos y golpes críticos.",
+            passiveEn = "Wild Strike: Basic attacks grant permanent critical strike chance (up to +25% after 125 attacks). Attacking champions activates a high attack speed surge that refreshes with consecutive attacks and critical strikes.",
+            coachTip = "El objeto definitivo de escalado para tiradores hiper-carry de velocidad de ataque como Jinx, Tristana, Kai'Sa y Ashe.",
+            coachTipEn = "The ultimate scaling item for high attack speed hyper-carries like Jinx, Tristana, Kai'Sa, and Ashe.",
+            iconUrl = "file:///android_asset/offline_images/1aeafb7896806a2f556ff126daf52d91.webp"
+        ),
+        WildRiftItem(
+            id = "statikk_shiv",
+            name = "Puñal de Statikk",
+            nameEn = "Statikk Shiv",
+            category = "Objetos con Daños Físicos",
+            goldCost = 2800,
+            stats = "+45 Daño de Ataque • +30% Velocidad de Ataque • +25% Tasa Crítica • +5% Vel. Movimiento",
+            statsEn = "+45 Attack Damage • +30% Attack Speed • +25% Critical Rate • +5% Move Speed",
+            passive = "Electrochoque: Moverse y atacar genera cargas energizadas. A 100 cargas, el siguiente ataque desata un rayo en cadena que inflige 90-190 de daño mágico en área a hasta 6 objetivos (daño crítico amplificado contra súbditos).",
+            passiveEn = "Electroshock: Moving and attacking builds Energized stacks. At 100 stacks, your next attack releases chain lightning dealing 90-190 magic damage to up to 6 targets (amplified critical damage vs minions).",
+            coachTip = "Proporciona limpieza instantánea de oleadas y daño en cadena masivo para peleas de equipo agrupadas.",
+            coachTipEn = "Provides instant waveclear and massive chain AoE damage for grouped teamfights.",
+            iconUrl = "file:///android_asset/offline_images/17b12d05612d9e67848fc60b16f961b5.webp"
+        ),
+        WildRiftItem(
+            id = "stormrazor",
+            name = "Navaja de Asalto",
+            nameEn = "Stormrazor",
+            category = "Objetos con Daños Físicos",
+            goldCost = 2900,
+            stats = "+45 Daño de Ataque • +25% Tasa Crítica • +20% Velocidad de Ataque",
+            statsEn = "+45 Attack Damage • +25% Critical Rate • +20% Attack Speed",
+            passive = "Paralizar: Los ataques energizados infligen 65-135 de daño mágico adicional, ralentizan al objetivo un 75% durante 0,75 s y te otorgan un 20% de velocidad de movimiento durante 1 s.",
+            passiveEn = "Paralyze: Energized attacks deal 65-135 bonus magic damage, slow the target by 75% for 0.75s, and grant you 20% bonus movement speed for 1s.",
+            coachTip = "El mejor objeto de fase temprana para tiradores que buscan presionar línea, cazar y hacer un kiting perfecto.",
+            coachTipEn = "Premier early-game item for marksmen looking to dominate laning phase, catch enemies, and execute flawless kiting.",
+            iconUrl = "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
+        ),
+        WildRiftItem(
+            id = "echoes_of_helia",
+            name = "Ecos de Helia",
+            nameEn = "Echoes of Helia",
+            category = "Objetos de Apoyo",
+            goldCost = 2400,
+            stats = "+200 Salud Máxima • +40 Poder de Habilidad • +20 Aceleración de Habilidad • +50% Regen. Maná",
+            statsEn = "+200 Max Health • +40 Ability Power • +20 Ability Haste • +50% Base Mana Regen",
+            passive = "Sifón de Almas: Dañar a campeones enemigos almacena fragmentos de alma (hasta 2). Curar o escudar a un aliado consume los fragmentos para curarlo por 80-250 de vida y dañar al enemigo más cercano.",
+            passiveEn = "Soul Siphon: Damaging enemy champions stores soul shards (up to 2). Healing or shielding an ally consumes shards to heal the ally for 80-250 and damage the nearest enemy champion.",
+            coachTip = "El objeto ideal para encantadores agresivos (Lulu, Nami, Karma, Sona, Seraphine) que combinan daño continuo con escudos y curaciones.",
+            coachTipEn = "Ideal item for aggressive enchanters (Lulu, Nami, Karma, Sona, Seraphine) weaving harass with ally shields and heals.",
+            iconUrl = "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp"
+        ),
+        WildRiftItem(
+            id = "hextech_mirror",
+            name = "Espejo Hextech",
+            nameEn = "Hextech Mirror",
+            category = "Objetos con Daños Físicos",
+            goldCost = 3000,
+            stats = "+45 Daño de Ataque • +20% Velocidad de Ataque • +15 Aceleración de Habilidad",
+            statsEn = "+45 Attack Damage • +20% Attack Speed • +15 Ability Haste",
+            passive = "Reflejo Hextech: Usar habilidades potencia tu siguiente ataque básico con daño adaptable adicional y otorga una ráfaga de velocidad de movimiento al infligir golpes críticos.",
+            passiveEn = "Hextech Reflection: Using abilities empowers your next basic attack with bonus adaptive damage and grants a movement speed boost upon landing critical strikes.",
+            coachTip = "Potencia a tiradores y duelistas que combinan el uso constante de habilidades con ataques básicos continuos.",
+            coachTipEn = "Powers up marksmen and duelists who weave frequent ability casts into their basic attack sequences.",
+            iconUrl = "file:///android_asset/offline_images/ddb7b42ff818a8e2d2f541c9dc96a0fc.webp"
+        ),
     )
 
     fun getItemsByCategory(category: String): List<WildRiftItem> =
@@ -3264,7 +3348,27 @@ object WildRiftItemsData {
         "el viento huracanado" to "galeforce",
         "mercurial scimitar" to "mercurial_scimitar",
         "cimitarra mercurial" to "mercurial_scimitar",
-        "la cimitarra mercurial" to "mercurial_scimitar"
+        "la cimitarra mercurial" to "mercurial_scimitar",
+        "fiendhunter bolts" to "fiendhunter_bolts",
+        "pernos cazamalignos" to "fiendhunter_bolts",
+        "los pernos cazamalignos" to "fiendhunter_bolts",
+        "yun tal wildarrows" to "yun_tal_wildarrows",
+        "yun tal" to "yun_tal_wildarrows",
+        "flechas salvajes de yun tal" to "yun_tal_wildarrows",
+        "las flechas salvajes de yun tal" to "yun_tal_wildarrows",
+        "statikk shiv" to "statikk_shiv",
+        "statikk" to "statikk_shiv",
+        "puñal de statikk" to "statikk_shiv",
+        "el puñal de statikk" to "statikk_shiv",
+        "stormrazor" to "stormrazor",
+        "navaja de asalto" to "stormrazor",
+        "la navaja de asalto" to "stormrazor",
+        "echoes of helia" to "echoes_of_helia",
+        "ecos de helia" to "echoes_of_helia",
+        "los ecos de helia" to "echoes_of_helia",
+        "hextech mirror" to "hextech_mirror",
+        "espejo hextech" to "hextech_mirror",
+        "el espejo hextech" to "hextech_mirror"
     )
 
     private fun normalizeString(input: String): String {
@@ -3373,6 +3477,12 @@ object WildRiftItemsData {
             cleaned.contains("eco armonico") || cleaned.contains("harmonic") -> return list.find { it.id == "harmonic_echo" }
             cleaned.contains("mandato") || cleaned.contains("mandate") -> return list.find { it.id == "imperial_mandate" }
             cleaned.contains("axiom") || cleaned.contains("axiomatico") -> return list.find { it.id == "axiom_arc" }
+            cleaned.contains("fiendhunter") || cleaned.contains("cazamalignos") -> return list.find { it.id == "fiendhunter_bolts" }
+            cleaned.contains("yun tal") || cleaned.contains("yuntal") -> return list.find { it.id == "yun_tal_wildarrows" }
+            cleaned.contains("statikk") -> return list.find { it.id == "statikk_shiv" }
+            cleaned.contains("stormrazor") || cleaned.contains("navaja de asalto") -> return list.find { it.id == "stormrazor" }
+            cleaned.contains("helia") -> return list.find { it.id == "echoes_of_helia" }
+            cleaned.contains("espejo hextech") || cleaned.contains("hextech mirror") -> return list.find { it.id == "hextech_mirror" }
         }
 
         return null

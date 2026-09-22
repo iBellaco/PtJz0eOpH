@@ -299,7 +299,7 @@ object WildRiftSpellsAndRunes {
             name = "Aplastar",
             cooldown = "10s",
             iconUrl = "file:///android_asset/spells/smite.webp",
-            description = "Mapa aplicable: Wild Rift\n\nInflige 600 de daño verdadero a los monstruos, monstruos épicos o súbditos enemigos. Al utilizar Aplastar contra monstruos, recuperas 127 de vida (70 + 10%). Aplastar se convierte en Aplastamiento desalentador tras usarlo 3 veces.",
+            description = "Mapa aplicable: Wild Rift\n\nInflige 600 de daño verdadero (1000 al evolucionar) a monstruos de la jungla y súbditos. Al usarlo contra monstruos, recuperas vida proporcional a tu salud máxima. Otorga bonificación pasiva de experiencia y oro en la jungla, y evoluciona tras limpiar 3 campamentos a Aplastamiento Desalentador.",
             category = "Combate & Daño"
         ),
 
