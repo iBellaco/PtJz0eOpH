@@ -29,15 +29,13 @@ enum class DamageType(val displayName: String) {
 
 @Serializable
 enum class ItemCategory(val displayName: String, val sectionTitle: String, val iconEmoji: String) {
-    BASIC("Artículos Básicos", "ARTÍCULOS BÁSICOS", ""),
-    MID_TIER("Objetos de Nivel Medio", "OBJETOS DE NIVEL MEDIO", "️"),
-    PHYSICAL("Objetos con Daños Físicos", "OBJETOS CON DAÑOS FÍSICOS", "️"),
-    MAGIC("Objetos de Daño Mágico", "OBJETOS DE DAÑO MÁGICO", ""),
-    DEFENSE("Objetos Defensivos", "OBJETOS DEFENSIVOS", "️"),
-    SUPPORT("Objetos de Apoyo", "OBJETOS DE APOYO", ""),
-    BOOTS_T2("Botas Nivel 2", "BOTAS NIVEL 2", ""),
-    BOOTS_T3("Botas Nivel 3", "BOTAS NIVEL 3", ""),
-    ACTIVE("Objetos de Hechizo Activos", "OBJETOS DE HECHIZO ACTIVOS", "")
+    FIGHTER("Luchador", "LUCHADOR", "⚔️"),
+    ASSASSIN("Asesino", "ASESINO", "🗡️"),
+    MARKSMAN("Tirador", "TIRADOR", "🏹"),
+    MAGIC("Mágico", "MÁGICO", "🔮"),
+    DEFENSE("Defensa", "DEFENSA", "🛡️"),
+    SUPPORT("Apoyo", "APOYO", "💚"),
+    BOOTS("Botas", "BOTAS", "🥾")
 }
 
 
@@ -149,7 +147,8 @@ data class WildRiftItem(
     val coachTip: String = "",
     val coachTipEn: String = "",
     val coachTipPt: String = "",
-    val iconUrl: String
+    val iconUrl: String,
+    val color: String = ""
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
@@ -181,6 +180,16 @@ data class WildRiftItem(
         return raw.split(Regex("[•\n]"))
             .map { it.trim() }
             .filter { it.isNotBlank() }
+    }
+
+    fun getThemeColor(): androidx.compose.ui.graphics.Color = when (color) {
+        "red" -> androidx.compose.ui.graphics.Color(0xFFE53935)
+        "orange" -> androidx.compose.ui.graphics.Color(0xFFFF7A00)
+        "blue" -> androidx.compose.ui.graphics.Color(0xFF29B6F6)
+        "green" -> androidx.compose.ui.graphics.Color(0xFF66BB6A)
+        "purple" -> androidx.compose.ui.graphics.Color(0xFFAB47BC)
+        "yellow" -> androidx.compose.ui.graphics.Color(0xFFFFD54F)
+        else -> androidx.compose.ui.graphics.Color(0xFFC8AA6E)
     }
 }
 

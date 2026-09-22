@@ -34,20 +34,6 @@ object WildRiftItemsData {
             iconUrl = "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp"
         ),
         WildRiftItem(
-            id = "magnetic_blaster",
-            name = "Cañón Magnético",
-            nameEn = "Magnetic Blaster",
-            category = "Objetos con Daños Físicos",
-            goldCost = 3000,
-            stats = "+30 Daño de Ataque • +25% Tasa Crítica • +35% Velocidad de Ataque",
-            statsEn = "+30 Attack Damage • +25% Critical Rate • +35% Attack Speed",
-            passive = "Fervor: +5% de velocidad de movimiento.\nEnergizado: Moverse y atacar generará un Ataque Energizado.\nPower Blitz: los ataques energizados obtienen 100 de alcance (50 de alcance para ataques cuerpo a cuerpo), infligen entre 40 y 100 de daño mágico adicional y otorgan 60 de velocidad de movimiento durante 0,75 segundos. Este daño rebota a 5 enemigos cercanos y puede golpear críticamente (inflige entre un 50 y un 80 % de daño adicional contra súbditos).",
-            passiveEn = "Fervor: +5% Move Speed.\nEnergized: Moving and attacking will generate an Energized Attack.\nPower Blitz: Energized Attacks gain 100 range (50 range for melee attacks), deal 40-100 bonus magic damage, and grant 60 Movement Speed for 0.75 seconds. This damage bounces to 5 nearby enemies and can Critically Strike.(Deals 50-80% bonus damage against minions.)",
-            coachTip = "Este objeto amplía tu alcance de ataque y agrega daño híbrido al potenciar cada cuarto ataque con una ráfaga mágica que puede rebotar hacia múltiples objetivos y causar un golpe crítico. Moverse y atacar cargan el golpe potenciado y, al activarlo, obtienes un gran aumento de velocidad de movimiento, lo que ayuda tanto a perseguir como a retirarte. — Perfecto para tiradores y matones de ataque automático que desean más alcance, daño a múltiples objetivos y movilidad extra en escaramuzas.",
-            coachTipEn = "This item extends your attack range and adds hybrid damage by empowering every fourth attack with a magic burst that can bounce to multiple targets and critically strike. Moving and attacking charges the empowered strike, and upon activation you gain a hefty movement speed boost, aiding both chase and retreat. — Perfect for marksmen and auto‑attack bruisers who want more reach, multi‑target damage, and extra mobility in skirmishes.",
-            iconUrl = "file:///android_asset/offline_images/17b12d05612d9e67848fc60b16f961b5.webp"
-        ),
-        WildRiftItem(
             id = "blade_of_the_ruined_king",
             name = "Espada del Rey Arruinado",
             nameEn = "Blade of the Ruined King",
@@ -2874,7 +2860,7 @@ object WildRiftItemsData {
             passiveEn = "Lifeline: If you take damage that would reduce your Health below 35%, gain a shield for 200-400 (based on level, scales with crit rate) for 5s and 10% Physical Vamp for 8s (90s cooldown).",
             coachTip = "Objeto defensivo esencial para tiradores y campeones de daño crítico frente a composiciones de alto daño explosivo o asesinos.",
             coachTipEn = "Essential defensive item for marksmen and crit carries against high-burst enemy compositions and assassins.",
-            iconUrl = "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp"
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
         ),
         WildRiftItem(
             id = "crown_of_the_shattered_queen",
@@ -2930,21 +2916,7 @@ object WildRiftItemsData {
             passiveEn = "Energized: Moving and attacking generates an Energized attack.\nSniper: Energized attacks gain up to +150 attack range (or 35% bonus range) and deal 60-140 bonus magic damage.",
             coachTip = "Ideal para tiradores que necesitan iniciar ataques o desgastar a los enemigos desde una distancia completamente segura.",
             coachTipEn = "Ideal for marksmen who need to poke or initiate attacks from extreme safe range.",
-            iconUrl = "file:///android_asset/offline_images/17b12d05612d9e67848fc60b16f961b5.webp"
-        ),
-        WildRiftItem(
-            id = "fiendhunter_bolts",
-            name = "Pernos Cazamalignos",
-            nameEn = "Fiendhunter Bolts",
-            category = "Objetos con Daños Físicos",
-            goldCost = 2650,
-            stats = "+25% Tasa Crítica • +45% Velocidad de Ataque • +4% Vel. Movimiento • +20 Aceleración de Definitiva",
-            statsEn = "+25% Critical Rate • +45% Attack Speed • +4% Move Speed • +20 Ultimate Haste",
-            passive = "Caza Letal: Tras lanzar la habilidad Definitiva (H4), obtienes 3 ataques básicos potenciados durante 8 s con un 50% de velocidad de ataque adicional e impacto crítico garantizado (80% del daño crítico habitual, o +15% de daño verdadero adicional si el ataque ya asestaría un golpe crítico normal).",
-            passiveEn = "Fiend Hunt: After casting your Ultimate (H4), gain 3 empowered basic attacks for 8s with 50% bonus attack speed and guaranteed critical strikes (80% crit damage, or +15% bonus true damage if already a crit).",
-            coachTip = "Excelente para tiradores dependientes de su habilidad definitiva como Lucian, Miss Fortune, Kai'Sa o Ashe para desatar ráfagas de daño crítico devastadoras.",
-            coachTipEn = "Exceptional for ultimate-reliant marksmen like Lucian, Miss Fortune, Kai'Sa, or Ashe to burst down enemies right after activating their ultimate.",
-            iconUrl = "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp"
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp"
         ),
         WildRiftItem(
             id = "yun_tal_wildarrows",
@@ -2958,7 +2930,7 @@ object WildRiftItemsData {
             passiveEn = "Wild Strike: Basic attacks grant permanent critical strike chance (up to +25% after 125 attacks). Attacking champions activates a high attack speed surge that refreshes with consecutive attacks and critical strikes.",
             coachTip = "El objeto definitivo de escalado para tiradores hiper-carry de velocidad de ataque como Jinx, Tristana, Kai'Sa y Ashe.",
             coachTipEn = "The ultimate scaling item for high attack speed hyper-carries like Jinx, Tristana, Kai'Sa, and Ashe.",
-            iconUrl = "file:///android_asset/offline_images/1aeafb7896806a2f556ff126daf52d91.webp"
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789128227_yun-tal-wildarrows.webp"
         ),
         WildRiftItem(
             id = "statikk_shiv",
@@ -2972,21 +2944,7 @@ object WildRiftItemsData {
             passiveEn = "Electroshock: Moving and attacking builds Energized stacks. At 100 stacks, your next attack releases chain lightning dealing 90-190 magic damage to up to 6 targets (amplified critical damage vs minions).",
             coachTip = "Proporciona limpieza instantánea de oleadas y daño en cadena masivo para peleas de equipo agrupadas.",
             coachTipEn = "Provides instant waveclear and massive chain AoE damage for grouped teamfights.",
-            iconUrl = "file:///android_asset/offline_images/17b12d05612d9e67848fc60b16f961b5.webp"
-        ),
-        WildRiftItem(
-            id = "stormrazor",
-            name = "Navaja de Asalto",
-            nameEn = "Stormrazor",
-            category = "Objetos con Daños Físicos",
-            goldCost = 2900,
-            stats = "+45 Daño de Ataque • +25% Tasa Crítica • +20% Velocidad de Ataque",
-            statsEn = "+45 Attack Damage • +25% Critical Rate • +20% Attack Speed",
-            passive = "Paralizar: Los ataques energizados infligen 65-135 de daño mágico adicional, ralentizan al objetivo un 75% durante 0,75 s y te otorgan un 20% de velocidad de movimiento durante 1 s.",
-            passiveEn = "Paralyze: Energized attacks deal 65-135 bonus magic damage, slow the target by 75% for 0.75s, and grant you 20% bonus movement speed for 1s.",
-            coachTip = "El mejor objeto de fase temprana para tiradores que buscan presionar línea, cazar y hacer un kiting perfecto.",
-            coachTipEn = "Premier early-game item for marksmen looking to dominate laning phase, catch enemies, and execute flawless kiting.",
-            iconUrl = "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789130448_statikk-shiv.webp"
         ),
         WildRiftItem(
             id = "echoes_of_helia",
@@ -3014,7 +2972,7 @@ object WildRiftItemsData {
             passiveEn = "Hextech Reflection: Using abilities empowers your next basic attack with bonus adaptive damage and grants a movement speed boost upon landing critical strikes.",
             coachTip = "Potencia a tiradores y duelistas que combinan el uso constante de habilidades con ataques básicos continuos.",
             coachTipEn = "Powers up marksmen and duelists who weave frequent ability casts into their basic attack sequences.",
-            iconUrl = "file:///android_asset/offline_images/ddb7b42ff818a8e2d2f541c9dc96a0fc.webp"
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789127657_hexoptics-c44.webp"
         ),
     )
 
@@ -3259,19 +3217,16 @@ object WildRiftItemsData {
         "fulgor vano" to "hollow_radiance",
         "bebedor de sangre" to "bloodthirster",
         "creagrietas" to "riftmaker",
-        "disparador magnético" to "magnetic_blaster",
         "fuerza de la naturaleza" to "force_of_nature",
         "hoja del rey arruinado" to "blade_of_the_ruined_king",
         "tormenta de liandry" to "liandry_s_torment",
         "escudo reliquia" to "relic_shield",
 
-        "magnetic blaster" to "magnetic_blaster",
-        "blaster magnetico" to "magnetic_blaster",
-        "blaster magnético" to "magnetic_blaster",
-        "el blaster magnetico" to "magnetic_blaster",
         "rapid firecannon" to "rapid_firecannon",
         "canon de fuego rapido" to "rapid_firecannon",
         "cañón de fuego rápido" to "rapid_firecannon",
+        "el cañón de fuego rápido" to "rapid_firecannon",
+        "el canon de fuego rapido" to "rapid_firecannon",
         "phantom dancer" to "phantom_dancer",
         "bailarina fantasma" to "phantom_dancer",
         "la bailarina fantasma" to "phantom_dancer",
@@ -3282,6 +3237,8 @@ object WildRiftItemsData {
         "immortal shieldbow" to "immortal_shieldbow",
         "arcoescudo inmortal" to "immortal_shieldbow",
         "el arcoescudo inmortal" to "immortal_shieldbow",
+        "arco escudo inmortal" to "immortal_shieldbow",
+        "el arco escudo inmortal" to "immortal_shieldbow",
         "la corona de la reina ahogada" to "crown_of_the_shattered_queen",
         "corona de la reina fragmentada" to "crown_of_the_shattered_queen",
         "la corona de la reina fragmentada" to "crown_of_the_shattered_queen",
@@ -3349,26 +3306,30 @@ object WildRiftItemsData {
         "mercurial scimitar" to "mercurial_scimitar",
         "cimitarra mercurial" to "mercurial_scimitar",
         "la cimitarra mercurial" to "mercurial_scimitar",
-        "fiendhunter bolts" to "fiendhunter_bolts",
-        "pernos cazamalignos" to "fiendhunter_bolts",
-        "los pernos cazamalignos" to "fiendhunter_bolts",
         "yun tal wildarrows" to "yun_tal_wildarrows",
         "yun tal" to "yun_tal_wildarrows",
         "flechas salvajes de yun tal" to "yun_tal_wildarrows",
         "las flechas salvajes de yun tal" to "yun_tal_wildarrows",
+        "flecha salvaje de yun tal" to "yun_tal_wildarrows",
+        "la flecha salvaje de yun tal" to "yun_tal_wildarrows",
         "statikk shiv" to "statikk_shiv",
         "statikk" to "statikk_shiv",
         "puñal de statikk" to "statikk_shiv",
         "el puñal de statikk" to "statikk_shiv",
-        "stormrazor" to "stormrazor",
-        "navaja de asalto" to "stormrazor",
-        "la navaja de asalto" to "stormrazor",
+        "puñal de estatikk" to "statikk_shiv",
+        "el puñal de estatikk" to "statikk_shiv",
+        "punal de statikk" to "statikk_shiv",
+        "el punal de statikk" to "statikk_shiv",
+        "punal de estatikk" to "statikk_shiv",
+        "el punal de estatikk" to "statikk_shiv",
         "echoes of helia" to "echoes_of_helia",
         "ecos de helia" to "echoes_of_helia",
         "los ecos de helia" to "echoes_of_helia",
         "hextech mirror" to "hextech_mirror",
         "espejo hextech" to "hextech_mirror",
-        "el espejo hextech" to "hextech_mirror"
+        "el espejo hextech" to "hextech_mirror",
+        "hexoptics" to "hextech_mirror",
+        "hexoptics c-44" to "hextech_mirror"
     )
 
     private fun normalizeString(input: String): String {
@@ -3460,7 +3421,8 @@ object WildRiftItemsData {
             cleaned.contains("arruinado") || cleaned.contains("botrk") -> return list.find { it.id == "blade_of_the_ruined_king" }
             cleaned.contains("sanguinario") || cleaned.contains("sanguinaria") || cleaned.contains("bloodthirster") -> return list.find { it.id == "bloodthirster" }
             cleaned.contains("borde infinito") || cleaned.contains("filo infinito") -> return list.find { it.id == "infinity_edge" }
-            cleaned.contains("blaster") || cleaned.contains("magnetico") -> return list.find { it.id == "magnetic_blaster" }
+            cleaned.contains("fuego rapido") || cleaned.contains("fuego rápido") || cleaned.contains("firecannon") -> return list.find { it.id == "rapid_firecannon" }
+            cleaned.contains("shieldbow") || cleaned.contains("arcoescudo") || cleaned.contains("arco escudo") -> return list.find { it.id == "immortal_shieldbow" }
             cleaned.contains("runaan") -> return list.find { it.id == "runaan_s_hurricane" }
             cleaned.contains("cielo desgarrado") || cleaned.contains("sundered") -> return list.find { it.id == "sundered_sky" }
             cleaned.contains("oceanida") || cleaned.contains("oceanid") -> return list.find { it.id == "oceanid_s_trident" }
@@ -3477,12 +3439,10 @@ object WildRiftItemsData {
             cleaned.contains("eco armonico") || cleaned.contains("harmonic") -> return list.find { it.id == "harmonic_echo" }
             cleaned.contains("mandato") || cleaned.contains("mandate") -> return list.find { it.id == "imperial_mandate" }
             cleaned.contains("axiom") || cleaned.contains("axiomatico") -> return list.find { it.id == "axiom_arc" }
-            cleaned.contains("fiendhunter") || cleaned.contains("cazamalignos") -> return list.find { it.id == "fiendhunter_bolts" }
             cleaned.contains("yun tal") || cleaned.contains("yuntal") -> return list.find { it.id == "yun_tal_wildarrows" }
-            cleaned.contains("statikk") -> return list.find { it.id == "statikk_shiv" }
-            cleaned.contains("stormrazor") || cleaned.contains("navaja de asalto") -> return list.find { it.id == "stormrazor" }
+            cleaned.contains("statikk") || cleaned.contains("estatikk") -> return list.find { it.id == "statikk_shiv" }
             cleaned.contains("helia") -> return list.find { it.id == "echoes_of_helia" }
-            cleaned.contains("espejo hextech") || cleaned.contains("hextech mirror") -> return list.find { it.id == "hextech_mirror" }
+            cleaned.contains("espejo hextech") || cleaned.contains("hextech mirror") || cleaned.contains("hexoptics") -> return list.find { it.id == "hextech_mirror" }
         }
 
         return null

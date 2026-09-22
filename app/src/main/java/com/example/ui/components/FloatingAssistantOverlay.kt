@@ -241,7 +241,9 @@ private fun OverlayItemsTabContent(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            val dynamicCats = WildRiftRepository.items.map { it.category }.distinct()
+            val defaultCats = listOf("Luchador", "Asesino", "Tirador", "Mágico", "Defensa", "Apoyo", "Botas")
+            val itemsCats = WildRiftRepository.items.map { it.category }.distinct()
+            val dynamicCats = (defaultCats + itemsCats).distinct()
             dynamicCats.forEach { cat ->
                 val isSelected = selectedCategory == cat
                 Box(
