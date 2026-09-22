@@ -1542,6 +1542,25 @@ object DraftVisionScanner {
             }
         }
 
+        // Garantizar unicidad estricta y deducción automática de líneas en allySlotRolesCache (5 líneas únicas)
+        val usedAllyRoles = mutableSetOf<LaneRole>()
+        for (i in 0..4) {
+            val r = allySlotRolesCache[i]
+            if (r != null) {
+                if (usedAllyRoles.contains(r)) {
+                    allySlotRolesCache.remove(i)
+                } else {
+                    usedAllyRoles.add(r)
+                }
+            }
+        }
+        val remainingAllyRoles = standardRoles.filter { !usedAllyRoles.contains(it) }.toMutableList()
+        for (i in 0..4) {
+            if (allySlotRolesCache[i] == null && remainingAllyRoles.isNotEmpty()) {
+                allySlotRolesCache[i] = remainingAllyRoles.removeAt(0)
+            }
+        }
+
         // 4.2 Enemigos: Asignación validada por roles primarios y secundarios de los picks seleccionados
         val validEnemySlots = enemySlots.filter { it.champion != null }
         val enemyResolved = DraftValidationLayer.resolveTeamRolesDetailed(validEnemySlots, allChamps, auditList, isAllyTeam = false)

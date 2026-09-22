@@ -34,12 +34,12 @@ import kotlin.math.sqrt
 object LiteRTVisionClassifier {
 
     private const val TAG = "LiteRTVisionClassifier"
-    private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
-    private const val EMBEDDING_DIM = 96     // Vector descriptor de 96 dimensiones
+    private const val TENSOR_INPUT_SIZE = 64 // 64x64 tensor de entrada multi-escala
+    private const val EMBEDDING_DIM = 320    // Vector descriptor multi-capa de 320 dimensiones
 
     // Umbrales calibrados de Google MediaPipe / LiteRT para clasificación del 10º pick
-    const val MIN_CONFIDENCE_THRESHOLD = 0.38f
-    const val MIN_CANDIDATE_MARGIN = 0.025f
+    const val MIN_CONFIDENCE_THRESHOLD = 0.35f
+    const val MIN_CANDIDATE_MARGIN = 0.020f
 
     // Requiere al menos 2 frames consecutivos estables con similitud alta (>= 0.48f) o 3 frames con similitud >= 0.38f
     const val REQUIRED_STABLE_FRAMES = 2
@@ -139,8 +139,11 @@ object LiteRTVisionClassifier {
     }
 
     /**
-     * Extrae un vector de embedding normalizado de L2 a partir del mapa de píxeles del avatar.
-     * Simula la capa de compresión y pooling convolucional de Google MediaPipe / LiteRT Image Embedder.
+     * Extrae un vector de embedding multi-capa de 320 dimensiones a partir del mapa de píxeles del avatar.
+     * Incorpora:
+     * 1) Grilla espacial 8x8 (64 celdas x 4 componentes: R, G, B, Luminancia = 256 dimensiones).
+     * 2) Histograma espectral de color denso (32 bins RGB/Lum + 16 bins Hue = 48 dimensiones).
+     * 3) Matriz de textura y gradiente direccional de bordes por cuadrantes (16 dimensiones).
      */
     private fun extractTensorEmbedding(bitmap: Bitmap): FloatArray {
         val scaled = Bitmap.createScaledBitmap(bitmap, TENSOR_INPUT_SIZE, TENSOR_INPUT_SIZE, true)
@@ -152,24 +155,34 @@ object LiteRTVisionClassifier {
 
         val embedding = FloatArray(EMBEDDING_DIM)
         val center = TENSOR_INPUT_SIZE / 2f
-        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.46f) * (TENSOR_INPUT_SIZE * 0.46f)
+        // Radio interior del círculo del avatar (0.42 * TENSOR_INPUT_SIZE para ignorar el marco circular exterior)
+        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.42f) * (TENSOR_INPUT_SIZE * 0.42f)
 
-        // Acumuladores por zonas espaciales (grilla 4x4) y componentes cromáticos
-        val rZone = FloatArray(16)
-        val gZone = FloatArray(16)
-        val bZone = FloatArray(16)
-        val lumZone = FloatArray(16)
-        val countZone = FloatArray(16)
+        // 1. Acumuladores de grilla espacial 8x8 (64 celdas)
+        val rZone = FloatArray(64)
+        val gZone = FloatArray(64)
+        val bZone = FloatArray(64)
+        val lumZone = FloatArray(64)
+        val countZone = FloatArray(64)
 
-        // Histogramas HSV compactos (16 bins de Hue + 8 de Luminancia)
-        val hueBins = FloatArray(16)
+        // 2. Histogramas espectrales
+        val rBins = FloatArray(8)
+        val gBins = FloatArray(8)
+        val bBins = FloatArray(8)
         val lumBins = FloatArray(8)
+        val hueBins = FloatArray(16)
+
+        // 3. Gradientes direccionales por 4 cuadrantes (4 cuadrantes x 4 direcciones = 16)
+        val gradEnergy = FloatArray(16)
+        val gradCounts = FloatArray(4)
 
         var totalValidPixels = 0
 
         for (y in 0 until TENSOR_INPUT_SIZE) {
             val dy = y - center
-            val cellY = (y * 4) / TENSOR_INPUT_SIZE
+            val cellY = (y * 8) / TENSOR_INPUT_SIZE
+            val quadY = if (y < center) 0 else 1
+
             for (x in 0 until TENSOR_INPUT_SIZE) {
                 val dx = x - center
                 val distSq = dx * dx + dy * dy
@@ -181,8 +194,8 @@ object LiteRTVisionClassifier {
                 val b = Color.blue(px) / 255.0f
                 val lum = 0.299f * r + 0.587f * g + 0.114f * b
 
-                val cellX = (x * 4) / TENSOR_INPUT_SIZE
-                val zoneIdx = (cellY * 4 + cellX).coerceIn(0, 15)
+                val cellX = (x * 8) / TENSOR_INPUT_SIZE
+                val zoneIdx = (cellY * 8 + cellX).coerceIn(0, 63)
 
                 rZone[zoneIdx] += r
                 gZone[zoneIdx] += g
@@ -191,11 +204,17 @@ object LiteRTVisionClassifier {
                 countZone[zoneIdx] += 1f
                 totalValidPixels++
 
-                // Espacio HSV
+                // Bins de canales individuales (8 bins cada uno)
+                rBins[(r * 7.99f).toInt().coerceIn(0, 7)] += 1f
+                gBins[(g * 7.99f).toInt().coerceIn(0, 7)] += 1f
+                bBins[(b * 7.99f).toInt().coerceIn(0, 7)] += 1f
+                lumBins[(lum * 7.99f).toInt().coerceIn(0, 7)] += 1f
+
+                // Espacio Hue ponderado por saturación
                 val maxC = max(r, max(g, b))
                 val minC = min(r, min(g, b))
                 val delta = maxC - minC
-                if (delta > 0.08f) {
+                if (delta > 0.05f) {
                     val hue = when {
                         maxC == r -> ((g - b) / delta) % 6f
                         maxC == g -> ((b - r) / delta) + 2f
@@ -203,70 +222,97 @@ object LiteRTVisionClassifier {
                     } * 60f
                     val positiveHue = if (hue < 0f) hue + 360f else hue
                     val hueBinIdx = ((positiveHue / 360f) * 16).toInt().coerceIn(0, 15)
-                    hueBins[hueBinIdx] += 1f
+                    hueBins[hueBinIdx] += delta
                 }
-                val lumBinIdx = (lum * 8).toInt().coerceIn(0, 7)
-                lumBins[lumBinIdx] += 1f
+
+                // Cálculo de gradiente local de bordes
+                if (x > 0 && y > 0 && x < TENSOR_INPUT_SIZE - 1 && y < TENSOR_INPUT_SIZE - 1) {
+                    val pxRight = pixels[y * TENSOR_INPUT_SIZE + (x + 1)]
+                    val pxDown = pixels[(y + 1) * TENSOR_INPUT_SIZE + x]
+                    val pxDiag = pixels[(y + 1) * TENSOR_INPUT_SIZE + (x + 1)]
+                    val lumRight = (Color.red(pxRight) * 0.299f + Color.green(pxRight) * 0.587f + Color.blue(pxRight) * 0.114f) / 255f
+                    val lumDown = (Color.red(pxDown) * 0.299f + Color.green(pxDown) * 0.587f + Color.blue(pxDown) * 0.114f) / 255f
+                    val lumDiag = (Color.red(pxDiag) * 0.299f + Color.green(pxDiag) * 0.587f + Color.blue(pxDiag) * 0.114f) / 255f
+
+                    val gx = abs(lumRight - lum)
+                    val gy = abs(lumDown - lum)
+                    val gdiag1 = abs(lumDiag - lum)
+                    val gdiag2 = abs(gx - gy)
+
+                    val quadX = if (x < center) 0 else 1
+                    val quadIdx = quadY * 2 + quadX
+                    val baseGrad = quadIdx * 4
+                    gradEnergy[baseGrad] += gx
+                    gradEnergy[baseGrad + 1] += gy
+                    gradEnergy[baseGrad + 2] += gdiag1
+                    gradEnergy[baseGrad + 3] += gdiag2
+                    gradCounts[quadIdx] += 1f
+                }
             }
         }
 
         val normCount = totalValidPixels.toFloat().coerceAtLeast(1f)
 
-        // Normalizar zonas espaciales (64 dimensiones)
-        for (i in 0 until 16) {
+        // 1. Zonas espaciales 8x8 (0..255: 256 dimensiones)
+        for (i in 0 until 64) {
             val cnt = countZone[i].coerceAtLeast(1f)
             embedding[i] = rZone[i] / cnt
-            embedding[16 + i] = gZone[i] / cnt
-            embedding[32 + i] = bZone[i] / cnt
-            embedding[48 + i] = lumZone[i] / cnt
+            embedding[64 + i] = gZone[i] / cnt
+            embedding[128 + i] = bZone[i] / cnt
+            embedding[192 + i] = lumZone[i] / cnt
         }
 
-        // Normalizar histograma de color (24 dimensiones)
-        for (i in 0 until 16) {
-            embedding[64 + i] = hueBins[i] / normCount
-        }
+        // 2. Histograma espectral denso (256..303: 48 dimensiones)
         for (i in 0 until 8) {
-            embedding[80 + i] = lumBins[i] / normCount
+            embedding[256 + i] = rBins[i] / normCount
+            embedding[264 + i] = gBins[i] / normCount
+            embedding[272 + i] = bBins[i] / normCount
+            embedding[280 + i] = lumBins[i] / normCount
+        }
+        val hueSum = hueBins.sum().coerceAtLeast(1e-4f)
+        for (i in 0 until 16) {
+            embedding[288 + i] = hueBins[i] / hueSum
         }
 
-        // Las últimas 8 dimensiones representan estadísticas globales de contraste y balance cromático
-        val avgR = rZone.sum() / normCount
-        val avgG = gZone.sum() / normCount
-        val avgB = bZone.sum() / normCount
-        val avgLum = lumZone.sum() / normCount
-        embedding[88] = avgR
-        embedding[89] = avgG
-        embedding[90] = avgB
-        embedding[91] = avgLum
-        embedding[92] = abs(avgR - avgG)
-        embedding[93] = abs(avgR - avgB)
-        embedding[94] = abs(avgG - avgB)
-        embedding[95] = normCount / (TENSOR_INPUT_SIZE * TENSOR_INPUT_SIZE).toFloat()
-
-        // Normalización L2 del vector embedding para cálculo directo de distancia coseno
-        var sumSquares = 0.0f
-        for (v in embedding) sumSquares += v * v
-        val l2Norm = sqrt(sumSquares).coerceAtLeast(1e-6f)
-        for (i in embedding.indices) {
-            embedding[i] /= l2Norm
+        // 3. Gradientes de textura por cuadrantes (304..319: 16 dimensiones)
+        for (q in 0 until 4) {
+            val qCnt = gradCounts[q].coerceAtLeast(1f)
+            val baseGrad = q * 4
+            for (d in 0 until 4) {
+                embedding[304 + baseGrad + d] = gradEnergy[baseGrad + d] / qCnt
+            }
         }
 
         return embedding
     }
 
     /**
-     * Calcula la correlación de Pearson entre dos vectores de características [-1.0 a 1.0].
-     * A diferencia del producto punto o similitud coseno directa sobre números positivos (que sesga
-     * imágenes oscuras hacia puntuaciones artificiales de 0.70-0.80), la correlación de Pearson resta
-     * la media eliminando el sesgo de luminancia global y evaluando la correspondencia real
-     * de contrastes, tonos cromáticos y distribución espacial.
+     * Calcula la similitud multi-escala combinada entre el embedding de entrada y un candidato del catálogo.
+     * Combina:
+     * - 65% Correlación de Pearson en la grilla espacial 8x8 (patrón 2D y alineación geométrica de rasgos).
+     * - 25% Similitud Coseno en el histograma espectral de color (paleta cromática y balances RGB/Hue).
+     * - 10% Correlación en los gradientes de textura (densidad de bordes y nivel de detalle).
      */
-    private fun pearsonCorrelation(v1: FloatArray, v2: FloatArray): Float {
-        val len = min(v1.size, v2.size)
-        if (len == 0) return 0f
+    private fun computeChampionSimilarity(v1: FloatArray, v2: FloatArray): Float {
+        // 1. Similitud espacial (índices 0..255)
+        val spatialSim = pearsonSegment(v1, v2, 0, 256)
+
+        // 2. Similitud espectral de color (índices 256..303)
+        val colorSim = cosineSegment(v1, v2, 256, 304)
+
+        // 3. Similitud de textura y bordes (índices 304..319)
+        val textureSim = pearsonSegment(v1, v2, 304, 320)
+
+        val combined = (spatialSim * 0.65f) + (colorSim * 0.25f) + (textureSim * 0.10f)
+        return combined.coerceIn(-1.0f, 1.0f)
+    }
+
+    private fun pearsonSegment(v1: FloatArray, v2: FloatArray, start: Int, end: Int): Float {
+        val len = end - start
+        if (len <= 0) return 0f
         var sum1 = 0f
         var sum2 = 0f
-        for (i in 0 until len) {
+        for (i in start until end) {
             sum1 += v1[i]
             sum2 += v2[i]
         }
@@ -276,7 +322,7 @@ object LiteRTVisionClassifier {
         var dot = 0f
         var var1 = 0f
         var var2 = 0f
-        for (i in 0 until len) {
+        for (i in start until end) {
             val d1 = v1[i] - mean1
             val d2 = v2[i] - mean2
             dot += d1 * d2
@@ -284,6 +330,20 @@ object LiteRTVisionClassifier {
             var2 += d2 * d2
         }
         val denom = sqrt(var1 * var2)
+        if (denom < 1e-6f) return 0f
+        return (dot / denom).coerceIn(-1.0f, 1.0f)
+    }
+
+    private fun cosineSegment(v1: FloatArray, v2: FloatArray, start: Int, end: Int): Float {
+        var dot = 0f
+        var mag1 = 0f
+        var mag2 = 0f
+        for (i in start until end) {
+            dot += v1[i] * v2[i]
+            mag1 += v1[i] * v1[i]
+            mag2 += v2[i] * v2[i]
+        }
+        val denom = sqrt(mag1 * mag2)
         if (denom < 1e-6f) return 0f
         return (dot / denom).coerceIn(-1.0f, 1.0f)
     }
@@ -533,7 +593,7 @@ object LiteRTVisionClassifier {
             if (confirmedChampionIds.contains(champ.id)) continue
 
             val cachedEmbedding = championEmbeddingCache[champ.id] ?: continue
-            val similarity = pearsonCorrelation(inputEmbedding, cachedEmbedding)
+            val similarity = computeChampionSimilarity(inputEmbedding, cachedEmbedding)
             candidateScores.add(Pair(champ, similarity))
         }
 

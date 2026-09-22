@@ -1170,14 +1170,16 @@ private fun FloatingOverlayContent(
                                         if (tenthChamp != null) {
                                             val isTenthAlly = result.tenthPickIsAlly ?: (!isFirstPick)
                                             if (isTenthAlly) {
-                                                val targetIdx = (result.tenthPickSlotIndex ?: allies.indexOfFirst { it == null }).let { if (it in 0..4) it else 4 }
+                                                val emptyIdx = allies.indices.firstOrNull { idx -> allies[idx] == null && manualLockedAllySlots[idx] != true } ?: -1
+                                                val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
                                                 if (manualLockedAllySlots[targetIdx] != true) {
                                                     assignAllySlot(targetIdx, tenthChamp)
                                                     newAlliesAdded++
                                                     AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $targetIdx: ${tenthChamp.name}")
                                                 }
                                             } else {
-                                                val targetIdx = (result.tenthPickSlotIndex ?: enemies.indexOfFirst { it == null }).let { if (it in 0..4) it else 4 }
+                                                val emptyIdx = enemies.indices.firstOrNull { idx -> enemies[idx] == null && manualLockedEnemySlots[idx] != true } ?: -1
+                                                val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
                                                 if (manualLockedEnemySlots[targetIdx] != true) {
                                                     assignEnemySlot(targetIdx, tenthChamp, 100)
                                                     newEnemiesAdded++
@@ -1620,11 +1622,11 @@ private fun FloatingOverlayContent(
                                     }
                                 }
 
-                                // Botón para Ver Círculos de Escaneo directamente en pantalla
+                                // Botón para alternar visibilidad de Círculos de Escaneo (Solo icono ✕ o ✓ sin texto redundante)
                                 val showScanCircles by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
                                 Surface(
                                     modifier = Modifier
-                                        .height(28.dp)
+                                        .size(28.dp)
                                         .clickable {
                                             com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !showScanCircles
                                         },
@@ -1632,22 +1634,15 @@ private fun FloatingOverlayContent(
                                     color = if (showScanCircles) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
                                     border = BorderStroke(1.dp, if (showScanCircles) HextechCyan else HextechGold.copy(alpha = 0.5f))
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
                                     ) {
                                         Icon(
                                             imageVector = if (showScanCircles) Icons.Default.Check else Icons.Default.Close,
                                             contentDescription = if (showScanCircles) "Ocultar círculos de escaneo" else "Mostrar círculos de escaneo",
                                             tint = if (showScanCircles) HextechCyan else HextechGold,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                        Text(
-                                            text = if (showScanCircles) "Círculos ✓" else "Círculos ✕",
-                                            color = if (showScanCircles) HextechCyan else HextechGold,
-                                            fontSize = 8.5.sp,
-                                            fontWeight = FontWeight.Bold
+                                            modifier = Modifier.size(16.dp)
                                         )
                                     }
                                 }
