@@ -1043,11 +1043,15 @@ private fun FloatingOverlayContent(
             // Temporización adaptativa:
             // - Si hay turnos de selección activos y no toca ciclo global: Bucle de alta prioridad (60ms)
             // - Si el draft está completo: Modo reposo (800ms)
+            // - Si el 10º pick está activo o hay 8+ picks confirmados: Inferencia LiteRT de alta frecuencia (80ms)
             // - En caso contrario (ciclo global para slots inactivos / preparación): 160ms
-            val isGlobalSyncCycle = isDraftComplete || (loopCycleCounter % 6L == 0L) || !hasActiveTurns
+            val totalConfirmedCount = allies.count { it != null } + enemies.count { it != null }
+            val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || totalConfirmedCount >= 8
+            val isGlobalSyncCycle = isDraftComplete || (loopCycleCounter % 6L == 0L) || !hasActiveTurns || isTenthPickActive
             val dynamicLoopDelay = when {
                 isDraftComplete -> 800L
                 !isGlobalSyncCycle && hasActiveTurns -> 60L
+                isTenthPickActive -> 80L
                 else -> 160L
             }
             delay(dynamicLoopDelay)
@@ -1174,6 +1178,7 @@ private fun FloatingOverlayContent(
                                                 val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
                                                 if (manualLockedAllySlots[targetIdx] != true) {
                                                     assignAllySlot(targetIdx, tenthChamp)
+                                                    DraftVisionScanner.allySlotConfirmedChampions[(result.tenthPickSlotIndex ?: targetIdx).coerceIn(0, 4)] = tenthChamp
                                                     newAlliesAdded++
                                                     AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $targetIdx: ${tenthChamp.name}")
                                                 }
@@ -1182,6 +1187,7 @@ private fun FloatingOverlayContent(
                                                 val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
                                                 if (manualLockedEnemySlots[targetIdx] != true) {
                                                     assignEnemySlot(targetIdx, tenthChamp, 100)
+                                                    DraftVisionScanner.enemySlotConfirmedChampions[(result.tenthPickSlotIndex ?: targetIdx).coerceIn(0, 4)] = tenthChamp
                                                     newEnemiesAdded++
                                                     AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $targetIdx: ${tenthChamp.name}")
                                                 }

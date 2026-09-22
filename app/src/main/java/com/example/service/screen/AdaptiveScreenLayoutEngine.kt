@@ -66,11 +66,11 @@ object AdaptiveScreenLayoutEngine {
         val geometry = analyzeScreen(width, height)
         val ratio = geometry.aspectRatio
 
-        // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla:
-        // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.073f
-        // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.960f
-        val adaptiveAllyCenterX = if (geometry.isUltrawide) 0.073f else baseConfig.allyAvatarCenterX
-        val adaptiveEnemyCenterX = if (geometry.isUltrawide) 0.960f else baseConfig.enemyAvatarCenterX
+        // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla de forma simétrica:
+        // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.076f
+        // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.928f (espejo simétrico de la columna aliada)
+        val adaptiveAllyCenterX = if (geometry.isUltrawide) 0.076f else baseConfig.allyAvatarCenterX
+        val adaptiveEnemyCenterX = if (geometry.isUltrawide) 0.928f else baseConfig.enemyAvatarCenterX
 
         // Rango de búsqueda OCR adaptativo:
         // El texto del slot aliado está estrictamente a la derecha del avatar (entre x ≈ 0.098 y x ≈ 0.240).
@@ -207,13 +207,16 @@ object AdaptiveScreenLayoutEngine {
         val expectedMinDiam = (targetDiam * 0.70f).toInt()
         val expectedMaxDiam = (targetDiam * 1.30f).toInt()
 
-        val actualCx = if (ringPixelCount >= 20 && (maxRingX - minRingX) in expectedMinDiam..expectedMaxDiam) {
+        val maxDevX = (targetDiam * 0.20f).toInt()
+        val maxDevY = (targetDiam * 0.20f).toInt()
+
+        val actualCx = if (ringPixelCount >= 20 && (maxRingX - minRingX) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingX + maxRingX) / 2) - cxNominal) <= maxDevX) {
             ((minRingX + maxRingX) / 2).coerceIn(radius, width - radius)
         } else {
             cxNominal.coerceIn(radius, width - radius)
         }
 
-        val actualCy = if (ringPixelCount >= 20 && (maxRingY - minRingY) in expectedMinDiam..expectedMaxDiam) {
+        val actualCy = if (ringPixelCount >= 20 && (maxRingY - minRingY) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingY + maxRingY) / 2) - cyNominal) <= maxDevY) {
             ((minRingY + maxRingY) / 2).coerceIn(radius, height - radius)
         } else {
             cyNominal.coerceIn(radius, height - radius)

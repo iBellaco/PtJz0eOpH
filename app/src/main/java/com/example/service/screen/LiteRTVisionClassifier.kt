@@ -141,9 +141,11 @@ object LiteRTVisionClassifier {
     /**
      * Extrae un vector de embedding multi-capa de 320 dimensiones a partir del mapa de píxeles del avatar.
      * Incorpora:
-     * 1) Grilla espacial 8x8 (64 celdas x 4 componentes: R, G, B, Luminancia = 256 dimensiones).
-     * 2) Histograma espectral de color denso (32 bins RGB/Lum + 16 bins Hue = 48 dimensiones).
-     * 3) Matriz de textura y gradiente direccional de bordes por cuadrantes (16 dimensiones).
+     * 1) Histograma cromático espectral denso (96 dimensiones: 16 Hue, 16 Sat, 16 Lum, 16 R, 16 G, 16 B).
+     * 2) Histograma multizonal Centro vs Periferia (48 dimensiones: 24 centro + 24 anillo exterior).
+     * 3) Grilla espacial multi-canal 6x6 con tolerancia a traslación (144 dimensiones: 36 Lum + 36 R + 36 G + 36 B).
+     * 4) Matriz de gradientes direccionales de textura Sobel por cuadrantes (32 dimensiones: 4 cuadrantes x 8 direcciones).
+     * Total = 96 + 48 + 144 + 32 = 320 dimensiones.
      */
     private fun extractTensorEmbedding(bitmap: Bitmap): FloatArray {
         val scaled = Bitmap.createScaledBitmap(bitmap, TENSOR_INPUT_SIZE, TENSOR_INPUT_SIZE, true)
@@ -155,140 +157,185 @@ object LiteRTVisionClassifier {
 
         val embedding = FloatArray(EMBEDDING_DIM)
         val center = TENSOR_INPUT_SIZE / 2f
-        // Radio interior del círculo del avatar (0.38 * TENSOR_INPUT_SIZE para ignorar estrictamente el marco circular exterior)
-        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.38f) * (TENSOR_INPUT_SIZE * 0.38f)
-        val outerRingZoneSq = (TENSOR_INPUT_SIZE * 0.30f) * (TENSOR_INPUT_SIZE * 0.30f)
+        // Radio interior del círculo del avatar (0.44 * TENSOR_INPUT_SIZE para abarcar el arte del campeón excluyendo el marco)
+        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.44f) * (TENSOR_INPUT_SIZE * 0.44f)
+        val centerCoreSq = (TENSOR_INPUT_SIZE * 0.24f) * (TENSOR_INPUT_SIZE * 0.24f)
 
-        // 1. Acumuladores de grilla espacial 8x8 (64 celdas)
-        val rZone = FloatArray(64)
-        val gZone = FloatArray(64)
-        val bZone = FloatArray(64)
-        val lumZone = FloatArray(64)
-        val countZone = FloatArray(64)
-
-        // 2. Histogramas espectrales
-        val rBins = FloatArray(8)
-        val gBins = FloatArray(8)
-        val bBins = FloatArray(8)
-        val lumBins = FloatArray(8)
+        // 1. Histogramas cromáticos espectrales globales (96 bins)
         val hueBins = FloatArray(16)
+        val satBins = FloatArray(16)
+        val lumBins = FloatArray(16)
+        val rBins = FloatArray(16)
+        val gBins = FloatArray(16)
+        val bBins = FloatArray(16)
 
-        // 3. Gradientes direccionales por 4 cuadrantes (4 cuadrantes x 4 direcciones = 16)
-        val gradEnergy = FloatArray(16)
+        // 2. Histogramas por zonas concéntricas (48 bins)
+        val coreHueBins = FloatArray(16)
+        val coreLumBins = FloatArray(8)
+        val outerHueBins = FloatArray(16)
+        val outerLumBins = FloatArray(8)
+
+        // 3. Grilla espacial 6x6 (36 celdas x 4 canales = 144 dimensiones)
+        val gridLum = FloatArray(36)
+        val gridR = FloatArray(36)
+        val gridG = FloatArray(36)
+        val gridB = FloatArray(36)
+        val gridCount = FloatArray(36)
+
+        // 4. Gradientes direccionales Sobel (4 cuadrantes x 8 orientaciones = 32 dimensiones)
+        val gradEnergy = FloatArray(32)
         val gradCounts = FloatArray(4)
 
         var totalValidPixels = 0
+        var totalCorePixels = 0
+        var totalOuterPixels = 0
+        var hueWeightSum = 0f
+        var coreHueWeightSum = 0f
+        var outerHueWeightSum = 0f
 
         for (y in 0 until TENSOR_INPUT_SIZE) {
             val dy = y - center
-            val cellY = (y * 8) / TENSOR_INPUT_SIZE
             val quadY = if (y < center) 0 else 1
+            val gridY = ((y * 6) / TENSOR_INPUT_SIZE).coerceIn(0, 5)
 
             for (x in 0 until TENSOR_INPUT_SIZE) {
                 val dx = x - center
                 val distSq = dx * dx + dy * dy
-                if (distSq > maxRadiusSq) continue // Enmascaramiento circular estricto de avatar
+                if (distSq > maxRadiusSq) continue // Enmascaramiento circular del avatar
 
                 val px = pixels[y * TENSOR_INPUT_SIZE + x]
                 val r = Color.red(px) / 255.0f
                 val g = Color.green(px) / 255.0f
                 val b = Color.blue(px) / 255.0f
-
-                // Filtrar cualquier píxel residual de marco/anillo exterior rojo o azul en la periferia
-                if (distSq > outerRingZoneSq) {
-                    val isBorderRing = (r > g * 1.35f && r > b * 1.35f && r > 0.35f) ||
-                                       (b > r * 1.35f && b > g * 1.35f && b > 0.35f)
-                    if (isBorderRing) continue
-                }
-
                 val lum = 0.299f * r + 0.587f * g + 0.114f * b
 
-                val cellX = (x * 8) / TENSOR_INPUT_SIZE
-                val zoneIdx = (cellY * 8 + cellX).coerceIn(0, 63)
+                val cMax = max(r, max(g, b))
+                val cMin = min(r, min(g, b))
+                val delta = cMax - cMin
+                val sat = if (cMax > 0.001f) delta / cMax else 0f
 
-                rZone[zoneIdx] += r
-                gZone[zoneIdx] += g
-                bZone[zoneIdx] += b
-                lumZone[zoneIdx] += lum
-                countZone[zoneIdx] += 1f
-                totalValidPixels++
+                // Acumuladores de grilla 6x6
+                val gridX = ((x * 6) / TENSOR_INPUT_SIZE).coerceIn(0, 5)
+                val cellIdx = gridY * 6 + gridX
+                gridLum[cellIdx] += lum
+                gridR[cellIdx] += r
+                gridG[cellIdx] += g
+                gridB[cellIdx] += b
+                gridCount[cellIdx] += 1f
 
-                // Bins de canales individuales (8 bins cada uno)
-                rBins[(r * 7.99f).toInt().coerceIn(0, 7)] += 1f
-                gBins[(g * 7.99f).toInt().coerceIn(0, 7)] += 1f
-                bBins[(b * 7.99f).toInt().coerceIn(0, 7)] += 1f
-                lumBins[(lum * 7.99f).toInt().coerceIn(0, 7)] += 1f
+                // Histogramas globales
+                rBins[(r * 15.99f).toInt().coerceIn(0, 15)] += 1f
+                gBins[(g * 15.99f).toInt().coerceIn(0, 15)] += 1f
+                bBins[(b * 15.99f).toInt().coerceIn(0, 15)] += 1f
+                lumBins[(lum * 15.99f).toInt().coerceIn(0, 15)] += 1f
+                satBins[(sat * 15.99f).toInt().coerceIn(0, 15)] += 1f
 
-                // Espacio Hue ponderado por saturación
-                val maxC = max(r, max(g, b))
-                val minC = min(r, min(g, b))
-                val delta = maxC - minC
-                if (delta > 0.05f) {
+                val isCore = distSq <= centerCoreSq
+                if (isCore) {
+                    coreLumBins[(lum * 7.99f).toInt().coerceIn(0, 7)] += 1f
+                    totalCorePixels++
+                } else {
+                    outerLumBins[(lum * 7.99f).toInt().coerceIn(0, 7)] += 1f
+                    totalOuterPixels++
+                }
+
+                // Cálculo de Hue ponderado
+                if (delta > 0.04f) {
                     val hue = when {
-                        maxC == r -> ((g - b) / delta) % 6f
-                        maxC == g -> ((b - r) / delta) + 2f
+                        cMax == r -> ((g - b) / delta) % 6f
+                        cMax == g -> ((b - r) / delta) + 2f
                         else -> ((r - g) / delta) + 4f
                     } * 60f
                     val positiveHue = if (hue < 0f) hue + 360f else hue
                     val hueBinIdx = ((positiveHue / 360f) * 16).toInt().coerceIn(0, 15)
-                    hueBins[hueBinIdx] += delta
+                    val weight = delta * (0.3f + 0.7f * lum)
+
+                    hueBins[hueBinIdx] += weight
+                    hueWeightSum += weight
+
+                    if (isCore) {
+                        coreHueBins[hueBinIdx] += weight
+                        coreHueWeightSum += weight
+                    } else {
+                        outerHueBins[hueBinIdx] += weight
+                        outerHueWeightSum += weight
+                    }
                 }
 
-                // Cálculo de gradiente local de bordes
+                totalValidPixels++
+
+                // Gradientes direccionales Sobel / diferencias locales (4 cuadrantes x 8 orientaciones)
                 if (x > 0 && y > 0 && x < TENSOR_INPUT_SIZE - 1 && y < TENSOR_INPUT_SIZE - 1) {
-                    val pxRight = pixels[y * TENSOR_INPUT_SIZE + (x + 1)]
-                    val pxDown = pixels[(y + 1) * TENSOR_INPUT_SIZE + x]
-                    val pxDiag = pixels[(y + 1) * TENSOR_INPUT_SIZE + (x + 1)]
-                    val lumRight = (Color.red(pxRight) * 0.299f + Color.green(pxRight) * 0.587f + Color.blue(pxRight) * 0.114f) / 255f
-                    val lumDown = (Color.red(pxDown) * 0.299f + Color.green(pxDown) * 0.587f + Color.blue(pxDown) * 0.114f) / 255f
-                    val lumDiag = (Color.red(pxDiag) * 0.299f + Color.green(pxDiag) * 0.587f + Color.blue(pxDiag) * 0.114f) / 255f
+                    val pxR = pixels[y * TENSOR_INPUT_SIZE + (x + 1)]
+                    val pxL = pixels[y * TENSOR_INPUT_SIZE + (x - 1)]
+                    val pxD = pixels[(y + 1) * TENSOR_INPUT_SIZE + x]
+                    val pxU = pixels[(y - 1) * TENSOR_INPUT_SIZE + x]
 
-                    val gx = abs(lumRight - lum)
-                    val gy = abs(lumDown - lum)
-                    val gdiag1 = abs(lumDiag - lum)
-                    val gdiag2 = abs(gx - gy)
+                    val lumR = (Color.red(pxR) * 0.299f + Color.green(pxR) * 0.587f + Color.blue(pxR) * 0.114f) / 255f
+                    val lumL = (Color.red(pxL) * 0.299f + Color.green(pxL) * 0.587f + Color.blue(pxL) * 0.114f) / 255f
+                    val lumD = (Color.red(pxD) * 0.299f + Color.green(pxD) * 0.587f + Color.blue(pxD) * 0.114f) / 255f
+                    val lumU = (Color.red(pxU) * 0.299f + Color.green(pxU) * 0.587f + Color.blue(pxU) * 0.114f) / 255f
 
-                    val quadX = if (x < center) 0 else 1
-                    val quadIdx = quadY * 2 + quadX
-                    val baseGrad = quadIdx * 4
-                    gradEnergy[baseGrad] += gx
-                    gradEnergy[baseGrad + 1] += gy
-                    gradEnergy[baseGrad + 2] += gdiag1
-                    gradEnergy[baseGrad + 3] += gdiag2
-                    gradCounts[quadIdx] += 1f
+                    val gx = lumR - lumL
+                    val gy = lumD - lumU
+                    val mag = sqrt(gx * gx + gy * gy)
+
+                    if (mag > 0.02f) {
+                        val angle = (kotlin.math.atan2(gy, gx) * 180f / Math.PI.toFloat())
+                        val posAngle = if (angle < 0f) angle + 360f else angle
+                        val dirIdx = ((posAngle / 360f) * 8).toInt().coerceIn(0, 7)
+
+                        val quadX = if (x < center) 0 else 1
+                        val quadIdx = quadY * 2 + quadX
+                        gradEnergy[quadIdx * 8 + dirIdx] += mag
+                        gradCounts[quadIdx] += 1f
+                    }
                 }
             }
         }
 
-        val normCount = totalValidPixels.toFloat().coerceAtLeast(1f)
+        val normTotal = totalValidPixels.toFloat().coerceAtLeast(1f)
+        val normCore = totalCorePixels.toFloat().coerceAtLeast(1f)
+        val normOuter = totalOuterPixels.toFloat().coerceAtLeast(1f)
+        val normHue = hueWeightSum.coerceAtLeast(1e-4f)
+        val normCoreHue = coreHueWeightSum.coerceAtLeast(1e-4f)
+        val normOuterHue = outerHueWeightSum.coerceAtLeast(1e-4f)
 
-        // 1. Zonas espaciales 8x8 (0..255: 256 dimensiones)
-        for (i in 0 until 64) {
-            val cnt = countZone[i].coerceAtLeast(1f)
-            embedding[i] = rZone[i] / cnt
-            embedding[64 + i] = gZone[i] / cnt
-            embedding[128 + i] = bZone[i] / cnt
-            embedding[192 + i] = lumZone[i] / cnt
-        }
-
-        // 2. Histograma espectral denso (256..303: 48 dimensiones)
-        for (i in 0 until 8) {
-            embedding[256 + i] = rBins[i] / normCount
-            embedding[264 + i] = gBins[i] / normCount
-            embedding[272 + i] = bBins[i] / normCount
-            embedding[280 + i] = lumBins[i] / normCount
-        }
-        val hueSum = hueBins.sum().coerceAtLeast(1e-4f)
+        // 1. Histogramas globales (0..95: 96 dimensiones)
         for (i in 0 until 16) {
-            embedding[288 + i] = hueBins[i] / hueSum
+            embedding[i] = hueBins[i] / normHue
+            embedding[16 + i] = satBins[i] / normTotal
+            embedding[32 + i] = lumBins[i] / normTotal
+            embedding[48 + i] = rBins[i] / normTotal
+            embedding[64 + i] = gBins[i] / normTotal
+            embedding[80 + i] = bBins[i] / normTotal
         }
 
-        // 3. Gradientes de textura por cuadrantes (304..319: 16 dimensiones)
+        // 2. Histogramas por zonas Centro vs Periferia (96..143: 48 dimensiones)
+        for (i in 0 until 16) {
+            embedding[96 + i] = coreHueBins[i] / normCoreHue
+            embedding[120 + i] = outerHueBins[i] / normOuterHue
+        }
+        for (i in 0 until 8) {
+            embedding[112 + i] = coreLumBins[i] / normCore
+            embedding[136 + i] = outerLumBins[i] / normOuter
+        }
+
+        // 3. Grilla espacial 6x6 (144..287: 144 dimensiones)
+        for (i in 0 until 36) {
+            val cnt = gridCount[i].coerceAtLeast(1f)
+            embedding[144 + i] = gridLum[i] / cnt
+            embedding[180 + i] = gridR[i] / cnt
+            embedding[216 + i] = gridG[i] / cnt
+            embedding[252 + i] = gridB[i] / cnt
+        }
+
+        // 4. Gradientes direccionales (288..319: 32 dimensiones)
         for (q in 0 until 4) {
             val qCnt = gradCounts[q].coerceAtLeast(1f)
-            val baseGrad = q * 4
-            for (d in 0 until 4) {
-                embedding[304 + baseGrad + d] = gradEnergy[baseGrad + d] / qCnt
+            val base = q * 8
+            for (d in 0 until 8) {
+                embedding[288 + base + d] = gradEnergy[base + d] / qCnt
             }
         }
 
@@ -296,58 +343,84 @@ object LiteRTVisionClassifier {
     }
 
     /**
-     * Calcula la similitud multi-escala combinada entre el embedding de entrada y un candidato del catálogo.
+     * Calcula la similitud multi-escala invariante a traslación entre el embedding de entrada y un candidato.
      * Combina:
-     * - 45% Correlación de Pearson en el mapa de luminancia espacial 8x8 (estructura facial, pelaje, rasgos y contraste).
-     * - 25% Correlación de Pearson en los canales espaciales RGB (distribución zonal de color).
-     * - 20% Similitud Coseno en el histograma espectral de color (paleta global RGB y Hue).
-     * - 10% Correlación en los gradientes de textura (densidad de bordes y nivel de detalle).
+     * - 45% Similitud cromática espectral e intersección de histogramas (invariante a pequeños desplazamientos).
+     * - 40% Similitud espacial multicanal (Lum + RGB) con alineación óptima tolerante a desfase.
+     * - 15% Similitud de gradientes y bordes direccionales Sobel.
      */
     private fun computeChampionSimilarity(v1: FloatArray, v2: FloatArray): Float {
-        // 1. Similitud de luminancia espacial (índices 192..255)
-        val spatialLumSim = pearsonSegment(v1, v2, 192, 256)
-
-        // 2. Similitud espacial por canal de color (R: 0..63, G: 64..127, B: 128..191)
-        val spatialRSim = pearsonSegment(v1, v2, 0, 64)
-        val spatialGSim = pearsonSegment(v1, v2, 64, 128)
-        val spatialBSim = pearsonSegment(v1, v2, 128, 192)
-        val spatialColorSim = (spatialRSim + spatialGSim + spatialBSim) / 3f
-
-        // 3. Similitud espectral de color (índices 256..303)
-        val colorSim = cosineSegment(v1, v2, 256, 304)
-
-        // 4. Similitud de textura y bordes (índices 304..319)
-        val textureSim = pearsonSegment(v1, v2, 304, 320)
-
-        val combined = (spatialLumSim * 0.45f) + (spatialColorSim * 0.25f) + (colorSim * 0.20f) + (textureSim * 0.10f)
-        return combined.coerceIn(-1.0f, 1.0f)
-    }
-
-    private fun pearsonSegment(v1: FloatArray, v2: FloatArray, start: Int, end: Int): Float {
-        val len = end - start
-        if (len <= 0) return 0f
-        var sum1 = 0f
-        var sum2 = 0f
-        for (i in start until end) {
-            sum1 += v1[i]
-            sum2 += v2[i]
+        // 1. Similitud cromática espectral (índices 0..95: 6 bloques de 16 bins)
+        var histIntersectionSum = 0f
+        for (i in 0 until 96) {
+            histIntersectionSum += min(v1[i], v2[i])
         }
-        val mean1 = sum1 / len
-        val mean2 = sum2 / len
+        val histInterSim = (histIntersectionSum / 6.0f).coerceIn(0f, 1f)
 
-        var dot = 0f
-        var var1 = 0f
-        var var2 = 0f
-        for (i in start until end) {
-            val d1 = v1[i] - mean1
-            val d2 = v2[i] - mean2
-            dot += d1 * d2
-            var1 += d1 * d1
-            var2 += d2 * d2
+        // Similitud espectral por Coseno
+        val globalCosSim = cosineSegment(v1, v2, 0, 96).coerceIn(0f, 1f)
+        val zonalCosSim = cosineSegment(v1, v2, 96, 144).coerceIn(0f, 1f)
+        val colorSim = (histInterSim * 0.45f + globalCosSim * 0.35f + zonalCosSim * 0.20f).coerceIn(0f, 1f)
+
+        // 2. Similitud espacial con tolerancia a desplazamiento (+-1 celda en grilla 6x6)
+        // Canales: Lum (144..179), R (180..215), G (216..251), B (252..287)
+        val offsets = listOf(
+            Pair(0, 0),
+            Pair(-1, 0), Pair(1, 0),
+            Pair(0, -1), Pair(0, 1)
+        )
+        var bestSpatialSim = 0f
+
+        for (offset in offsets) {
+            val dx = offset.first
+            val dy = offset.second
+            var dotLum = 0f; var mag1Lum = 0f; var mag2Lum = 0f
+            var dotColor = 0f; var mag1Color = 0f; var mag2Color = 0f
+
+            for (gy in 0 until 6) {
+                val targetY = gy + dy
+                if (targetY !in 0 until 6) continue
+                for (gx in 0 until 6) {
+                    val targetX = gx + dx
+                    if (targetX !in 0 until 6) continue
+
+                    val idx1 = gy * 6 + gx
+                    val idx2 = targetY * 6 + targetX
+
+                    // Canal Luminancia
+                    val l1 = v1[144 + idx1]; val l2 = v2[144 + idx2]
+                    dotLum += l1 * l2
+                    mag1Lum += l1 * l1
+                    mag2Lum += l2 * l2
+
+                    // Canales RGB
+                    val r1 = v1[180 + idx1]; val r2 = v2[180 + idx2]
+                    val g1 = v1[216 + idx1]; val g2 = v2[216 + idx2]
+                    val b1 = v1[252 + idx1]; val b2 = v2[252 + idx2]
+                    dotColor += (r1 * r2 + g1 * g2 + b1 * b2)
+                    mag1Color += (r1 * r1 + g1 * g1 + b1 * b1)
+                    mag2Color += (r2 * r2 + g2 * g2 + b2 * b2)
+                }
+            }
+
+            val denomLum = sqrt(mag1Lum * mag2Lum)
+            val simLum = if (denomLum > 1e-5f) (dotLum / denomLum).coerceIn(0f, 1f) else 0f
+
+            val denomColor = sqrt(mag1Color * mag2Color)
+            val simColor = if (denomColor > 1e-5f) (dotColor / denomColor).coerceIn(0f, 1f) else 0f
+
+            val currentSim = simLum * 0.55f + simColor * 0.45f
+            if (currentSim > bestSpatialSim) {
+                bestSpatialSim = currentSim
+            }
         }
-        val denom = sqrt(var1 * var2)
-        if (denom < 1e-6f) return 0f
-        return (dot / denom).coerceIn(-1.0f, 1.0f)
+        val spatialSim = bestSpatialSim.coerceIn(0f, 1f)
+
+        // 3. Similitud de texturas y gradientes (índices 288..319)
+        val textureSim = cosineSegment(v1, v2, 288, 320).coerceIn(0f, 1f)
+
+        val combined = (colorSim * 0.45f) + (spatialSim * 0.40f) + (textureSim * 0.15f)
+        return combined.coerceIn(0.0f, 1.0f)
     }
 
     private fun cosineSegment(v1: FloatArray, v2: FloatArray, start: Int, end: Int): Float {
@@ -378,9 +451,8 @@ object LiteRTVisionClassifier {
     )
 
     /**
-     * Analiza exhaustivamente el contenido interno del slot final (ignorando el anillo exterior de borde)
-     * para determinar si está en estado de ESPERA (con yelmo espartano, icono de línea o fondo negro)
-     * o si ya contiene el retrato/splash art de un campeón seleccionado.
+     * Analiza el contenido interno del slot final para determinar si está en estado de ESPERA
+     * (con yelmo espartano, icono de línea o fondo oscuro) o si ya contiene el arte de un campeón seleccionado.
      */
     fun analyzeSlotContent(bitmap: Bitmap, isAlly: Boolean): SlotContentAnalysis {
         val w = bitmap.width
@@ -400,8 +472,6 @@ object LiteRTVisionClassifier {
         val cx = w / 2f
         val cy = h / 2f
         val radius = min(cx, cy)
-
-        // Radio interior para evaluar el contenido del avatar sin tocar el anillo de borde (0.78 * radius)
         val innerRadius = radius * 0.78f
         val midRingInner = radius * 0.28f
 
@@ -470,30 +540,24 @@ object LiteRTVisionClassifier {
         val midRingDarkRatio = if (totalMidRing > 0) darkMidRing.toFloat() / totalMidRing else darkRatio
         val colorfulRatio = colorfulCount.toFloat() / totalInner
 
-        // COMPROBACIÓN CRÍTICA:
-        // En Wild Rift, un slot en espera (yelmo espartano o icono de línea) o vacío es:
-        // 1. Predominantemente oscuro (el icono o yelmo ocupa un área pequeña central y deja > 68-75% del círculo como fondo oscuro).
-        // 2. Muy baja desviación de luminancia (sin texturas complejas, pelo, ojos, reflejos de armadura, stdDevLum < 16f).
-        // 3. En cambio, el retrato de un campeón (incluso campeones oscuros o fríos como Volibear, Malphite, Viego, Nocturne)
-        //    cubre ampliamente el círculo interior y presenta contrastes/texturas marcadas (stdDevLum >= 16f, maxLum >= 90).
-        val isAchromatic = maxSat < 30 && colorfulRatio < 0.05f
+        val isAchromatic = maxSat < 35 && colorfulRatio < 0.08f
         val isEmptyOrWaiting = when {
-            // 1. Prácticamente todo oscuro (slot apagado o fondo negro)
+            // 1. Fondo negro o apagado
             maxLum < 45 -> true
 
-            // 2. Fondo oscuro predominante con baja textura (icono de línea o yelmo espartano vacío):
-            darkRatio >= 0.72f && stdDevLum < 20f -> true
-            midRingDarkRatio >= 0.70f && darkRatio >= 0.65f && stdDevLum < 18f -> true
+            // 2. Fondo oscuro predominante con baja textura (icono de línea o yelmo espartano):
+            darkRatio >= 0.70f && stdDevLum < 22f -> true
+            midRingDarkRatio >= 0.68f && darkRatio >= 0.62f && stdDevLum < 20f -> true
 
-            // 3. Luminancia global sumamente baja con fondo casi en su totalidad oscuro:
-            avgLum < 30f && stdDevLum < 15f -> true
+            // 3. Luminancia global sumamente baja:
+            avgLum < 32f && stdDevLum < 16f -> true
 
-            // 4. Caso acromático (yelmo espartano rival sin texturas):
-            isAchromatic && darkRatio >= 0.62f && stdDevLum < 16f -> true
-            isAchromatic && stdDevLum < 12f && avgLum < 45f -> true
+            // 4. Caso acromático (yelmo espartano o icono monocromático):
+            isAchromatic && darkRatio >= 0.58f && stdDevLum < 18f -> true
+            isAchromatic && stdDevLum < 14f && avgLum < 50f -> true
 
-            // 5. Firma de Icono de Línea (glifo simple sobre fondo oscuro uniforme):
-            colorfulRatio < 0.15f && darkRatio >= 0.68f && stdDevLum < 18f -> true
+            // 5. Firma de Icono de Línea (glifo simple sobre fondo oscuro):
+            colorfulRatio < 0.12f && darkRatio >= 0.65f && stdDevLum < 20f -> true
 
             else -> false
         }
@@ -524,18 +588,9 @@ object LiteRTVisionClassifier {
     }
 
     /**
-     * Ejecuta el análisis del 10º Pick con Google MediaPipe / LiteRT.
+     * Ejecuta el análisis y clasificación del 10º Pick con Google MediaPipe / LiteRT.
      * 
-     * CONDICIÓN ESTRICTA: Solo se ejecuta si [confirmedPicksCount] >= 9.
-     * 
-     * @param cropBitmap Recorte visual del slot o círculo superior correspondiente al 10º pick.
-     * @param isAlly Indica si el 10º pick pertenece al bando aliado o enemigo.
-     * @param confirmedChampionIds Campeones ya detectados y seleccionados en los picks 1 a 9 (para excluirlos).
-     * @param confirmedPicksCount Cantidad de selecciones previas ya confirmadas en el draft.
-     * @param slotIndex Índice del slot (típicamente 4 para el 5º jugador).
-     * @param isSlotShowingLaneOrEmpty Si es true, el slot textualmente sigue mostrando la línea asignada o no tiene campeón mientras la selección sigue activa.
-     * @param isActiveSelectionPhase Indica si la partida está en selección activa en pantalla.
-     * @param context Contexto de la aplicación.
+     * Solo se ejecuta si [confirmedPicksCount] >= 8.
      */
     suspend fun executeTenthPickInference(
         cropBitmap: Bitmap?,
@@ -547,7 +602,7 @@ object LiteRTVisionClassifier {
         isActiveSelectionPhase: Boolean = false,
         context: Context? = null
     ): Pair<Champion, Int>? = withContext(Dispatchers.Default) {
-        val slotDesc = if (isAlly) "Aliado 5 (10º Pick)" else "Rival 5 (10º Pick)"
+        val slotDesc = if (isAlly) "Aliado ${slotIndex + 1} (10º Pick)" else "Rival ${slotIndex + 1} (10º Pick)"
 
         // REGLA: Requiere que las selecciones previas estén presentes (al menos 8 detectadas)
         if (confirmedPicksCount < 8) {
@@ -597,10 +652,10 @@ object LiteRTVisionClassifier {
         val startTime = System.currentTimeMillis()
         ensureIndexed(context)
 
-        // Extraer el embedding tensor del recorte actual del 10º pick
+        // Extraer el embedding tensor de alta fidelidad del recorte actual del 10º pick
         val inputEmbedding = extractTensorEmbedding(cropBitmap)
 
-        // Evaluar contra todos los campeones no tomados usando correlación de Pearson
+        // Evaluar contra todos los campeones no tomados usando similitud multiescala
         val allChamps = WildRiftRepository.champions
         val candidateScores = mutableListOf<Pair<Champion, Float>>()
 
@@ -624,11 +679,11 @@ object LiteRTVisionClassifier {
             return@withContext null
         }
 
-        // Ordenar candidatos por similitud Pearson de mayor a menor
+        // Ordenar candidatos por similitud de mayor a menor
         val sortedCandidates = candidateScores.sortedByDescending { it.second }
 
-        // Distribución Softmax para probabilidades relativas (temperatura calibrada T = 0.08)
-        val temperature = 0.08f
+        // Distribución Softmax para probabilidades relativas (temperatura T = 0.06)
+        val temperature = 0.06f
         val top5 = sortedCandidates.take(5)
         val maxSim = top5.first().second
         val expValues = top5.map { exp((it.second - maxSim) / temperature) }
@@ -637,8 +692,8 @@ object LiteRTVisionClassifier {
 
         val candidateReports = top5.mapIndexed { index, pair ->
             val prob = probabilities[index]
-            val simNorm = ((pair.second + 1.0f) / 2.0f).coerceIn(0f, 1f)
-            val confPct = ((simNorm * 0.7f + prob * 0.3f) * 100).toInt().coerceIn(1, 99)
+            val simVal = pair.second.coerceIn(0f, 1f)
+            val confPct = ((simVal * 0.65f + prob * 0.35f) * 100).toInt().coerceIn(1, 99)
             LiteRTCandidateScore(
                 champion = pair.first,
                 similarityScore = pair.second,
@@ -653,36 +708,82 @@ object LiteRTVisionClassifier {
         val secondCandidate = candidateReports.getOrNull(1)
         val scoreMargin = if (secondCandidate != null) bestCandidate.similarityScore - secondCandidate.similarityScore else 1.0f
         val winnerChamp = bestCandidate.champion
-        val finalConfidence = bestCandidate.confidencePercent.coerceIn(65, 99)
-
-        // SELECCIÓN DIRECTA DEL 10º PICK:
-        // Con las 9 selecciones confirmadas y el área verificada, el motor LiteRT selecciona
-        // al campeón ganador entre los disponibles y confirma el 10º pick en el draft.
-        stableFramesCounter = REQUIRED_STABLE_FRAMES
-        lastCandidateId = winnerChamp.id
-        val isConfirmed = true
-
-        val decisionReason = "10º Pick seleccionado por LiteRT: ${winnerChamp.name} (${(bestCandidate.similarityScore * 100).toInt()}% similitud, margen ${(scoreMargin * 100).toInt()}%)"
         val persistentCrop = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
 
-        _reportFlow.value = LiteRTInferenceReport(
-            status = EngineStatus.COMPLETED,
-            pickedChampion = winnerChamp,
-            confidencePercent = finalConfidence,
-            inferenceTimeMs = inferenceDuration,
-            topCandidates = candidateReports,
-            cropBitmap = persistentCrop,
-            decisionReason = decisionReason,
-            slotDescription = slotDesc,
-            evaluatedPicksCount = confirmedPicksCount,
-            isConfirmed = isConfirmed,
-            stableFramesCount = stableFramesCounter,
-            requiredStableFrames = REQUIRED_STABLE_FRAMES,
-            minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
-        )
+        // FILTRO DE EXACTITUD (CRÍTICO):
+        // Si el mejor candidato no alcanza el umbral mínimo de confianza, NO seleccionar al azar.
+        if (bestCandidate.similarityScore < MIN_CONFIDENCE_THRESHOLD) {
+            resetStabilityTracker()
+            val reason = "Candidato líder ${winnerChamp.name} no alcanza el umbral mínimo de similitud (${(bestCandidate.similarityScore * 100).toInt()}% < ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). Esperando fotograma nítido..."
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.RUNNING_INFERENCE,
+                pickedChampion = null,
+                confidencePercent = bestCandidate.confidencePercent,
+                inferenceTimeMs = inferenceDuration,
+                topCandidates = candidateReports,
+                cropBitmap = persistentCrop ?: _reportFlow.value.cropBitmap,
+                decisionReason = reason,
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                isConfirmed = false,
+                stableFramesCount = 0,
+                requiredStableFrames = REQUIRED_STABLE_FRAMES,
+                minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
+            )
+            AppLogger.d(TAG, reason)
+            return@withContext null
+        }
 
-        AppLogger.d(TAG, "LiteRT seleccionó exitosamente el 10º Pick: ${winnerChamp.name} ($finalConfidence%)")
-        return@withContext Pair(winnerChamp, finalConfidence)
+        // VALIDACIÓN DE ESTABILIDAD ENTRE FOTOGRAMAS:
+        // Evita falsos positivos por parpadeos o animaciones de transición
+        if (lastCandidateId == winnerChamp.id) {
+            stableFramesCounter++
+        } else {
+            lastCandidateId = winnerChamp.id
+            stableFramesCounter = 1
+        }
+
+        val isConfirmed = (stableFramesCounter >= REQUIRED_STABLE_FRAMES) || (bestCandidate.similarityScore >= 0.52f)
+        val finalConfidence = bestCandidate.confidencePercent.coerceIn(70, 99)
+
+        if (isConfirmed) {
+            val decisionReason = "10º Pick confirmado: ${winnerChamp.name} (${(bestCandidate.similarityScore * 100).toInt()}% similitud, margen ${(scoreMargin * 100).toInt()}%)"
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.COMPLETED,
+                pickedChampion = winnerChamp,
+                confidencePercent = finalConfidence,
+                inferenceTimeMs = inferenceDuration,
+                topCandidates = candidateReports,
+                cropBitmap = persistentCrop ?: _reportFlow.value.cropBitmap,
+                decisionReason = decisionReason,
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                isConfirmed = true,
+                stableFramesCount = stableFramesCounter,
+                requiredStableFrames = REQUIRED_STABLE_FRAMES,
+                minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
+            )
+            AppLogger.d(TAG, "LiteRT seleccionó y confirmó exitosamente el 10º Pick: ${winnerChamp.name} ($finalConfidence%)")
+            return@withContext Pair(winnerChamp, finalConfidence)
+        } else {
+            val decisionReason = "Validando estabilidad visual de ${winnerChamp.name} (frame $stableFramesCounter/$REQUIRED_STABLE_FRAMES, ${(bestCandidate.similarityScore * 100).toInt()}% similitud)..."
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.RUNNING_INFERENCE,
+                pickedChampion = winnerChamp,
+                confidencePercent = finalConfidence,
+                inferenceTimeMs = inferenceDuration,
+                topCandidates = candidateReports,
+                cropBitmap = persistentCrop ?: _reportFlow.value.cropBitmap,
+                decisionReason = decisionReason,
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                isConfirmed = false,
+                stableFramesCount = stableFramesCounter,
+                requiredStableFrames = REQUIRED_STABLE_FRAMES,
+                minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
+            )
+            return@withContext null
+        }
     }
 
     /**
