@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 622
-    versionName = "1.1.2.14"
+    versionCode = 623
+    versionName = "1.1.2.15"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     val geminiKey = (project.findProperty("GEMINI_API_KEY") as? String ?: System.getenv("GEMINI_API_KEY") ?: "").trim('\"', '\'')
     buildConfigField("String", "GEMINI_API_KEY", "\"${geminiKey}\"")
@@ -33,10 +33,17 @@ android {
 
   signingConfigs {
     getByName("debug") {
-      storeFile = if (file("${rootDir}/github.keystore").exists()) file("${rootDir}/github.keystore") else file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+      val customStore = when {
+        file("${rootDir}/github.keystore").exists() -> file("${rootDir}/github.keystore")
+        file("${rootDir}/debug.keystore").exists() -> file("${rootDir}/debug.keystore")
+        else -> null
+      }
+      if (customStore != null) {
+        storeFile = customStore
+        storePassword = "android"
+        keyAlias = "androiddebugkey"
+        keyPassword = "android"
+      }
       enableV2Signing = true
       enableV3Signing = true
     }

@@ -165,7 +165,15 @@ jobs:
 
       - name: Build Debug APK
         run: |
-          gradle :app:assembleDebug --stacktrace --no-daemon --no-build-cache
+          set -o pipefail
+          gradle :app:assembleDebug --stacktrace --no-daemon 2>&1 | tee build_output.log || {
+            echo "================================================================================"
+            echo ">>> BUILD FAILED! CRITICAL FAILURE LOG (LAST 100 LINES) <<<"
+            echo "================================================================================"
+            tail -n 100 build_output.log
+            echo "================================================================================"
+            exit 1
+          }
 
       - name: Verify APK
         run: |
