@@ -23,7 +23,7 @@ import com.example.model.MetaDataSource
 object WildRiftRepository {
 
     // Versión canónica oficial de Wild Rift
-    var CURRENT_PATCH_VERSION = "Parche 7.2e"
+    var CURRENT_PATCH_VERSION = "Parche 7.3"
     var LAST_SYNC_STATUS = "Sincronización Automática Activa"
 
     // CDN base URL para avatares, habilidades, objetos y hechizos

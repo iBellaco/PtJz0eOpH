@@ -89,7 +89,7 @@ object WildRiftSpellsAndRunes {
             "último esfuerzo", "ultimo esfuerzo", "last stand" -> "Último Esfuerzo"
             "derribado", "cut down", "cazagigantes", "giant slayer" -> "Derribado"
             "golpe de gracia", "coup de grace" -> "Golpe de Gracia"
-            "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Presteza"
+            "leyenda: velocidad", "leyenda velocidad", "velocidad", "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Velocidad"
             "leyenda: tenacidad", "leyenda tenacidad", "tenacidad", "legend tenacity" -> "Leyenda: Tenacidad"
             "leyenda: linaje", "leyenda linaje", "linaje", "legend bloodline" -> "Leyenda: Linaje"
             // Dominación / Domination aliases
@@ -170,7 +170,7 @@ object WildRiftSpellsAndRunes {
             "último esfuerzo", "ultimo esfuerzo", "last stand" -> "Último Esfuerzo"
             "derribado", "cut down", "cazagigantes", "giant slayer" -> "Derribado"
             "golpe de gracia", "coup de grace" -> "Golpe de Gracia"
-            "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Presteza"
+            "leyenda: velocidad", "leyenda velocidad", "velocidad", "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Velocidad"
             "leyenda: tenacidad", "leyenda tenacidad", "tenacidad", "legend tenacity" -> "Leyenda: Tenacidad"
             "leyenda: linaje", "leyenda linaje", "linaje", "legend bloodline" -> "Leyenda: Linaje"
             // Dominación / Domination aliases
@@ -534,10 +534,10 @@ object WildRiftSpellsAndRunes {
         ),
         RuneItem(
             id = "legend_alacrity",
-            name = "Leyenda: Presteza",
+            name = "Leyenda: Velocidad",
             category = "Precisión",
             iconUrl = "file:///android_asset/runes/legend_alacrity.webp",
-            description = "Otorga un 3% de velocidad de ataque. Asesina a monstruos, súbditos y campeones enemigos o consigue asistencias para obtener hasta un 18% de velocidad de ataque adicional."
+            description = "Otorga 0 de velocidad de habilidades al principio de la partida. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de habilidades adicionales. La bonificación total tiene un límite de 15 de velocidad de habilidades."
         ),
         RuneItem(
             id = "legend_tenacity",

@@ -105,10 +105,10 @@
   },
   {
     "id": "legend_alacrity",
-    "name": "Leyenda: Presteza",
+    "name": "Leyenda: Velocidad",
     "tree": "Precisión",
     "type": "Secundaria",
-    "description": "Otorga un 3% de velocidad de ataque. Asesina a monstruos, súbditos y campeones enemigos o consigue asistencias para obtener hasta un 18% de velocidad de ataque adicional.",
+    "description": "Otorga 0 de velocidad de habilidades al principio de la partida. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de habilidades adicionales. La bonificación total tiene un límite de 15 de velocidad de habilidades.",
     "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/legendalacrity/legendalacrity.png"
   },
   {
