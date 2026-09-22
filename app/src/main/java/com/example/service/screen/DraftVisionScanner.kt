@@ -184,6 +184,8 @@ object DraftVisionScanner {
     // Memoria persistente de los carriles asignados a cada slot aliado (0..4)
     // En Wild Rift, el carril asignado a cada jugador es fijo durante toda la fase de selección
     val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
+    // Memoria persistente exclusiva de la línea leída por OCR directamente en el slot aliado (sin sobreescrituras por campeones)
+    val allySlotOcrLaneCache = mutableMapOf<Int, LaneRole>()
     // Memoria persistente de los nombres de invocador aliados (0..4)
     private val allySummonerNamesCache = mutableMapOf<Int, String>()
     // Memoria persistente del slot asignado al usuario
@@ -259,6 +261,7 @@ object DraftVisionScanner {
         isLegendaryRankedCache = false
         cachedUserSlotIndex = null
         allySlotRolesCache.clear()
+        allySlotOcrLaneCache.clear()
         allySummonerNamesCache.clear()
         allySlotConfirmedChampions.fill(null)
         enemySlotConfirmedChampions.fill(null)
@@ -708,6 +711,7 @@ object DraftVisionScanner {
                                 detectedRoleInSlot = role
                                 slot.explicitRole = role
                                 allySlotRolesCache[i] = role
+                                allySlotOcrLaneCache[i] = role
                                 textDiagnosticsList.add(
                                     TextBlockDiagnostic(
                                         text = line,
@@ -883,6 +887,7 @@ object DraftVisionScanner {
                                         if (rMatched != null && detectedRoleInSlot == null) {
                                             detectedRoleInSlot = rMatched
                                             allySlotRolesCache[i] = rMatched
+                                            allySlotOcrLaneCache[i] = rMatched
                                             slot.explicitRole = rMatched
                                         }
                                     }
@@ -1360,6 +1365,7 @@ object DraftVisionScanner {
             val hasSmite = allySlotSpells.any { it.equals("Castigo", ignoreCase = true) || it.equals("Smite", ignoreCase = true) }
             if (hasSmite) {
                 allySlotRolesCache[i] = LaneRole.JUNGLE
+                allySlotOcrLaneCache[i] = LaneRole.JUNGLE
                 allySlots[i].explicitRole = LaneRole.JUNGLE
                 allySlots[i].assignedRole = LaneRole.JUNGLE
             }
