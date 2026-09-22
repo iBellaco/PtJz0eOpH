@@ -1993,10 +1993,9 @@ private fun ItemsCatalogTab() {
     val allItems = WildRiftRepository.items
 
     val allCategories = remember(allItems) {
-        val priority = listOf("Luchador", "Asesino", "Tirador", "Mágico", "Defensa", "Apoyo", "Botas")
-        val catsFromItems = allItems.map { it.category }.distinct()
-        val combined = (priority + catsFromItems).distinct()
-        combined.sortedBy { cat ->
+        val cats = allItems.map { it.category }.distinct()
+        val priority = listOf("Físico", "Physical", "Magia", "Magic", "Defensa", "Defense", "Botas", "Boots", "Encantamiento", "Enchantment")
+        cats.sortedBy { cat ->
             val p = priority.indexOfFirst { cat.contains(it, ignoreCase = true) }
             if (p >= 0) p else 99
         }
@@ -2030,33 +2029,15 @@ private fun ItemsCatalogTab() {
         val result = mutableListOf<Pair<String, List<WildRiftItem>>>()
         val groups = filteredItems.groupBy { it.category }
         
-        fun getItemTierOrder(item: WildRiftItem): Int {
-            return when {
-                item.goldCost >= 2000 || item.category.equals("Botas", ignoreCase = true) -> 1 // MEJORADAS
-                item.goldCost in 700..1999 -> 2 // NIVEL MEDIO
-                else -> 3 // BÁSICO
-            }
-        }
-
         allCategories.forEach { cat ->
             val itemsInCat = groups[cat]
             if (!itemsInCat.isNullOrEmpty()) {
-                val sortedItems = itemsInCat.sortedWith(
-                    compareBy<WildRiftItem> { getItemTierOrder(it) }
-                        .thenBy { it.goldCost }
-                        .thenBy { it.name }
-                )
-                result.add(cat to sortedItems)
+                result.add(cat to itemsInCat)
             }
         }
         groups.forEach { (cat, itemsInCat) ->
             if (result.none { it.first == cat }) {
-                val sortedItems = itemsInCat.sortedWith(
-                    compareBy<WildRiftItem> { getItemTierOrder(it) }
-                        .thenBy { it.goldCost }
-                        .thenBy { it.name }
-                )
-                result.add(cat to sortedItems)
+                result.add(cat to itemsInCat)
             }
         }
         result
@@ -2289,56 +2270,29 @@ private fun ItemsCatalogTab() {
                                 )
                             }
 
-                            val tierGroups = itemsInCat.groupBy { item ->
-                                when {
-                                    item.goldCost >= 2000 || item.category.equals("Botas", ignoreCase = true) -> "MEJORADAS"
-                                    item.goldCost in 700..1999 -> "NIVEL MEDIO"
-                                    else -> "BÁSICO"
-                                }
-                            }
-                            val tierOrder = listOf("MEJORADAS", "NIVEL MEDIO", "BÁSICO")
-
-                            tierOrder.forEach { tierName ->
-                                val itemsInTier = tierGroups[tierName]
-                                if (!itemsInTier.isNullOrEmpty()) {
-                                    if (tierGroups.size > 1) {
-                                        Text(
-                                            text = tr(tierName),
-                                            color = HextechGold,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            letterSpacing = 1.sp,
-                                            modifier = Modifier.padding(top = 6.dp, bottom = 4.dp)
+                            if (isGridView) {
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    itemsInCat.forEach { item ->
+                                        ItemGridCard(
+                                            item = item,
+                                            onClick = { itemForDetail = item },
+                                            modifier = Modifier.width(68.dp),
+                                            borderColor = catColor
                                         )
                                     }
-                                    if (isGridView) {
-                                        FlowRow(
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                                            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
-                                        ) {
-                                            itemsInTier.forEach { item ->
-                                                ItemGridCard(
-                                                    item = item,
-                                                    onClick = { itemForDetail = item },
-                                                    modifier = Modifier.width(68.dp),
-                                                    borderColor = catColor
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        Column(
-                                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                                            modifier = Modifier.padding(bottom = 6.dp)
-                                        ) {
-                                            itemsInTier.forEach { item ->
-                                                ItemListCard(
-                                                    item = item,
-                                                    onClick = { itemForDetail = item },
-                                                    borderColor = catColor
-                                                )
-                                            }
-                                        }
+                                }
+                            } else {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    itemsInCat.forEach { item ->
+                                        ItemListCard(
+                                            item = item,
+                                            onClick = { itemForDetail = item },
+                                            borderColor = catColor
+                                        )
                                     }
                                 }
                             }
@@ -2541,7 +2495,7 @@ private fun ItemGridCard(
     item: WildRiftItem,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    borderColor: Color = item.getThemeColor()
+    borderColor: Color = HextechGold
 ) {
     val lang = LocalLanguage.current
     val localizedName = item.getLocalizedName(lang)
@@ -2588,7 +2542,7 @@ private fun ItemGridCard(
 private fun ItemListCard(
     item: WildRiftItem,
     onClick: () -> Unit,
-    borderColor: Color = item.getThemeColor()
+    borderColor: Color = HextechCardBorder
 ) {
     val lang = LocalLanguage.current
     val localizedName = item.getLocalizedName(lang)

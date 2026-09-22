@@ -299,7 +299,7 @@ object WildRiftSpellsAndRunes {
             name = "Aplastar",
             cooldown = "10s",
             iconUrl = "file:///android_asset/spells/smite.webp",
-            description = "Mapa aplicable: Wild Rift\n\nInflige 600 de daño verdadero (1000 al evolucionar) a monstruos de la jungla y súbditos. Al usarlo contra monstruos, recuperas vida proporcional a tu salud máxima. Otorga bonificación pasiva de experiencia y oro en la jungla, y evoluciona tras limpiar 3 campamentos a Aplastamiento Desalentador.",
+            description = "Mapa aplicable: Wild Rift\n\nInflige 600 de daño verdadero a los monstruos, monstruos épicos o súbditos enemigos. Al utilizar Aplastar contra monstruos, recuperas 127 de vida (70 + 10%). Aplastar se convierte en Aplastamiento desalentador tras usarlo 3 veces.",
             category = "Combate & Daño"
         ),
 
@@ -351,7 +351,7 @@ object WildRiftSpellsAndRunes {
             name = "Compás Letal",
             category = "Clave",
             iconUrl = "file:///android_asset/runes/lethal_tempo.png",
-            description = "Velocidad de ataque y daño adaptativo\n\nObtienes velocidad de ataque acumulable al acertar ataques básicos a campeones enemigos (8% para cuerpo a cuerpo y 6,4% para a distancia, hasta 6 acumulaciones durante 6 s).\nCon el máximo de 6 acumulaciones, tus ataques disparan un proyectil que inflige daño adaptativo adicional (9-30 cuerpo a cuerpo / 6-24 a distancia) escalando con la velocidad de ataque adicional."
+            description = "Velocidad de ataque\n\nObtienes velocidad de ataque acumulable al atacar a campeones enemigos. Se acumula hasta 6 veces. Con el máximo de acumulaciones, obtienes alcance adicional y puedes superar el límite de velocidad de ataque.\nCada acumulación aumenta la velocidad de ataque un 6-14% (cuerpo a cuerpo) o un 3,5-8% (a distancia) durante 6 s.\nCon el máximo de acumulaciones, obtienes 25 (cuerpo a cuerpo) o 50 (a distancia) de alcance."
         ),
         RuneItem(
             id = "fleet_footwork",
@@ -537,7 +537,7 @@ object WildRiftSpellsAndRunes {
             name = "Leyenda: Presteza",
             category = "Precisión",
             iconUrl = "file:///android_asset/runes/legend_alacrity.webp",
-            description = "Otorga celeridad de habilidad y velocidad de ataque adicional. Asesina a monstruos, súbditos y campeones enemigos o consigue asistencias para obtener hasta 15 de celeridad de habilidad básica adicional."
+            description = "Otorga un 3% de velocidad de ataque. Asesina a monstruos, súbditos y campeones enemigos o consigue asistencias para obtener hasta un 18% de velocidad de ataque adicional."
         ),
         RuneItem(
             id = "legend_tenacity",
@@ -625,7 +625,7 @@ object WildRiftSpellsAndRunes {
             name = "Demoler",
             category = "Valor",
             iconUrl = "file:///android_asset/runes/demolish.webp",
-            description = "Se activa tras 3 ataques básicos a una torreta enemiga, asestando un golpe demoledor que inflige daño físico masivo:\n• Cuerpo a cuerpo: 85 + 28% de la vida máxima.\n• A distancia: 50 + 20% de la vida máxima.\n(35 s de enfriamiento)."
+            description = "Al estar a 550 de distancia de una torreta enemiga, obtienes una carga cada 0,5 s, hasta un máximo de 6 veces. Con el máximo de cargas, el siguiente ataque que asestes a la torreta inflige (100 + 22% de la vida máxima ) de daño físico adicional (30 s de enfriamiento)."
         ),
 
         // =========================================================================

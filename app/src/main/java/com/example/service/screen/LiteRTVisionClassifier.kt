@@ -155,9 +155,8 @@ object LiteRTVisionClassifier {
 
         val embedding = FloatArray(EMBEDDING_DIM)
         val center = TENSOR_INPUT_SIZE / 2f
-        // Radio interior del círculo del avatar (0.38 * TENSOR_INPUT_SIZE para ignorar estrictamente el marco circular exterior)
-        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.38f) * (TENSOR_INPUT_SIZE * 0.38f)
-        val outerRingZoneSq = (TENSOR_INPUT_SIZE * 0.30f) * (TENSOR_INPUT_SIZE * 0.30f)
+        // Radio interior del círculo del avatar (0.42 * TENSOR_INPUT_SIZE para ignorar el marco circular exterior)
+        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.42f) * (TENSOR_INPUT_SIZE * 0.42f)
 
         // 1. Acumuladores de grilla espacial 8x8 (64 celdas)
         val rZone = FloatArray(64)
@@ -187,20 +186,12 @@ object LiteRTVisionClassifier {
             for (x in 0 until TENSOR_INPUT_SIZE) {
                 val dx = x - center
                 val distSq = dx * dx + dy * dy
-                if (distSq > maxRadiusSq) continue // Enmascaramiento circular estricto de avatar
+                if (distSq > maxRadiusSq) continue // Enmascaramiento circular de avatar
 
                 val px = pixels[y * TENSOR_INPUT_SIZE + x]
                 val r = Color.red(px) / 255.0f
                 val g = Color.green(px) / 255.0f
                 val b = Color.blue(px) / 255.0f
-
-                // Filtrar cualquier píxel residual de marco/anillo exterior rojo o azul en la periferia
-                if (distSq > outerRingZoneSq) {
-                    val isBorderRing = (r > g * 1.35f && r > b * 1.35f && r > 0.35f) ||
-                                       (b > r * 1.35f && b > g * 1.35f && b > 0.35f)
-                    if (isBorderRing) continue
-                }
-
                 val lum = 0.299f * r + 0.587f * g + 0.114f * b
 
                 val cellX = (x * 8) / TENSOR_INPUT_SIZE
@@ -298,28 +289,21 @@ object LiteRTVisionClassifier {
     /**
      * Calcula la similitud multi-escala combinada entre el embedding de entrada y un candidato del catálogo.
      * Combina:
-     * - 45% Correlación de Pearson en el mapa de luminancia espacial 8x8 (estructura facial, pelaje, rasgos y contraste).
-     * - 25% Correlación de Pearson en los canales espaciales RGB (distribución zonal de color).
-     * - 20% Similitud Coseno en el histograma espectral de color (paleta global RGB y Hue).
+     * - 65% Correlación de Pearson en la grilla espacial 8x8 (patrón 2D y alineación geométrica de rasgos).
+     * - 25% Similitud Coseno en el histograma espectral de color (paleta cromática y balances RGB/Hue).
      * - 10% Correlación en los gradientes de textura (densidad de bordes y nivel de detalle).
      */
     private fun computeChampionSimilarity(v1: FloatArray, v2: FloatArray): Float {
-        // 1. Similitud de luminancia espacial (índices 192..255)
-        val spatialLumSim = pearsonSegment(v1, v2, 192, 256)
+        // 1. Similitud espacial (índices 0..255)
+        val spatialSim = pearsonSegment(v1, v2, 0, 256)
 
-        // 2. Similitud espacial por canal de color (R: 0..63, G: 64..127, B: 128..191)
-        val spatialRSim = pearsonSegment(v1, v2, 0, 64)
-        val spatialGSim = pearsonSegment(v1, v2, 64, 128)
-        val spatialBSim = pearsonSegment(v1, v2, 128, 192)
-        val spatialColorSim = (spatialRSim + spatialGSim + spatialBSim) / 3f
-
-        // 3. Similitud espectral de color (índices 256..303)
+        // 2. Similitud espectral de color (índices 256..303)
         val colorSim = cosineSegment(v1, v2, 256, 304)
 
-        // 4. Similitud de textura y bordes (índices 304..319)
+        // 3. Similitud de textura y bordes (índices 304..319)
         val textureSim = pearsonSegment(v1, v2, 304, 320)
 
-        val combined = (spatialLumSim * 0.45f) + (spatialColorSim * 0.25f) + (colorSim * 0.20f) + (textureSim * 0.10f)
+        val combined = (spatialSim * 0.65f) + (colorSim * 0.25f) + (textureSim * 0.10f)
         return combined.coerceIn(-1.0f, 1.0f)
     }
 
