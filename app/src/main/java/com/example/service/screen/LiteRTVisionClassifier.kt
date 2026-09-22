@@ -38,8 +38,8 @@ object LiteRTVisionClassifier {
     private const val EMBEDDING_DIM = 320    // Vector descriptor multi-capa de 320 dimensiones
 
     // Umbrales calibrados de Google MediaPipe / LiteRT para clasificación del 10º pick
-    const val MIN_CONFIDENCE_THRESHOLD = 0.35f
-    const val MIN_CANDIDATE_MARGIN = 0.020f
+    const val MIN_CONFIDENCE_THRESHOLD = 0.45f
+    const val MIN_CANDIDATE_MARGIN = 0.025f
 
     // Requiere al menos 2 frames consecutivos estables con similitud alta (>= 0.48f) o 3 frames con similitud >= 0.38f
     const val REQUIRED_STABLE_FRAMES = 2
@@ -129,6 +129,14 @@ object LiteRTVisionClassifier {
     private var isCatalogIndexed = false
 
     /**
+     * Invalida el índice en memoria para forzar recálculo con nuevos parámetros de enmascaramiento.
+     */
+    fun invalidateCatalogIndex() {
+        championEmbeddingCache.clear()
+        isCatalogIndexed = false
+    }
+
+    /**
      * Inicializa y precalcula los embeddings de tensores para los campeones en memoria.
      */
     fun ensureIndexed(context: Context? = null) {
@@ -192,9 +200,11 @@ object LiteRTVisionClassifier {
 
         val embedding = FloatArray(EMBEDDING_DIM)
         val center = TENSOR_INPUT_SIZE / 2f
-        // Radio interior del círculo del avatar (0.44 * TENSOR_INPUT_SIZE para abarcar el arte del campeón excluyendo el marco)
-        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.44f) * (TENSOR_INPUT_SIZE * 0.44f)
-        val centerCoreSq = (TENSOR_INPUT_SIZE * 0.24f) * (TENSOR_INPUT_SIZE * 0.24f)
+        // Radio interior del círculo del avatar: 0.34f (en lugar de 0.44f) para aislar estrictamente
+        // el rostro/cabeza del campeón, evitando la contaminación cromática del aro perimetral de selección
+        // (anillo carmesí en selección enemiga o cian en aliada).
+        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.34f) * (TENSOR_INPUT_SIZE * 0.34f)
+        val centerCoreSq = (TENSOR_INPUT_SIZE * 0.18f) * (TENSOR_INPUT_SIZE * 0.18f)
 
         // 1. Histogramas cromáticos espectrales globales (96 bins)
         val hueBins = FloatArray(16)
@@ -236,12 +246,22 @@ object LiteRTVisionClassifier {
             for (x in 0 until TENSOR_INPUT_SIZE) {
                 val dx = x - center
                 val distSq = dx * dx + dy * dy
-                if (distSq > maxRadiusSq) continue // Enmascaramiento circular del avatar
+                if (distSq > maxRadiusSq) continue // Enmascaramiento circular estricto del rostro del avatar
 
                 val px = pixels[y * TENSOR_INPUT_SIZE + x]
                 val r = Color.red(px) / 255.0f
                 val g = Color.green(px) / 255.0f
                 val b = Color.blue(px) / 255.0f
+
+                // Descartar píxeles perimetrales contaminados por el aro de selección de Wild Rift
+                // (anillo carmesí en rivales, aro cian en aliados o halos luminosos de cuenta regresiva)
+                val distNorm = sqrt(distSq) / TENSOR_INPUT_SIZE
+                if (distNorm > 0.25f) {
+                    val isCrimsonRing = r > 0.45f && r > (g * 1.25f) && r > (b * 1.25f)
+                    val isCyanRing = b > 0.45f && b > (r * 1.25f) && b > (g * 1.15f)
+                    if (isCrimsonRing || isCyanRing) continue
+                }
+
                 val lum = 0.299f * r + 0.587f * g + 0.114f * b
 
                 val cMax = max(r, max(g, b))
@@ -870,8 +890,9 @@ object LiteRTVisionClassifier {
             stableFramesCounter = 1
         }
 
-        val isConfirmed = (stableFramesCounter >= REQUIRED_STABLE_FRAMES) || (bestCandidate.similarityScore >= 0.52f)
-        val finalConfidence = bestCandidate.confidencePercent.coerceIn(70, 99)
+        val isConfirmed = (stableFramesCounter >= REQUIRED_STABLE_FRAMES && scoreMargin >= MIN_CANDIDATE_MARGIN) ||
+                (bestCandidate.similarityScore >= 0.70f && scoreMargin >= 0.04f)
+        val finalConfidence = bestCandidate.confidencePercent.coerceIn(1, 99)
 
         if (isConfirmed) {
             val topEnginesSummary = winnerEngines.take(3).joinToString(", ") { "${it.engine.displayName}: ${it.confidencePercent}%" }

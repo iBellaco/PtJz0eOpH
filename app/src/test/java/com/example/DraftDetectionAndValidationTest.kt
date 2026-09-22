@@ -410,6 +410,47 @@ class DraftDetectionAndValidationTest {
     }
 
     @Test
+    fun testVolibearNotConfusedWithEzreal() = kotlinx.coroutines.test.runTest {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        com.example.service.screen.LiteRTVisionClassifier.invalidateCatalogIndex()
+        com.example.service.screen.LiteRTVisionClassifier.ensureIndexed(context)
+
+        var volibearBmp: android.graphics.Bitmap? = null
+        try {
+            val stream = context.assets.open("champions/volibear.png")
+            volibearBmp = android.graphics.BitmapFactory.decodeStream(stream)
+            stream.close()
+        } catch (_: Throwable) {}
+
+        if (volibearBmp != null) {
+            val cropWithRedRing = android.graphics.Bitmap.createBitmap(volibearBmp.width, volibearBmp.height, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(cropWithRedRing)
+            canvas.drawBitmap(volibearBmp, 0f, 0f, null)
+            val ringPaint = android.graphics.Paint().apply {
+                color = android.graphics.Color.RED
+                style = android.graphics.Paint.Style.STROKE
+                strokeWidth = volibearBmp.width * 0.12f
+            }
+            canvas.drawCircle(volibearBmp.width / 2f, volibearBmp.height / 2f, volibearBmp.width * 0.42f, ringPaint)
+
+            val result = com.example.service.screen.LiteRTVisionClassifier.executeTenthPickInference(
+                cropBitmap = cropWithRedRing,
+                isAlly = false,
+                confirmedChampionIds = setOf("malphite", "lux", "ashe", "jax"),
+                confirmedPicksCount = 9,
+                slotIndex = 4,
+                isSlotShowingLaneOrEmpty = false,
+                context = context
+            )
+            val report = com.example.service.screen.LiteRTVisionClassifier.reportFlow.value
+            val top1 = report.topCandidates.firstOrNull()
+            assertNotNull(top1)
+            assertEquals("volibear", top1?.champion?.id)
+            assertTrue(top1?.champion?.id != "ezreal")
+        }
+    }
+
+    @Test
     fun testMasteryIconStrippingAndChampionDetection() {
         val champs = getSafeChamps()
 

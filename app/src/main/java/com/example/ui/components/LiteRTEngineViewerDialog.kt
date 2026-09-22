@@ -1,6 +1,7 @@
 package com.example.ui.components
 
 import android.graphics.Bitmap
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -435,19 +436,28 @@ fun LiteRTEngineViewerDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "PORCENTAJES POR MOTOR (8 MOTORES IA/CV)",
+                                text = "PORCENTAJES POR MOTOR (8 MOTORES)",
                                 color = Color(0xFF00E5FF),
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 11.5.sp,
-                                letterSpacing = 0.5.sp
+                                fontSize = 11.sp,
+                                letterSpacing = 0.5.sp,
+                                modifier = Modifier.weight(1f, fill = false)
                             )
                             if (report.pickedChampion != null) {
-                                Text(
-                                    text = "Ganador: ${report.pickedChampion?.name}",
-                                    color = Color(0xFF10B981),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 11.sp
-                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    color = Color(0xFF064E3B),
+                                    shape = RoundedCornerShape(4.dp),
+                                    border = BorderStroke(1.dp, Color(0xFF10B981))
+                                ) {
+                                    Text(
+                                        text = "Top 1: ${report.pickedChampion?.name}",
+                                        color = Color(0xFFD1FAE5),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.5.sp,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
                             }
                         }
 
