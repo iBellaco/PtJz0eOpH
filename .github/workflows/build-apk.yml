@@ -92,10 +92,9 @@ jobs:
         run: |
           if [ -f "./debug.keystore.base64" ]; then
             echo "Restoring persistent debug keystore from base64..."
-            base64 -d ./debug.keystore.base64 > ./debug.keystore
-          elif [ -f "./debug.keystore" ]; then
-            echo "debug.keystore already exists."
-          else
+            tr -d '\r\n ' < ./debug.keystore.base64 | base64 -d > ./debug.keystore || true
+          fi
+          if [ ! -s "./debug.keystore" ]; then
             echo "Generating fallback debug keystore..."
             keytool -genkey -v \
               -keystore ./debug.keystore \
@@ -107,6 +106,7 @@ jobs:
               -keysize 2048 \
               -validity 10000
           fi
+          cp ./debug.keystore ./github.keystore 2>/dev/null || true
           mkdir -p ~/.android
           cp ./debug.keystore ~/.android/debug.keystore 2>/dev/null || true
 

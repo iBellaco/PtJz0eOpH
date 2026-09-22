@@ -20,13 +20,13 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 621
-    versionName = "1.1.2.13"
+    versionCode = 622
+    versionName = "1.1.2.14"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    val geminiKey = project.findProperty("GEMINI_API_KEY") as? String ?: System.getenv("GEMINI_API_KEY") ?: ""
+    val geminiKey = (project.findProperty("GEMINI_API_KEY") as? String ?: System.getenv("GEMINI_API_KEY") ?: "").trim('\"', '\'')
     buildConfigField("String", "GEMINI_API_KEY", "\"${geminiKey}\"")
-    val supabaseUrl = project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "https://yreknglctxujpetgqhnw.supabase.co"
-    val supabaseKey = project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr"
+    val supabaseUrl = (project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "https://yreknglctxujpetgqhnw.supabase.co").trim('\"', '\'')
+    val supabaseKey = (project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr").trim('\"', '\'')
     buildConfigField("String", "SUPABASE_URL", "\"${supabaseUrl}\"")
     buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseKey}\"")
   }
