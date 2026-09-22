@@ -97,9 +97,8 @@ fun ScannerDebugOverlay(
                 style = Stroke(width = 1.2f)
             )
 
-            // Etiqueta del slot / rol aliado dinámico según la línea leída en el slot
-            val detectedRole = DraftVisionScanner.allySlotOcrLaneCache[sIdx]?.shortName
-                ?: DraftVisionScanner.allySlotRolesCache[sIdx]?.shortName
+            // Etiqueta del slot / rol aliado dinámico
+            val detectedRole = DraftVisionScanner.allySlotRolesCache[sIdx]?.shortName
             val slotLabel = if (detectedRole != null) "Aliado ${sIdx + 1} ($detectedRole)" else "Aliado ${sIdx + 1}"
             drawContext.canvas.nativeCanvas.drawText(
                 slotLabel,
