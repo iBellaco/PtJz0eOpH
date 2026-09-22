@@ -1628,31 +1628,6 @@ private fun FloatingOverlayContent(
                                     }
                                 }
 
-                                // Botón para alternar visibilidad de Círculos de Escaneo (Solo icono ✕ o ✓ sin texto redundante)
-                                val showScanCircles by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
-                                Surface(
-                                    modifier = Modifier
-                                        .size(28.dp)
-                                        .clickable {
-                                            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !showScanCircles
-                                        },
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = if (showScanCircles) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
-                                    border = BorderStroke(1.dp, if (showScanCircles) HextechCyan else HextechGold.copy(alpha = 0.5f))
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Icon(
-                                            imageVector = if (showScanCircles) Icons.Default.Check else Icons.Default.Close,
-                                            contentDescription = if (showScanCircles) "Ocultar círculos de escaneo" else "Mostrar círculos de escaneo",
-                                            tint = if (showScanCircles) HextechCyan else HextechGold,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-
                                 // Botón del Visor LiteRT (Solo Emoji 👁️, en el Hub al lado de minimizar)
                                 Surface(
                                     modifier = Modifier

@@ -70,14 +70,12 @@ fun LiteRTEngineViewerDialog(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.85f))
-            .clickable { onDismissRequest() },
+            .background(Color.Black.copy(alpha = 0.85f)),
         contentAlignment = Alignment.Center
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable(enabled = false) { /* Evitar cerrar al hacer click dentro */ }
                 .padding(4.dp)
                 .testTag("litert_viewer_dialog"),
             shape = RoundedCornerShape(14.dp),
@@ -98,7 +96,10 @@ fun LiteRTEngineViewerDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = "LiteRT Motor",
@@ -122,15 +123,23 @@ fun LiteRTEngineViewerDialog(
                         }
                     }
 
-                    IconButton(
-                        onClick = onDismissRequest,
-                        modifier = Modifier.size(32.dp)
+                    // Botón Cerrar en Cabecera con área de toque amplia y destacada
+                    Surface(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clickable { onDismissRequest() },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF334155),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF64748B))
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
-                            tint = Color.White
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Cerrar Visor",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
 
@@ -578,6 +587,38 @@ fun LiteRTEngineViewerDialog(
                         fontSize = 12.sp,
                         lineHeight = 16.sp
                     )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Botón inferior para salir/cerrar el visor de forma garantizada
+                Button(
+                    onClick = onDismissRequest,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(42.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF334155)),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar Visor",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "CERRAR VISOR (VOLVER AL DRAFT)",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                    }
                 }
             }
         }

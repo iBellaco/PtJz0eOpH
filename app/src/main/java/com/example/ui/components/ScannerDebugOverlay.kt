@@ -171,8 +171,32 @@ fun ScannerDebugOverlay(
                 )
             }
         }
+
+        // -------------------------------------------------------------
+        // 3. Círculo de Visión del 10º Pick (Slot Rival 5 / 10º Pick Activo)
+        // -------------------------------------------------------------
+        val tenthEnemyY = h * currentConfig.enemySlotYRatios.getOrElse(4) { 0.732f }
+        val tenthEnemyX = w * currentConfig.enemyAvatarCenterX
+        drawCircle(
+            color = Color(0xFFFFD700),
+            center = Offset(tenthEnemyX, tenthEnemyY),
+            radius = avatarRadius + 4f,
+            style = Stroke(width = 3.0f)
+        )
+        drawContext.canvas.nativeCanvas.drawText(
+            "10º PICK (Rival 5)",
+            tenthEnemyX,
+            tenthEnemyY + avatarRadius + 14f,
+            android.graphics.Paint().apply {
+                color = android.graphics.Color.parseColor("#FFD700")
+                textSize = with(density) { 9.sp.toPx() }
+                isAntiAlias = true
+                textAlign = android.graphics.Paint.Align.CENTER
+                setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
+            }
+        )
         
-        // 3. Límites del Asistente Flotante
+        // 4. Límites del Asistente Flotante
         if (overlayRect != null) {
             drawRect(
                 color = Color(0x55C89B3C),
