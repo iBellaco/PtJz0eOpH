@@ -173,14 +173,23 @@ jobs:
       - name: Build Debug APK
         run: |
           set -o pipefail
-          gradle :app:assembleDebug --stacktrace --no-daemon 2>&1 | tee build_output.log || {
+          gradle :app:assembleDebug --stacktrace -Dorg.gradle.jvmargs="-Xmx2560m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -Dfile.encoding=UTF-8" -Dkotlin.daemon.jvm.options="-Xmx1024m -XX:MaxMetaspaceSize=384m" 2>&1 | tee build_output.log || {
             echo "================================================================================"
-            echo ">>> BUILD FAILED! CRITICAL FAILURE LOG (LAST 100 LINES) <<<"
+            echo ">>> BUILD FAILED! CRITICAL FAILURE LOG (LAST 250 LINES) <<<"
             echo "================================================================================"
-            tail -n 100 build_output.log
+            tail -n 250 build_output.log
             echo "================================================================================"
             exit 1
           }
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-failure-log
+          path: build_output.log
+          retention-days: 7
+        continue-on-error: true
 
       - name: Verify APK
         run: |
