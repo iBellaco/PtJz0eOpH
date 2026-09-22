@@ -66,11 +66,11 @@ object AdaptiveScreenLayoutEngine {
         val geometry = analyzeScreen(width, height)
         val ratio = geometry.aspectRatio
 
-        // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla de forma simétrica:
-        // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.076f
-        // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.928f (espejo simétrico de la columna aliada)
-        val adaptiveAllyCenterX = if (geometry.isUltrawide) 0.076f else baseConfig.allyAvatarCenterX
-        val adaptiveEnemyCenterX = if (geometry.isUltrawide) 0.928f else baseConfig.enemyAvatarCenterX
+        // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla:
+        // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.076f (después de los hechizos de invocador)
+        // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.962f (al extremo derecho del slot rival, tras el texto OCR)
+        val adaptiveAllyCenterX = baseConfig.allyAvatarCenterX
+        val adaptiveEnemyCenterX = if (baseConfig.enemyAvatarCenterX == 0.928f) 0.962f else baseConfig.enemyAvatarCenterX
 
         // Rango de búsqueda OCR adaptativo:
         // El texto del slot aliado está estrictamente a la derecha del avatar (entre x ≈ 0.098 y x ≈ 0.240).

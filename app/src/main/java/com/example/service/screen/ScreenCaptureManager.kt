@@ -203,44 +203,24 @@ class ScreenCaptureManager(private val context: Context) {
 
     /**
      * Captura el frame actual de la pantalla bajo demanda como un Bitmap con sincronización protegida.
-     * Garantiza acceso thread-safe exclusivo a ImageReader y reciclaje de fotogramas.
+     * Garantiza acceso thread-safe exclusivo a ImageReader, reciclaje directo y omisión de copias pesadas.
+     * Si no hay fotograma nuevo disponible, retorna null permitiendo la estrategia de frame skipping.
      */
     fun captureCurrentFrame(): Bitmap? {
         synchronized(frameLock) {
             val reader = imageReader ?: return null
             var image: Image? = null
             try {
+                // Adquiere el fotograma más reciente disponible y descarta fotogramas viejos en cola
                 image = reader.acquireLatestImage() ?: reader.acquireNextImage()
                 if (image != null) {
                     val cleanBmp = processImageToBitmap(image)
                     if (cleanBmp != null) {
-                        val old = lastFrame
-                        try {
-                            lastFrame = cleanBmp.copy(Bitmap.Config.ARGB_8888, false)
-                        } catch (_: Throwable) {}
-                        old?.recycle()
                         return cleanBmp
-                    }
-                }
-                // Si este frame específico vino vacío, retornar copia segura del último frame válido
-                val cached = lastFrame
-                if (cached != null && !cached.isRecycled) {
-                    return try {
-                        cached.copy(Bitmap.Config.ARGB_8888, false)
-                    } catch (_: Throwable) {
-                        null
                     }
                 }
             } catch (e: Throwable) {
                 AppLogger.w(TAG, "Extracción de frame segura: ${e.message}")
-                val cached = lastFrame
-                if (cached != null && !cached.isRecycled) {
-                    return try {
-                        cached.copy(Bitmap.Config.ARGB_8888, false)
-                    } catch (_: Throwable) {
-                        null
-                    }
-                }
             } finally {
                 try {
                     image?.close()

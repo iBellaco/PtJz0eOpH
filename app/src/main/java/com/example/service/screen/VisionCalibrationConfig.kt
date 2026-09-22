@@ -10,7 +10,7 @@ import android.content.SharedPreferences
 data class VisionCalibrationConfig(
     // Posición horizontal X central de avatares en columnas verticales de draft (0..1)
     val allyAvatarCenterX: Float = 0.076f,
-    val enemyAvatarCenterX: Float = 0.928f,
+    val enemyAvatarCenterX: Float = 0.962f,
 
     // Diámetro del avatar relativo al alto de pantalla (0..1)
     val avatarDiameterRatio: Float = 0.110f,
@@ -130,7 +130,7 @@ VisionCalibrationConfig(
     }
 
     companion object {
-        private const val CURRENT_CALIBRATION_VERSION = 6
+        private const val CURRENT_CALIBRATION_VERSION = 7
 
         fun resetToDefaults(context: Context): VisionCalibrationConfig {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
@@ -151,9 +151,12 @@ VisionCalibrationConfig(
                 val allyY = (0..4).map { idx -> prefs.getFloat("ally_slot_y_$idx", default.allySlotYRatios[idx]) }
                 val enemyY = (0..4).map { idx -> prefs.getFloat("enemy_slot_y_$idx", default.enemySlotYRatios[idx]) }
                 
+                val savedEnemyX = prefs.getFloat("enemyAvatarCenterX", default.enemyAvatarCenterX)
+                val migratedEnemyX = if (version < 7 || savedEnemyX == 0.928f) default.enemyAvatarCenterX else savedEnemyX
+
                 val migrated = VisionCalibrationConfig(
                     allyAvatarCenterX = prefs.getFloat("allyAvatarCenterX", default.allyAvatarCenterX),
-                    enemyAvatarCenterX = prefs.getFloat("enemyAvatarCenterX", default.enemyAvatarCenterX),
+                    enemyAvatarCenterX = migratedEnemyX,
                     avatarDiameterRatio = prefs.getFloat("avatarDiameterRatio", default.avatarDiameterRatio),
                     allySlotYRatios = allyY,
                     enemySlotYRatios = enemyY,
@@ -178,9 +181,12 @@ VisionCalibrationConfig(
             val topAllyX = (0..4).map { idx -> prefs.getFloat("top_ally_x_$idx", default.topAllyXRatios[idx]) }
             val topEnemyX = (0..4).map { idx -> prefs.getFloat("top_enemy_x_$idx", default.topEnemyXRatios[idx]) }
 
+            val loadedEnemyX = prefs.getFloat("enemyAvatarCenterX", default.enemyAvatarCenterX)
+            val resolvedEnemyX = if (loadedEnemyX == 0.928f) default.enemyAvatarCenterX else loadedEnemyX
+
             return VisionCalibrationConfig(
                 allyAvatarCenterX = prefs.getFloat("allyAvatarCenterX", default.allyAvatarCenterX),
-                enemyAvatarCenterX = prefs.getFloat("enemyAvatarCenterX", default.enemyAvatarCenterX),
+                enemyAvatarCenterX = resolvedEnemyX,
                 avatarDiameterRatio = prefs.getFloat("avatarDiameterRatio", default.avatarDiameterRatio),
                 allySlotYRatios = allyY,
                 enemySlotYRatios = enemyY,

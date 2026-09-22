@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -26,7 +27,66 @@ fun ScannerDebugOverlay(
     val rawConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
     val density = LocalDensity.current
-    
+
+    // Telemetría del motor de visión y estrategia de salto de fotogramas
+    val liveScanFps by DraftVisionScanner.liveScanFps.collectAsStateWithLifecycle()
+    val skippedFrames by DraftVisionScanner.framesSkippedCount.collectAsStateWithLifecycle()
+    val lastDurationMs by DraftVisionScanner.lastProcessingDurationMs.collectAsStateWithLifecycle()
+    val isBusy by DraftVisionScanner.isVisionEngineBusy.collectAsStateWithLifecycle()
+
+    // OPTIMIZACIÓN DE RENDIMIENTO (60-120 FPS):
+    // Recordar pinturas nativas fuera de Canvas para eliminar asignaciones masivas de memoria
+    // y evitar pausas de Garbage Collector (GC) que reducen la tasa de fotogramas del overlay.
+    val allyTextPaint = remember(density) {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.parseColor("#00E5FF")
+            textSize = with(density) { 10.sp.toPx() }
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.CENTER
+            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
+        }
+    }
+
+    val enemyTextPaint = remember(density) {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.parseColor("#FF5252")
+            textSize = with(density) { 10.sp.toPx() }
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.CENTER
+            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
+        }
+    }
+
+    val labelPaint = remember(density) {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.WHITE
+            textSize = with(density) { 9.sp.toPx() }
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.CENTER
+            setShadowLayer(3f, 0f, 0f, android.graphics.Color.BLACK)
+        }
+    }
+
+    val tenthPickPaint = remember(density) {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.parseColor("#FFD700")
+            textSize = with(density) { 9.sp.toPx() }
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.CENTER
+            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
+        }
+    }
+
+    val hudPaint = remember(density) {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.parseColor("#00E676")
+            textSize = with(density) { 9.5.sp.toPx() }
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.LEFT
+            setShadowLayer(3f, 0f, 0f, android.graphics.Color.BLACK)
+        }
+    }
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
@@ -35,30 +95,6 @@ fun ScannerDebugOverlay(
         val currentConfig = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(w.toInt(), h.toInt(), rawConfig)
         val avatarDiameter = h * currentConfig.avatarDiameterRatio
         val avatarRadius = avatarDiameter / 2f
-        
-        val allyTextPaint = android.graphics.Paint().apply {
-            color = android.graphics.Color.parseColor("#00E5FF")
-            textSize = with(density) { 10.sp.toPx() }
-            isAntiAlias = true
-            textAlign = android.graphics.Paint.Align.CENTER
-            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
-        }
-
-        val enemyTextPaint = android.graphics.Paint().apply {
-            color = android.graphics.Color.parseColor("#FF5252")
-            textSize = with(density) { 10.sp.toPx() }
-            isAntiAlias = true
-            textAlign = android.graphics.Paint.Align.CENTER
-            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
-        }
-
-        val labelPaint = android.graphics.Paint().apply {
-            color = android.graphics.Color.WHITE
-            textSize = with(density) { 9.sp.toPx() }
-            isAntiAlias = true
-            textAlign = android.graphics.Paint.Align.CENTER
-            setShadowLayer(3f, 0f, 0f, android.graphics.Color.BLACK)
-        }
 
         // SLOTS VERTICALES (LADO IZQUIERDO Y DERECHO) - AJUSTADOS PARA DRAFT REAL
         for (sIdx in 0..4) {
@@ -156,7 +192,7 @@ fun ScannerDebugOverlay(
             // Etiqueta del slot rival
             drawContext.canvas.nativeCanvas.drawText(
                 "Rival ${sIdx + 1}",
-                enemyX,
+                enemyX.coerceAtMost(w - 24f),
                 enemyY - avatarRadius - 6f,
                 labelPaint
             )
@@ -185,15 +221,9 @@ fun ScannerDebugOverlay(
         )
         drawContext.canvas.nativeCanvas.drawText(
             "10º PICK (Rival 5)",
-            tenthEnemyX,
+            tenthEnemyX.coerceAtMost(w - 52f),
             tenthEnemyY + avatarRadius + 14f,
-            android.graphics.Paint().apply {
-                color = android.graphics.Color.parseColor("#FFD700")
-                textSize = with(density) { 9.sp.toPx() }
-                isAntiAlias = true
-                textAlign = android.graphics.Paint.Align.CENTER
-                setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
-            }
+            tenthPickPaint
         )
         
         // 4. Límites del Asistente Flotante
@@ -205,5 +235,40 @@ fun ScannerDebugOverlay(
                 style = Stroke(width = 1.5f)
             )
         }
+
+        // -------------------------------------------------------------
+        // 5. Panel HUD de Rendimiento y Salto de Fotogramas (Frame Skipping)
+        // -------------------------------------------------------------
+        val hudText = String.format(
+            java.util.Locale.US,
+            "Motor Visión: %s | Tasa: %.1f Hz | Latencia: %dms | Fotogramas Saltados: %d",
+            if (isBusy) "PROCESANDO" else "LISTO",
+            liveScanFps,
+            lastDurationMs,
+            skippedFrames
+        )
+        val hudX = w * 0.12f
+        val hudY = 24f
+
+        drawRoundRect(
+            color = Color(0xCC050A14),
+            topLeft = Offset(hudX - 10f, 6f),
+            size = Size(with(density) { 340.sp.toPx() }, 26f),
+            cornerRadius = CornerRadius(6f, 6f)
+        )
+        drawRoundRect(
+            color = if (isBusy) Color(0xFFFFD700) else Color(0x8800E676),
+            topLeft = Offset(hudX - 10f, 6f),
+            size = Size(with(density) { 340.sp.toPx() }, 26f),
+            cornerRadius = CornerRadius(6f, 6f),
+            style = Stroke(width = 1f)
+        )
+
+        drawContext.canvas.nativeCanvas.drawText(
+            hudText,
+            hudX,
+            hudY,
+            hudPaint
+        )
     }
 }

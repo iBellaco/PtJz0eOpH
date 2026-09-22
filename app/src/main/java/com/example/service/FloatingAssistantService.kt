@@ -177,6 +177,7 @@ import com.example.data.local.entity.SavedDraftEntity
 import com.example.model.Champion
 import com.example.model.DraftSlot
 import com.example.model.LaneRole
+import com.example.service.screen.DraftPickTurn
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.ScreenCaptureManager
 import com.example.ui.components.AppAssetImage
@@ -1016,68 +1017,111 @@ private fun FloatingOverlayContent(
         )
     }
 
-    // Auto-Scan Loop en segundo plano optimizado en Dispatchers.IO:
-    // Arquitectura de Bucle Dual con Priorización de Eventos:
-    // 1) Bucle de Alta Prioridad para Slots Activos (60ms): Escanea directamente el ROI del/los slot(s)
-    //    en turno de selección activa sin procesar toda la pantalla, reduciendo la latencia de reconocimiento a <30ms.
-    // 2) Bucle de Baja Frecuencia para Slots Inactivos (cada 6 ciclos o en reposo 800ms): Sincroniza
-    //    nombres de invocador, hechizos, detección de 10º pick y confirmaciones globales, ahorrando CPU y batería.
+    // FRAME SKIPPING & BACKGROUND PROCESSING STRATEGY:
+    // El bucle de visión se ejecuta en un contexto de segundo plano desacoplado (Dispatchers.Default),
+    // liberando por completo el hilo principal (UI) para garantizar una tasa de refresco fluida (60-120 FPS)
+    // tanto en el live scan overlay (ScannerDebugOverlay) como en las animaciones y gestos de la burbuja.
+    // Estrategia de salto de fotogramas (Frame Skipping Strategy):
+    // 1. In-flight Concurrency Guard (AtomicBoolean): Si el motor de visión ya se encuentra procesando
+    //    una inferencia (OCR o LiteRT), cualquier fotograma entrante o ciclo es descartado de inmediato.
+    // 2. User Gesture Throttling: Cuando el usuario arrastra la burbuja (isDraggingBubble) o interactúa
+    //    con diálogos modales, la captura se suspende, dedicando el 100% de GPU y CPU a la fluidez táctil.
+    // 3. Adaptive Cooldown: Si una inferencia toma más tiempo del previsto, se aplica un intervalo compensatorio
+    //    para evitar saturación térmica y mantener estabilidad de fotogramas en Android.
+    // 4. Null-Frame Drop: Si el ImageReader no tiene un fotograma nuevo, se salta el ciclo sin re-analizar imágenes estáticas.
     LaunchedEffect(autoScanEnabled) {
-        if (!autoScanEnabled) return@LaunchedEffect
-        var loopCycleCounter = 0L
-        while (autoScanEnabled) {
-            loopCycleCounter++
-            val confirmedPicksCount = allies.count { it != null } + enemies.count { it != null }
+        if (!autoScanEnabled) {
+            DraftVisionScanner.isVisionEngineBusy.value = false
+            return@LaunchedEffect
+        }
 
-            val tentativeFirstPick = isFirstPick ?: true
-            val sequence = DraftVisionScanner.getDraftPickSequence(tentativeFirstPick)
-            val activeTurns = DraftVisionScanner.computeActiveSelectionTurns(
-                sequence,
-                DraftVisionScanner.allySlotConfirmedChampions,
-                DraftVisionScanner.enemySlotConfirmedChampions
-            )
+        withContext(Dispatchers.Default) {
+            val isProcessingFrame = java.util.concurrent.atomic.AtomicBoolean(false)
+            var loopCycleCounter = 0L
+            var fpsLastTime = System.currentTimeMillis()
+            var framesInSecond = 0
 
-            val isDraftComplete = (confirmedPicksCount >= 10)
-            val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
+            while (autoScanEnabled) {
+                // 1. REGLA DE SALTO: Arrastre o interacción de usuario
+                if (isDraggingBubble || showSaveDraftDialog || showRoleChangeDialog) {
+                    DraftVisionScanner.recordFrameSkipped()
+                    delay(80L)
+                    continue
+                }
 
-            // Temporización adaptativa:
-            // - Si hay turnos de selección activos y no toca ciclo global: Bucle de alta prioridad (60ms)
-            // - Si el draft está completo: Modo reposo (800ms)
-            // - Si el 10º pick está activo o hay 8+ picks confirmados: Inferencia LiteRT de alta frecuencia (80ms)
-            // - En caso contrario (ciclo global para slots inactivos / preparación): 160ms
-            val totalConfirmedCount = allies.count { it != null } + enemies.count { it != null }
-            val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || totalConfirmedCount >= 8
-            val isGlobalSyncCycle = isDraftComplete || (loopCycleCounter % 6L == 0L) || !hasActiveTurns || isTenthPickActive
-            val dynamicLoopDelay = when {
-                isDraftComplete -> 800L
-                !isGlobalSyncCycle && hasActiveTurns -> 60L
-                isTenthPickActive -> 80L
-                else -> 160L
-            }
-            delay(dynamicLoopDelay)
+                // 2. REGLA DE SALTO: In-flight Concurrency Guard (si hay un análisis activo, omitir)
+                if (!isProcessingFrame.compareAndSet(false, true)) {
+                    DraftVisionScanner.recordFrameSkipped()
+                    delay(30L)
+                    continue
+                }
 
-            try {
-                if (screenCaptureManager == null || !screenCaptureManager.isReady()) {
-                    withContext(Dispatchers.Main) {
-                        scanNoticeMessage = "Permiso de captura inactivo. Toca aquí para activarlo."
+                loopCycleCounter++
+                val cycleStartTime = System.currentTimeMillis()
+
+                // Medición de fotogramas de escaneo por segundo (Scan FPS)
+                framesInSecond++
+                val nowTime = System.currentTimeMillis()
+                if (nowTime - fpsLastTime >= 1000L) {
+                    val computedFps = (framesInSecond * 1000f) / (nowTime - fpsLastTime).coerceAtLeast(1L)
+                    DraftVisionScanner.updateFps(computedFps)
+                    framesInSecond = 0
+                    fpsLastTime = nowTime
+                }
+
+                try {
+                    DraftVisionScanner.isVisionEngineBusy.value = true
+
+                    val confirmedPicksCount = allies.count { it != null } + enemies.count { it != null }
+                    val tentativeFirstPick = isFirstPick ?: true
+                    val sequence = DraftVisionScanner.getDraftPickSequence(tentativeFirstPick)
+                    val activeTurns = DraftVisionScanner.computeActiveSelectionTurns(
+                        sequence,
+                        DraftVisionScanner.allySlotConfirmedChampions,
+                        DraftVisionScanner.enemySlotConfirmedChampions
+                    )
+
+                    val isDraftComplete = (confirmedPicksCount >= 10)
+                    val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
+                    val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
+                    val isGlobalSyncCycle = isDraftComplete || (loopCycleCounter % 6L == 0L) || !hasActiveTurns || isTenthPickActive
+
+                    val dynamicLoopDelay = when {
+                        isDraftComplete -> 800L
+                        !isGlobalSyncCycle && hasActiveTurns -> 60L
+                        isTenthPickActive -> 80L
+                        else -> 160L
                     }
-                } else if (!isScanning) {
-                    val bitmap = withContext(Dispatchers.IO) {
-                        screenCaptureManager?.captureCurrentFrame()
-                    }
-                    if (bitmap != null && !bitmap.isRecycled && bitmap.width > 0 && bitmap.height > 0) {
-                        try {
-                            if (!isGlobalSyncCycle && hasActiveTurns) {
-                                // -------------------------------------------------------------------------
-                                // RUTA DE ALTA PRIORIDAD: ESCANEO DIRIGIDO DEL SLOT ACTIVO (<30ms latencia)
-                                // -------------------------------------------------------------------------
-                                withContext(Dispatchers.IO) {
-                                    var fastPicksAdded = 0
+
+                    if (screenCaptureManager == null || !screenCaptureManager.isReady()) {
+                        withContext(Dispatchers.Main) {
+                            scanNoticeMessage = "Permiso de captura inactivo. Toca aquí para activarlo."
+                        }
+                        delay(500L)
+                    } else if (!isScanning) {
+                        val bitmap = screenCaptureManager?.captureCurrentFrame()
+                        if (bitmap == null || bitmap.isRecycled || bitmap.width <= 0 || bitmap.height <= 0) {
+                            // Salto de fotograma: no hay imagen nueva disponible en ImageReader
+                            DraftVisionScanner.recordFrameSkipped()
+                        } else {
+                            try {
+                                if (!isGlobalSyncCycle && hasActiveTurns) {
+                                    // -----------------------------------------------------------------
+                                    // RUTA DE ALTA PRIORIDAD: ESCANEO DIRIGIDO DEL SLOT ACTIVO (<30ms)
+                                    // -----------------------------------------------------------------
+                                    val detectedPicks = mutableListOf<Pair<DraftPickTurn, Champion>>()
                                     for (turn in activeTurns) {
                                         val activeResult = DraftVisionScanner.scanActiveSlotDirectly(bitmap, turn)
                                         val champ = activeResult?.champion
                                         if (champ != null) {
-                                            withContext(Dispatchers.Main) {
+                                            detectedPicks.add(turn to champ)
+                                        }
+                                    }
+
+                                    if (detectedPicks.isNotEmpty()) {
+                                        withContext(Dispatchers.Main) {
+                                            var fastPicksAdded = 0
+                                            for ((turn, champ) in detectedPicks) {
                                                 if (turn.isAlly) {
                                                     val role = DraftVisionScanner.getAllySlotRole(turn.slotIndex)
                                                     val roleIdx = defaultRoles.indexOf(role).let { if (it != -1) it else turn.slotIndex }
@@ -1085,7 +1129,7 @@ private fun FloatingOverlayContent(
                                                         assignAllySlot(roleIdx, champ)
                                                         DraftVisionScanner.allySlotConfirmedChampions[turn.slotIndex] = champ
                                                         fastPicksAdded++
-                                                        AppLogger.d("HighPriorityLoop", "Slot Aliado Activo ${turn.slotIndex} ($role) fijado instantáneamente: ${champ.name}")
+                                                        AppLogger.d("HighPriorityLoop", "Slot Aliado Activo ${turn.slotIndex} ($role) fijado: ${champ.name}")
                                                     }
                                                 } else {
                                                     val enemyRole = defaultRoles.getOrElse(turn.slotIndex) { LaneRole.TOP }
@@ -1094,181 +1138,180 @@ private fun FloatingOverlayContent(
                                                         assignEnemySlot(roleIdx, champ, 100)
                                                         DraftVisionScanner.enemySlotConfirmedChampions[turn.slotIndex] = champ
                                                         fastPicksAdded++
-                                                        AppLogger.d("HighPriorityLoop", "Slot Rival Activo ${turn.slotIndex} fijado instantáneamente: ${champ.name}")
+                                                        AppLogger.d("HighPriorityLoop", "Slot Rival Activo ${turn.slotIndex} fijado: ${champ.name}")
                                                     }
+                                                }
+                                            }
+                                            if (fastPicksAdded > 0) {
+                                                val totalAllies = allies.filterNotNull().size
+                                                val totalEnemies = enemies.filterNotNull().size
+                                                if (totalAllies == 5 && totalEnemies == 5) {
+                                                    autoScanEnabled = false
+                                                    scanNoticeMessage = "10/10 Campeones confirmados"
                                                 }
                                             }
                                         }
                                     }
-                                    if (fastPicksAdded > 0) {
-                                        withContext(Dispatchers.Main) {
-                                            val totalAllies = allies.filterNotNull().size
-                                            val totalEnemies = enemies.filterNotNull().size
-                                            if (totalAllies == 5 && totalEnemies == 5) {
-                                                autoScanEnabled = false
-                                                scanNoticeMessage = "10/10 Campeones confirmados"
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                // -------------------------------------------------------------------------
-                                // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
-                                // -------------------------------------------------------------------------
-                                val result = withContext(Dispatchers.IO) {
-                                    DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
-                                }
-                                withContext(Dispatchers.Main) {
+                                } else {
+                                    // -----------------------------------------------------------------
+                                    // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
+                                    // -----------------------------------------------------------------
+                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
                                     if (result.isSuccessful) {
-                                        if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
-                                            isFirstPick = result.detectedFirstPick
-                                        }
+                                        withContext(Dispatchers.Main) {
+                                            if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
+                                                isFirstPick = result.detectedFirstPick
+                                            }
 
-                                        var newAlliesAdded = 0
-                                        var newEnemiesAdded = 0
-                                        
-                                        defaultRoles.forEachIndexed { idx, role ->
-                                            if (manualLockedAllySlots[idx] != true) {
-                                                // ASIGNACIÓN DETERMINÍSTICA POR ROL:
-                                                // En Wild Rift cada slot aliado muestra primero qué línea va a ir (Top, Jungla, Mid, Dúo, Soporte)
-                                                // y luego esa línea se cambia por el nombre del campeón seleccionado.
-                                                // Cada índice `idx` en `allies` corresponde estricta y únicamente a `role` (defaultRoles[idx]).
-                                                // NUNCA caer en fallback de `alliesBySlot[idx]` porque el slot físico de pick puede tener un rol distinto.
-                                                val scannedAlly = result.alliesByRole[role]
-                                                if (scannedAlly != null) {
-                                                    if (allies[idx] == null || allies[idx]?.id != scannedAlly.id) {
-                                                        assignAllySlot(idx, scannedAlly)
+                                            var newAlliesAdded = 0
+                                            var newEnemiesAdded = 0
+                                            
+                                            defaultRoles.forEachIndexed { idx, role ->
+                                                if (manualLockedAllySlots[idx] != true) {
+                                                    val scannedAlly = result.alliesByRole[role]
+                                                    if (scannedAlly != null) {
+                                                        if (allies[idx] == null || allies[idx]?.id != scannedAlly.id) {
+                                                            assignAllySlot(idx, scannedAlly)
+                                                            newAlliesAdded++
+                                                        }
+                                                    }
+                                                }
+                                                if (manualLockedEnemySlots[idx] != true) {
+                                                    val scannedEnemy = result.enemiesByRole[role]
+                                                    if (scannedEnemy != null) {
+                                                        if (enemies[idx] == null || enemies[idx]?.id != scannedEnemy.id) {
+                                                            assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
+                                                            if (enemies[idx] == null) newEnemiesAdded++
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // Preservar campeones aliados no asignados
+                                            for (slotIdx in 0..4) {
+                                                val champ = result.alliesBySlot[slotIdx] ?: continue
+                                                val isAlreadyInAllies = allies.any { it?.id == champ.id }
+                                                if (!isAlreadyInAllies) {
+                                                    val emptyIdx = allies.indices.firstOrNull { allies[it] == null && manualLockedAllySlots[it] != true }
+                                                    if (emptyIdx != null) {
+                                                        assignAllySlot(emptyIdx, champ)
                                                         newAlliesAdded++
+                                                        AppLogger.d(TAG, "Campeón aliado detectado asignado a slot vacío $emptyIdx: ${champ.name}")
                                                     }
                                                 }
                                             }
-                                            if (manualLockedEnemySlots[idx] != true) {
-                                                val scannedEnemy = result.enemiesByRole[role]
-                                                if (scannedEnemy != null) {
-                                                    if (enemies[idx] == null || enemies[idx]?.id != scannedEnemy.id) {
-                                                        assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
-                                                        if (enemies[idx] == null) newEnemiesAdded++
+
+                                            // Asignación directa y garantizada del 10º Pick
+                                            val tenthChamp = result.lastPickChampion
+                                            if (tenthChamp != null) {
+                                                val isTenthAlly = result.tenthPickIsAlly ?: (!isFirstPick)
+                                                if (isTenthAlly) {
+                                                    val emptyIdx = allies.indices.firstOrNull { idx -> allies[idx] == null && manualLockedAllySlots[idx] != true } ?: -1
+                                                    val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
+                                                    if (manualLockedAllySlots[targetIdx] != true) {
+                                                        assignAllySlot(targetIdx, tenthChamp)
+                                                        DraftVisionScanner.allySlotConfirmedChampions[(result.tenthPickSlotIndex ?: targetIdx).coerceIn(0, 4)] = tenthChamp
+                                                        newAlliesAdded++
+                                                        AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $targetIdx: ${tenthChamp.name}")
+                                                    }
+                                                } else {
+                                                    val emptyIdx = enemies.indices.firstOrNull { idx -> enemies[idx] == null && manualLockedEnemySlots[idx] != true } ?: -1
+                                                    val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
+                                                    if (manualLockedEnemySlots[targetIdx] != true) {
+                                                        assignEnemySlot(targetIdx, tenthChamp, 100)
+                                                        DraftVisionScanner.enemySlotConfirmedChampions[(result.tenthPickSlotIndex ?: targetIdx).coerceIn(0, 4)] = tenthChamp
+                                                        newEnemiesAdded++
+                                                        AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $targetIdx: ${tenthChamp.name}")
                                                     }
                                                 }
                                             }
-                                        }
 
-                                        // Garantizar que ningún campeón aliado detectado quede sin asignar a un carril
-                                        for (slotIdx in 0..4) {
-                                            val champ = result.alliesBySlot[slotIdx] ?: continue
-                                            val isAlreadyInAllies = allies.any { it?.id == champ.id }
-                                            if (!isAlreadyInAllies) {
-                                                val emptyIdx = allies.indices.firstOrNull { allies[it] == null && manualLockedAllySlots[it] != true }
-                                                if (emptyIdx != null) {
-                                                    assignAllySlot(emptyIdx, champ)
-                                                    newAlliesAdded++
-                                                    AppLogger.d(TAG, "Campeón aliado detectado asignado a slot vacío $emptyIdx: ${champ.name}")
+                                            val currentAllyPicks = allies.count { it != null }
+                                            val currentEnemyPicks = enemies.count { it != null }
+                                            if (!state.isFirstPickManuallySelected) {
+                                                if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
+                                                    isFirstPick = false
+                                                } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
+                                                    isFirstPick = true
                                                 }
                                             }
-                                        }
 
-                                        // Asignación directa y garantizada del 10º Pick según el bando del draft:
-                                        // Si los aliados tienen 1ª selección -> el 10º pick pertenece al equipo RIVAL.
-                                        // Si el rival tiene 1ª selección -> el 10º pick pertenece al equipo ALIADO.
-                                        val tenthChamp = result.lastPickChampion
-                                        if (tenthChamp != null) {
-                                            val isTenthAlly = result.tenthPickIsAlly ?: (!isFirstPick)
-                                            if (isTenthAlly) {
-                                                val emptyIdx = allies.indices.firstOrNull { idx -> allies[idx] == null && manualLockedAllySlots[idx] != true } ?: -1
-                                                val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
-                                                if (manualLockedAllySlots[targetIdx] != true) {
-                                                    assignAllySlot(targetIdx, tenthChamp)
-                                                    DraftVisionScanner.allySlotConfirmedChampions[(result.tenthPickSlotIndex ?: targetIdx).coerceIn(0, 4)] = tenthChamp
-                                                    newAlliesAdded++
-                                                    AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $targetIdx: ${tenthChamp.name}")
+                                            if (result.isLegendaryRanked) {
+                                                if (!isLegendaryQueue) {
+                                                    isLegendaryQueue = true
+                                                }
+                                                if (state.allySummonerNames.isNotEmpty()) {
+                                                    state.allySummonerNames.clear()
                                                 }
                                             } else {
-                                                val emptyIdx = enemies.indices.firstOrNull { idx -> enemies[idx] == null && manualLockedEnemySlots[idx] != true } ?: -1
-                                                val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
-                                                if (manualLockedEnemySlots[targetIdx] != true) {
-                                                    assignEnemySlot(targetIdx, tenthChamp, 100)
-                                                    DraftVisionScanner.enemySlotConfirmedChampions[(result.tenthPickSlotIndex ?: targetIdx).coerceIn(0, 4)] = tenthChamp
-                                                    newEnemiesAdded++
-                                                    AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $targetIdx: ${tenthChamp.name}")
-                                                }
-                                            }
-                                        }
-
-                                        val currentAllyPicks = allies.count { it != null }
-                                        val currentEnemyPicks = enemies.count { it != null }
-                                        if (!state.isFirstPickManuallySelected) {
-                                            if (currentEnemyPicks > 0 && currentAllyPicks == 0) {
-                                                isFirstPick = false
-                                            } else if (currentAllyPicks > 0 && currentEnemyPicks == 0) {
-                                                isFirstPick = true
-                                            }
-                                        }
-
-                                        if (result.isLegendaryRanked) {
-                                            if (!isLegendaryQueue) {
-                                                isLegendaryQueue = true
-                                            }
-                                            if (state.allySummonerNames.isNotEmpty()) {
-                                                state.allySummonerNames.clear()
-                                            }
-                                        } else {
-                                            defaultRoles.forEachIndexed { idx, role ->
-                                                val sName = result.allySummonerNamesByRole[role] ?: result.allySummonerNamesBySlot[idx]
-                                                if (!sName.isNullOrBlank()) {
-                                                    val current = state.allySummonerNames[idx]
-                                                    if (current.isNullOrBlank() || sName.length > current.length || (sName.contains(" ") && !current.contains(" "))) {
-                                                        state.allySummonerNames[idx] = sName
+                                                defaultRoles.forEachIndexed { idx, role ->
+                                                    val sName = result.allySummonerNamesByRole[role] ?: result.allySummonerNamesBySlot[idx]
+                                                    if (!sName.isNullOrBlank()) {
+                                                        val current = state.allySummonerNames[idx]
+                                                        if (current.isNullOrBlank() || sName.length > current.length || (sName.contains(" ") && !current.contains(" "))) {
+                                                            state.allySummonerNames[idx] = sName
+                                                        }
+                                                    }
+                                                    val spells = result.allySpellsByRole[role] ?: result.allySpellsBySlot[idx]
+                                                    if (!spells.isNullOrEmpty()) {
+                                                        state.allySpells[idx] = spells
                                                     }
                                                 }
-                                                val spells = result.allySpellsByRole[role] ?: result.allySpellsBySlot[idx]
-                                                if (!spells.isNullOrEmpty()) {
-                                                    state.allySpells[idx] = spells
-                                                }
                                             }
-                                        }
-                                        if (state.enemySpells.isNotEmpty()) {
-                                            state.enemySpells.clear()
-                                        }
+                                            if (state.enemySpells.isNotEmpty()) {
+                                                state.enemySpells.clear()
+                                            }
 
-                                        val finalAlliesPicked = allies.filterNotNull().size
-                                        val finalEnemiesPicked = enemies.filterNotNull().size
+                                            val finalAlliesPicked = allies.filterNotNull().size
+                                            val finalEnemiesPicked = enemies.filterNotNull().size
+                                            val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
 
-                                        val isDraftFullyConfirmed = (finalAlliesPicked == 5 && finalEnemiesPicked == 5)
+                                            if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
+                                                activeRole = result.userExplicitlyDetectedRole
+                                                com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
+                                                scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
+                                            } else if (isDraftFullyConfirmed) {
+                                                autoScanEnabled = false
+                                                scanNoticeMessage = "10/10 Campeones confirmados"
+                                                AppLogger.i("FloatingService", "Auto-Scan desactivado: 10/10 campeones confirmados.")
+                                            } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
+                                                scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
+                                            } else if (newAlliesAdded > 0 || newEnemiesAdded > 0) {
+                                                scanNoticeMessage = "Auto-Scan: +${newAlliesAdded + newEnemiesAdded} picks detectados ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)"
+                                            }
 
-                                        if (result.userExplicitlyDetectedRole != null && activeRole != result.userExplicitlyDetectedRole) {
-                                            activeRole = result.userExplicitlyDetectedRole
-                                            com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
-                                            scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
-                                        } else if (isDraftFullyConfirmed) {
-                                            autoScanEnabled = false
-                                            scanNoticeMessage = "10/10 Campeones confirmados"
-                                            AppLogger.i("FloatingService", "Auto-Scan desactivado: 10/10 campeones confirmados.")
-                                        } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
-                                            scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
-                                            AppLogger.d("FloatingService", "Fase de Preparación en curso ($finalAlliesPicked/5 vs $finalEnemiesPicked/5). Auto-scan continúa.")
-                                        } else if (newAlliesAdded > 0 || newEnemiesAdded > 0) {
-                                            scanNoticeMessage = "Auto-Scan: +${newAlliesAdded + newEnemiesAdded} picks detectados ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)"
-                                        }
-
-                                        if (scanNoticeMessage != null) {
-                                            launch {
-                                                delay(2000)
-                                                scanNoticeMessage = null
+                                            if (scanNoticeMessage != null) {
+                                                coroutineScope.launch {
+                                                    delay(2000)
+                                                    scanNoticeMessage = null
+                                                }
                                             }
                                         }
                                     }
                                 }
+                                val processDuration = System.currentTimeMillis() - cycleStartTime
+                                DraftVisionScanner.recordFrameProcessed(processDuration)
+                            } finally {
+                                try {
+                                    bitmap.recycle()
+                                } catch (_: Throwable) {}
                             }
-                        } finally {
-                            try {
-                                bitmap.recycle()
-                            } catch (_: Throwable) {}
                         }
                     }
+
+                    val totalCycleDuration = System.currentTimeMillis() - cycleStartTime
+                    // 3. ESTRATEGIA ADAPTATIVA: Si el ciclo tomó más tiempo del previsto,
+                    // compensar el retraso para evitar ráfagas y proteger la tasa de fotogramas del live overlay
+                    val compensatedDelay = (dynamicLoopDelay - totalCycleDuration).coerceAtLeast(30L)
+                    delay(compensatedDelay)
+
+                } catch (t: Throwable) {
+                    AppLogger.e("FloatingService", "Error in auto-scan loop", t)
+                    delay(200L)
+                } finally {
+                    isProcessingFrame.set(false)
+                    DraftVisionScanner.isVisionEngineBusy.value = false
                 }
-            } catch (t: Throwable) {
-                AppLogger.e("FloatingService", "Error in auto-scan loop", t)
-                delay(300)
             }
         }
     }

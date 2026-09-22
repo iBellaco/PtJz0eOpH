@@ -121,6 +121,26 @@ object DraftVisionScanner {
     val showCalibrationBoxes = kotlinx.coroutines.flow.MutableStateFlow(false)
     val debugVisualMatches = kotlinx.coroutines.flow.MutableStateFlow<Map<String, String>>(emptyMap())
 
+    // Telemetría de rendimiento y control adaptativo de salto de fotogramas (Frame Skipping Strategy)
+    val isVisionEngineBusy = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val liveScanFps = kotlinx.coroutines.flow.MutableStateFlow(0f)
+    val framesSkippedCount = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val framesProcessedCount = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val lastProcessingDurationMs = kotlinx.coroutines.flow.MutableStateFlow(0L)
+
+    fun recordFrameProcessed(durationMs: Long) {
+        lastProcessingDurationMs.value = durationMs
+        framesProcessedCount.value++
+    }
+
+    fun recordFrameSkipped() {
+        framesSkippedCount.value++
+    }
+
+    fun updateFps(fps: Float) {
+        liveScanFps.value = fps
+    }
+
     
     /**
      * Devuelve la secuencia real de los 10 turnos del Draft de Wild Rift:
