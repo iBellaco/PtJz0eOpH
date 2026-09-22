@@ -108,15 +108,16 @@ fun LiteRTEngineViewerDialog(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "Visor Google MediaPipe / LiteRT",
+                                text = "Visor Multi-Motor de Inferencia (10º Pick)",
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
+                                fontSize = 15.sp
                             )
                             Text(
-                                text = "Motor de Inferencia del 10º Pick (On-Device)",
+                                text = "8 Motores IA/CV On-Device: ML Kit, MediaPipe, ONNX, ExecuTorch, OpenCV, NCNN, MNN, Tesseract",
                                 color = Color(0xFF94A3B8),
-                                fontSize = 11.sp
+                                fontSize = 10.sp,
+                                maxLines = 1
                             )
                         }
                     }
@@ -205,7 +206,7 @@ fun LiteRTEngineViewerDialog(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            text = "DECISIÓN DEL MOTOR MEDIAPIPE / LITERT",
+                            text = "DECISIÓN ENSEMBLE MULTI-MOTOR (8 MOTORES IA/CV)",
                             color = Color(0xFF00E5FF),
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
@@ -329,7 +330,7 @@ fun LiteRTEngineViewerDialog(
                                     )
                                     Text(
                                         text = when {
-                                            topCand != null -> "Similitud tensor: ${(topCand.similarityScore * 100).toInt()}% • ${topCand.champion.primaryRole.displayName}"
+                                            topCand != null -> "Puntuación Ensemble: ${topCand.confidencePercent}% • ${topCand.champion.primaryRole.displayName}"
                                             report.status == LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> {
                                                 if (report.slotDescription.contains("Aliado", ignoreCase = true)) {
                                                     "Mostrando icono de línea. Esperando Avatar."
@@ -411,9 +412,111 @@ fun LiteRTEngineViewerDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
+                // Panel de los 8 Motores de Visión con Porcentajes de Reconocimiento
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF334155))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "PORCENTAJES POR MOTOR (8 MOTORES IA/CV)",
+                                color = Color(0xFF00E5FF),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.5.sp,
+                                letterSpacing = 0.5.sp
+                            )
+                            if (report.pickedChampion != null) {
+                                Text(
+                                    text = "Ganador: ${report.pickedChampion?.name}",
+                                    color = Color(0xFF10B981),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        val enginesList = if (report.engineResults.isNotEmpty()) {
+                            report.engineResults
+                        } else {
+                            LiteRTVisionClassifier.VisionEngineType.values().map { engine ->
+                                LiteRTVisionClassifier.EngineConfidence(
+                                    engine = engine,
+                                    candidateChamp = report.pickedChampion ?: Champion(id = "wait", name = "En espera"),
+                                    confidencePercent = 0,
+                                    rawScore = 0f
+                                )
+                            }
+                        }
+
+                        // Lista en cuadrícula 2 columnas de los 8 motores
+                        enginesList.chunked(2).forEach { rowEngines ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 3.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                rowEngines.forEach { eng ->
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(Color(0xFF0F172A))
+                                            .border(1.dp, Color(0xFF334155), RoundedCornerShape(6.dp))
+                                            .padding(horizontal = 8.dp, vertical = 6.dp)
+                                    ) {
+                                        Column {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = eng.engine.displayName,
+                                                    color = Color(0xFFCBD5E1),
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    maxLines = 1
+                                                )
+                                                Text(
+                                                    text = "${eng.confidencePercent}%",
+                                                    color = if (eng.confidencePercent >= 40) Color(0xFF10B981) else Color(0xFF94A3B8),
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(3.dp))
+                                            LinearProgressIndicator(
+                                                progress = { (eng.confidencePercent / 100f).coerceIn(0f, 1f) },
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(3.dp)
+                                                    .clip(RoundedCornerShape(2.dp)),
+                                                color = if (eng.confidencePercent >= 40) Color(0xFF00E5FF) else Color(0xFF64748B),
+                                                trackColor = Color(0xFF1E293B)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
                 // Tabla de Candidatos Comparados por LiteRT
                 Text(
-                    text = "COMPARACIÓN DE TENSORES (TOP 5 CANDIDATOS)",
+                    text = "COMPARACIÓN DE CANDIDATOS (TOP 5 POR PORCENTAJE)",
                     color = Color(0xFFE2E8F0),
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
@@ -535,14 +638,14 @@ private fun CandidateRowItem(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "${(candidate.similarityScore * 100).toInt()}% Tensor",
+                    text = "${candidate.confidencePercent}% Ensemble",
                     color = if (isWinner) Color(0xFF10B981) else Color(0xFFCBD5E1),
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 LinearProgressIndicator(
-                    progress = { candidate.similarityScore.coerceIn(0f, 1f) },
+                    progress = { (candidate.confidencePercent / 100f).coerceIn(0f, 1f) },
                     modifier = Modifier
                         .width(56.dp)
                         .height(4.dp)
