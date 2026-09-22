@@ -42,6 +42,10 @@ jobs:
           echo "ANDROID_HOME=$ANDROID_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_ROOT" >> $GITHUB_ENV
           
+          mkdir -p "$ANDROID_ROOT/licenses"
+          echo -e "\n89337d125679637817a3880e5490d21a99ab6439\n24333f8a63b1d79430e4539e1e06834d0a6e4eb3\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a256e307347618222608606e85a\n601085b94cd77f0b54ff86406955499f34350d24" > "$ANDROID_ROOT/licenses/android-sdk-license"
+          echo -e "\n84831b9409646a256e307347618222608606e85a\n601085b94cd77f0b54ff86406955499f34350d24" > "$ANDROID_ROOT/licenses/android-sdk-preview-license"
+
           # Find sdkmanager
           SDKMANAGER_PATH=$(find $ANDROID_ROOT/cmdline-tools -name sdkmanager 2>/dev/null | head -n 1)
           if [ -z "$SDKMANAGER_PATH" ]; then
@@ -161,7 +165,7 @@ jobs:
 
       - name: Build Debug APK
         run: |
-          gradle :app:assembleDebug --stacktrace --no-daemon
+          gradle :app:assembleDebug --stacktrace --no-daemon --no-build-cache
 
       - name: Verify APK
         run: |

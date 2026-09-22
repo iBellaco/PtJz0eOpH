@@ -37,10 +37,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HeadsetMic
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -110,7 +110,7 @@ fun SupportReportDialog(
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val isSponsorUser = userRole.equals("patrocinador", ignoreCase = true) || userRole.equals("admin", ignoreCase = true) || AuthManager.isCurrentUserAdmin()
 
-    var selectedTag by remember { mutableStateOf("SOPORTE") }
+    var selectedTag by remember(isSponsorUser) { mutableStateOf(if (isSponsorUser) "PATROCINADOR" else "SOPORTE") }
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var titleError by remember { mutableStateOf(false) }
@@ -687,7 +687,7 @@ fun SupportReportDialog(
                             )
                         } else {
                             Icon(
-                                imageVector = Icons.Default.Send,
+                                imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = null,
                                 tint = HextechDarkBg,
                                 modifier = Modifier.size(18.dp)

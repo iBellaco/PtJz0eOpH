@@ -29,6 +29,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.FlashOn
@@ -47,10 +49,8 @@ import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.LiveTv
-import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -350,7 +350,6 @@ fun MainDraftingScreen(
                         // User Avatar Profile button
                         val authUser = com.example.util.AuthManager.getAuth()?.currentUser
                         if (authUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(authUser)) {
-                            val isCurrentUserAdmin = com.example.util.AuthManager.isCurrentUserAdmin()
                             IconButton(
                                 onClick = onNavigateToLogin,
                                 modifier = Modifier
@@ -361,9 +360,8 @@ fun MainDraftingScreen(
                                 UserAvatarView(
                                     avatarId = currentAvatarId,
                                     rankBorder = currentRankBorder,
-                                    size = if (isCurrentUserAdmin) 26.dp else 36.dp,
-                                    fallbackInitial = authUser.displayName ?: authUser.email ?: "U",
-                                    isAdmin = isCurrentUserAdmin
+                                    size = 36.dp,
+                                    fallbackInitial = authUser.displayName ?: authUser.email ?: "U"
                                 )
                             }
                         }
@@ -835,9 +833,9 @@ fun getNoticeTagIcon(tag: String): androidx.compose.ui.graphics.vector.ImageVect
         l.contains("oferta") || l.contains("descuento") -> Icons.Default.LocalOffer
         l.contains("publicidad") || l.contains("ads") || l.contains("promo") -> Icons.Default.Storefront
         l.contains("mantenimiento") -> Icons.Default.Build
-        l.contains("noticia") -> Icons.Default.Article
+        l.contains("noticia") -> Icons.AutoMirrored.Filled.Article
         l.contains("streamer") -> Icons.Default.LiveTv
-        else -> Icons.Default.Label
+        else -> Icons.AutoMirrored.Filled.Label
     }
 }
 
