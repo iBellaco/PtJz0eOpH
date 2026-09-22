@@ -58,6 +58,17 @@
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="ocr" />
 
+        <!-- FileProvider para compartir y acceder a recortes del modo diagnóstico en caché -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- Servicio en segundo plano para la superposición flotante y escaneo de draft sobre Wild Rift -->
         <service
             android:name=".service.FloatingAssistantService"

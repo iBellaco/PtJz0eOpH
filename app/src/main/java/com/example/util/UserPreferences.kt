@@ -73,4 +73,16 @@ object UserPreferences {
         val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, PREFS_NAME + "_enc")
         prefs.edit().putString(KEY_ACTIVE_DRAFT_ROLE, role.name).apply()
     }
+
+    private const val KEY_TENTH_PICK_DIAGNOSTIC_ENABLED = "tenth_pick_diagnostic_enabled"
+
+    fun isTenthPickDiagnosticEnabled(context: Context): Boolean {
+        val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, PREFS_NAME + "_enc")
+        return prefs.getBoolean(KEY_TENTH_PICK_DIAGNOSTIC_ENABLED, true)
+    }
+
+    fun setTenthPickDiagnosticEnabled(context: Context, enabled: Boolean) {
+        val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, PREFS_NAME + "_enc")
+        prefs.edit().putBoolean(KEY_TENTH_PICK_DIAGNOSTIC_ENABLED, enabled).apply()
+    }
 }
