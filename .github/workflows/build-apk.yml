@@ -43,8 +43,14 @@ jobs:
           echo "ANDROID_SDK_ROOT=$ANDROID_ROOT" >> $GITHUB_ENV
           
           mkdir -p "$ANDROID_ROOT/licenses"
-          echo -e "\n89337d125679637817a3880e5490d21a99ab6439\n24333f8a63b1d79430e4539e1e06834d0a6e4eb3\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a256e307347618222608606e85a\n601085b94cd77f0b54ff86406955499f34350d24" > "$ANDROID_ROOT/licenses/android-sdk-license"
-          echo -e "\n84831b9409646a256e307347618222608606e85a\n601085b94cd77f0b54ff86406955499f34350d24" > "$ANDROID_ROOT/licenses/android-sdk-preview-license"
+          mkdir -p "$HOME/.android/licenses"
+          
+          # Accept all standard and preview Android SDK licenses
+          echo -e "\n89337d125679637817a3880e5490d21a99ab6439\n24333f8a63b1d79430e4539e1e06834d0a6e4eb3\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a256e307347618222608606e85a\n601085b94cd77f0b54ff86406955499f34350d24" | tee "$ANDROID_ROOT/licenses/android-sdk-license" > "$HOME/.android/licenses/android-sdk-license"
+          echo -e "\n84831b9409646a256e307347618222608606e85a\n601085b94cd77f0b54ff86406955499f34350d24" | tee "$ANDROID_ROOT/licenses/android-sdk-preview-license" > "$HOME/.android/licenses/android-sdk-preview-license"
+          echo -e "\nd975f751698a77b662f1254ddbeed3901e0684d3" | tee "$ANDROID_ROOT/licenses/intel-android-extra-license" > "$HOME/.android/licenses/intel-android-extra-license"
+          echo -e "\ne9acab5b5fbb560a72cfa4f69c30ed2e08dce373" | tee "$ANDROID_ROOT/licenses/mips-android-sysimage-license" > "$HOME/.android/licenses/mips-android-sysimage-license"
+          echo -e "\n33b6a2b64607f11b759f320ef9dff4ae5c47d97a" | tee "$ANDROID_ROOT/licenses/google-gdk-license" > "$HOME/.android/licenses/google-gdk-license"
 
           # Find sdkmanager
           SDKMANAGER_PATH=$(find $ANDROID_ROOT/cmdline-tools -name sdkmanager 2>/dev/null | head -n 1)
@@ -57,7 +63,8 @@ jobs:
             echo "$SDK_BIN_DIR" >> $GITHUB_PATH
             echo "Using sdkmanager from: $SDKMANAGER_PATH"
             yes | "$SDKMANAGER_PATH" --licenses || true
-            "$SDKMANAGER_PATH" "platforms;android-36" "build-tools;36.0.0" "platform-tools" || true
+            yes | "$SDKMANAGER_PATH" --channel=3 "platforms;android-36" "build-tools;36.0.0" "platform-tools" || true
+            yes | "$SDKMANAGER_PATH" "platforms;android-36" "build-tools;36.0.0" "platform-tools" || true
           fi
 
       - name: Prepare environment files
