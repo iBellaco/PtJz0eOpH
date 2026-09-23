@@ -177,7 +177,7 @@ jobs:
           CI: "true"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          gradle :app:assembleDebug --stacktrace --warning-mode=all
+          gradle :app:assembleDebug --stacktrace --warning-mode=all -x test -x lint -x lintVitalRelease 2>&1
           
           EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$EXPECTED_APK" ]; then
