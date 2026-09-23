@@ -172,16 +172,19 @@ jobs:
 
       - name: Build Debug APK
         run: |
-          set -o pipefail
           rm -rf app/build/outputs/apk/ || true
-          gradle :app:assembleDebug --stacktrace --info --no-daemon -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -Dfile.encoding=UTF-8" -Dkotlin.daemon.jvm.options="-Xmx768m -XX:MaxMetaspaceSize=384m" 2>&1 | tee build_output.log || {
+          if gradle :app:assembleDebug --stacktrace --no-daemon > build_output.log 2>&1; then
+            echo "Gradle build completed successfully!"
+            cat build_output.log | tail -n 50
+          else
+            EXIT_CODE=$?
             echo "================================================================================"
-            echo ">>> BUILD FAILED! CRITICAL FAILURE LOG (LAST 300 LINES) <<<"
+            echo ">>> BUILD FAILED WITH EXIT CODE $EXIT_CODE! PRINTING BUILD LOG <<<"
             echo "================================================================================"
-            tail -n 300 build_output.log
+            cat build_output.log
             echo "================================================================================"
-            exit 1
-          }
+            exit $EXIT_CODE
+          fi
 
       - name: Upload build log on failure
         if: failure()
