@@ -177,10 +177,12 @@ jobs:
           CI: "true"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          gradle :app:assembleDebug --stacktrace --no-daemon -PsuppressWarnings=true -PcheckReleaseBuilds=false
+          gradle :app:assembleDebug --stacktrace --no-daemon --console=plain || gradle :app:assembleDebug --stacktrace --no-daemon --offline --console=plain
           
           EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$EXPECTED_APK" ]; then
+            echo "Searching for any generated apk files..."
+            find app/build/outputs/ -name "*.apk" || true
             echo "ERROR: Expected APK not found at $EXPECTED_APK"
             exit 1
           fi
