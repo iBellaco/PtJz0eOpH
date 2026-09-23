@@ -14,8 +14,12 @@ import com.example.model.LaneRole
 import com.example.util.LocalLanguage
 import androidx.compose.runtime.CompositionLocalProvider
 import org.robolectric.shadows.ShadowLog
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
 
 @RunWith(AndroidJUnit4::class)
+@Config(sdk = [34])
+@SQLiteMode(SQLiteMode.Mode.LEGACY)
 class FullAppFlowTest {
 
     @get:Rule

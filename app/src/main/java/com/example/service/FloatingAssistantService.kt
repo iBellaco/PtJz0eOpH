@@ -23,6 +23,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.material.icons.filled.BugReport
 import com.example.data.repository.DraftHistoryRepository
 import com.example.util.ChampionRoleAdapter
 import kotlinx.coroutines.launch
@@ -1671,21 +1673,34 @@ private fun FloatingOverlayContent(
                                     }
                                 }
 
-                                // Botón del Visor LiteRT (Solo Emoji 👁️, en el Hub al lado de minimizar)
+                                // Botón de Depurado LiteRT
                                 Surface(
                                     modifier = Modifier
-                                        .size(28.dp)
+                                        .height(28.dp)
                                         .clickable {
                                             showLiteRTViewer = true
-                                        },
+                                        }
+                                        .testTag("btn_debug_overlay"),
                                     shape = RoundedCornerShape(6.dp),
                                     color = if (showLiteRTViewer) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
                                     border = BorderStroke(1.dp, if (showLiteRTViewer) HextechCyan else HextechCyan.copy(alpha = 0.6f))
                                 ) {
-                                    Box(contentAlignment = Alignment.Center) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.BugReport,
+                                            contentDescription = "Depurado",
+                                            tint = HextechCyan,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = "👁️",
-                                            fontSize = 13.sp
+                                            text = tr("Depurar"),
+                                            color = HextechCyan,
+                                            fontSize = 8.5.sp,
+                                            fontWeight = FontWeight.Bold
                                         )
                                     }
                                 }
@@ -2996,6 +3011,37 @@ private fun OverlayVersusDraftBoard(
                             fontWeight = FontWeight.Bold,
                             fontSize = 9.5.sp
                         )
+                    }
+                }
+
+                if (onOpenLiteRTViewer != null) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Surface(
+                        modifier = Modifier
+                            .clickable { onOpenLiteRTViewer.invoke() }
+                            .testTag("btn_debug_versus_board"),
+                        shape = RoundedCornerShape(12.dp),
+                        color = HextechCyan.copy(alpha = 0.15f),
+                        border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.6f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.BugReport,
+                                contentDescription = "Depurado",
+                                tint = HextechCyan,
+                                modifier = Modifier.size(11.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = tr("Depurado"),
+                                color = HextechCyan,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.5.sp
+                            )
+                        }
                     }
                 }
             }

@@ -5276,13 +5276,13 @@ fun TierSelectionPanel(
 
             Spacer(modifier = Modifier.height(if (isOverlay) 8.dp else 10.dp))
 
-            // SELECTOR DE 3 SERVIDORES: Servidor Chino (API Tencent) | Global (Meta Live) | América (NA) (Local Cache)
+            // SELECTOR DE 3 SERVIDORES: Servidor Chino (Meta Tencent) | Global (Meta Live) | América (NA) (Local Cache)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
             ) {
                 val regionItems = listOf(
-                    Triple("CN", "🇨🇳 " + tr("Servidor Chino"), "API Tencent"),
+                    Triple("CN", "🇨🇳 " + tr("Servidor Chino"), "Meta CN"),
                     Triple("Global", "🌍 " + tr("Global"), "Meta Live"),
                     Triple("NA", "🌎 " + tr("América (NA)"), "Local Cache")
                 )

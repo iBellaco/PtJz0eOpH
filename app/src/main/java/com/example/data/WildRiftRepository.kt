@@ -264,7 +264,7 @@ object WildRiftRepository {
 
             when (regionId) {
                 "CN" -> {
-                    // Adaptación por Elo para el Servidor Chino (API Tencent Super-Server) con rangos de WinRate realistas y coherentes (47.0% - 52.8%)
+                    // Adaptación por Elo para el Servidor Chino (Tencent Super-Server) con rangos de WinRate realistas y coherentes (47.0% - 52.8%)
                     val (winrate, pickRate, banRate, delta) = when (tencentTier) {
                         com.example.data.sync.TencentRankTier.CHALLENGER -> {
                             if (isHighSkillCapOrAssassin) {

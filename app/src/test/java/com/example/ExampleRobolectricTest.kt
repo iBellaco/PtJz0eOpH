@@ -26,9 +26,9 @@ class ExampleRobolectricTest {
     val context = ApplicationProvider.getApplicationContext<Context>()
     runes.forEach { rune ->
       val drawableRes = com.example.data.WildRiftSpellsAndRunes.getRuneDrawableRes(rune.name)
-      if (drawableRes != null) {
-        val entryName = try { context.resources.getResourceEntryName(drawableRes) } catch (_: Exception) { null }
-        org.junit.Assert.assertNotNull("Drawable resource should exist for ${rune.name}", entryName)
+      if (drawableRes != null && drawableRes != 0) {
+        val drawable = try { androidx.core.content.ContextCompat.getDrawable(context, drawableRes) } catch (_: Exception) { null }
+        org.junit.Assert.assertNotNull("Drawable resource should load for ${rune.name}", drawable)
       }
     }
   }

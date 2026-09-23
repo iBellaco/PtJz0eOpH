@@ -265,11 +265,11 @@ fun MultiServerStatsDialog(
                     // Server 1: China Tencent
                     ServerStatCard(
                         flag = "🇨🇳",
-                        serverName = tr("API China Tencent (lolm.qq.com)"),
+                        serverName = tr("Servidor Chino (lolm.qq.com)"),
                         matchesText = String.format(java.util.Locale.US, "%.1fM", chinaMatches / 1_000_000.0),
                         topChampions = topCn,
                         borderColor = HextechGold,
-                        apiSource = "Tencent Super-Server API"
+                        dataSource = "Tencent Super-Server"
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -281,7 +281,7 @@ fun MultiServerStatsDialog(
                         matchesText = String.format(java.util.Locale.US, "%.1fM", globalMatches / 1_000_000.0),
                         topChampions = topGlobal,
                         borderColor = HextechCyan,
-                        apiSource = "Global Cloud Sync"
+                        dataSource = "Global Cloud Sync"
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -293,7 +293,7 @@ fun MultiServerStatsDialog(
                         matchesText = String.format(java.util.Locale.US, "%.1fM", naMatches / 1_000_000.0),
                         topChampions = topNa,
                         borderColor = Color(0xFF4A90E2),
-                        apiSource = "Riot Americas Cache"
+                        dataSource = "Riot Americas Cache"
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -319,7 +319,7 @@ fun ServerStatCard(
     matchesText: String,
     topChampions: List<com.example.model.Champion>,
     borderColor: Color,
-    apiSource: String
+    dataSource: String
 ) {
     var showDetailDialog by remember { mutableStateOf(false) }
 
@@ -339,7 +339,7 @@ fun ServerStatCard(
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Este bloque consolida las partidas oficiales recopiladas en tiempo real mediante $apiSource.",
+                        text = "Este bloque consolida las partidas oficiales recopiladas en tiempo real mediante $dataSource.",
                         fontSize = 12.sp,
                         color = TextPrimary,
                         lineHeight = 16.sp
@@ -423,7 +423,7 @@ fun ServerStatCard(
                     }
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = apiSource,
+                        text = dataSource,
                         color = TextSecondary,
                         fontSize = 10.sp
                     )

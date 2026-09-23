@@ -20,11 +20,9 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 650
-    versionName = "1.1.3.4"
+    versionCode = 651
+    versionName = "1.1.3.5"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    val geminiKey = (project.findProperty("GEMINI_API_KEY") as? String ?: System.getenv("GEMINI_API_KEY") ?: "").trim('\"', '\'')
-    buildConfigField("String", "GEMINI_API_KEY", "\"${geminiKey}\"")
     val supabaseUrl = (project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "https://yreknglctxujpetgqhnw.supabase.co").trim('\"', '\'')
     val supabaseKey = (project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr").trim('\"', '\'')
     buildConfigField("String", "SUPABASE_URL", "\"${supabaseUrl}\"")
@@ -91,7 +89,14 @@ android {
     buildConfig = true
   }
 
-  testOptions { unitTests { isIncludeAndroidResources = true } }
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all {
+        it.systemProperty("robolectric.sqliteMode", "LEGACY")
+      }
+    }
+  }
 
   dependenciesInfo {
     includeInApk = false

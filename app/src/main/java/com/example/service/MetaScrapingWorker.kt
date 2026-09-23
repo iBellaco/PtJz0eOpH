@@ -29,7 +29,7 @@ class MetaScrapingWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            AppLogger.d("MetaScrapingWorker", "Iniciando sincronización con API Oficial de Tencent (lolm.qq.com)...")
+            AppLogger.d("MetaScrapingWorker", "Iniciando sincronización con Servidor Oficial de Tencent (lolm.qq.com)...")
             
             // Intentar consultar endpoints en vivo con OkHttpClient seguro
             try {
