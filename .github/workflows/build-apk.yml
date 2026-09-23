@@ -178,17 +178,15 @@ jobs:
           SUPABASE_URL: "https://yreknglctxujpetgqhnw.supabase.co"
           SUPABASE_ANON_KEY: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr"
           CI: "true"
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+          GRADLE_USER_HOME: "/tmp/gradle_user_home"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          gradle :app:assembleDebug --stacktrace --no-daemon --console=plain -x test -x lint -x lintVitalRelease || BUILD_FAILED=1
+          mkdir -p /tmp/gradle_user_home
+          gradle :app:assembleDebug --stacktrace --no-daemon -g /tmp/gradle_user_home -x test -x lint -x lintVitalRelease || BUILD_FAILED=1
           
           if [ "${BUILD_FAILED}" = "1" ]; then
-            echo "=== Gradle build command failed. Inspecting daemon logs ==="
-            find /home/runner/.gradle/daemon/ -type f -name "*.log" -exec echo "--- LOG FILE: {} ---" \; -exec tail -n 150 {} \; || true
-            echo "=== Checking system memory and dmesg ==="
-            free -m || true
-            dmesg | tail -n 50 || true
+            echo "=== Gradle build command failed. Inspecting logs ==="
+            find /tmp/gradle_user_home/daemon/ -type f -name "*.log" -exec echo "--- LOG FILE: {} ---" \; -exec tail -n 150 {} \; || true
             exit 1
           fi
           
