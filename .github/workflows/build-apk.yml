@@ -90,11 +90,13 @@ jobs:
           cp .env app/.env 2>/dev/null || true
 
       - name: Set up Gradle 9.3.1
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.3.1'
-          validate-wrappers: false
-          develocity-injection-enabled: false
+        run: |
+          echo "Installing official Gradle 9.3.1 cleanly..."
+          curl -sSL "https://services.gradle.org/distributions/gradle-9.3.1-bin.zip" -o /tmp/gradle-9.3.1-bin.zip
+          sudo unzip -q -d /opt /tmp/gradle-9.3.1-bin.zip
+          echo "/opt/gradle-9.3.1/bin" >> $GITHUB_PATH
+          export PATH="/opt/gradle-9.3.1/bin:$PATH"
+          gradle -v
 
       - name: Restore persistent debug keystore
         run: |
