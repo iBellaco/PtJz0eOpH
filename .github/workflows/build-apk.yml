@@ -178,11 +178,11 @@ jobs:
           SUPABASE_URL: "https://yreknglctxujpetgqhnw.supabase.co"
           SUPABASE_ANON_KEY: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr"
           CI: "true"
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=\"-Xmx3072m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8\""
-          JAVA_OPTS: "-Xmx3072m -XX:MaxMetaspaceSize=768m"
+          GRADLE_USER_HOME: "/tmp/gh_gradle_home"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          /opt/gradle-9.3.1/bin/gradle :app:assembleDebug --stacktrace --no-daemon -x test -x lint -x lintVitalRelease
+          mkdir -p /tmp/gh_gradle_home
+          /opt/gradle-9.3.1/bin/gradle :app:assembleDebug --stacktrace --no-daemon --no-parallel -g /tmp/gh_gradle_home -x test -x lint -x lintVitalRelease
           
           EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$EXPECTED_APK" ]; then
