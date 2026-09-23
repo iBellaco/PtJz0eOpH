@@ -160,8 +160,8 @@ object AdaptiveScreenLayoutEngine {
         val targetDiam = (height * config.avatarDiameterRatio).toInt().coerceAtLeast(32)
         val radius = targetDiam / 2
 
-        // Ventana de búsqueda alrededor de la posición nominal
-        val margin = (targetDiam * 0.15f).toInt()
+        // Ventana de búsqueda controlada alrededor de la posición nominal
+        val margin = (targetDiam * 0.12f).toInt()
         val searchLeft = (cxNominal - radius - margin).coerceIn(0, width - 1)
         val searchRight = (cxNominal + radius + margin).coerceIn(0, width)
         val searchTop = (cyNominal - radius - margin).coerceIn(0, height - 1)
@@ -181,17 +181,31 @@ object AdaptiveScreenLayoutEngine {
         var ringPixelCount = 0
 
         val step = 2
+        val rMinExpectedSq = (radius * 0.72f) * (radius * 0.72f)
+        val rMaxExpectedSq = (radius * 1.25f) * (radius * 1.25f)
+
         for (y in searchTop until searchBottom step step) {
+            val dy = y - cyNominal
             for (x in searchLeft until searchRight step step) {
+                val dx = x - cxNominal
+                val distFromNominalSq = (dx * dx + dy * dy).toFloat()
+
+                // Filtrar píxeles que pertenezcan estrictamente al anillo periférico (evita falsos positivos internos)
+                if (distFromNominalSq < rMinExpectedSq || distFromNominalSq > rMaxExpectedSq) continue
+
                 val px = sourceBitmap.getPixel(x, y)
                 val r = (px shr 16) and 0xFF
                 val g = (px shr 8) and 0xFF
                 val b = px and 0xFF
 
+                // En Wild Rift:
+                // Aliado: borde azul eléctrico / cian (b alto con r bajo)
+                // Rival: borde rojo escarlata / carmesí (r alto con g y b bajos)
+                // Píxeles blancos/brillantes de campeones como Volibear (r,g,b altos) quedan descartados
                 val isRing = if (isAlly) {
-                    b > 110 && b > (r * 1.3f) && (g > 60 || b > 140)
+                    b > 115 && b > (r * 1.45f) && (g > 65 || b > 145) && (r + g + b) < 580
                 } else {
-                    r > 105 && r > (g * 1.30f) && r > (b * 1.30f)
+                    r > 115 && r > (g * 1.40f) && r > (b * 1.40f) && (r + g + b) < 580
                 }
 
                 if (isRing) {
@@ -204,19 +218,20 @@ object AdaptiveScreenLayoutEngine {
             }
         }
 
-        val expectedMinDiam = (targetDiam * 0.70f).toInt()
-        val expectedMaxDiam = (targetDiam * 1.30f).toInt()
+        val expectedMinDiam = (targetDiam * 0.75f).toInt()
+        val expectedMaxDiam = (targetDiam * 1.25f).toInt()
 
-        val maxDevX = (targetDiam * 0.20f).toInt()
-        val maxDevY = (targetDiam * 0.20f).toInt()
+        // Restricción estricta de desviación máxima respecto al centro nominal (máximo 12%)
+        val maxDevX = (targetDiam * 0.12f).toInt()
+        val maxDevY = (targetDiam * 0.12f).toInt()
 
-        val actualCx = if (ringPixelCount >= 20 && (maxRingX - minRingX) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingX + maxRingX) / 2) - cxNominal) <= maxDevX) {
+        val actualCx = if (ringPixelCount >= 18 && (maxRingX - minRingX) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingX + maxRingX) / 2) - cxNominal) <= maxDevX) {
             ((minRingX + maxRingX) / 2).coerceIn(radius, width - radius)
         } else {
             cxNominal.coerceIn(radius, width - radius)
         }
 
-        val actualCy = if (ringPixelCount >= 20 && (maxRingY - minRingY) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingY + maxRingY) / 2) - cyNominal) <= maxDevY) {
+        val actualCy = if (ringPixelCount >= 18 && (maxRingY - minRingY) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingY + maxRingY) / 2) - cyNominal) <= maxDevY) {
             ((minRingY + maxRingY) / 2).coerceIn(radius, height - radius)
         } else {
             cyNominal.coerceIn(radius, height - radius)

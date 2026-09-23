@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.LiteRTVisionClassifier
 import com.example.service.screen.TenthPickDiagnosticManager
 
@@ -392,7 +393,19 @@ fun LiteRTEngineViewerDialog(
 
                 if (report.topCandidates.isNotEmpty()) {
                     report.topCandidates.forEach { candidate ->
-                        CandidateRowItem(candidate = candidate)
+                        CandidateRowItem(
+                            candidate = candidate,
+                            onSelect = { selectedChamp ->
+                                LiteRTVisionClassifier.manuallyConfirmTenthPick(selectedChamp)
+                                val isAlly = report.slotDescription.contains("Aliado", ignoreCase = true)
+                                if (isAlly) {
+                                    DraftVisionScanner.allySlotConfirmedChampions[4] = selectedChamp
+                                } else {
+                                    DraftVisionScanner.enemySlotConfirmedChampions[4] = selectedChamp
+                                }
+                                Toast.makeText(context, "10º Pick fijado: ${selectedChamp.name}", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                         Spacer(modifier = Modifier.height(6.dp))
                     }
                 } else {
@@ -968,7 +981,10 @@ private fun MetricRow(
 }
 
 @Composable
-private fun CandidateRowItem(candidate: LiteRTVisionClassifier.LiteRTCandidateScore) {
+private fun CandidateRowItem(
+    candidate: LiteRTVisionClassifier.LiteRTCandidateScore,
+    onSelect: ((com.example.model.Champion) -> Unit)? = null
+) {
     val isWinner = candidate.rank == 1
     val borderColor = if (isWinner) Color(0xFF00E5FF) else Color(0xFF334155)
     val bgColor = if (isWinner) Color(0xFF1E293B) else Color(0xFF0F172A)
@@ -979,6 +995,9 @@ private fun CandidateRowItem(candidate: LiteRTVisionClassifier.LiteRTCandidateSc
             .clip(RoundedCornerShape(8.dp))
             .background(bgColor)
             .border(1.dp, borderColor, RoundedCornerShape(8.dp))
+            .clickable(enabled = onSelect != null) {
+                onSelect?.invoke(candidate.champion)
+            }
             .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

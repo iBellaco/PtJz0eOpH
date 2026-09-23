@@ -151,7 +151,9 @@ object LiteRTVisionClassifier {
 
         val embedding = FloatArray(EMBEDDING_DIM)
         val center = TENSOR_INPUT_SIZE / 2f
-        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.46f) * (TENSOR_INPUT_SIZE * 0.46f)
+        // Radio efectivo al 42% del tamaño del tensor para aislar exclusivamente la fisonomía del campeón
+        // y descartar cualquier remanente del anillo del marco de selección (borde azul/rojo)
+        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.42f) * (TENSOR_INPUT_SIZE * 0.42f)
 
         // Acumuladores por zonas espaciales (grilla 4x4) y componentes cromáticos
         val rZone = FloatArray(16)
@@ -535,9 +537,28 @@ object LiteRTVisionClassifier {
     }
 
     /**
+     * Permite fijar o corregir manualmente el 10º pick con un candidato seleccionado.
+     */
+    fun manuallyConfirmTenthPick(champion: Champion) {
+        val currentReport = _reportFlow.value
+        lastCandidateId = champion.id
+        stableFramesCounter = REQUIRED_STABLE_FRAMES
+        _reportFlow.value = currentReport.copy(
+            status = EngineStatus.COMPLETED,
+            pickedChampion = champion,
+            confidencePercent = 99,
+            isConfirmed = true,
+            decisionReason = "Confirmado manualmente por el usuario: ${champion.name}"
+        )
+        AppLogger.d(TAG, "10º Pick fijado manualmente a: ${champion.name}")
+    }
+
+    /**
      * Reinicia el estado del motor LiteRT al comenzar un nuevo draft.
      */
     fun reset() {
+        lastCandidateId = null
+        stableFramesCounter = 0
         _reportFlow.value = LiteRTInferenceReport()
     }
 }
