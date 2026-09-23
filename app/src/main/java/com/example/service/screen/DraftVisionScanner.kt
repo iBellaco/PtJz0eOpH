@@ -90,6 +90,8 @@ data class DraftScanResult(
     val isLastPickImageRecognized: Boolean = false,
     val isLastPickConfirmed: Boolean = false,
     val lastPickChampion: Champion? = null,
+    val tenthPickIsAlly: Boolean? = null,
+    val tenthPickSlotIndex: Int? = null,
     val detectedRawWords: List<String> = emptyList(),
     val discrepancies: List<String> = emptyList(),
     val diagnostics: List<SlotDiagnostic> = emptyList(),
@@ -110,6 +112,60 @@ object DraftVisionScanner {
     var overlayRect: android.graphics.Rect? = null
     val showCalibrationBoxes = kotlinx.coroutines.flow.MutableStateFlow(false)
     val debugVisualMatches = kotlinx.coroutines.flow.MutableStateFlow<Map<String, String>>(emptyMap())
+
+    val isVisionEngineBusy = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val liveScanFps = kotlinx.coroutines.flow.MutableStateFlow(0f)
+    val framesSkippedCount = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val lastProcessingDurationMs = kotlinx.coroutines.flow.MutableStateFlow(0L)
+
+    val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
+    val allySlotOcrLaneCache = mutableMapOf<Int, LaneRole>()
+
+    fun recordFrameSkipped() {
+        framesSkippedCount.value = framesSkippedCount.value + 1L
+    }
+
+    fun recordFrameProcessed(durationMs: Long) {
+        lastProcessingDurationMs.value = durationMs
+    }
+
+    fun updateFps(fps: Float) {
+        liveScanFps.value = fps
+    }
+
+    fun computeActiveSelectionTurns(
+        sequence: List<DraftPickTurn>,
+        allies: Array<Champion?>,
+        enemies: Array<Champion?>
+    ): List<DraftPickTurn> {
+        val active = mutableListOf<DraftPickTurn>()
+        for (turn in sequence) {
+            val isPicked = if (turn.isAlly) {
+                allies.getOrNull(turn.slotIndex) != null
+            } else {
+                enemies.getOrNull(turn.slotIndex) != null
+            }
+            if (!isPicked) {
+                active.add(turn)
+                break
+            }
+        }
+        return active
+    }
+
+    fun scanActiveSlotDirectly(bitmap: Bitmap, turn: DraftPickTurn): ScannedSlotInfo? {
+        return null
+    }
+
+    fun getAllySlotRole(slotIndex: Int): LaneRole {
+        return allySlotRolesCache[slotIndex] ?: allySlotOcrLaneCache[slotIndex] ?: when (slotIndex) {
+            0 -> LaneRole.TOP
+            1 -> LaneRole.JUNGLE
+            2 -> LaneRole.MID
+            3 -> LaneRole.ADC
+            else -> LaneRole.SUPPORT
+        }
+    }
 
     
     /**
@@ -171,9 +227,6 @@ object DraftVisionScanner {
 
     private var recognizerInstance: com.google.mlkit.vision.text.TextRecognizer? = null
 
-    // Memoria persistente de los carriles asignados a cada slot aliado (0..4)
-    // En Wild Rift, el carril asignado a cada jugador es fijo durante toda la fase de selección
-    private val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
     // Memoria persistente de los nombres de invocador aliados (0..4)
     private val allySummonerNamesCache = mutableMapOf<Int, String>()
     // Memoria persistente del slot asignado al usuario

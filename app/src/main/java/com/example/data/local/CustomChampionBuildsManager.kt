@@ -55,6 +55,9 @@ data class CustomChampionBuildRecord(
     val situationalRunes: List<RuneBuildEntry> = emptyList(),
     val coreSpells: List<SpellBuildEntry> = emptyList(),
     val situationalSpells: List<SpellBuildEntry> = emptyList(),
+    val bootsT2Item: ItemBuildEntry? = null,
+    val bootsT3Item: ItemBuildEntry? = null,
+    val comboVideoUri: String? = null,
     val gameplayVideoUri: String? = null,
     val creatorName: String = "Creador Oficial",
     val creatorAvatarId: String? = null,
@@ -74,6 +77,7 @@ object CustomChampionBuildsManager {
     private const val TAG = "CreatorBuildsManager"
     private const val PREFS_NAME = "wr_custom_champion_builds_prefs"
     private const val KEY_BUILDS_JSON = "custom_champion_builds_json"
+    private const val KEY_USER_VOTES = "user_voted_builds_map"
 
     private const val REMOTE_CONFIG_COLLECTION = "system_config"
     private const val REMOTE_DOC_CREATOR_BUILDS = "creator_builds"
@@ -86,6 +90,9 @@ object CustomChampionBuildsManager {
 
     private val _customBuilds = MutableStateFlow<List<CustomChampionBuildRecord>>(emptyList())
     val customBuilds: StateFlow<List<CustomChampionBuildRecord>> = _customBuilds.asStateFlow()
+
+    private val _userVotedBuilds = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val userVotedBuilds: StateFlow<Map<String, Int>> = _userVotedBuilds.asStateFlow()
 
     private var firestoreListener: ListenerRegistration? = null
     private var authStateListener: FirebaseAuth.AuthStateListener? = null

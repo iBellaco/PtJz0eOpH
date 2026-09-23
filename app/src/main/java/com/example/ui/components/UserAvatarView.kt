@@ -56,7 +56,7 @@ fun UserAvatarView(
     customBorderColor: Color? = null,
     rankBorder: String = "NONE",
     isAdmin: Boolean = false,
-    adminFrameResId: Int = com.example.R.drawable.ic_frame_admin,
+    adminFrameResId: Int = 0,
     adminFrameUrl: String? = null
 ) {
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
