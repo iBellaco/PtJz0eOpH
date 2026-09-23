@@ -171,29 +171,19 @@ jobs:
           EOF
 
       - name: Build Debug APK
+        env:
+          SUPABASE_URL: "https://yreknglctxujpetgqhnw.supabase.co"
+          SUPABASE_ANON_KEY: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr"
+          CI: "true"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          if gradle :app:assembleDebug --stacktrace --no-daemon > build_output.log 2>&1; then
-            echo "Gradle build completed successfully!"
-            cat build_output.log | tail -n 50
-          else
-            EXIT_CODE=$?
-            echo "================================================================================"
-            echo ">>> BUILD FAILED WITH EXIT CODE $EXIT_CODE! PRINTING BUILD LOG <<<"
-            echo "================================================================================"
-            cat build_output.log
-            echo "================================================================================"
-            exit $EXIT_CODE
+          gradle :app:assembleDebug --stacktrace --no-daemon -PsuppressWarnings=true -PcheckReleaseBuilds=false
+          
+          EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
+          if [ ! -f "$EXPECTED_APK" ]; then
+            echo "ERROR: Expected APK not found at $EXPECTED_APK"
+            exit 1
           fi
-
-      - name: Upload build log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-failure-log
-          path: build_output.log
-          retention-days: 7
-        continue-on-error: true
 
       - name: Verify APK
         run: |
