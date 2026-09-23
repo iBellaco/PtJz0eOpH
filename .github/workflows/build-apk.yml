@@ -171,17 +171,14 @@ jobs:
           EOF
 
       - name: Build Debug APK
-        uses: gradle/actions/setup-gradle@v4
         env:
           SUPABASE_URL: "https://yreknglctxujpetgqhnw.supabase.co"
           SUPABASE_ANON_KEY: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr"
           CI: "true"
-        with:
-          gradle-version: '9.3.1'
-          arguments: ":app:assembleDebug --stacktrace --warning-mode=all -x test -x lint -x lintVitalRelease"
-
-      - name: Locate and Verify Debug APK
         run: |
+          rm -rf app/build/outputs/apk/ || true
+          gradle :app:assembleDebug --stacktrace --no-daemon --warning-mode=none -x test -x lint -x lintVitalRelease
+          
           EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$EXPECTED_APK" ]; then
             echo "Searching for any generated apk files..."
