@@ -180,7 +180,7 @@ jobs:
           CI: "true"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          gradle :app:assembleDebug --stacktrace --no-daemon --info -x test -x lint -x lintVitalRelease
+          gradle --no-daemon --no-parallel --stacktrace :app:assembleDebug -x test -x lint -x lintVitalRelease
           
           EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$EXPECTED_APK" ]; then
