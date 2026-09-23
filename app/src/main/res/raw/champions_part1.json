@@ -5789,6 +5789,179 @@
     ]
   },
   {
+    "id": "hwei",
+    "name": "Hwei",
+    "nameEn": "Hwei",
+    "namePt": "Hwei",
+    "title": "el Visionario",
+    "titleEn": "the Visionary",
+    "titlePt": "o Visionário",
+    "ddragonId": "Hwei",
+    "avatarUrl": "file:///android_asset/champions/hwei.png",
+    "primaryRole": "MID",
+    "secondaryRoles": [
+      "SUPPORT"
+    ],
+    "tier": "S",
+    "winrate": 51.85,
+    "pickRate": 7.92,
+    "banRate": 14.3,
+    "winrateDelta": 0.45,
+    "pickRateDelta": 0.2,
+    "banRateDelta": 0.5,
+    "cnTier": "T1",
+    "damageType": "MAGIC",
+    "summary": "Hwei es un pintor melancólico de Jonia que crea arte deslumbrante para confrontar a los criminales de su tierra y consolar a sus víctimas. En Wild Rift es un mago de control con un repertorio dinámico de 10 habilidades, capaz de desatar daño explosivo a distancia, otorgar escudos y velocidad a sus aliados, y controlar peleas grupales con poderosos efectos de miedo y ralentización.",
+    "advantageAgainst": [
+      "Veigar",
+      "Orianna",
+      "Twisted Fate",
+      "Lux",
+      "Brand"
+    ],
+    "counteredBy": [
+      "Zed",
+      "Fizz",
+      "Kassadin",
+      "Akali",
+      "Yasuo"
+    ],
+    "synergies": [
+      "Amumu",
+      "Malphite",
+      "Jarvan IV",
+      "Nautilus",
+      "Leona"
+    ],
+    "tacticalAdvice": "En la Línea Central, gestiona tus pinceladas según el estado de la línea: usa tu Habilidad 2 (H2 - Luces Provocadoras) para restaurar maná con ataques básicos y tu Habilidad 1 (H1 - Fuego Devastador o Rayo Destrozador) para castigar el posicionamiento enemigo. En peleas de equipo, bloquea el paso o agrupa a los rivales con tu Habilidad 3 (H3 - Fauces Trituradoras) antes de conectar tu Definitiva (H4 - Desesperación en Espiral) para activar detonaciones masivas de tu Pasiva.",
+    "recommendedRunes": "Primer golpe,Impacto repentino,Colección de globos oculares,Tirano,Banda de maná",
+    "runeTreeDetails": "Inspiración / Dominación: Primer Golpe • Impacto Repentino • Colección de Globos Oculares • Tirano • Banda de Maná",
+    "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/inspiration/firststrike/firststrike.png",
+    "recommendedSpells": [
+      "Destello",
+      "Barrera"
+    ],
+    "spellsIcons": [
+      "file:///android_asset/spells/flash.png",
+      "file:///android_asset/spells/barrier.png"
+    ],
+    "coreItems": [
+      "Eco de Luden",
+      "Corona de la Reina Ahogada",
+      "Tormento de Liandry",
+      "Sombrero mortal de Rabadon",
+      "Báculo del Vacío"
+    ],
+    "coreItemsIcons": [],
+    "situationalItems": [
+      "Morellonomicón",
+      "Velo de la banshee",
+      "Impulso cósmico",
+      "Báculo del arcángel"
+    ],
+    "situationalItemsIcons": [],
+    "build2Runes": "Cometa Arcano • Banda de Maná • Trascendencia • Piroláser • Se Avecina Tormenta",
+    "build2Spells": [
+      "Destello",
+      "Extenuación"
+    ],
+    "itemSwaps": [],
+    "skillOrder": "Habilidad 1 > Habilidad 3 > Habilidad 2 (Priorizar Definitiva)",
+    "skills": [
+      {
+        "slot": "P",
+        "slotName": "Pasiva",
+        "name": "FIRMA DEL VISIONARIO",
+        "nameEn": "Signature of the Visionary",
+        "namePt": "Assinatura do Visionário",
+        "description": "Hwei inflige daño a los campeones enemigos y los marca para el toque final. El segundo golpe completa su firma, que detona tras un breve momento e inflige daño mágico a los enemigos dentro del alcance.",
+        "iconUrl": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/52e66b4b6326bf330913b0293c230c22ac2b9139-650x650.png?accountingTag=WR",
+        "cooldown": ""
+      },
+      {
+        "slot": "1",
+        "slotName": "Habilidad 1",
+        "name": "TEMA: DESASTRE",
+        "nameEn": "Subject: Disaster",
+        "namePt": "Tema: Desastre",
+        "description": "Hwei reemplaza las habilidades por hechizos que infligen daño:\n\nFuego Devastador: Dispara un proyectil en llamas.\nRayo Destrozador: Lanza un impacto de rayo de largo alcance.\nFisura Magma: Lanza un camino de fuego en erupción.",
+        "iconUrl": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/d06e045810edd5dfe365a61834da83dab2267baf-650x650.png?accountingTag=WR",
+        "cooldown": ""
+      },
+      {
+        "slot": "2",
+        "slotName": "Habilidad 2",
+        "name": "TEMA: SERENIDAD",
+        "nameEn": "Subject: Serenity",
+        "namePt": "Tema: Serenidade",
+        "description": "Hwei reemplaza las habilidades por mejoras de utilidad:\n\nCorriente Fugaz: Aumenta la velocidad de movimiento.\nEstanque del Reflejo: Crea escudos de agua.\nLuces Provocadoras: Restaura maná e inflige daño adicional.",
+        "iconUrl": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/ff240447e932c37fc4549eb821d31418e5210a27-650x650.png?accountingTag=WR",
+        "cooldown": ""
+      },
+      {
+        "slot": "3",
+        "slotName": "Habilidad 3",
+        "name": "TEMA: TORMENTO",
+        "nameEn": "Subject: Torment",
+        "namePt": "Tema: Tormento",
+        "description": "Hwei reemplaza las habilidades por efectos de control de masas:\n\nSemblante Sombrío: Aterroriza y ralentiza a los enemigos.\nMirada del Abismo: Lanza un ojo proyectil que rastrea a los enemigos y otorga Visión Verdadera.\nFauces Trituradoras: Atrae a los enemigos, les inflige daño y los ralentiza.",
+        "iconUrl": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/dbe6a82a9cb269a918f9558fa47f1a3710762382-650x650.png?accountingTag=WR",
+        "cooldown": ""
+      },
+      {
+        "slot": "4",
+        "slotName": "Definitiva",
+        "name": "DESESPERACIÓN EN ESPIRAL",
+        "nameEn": "Spiraling Despair",
+        "namePt": "Desespero Espiral",
+        "description": "Hwei atrapa a los campeones enemigos en un área en expansión que ralentiza e inflige daño. El área explota si alcanza su tamaño máximo o si el campeón muere.",
+        "iconUrl": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/f6562e76ee86e0cc66d8f219915a95b0d73975d8-650x650.png?accountingTag=WR",
+        "cooldown": ""
+      }
+    ],
+    "isRanged": true,
+    "isFrontline": false,
+    "wildRiftFireUrl": "https://www.wildriftfire.com/guide/hwei",
+    "wrMetaUrl": "https://wr-meta.com/champion/hwei",
+    "wildRiftCoreUrl": "https://wildriftcore.com/es/campeones/hwei",
+    "bestBuildWrUrl": "https://bestbuildwr.com/champions/hwei",
+    "builds": [
+      {
+        "id": "hwei_burst_control",
+        "title": "Pintura de Control y Desgaste",
+        "role": "Línea Central",
+        "items": [
+          "Eco de Luden",
+          "Corona de la Reina Ahogada",
+          "Tormento de Liandry",
+          "Sombrero mortal de Rabadon",
+          "Báculo del Vacío"
+        ],
+        "coreItems": [
+          "Eco de Luden",
+          "Corona de la Reina Ahogada",
+          "Tormento de Liandry"
+        ],
+        "situationalItems": [
+          "Morellonomicón",
+          "Velo de la banshee",
+          "Impulso cósmico"
+        ],
+        "runes": "Primer Golpe • Impacto Repentino • Colección de Globos Oculares • Tirano • Banda de Maná",
+        "spells": [
+          "Destello",
+          "Barrera"
+        ],
+        "bootBase": "Botas de Hechicero",
+        "bootUpgrade": "Estasis",
+        "situationalBoots": [
+          "Velo",
+          "Magnetrón"
+        ]
+      }
+    ]
+  },
+  {
     "id": "irelia",
     "name": "Irelia",
     "title": "la Danza de las Cuchillas",

@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 649
-    versionName = "1.1.3.3"
+    versionCode = 650
+    versionName = "1.1.3.4"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     val geminiKey = (project.findProperty("GEMINI_API_KEY") as? String ?: System.getenv("GEMINI_API_KEY") ?: "").trim('\"', '\'')
     buildConfigField("String", "GEMINI_API_KEY", "\"${geminiKey}\"")

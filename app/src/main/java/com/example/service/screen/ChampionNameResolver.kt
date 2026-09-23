@@ -71,6 +71,7 @@ object ChampionNameResolver {
         "gwen" to "gwen",
         "hecarim" to "hecarim",
         "heimerdinger" to "heimerdinger",
+        "hwei" to "hwei",
         "irelia" to "irelia",
         "janna" to "janna",
         "jarvan iv" to "jarvan_iv",

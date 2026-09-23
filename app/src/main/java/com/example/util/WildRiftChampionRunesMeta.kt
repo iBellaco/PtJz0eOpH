@@ -221,6 +221,12 @@ object WildRiftChampionRunesMeta {
             opt2Title = "Irrupción de Fase (Movilidad en TF)",
             option2 = listOf("Irrupción de Fase", "Banda de Maná", "Trascendencia", "Celeridad", "Triunfo")
         ),
+        "hwei" to ChampionRunePair(
+            opt1Title = "Primer Golpe & Arte Devastador (Meta)",
+            option1 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Banda de Maná"),
+            opt2Title = "Cometa Arcano (Poke de Largo Alcance)",
+            option2 = listOf("Cometa Arcano", "Banda de Maná", "Trascendencia", "Piroláser", "Se Avecina Tormenta")
+        ),
         "akali" to ChampionRunePair(
             opt1Title = "Electrocutar & Velo de Sombras",
             option1 = listOf("Electrocutar", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Fuerzas Renovadas"),

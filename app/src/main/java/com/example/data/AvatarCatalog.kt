@@ -508,6 +508,16 @@ object AvatarCatalog {
             description = "El profesor Cecil B. Heimerdinger, un científico yordle excéntrico pero brillante, es considera..."
         ),
         AvatarItem(
+            id = "hwei",
+            name = "Hwei",
+            title = "el Visionario",
+            region = "Jonia",
+            rarity = "Épico",
+            imageUrl = "file:///android_asset/champions/hwei.png",
+            borderHex = "#8A2BE2",
+            description = "Hwei es un pintor melancólico de Jonia que crea arte deslumbrante para confrontar a los criminales y consolar a sus víctimas."
+        ),
+        AvatarItem(
             id = "irelia",
             name = "Irelia",
             title = "la Danza de las Cuchillas",

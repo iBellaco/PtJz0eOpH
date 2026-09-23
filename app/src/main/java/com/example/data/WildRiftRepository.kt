@@ -253,7 +253,7 @@ object WildRiftRepository {
                 "leesin", "zed", "yasuo", "yone", "aatrox", "camille", "renekton",
                 "akali", "irelia", "kassadin", "kaisa", "vayne", "fiora", "riven",
                 "jax", "pantheon", "talon", "khazix", "kayn", "darius", "sett",
-                "pyke", "lucian", "gragas", "jayce", "katarina", "samira"
+                "pyke", "lucian", "gragas", "jayce", "katarina", "samira", "hwei"
             )
 
             val isSimpleOrLowEloStomper = champ.id in listOf(
@@ -743,14 +743,14 @@ object WildRiftRepository {
         val safeBlindPicks = mapOf(
             LaneRole.TOP to listOf("sett", "aatrox", "darius", "renekton", "ornn", "camille", "gwen", "urgot"),
             LaneRole.JUNGLE to listOf("vi", "lee_sin", "xin_zhao", "viego", "wukong", "kayn", "jarvan_iv", "volibear"),
-            LaneRole.MID to listOf("ahri", "orianna", "syndra", "yone", "karma", "vex", "jayce", "galio"),
+            LaneRole.MID to listOf("ahri", "orianna", "syndra", "yone", "karma", "vex", "jayce", "galio", "hwei"),
             LaneRole.ADC to listOf("varus", "ezreal", "kaisa", "caitlyn", "xayah", "jinx", "lucian", "sivir"),
             LaneRole.SUPPORT to listOf("thresh", "nautilus", "lulu", "nami", "karma", "morgana", "leona", "rakan", "braum")
         )
 
         // Server CN Priority Meta staples (High Elo Soberano Pick & Ban)
         val cnMetaStaples = setOf(
-            "aatrox", "lee_sin", "camille", "yone", "syndra", "ahri", "varus", "ezreal", "vi", "nautilus", "thresh", "karma", "gwen", "jayce", "viego", "renekton", "rakan"
+            "aatrox", "lee_sin", "camille", "yone", "syndra", "ahri", "varus", "ezreal", "vi", "nautilus", "thresh", "karma", "gwen", "jayce", "viego", "renekton", "rakan", "hwei"
         )
 
         var directMatchupWarning: String? = null
@@ -899,6 +899,10 @@ object WildRiftRepository {
             }
             if (champ.id == "xayah" && allyIds.contains("rakan") || (champ.id == "rakan" && allyIds.contains("xayah"))) {
                 comboSynergies.add("❤️ Dúo Sagrado: Mayor alcance en Danza de Batalla y retirada conjunta")
+            }
+            if (champ.id == "hwei" && allyIds.any { it in listOf("amumu", "malphite", "jarvan_iv", "leona", "nautilus") }) {
+                val ccChamp = allies.firstOrNull { it.id in listOf("amumu", "malphite", "jarvan_iv", "leona", "nautilus") }?.name ?: "Iniciador"
+                comboSynergies.add("💥 Tormento Artístico: Definitiva (H4) sobre el control de masas de $ccChamp para detonación de Pasiva en área")
             }
 
             if (isFirstPickEffective) {
