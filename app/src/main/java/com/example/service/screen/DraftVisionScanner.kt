@@ -713,44 +713,54 @@ object DraftVisionScanner {
 
             // DEDUCIR Y COMPLETAR ROLES DE TODOS LOS SLOTS ALIADOS (5 ROLES ÚNICOS DETERMINÍSTICOS)
             val allStandardRoles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
+            // 1. Asignar roles explícitos ya conocidos (por OCR de línea detectada o Smite)
             for (i in 0..4) {
-                if (allySlots[i].explicitRole != null) {
-                    allySlotRolesCache[i] = allySlots[i].explicitRole!!
+                val ocrRole = allySlotOcrLaneCache[i] ?: allySlots[i].explicitRole
+                if (ocrRole != null) {
+                    allySlotRolesCache[i] = ocrRole
+                    allySlots[i].explicitRole = ocrRole
                 }
             }
-            val claimedRoles = allySlotRolesCache.values.toSet()
+            val claimedRoles = allySlotRolesCache.values.toMutableSet()
             val availableRoles = allStandardRoles.filterNot { claimedRoles.contains(it) }.toMutableList()
 
-            // 1. Para slots aliados sin carril cacheado que ya tienen campeón seleccionado (ej: Sett, Senna),
-            // asignar por afinidad del campeón con los carriles restantes disponibles
-            for (i in 0..4) {
-                if (!allySlotRolesCache.containsKey(i)) {
+            // 2. Para slots aliados sin carril confirmado que ya tienen campeón seleccionado,
+            // ordenar por flexibilidad (campeones con menos opciones de rol se asignan primero)
+            val unassignedSlotsWithChamp = (0..4).filter { !allySlotRolesCache.containsKey(it) }
+                .mapNotNull { i ->
                     val champ = allySlots[i].champion ?: allySlotConfirmedChampions[i] ?: allyOcrChampions[i]
-                    if (champ != null && availableRoles.isNotEmpty()) {
-                        val bestRole = when {
-                            availableRoles.contains(champ.primaryRole) -> champ.primaryRole
-                            else -> champ.secondaryRoles.firstOrNull { availableRoles.contains(it) } ?: availableRoles.firstOrNull()
-                        }
-                        if (bestRole != null) {
-                            allySlotRolesCache[i] = bestRole
-                            availableRoles.remove(bestRole)
-                            allySlots[i].explicitRole = bestRole
-                            AppLogger.d(TAG, "Slot Aliado $i deducido por afinidad de ${champ.name} -> ${bestRole.shortName}")
-                        }
+                    champ?.let { i to it }
+                }
+
+            if (unassignedSlotsWithChamp.isNotEmpty() && availableRoles.isNotEmpty()) {
+                val sortedByFlexibility = unassignedSlotsWithChamp.sortedBy { (_, champ) ->
+                    val validRolesCount = (listOf(champ.primaryRole) + champ.secondaryRoles).distinct().count { availableRoles.contains(it) }
+                    if (validRolesCount == 0) 99 else validRolesCount
+                }
+
+                for ((slotIdx, champ) in sortedByFlexibility) {
+                    val champRoles = (listOf(champ.primaryRole) + champ.secondaryRoles).distinct()
+                    val bestRole = champRoles.firstOrNull { availableRoles.contains(it) }
+                        ?: availableRoles.firstOrNull()
+
+                    if (bestRole != null) {
+                        allySlotRolesCache[slotIdx] = bestRole
+                        availableRoles.remove(bestRole)
+                        claimedRoles.add(bestRole)
+                        allySlots[slotIdx].explicitRole = bestRole
+                        AppLogger.d(TAG, "Slot Aliado $slotIdx resuelto determinísticamente: ${champ.name} -> ${bestRole.shortName}")
                     }
                 }
             }
 
-            // 2. Si quedan slots sin rol asignado pero con campeón confirmado, asignar temporalmente de los roles restantes
+            // 3. Completar cualquier slot restante por descarte
             for (i in 0..4) {
-                if (!allySlotRolesCache.containsKey(i)) {
-                    val champ = allySlots[i].champion ?: allySlotConfirmedChampions[i]
-                    if (champ != null && availableRoles.isNotEmpty()) {
-                        val role = availableRoles.removeAt(0)
-                        allySlots[i].explicitRole = role
-                        AppLogger.d(TAG, "Slot Aliado $i con campeón asignado por descarte de rol -> ${role.shortName}")
-                    }
-                } else {
+                if (!allySlotRolesCache.containsKey(i) && availableRoles.isNotEmpty()) {
+                    val role = availableRoles.removeAt(0)
+                    allySlotRolesCache[i] = role
+                    allySlots[i].explicitRole = role
+                    AppLogger.d(TAG, "Slot Aliado $i completado por descarte de rol -> ${role.shortName}")
+                } else if (allySlotRolesCache.containsKey(i)) {
                     allySlots[i].explicitRole = allySlotRolesCache[i]
                 }
             }
@@ -1231,9 +1241,11 @@ object DraftVisionScanner {
 
         val visualMatches = mutableMapOf<String, String>()
         for (i in 0..4) {
-            val aChamp = alliesBySlotMap[i]?.name ?: allySummonerNamesCache[i]
-            if (aChamp != null) visualMatches["ally_$i"] = aChamp
-            val eChamp = enemiesBySlotMap[i]?.name
+            val confirmedChamp = alliesBySlotMap[i]?.name ?: allySlotConfirmedChampions[i]?.name
+            val detectedLaneName = (allySlotOcrLaneCache[i] ?: allySlotRolesCache[i] ?: allySlots.getOrNull(i)?.explicitRole)?.displayName
+            val aDisplayName = confirmedChamp ?: detectedLaneName
+            if (aDisplayName != null) visualMatches["ally_$i"] = aDisplayName
+            val eChamp = enemiesBySlotMap[i]?.name ?: enemySlotConfirmedChampions[i]?.name
             if (eChamp != null) visualMatches["enemy_$i"] = eChamp
         }
         debugVisualMatches.value = visualMatches

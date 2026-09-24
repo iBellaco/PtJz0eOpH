@@ -1680,19 +1680,22 @@ private fun FloatingOverlayContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier.weight(1f, fill = false),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Image(
                                     painter = painterResource(id = com.example.R.drawable.ic_overlay_logo),
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
-                                        .size(20.dp)
+                                        .size(18.dp)
                                         .clip(CircleShape)
                                         .border(1.dp, HextechGold, CircleShape)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Column {
-                                    Text("DRAFTING COACH", color = HextechGold, fontWeight = FontWeight.Black, fontSize = 12.5.sp)
+                                    Text("COACH", color = HextechGold, fontWeight = FontWeight.Black, fontSize = 11.5.sp, maxLines = 1)
                                     val isCaptureReady = screenCaptureManager?.isReady() == true
                                     val indicatorColor = when {
                                         !isCaptureReady -> Color(0xFFFFB300)
@@ -1700,9 +1703,9 @@ private fun FloatingOverlayContent(
                                         else -> HextechGold
                                     }
                                     val indicatorText = when {
-                                        !isCaptureReady -> tr("Sin permiso de pantalla")
-                                        autoScanEnabled -> tr("Auto-Scan Activo")
-                                        else -> tr("Escaneo Manual")
+                                        !isCaptureReady -> tr("Sin permiso")
+                                        autoScanEnabled -> tr("Auto-Scan")
+                                        else -> tr("Manual")
                                     }
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -1720,31 +1723,34 @@ private fun FloatingOverlayContent(
                                     ) {
                                         Box(
                                             modifier = Modifier
-                                                .size(6.dp)
+                                                .size(5.dp)
                                                 .clip(CircleShape)
                                                 .background(indicatorColor)
                                         )
-                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Spacer(modifier = Modifier.width(3.dp))
                                         Text(
                                             text = indicatorText,
                                             color = indicatorColor,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontSize = 8.5.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1
                                         )
                                     }
                                 }
                             }
 
+                            Spacer(modifier = Modifier.width(4.dp))
+
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 val isLiveVisionActive by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
-                                // Botón de Visión en Vivo (Solo emoji/icono de ojo, sin texto)
+                                // 1. Botón de Visión en Vivo (Solo icono de ojo, sin texto)
                                 Surface(
                                     modifier = Modifier
-                                        .size(28.dp)
+                                        .size(26.dp)
                                         .clickable {
                                             com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !isLiveVisionActive
                                         }
@@ -1756,17 +1762,17 @@ private fun FloatingOverlayContent(
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = if (isLiveVisionActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = "Visión en Vivo",
+                                            contentDescription = "Visión",
                                             tint = if (isLiveVisionActive) HextechCyan else TextSecondary,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(15.dp)
                                         )
                                     }
                                 }
 
-                                // Botón de Depurado LiteRT (Solo icono)
+                                // 2. Botón de Depurado LiteRT (Solo icono)
                                 Surface(
                                     modifier = Modifier
-                                        .size(28.dp)
+                                        .size(26.dp)
                                         .clickable {
                                             showLiteRTViewer = true
                                         }
@@ -1780,30 +1786,30 @@ private fun FloatingOverlayContent(
                                             imageVector = Icons.Default.BugReport,
                                             contentDescription = "Depurado",
                                             tint = HextechCyan,
-                                            modifier = Modifier.size(15.dp)
+                                            modifier = Modifier.size(14.dp)
                                         )
                                     }
                                 }
 
-                                // Botón Minimizar (a Burbuja flotante)
+                                // 3. Botón Minimizar (a Burbuja flotante) - Visible, resaltado y siempre asegurado
                                 Surface(
                                     modifier = Modifier
-                                        .size(28.dp)
+                                        .size(26.dp)
                                         .clickable {
                                             isExpanded = false
                                             onExpandedChange(false)
                                         }
                                         .testTag("btn_minimize_hub"),
                                     shape = RoundedCornerShape(6.dp),
-                                    color = HextechGold.copy(alpha = 0.15f),
-                                    border = BorderStroke(1.dp, HextechGold)
+                                    color = HextechGold.copy(alpha = 0.2f),
+                                    border = BorderStroke(1.2.dp, HextechGold)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
-                                            imageVector = Icons.Default.UnfoldLess,
-                                            contentDescription = "Minimizar a Burbuja",
+                                            imageVector = Icons.Default.Remove,
+                                            contentDescription = "Minimizar",
                                             tint = HextechGold,
-                                            modifier = Modifier.size(18.dp)
+                                            modifier = Modifier.size(16.dp)
                                         )
                                     }
                                 }
@@ -2927,17 +2933,14 @@ private fun FloatingDraftCoachView(
         }
     }
 
-    val allySlots = remember(allies.toList(), allySummonerNames.toMap(), allySpells.toMap(), DraftVisionScanner.allySlotRolesCache.toMap(), DraftVisionScanner.allySlotOcrLaneCache.toMap()) {
+    val allySlots = remember(allies.toList(), allySpells.toMap()) {
         allies.mapIndexedNotNull { index, champ ->
-            val detectedRole = DraftVisionScanner.allySlotOcrLaneCache[index]
-                ?: DraftVisionScanner.allySlotRolesCache[index]
-                ?: champ?.primaryRole
-                ?: defaultRoles.getOrElse(index) { LaneRole.MID }
+            val role = defaultRoles.getOrElse(index) { LaneRole.MID }
             champ?.let {
                 DraftSlot(
                     champion = it,
-                    assignedRole = detectedRole,
-                    summonerName = allySummonerNames[index],
+                    assignedRole = role,
+                    summonerName = null,
                     spells = allySpells[index] ?: emptyList()
                 )
             }
