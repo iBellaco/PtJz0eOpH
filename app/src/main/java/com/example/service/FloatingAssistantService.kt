@@ -208,7 +208,10 @@ import android.content.res.Configuration
 import com.example.util.LocalLanguage
 import com.example.util.SubscriptionManager
 import com.example.util.tr
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -233,12 +236,73 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private val isDeviceLandscape = androidx.compose.runtime.mutableStateOf(false)
     private var closeTargetComposeView: ComposeView? = null
     private var debugOverlayView: ComposeView? = null
+    private var isDebugOverlayAttached = false
     private var floatingParams: WindowManager.LayoutParams? = null
     private var isOverlayExpanded: Boolean = false
     private var isCompactBubbleMode: Boolean = false
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val store = ViewModelStore()
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    private fun syncDebugOverlay(show: Boolean) {
+        try {
+            val wm = windowManager ?: return
+            if (show && !isDebugOverlayAttached) {
+                val layoutType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                } else {
+                    @Suppress("DEPRECATION")
+                    WindowManager.LayoutParams.TYPE_PHONE
+                }
+                val debugParams = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    layoutType,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                    PixelFormat.TRANSLUCENT
+                ).apply {
+                    gravity = Gravity.TOP or Gravity.START
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                    }
+                }
+                if (debugOverlayView == null) {
+                    debugOverlayView = ComposeView(this).apply {
+                        setViewTreeLifecycleOwner(this@FloatingAssistantService)
+                        setViewTreeViewModelStoreOwner(this@FloatingAssistantService)
+                        setViewTreeSavedStateRegistryOwner(this@FloatingAssistantService)
+                        setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+
+                        setContent {
+                            val showBoxes by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+                            if (showBoxes) {
+                                com.example.ui.components.ScannerDebugOverlay(
+                                    config = com.example.service.screen.DraftVisionScanner.calibrationConfig,
+                                    overlayRect = com.example.service.screen.DraftVisionScanner.overlayRect
+                                )
+                            }
+                        }
+                    }
+                }
+                debugOverlayView?.let { view ->
+                    wm.addView(view, debugParams)
+                    isDebugOverlayAttached = true
+                    AppLogger.d("FloatingService", "DebugOverlayView agregado dinámicamente")
+                }
+            } else if (!show && isDebugOverlayAttached) {
+                debugOverlayView?.let { view ->
+                    try { wm.removeViewImmediate(view) } catch (_: Throwable) {}
+                    isDebugOverlayAttached = false
+                    AppLogger.d("FloatingService", "DebugOverlayView retirado para liberar compositor")
+                }
+            }
+        } catch (e: Throwable) {
+            AppLogger.w("FloatingService", "Error sincronizando debug overlay: ${e.message}")
+        }
+    }
 
     override val lifecycle: Lifecycle get() = lifecycleRegistry
     override val viewModelStore: ViewModelStore get() = store
@@ -391,6 +455,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
         // 2. Liberar recursos de captura
         try {
+            serviceScope.cancel()
             screenCaptureManager?.release()
             screenCaptureManager = null
         } catch (_: Exception) {}
@@ -501,10 +566,15 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            }
             y = (24 * density).toInt()
         }
 
@@ -529,45 +599,28 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             windowManager?.addView(closeTargetComposeView, closeTargetParams)
         } catch (_: Exception) {}
 
-        val debugParams = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            layoutType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-        }
-
-        debugOverlayView = ComposeView(this).apply {
-            setViewTreeLifecycleOwner(this@FloatingAssistantService)
-            setViewTreeViewModelStoreOwner(this@FloatingAssistantService)
-            setViewTreeSavedStateRegistryOwner(this@FloatingAssistantService)
-            setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-
-            setContent {
-                val showBoxes by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
-                if (showBoxes) {
-                    com.example.ui.components.ScannerDebugOverlay(
-                        config = com.example.service.screen.DraftVisionScanner.calibrationConfig,
-                        overlayRect = com.example.service.screen.DraftVisionScanner.overlayRect
-                    )
+        // Sincronización reactiva del visor de calibración:
+        // No se agrega una ventana MATCH_PARENT permanente para evitar que Samsung Game Booster cierre el servicio.
+        // Se añade únicamente cuando la depuración visual está habilitada por el usuario.
+        serviceScope.launch {
+            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collect { show ->
+                withContext(Dispatchers.Main) {
+                    syncDebugOverlay(show)
                 }
             }
         }
-
-        try {
-            windowManager?.addView(debugOverlayView, debugParams)
-        } catch (_: Exception) {}
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            }
             x = (screenWidth - bubbleSizePx - marginPx * 2).coerceAtLeast(marginPx)
             y = (120 * density).toInt()
         }
@@ -739,6 +792,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 try { wm.removeViewImmediate(view) } catch (_: Exception) {}
             }
             debugOverlayView = null
+            isDebugOverlayAttached = false
         } catch (_: Exception) {}
     }
 

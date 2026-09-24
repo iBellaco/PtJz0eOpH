@@ -83,6 +83,7 @@ import com.example.model.RuneItem
 import com.example.model.SummonerSpellItem
 import com.example.model.WildRiftItem
 import com.example.ui.theme.DangerRed
+import com.example.util.DevicePhotoModelDetector
 import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechDarkBg
@@ -1616,44 +1617,58 @@ fun BugReportFeedbackDialog(
                     if (selectedImages.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         selectedImages.forEachIndexed { index, base64 ->
-                            Row(
+                            val photoAnalysis = remember(base64) { DevicePhotoModelDetector.analyzeBase64(base64) }
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(HextechSurfaceVariant.copy(alpha = 0.5f))
                                     .border(1.dp, HextechGold.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                                    .padding(12.dp)
-                                    .padding(bottom = if (index < selectedImages.size - 1) 8.dp else 0.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(10.dp)
+                                    .padding(bottom = if (index < selectedImages.size - 1) 8.dp else 0.dp)
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Image,
-                                        contentDescription = null,
-                                        tint = HextechGold,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = tr("Imagen subida") + " " + (index + 1),
-                                        color = TextPrimary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
-                                IconButton(
-                                    onClick = {
-                                        val newList = selectedImages.toMutableList()
-                                        newList.removeAt(index)
-                                        selectedImages = newList
-                                    },
-                                    modifier = Modifier.size(24.dp)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = tr("Eliminar imagen"),
-                                        tint = Color(0xFFFF5252)
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Image,
+                                            contentDescription = null,
+                                            tint = HextechGold,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = tr("Imagen subida") + " " + (index + 1),
+                                            color = TextPrimary,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            val newList = selectedImages.toMutableList()
+                                            newList.removeAt(index)
+                                            selectedImages = newList
+                                        },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = tr("Eliminar imagen"),
+                                            tint = Color(0xFFFF5252)
+                                        )
+                                    }
+                                }
+                                if (photoAnalysis != null) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "📱 Modelo probable: ${photoAnalysis.primaryDeviceSummary}",
+                                        color = HextechCyan,
+                                        fontSize = 10.5.sp,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }

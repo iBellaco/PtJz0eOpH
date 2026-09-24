@@ -53,13 +53,27 @@ class ScreenCaptureManager(private val context: Context) {
     }
 
     private fun updateScreenDimensions() {
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val metrics = DisplayMetrics()
-        @Suppress("DEPRECATION")
-        windowManager.defaultDisplay.getRealMetrics(metrics)
-        screenWidth = metrics.widthPixels
-        screenHeight = metrics.heightPixels
-        screenDensity = metrics.densityDpi
+        try {
+            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                val bounds = windowManager.currentWindowMetrics.bounds
+                screenWidth = bounds.width().coerceAtLeast(720)
+                screenHeight = bounds.height().coerceAtLeast(720)
+                screenDensity = context.resources.configuration.densityDpi
+            } else {
+                val metrics = DisplayMetrics()
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay.getRealMetrics(metrics)
+                screenWidth = metrics.widthPixels
+                screenHeight = metrics.heightPixels
+                screenDensity = metrics.densityDpi
+            }
+        } catch (_: Throwable) {
+            val metrics = context.resources.displayMetrics
+            screenWidth = metrics.widthPixels
+            screenHeight = metrics.heightPixels
+            screenDensity = metrics.densityDpi
+        }
     }
 
     private val frameLock = Any()
@@ -100,6 +114,10 @@ class ScreenCaptureManager(private val context: Context) {
             } else {
                 bmp
             }
+        } catch (oom: OutOfMemoryError) {
+            AppLogger.e(TAG, "Memoria insuficiente (OOM) en frame: forzando recoleccion segura")
+            System.gc()
+            null
         } catch (t: Throwable) {
             AppLogger.w(TAG, "Error seguro procesando imagen a Bitmap: ${t.message}")
             null
@@ -148,12 +166,12 @@ class ScreenCaptureManager(private val context: Context) {
                 // 3. Se previene de raíz la SecurityException de Android 14+ generada al reutilizar el token de MediaProjection.
                 val rawW = maxOf(screenWidth, screenHeight)
                 val rawH = minOf(screenWidth, screenHeight)
-                // En pantallas QHD+ (como Samsung Galaxy S24/S26 Ultra 3120x1440), limitar la resolución de captura
-                // a un máximo de 2340x1080 para evitar consumo excesivo de memoria en la cola nativa de ImageReader
-                // y prevenir cierres forzados por falta de memoria (OOM).
-                val scale = if (rawW > 2340) 2340f / rawW else 1.0f
-                val captureWidth = (((rawW * scale).toInt() / 2) * 2).coerceAtLeast(1280)
-                val captureHeight = (((rawH * scale).toInt() / 2) * 2).coerceAtLeast(720)
+                // En pantallas QHD+ (como Samsung Galaxy S24/S25/S26 Ultra 3120x1440), limitar la resolución de captura
+                // a un máximo de 1920x1080 para evitar consumo excesivo de memoria en la cola nativa de ImageReader
+                // y prevenir cierres forzados por falta de memoria (OOM) o saturación de Game Booster.
+                val scale = if (rawW > 1920) 1920f / rawW else 1.0f
+                val captureWidth = (((rawW * scale).toInt() / 2) * 2).coerceIn(1280, 1920)
+                val captureHeight = (((rawH * scale).toInt() / 2) * 2).coerceIn(720, 1080)
 
                 // ImageReader configurado con 2 buffers bajo demanda para reducir huella de memoria en segundo plano
                 imageReader = ImageReader.newInstance(

@@ -107,6 +107,7 @@ import com.example.ui.theme.HextechSurfaceVariant
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
+import com.example.util.DevicePhotoModelDetector
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
@@ -1075,6 +1076,7 @@ fun AdminSupportReportsDialog(
 
     // Modal de zoom para foto adjunta
     if (previewZoomBitmap != null) {
+        val analysis = remember(previewZoomBitmap) { DevicePhotoModelDetector.analyzeBitmap(previewZoomBitmap) }
         Dialog(onDismissRequest = { previewZoomBitmap = null }) {
             Box(
                 modifier = Modifier
@@ -1084,7 +1086,10 @@ fun AdminSupportReportsDialog(
                     .padding(12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Image(
                         bitmap = previewZoomBitmap!!.asImageBitmap(),
                         contentDescription = "Foto ampliada",
@@ -1093,7 +1098,48 @@ fun AdminSupportReportsDialog(
                             .clip(RoundedCornerShape(12.dp))
                             .border(1.dp, HextechGold, RoundedCornerShape(12.dp))
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    if (analysis != null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(HextechDarkBg.copy(alpha = 0.92f))
+                                .border(1.dp, HextechGold.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                                .padding(10.dp)
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Smartphone,
+                                        contentDescription = null,
+                                        tint = HextechGold,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Posibles modelos de celular identificados:",
+                                        color = HextechGold,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "${analysis.landscapeWidth} x ${analysis.landscapeHeight} (${analysis.aspectRatioLabel})",
+                                    color = HextechCyan,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = analysis.probableDeviceModels.joinToString(", "),
+                                    color = TextPrimary,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = "Toca la pantalla para cerrar",
                         color = HextechCyan,
@@ -1400,6 +1446,18 @@ private fun UnifiedReportAdminCard(
                             }
                         }
                     }
+                }
+                val firstPhotoAnalysis = remember(report.photosBase64) {
+                    report.photosBase64.firstOrNull()?.let { DevicePhotoModelDetector.analyzeBase64(it) }
+                }
+                if (firstPhotoAnalysis != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "📱 Celular inferido: ${firstPhotoAnalysis.primaryDeviceSummary}",
+                        color = HextechCyan,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
 

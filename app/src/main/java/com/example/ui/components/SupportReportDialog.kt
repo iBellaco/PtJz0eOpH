@@ -41,6 +41,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HeadsetMic
+import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -85,6 +86,7 @@ import com.example.ui.theme.HextechSurfaceVariant
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
+import com.example.util.DevicePhotoModelDetector
 import com.example.util.AuthManager
 import com.example.util.ImageUtils
 import com.google.firebase.Timestamp
@@ -519,6 +521,47 @@ fun SupportReportDialog(
                         }
                     }
 
+                    // Panel Informativo de Modelos Detectados a partir de las Fotos
+                    if (base64Photos.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(HextechSurfaceVariant.copy(alpha = 0.5f))
+                                .border(1.dp, HextechCyan.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                                .padding(10.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Smartphone,
+                                    contentDescription = null,
+                                    tint = HextechCyan,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Posibles modelos de celular detectados en fotos:",
+                                    color = HextechCyan,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            base64Photos.forEachIndexed { idx, b64 ->
+                                val analysis = remember(b64) { DevicePhotoModelDetector.analyzeBase64(b64) }
+                                if (analysis != null) {
+                                    Text(
+                                        text = "• Foto ${idx + 1}: ${analysis.primaryDeviceSummary}",
+                                        color = TextPrimary,
+                                        fontSize = 11.sp,
+                                        modifier = Modifier.padding(vertical = 1.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(18.dp))
 
                     // Botón Enviar Reporte
@@ -708,6 +751,7 @@ fun SupportReportDialog(
 
     // Modal de zoom para ver la foto adjunta en tamaño grande
     if (previewZoomBitmap != null) {
+        val analysis = remember(previewZoomBitmap) { DevicePhotoModelDetector.analyzeBitmap(previewZoomBitmap) }
         Dialog(onDismissRequest = { previewZoomBitmap = null }) {
             Box(
                 modifier = Modifier
@@ -717,13 +761,50 @@ fun SupportReportDialog(
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    bitmap = previewZoomBitmap!!.asImageBitmap(),
-                    contentDescription = "Vista previa foto",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        bitmap = previewZoomBitmap!!.asImageBitmap(),
+                        contentDescription = "Vista previa foto",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                    if (analysis != null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(HextechDarkBg.copy(alpha = 0.9f))
+                                .border(1.dp, HextechGold.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                                .padding(10.dp)
+                        ) {
+                            Column {
+                                Text(
+                                    text = "📱 Posible modelo detectado en esta foto:",
+                                    color = HextechGold,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "${analysis.landscapeWidth} x ${analysis.landscapeHeight} (${analysis.aspectRatioLabel})",
+                                    color = HextechCyan,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = "Modelos compatibles: ${analysis.probableDeviceModels.joinToString(", ")}",
+                                    color = TextPrimary,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
