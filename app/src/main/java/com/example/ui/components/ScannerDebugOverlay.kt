@@ -57,6 +57,26 @@ fun ScannerDebugOverlay(
         }
     }
 
+    val allyLabelPaint = remember(density) {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.WHITE
+            textSize = with(density) { 9.5.sp.toPx() }
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.LEFT
+            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
+        }
+    }
+
+    val enemyLabelPaint = remember(density) {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.WHITE
+            textSize = with(density) { 9.5.sp.toPx() }
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.RIGHT
+            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
+        }
+    }
+
     val labelPaint = remember(density) {
         android.graphics.Paint().apply {
             color = android.graphics.Color.WHITE
@@ -134,14 +154,24 @@ fun ScannerDebugOverlay(
             )
 
             // Etiqueta del slot / rol aliado dinámico según la línea leída en el slot
+            val defaultAllyRole = when (sIdx) {
+                0 -> "Soporte"
+                1 -> "Dúo"
+                2 -> "Jungla"
+                3 -> "Mid"
+                4 -> "Top"
+                else -> null
+            }
             val detectedRole = DraftVisionScanner.allySlotOcrLaneCache[sIdx]?.shortName
                 ?: DraftVisionScanner.allySlotRolesCache[sIdx]?.shortName
+                ?: defaultAllyRole
             val slotLabel = if (detectedRole != null) "Aliado ${sIdx + 1} ($detectedRole)" else "Aliado ${sIdx + 1}"
+            val allyLabelX = (allyX - avatarRadius).coerceAtLeast(8f)
             drawContext.canvas.nativeCanvas.drawText(
                 slotLabel,
-                allyX,
+                allyLabelX,
                 allyY - avatarRadius - 6f,
-                labelPaint
+                allyLabelPaint
             )
             
             val allyMatch = debugMatches["ally_$sIdx"]
@@ -190,11 +220,21 @@ fun ScannerDebugOverlay(
             )
 
             // Etiqueta del slot rival
+            val defaultEnemyRole = when (sIdx) {
+                0 -> "Top"
+                1 -> "Jungla"
+                2 -> "Mid"
+                3 -> "Dúo"
+                4 -> "Soporte"
+                else -> null
+            }
+            val enemySlotLabel = if (defaultEnemyRole != null) "Rival ${sIdx + 1} ($defaultEnemyRole)" else "Rival ${sIdx + 1}"
+            val enemyLabelX = (enemyX + avatarRadius).coerceAtMost(w - 10f)
             drawContext.canvas.nativeCanvas.drawText(
-                "Rival ${sIdx + 1}",
-                enemyX.coerceAtMost(w - 24f),
+                enemySlotLabel,
+                enemyLabelX,
                 enemyY - avatarRadius - 6f,
-                labelPaint
+                enemyLabelPaint
             )
 
             val enemyMatch = debugMatches["enemy_$sIdx"]

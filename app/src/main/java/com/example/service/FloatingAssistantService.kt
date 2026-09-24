@@ -1534,6 +1534,40 @@ private fun FloatingOverlayContent(
                             )
                         }
                     }
+
+                    val isBubbleLiveVisionActive by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+                    if (isBubbleLiveVisionActive && !isDraggingBubble) {
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Surface(
+                            modifier = Modifier
+                                .clickable {
+                                    com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = false
+                                }
+                                .testTag("btn_bubble_live_vision_off"),
+                            shape = RoundedCornerShape(8.dp),
+                            color = HextechDarkBg.copy(alpha = 0.9f),
+                            border = BorderStroke(1.dp, HextechCyan)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(HextechCyan)
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = "VISIÓN",
+                                    color = HextechCyan,
+                                    fontSize = 7.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1667,6 +1701,40 @@ private fun FloatingOverlayContent(
                                         Text(
                                             text = if (isLegendaryQueue) tr("Legendaria") else tr("Clasificatoria"),
                                             color = if (isLegendaryQueue) Color(0xFFE9D5FF) else HextechGold,
+                                            fontSize = 8.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+
+                                val isLiveVisionActive by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+
+                                // Botón de Visión en Vivo (Superposición en tiempo real sobre la pantalla de Wild Rift)
+                                Surface(
+                                    modifier = Modifier
+                                        .height(28.dp)
+                                        .clickable {
+                                            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !isLiveVisionActive
+                                        }
+                                        .testTag("btn_live_vision_toggle"),
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (isLiveVisionActive) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
+                                    border = BorderStroke(1.dp, if (isLiveVisionActive) HextechCyan else HextechCyan.copy(alpha = 0.6f))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isLiveVisionActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = "Visión en Vivo",
+                                            tint = if (isLiveVisionActive) HextechCyan else TextSecondary,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = if (isLiveVisionActive) tr("Visión ON") else tr("Visión en Vivo"),
+                                            color = if (isLiveVisionActive) HextechCyan else TextSecondary,
                                             fontSize = 8.5.sp,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -3008,6 +3076,39 @@ private fun OverlayVersusDraftBoard(
                         Text(
                             text = if (isLegendary) tr("Legendaria") else tr("Clasificatoria"),
                             color = if (isLegendary) Color(0xFFFFB74D) else TextSecondary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.5.sp
+                        )
+                    }
+                }
+
+                // Botón Visión en Vivo en Versus Board
+                val isBoardLiveVisionActive by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+                Spacer(modifier = Modifier.width(6.dp))
+                Surface(
+                    modifier = Modifier
+                        .clickable {
+                            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !isBoardLiveVisionActive
+                        }
+                        .testTag("btn_live_vision_versus_board"),
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isBoardLiveVisionActive) HextechCyan.copy(alpha = 0.25f) else HextechDarkBg,
+                    border = BorderStroke(1.dp, if (isBoardLiveVisionActive) HextechCyan else HextechCardBorder.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (isBoardLiveVisionActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = "Visión en Vivo",
+                            tint = if (isBoardLiveVisionActive) HextechCyan else TextSecondary,
+                            modifier = Modifier.size(11.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (isBoardLiveVisionActive) tr("Visión ON") else tr("Visión en Vivo"),
+                            color = if (isBoardLiveVisionActive) HextechCyan else TextSecondary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 9.5.sp
                         )

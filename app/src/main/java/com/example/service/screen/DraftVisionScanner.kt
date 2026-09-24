@@ -1219,6 +1219,15 @@ object DraftVisionScanner {
         val alliesBySlotMap = allySlots.mapNotNull { s -> s.champion?.let { s.slotIndex to it } }.toMap()
         val enemiesBySlotMap = enemySlots.mapNotNull { s -> s.champion?.let { s.slotIndex to it } }.toMap()
 
+        val visualMatches = mutableMapOf<String, String>()
+        for (i in 0..4) {
+            val aChamp = alliesBySlotMap[i]?.name ?: allySummonerNamesCache[i]
+            if (aChamp != null) visualMatches["ally_$i"] = aChamp
+            val eChamp = enemiesBySlotMap[i]?.name
+            if (eChamp != null) visualMatches["enemy_$i"] = eChamp
+        }
+        debugVisualMatches.value = visualMatches
+
         val allyChampsList = alliesMap.values.toList()
         val enemyChampsList = finalEnemiesMap.values.toList()
         val total = allyChampsList.size + enemyChampsList.size

@@ -176,7 +176,6 @@ fun MainDraftingScreen(
     var showBugReportDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
-    var showLiteRTViewer by remember { mutableStateOf(false) }
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
 
@@ -249,10 +248,9 @@ fun MainDraftingScreen(
     }
 
     // Si hay un diálogo o modal abierto en la pantalla de inicio, el botón atrás lo cierra primero
-    BackHandler(enabled = showPermissionDialog || showBugReportDialog || showLiteRTViewer) {
+    BackHandler(enabled = showPermissionDialog || showBugReportDialog) {
         if (showPermissionDialog) showPermissionDialog = false
         if (showBugReportDialog) showBugReportDialog = false
-        if (showLiteRTViewer) showLiteRTViewer = false
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -331,24 +329,6 @@ fun MainDraftingScreen(
                         }
                     },
                     actions = {
-                        IconButton(
-                            onClick = { showLiteRTViewer = true },
-                            modifier = Modifier
-                                .padding(end = 4.dp)
-                                .clip(CircleShape)
-                                .background(HextechSurface)
-                                .border(1.dp, HextechCyan.copy(alpha = 0.7f), CircleShape)
-                                .size(38.dp)
-                                .testTag("btn_debug_app_bar")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Build,
-                                contentDescription = tr("Panel de Depurado"),
-                                tint = HextechCyan,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-
                         IconButton(
                             onClick = { showBugReportDialog = true },
                             modifier = Modifier
@@ -702,37 +682,6 @@ fun MainDraftingScreen(
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Botón de Depurado LiteRT
-                Button(
-                    onClick = { showLiteRTViewer = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(44.dp)
-                        .testTag("btn_debug_panel"),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0F172A),
-                        contentColor = HextechCyan
-                    ),
-                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.7f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Build,
-                        contentDescription = "Depurado",
-                        tint = HextechCyan,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = tr("Panel de Depurado LiteRT"),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = HextechCyan
-                    )
-                }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                     // Derechos de autor y créditos
@@ -742,7 +691,6 @@ fun MainDraftingScreen(
                             .clip(RoundedCornerShape(10.dp))
                             .background(HextechSurface.copy(alpha = 0.5f))
                             .border(1.dp, HextechCardBorder.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                            .clickable { showLiteRTViewer = true }
                             .padding(horizontal = 14.dp, vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -845,53 +793,6 @@ fun MainDraftingScreen(
                 onDismiss = { showPlansDialog = false }
             )
         }
-
-        // Botón / Indicador persistente de Depurado y Versión en la esquina inferior derecha
-        Surface(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 12.dp, end = 12.dp)
-                .testTag("btn_debug_bottom_right")
-                .clickable { showLiteRTViewer = true },
-            shape = RoundedCornerShape(20.dp),
-            color = HextechDarkBg.copy(alpha = 0.95f),
-            border = BorderStroke(1.2.dp, HextechGold.copy(alpha = 0.8f)),
-            shadowElevation = 8.dp
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(7.dp)
-                        .clip(CircleShape)
-                        .background(HextechCyan)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Icon(
-                    imageVector = Icons.Default.Build,
-                    contentDescription = "Depurado",
-                    tint = HextechGold,
-                    modifier = Modifier.size(13.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Depurado v${com.example.BuildConfig.VERSION_NAME} (${com.example.BuildConfig.VERSION_CODE})",
-                    color = HextechGoldLight,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
-        if (showLiteRTViewer) {
-            com.example.ui.components.LiteRTEngineViewerDialog(
-                onDismissRequest = { showLiteRTViewer = false }
-            )
-        }
-
-
     }
 }
 
