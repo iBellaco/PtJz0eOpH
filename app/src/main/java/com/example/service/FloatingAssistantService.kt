@@ -313,6 +313,8 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     override fun onCreate() {
         super.onCreate()
         try {
+            // Desactivar visor de depuración por defecto al iniciar o reabrir el overlay
+            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = false
             com.example.data.WildRiftRepository.initChampions(applicationContext)
             screenCaptureManager = ScreenCaptureManager(this)
             savedStateRegistryController.performRestore(null)
@@ -453,8 +455,9 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         // 1. Desconectar todas las vistas del WindowManager ANTES de destruir el ciclo de vida
         removeFloatingOverlay()
 
-        // 2. Liberar recursos de captura
+        // 2. Liberar recursos de captura y apagar visor
         try {
+            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = false
             serviceScope.cancel()
             screenCaptureManager?.release()
             screenCaptureManager = null

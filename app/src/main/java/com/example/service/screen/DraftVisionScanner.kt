@@ -336,6 +336,7 @@ object DraftVisionScanner {
         allySlotFilters.forEach { it.reset() }
         enemySlotFilters.forEach { it.reset() }
         LiteRTVisionClassifier.reset()
+        showCalibrationBoxes.value = false
         AppLogger.d(TAG, "Memoria de roles, invocadores y motor LiteRT reiniciada por completo")
     }
 
@@ -599,6 +600,7 @@ object DraftVisionScanner {
             }
 
             val tentativeFirstPick = detectedFirstPick ?: currentIsFirstPick ?: false
+            val currentScanFrameOcrLanes = mutableMapOf<Int, LaneRole>()
 
             // Procesar textos aliados: Detección estricta de Línea 1 (Rol o Campeón) y Línea 2 (Nombre de Invocador)
             for (i in 0..4) {
@@ -644,81 +646,41 @@ object DraftVisionScanner {
                             ?: DraftValidationLayer.parseRoleFromText(line)
 
                         if (role != null) {
-                            // REGLA ESTRICTA DE UNICIDAD Y DETECCIÓN DE CAMBIOS DE LÍNEA / SWAPS EN WILD RIFT:
-                            // 1. Si ya se detectó una línea, nunca debe repetirse en otro slot (las 5 líneas son únicas).
-                            // 2. Si un campeón ya fue elegido para esa línea, no se debe poner otro campeón en la misma línea.
-                            // 3. Si las líneas cambian de lugar (ej. Soporte y Tirador suben arriba mediante intercambio de turno),
-                            //    debemos detectar dinámicamente el swap y reubicar las líneas en lugar de mantenerlas abajo fijas.
-                            val otherSlotWithRole = (0..4).firstOrNull { otherSlot ->
-                                otherSlot != i && (
-                                    (allySlotConfirmedChampions[otherSlot] != null && (allySlotRolesCache[otherSlot] == role || allySlotOcrLaneCache[otherSlot] == role)) ||
-                                    (allySlots[otherSlot].champion != null && (allySlotRolesCache[otherSlot] == role || allySlots[otherSlot].explicitRole == role)) ||
-                                    (allySlotOcrLaneCache[otherSlot] == role) ||
-                                    (allySlotRolesCache[otherSlot] == role)
-                                )
-                            }
+                            // REGLA FUNDAMENTAL DE WILD RIFT:
+                            // "si aún se ve su nombre de la línea que pertenece esa es la que manda"
+                            // Si el slot muestra en pantalla el nombre de la línea, este slot TIENE esa línea con certeza total e inmediata.
+                            detectedRoleInSlot = role
+                            slot.explicitRole = role
+                            allySlotRolesCache[i] = role
+                            allySlotOcrLaneCache[i] = role
+                            currentScanFrameOcrLanes[i] = role
 
-                            if (otherSlotWithRole != null) {
-                                val otherHasLockedChamp = allySlotConfirmedChampions[otherSlotWithRole] != null ||
-                                    (allySlots[otherSlotWithRole].champion != null && (allySlotRolesCache[otherSlotWithRole] == role || allySlots[otherSlotWithRole].explicitRole == role))
-
-                                if (otherHasLockedChamp) {
-                                    // El otro slot ya tiene un campeón elegido y confirmado para esta línea;
-                                    // no se permite sobrescribir ni duplicar la línea con otro campeón.
-                                    AppLogger.d(TAG, "Línea ${role.shortName} bloqueada para Slot $i: campeón en Slot $otherSlotWithRole ya eligió para esa línea")
-                                } else {
-                                    // ¡INTERCAMBIO DE POSICIÓN / PICK SWAP DETECTADO!
-                                    // El rol ahora está visible en el Slot i (ej: Soporte o ADC subió a los slots superiores).
-                                    // Realizamos un intercambio limpio entre Slot i y otherSlotWithRole para no duplicar.
-                                    val oldRoleInSlotI = allySlotOcrLaneCache[i] ?: allySlotRolesCache[i] ?: slot.explicitRole
-                                    detectedRoleInSlot = role
-                                    slot.explicitRole = role
-                                    allySlotRolesCache[i] = role
-                                    allySlotOcrLaneCache[i] = role
-
-                                    if (oldRoleInSlotI != null && oldRoleInSlotI != role) {
-                                        // Intercambio simétrico: el otro slot pasa a la línea que tenía este slot
-                                        allySlotRolesCache[otherSlotWithRole] = oldRoleInSlotI
-                                        allySlotOcrLaneCache[otherSlotWithRole] = oldRoleInSlotI
-                                        allySlots[otherSlotWithRole].explicitRole = oldRoleInSlotI
-                                        AppLogger.d(TAG, "¡Swap detectado! Slot $i pasa a ${role.shortName}, Slot $otherSlotWithRole pasa a ${oldRoleInSlotI.shortName}")
-                                    } else {
-                                        // Si el slot i no tenía línea previa, liberamos al otro slot para evitar duplicación
-                                        allySlotRolesCache.remove(otherSlotWithRole)
-                                        allySlotOcrLaneCache.remove(otherSlotWithRole)
-                                        allySlots[otherSlotWithRole].explicitRole = null
-                                        AppLogger.d(TAG, "¡Swap detectado! Slot $i toma ${role.shortName}; liberado Slot $otherSlotWithRole para evitar duplicados")
+                            // Liberar cualquier otro slot que tuviera esta línea asignada previamente para evitar duplicados y resolver swaps al instante
+                            for (otherSlot in 0..4) {
+                                if (otherSlot != i) {
+                                    if (allySlotOcrLaneCache[otherSlot] == role) {
+                                        allySlotOcrLaneCache.remove(otherSlot)
                                     }
-
-                                    textDiagnosticsList.add(
-                                        TextBlockDiagnostic(
-                                            text = line,
-                                            rect = box ?: Rect(0, 0, 10, 10),
-                                            isAlly = true,
-                                            slotIndex = i,
-                                            tag = "LÍNEA: ${role.shortName} (Cambio/Swap)",
-                                            color = android.graphics.Color.CYAN
-                                        )
-                                    )
+                                    if (allySlotRolesCache[otherSlot] == role) {
+                                        allySlotRolesCache.remove(otherSlot)
+                                    }
+                                    if (allySlots[otherSlot].explicitRole == role) {
+                                        allySlots[otherSlot].explicitRole = null
+                                    }
                                 }
-                            } else {
-                                // No hay conflicto: asignación limpia de línea única para este slot
-                                detectedRoleInSlot = role
-                                slot.explicitRole = role
-                                allySlotRolesCache[i] = role
-                                allySlotOcrLaneCache[i] = role
-                                textDiagnosticsList.add(
-                                    TextBlockDiagnostic(
-                                        text = line,
-                                        rect = box ?: Rect(0, 0, 10, 10),
-                                        isAlly = true,
-                                        slotIndex = i,
-                                        tag = "LÍNEA: ${role.shortName} (Esperando)",
-                                        color = android.graphics.Color.CYAN
-                                    )
-                                )
-                                AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea asignada: ${role.shortName} (Esperando selección)")
                             }
+
+                            textDiagnosticsList.add(
+                                TextBlockDiagnostic(
+                                    text = line,
+                                    rect = box ?: Rect(0, 0, 10, 10),
+                                    isAlly = true,
+                                    slotIndex = i,
+                                    tag = "LÍNEA: ${role.shortName} (Visible)",
+                                    color = android.graphics.Color.CYAN
+                                )
+                            )
+                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea visible en pantalla: ${role.shortName}")
                         }
                     }
 
@@ -850,24 +812,25 @@ object DraftVisionScanner {
             val allStandardRoles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
             
             // REGLA CRÍTICA DE UNICIDAD Y NO DUPLICACIÓN:
-            // "si ya detectaste su línea no deberías poner otro slot la misma línea ya que no se repite una vez el campeón que ya tenía su línea asignada elige un campeón para esa línea no deberías poner otro campeón en la misma línea"
+            // "si aún se ve su nombre de la línea que pertenece esa es la que manda"
             val claimedRoles = mutableSetOf<LaneRole>()
             val resolvedSlotRoles = mutableMapOf<Int, LaneRole>()
 
-            // 1. Prioridad Máxima: Slots que ya tienen un campeón seleccionado y una línea previamente asignada
+            // 1. PRIORIDAD ABSOLUTA (MÁXIMA JERARQUÍA):
+            // Slots que muestran actualmente su texto de línea en pantalla (OCR en vivo en este frame)
             for (i in 0..4) {
-                val hasChamp = allySlots[i].champion != null || allySlotConfirmedChampions[i] != null
-                val priorRole = allySlotRolesCache[i] ?: allySlotOcrLaneCache[i] ?: allySlots[i].explicitRole
-                if (hasChamp && priorRole != null && !claimedRoles.contains(priorRole)) {
-                    resolvedSlotRoles[i] = priorRole
-                    claimedRoles.add(priorRole)
-                    allySlots[i].explicitRole = priorRole
-                    allySlotRolesCache[i] = priorRole
-                    AppLogger.d(TAG, "Línea ${priorRole.shortName} bloqueada estrictamente para Slot Aliado $i con campeón elegido")
+                val liveRole = currentScanFrameOcrLanes[i]
+                if (liveRole != null && !claimedRoles.contains(liveRole)) {
+                    resolvedSlotRoles[i] = liveRole
+                    claimedRoles.add(liveRole)
+                    allySlots[i].explicitRole = liveRole
+                    allySlotRolesCache[i] = liveRole
+                    allySlotOcrLaneCache[i] = liveRole
+                    AppLogger.d(TAG, "Línea ${liveRole.shortName} asignada con PRIORIDAD ABSOLUTA a Slot Aliado $i por texto visible en pantalla")
                 }
             }
 
-            // 2. Prioridad Hechizo Castigo (Smite) -> Jungla
+            // 2. Prioridad Hechizo Castigo (Smite) -> Jungla (si no ha sido reclamada por texto visible)
             for (i in 0..4) {
                 if (!resolvedSlotRoles.containsKey(i)) {
                     val hasSmite = allySlots[i].summonerSpells.any { it.equals("Castigo", ignoreCase = true) || it.equals("Smite", ignoreCase = true) }
@@ -881,16 +844,16 @@ object DraftVisionScanner {
                 }
             }
 
-            // 3. Prioridad Slots en espera con línea detectada por OCR
+            // 3. Prioridad Slots con línea OCR en caché previa (sin conflicto con textos activos ni smite)
             for (i in 0..4) {
                 if (!resolvedSlotRoles.containsKey(i)) {
-                    val ocrRole = allySlotOcrLaneCache[i] ?: allySlotRolesCache[i] ?: allySlots[i].explicitRole
+                    val ocrRole = allySlotOcrLaneCache[i]
                     if (ocrRole != null && !claimedRoles.contains(ocrRole)) {
                         resolvedSlotRoles[i] = ocrRole
                         claimedRoles.add(ocrRole)
                         allySlots[i].explicitRole = ocrRole
                         allySlotRolesCache[i] = ocrRole
-                        AppLogger.d(TAG, "Línea ${ocrRole.shortName} asignada a Slot Aliado $i (esperando)")
+                        AppLogger.d(TAG, "Línea ${ocrRole.shortName} asignada a Slot Aliado $i de caché OCR previa")
                     }
                 }
             }
@@ -1331,64 +1294,60 @@ object DraftVisionScanner {
         val targetSlot = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
         val targetAlreadyConfirmed = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] != null else enemySlotConfirmedChampions[tenthSlotIndex] != null
 
-        val shouldRunTenthPick = (confirmedPicksCount >= 9) && 
-                targetSlot.champion == null && !targetAlreadyConfirmed
+        // EXTRACCIÓN Y ANÁLISIS EN VIVO DEL 10º PICK (Google MediaPipe / LiteRT):
+        // Siempre se extrae el recorte del slot para alimentar el visor en tiempo real y permitir pruebas del usuario.
+        val tenthCrop: Bitmap? = if (!targetAlreadyConfirmed) {
+            AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
+                sourceBitmap = bitmap,
+                width = width,
+                height = height,
+                isAlly = tenthIsAlly,
+                slotIndex = tenthSlotIndex,
+                config = calib
+            )
+        } else null
 
-        if (shouldRunTenthPick) {
-            val targetSlotToCrop = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
-            if (targetSlotToCrop.champion == null) {
-                // Obtener recorte adaptativo multipantalla centrado con total precisión y auto-calibración en el slot final
-                val tenthCrop: Bitmap? = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
-                    sourceBitmap = bitmap,
-                    width = width,
-                    height = height,
-                    isAlly = tenthIsAlly,
-                    slotIndex = tenthSlotIndex,
-                    config = calib
-                )
+        if (tenthCrop != null && !tenthCrop.isRecycled) {
+            TenthPickDiagnosticManager.recordTenthPickCrop(
+                cropBitmap = tenthCrop,
+                isAlly = tenthIsAlly,
+                slotIndex = tenthSlotIndex,
+                stage = "CROP_EXTRACTED",
+                context = context
+            )
+        }
 
-                // Modo Diagnóstico: Guardar frame extraído para el 10º pick en el directorio de caché
-                if (tenthCrop != null && !tenthCrop.isRecycled) {
-                    TenthPickDiagnosticManager.recordTenthPickCrop(
-                        cropBitmap = tenthCrop,
-                        isAlly = tenthIsAlly,
-                        slotIndex = tenthSlotIndex,
-                        stage = "CROP_EXTRACTED",
-                        context = context
-                    )
+        if (!targetAlreadyConfirmed) {
+            val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
+                cropBitmap = tenthCrop,
+                isAlly = tenthIsAlly,
+                confirmedChampionIds = confirmedChampIds,
+                confirmedPicksCount = confirmedPicksCount,
+                slotIndex = tenthSlotIndex,
+                context = context
+            )
+
+            if (liteRTDecision != null && confirmedPicksCount >= 9) {
+                val (champWinner, confidence) = liteRTDecision
+                detectedTenthChampion = champWinner
+                isTenthConfirmed = true
+                if (tenthIsAlly) {
+                    allySlots[tenthSlotIndex].champion = champWinner
+                    allySlots[tenthSlotIndex].confidencePercent = confidence
+                    allySlots[tenthSlotIndex].isLikelyUnpicked = false
+                    allySlotConfirmedChampions[tenthSlotIndex] = champWinner
+                } else {
+                    enemySlots[tenthSlotIndex].champion = champWinner
+                    enemySlots[tenthSlotIndex].confidencePercent = confidence
+                    enemySlots[tenthSlotIndex].isLikelyUnpicked = false
+                    enemySlotConfirmedChampions[tenthSlotIndex] = champWinner
                 }
-
-                val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
-                    cropBitmap = tenthCrop,
-                    isAlly = tenthIsAlly,
-                    confirmedChampionIds = confirmedChampIds,
-                    confirmedPicksCount = confirmedPicksCount,
-                    slotIndex = tenthSlotIndex,
-                    context = context
-                )
-
-                if (liteRTDecision != null) {
-                    val (champWinner, confidence) = liteRTDecision
-                    detectedTenthChampion = champWinner
-                    isTenthConfirmed = true
-                    if (tenthIsAlly) {
-                        allySlots[tenthSlotIndex].champion = champWinner
-                        allySlots[tenthSlotIndex].confidencePercent = confidence
-                        allySlots[tenthSlotIndex].isLikelyUnpicked = false
-                        allySlotConfirmedChampions[tenthSlotIndex] = champWinner
-                    } else {
-                        enemySlots[tenthSlotIndex].champion = champWinner
-                        enemySlots[tenthSlotIndex].confidencePercent = confidence
-                        enemySlots[tenthSlotIndex].isLikelyUnpicked = false
-                        enemySlotConfirmedChampions[tenthSlotIndex] = champWinner
-                    }
-                    AppLogger.d(TAG, "Google MediaPipe / LiteRT decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
-                }
-
-                try { tenthCrop?.recycle() } catch (_: Throwable) {}
+                AppLogger.d(TAG, "Google MediaPipe / LiteRT decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
             }
-        } else if (targetAlreadyConfirmed) {
-            // Preservar la confirmación del 10º pick y mantenerlo en el resultado sin sobreescribir el reporte del motor
+
+            try { tenthCrop?.recycle() } catch (_: Throwable) {}
+        } else {
+            // Preservar la confirmación previa del 10º pick
             val cachedChamp = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] else enemySlotConfirmedChampions[tenthSlotIndex]
             if (cachedChamp != null) {
                 detectedTenthChampion = cachedChamp
@@ -1403,16 +1362,6 @@ object DraftVisionScanner {
                     enemySlots[tenthSlotIndex].isLikelyUnpicked = false
                 }
             }
-        } else {
-            // Solo si aún no ha sido confirmado el 10º pick, notificar estado al motor para actualizar el visor
-            LiteRTVisionClassifier.executeTenthPickInference(
-                cropBitmap = null,
-                isAlly = tenthIsAlly,
-                confirmedChampionIds = confirmedChampIds,
-                confirmedPicksCount = confirmedPicksCount,
-                slotIndex = tenthSlotIndex,
-                context = context
-            )
         }
         
         // 4.1 Aliados: Cada slot aliado (0..4) mapea determinísticamente a su carril (allySlotRolesCache)

@@ -36,7 +36,7 @@ object LiteRTVisionClassifier {
 
     private const val TAG = "LiteRTVisionClassifier"
     private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
-    private const val EMBEDDING_DIM = 118    // Vector descriptor de 118 dimensiones de alta fidelidad
+    private const val EMBEDDING_DIM = 136    // Vector descriptor de 136 dimensiones de alta fidelidad
 
     // Umbral de confianza por defecto (80% de similitud real centrada en cero)
     const val DEFAULT_CONFIDENCE_THRESHOLD = 0.80f
@@ -163,20 +163,25 @@ object LiteRTVisionClassifier {
     }
 
     /**
-     * Extrae un vector descriptor de alta fidelidad centrado en cero y normalizado en L2 (118 dimensiones)
+     * Extrae un vector descriptor de alta fidelidad centrado en cero y normalizado en L2 (136 dimensiones)
      * a partir del mapa de píxeles del avatar facial del campeón.
      * 
      * Invariante a pequeños desplazamientos espaciales, escala, iluminación y bordes de UI:
-     * - Enmascaramiento circular facial interior (radio <= 0.36 * diámetro) para descartar esquinas oscuras
-     *   y el marco exterior de la ranura.
-     * - Filtrado selectivo de píxeles espurios del aro exterior (rojo carmesí en rivales, azul eléctrico en aliados).
+     * - Enmascaramiento circular facial interior (radio <= 0.38 * diámetro) para descartar esquinas oscuras.
      * - Histograma bidimensional HSV (16 tonalidades x 4 niveles de saturación = 64 dimensiones).
      * - Histograma de valor/luminancia (8 dimensiones).
      * - Grilla espacial 3x3 para distribución morfológica (RGB = 27 dimensiones).
-     * - Balances cromáticos y firmas Zaun/Freljord/Noxus (11 dimensiones).
+     * - Grilla cuadrante 2x2 de dominancia espacial cromática y luminancia (8 dimensiones).
+     * - Firmas espectrales de dominio y discriminación ortogonal de campeones (21 dimensiones):
+     *   * Abyssal Cyan (Pyke, Thresh, Viego, Kalista): cian/turquesa 160°-200°, alto B y G.
+     *   * Chemtech Toxic Lime (Urgot, Singed, Twitch): verde lima/ácido 80°-130°, alto G sin azul.
+     *   * Glowing Turquoise Eyes (Pyke): ojos cian brillantes en el centro superior.
+     *   * Pale Flesh/Metal Head (Urgot): cabeza calva/metal grisáceo superior.
+     *   * Dark Mask/Bandana (Pyke): tela magenta/oscura inferior.
+     *   * Void Magenta, Freljord Ice, Noxus Blood, Demacia Gold, Ionia Spirit.
+     *   * Ratio de discriminación ortogonal Cyan-vs-Lime.
      * - Histograma de gradientes direccionales Sobel (8 dimensiones).
-     * - Centrado en cero estricto (zero-centering) y normalización L2: convierte la similitud coseno
-     *   en el coeficiente de correlación de Pearson, eliminando falsos positivos globales.
+     * - Centrado en cero estricto (zero-centering) y normalización L2: correlación de Pearson exacta.
      */
     private fun extractTensorEmbedding(bitmap: Bitmap): FloatArray {
         val scaled = Bitmap.createScaledBitmap(bitmap, TENSOR_INPUT_SIZE, TENSOR_INPUT_SIZE, true)
@@ -187,7 +192,7 @@ object LiteRTVisionClassifier {
         }
 
         val center = TENSOR_INPUT_SIZE / 2f
-        val maxInnerRadius = TENSOR_INPUT_SIZE * 0.36f
+        val maxInnerRadius = TENSOR_INPUT_SIZE * 0.38f
         val maxRadiusSq = maxInnerRadius * maxInnerRadius
 
         // 1. Histograma 2D HSV (16 Tonalidades x 4 Niveles de Saturación = 64 bins)
@@ -202,23 +207,46 @@ object LiteRTVisionClassifier {
         val spatialB = FloatArray(9)
         val spatialCnt = FloatArray(9)
 
-        // 4. Acumuladores globales y firmas Zaun/Freljord/Noxus
+        // 4. Grilla cuadrante 2x2 (4 cuadrantes x 2 canales: Lum y CyanVsLime = 8 bins)
+        val quadLum = FloatArray(4)
+        val quadCyanLime = FloatArray(4)
+        val quadCnt = FloatArray(4)
+
+        // 5. Acumuladores globales y firmas espectrales ortogonales
         var totalValidPixels = 0
         var totalR = 0f
         var totalG = 0f
         var totalB = 0f
         var totalLum = 0f
         var totalLumSq = 0f
+        var topHalfLum = 0f
+        var bottomHalfLum = 0f
+        var topHalfCnt = 0
+        var bottomHalfCnt = 0
+
+        // Firmas cromáticas ortogonales
+        var abyssalCyanCount = 0f       // Pyke, Thresh, Viego (Cian/Turquesa puro)
+        var chemtechLimeCount = 0f      // Urgot, Singed, Twitch (Verde Lima Quimtech)
+        var glowingEyeCyanCount = 0f    // Ojos turquesa brillantes de Pyke
+        var paleFleshMetalCount = 0f    // Cabeza pálida y máscara de Urgot
+        var darkBandanaCount = 0f       // Pañuelo oscuro/violeta de Pyke
+        var voidMagentaCount = 0f       // Kai'Sa, Kassadin, Malzahar
+        var iceFreljordCount = 0f       // Ashe, Braum, Lissandra
+        var noxusCrimsonCount = 0f      // Darius, Sion, Vladimir
+        var demaciaGoldCount = 0f       // Garen, Lux, Leona
+        var shadowIslesCount = 0f       // Hecarim, Karthus, Yorick
+        var ioniaSpiritCount = 0f       // Ahri, Yasuo, Yone, Karma
         var highlightCount = 0f
         var shadowCount = 0f
-        var chemtechCount = 0f // Firma de verde tóxico/quimtech (Urgot, Singed, Twitch)
+        var midtoneSatCount = 0f
 
         // Matriz de luminancia para gradientes direccionales Sobel
         val lumGrid = Array(TENSOR_INPUT_SIZE) { FloatArray(TENSOR_INPUT_SIZE) }
 
         for (y in 0 until TENSOR_INPUT_SIZE) {
             val dy = y - center
-            val cellY = ((y * 3) / TENSOR_INPUT_SIZE).coerceIn(0, 2)
+            val cellY3 = ((y * 3) / TENSOR_INPUT_SIZE).coerceIn(0, 2)
+            val cellY2 = if (y < center) 0 else 1
             for (x in 0 until TENSOR_INPUT_SIZE) {
                 val dx = x - center
                 val distSq = dx * dx + dy * dy
@@ -232,9 +260,9 @@ object LiteRTVisionClassifier {
                 if (distSq > maxRadiusSq) continue // Enmascaramiento circular interno
 
                 val dist = sqrt(distSq)
-                // Descartar píxeles periféricos contaminados por el aro exterior de la UI (rojo escarlata o azul cian)
-                if (dist > TENSOR_INPUT_SIZE * 0.26f) {
-                    if ((r > 0.45f && r > g * 1.35f && r > b * 1.35f) || (b > 0.45f && b > r * 1.35f && b > g * 1.15f)) {
+                // Descartar únicamente píxeles extremadamente periféricos de aros saturados
+                if (dist > TENSOR_INPUT_SIZE * 0.35f) {
+                    if ((r > 0.70f && r > g * 2.0f && r > b * 2.0f) || (b > 0.70f && b > r * 2.0f && b > g * 1.5f)) {
                         continue
                     }
                 }
@@ -264,12 +292,25 @@ object LiteRTVisionClassifier {
                 hueSatHist[hBin][sBin] += weight
                 valHist[vBin] += 1f
 
-                val cellX = ((x * 3) / TENSOR_INPUT_SIZE).coerceIn(0, 2)
-                val sIdx = cellY * 3 + cellX
-                spatialR[sIdx] += r
-                spatialG[sIdx] += g
-                spatialB[sIdx] += b
-                spatialCnt[sIdx] += 1f
+                // Grilla 3x3
+                val cellX3 = ((x * 3) / TENSOR_INPUT_SIZE).coerceIn(0, 2)
+                val sIdx3 = cellY3 * 3 + cellX3
+                spatialR[sIdx3] += r
+                spatialG[sIdx3] += g
+                spatialB[sIdx3] += b
+                spatialCnt[sIdx3] += 1f
+
+                // Grilla 2x2
+                val cellX2 = if (x < center) 0 else 1
+                val qIdx = cellY2 * 2 + cellX2
+                quadLum[qIdx] += lum
+                val pixelCyanVsLime = when {
+                    (b > r + 0.04f && g > r + 0.03f) -> 1.0f  // Cian / Turquesa (Pyke)
+                    (g > r + 0.04f && g > b + 0.06f) -> -1.0f // Verde Lima (Urgot)
+                    else -> 0.0f
+                }
+                quadCyanLime[qIdx] += pixelCyanVsLime
+                quadCnt[qIdx] += 1f
 
                 totalValidPixels++
                 totalR += r
@@ -277,9 +318,76 @@ object LiteRTVisionClassifier {
                 totalB += b
                 totalLum += lum
                 totalLumSq += lum * lum
+
+                if (y < center) {
+                    topHalfLum += lum
+                    topHalfCnt++
+                } else {
+                    bottomHalfLum += lum
+                    bottomHalfCnt++
+                }
+
                 if (lum > 0.70f) highlightCount += 1f
                 if (lum < 0.18f) shadowCount += 1f
-                if (g > r + 0.05f && g > b + 0.03f) chemtechCount += 1f
+                if (lum in 0.25f..0.75f && sat > 0.30f) midtoneSatCount += 1f
+
+                // -------------------------------------------------------------
+                // DISCRIMINACIÓN ESPECTRAL ORTOGONAL:
+                // -------------------------------------------------------------
+                // 1) Cian / Turquesa Abisal (Pyke): B y G altos, B+G >> 2*R, Hue en 155°-205°
+                if ((b > r + 0.05f && g > r + 0.03f && (b + g) > 0.35f && abs(b - g) < 0.25f) || (hue in 155f..205f && sat > 0.25f)) {
+                    abyssalCyanCount += 1f
+                }
+
+                // 2) Verde Lima Quimtech Tóxico (Urgot): G alto, G >> R, G >> B + 0.06, Hue en 75°-135°
+                if ((g > r + 0.05f && g > b + 0.07f && g > 0.25f) || (hue in 75f..135f && sat > 0.25f)) {
+                    chemtechLimeCount += 1f
+                }
+
+                // 3) Ojos Turquesa Brillantes de Pyke (Zona media-superior cian brillante)
+                if (dist < TENSOR_INPUT_SIZE * 0.22f && lum > 0.45f && b > r + 0.08f && g > r + 0.05f) {
+                    glowingEyeCyanCount += 1f
+                }
+
+                // 4) Cabeza Calva Pálida y Metal de Urgot (Zona superior grisácea/metal)
+                if (y < center && lum in 0.35f..0.80f && sat < 0.20f && abs(r - g) < 0.08f && abs(g - b) < 0.08f) {
+                    paleFleshMetalCount += 1f
+                }
+
+                // 5) Pañuelo Oscuro / Máscara de Pyke (Zona inferior con tono violeta/magenta oscuro)
+                if (y >= center && lum < 0.32f && (r > g + 0.04f || b > g + 0.02f)) {
+                    darkBandanaCount += 1f
+                }
+
+                // 6) Magenta del Vacío (Kai'Sa, Bel'Veth, Kassadin, Malzahar)
+                if ((r > g + 0.08f && b > g + 0.06f && (r + b) > 0.45f) || (hue in 280f..330f && sat > 0.25f)) {
+                    voidMagentaCount += 1f
+                }
+
+                // 7) Hielo de Freljord (Ashe, Braum, Lissandra, Anivia)
+                if (b > 0.50f && b > r * 1.3f && lum > 0.50f) {
+                    iceFreljordCount += 1f
+                }
+
+                // 8) Carmesí de Noxus (Darius, Sion, Vladimir)
+                if (r > 0.45f && r > g * 1.4f && r > b * 1.4f) {
+                    noxusCrimsonCount += 1f
+                }
+
+                // 9) Dorado de Demacia / Shurima (Garen, Lux, Leona, Azir)
+                if (r > 0.45f && g > 0.35f && b < 0.25f && (r + g) > 0.80f) {
+                    demaciaGoldCount += 1f
+                }
+
+                // 10) Oscuridad de Islas de las Sombras (Hecarim, Karthus, Yorick)
+                if (lum < 0.20f && b > r) {
+                    shadowIslesCount += 1f
+                }
+
+                // 11) Espíritu de Jonia (Ahri, Yasuo, Yone, Karma)
+                if (r > 0.35f && b > 0.30f && sat > 0.25f && g < r) {
+                    ioniaSpiritCount += 1f
+                }
             }
         }
 
@@ -314,27 +422,46 @@ object LiteRTVisionClassifier {
             embedding[embIdx++] = spatialB[i] / c
         } // 72 + 27 = 99 dims
 
-        // 4. Balances cromáticos y momentos estadísticos (11 dims)
+        // 4. Grilla espacial 2x2 (4 cuadrantes x 2 canales: Lum y CyanVsLime = 8 dims)
+        for (i in 0 until 4) {
+            val c = quadCnt[i].coerceAtLeast(1f)
+            embedding[embIdx++] = quadLum[i] / c
+            embedding[embIdx++] = quadCyanLime[i] / c
+        } // 99 + 8 = 107 dims
+
+        // 5. Firmas espectrales ortogonales y momentos estadísticos (21 dims)
         val meanR = totalR / normCount
         val meanG = totalG / normCount
         val meanB = totalB / normCount
         val meanLum = totalLum / normCount
         val varLum = max(0f, (totalLumSq / normCount) - (meanLum * meanLum))
+        val topAvgLum = if (topHalfCnt > 0) topHalfLum / topHalfCnt else meanLum
+        val botAvgLum = if (bottomHalfCnt > 0) bottomHalfLum / bottomHalfCnt else meanLum
 
         embedding[embIdx++] = meanR
         embedding[embIdx++] = meanG
         embedding[embIdx++] = meanB
         embedding[embIdx++] = meanLum
         embedding[embIdx++] = sqrt(varLum)
-        embedding[embIdx++] = meanG - meanR // Verde Zaun vs Rojo
-        embedding[embIdx++] = meanB - meanR // Azul Freljord vs Rojo
-        embedding[embIdx++] = meanR - meanB // Rojo Noxus vs Azul
-        embedding[embIdx++] = chemtechCount / normCount
+        embedding[embIdx++] = abyssalCyanCount / normCount        // Pyke / Thresh
+        embedding[embIdx++] = chemtechLimeCount / normCount       // Urgot / Singed
+        embedding[embIdx++] = (abyssalCyanCount - chemtechLimeCount) / (abyssalCyanCount + chemtechLimeCount + 1e-4f) // Discriminador directo Pyke vs Urgot
+        embedding[embIdx++] = glowingEyeCyanCount / normCount     // Ojos de Pyke
+        embedding[embIdx++] = paleFleshMetalCount / normCount     // Calva/Metal de Urgot
+        embedding[embIdx++] = darkBandanaCount / normCount        // Pañuelo de Pyke
+        embedding[embIdx++] = voidMagentaCount / normCount
+        embedding[embIdx++] = iceFreljordCount / normCount
+        embedding[embIdx++] = noxusCrimsonCount / normCount
+        embedding[embIdx++] = demaciaGoldCount / normCount
+        embedding[embIdx++] = shadowIslesCount / normCount
+        embedding[embIdx++] = ioniaSpiritCount / normCount
+        embedding[embIdx++] = topAvgLum - botAvgLum               // Gradiente vertical de luz (Urgot claro arriba, Pyke oscuro arriba)
         embedding[embIdx++] = highlightCount / normCount
         embedding[embIdx++] = shadowCount / normCount
-        // 99 + 11 = 110 dims
+        embedding[embIdx++] = midtoneSatCount / normCount
+        // 107 + 21 = 128 dims
 
-        // 5. Histograma de bordes direccionales Sobel (8 bins)
+        // 6. Histograma de bordes direccionales Sobel (8 bins)
         val edgeHist = FloatArray(8)
         var totalGradMag = 0f
         for (y in 3 until TENSOR_INPUT_SIZE - 3) {
@@ -357,7 +484,7 @@ object LiteRTVisionClassifier {
         val edgeSum = totalGradMag.coerceAtLeast(1e-4f)
         for (b in 0 until 8) {
             embedding[embIdx++] = edgeHist[b] / edgeSum
-        } // 110 + 8 = 118 dims
+        } // 128 + 8 = 136 dims
 
         // CENTRADO EN CERO (Zero-Centering):
         val meanVal = embedding.sum() / embedding.size
@@ -389,9 +516,11 @@ object LiteRTVisionClassifier {
     }
 
     /**
-     * Ejecuta el análisis del 10º Pick con Google MediaPipe / LiteRT.
+     * Ejecuta el análisis del 10º Pick con Google MediaPipe / LiteRT On-Device.
      * 
-     * CONDICIÓN ESTRICTA: Solo se ejecuta si [confirmedPicksCount] >= 9.
+     * Soporta ejecución continua en vivo para el Visor de Depuración:
+     * - Siempre actualiza el reporte con el recorte en vivo, candidato principal y métricas.
+     * - Únicamente confirma y bloquea la selección en el modelo de juego cuando [confirmedPicksCount] >= 9.
      * 
      * @param cropBitmap Recorte visual del slot o círculo superior correspondiente al 10º pick.
      * @param isAlly Indica si el 10º pick pertenece al bando aliado o enemigo.
@@ -432,30 +561,15 @@ object LiteRTVisionClassifier {
             return@withContext null
         }
 
-        // Si el draft se encuentra en fases previas (< 9 selecciones confirmadas en total):
-        if (confirmedPicksCount < 9) {
-            resetStabilityTracker()
-            _reportFlow.value = LiteRTInferenceReport(
-                status = EngineStatus.WAITING_FOR_PICKS_1_TO_9,
-                pickedChampion = null,
-                confidencePercent = 0,
-                decisionReason = "Esperando selecciones 1 al 9 completas ($confirmedPicksCount/9 detectados)",
-                slotDescription = slotDesc,
-                evaluatedPicksCount = confirmedPicksCount,
-                cropBitmap = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
-            )
-            return@withContext null
-        }
+        val persistentCrop = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
 
-        // COMPROBACIÓN CRÍTICA DEL USUARIO:
+        // COMPROBACIÓN DEL USUARIO:
         // En el slot final de Wild Rift:
         // - Lado rival: muestra un borde rojo y un icono de yelmo espartano gris oscuro esperando selección.
         // - Lado aliado: muestra un borde azul y el icono de la línea asignada esperando selección.
-        // - ÚNICAMENTE cuando el jugador confirma la selección, el icono es reemplazado por el Avatar del campeón.
         val isWaitingIcon = isSlotWaitingIcon(cropBitmap, isAlly)
         if (isWaitingIcon) {
             resetStabilityTracker()
-            val persistentCrop = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
             val reason = if (isAlly) {
                 "Slot final aliado en espera (icono de línea con borde azul visible). A la espera de que se reemplace por el Avatar del campeón."
             } else {
@@ -485,7 +599,7 @@ object LiteRTVisionClassifier {
         val startTime = System.currentTimeMillis()
         ensureIndexed(context)
 
-        // Extraer el embedding tensor del recorte actual
+        // Extraer el embedding tensor de 136 dimensiones del recorte actual
         val inputEmbedding = extractTensorEmbedding(cropBitmap)
 
         // Evaluar contra todos los campeones no tomados
@@ -507,14 +621,14 @@ object LiteRTVisionClassifier {
                 status = EngineStatus.NO_DETECTION,
                 decisionReason = "No hay candidatos elegibles para comparar",
                 slotDescription = slotDesc,
-                evaluatedPicksCount = confirmedPicksCount
+                evaluatedPicksCount = confirmedPicksCount,
+                cropBitmap = persistentCrop
             )
             return@withContext null
         }
 
         // Ordenar candidatos por similitud de mayor a menor
         val sortedCandidates = candidateScores.sortedByDescending { it.second }
-        val topScore = sortedCandidates.first().second
 
         // Distribución Softmax para probabilidades relativas (temperatura calibrada T = 0.08)
         val temperature = 0.08f
@@ -542,10 +656,31 @@ object LiteRTVisionClassifier {
         val winnerChamp = bestCandidate.champion
         val finalConfidence = bestCandidate.confidencePercent
         val margin = bestCandidate.similarityScore - secondScore
-
         val effectiveThreshold = getEffectiveThreshold(context)
 
-        // CONTROL DE UMBRAL DE CONFIANZA Y FRAMES ESTABLES:
+        // MODO EN VIVO CUANDO CONFIRMED PICKS < 9 (Permite al usuario probar el visor todo el tiempo):
+        if (confirmedPicksCount < 9) {
+            resetStabilityTracker()
+            val liveReason = "Visor en vivo activo ($confirmedPicksCount/9 picks confirmados). Analizando avatar en tiempo real: ${winnerChamp.name} (${(bestCandidate.similarityScore * 100).toInt()}% similitud, margen: +${(margin * 100).toInt()}%)."
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.RUNNING_INFERENCE,
+                pickedChampion = winnerChamp,
+                confidencePercent = finalConfidence,
+                inferenceTimeMs = inferenceDuration,
+                topCandidates = candidateReports,
+                cropBitmap = persistentCrop,
+                decisionReason = liveReason,
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                isConfirmed = false,
+                stableFramesCount = 0,
+                requiredStableFrames = 3,
+                minConfidenceThreshold = effectiveThreshold
+            )
+            return@withContext null
+        }
+
+        // CONTROL DE UMBRAL DE CONFIANZA Y FRAMES ESTABLES PARA DECISIÓN FINAL (Picks >= 9):
         val passesConfidence = bestCandidate.similarityScore >= effectiveThreshold
 
         val requiredFrames = when {
@@ -579,8 +714,6 @@ object LiteRTVisionClassifier {
                 "Puntaje de ${winnerChamp.name} (${(bestCandidate.similarityScore * 100).toInt()}%) inferior al umbral configurado (${(effectiveThreshold * 100).toInt()}%). El motor continúa analizando los tensores en pantalla."
             }
         }
-
-        val persistentCrop = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
 
         // Modo Diagnóstico: Guardar frame en el directorio de caché con los datos del análisis óptico
         TenthPickDiagnosticManager.recordTenthPickCrop(

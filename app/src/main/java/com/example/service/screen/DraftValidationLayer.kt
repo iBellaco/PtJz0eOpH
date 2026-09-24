@@ -393,21 +393,32 @@ object DraftValidationLayer {
             // TOP
             if (cand.contains("calle del baron") || cand.contains("calle del barón") ||
                 cand.contains("calle de baron") || cand.contains("calle de barón") ||
+                cand.contains("calle del varon") || cand.contains("calle del varón") ||
+                cand.contains("calle de varon") || cand.contains("calle de varón") ||
                 cand.contains("calle baron") || cand.contains("calle barón") ||
+                cand.contains("calle varon") || cand.contains("calle varón") ||
                 cand.contains("carril del baron") || cand.contains("carril del barón") ||
                 cand.contains("carril de baron") || cand.contains("carril de barón") ||
+                cand.contains("carril del varon") || cand.contains("carril del varón") ||
+                cand.contains("carril de varon") || cand.contains("carril de varón") ||
                 cand.contains("carril baron") || cand.contains("carril barón") ||
+                cand.contains("carril varon") || cand.contains("carril varón") ||
                 cand.contains("linea del baron") || cand.contains("linea del barón") ||
                 cand.contains("linea de baron") || cand.contains("linea de barón") ||
+                cand.contains("linea del varon") || cand.contains("linea del varón") ||
+                cand.contains("linea de varon") || cand.contains("linea de varón") ||
                 cand.contains("linea baron") || cand.contains("linea barón") ||
+                cand.contains("linea varon") || cand.contains("linea varón") ||
                 cand.contains("carril superior") || cand.contains("calle superior") ||
                 cand.contains("linea superior") || cand.contains("carril solo") ||
                 cand.contains("calle solo") || cand.contains("linea solo") ||
-                cand.contains("baron lane") || cand.contains("rota de barao") ||
+                cand.contains("baron lane") || cand.contains("varon lane") || cand.contains("rota de barao") ||
                 cand.contains("rota do barao") || cand.contains("rota de barão") ||
                 cand.contains("rota do barão") || cand.contains("rota do topo") ||
                 cand.contains("rota solo") || cand.contains("solo lane") ||
-                cand == "baron" || cand == "barao" || cand == "barão" || cand == "solo" || cand == "top") {
+                cand == "baron" || cand == "barón" || cand == "varon" || cand == "varón" ||
+                cand == "barao" || cand == "barão" || cand == "varao" || cand == "varão" ||
+                cand == "solo" || cand == "top") {
                 return LaneRole.TOP
             }
 
@@ -468,7 +479,7 @@ object DraftValidationLayer {
         // Búsqueda por tokens individuales
         for (token in tokens) {
             when (token) {
-                "baron", "barao", "barão", "top", "solo", "topo", "superior" -> return LaneRole.TOP
+                "baron", "barón", "varon", "varón", "barao", "barão", "varao", "varão", "top", "solo", "topo", "superior" -> return LaneRole.TOP
                 "jungla", "jungle", "cacador", "caçador", "selva", "jg" -> return LaneRole.JUNGLE
                 "mid", "medio", "meio", "central" -> return LaneRole.MID
                 "adc", "duo", "dúo", "dragon", "dragón", "dragao", "dragão", "tirador", "atirador", "bot" -> return LaneRole.ADC
@@ -482,7 +493,9 @@ object DraftValidationLayer {
         for (c in listOf(compactStripped, compact)) {
             when {
                 c.endsWith("carrilcentral") || c.endsWith("lineacentral") || c.endsWith("callecentral") || c.endsWith("mid") || c.endsWith("central") || c.endsWith("medio") -> return LaneRole.MID
-                c.endsWith("calledelbaron") || c.endsWith("calledebaron") || c.endsWith("callebaron") || c.endsWith("carrildebaron") || c.endsWith("carrildelbaron") || c.endsWith("carrilbaron") || c.endsWith("lineadelbaron") || c.endsWith("baron") || c.endsWith("solo") || c.endsWith("top") -> return LaneRole.TOP
+                c.endsWith("calledelbaron") || c.endsWith("calledebaron") || c.endsWith("callebaron") || c.endsWith("carrildebaron") || c.endsWith("carrildelbaron") || c.endsWith("carrilbaron") || c.endsWith("lineadelbaron") || c.endsWith("baron") ||
+                c.endsWith("calledelvaron") || c.endsWith("calledevaron") || c.endsWith("callevaron") || c.endsWith("carrildevaron") || c.endsWith("carrildelvaron") || c.endsWith("carrilvaron") || c.endsWith("lineadelvaron") || c.endsWith("varon") ||
+                c.endsWith("solo") || c.endsWith("top") -> return LaneRole.TOP
                 c.endsWith("carriljungla") || c.endsWith("callejungla") || c.endsWith("lineajungla") || c.endsWith("jungla") || c.endsWith("jungle") || c.endsWith("cacador") || c.endsWith("caçador") || c.endsWith("selva") -> return LaneRole.JUNGLE
                 c.endsWith("calledeldragon") || c.endsWith("callededragon") || c.endsWith("calledragon") || c.endsWith("carrilduo") || c.endsWith("calleduo") || c.endsWith("carrildeldragon") || c.endsWith("duo") || c.endsWith("adc") || c.endsWith("tirador") || c.endsWith("dragon") -> return LaneRole.ADC
                 c.endsWith("carrilsoporte") || c.endsWith("carrilapoyo") || c.endsWith("calleapoyo") || c.endsWith("callesoporte") || c.endsWith("soporte") || c.endsWith("suporte") || c.endsWith("support") || c.endsWith("apoyo") || c.endsWith("sup") -> return LaneRole.SUPPORT
