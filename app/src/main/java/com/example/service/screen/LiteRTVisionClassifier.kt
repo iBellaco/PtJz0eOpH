@@ -92,14 +92,14 @@ object LiteRTVisionClassifier {
     )
 
     data class LiteRTInferenceReport(
-        val status: EngineStatus = EngineStatus.WAITING_FOR_PICKS_1_TO_9,
+        val status: EngineStatus = EngineStatus.RUNNING_INFERENCE,
         val pickedChampion: Champion? = null,
         val confidencePercent: Int = 0,
         val inferenceTimeMs: Long = 0L,
         val topCandidates: List<LiteRTCandidateScore> = emptyList(),
         val cropBitmap: Bitmap? = null,
-        val decisionReason: String = "Esperando que se confirmen las selecciones 1 a 9",
-        val slotDescription: String = "",
+        val decisionReason: String = "Visor continuo activo. Escaneando tensores del 10º pick en tiempo real.",
+        val slotDescription: String = "Slot 5 (10º Pick)",
         val tensorDimensions: String = "${TENSOR_INPUT_SIZE}x${TENSOR_INPUT_SIZE}x3 (Float32)",
         val evaluatedPicksCount: Int = 0,
         val isConfirmed: Boolean = false,
@@ -542,15 +542,9 @@ object LiteRTVisionClassifier {
         // Si no hay recorte válido disponible:
         if (cropBitmap == null || cropBitmap.isRecycled || cropBitmap.width < 16 || cropBitmap.height < 16) {
             resetStabilityTracker()
-            val isWaitingEarly = confirmedPicksCount < 8
-            val status = if (isWaitingEarly) EngineStatus.WAITING_FOR_PICKS_1_TO_9 else EngineStatus.WAITING_FOR_TENTH_PICK
-            val decisionReason = if (isWaitingEarly) {
-                "Esperando selecciones 1 al 9 completas ($confirmedPicksCount/9 detectados)"
-            } else {
-                "Slot final en espera del 10º pick ($confirmedPicksCount/9 detectados)"
-            }
+            val decisionReason = "Visor continuo activo: Apuntando al $slotDesc ($confirmedPicksCount/9 confirmados)"
             _reportFlow.value = LiteRTInferenceReport(
-                status = status,
+                status = EngineStatus.RUNNING_INFERENCE,
                 pickedChampion = null,
                 confidencePercent = 0,
                 decisionReason = decisionReason,

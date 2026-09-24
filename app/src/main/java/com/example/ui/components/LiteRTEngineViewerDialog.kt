@@ -261,23 +261,18 @@ fun LiteRTEngineViewerDialog(
 
                 // Estado del Motor
                 val (badgeBg, badgeBorder, badgeText, statusIcon) = when (report.status) {
-                    LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9 -> Quadruple(
+                    LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9,
+                    LiteRTVisionClassifier.EngineStatus.RUNNING_INFERENCE -> Quadruple(
                         Color(0xFF0C4A6E),
                         Color(0xFF38BDF8),
-                        "VISOR EN VIVO ACTIVO • PRUEBA EN TIEMPO REAL (${report.evaluatedPicksCount}/9 confirmados)",
+                        "VISOR EN VIVO • ANALIZANDO EN TIEMPO REAL (${report.evaluatedPicksCount}/9 confirmados)",
                         Icons.Default.AutoAwesome
                     )
                     LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> Quadruple(
                         Color(0xFF0C4A6E),
                         Color(0xFF38BDF8),
-                        "SLOT FINAL EN ESPERA • APUNTANDO AL 10º PICK",
+                        "SLOT FINAL EN ESPERA • APUNTANDO AL 10º PICK (${report.evaluatedPicksCount}/9)",
                         Icons.Default.HourglassEmpty
-                    )
-                    LiteRTVisionClassifier.EngineStatus.RUNNING_INFERENCE -> Quadruple(
-                        Color(0xFF1E293B),
-                        Color(0xFF00E5FF),
-                        "VISOR EN VIVO • PROCESANDO TENSORES DE IMAGEN",
-                        Icons.Default.AutoAwesome
                     )
                     LiteRTVisionClassifier.EngineStatus.COMPLETED -> Quadruple(
                         Color(0xFF064E3B),

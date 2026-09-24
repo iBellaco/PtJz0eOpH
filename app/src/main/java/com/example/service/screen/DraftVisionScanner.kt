@@ -1294,18 +1294,16 @@ object DraftVisionScanner {
         val targetSlot = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
         val targetAlreadyConfirmed = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] != null else enemySlotConfirmedChampions[tenthSlotIndex] != null
 
-        // EXTRACCIÓN Y ANÁLISIS EN VIVO DEL 10º PICK (Google MediaPipe / LiteRT):
-        // Siempre se extrae el recorte del slot para alimentar el visor en tiempo real y permitir pruebas del usuario.
-        val tenthCrop: Bitmap? = if (!targetAlreadyConfirmed) {
-            AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
-                sourceBitmap = bitmap,
-                width = width,
-                height = height,
-                isAlly = tenthIsAlly,
-                slotIndex = tenthSlotIndex,
-                config = calib
-            )
-        } else null
+        // EXTRACCIÓN Y ANÁLISIS EN VIVO CONTINUO DEL 10º PICK (Google MediaPipe / LiteRT):
+        // Se extrae el recorte del slot en cada fotograma para alimentar el visor en tiempo real y permitir pruebas del usuario en todo momento.
+        val tenthCrop: Bitmap? = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
+            sourceBitmap = bitmap,
+            width = width,
+            height = height,
+            isAlly = tenthIsAlly,
+            slotIndex = tenthSlotIndex,
+            config = calib
+        )
 
         if (tenthCrop != null && !tenthCrop.isRecycled) {
             TenthPickDiagnosticManager.recordTenthPickCrop(
@@ -1317,37 +1315,33 @@ object DraftVisionScanner {
             )
         }
 
-        if (!targetAlreadyConfirmed) {
-            val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
-                cropBitmap = tenthCrop,
-                isAlly = tenthIsAlly,
-                confirmedChampionIds = confirmedChampIds,
-                confirmedPicksCount = confirmedPicksCount,
-                slotIndex = tenthSlotIndex,
-                context = context
-            )
+        val liteRTDecision = LiteRTVisionClassifier.executeTenthPickInference(
+            cropBitmap = tenthCrop,
+            isAlly = tenthIsAlly,
+            confirmedChampionIds = confirmedChampIds,
+            confirmedPicksCount = confirmedPicksCount,
+            slotIndex = tenthSlotIndex,
+            context = context
+        )
 
-            if (liteRTDecision != null && confirmedPicksCount >= 9) {
-                val (champWinner, confidence) = liteRTDecision
-                detectedTenthChampion = champWinner
-                isTenthConfirmed = true
-                if (tenthIsAlly) {
-                    allySlots[tenthSlotIndex].champion = champWinner
-                    allySlots[tenthSlotIndex].confidencePercent = confidence
-                    allySlots[tenthSlotIndex].isLikelyUnpicked = false
-                    allySlotConfirmedChampions[tenthSlotIndex] = champWinner
-                } else {
-                    enemySlots[tenthSlotIndex].champion = champWinner
-                    enemySlots[tenthSlotIndex].confidencePercent = confidence
-                    enemySlots[tenthSlotIndex].isLikelyUnpicked = false
-                    enemySlotConfirmedChampions[tenthSlotIndex] = champWinner
-                }
-                AppLogger.d(TAG, "Google MediaPipe / LiteRT decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
+        if (liteRTDecision != null && confirmedPicksCount >= 9) {
+            val (champWinner, confidence) = liteRTDecision
+            detectedTenthChampion = champWinner
+            isTenthConfirmed = true
+            if (tenthIsAlly) {
+                allySlots[tenthSlotIndex].champion = champWinner
+                allySlots[tenthSlotIndex].confidencePercent = confidence
+                allySlots[tenthSlotIndex].isLikelyUnpicked = false
+                allySlotConfirmedChampions[tenthSlotIndex] = champWinner
+            } else {
+                enemySlots[tenthSlotIndex].champion = champWinner
+                enemySlots[tenthSlotIndex].confidencePercent = confidence
+                enemySlots[tenthSlotIndex].isLikelyUnpicked = false
+                enemySlotConfirmedChampions[tenthSlotIndex] = champWinner
             }
-
-            try { tenthCrop?.recycle() } catch (_: Throwable) {}
-        } else {
-            // Preservar la confirmación previa del 10º pick
+            AppLogger.d(TAG, "Google MediaPipe / LiteRT decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
+        } else if (targetAlreadyConfirmed) {
+            // Preservar la confirmación previa del 10º pick en el modelo de juego
             val cachedChamp = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] else enemySlotConfirmedChampions[tenthSlotIndex]
             if (cachedChamp != null) {
                 detectedTenthChampion = cachedChamp
@@ -1363,6 +1357,8 @@ object DraftVisionScanner {
                 }
             }
         }
+
+        try { tenthCrop?.recycle() } catch (_: Throwable) {}
         
         // 4.1 Aliados: Cada slot aliado (0..4) mapea determinísticamente a su carril (allySlotRolesCache)
         val alliesMap = mutableMapOf<LaneRole, Champion>()
