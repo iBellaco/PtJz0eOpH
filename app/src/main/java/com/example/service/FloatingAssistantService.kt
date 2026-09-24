@@ -2914,12 +2914,16 @@ private fun FloatingDraftCoachView(
         }
     }
 
-    val allySlots = remember(allies.toList(), allySummonerNames.toMap(), allySpells.toMap()) {
-        defaultRoles.mapIndexedNotNull { index, role ->
-            allies.getOrNull(index)?.let {
+    val allySlots = remember(allies.toList(), allySummonerNames.toMap(), allySpells.toMap(), DraftVisionScanner.allySlotRolesCache.toMap(), DraftVisionScanner.allySlotOcrLaneCache.toMap()) {
+        allies.mapIndexedNotNull { index, champ ->
+            val detectedRole = DraftVisionScanner.allySlotOcrLaneCache[index]
+                ?: DraftVisionScanner.allySlotRolesCache[index]
+                ?: champ?.primaryRole
+                ?: defaultRoles.getOrElse(index) { LaneRole.MID }
+            champ?.let {
                 DraftSlot(
                     champion = it,
-                    assignedRole = role,
+                    assignedRole = detectedRole,
                     summonerName = allySummonerNames[index],
                     spells = allySpells[index] ?: emptyList()
                 )
@@ -2927,18 +2931,28 @@ private fun FloatingDraftCoachView(
         }
     }
     val enemySlots = remember(enemies.toList(), enemyConfidences.toMap(), enemySpells.toMap(), enemySummonerNames.toMap()) {
-        defaultRoles.mapIndexedNotNull { index, role ->
-            enemies.getOrNull(index)?.let {
-                val conf = enemyConfidences[role] ?: 85
+        // En Wild Rift el orden de líneas del rival está oculto en el draft. Se deduce por afinidad de rol primario o flex
+        val availableRoles = defaultRoles.toMutableList()
+        val assignedList = mutableListOf<DraftSlot>()
+        enemies.filterNotNull().forEachIndexed { index, champ ->
+            val targetRole = if (availableRoles.contains(champ.primaryRole)) {
+                champ.primaryRole
+            } else {
+                champ.secondaryRoles.firstOrNull { availableRoles.contains(it) } ?: availableRoles.firstOrNull() ?: champ.primaryRole
+            }
+            availableRoles.remove(targetRole)
+            val conf = enemyConfidences[targetRole] ?: 85
+            assignedList.add(
                 DraftSlot(
-                    champion = it,
-                    assignedRole = role,
+                    champion = champ,
+                    assignedRole = targetRole,
                     confidence = conf,
                     summonerName = enemySummonerNames[index],
                     spells = enemySpells[index] ?: emptyList()
                 )
-            }
+            )
         }
+        assignedList
     }
 
     Column(
@@ -3430,6 +3444,16 @@ private fun OverlayVersusDraftBoard(
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.End
                                     )
+                                    if (enemyChamp.secondaryRoles.isNotEmpty()) {
+                                        val otherRoles = enemyChamp.secondaryRoles.joinToString("/") { it.shortName }
+                                        Text(
+                                            text = "FLEX ($otherRoles)",
+                                            color = HextechCyan,
+                                            fontSize = 6.5.sp,
+                                            fontWeight = FontWeight.Black,
+                                            textAlign = TextAlign.End
+                                        )
+                                    }
                                 }
                             } else {
                                 Text(

@@ -153,19 +153,12 @@ fun ScannerDebugOverlay(
                 style = Stroke(width = 1.2f)
             )
 
-            // Etiqueta del slot / rol aliado dinámico según la línea leída en el slot
-            val defaultAllyRole = when (sIdx) {
-                0 -> "Soporte"
-                1 -> "Dúo"
-                2 -> "Jungla"
-                3 -> "Mid"
-                4 -> "Top"
-                else -> null
-            }
-            val detectedRole = DraftVisionScanner.allySlotOcrLaneCache[sIdx]?.shortName
+            // Etiqueta del slot / rol aliado dinámico según la línea leída por OCR o campeón detectado
+            // En Wild Rift, el orden de líneas aliadas cambia y los jugadores pueden hacer swap en tiempo real
+            val detectedAllyRole = DraftVisionScanner.allySlotOcrLaneCache[sIdx]?.shortName
                 ?: DraftVisionScanner.allySlotRolesCache[sIdx]?.shortName
-                ?: defaultAllyRole
-            val slotLabel = if (detectedRole != null) "Aliado ${sIdx + 1} ($detectedRole)" else "Aliado ${sIdx + 1}"
+                ?: DraftVisionScanner.allySlotConfirmedChampions[sIdx]?.primaryRole?.shortName
+            val slotLabel = if (detectedAllyRole != null) "Aliado ${sIdx + 1} ($detectedAllyRole)" else "Aliado ${sIdx + 1}"
             val allyLabelX = (allyX - avatarRadius).coerceAtLeast(8f)
             drawContext.canvas.nativeCanvas.drawText(
                 slotLabel,
@@ -219,16 +212,27 @@ fun ScannerDebugOverlay(
                 style = Stroke(width = 1.2f)
             )
 
-            // Etiqueta del slot rival
-            val defaultEnemyRole = when (sIdx) {
-                0 -> "Top"
-                1 -> "Jungla"
-                2 -> "Mid"
-                3 -> "Dúo"
-                4 -> "Soporte"
-                else -> null
+            // Etiqueta del slot rival: en Wild Rift la línea del enemigo está oculta.
+            // No se muestra línea por defecto, pero si ya hay un campeón detectado se infiere su rol primario o flex
+            val enemyMatch = debugMatches["enemy_$sIdx"]
+            val confirmedEnemy = DraftVisionScanner.enemySlotConfirmedChampions[sIdx]
+            val enemyChamp = confirmedEnemy ?: enemyMatch?.let { name ->
+                com.example.data.WildRiftRepository.getChampionByName(name)
             }
-            val enemySlotLabel = if (defaultEnemyRole != null) "Rival ${sIdx + 1} ($defaultEnemyRole)" else "Rival ${sIdx + 1}"
+
+            val enemySlotLabel = if (enemyChamp != null) {
+                val primary = enemyChamp.primaryRole.shortName
+                val secondaries = enemyChamp.secondaryRoles.map { it.shortName }.filter { it != primary }
+                if (secondaries.isNotEmpty()) {
+                    val flexStr = (listOf(primary) + secondaries).distinct().joinToString("/")
+                    "Rival ${sIdx + 1} ($flexStr • Flex)"
+                } else {
+                    "Rival ${sIdx + 1} ($primary)"
+                }
+            } else {
+                "Rival ${sIdx + 1}"
+            }
+
             val enemyLabelX = (enemyX + avatarRadius).coerceAtMost(w - 10f)
             drawContext.canvas.nativeCanvas.drawText(
                 enemySlotLabel,
@@ -237,7 +241,6 @@ fun ScannerDebugOverlay(
                 enemyLabelPaint
             )
 
-            val enemyMatch = debugMatches["enemy_$sIdx"]
             if (enemyMatch != null) {
                 drawContext.canvas.nativeCanvas.drawText(
                     enemyMatch,

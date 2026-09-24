@@ -266,6 +266,7 @@ object DraftVisionScanner {
         isLegendaryRankedCache = false
         cachedUserSlotIndex = null
         allySlotRolesCache.clear()
+        allySlotOcrLaneCache.clear()
         allySummonerNamesCache.clear()
         allySlotConfirmedChampions.fill(null)
         enemySlotConfirmedChampions.fill(null)
@@ -571,7 +572,15 @@ object DraftVisionScanner {
                         if (role != null) {
                             detectedRoleInSlot = role
                             slot.explicitRole = role
+                            // Manejo de swaps dinámicos: si otro slot tenía este rol previamente, se reasigna
+                            for (otherSlot in 0..4) {
+                                if (otherSlot != i) {
+                                    if (allySlotRolesCache[otherSlot] == role) allySlotRolesCache.remove(otherSlot)
+                                    if (allySlotOcrLaneCache[otherSlot] == role) allySlotOcrLaneCache.remove(otherSlot)
+                                }
+                            }
                             allySlotRolesCache[i] = role
+                            allySlotOcrLaneCache[i] = role
                             textDiagnosticsList.add(
                                 TextBlockDiagnostic(
                                     text = line,
@@ -732,15 +741,16 @@ object DraftVisionScanner {
                 }
             }
 
-            // 2. Si quedan slots sin rol asignado y sin campeón, repartir los roles restantes por orden
+            // 2. Si quedan slots sin rol asignado pero con campeón confirmado, asignar temporalmente de los roles restantes
             for (i in 0..4) {
-                if (!allySlotRolesCache.containsKey(i) && availableRoles.isNotEmpty()) {
-                    val role = availableRoles.removeAt(0)
-                    allySlotRolesCache[i] = role
-                    allySlots[i].explicitRole = role
-                    AppLogger.d(TAG, "Slot Aliado $i asignado por descarte de rol -> ${role.shortName}")
-                }
-                if (allySlotRolesCache.containsKey(i)) {
+                if (!allySlotRolesCache.containsKey(i)) {
+                    val champ = allySlots[i].champion ?: allySlotConfirmedChampions[i]
+                    if (champ != null && availableRoles.isNotEmpty()) {
+                        val role = availableRoles.removeAt(0)
+                        allySlots[i].explicitRole = role
+                        AppLogger.d(TAG, "Slot Aliado $i con campeón asignado por descarte de rol -> ${role.shortName}")
+                    }
+                } else {
                     allySlots[i].explicitRole = allySlotRolesCache[i]
                 }
             }
