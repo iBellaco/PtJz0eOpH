@@ -5,6 +5,24 @@ import com.example.model.WildRiftItem
 object WildRiftItemsData {
     val list: List<WildRiftItem> = listOf(
         WildRiftItem(
+            id = "fiendhunter_bolts",
+            name = "Dardos rastreademonios",
+            nameEn = "Fiendhunter Bolts",
+            namePt = "Dardos Caça-Demônios",
+            category = "Objetos con Daños Físicos",
+            goldCost = 3000,
+            stats = "+25% Probabilidad de crítico • +45% Velocidad de ataque • +4% Velocidad de movimiento",
+            statsEn = "+25% Critical Rate • +45% Attack Speed • +4% Move Speed",
+            statsPt = "+25% Taxa Crítica • +45% Velocidade de Ataque • +4% Velocidade de Movimento",
+            passive = "Vigilia nocturna: Otorga 20 de velocidad de habilidad definitiva.\nAndanada inicial: Tras lanzar tu habilidad definitiva, tus siguientes 3 ataques en los próximos 8 s obtienen un 50% de velocidad de ataque y asestan impactos críticos, que infligen un 80% de tu daño de impacto crítico normal. Si un ataque fuera a infligir un impacto crítico, inflige un 120% de daño de impacto crítico normal.",
+            passiveEn = "Night Watch: Grants 20 Ultimate Ability Haste.\nInitial Volley: After casting your Ultimate, your next 3 attacks within 8s gain 50% Attack Speed and Critically Strike, dealing 80% of normal critical damage. If an attack would already Critically Strike, it deals 120% normal critical damage.",
+            passivePt = "Vigília Noturna: Concede 20 de Aceleração de Habilidade Ultimate.\nRajada Inicial: Após conjurar sua Ultimate, seus próximos 3 ataques dentro de 8s ganham 50% de Velocidade de Ataque e causam Acertos Críticos, causando 80% do dano crítico normal. Se um ataque já causaria acerto crítico, causa 120% do dano crítico normal.",
+            coachTip = "Objeto indispensable para tiradores dependientes de su definitiva (Vayne, Lucian, Twitch, Miss Fortune, Zeri, Samira, Ashe). Aumenta la velocidad de ataque y asegura daño crítico explosivo inmediato al iniciar con la definitiva.",
+            coachTipEn = "Essential item for marksmen who rely heavily on their ultimate (Vayne, Lucian, Twitch, Miss Fortune, Zeri, Samira, Ashe). Maximizes attack speed and guarantees rapid critical burst upon ultimate activation.",
+            coachTipPt = "Item essencial para atiradores dependentes da ultimate. Aumenta a velocidade de ataque e garante rajadas de dano crítico imediato após ativar a ultimate.",
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789129862_fiendhunter-bolts.webp"
+        ),
+        WildRiftItem(
             id = "bloodthirster",
             name = "La Sanguinaria",
             nameEn = "Bloodthirster",
@@ -3442,6 +3460,7 @@ object WildRiftItemsData {
             cleaned.contains("statikk") || cleaned.contains("estatikk") -> return list.find { it.id == "statikk_shiv" }
             cleaned.contains("helia") -> return list.find { it.id == "echoes_of_helia" }
             cleaned.contains("espejo hextech") || cleaned.contains("hextech mirror") || cleaned.contains("hexoptics") -> return list.find { it.id == "hextech_mirror" }
+            cleaned.contains("dardo") || cleaned.contains("rastreademonio") || cleaned.contains("fiendhunter") -> return list.find { it.id == "fiendhunter_bolts" }
         }
 
         return null

@@ -25,11 +25,11 @@
   },
   {
     "id": "lethal_tempo",
-    "name": "Cadencia Letal",
+    "name": "Compás Letal",
     "tree": "Precisión",
     "type": "Clave",
-    "description": "Los ataques básicos otorgan velocidad de ataque acumulable (hasta 6 veces). Al llegar al máximo, otorga alcance de ataque adicional y velocidad de ataque desbordante.",
-    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/lethaltempo/lethaltempotemp.png"
+    "description": "Velocidad de ataque y daño adaptable al impacto\n\nAl asestar ataques básicos a campeones enemigos, obtienes velocidad de ataque acumulable: 8% (cuerpo a cuerpo) o 6,4% (a distancia) durante 6 s (hasta 6 acumulaciones).\nCon el máximo de acumulaciones, los ataques disparan un proyectil que inflige de 9 a 30 (cuerpo a cuerpo) o de 6 a 24 (a distancia) de daño adaptable adicional al impacto.\nEscalado: El daño adaptable aumenta un 1% por cada 1% de velocidad de ataque adicional (cuerpo a cuerpo) o un 0,67% por cada 1% de velocidad de ataque adicional (a distancia).",
+    "iconUrl": "file:///android_asset/runes/lethal_tempo.png"
   },
   {
     "id": "summon_aery",

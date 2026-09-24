@@ -35,7 +35,7 @@ object LiteRTVisionClassifier {
 
     private const val TAG = "LiteRTVisionClassifier"
     private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
-    private const val EMBEDDING_DIM = 96     // Vector descriptor de 96 dimensiones
+    private const val EMBEDDING_DIM = 192    // Vector descriptor de 192 dimensiones de alta fidelidad
 
     // Umbral de confianza mínimo de MediaPipe / LiteRT (65% similitud de tensor con 3 frames estables)
     const val MIN_CONFIDENCE_THRESHOLD = 0.65f
@@ -138,8 +138,14 @@ object LiteRTVisionClassifier {
     }
 
     /**
-     * Extrae un vector de embedding normalizado de L2 a partir del mapa de píxeles del avatar.
-     * Simula la capa de compresión y pooling convolucional de Google MediaPipe / LiteRT Image Embedder.
+     * Extrae un vector de embedding normalizado de L2 (192 dimensiones) a partir del mapa de píxeles del avatar.
+     * Simula la arquitectura profunda convolucional de Google MediaPipe / LiteRT Image Embedder:
+     * - Grilla espacial 4x4 (64 dims color + 16 dims varianza de textura)
+     * - Canales HSV con peso de saturación + luminancia (32 dims)
+     * - Gradientes direccionales espaciales Sobel HOG (24 dims)
+     * - Perfiles radiales concéntricos (15 dims)
+     * - Asimetrías morfológicas horizontal y vertical (8 dims)
+     * - Balances cromáticos de alta gama y tonalidades frías/eléctricas (33 dims)
      */
     private fun extractTensorEmbedding(bitmap: Bitmap): FloatArray {
         val scaled = Bitmap.createScaledBitmap(bitmap, TENSOR_INPUT_SIZE, TENSOR_INPUT_SIZE, true)
@@ -151,22 +157,40 @@ object LiteRTVisionClassifier {
 
         val embedding = FloatArray(EMBEDDING_DIM)
         val center = TENSOR_INPUT_SIZE / 2f
-        // Radio efectivo al 42% del tamaño del tensor para aislar exclusivamente la fisonomía del campeón
-        // y descartar cualquier remanente del anillo del marco de selección (borde azul/rojo)
-        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.42f) * (TENSOR_INPUT_SIZE * 0.42f)
+        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.44f) * (TENSOR_INPUT_SIZE * 0.44f)
 
-        // Acumuladores por zonas espaciales (grilla 4x4) y componentes cromáticos
+        // 1. Acumuladores por zonas espaciales (grilla 4x4)
         val rZone = FloatArray(16)
         val gZone = FloatArray(16)
         val bZone = FloatArray(16)
         val lumZone = FloatArray(16)
+        val lumSqZone = FloatArray(16)
         val countZone = FloatArray(16)
 
-        // Histogramas HSV compactos (16 bins de Hue + 8 de Luminancia)
+        // 2. Canales cromáticos HSV
         val hueBins = FloatArray(16)
+        val satBins = FloatArray(8)
         val lumBins = FloatArray(8)
 
+        // 3. Perfiles radiales concéntricos (Centro / Medio / Borde)
+        val rRadial = FloatArray(3)
+        val gRadial = FloatArray(3)
+        val bRadial = FloatArray(3)
+        val lumRadial = FloatArray(3)
+        val lumSqRadial = FloatArray(3)
+        val countRadial = FloatArray(3)
+
+        // 4. Estadísticas globales
         var totalValidPixels = 0
+        var totalR = 0f
+        var totalG = 0f
+        var totalB = 0f
+        var totalLum = 0f
+        var highlightCount = 0f // Zonas de brillo intenso (rayos de Volibear / ojos brillantes / pelaje blanco)
+        var shadowCount = 0f    // Zonas de armadura oscura
+
+        // Matriz de luminancia 2D para cálculo de gradientes Sobel
+        val lumGrid = Array(TENSOR_INPUT_SIZE) { FloatArray(TENSOR_INPUT_SIZE) }
 
         for (y in 0 until TENSOR_INPUT_SIZE) {
             val dy = y - center
@@ -174,13 +198,16 @@ object LiteRTVisionClassifier {
             for (x in 0 until TENSOR_INPUT_SIZE) {
                 val dx = x - center
                 val distSq = dx * dx + dy * dy
-                if (distSq > maxRadiusSq) continue // Enmascaramiento circular de avatar
+                val dist = sqrt(distSq)
 
                 val px = pixels[y * TENSOR_INPUT_SIZE + x]
                 val r = Color.red(px) / 255.0f
                 val g = Color.green(px) / 255.0f
                 val b = Color.blue(px) / 255.0f
                 val lum = 0.299f * r + 0.587f * g + 0.114f * b
+                lumGrid[y][x] = lum
+
+                if (distSq > maxRadiusSq) continue // Enmascaramiento circular para descartar borde externo
 
                 val cellX = (x * 4) / TENSOR_INPUT_SIZE
                 val zoneIdx = (cellY * 4 + cellX).coerceIn(0, 15)
@@ -189,14 +216,39 @@ object LiteRTVisionClassifier {
                 gZone[zoneIdx] += g
                 bZone[zoneIdx] += b
                 lumZone[zoneIdx] += lum
+                lumSqZone[zoneIdx] += lum * lum
                 countZone[zoneIdx] += 1f
-                totalValidPixels++
 
-                // Espacio HSV
+                totalValidPixels++
+                totalR += r
+                totalG += g
+                totalB += b
+                totalLum += lum
+                if (lum > 0.72f) highlightCount += 1f
+                if (lum < 0.18f) shadowCount += 1f
+
+                // Regiones radiales concéntricas
+                val radialIdx = when {
+                    dist < TENSOR_INPUT_SIZE * 0.22f -> 0 // Centro facial
+                    dist < TENSOR_INPUT_SIZE * 0.35f -> 1 // Anillo medio
+                    else -> 2                             // Silueta exterior
+                }
+                rRadial[radialIdx] += r
+                gRadial[radialIdx] += g
+                bRadial[radialIdx] += b
+                lumRadial[radialIdx] += lum
+                lumSqRadial[radialIdx] += lum * lum
+                countRadial[radialIdx] += 1f
+
+                // Espacio HSV con ponderación por saturación
                 val maxC = max(r, max(g, b))
                 val minC = min(r, min(g, b))
                 val delta = maxC - minC
-                if (delta > 0.08f) {
+                val sat = if (maxC > 1e-4f) delta / maxC else 0f
+                val satBinIdx = (sat * 8f).toInt().coerceIn(0, 7)
+                satBins[satBinIdx] += 1f
+
+                if (delta > 0.05f) {
                     val hue = when {
                         maxC == r -> ((g - b) / delta) % 6f
                         maxC == g -> ((b - r) / delta) + 2f
@@ -204,45 +256,152 @@ object LiteRTVisionClassifier {
                     } * 60f
                     val positiveHue = if (hue < 0f) hue + 360f else hue
                     val hueBinIdx = ((positiveHue / 360f) * 16).toInt().coerceIn(0, 15)
-                    hueBins[hueBinIdx] += 1f
+                    // Ponderar por saturación para que colores puros tengan más impacto
+                    hueBins[hueBinIdx] += sat.coerceAtLeast(0.1f)
                 }
-                val lumBinIdx = (lum * 8).toInt().coerceIn(0, 7)
+
+                val lumBinIdx = (lum * 8f).toInt().coerceIn(0, 7)
                 lumBins[lumBinIdx] += 1f
             }
         }
 
         val normCount = totalValidPixels.toFloat().coerceAtLeast(1f)
+        var embIdx = 0
 
-        // Normalizar zonas espaciales (64 dimensiones)
+        // 1. Zonas espaciales 4x4 (Media RGB Lum + Varianza de Textura) = 80 dims
         for (i in 0 until 16) {
             val cnt = countZone[i].coerceAtLeast(1f)
-            embedding[i] = rZone[i] / cnt
-            embedding[16 + i] = gZone[i] / cnt
-            embedding[32 + i] = bZone[i] / cnt
-            embedding[48 + i] = lumZone[i] / cnt
-        }
+            val meanLum = lumZone[i] / cnt
+            val varLum = max(0f, (lumSqZone[i] / cnt) - (meanLum * meanLum))
+            embedding[embIdx++] = rZone[i] / cnt
+            embedding[embIdx++] = gZone[i] / cnt
+            embedding[embIdx++] = bZone[i] / cnt
+            embedding[embIdx++] = meanLum
+            embedding[embIdx++] = sqrt(varLum) // Desviación estándar (textura)
+        } // 16 * 5 = 80 dims
 
-        // Normalizar histograma de color (24 dimensiones)
+        // 2. Histogramas HSV y Luminancia = 32 dims
+        val hueSum = hueBins.sum().coerceAtLeast(1e-4f)
         for (i in 0 until 16) {
-            embedding[64 + i] = hueBins[i] / normCount
+            embedding[embIdx++] = hueBins[i] / hueSum
         }
         for (i in 0 until 8) {
-            embedding[80 + i] = lumBins[i] / normCount
+            embedding[embIdx++] = satBins[i] / normCount
+        }
+        for (i in 0 until 8) {
+            embedding[embIdx++] = lumBins[i] / normCount
+        } // 80 + 32 = 112 dims
+
+        // 3. Gradientes espaciales y descriptores de bordes (Sobel dx, dy en 4 cuadrantes) = 24 dims
+        val gradQuadDx = FloatArray(4)
+        val gradQuadDy = FloatArray(4)
+        val gradQuadDiag1 = FloatArray(4)
+        val gradQuadDiag2 = FloatArray(4)
+        val gradHist = FloatArray(8)
+        var totalGradMagnitude = 0f
+
+        for (y in 2 until TENSOR_INPUT_SIZE - 2) {
+            val quadY = if (y < center) 0 else 1
+            for (x in 2 until TENSOR_INPUT_SIZE - 2) {
+                val dx = (x - center).toFloat()
+                val dy = (y - center).toFloat()
+                if (dx * dx + dy * dy > maxRadiusSq) continue
+
+                val quadX = if (x < center) 0 else 1
+                val quadIdx = quadY * 2 + quadX
+
+                // Filtro Sobel 3x3 para dx y dy
+                val gx = (-lumGrid[y-1][x-1] + lumGrid[y-1][x+1] - 2*lumGrid[y][x-1] + 2*lumGrid[y][x+1] - lumGrid[y+1][x-1] + lumGrid[y+1][x+1])
+                val gy = (-lumGrid[y-1][x-1] - 2*lumGrid[y-1][x] - lumGrid[y-1][x+1] + lumGrid[y+1][x-1] + 2*lumGrid[y+1][x] + lumGrid[y+1][x+1])
+                val gMag = sqrt(gx * gx + gy * gy)
+                totalGradMagnitude += gMag
+
+                gradQuadDx[quadIdx] += abs(gx)
+                gradQuadDy[quadIdx] += abs(gy)
+                gradQuadDiag1[quadIdx] += abs(gx + gy) * 0.707f
+                gradQuadDiag2[quadIdx] += abs(gx - gy) * 0.707f
+
+                if (gMag > 0.04f) {
+                    val angle = (kotlin.math.atan2(gy.toDouble(), gx.toDouble()) * 180.0 / Math.PI + 360.0) % 360.0
+                    val bin = ((angle / 360.0) * 8.0).toInt().coerceIn(0, 7)
+                    gradHist[bin] += gMag
+                }
+            }
         }
 
-        // Las últimas 8 dimensiones representan estadísticas globales de contraste y balance cromático
-        val avgR = rZone.sum() / normCount
-        val avgG = gZone.sum() / normCount
-        val avgB = bZone.sum() / normCount
-        val avgLum = lumZone.sum() / normCount
-        embedding[88] = avgR
-        embedding[89] = avgG
-        embedding[90] = avgB
-        embedding[91] = avgLum
-        embedding[92] = abs(avgR - avgG)
-        embedding[93] = abs(avgR - avgB)
-        embedding[94] = abs(avgG - avgB)
-        embedding[95] = normCount / (TENSOR_INPUT_SIZE * TENSOR_INPUT_SIZE).toFloat()
+        val normGrad = totalGradMagnitude.coerceAtLeast(1e-4f)
+        for (q in 0 until 4) {
+            embedding[embIdx++] = gradQuadDx[q] / normGrad
+            embedding[embIdx++] = gradQuadDy[q] / normGrad
+            embedding[embIdx++] = gradQuadDiag1[q] / normGrad
+            embedding[embIdx++] = gradQuadDiag2[q] / normGrad
+        } // 16 dims
+        val gradHistSum = gradHist.sum().coerceAtLeast(1e-4f)
+        for (b in 0 until 8) {
+            embedding[embIdx++] = gradHist[b] / gradHistSum
+        } // 8 dims -> 112 + 24 = 136 dims
+
+        // 4. Perfiles radiales concéntricos (Centro / Medio / Silueta) = 15 dims
+        for (r in 0 until 3) {
+            val cnt = countRadial[r].coerceAtLeast(1f)
+            val meanLum = lumRadial[r] / cnt
+            val varLum = max(0f, (lumSqRadial[r] / cnt) - (meanLum * meanLum))
+            embedding[embIdx++] = rRadial[r] / cnt
+            embedding[embIdx++] = gRadial[r] / cnt
+            embedding[embIdx++] = bRadial[r] / cnt
+            embedding[embIdx++] = meanLum
+            embedding[embIdx++] = sqrt(varLum)
+        } // 136 + 15 = 151 dims
+
+        // 5. Asimetrías morfológicas (Izquierda vs Derecha, Superior vs Inferior) = 8 dims
+        val leftR = (rZone[0] + rZone[4] + rZone[8] + rZone[12]) / 4f
+        val rightR = (rZone[3] + rZone[7] + rZone[11] + rZone[15]) / 4f
+        val leftB = (bZone[0] + bZone[4] + bZone[8] + bZone[12]) / 4f
+        val rightB = (bZone[3] + bZone[7] + bZone[11] + bZone[15]) / 4f
+        val topLum = (lumZone[0] + lumZone[1] + lumZone[2] + lumZone[3]) / 4f
+        val bottomLum = (lumZone[12] + lumZone[13] + lumZone[14] + lumZone[15]) / 4f
+
+        embedding[embIdx++] = abs(leftR - rightR)
+        embedding[embIdx++] = abs(leftB - rightB)
+        embedding[embIdx++] = abs(topLum - bottomLum)
+        embedding[embIdx++] = (topLum - bottomLum) // Diferencia con signo (luz cenital vs armadura baja)
+        embedding[embIdx++] = abs((gZone[0] + gZone[4]) - (gZone[3] + gZone[7]))
+        embedding[embIdx++] = abs((lumZone[0] + lumZone[1]) - (lumZone[2] + lumZone[3]))
+        embedding[embIdx++] = (rRadial[0] - rRadial[2]) // Gradiente centro-borde
+        embedding[embIdx++] = (bRadial[0] - bRadial[2]) // Gradiente de energía azul centro-borde
+        // 151 + 8 = 159 dims
+
+        // 6. Balances cromáticos de alta gama, relámpago/pelaje frío y contrastes = 33 dims
+        val avgR = totalR / normCount
+        val avgG = totalG / normCount
+        val avgB = totalB / normCount
+        val avgLum = totalLum / normCount
+
+        embedding[embIdx++] = avgR
+        embedding[embIdx++] = avgG
+        embedding[embIdx++] = avgB
+        embedding[embIdx++] = avgLum
+        embedding[embIdx++] = abs(avgR - avgG)
+        embedding[embIdx++] = abs(avgR - avgB)
+        embedding[embIdx++] = abs(avgG - avgB)
+        embedding[embIdx++] = highlightCount / normCount // Razón de píxeles hiper-brillantes (fur/lightning)
+        embedding[embIdx++] = shadowCount / normCount    // Razón de sombras profundas
+        embedding[embIdx++] = (avgB - avgR) / (avgB + avgR + 0.01f) // Balance frío vs cálido
+        embedding[embIdx++] = (avgG + avgB - 2f * avgR).coerceIn(-2f, 2f) // Firma eléctrica cian/azul
+
+        // Features adicionales localizadas de alta especificidad en el centro
+        val centerZones = listOf(5, 6, 9, 10)
+        for (z in centerZones) {
+            val cnt = countZone[z].coerceAtLeast(1f)
+            embedding[embIdx++] = rZone[z] / cnt
+            embedding[embIdx++] = gZone[z] / cnt
+            embedding[embIdx++] = bZone[z] / cnt
+            embedding[embIdx++] = lumZone[z] / cnt
+            embedding[embIdx++] = (bZone[z] - rZone[z]) / cnt
+        } // 4 * 5 = 20 dims
+        embedding[embIdx++] = normCount / (TENSOR_INPUT_SIZE * TENSOR_INPUT_SIZE).toFloat()
+        embedding[embIdx++] = totalGradMagnitude / (normCount * 4f)
+        // 159 + 11 + 20 + 2 = 192 dims
 
         // Normalización L2 del vector embedding para cálculo directo de distancia coseno
         var sumSquares = 0.0f

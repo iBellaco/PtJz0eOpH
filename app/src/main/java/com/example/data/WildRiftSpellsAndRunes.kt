@@ -351,7 +351,7 @@ object WildRiftSpellsAndRunes {
             name = "Compás Letal",
             category = "Clave",
             iconUrl = "file:///android_asset/runes/lethal_tempo.png",
-            description = "Velocidad de ataque\n\nObtienes velocidad de ataque acumulable al atacar a campeones enemigos. Se acumula hasta 6 veces. Con el máximo de acumulaciones, obtienes alcance adicional y puedes superar el límite de velocidad de ataque.\nCada acumulación aumenta la velocidad de ataque un 6-14% (cuerpo a cuerpo) o un 3,5-8% (a distancia) durante 6 s.\nCon el máximo de acumulaciones, obtienes 25 (cuerpo a cuerpo) o 50 (a distancia) de alcance."
+            description = "Velocidad de ataque y daño adaptable al impacto\n\nAl asestar ataques básicos a campeones enemigos, obtienes velocidad de ataque acumulable: 8% (cuerpo a cuerpo) o 6,4% (a distancia) durante 6 s. Se acumula hasta 6 veces.\nCon el máximo de acumulaciones, los ataques también disparan un proyectil que inflige de 9 a 30 (cuerpo a cuerpo) o de 6 a 24 (a distancia) de daño adaptable adicional al impacto.\nEscalado de impacto: El daño adaptable adicional aumenta un 1% por cada 1% de velocidad de ataque adicional para campeones cuerpo a cuerpo, y un 0,67% por cada 1% de velocidad de ataque adicional para campeones a distancia."
         ),
         RuneItem(
             id = "fleet_footwork",

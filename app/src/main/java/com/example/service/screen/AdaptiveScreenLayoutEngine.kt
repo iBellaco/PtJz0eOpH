@@ -73,15 +73,15 @@ object AdaptiveScreenLayoutEngine {
         val adaptiveEnemyCenterX = if (baseConfig.enemyAvatarCenterX == 0.928f) 0.962f else baseConfig.enemyAvatarCenterX
 
         // Rango de búsqueda OCR adaptativo:
-        // El texto del slot aliado está estrictamente a la derecha del avatar (entre x ≈ 0.098 y x ≈ 0.240).
-        // Inicia justo después del aro del avatar aliado para no recortar fotos ni maestrías,
-        // y JAMÁS debe invadir el carrusel central de selección de campeones (x >= 0.26).
-        val allyOcrMinX = 0.098f
-        val allyOcrMaxX = 0.240f
+        // El texto del slot aliado está a la derecha del avatar (entre x ≈ 0.050 y x ≈ 0.280).
+        // Captura tanto nombres cortos ("MID", "APOYO") como nombres largos ("CALLE DEL BARÓN", "CALLE DEL DRAGÓN").
+        // JAMÁS debe invadir el carrusel central de selección de campeones (x >= 0.285).
+        val allyOcrMinX = 0.050f
+        val allyOcrMaxX = 0.280f
 
-        // El texto del slot rival está estrictamente a la izquierda del avatar rival (entre x ≈ 0.775 y x ≈ 0.935).
-        val enemyOcrMinX = 0.775f
-        val enemyOcrMaxX = 0.935f
+        // El texto del slot rival está a la izquierda del avatar rival (entre x ≈ 0.700 y x ≈ 0.950).
+        val enemyOcrMinX = 0.700f
+        val enemyOcrMaxX = 0.950f
 
         // Ajuste de las posiciones horizontales de la barra superior (los 10 avatares de la cabecera)
         // En tablets los avatares superiores están ligeramente más comprimidos hacia el centro; en ultrawide hacia los bordes.

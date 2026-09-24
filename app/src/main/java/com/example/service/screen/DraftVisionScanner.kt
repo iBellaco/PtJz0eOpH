@@ -522,16 +522,21 @@ object DraftVisionScanner {
                     detectedWords.add(text)
 
                     // Ignorar barra de bans superior (< 0.12f) y botones inferiores extremos (> 0.88f)
-                    // Permitir todos los 5 slots (desde y=0.15 hasta y=0.85)
+                    // Permitir todos los 5 slots (desde y=0.12 hasta y=0.88)
                     if (yRatio < 0.12f || yRatio > 0.880f) continue
 
-                    val isAllyCol = xRatio in calib.allyOcrMinX..calib.allyOcrMaxX
-                    val isEnemyCol = xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX
+                    val boxLeftRatio = if (box != null && width > 0) box.left.toFloat() / width.toFloat() else xRatio
+                    val boxRightRatio = if (box != null && width > 0) box.right.toFloat() / width.toFloat() else xRatio
+
+                    val isAllyCol = (xRatio in calib.allyOcrMinX..calib.allyOcrMaxX) ||
+                            (xRatio < 0.32f && (boxLeftRatio <= calib.allyOcrMaxX && boxRightRatio >= calib.allyOcrMinX))
+                    val isEnemyCol = (xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX) ||
+                            (xRatio > 0.68f && (boxLeftRatio <= calib.enemyOcrMaxX && boxRightRatio >= calib.enemyOcrMinX))
 
                     // 1.1 COLUMNA ALIADA (Texto a la derecha del avatar aliado)
                     if (isAllyCol) {
                         var bestSlot = -1
-                        var minDiff = 0.085f
+                        var minDiff = 0.095f
                         for (s in 0..4) {
                             val diff = kotlin.math.abs(yRatio - calib.allySlotYRatios[s])
                             if (diff < minDiff) {
@@ -546,7 +551,7 @@ object DraftVisionScanner {
                     // 1.2 COLUMNA ENEMIGA (Texto a la izquierda del avatar rival)
                     else if (isEnemyCol) {
                         var bestSlot = -1
-                        var minDiff = 0.085f
+                        var minDiff = 0.095f
                         for (s in 0..4) {
                             val diff = kotlin.math.abs(yRatio - calib.enemySlotYRatios[s])
                             if (diff < minDiff) {
