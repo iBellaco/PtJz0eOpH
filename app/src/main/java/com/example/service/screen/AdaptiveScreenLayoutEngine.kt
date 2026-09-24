@@ -102,7 +102,7 @@ object AdaptiveScreenLayoutEngine {
         return baseConfig.copy(
             allyAvatarCenterX = adaptiveAllyCenterX,
             enemyAvatarCenterX = adaptiveEnemyCenterX,
-            avatarDiameterRatio = 0.110f,
+            avatarDiameterRatio = baseConfig.avatarDiameterRatio,
             allyOcrMinX = allyOcrMinX,
             allyOcrMaxX = allyOcrMaxX,
             enemyOcrMinX = enemyOcrMinX,
@@ -125,10 +125,10 @@ object AdaptiveScreenLayoutEngine {
         config: VisionCalibrationConfig
     ): Rect {
         val sIdx = slotIndex.coerceIn(0, 4)
-        val cx = if (isAlly) (width * config.allyAvatarCenterX).toInt() else (width * config.enemyAvatarCenterX).toInt()
+        val cx = if (isAlly) (width * config.getAllySlotX(sIdx)).toInt() else (width * config.getEnemySlotX(sIdx)).toInt()
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cy = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
-        val diam = (height * config.avatarDiameterRatio).toInt().coerceAtLeast(32)
+        val diam = (height * config.getSlotDiameter(isAlly, sIdx)).toInt().coerceAtLeast(32)
         val radius = diam / 2
 
         val left = (cx - radius).coerceIn(0, (width - diam).coerceAtLeast(0))
@@ -153,11 +153,11 @@ object AdaptiveScreenLayoutEngine {
         config: VisionCalibrationConfig
     ): android.graphics.Bitmap? {
         val sIdx = slotIndex.coerceIn(0, 4)
-        val cxNominal = if (isAlly) (width * config.allyAvatarCenterX).toInt() else (width * config.enemyAvatarCenterX).toInt()
+        val cxNominal = if (isAlly) (width * config.getAllySlotX(sIdx)).toInt() else (width * config.getEnemySlotX(sIdx)).toInt()
         val yRatios = if (isAlly) config.allySlotYRatios else config.enemySlotYRatios
         val cyNominal = (height * yRatios.getOrElse(sIdx) { 0.2f + sIdx * 0.13f }).toInt()
 
-        val targetDiam = (height * config.avatarDiameterRatio).toInt().coerceAtLeast(32)
+        val targetDiam = (height * config.getSlotDiameter(isAlly, sIdx)).toInt().coerceAtLeast(32)
         val radius = targetDiam / 2
 
         // Ventana de búsqueda controlada alrededor de la posición nominal

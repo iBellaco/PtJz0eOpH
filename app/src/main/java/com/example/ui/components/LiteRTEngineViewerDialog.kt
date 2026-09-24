@@ -63,6 +63,25 @@ import coil.compose.AsyncImage
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.LiteRTVisionClassifier
 import com.example.service.screen.TenthPickDiagnosticManager
+import com.example.service.screen.VisionCalibrationConfig
+
+enum class CircleTarget(val title: String, val shortName: String) {
+    ALLY_0("Aliado 1 (TOP)", "A1 TOP"),
+    ALLY_1("Aliado 2 (JG)", "A2 JG"),
+    ALLY_2("Aliado 3 (MID)", "A3 MID"),
+    ALLY_3("Aliado 4 (ADC)", "A4 ADC"),
+    ALLY_4("Aliado 5 (SUP)", "A5 SUP"),
+    ENEMY_0("Rival 1", "R1"),
+    ENEMY_1("Rival 2", "R2"),
+    ENEMY_2("Rival 3", "R3"),
+    ENEMY_3("Rival 4", "R4"),
+    ENEMY_4("Rival 5", "R5"),
+    COL_ALLIES_X("Columna Aliados X", "Col Aliados"),
+    COL_ENEMIES_X("Columna Rivales X", "Col Rivales"),
+    GLOBAL_Y("Todos los Slots Y", "Slots Y"),
+    GLOBAL_SIZE("Tamaño Global (⌀)", "Tam Global"),
+    TOP_10TH_PICK("10º Pick (Barra Sup)", "10º Pick")
+}
 
 @Composable
 fun LiteRTEngineViewerDialog(
@@ -73,7 +92,101 @@ fun LiteRTEngineViewerDialog(
     val isDiagnosticEnabled by TenthPickDiagnosticManager.isDiagnosticModeEnabled.collectAsStateWithLifecycle()
     val savedFrames by TenthPickDiagnosticManager.savedFramesFlow.collectAsStateWithLifecycle()
     val cacheStats by TenthPickDiagnosticManager.cacheStatsFlow.collectAsStateWithLifecycle()
+    val calibrationConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
+    val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
+
     var inspectingFrame by remember { mutableStateOf<TenthPickDiagnosticManager.DiagnosticCropInfo?>(null) }
+    var selectedTarget by remember { mutableStateOf(CircleTarget.ALLY_0) }
+    var calibrationStep by remember { mutableStateOf(0.005f) } // 0.5% por defecto
+
+    fun modifyDetectionCircle(deltaX: Float = 0f, deltaY: Float = 0f, deltaSize: Float = 0f) {
+        val cur = calibrationConfig
+        val updated = when (selectedTarget) {
+            CircleTarget.ALLY_0 -> cur.copy(
+                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[0] = (it[0] + deltaX).coerceIn(0.01f, 0.45f) },
+                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[0] = (it[0] + deltaY).coerceIn(0.05f, 0.95f) },
+                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[0] = (it[0] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ALLY_1 -> cur.copy(
+                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[1] = (it[1] + deltaX).coerceIn(0.01f, 0.45f) },
+                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[1] = (it[1] + deltaY).coerceIn(0.05f, 0.95f) },
+                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[1] = (it[1] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ALLY_2 -> cur.copy(
+                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[2] = (it[2] + deltaX).coerceIn(0.01f, 0.45f) },
+                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[2] = (it[2] + deltaY).coerceIn(0.05f, 0.95f) },
+                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[2] = (it[2] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ALLY_3 -> cur.copy(
+                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[3] = (it[3] + deltaX).coerceIn(0.01f, 0.45f) },
+                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[3] = (it[3] + deltaY).coerceIn(0.05f, 0.95f) },
+                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[3] = (it[3] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ALLY_4 -> cur.copy(
+                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[4] = (it[4] + deltaX).coerceIn(0.01f, 0.45f) },
+                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[4] = (it[4] + deltaY).coerceIn(0.05f, 0.95f) },
+                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[4] = (it[4] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ENEMY_0 -> cur.copy(
+                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[0] = (it[0] + deltaX).coerceIn(0.55f, 0.99f) },
+                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[0] = (it[0] + deltaY).coerceIn(0.05f, 0.95f) },
+                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[0] = (it[0] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ENEMY_1 -> cur.copy(
+                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[1] = (it[1] + deltaX).coerceIn(0.55f, 0.99f) },
+                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[1] = (it[1] + deltaY).coerceIn(0.05f, 0.95f) },
+                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[1] = (it[1] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ENEMY_2 -> cur.copy(
+                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[2] = (it[2] + deltaX).coerceIn(0.55f, 0.99f) },
+                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[2] = (it[2] + deltaY).coerceIn(0.05f, 0.95f) },
+                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[2] = (it[2] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ENEMY_3 -> cur.copy(
+                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[3] = (it[3] + deltaX).coerceIn(0.55f, 0.99f) },
+                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[3] = (it[3] + deltaY).coerceIn(0.05f, 0.95f) },
+                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[3] = (it[3] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.ENEMY_4 -> cur.copy(
+                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[4] = (it[4] + deltaX).coerceIn(0.55f, 0.99f) },
+                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[4] = (it[4] + deltaY).coerceIn(0.05f, 0.95f) },
+                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[4] = (it[4] + deltaSize).coerceIn(0.03f, 0.30f) }
+            )
+            CircleTarget.COL_ALLIES_X -> {
+                val newX = (cur.allyAvatarCenterX + deltaX).coerceIn(0.01f, 0.45f)
+                cur.copy(
+                    allyAvatarCenterX = newX,
+                    allySlotXRatios = cur.allySlotXRatios.map { (it + deltaX).coerceIn(0.01f, 0.45f) }
+                )
+            }
+            CircleTarget.COL_ENEMIES_X -> {
+                val newX = (cur.enemyAvatarCenterX + deltaX).coerceIn(0.55f, 0.99f)
+                cur.copy(
+                    enemyAvatarCenterX = newX,
+                    enemySlotXRatios = cur.enemySlotXRatios.map { (it + deltaX).coerceIn(0.55f, 0.99f) }
+                )
+            }
+            CircleTarget.GLOBAL_Y -> cur.copy(
+                allySlotYRatios = cur.allySlotYRatios.map { (it + deltaY).coerceIn(0.05f, 0.95f) },
+                enemySlotYRatios = cur.enemySlotYRatios.map { (it + deltaY).coerceIn(0.05f, 0.95f) }
+            )
+            CircleTarget.GLOBAL_SIZE -> {
+                val newSize = (cur.avatarDiameterRatio + deltaSize).coerceIn(0.04f, 0.28f)
+                cur.copy(
+                    avatarDiameterRatio = newSize,
+                    allySlotDiameterRatios = cur.allySlotDiameterRatios.map { (it + deltaSize).coerceIn(0.04f, 0.28f) },
+                    enemySlotDiameterRatios = cur.enemySlotDiameterRatios.map { (it + deltaSize).coerceIn(0.04f, 0.28f) }
+                )
+            }
+            CircleTarget.TOP_10TH_PICK -> cur.copy(
+                topEnemy5XRatio = (cur.topEnemy5XRatio + deltaX).coerceIn(0.60f, 0.99f),
+                topAlly5XRatio = (cur.topAlly5XRatio + deltaX).coerceIn(0.01f, 0.40f),
+                topAvatarYRatio = (cur.topAvatarYRatio + deltaY).coerceIn(0.01f, 0.30f),
+                topAvatarDiameterRatio = (cur.topAvatarDiameterRatio + deltaSize).coerceIn(0.03f, 0.20f)
+            )
+        }
+        DraftVisionScanner.updateCalibration(context, updated)
+    }
 
     LaunchedEffect(Unit) {
         TenthPickDiagnosticManager.init(context)
@@ -475,6 +588,370 @@ fun LiteRTEngineViewerDialog(
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                             ) {
                                 Text("+5%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // -------------------------------------------------------------
+                // CONTROL DE CALIBRACIÓN DE CÍRCULOS DE DETECCIÓN (SLOTS Y 10º PICK)
+                // -------------------------------------------------------------
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                    border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.6f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Adjust,
+                                    contentDescription = null,
+                                    tint = Color(0xFF00E5FF),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "CALIBRACIÓN DE CÍRCULOS DE DETECCIÓN",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
+
+                            // Switch para alternar círculos en pantalla en vivo
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (isLiveVisionActive) "Ver en Pantalla: ON" else "Ver en Pantalla: OFF",
+                                    color = if (isLiveVisionActive) Color(0xFF00E5FF) else Color(0xFF94A3B8),
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Switch(
+                                    checked = isLiveVisionActive,
+                                    onCheckedChange = {
+                                        DraftVisionScanner.showCalibrationBoxes.value = it
+                                    },
+                                    modifier = Modifier.height(20.dp),
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color(0xFF00E5FF),
+                                        checkedTrackColor = Color(0xFF0C4A6E),
+                                        uncheckedThumbColor = Color(0xFF64748B),
+                                        uncheckedTrackColor = Color(0xFF334155)
+                                    )
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "Ajusta las coordenadas de los círculos de escaneo en la pantalla (arriba/abajo/izquierda/derecha), modifica el tamaño del radio y copia las coordenadas finales.",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 10.sp,
+                            lineHeight = 14.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Selector de Círculo Objetivo (Chips horizontales)
+                        Text(
+                            text = "1. Selecciona el círculo a ajustar:",
+                            color = Color(0xFFE2E8F0),
+                            fontSize = 9.5.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            CircleTarget.entries.forEach { target ->
+                                val isSel = selectedTarget == target
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isSel) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFF0F172A))
+                                        .border(
+                                            1.dp,
+                                            if (isSel) Color(0xFF38BDF8) else Color(0xFF334155),
+                                            RoundedCornerShape(6.dp)
+                                        )
+                                        .clickable { selectedTarget = target }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = target.title,
+                                        color = if (isSel) Color(0xFF38BDF8) else Color(0xFF94A3B8),
+                                        fontSize = 8.5.sp,
+                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Indicador de Coordenadas Actuales del Objetivo
+                        val currentCoordsText = when (selectedTarget) {
+                            CircleTarget.ALLY_0 -> "Slot 1 TOP: X=${(calibrationConfig.getAllySlotX(0) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[0] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 0) * 100).format(2)}%"
+                            CircleTarget.ALLY_1 -> "Slot 2 JG: X=${(calibrationConfig.getAllySlotX(1) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[1] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 1) * 100).format(2)}%"
+                            CircleTarget.ALLY_2 -> "Slot 3 MID: X=${(calibrationConfig.getAllySlotX(2) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[2] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 2) * 100).format(2)}%"
+                            CircleTarget.ALLY_3 -> "Slot 4 ADC: X=${(calibrationConfig.getAllySlotX(3) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[3] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 3) * 100).format(2)}%"
+                            CircleTarget.ALLY_4 -> "Slot 5 SUP: X=${(calibrationConfig.getAllySlotX(4) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[4] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 4) * 100).format(2)}%"
+                            CircleTarget.ENEMY_0 -> "Rival 1: X=${(calibrationConfig.getEnemySlotX(0) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[0] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 0) * 100).format(2)}%"
+                            CircleTarget.ENEMY_1 -> "Rival 2: X=${(calibrationConfig.getEnemySlotX(1) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[1] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 1) * 100).format(2)}%"
+                            CircleTarget.ENEMY_2 -> "Rival 3: X=${(calibrationConfig.getEnemySlotX(2) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[2] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 2) * 100).format(2)}%"
+                            CircleTarget.ENEMY_3 -> "Rival 4: X=${(calibrationConfig.getEnemySlotX(3) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[3] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 3) * 100).format(2)}%"
+                            CircleTarget.ENEMY_4 -> "Rival 5: X=${(calibrationConfig.getEnemySlotX(4) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[4] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 4) * 100).format(2)}%"
+                            CircleTarget.COL_ALLIES_X -> "Columna Aliada X: ${(calibrationConfig.allyAvatarCenterX * 100).format(2)}% (${calibrationConfig.allyAvatarCenterX}f)"
+                            CircleTarget.COL_ENEMIES_X -> "Columna Rival X: ${(calibrationConfig.enemyAvatarCenterX * 100).format(2)}% (${calibrationConfig.enemyAvatarCenterX}f)"
+                            CircleTarget.GLOBAL_Y -> "Desplazamiento Vertical Slots Y: 18.8% ~ 73.2%"
+                            CircleTarget.GLOBAL_SIZE -> "Diámetro Avatar Global: ${(calibrationConfig.avatarDiameterRatio * 100).format(2)}% (${calibrationConfig.avatarDiameterRatio}f)"
+                            CircleTarget.TOP_10TH_PICK -> "Top 10º Rival: X=${(calibrationConfig.topEnemy5XRatio * 100).format(2)}% | Y=${(calibrationConfig.topAvatarYRatio * 100).format(2)}% | ⌀=${(calibrationConfig.topAvatarDiameterRatio * 100).format(2)}%"
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFF0B132B))
+                                .border(1.dp, Color(0xFF0284C7).copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 5.dp)
+                        ) {
+                            Text(
+                                text = currentCoordsText,
+                                color = Color(0xFF38BDF8),
+                                fontSize = 9.sp,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Controles de Posición (D-Pad: Arriba, Abajo, Izquierda, Derecha) y Tamaño
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // D-Pad
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(start = 4.dp)
+                            ) {
+                                // Arriba
+                                Surface(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clickable { modifyDetectionCircle(deltaY = -calibrationStep) },
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFF0F172A),
+                                    border = BorderStroke(1.dp, Color(0xFF38BDF8))
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Arriba", tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
+                                    }
+                                }
+
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.padding(vertical = 3.dp)
+                                ) {
+                                    // Izquierda
+                                    Surface(
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clickable { modifyDetectionCircle(deltaX = -calibrationStep) },
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = Color(0xFF0F172A),
+                                        border = BorderStroke(1.dp, Color(0xFF38BDF8))
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Izquierda", tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
+                                        }
+                                    }
+
+                                    // Indicador de paso
+                                    Box(
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(Color(0xFF0C4A6E)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "±${(calibrationStep * 100).format(1)}%",
+                                            color = Color.White,
+                                            fontSize = 7.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    // Derecha
+                                    Surface(
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clickable { modifyDetectionCircle(deltaX = calibrationStep) },
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = Color(0xFF0F172A),
+                                        border = BorderStroke(1.dp, Color(0xFF38BDF8))
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Derecha", tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
+                                        }
+                                    }
+                                }
+
+                                // Abajo
+                                Surface(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clickable { modifyDetectionCircle(deltaY = calibrationStep) },
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFF0F172A),
+                                    border = BorderStroke(1.dp, Color(0xFF38BDF8))
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Abajo", tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
+                                    }
+                                }
+                            }
+
+                            // Botones de Tamaño (Hacer más pequeño / Hacer más grande) y Selector de Paso
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 12.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "Ajuste de Tamaño (Radio/⌀):",
+                                    color = Color(0xFFE2E8F0),
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Button(
+                                        onClick = { modifyDetectionCircle(deltaSize = calibrationStep) },
+                                        modifier = Modifier.weight(1f).height(32.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0369A1)),
+                                        shape = RoundedCornerShape(6.dp),
+                                        contentPadding = PaddingValues(0.dp)
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                            Spacer(modifier = Modifier.width(2.dp))
+                                            Text("Agrandar", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+
+                                    Button(
+                                        onClick = { modifyDetectionCircle(deltaSize = -calibrationStep) },
+                                        modifier = Modifier.weight(1f).height(32.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF881337)),
+                                        shape = RoundedCornerShape(6.dp),
+                                        contentPadding = PaddingValues(0.dp)
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.Remove, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                            Spacer(modifier = Modifier.width(2.dp))
+                                            Text("Reducir", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+
+                                // Selector de Paso
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Paso:", color = Color(0xFF94A3B8), fontSize = 8.sp)
+                                    val steps = listOf(
+                                        Pair("0.1%", 0.001f),
+                                        Pair("0.5%", 0.005f),
+                                        Pair("1.0%", 0.010f),
+                                        Pair("2.0%", 0.020f)
+                                    )
+                                    steps.forEach { (label, value) ->
+                                        val isSel = calibrationStep == value
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(if (isSel) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFF0F172A))
+                                                .border(0.6.dp, if (isSel) Color(0xFF38BDF8) else Color(0xFF334155), RoundedCornerShape(4.dp))
+                                                .clickable { calibrationStep = value }
+                                                .padding(vertical = 3.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = label,
+                                                color = if (isSel) Color(0xFF38BDF8) else Color(0xFF94A3B8),
+                                                fontSize = 7.5.sp,
+                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // BOTONES DE ACCIÓN: COPIAR COORDENADAS Y RESTABLECER
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("WildRift_Vision_Calibration", calibrationConfig.toFormattedCoordinatesString())
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "Coordenadas copiadas al portapapeles", Toast.LENGTH_LONG).show()
+                                },
+                                modifier = Modifier.weight(1.3f).height(34.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                                shape = RoundedCornerShape(6.dp),
+                                contentPadding = PaddingValues(horizontal = 6.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color.White, modifier = Modifier.size(13.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Copiar Coordenadas", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                                }
+                            }
+
+                            Button(
+                                onClick = {
+                                    DraftVisionScanner.resetCalibration(context)
+                                    Toast.makeText(context, "Calibración restablecida", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.weight(0.9f).height(34.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
+                                border = BorderStroke(1.dp, Color(0xFF334155)),
+                                shape = RoundedCornerShape(6.dp),
+                                contentPadding = PaddingValues(horizontal = 4.dp)
+                            ) {
+                                Text("Restablecer", color = Color(0xFF94A3B8), fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -1179,3 +1656,5 @@ private fun CandidateRowItem(
 }
 
 private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
+
+private fun Float.format(digits: Int): String = "%.${digits}f".format(java.util.Locale.US, this)

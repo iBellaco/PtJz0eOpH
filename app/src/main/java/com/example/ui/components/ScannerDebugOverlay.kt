@@ -123,13 +123,15 @@ fun ScannerDebugOverlay(
             // 1. Columna Aliada (Izquierda: Círculo de Avatar + Región OCR de Nombre)
             // -------------------------------------------------------------
             val allyY = h * currentConfig.allySlotYRatios.getOrElse(sIdx) { 0.188f + sIdx * 0.136f }
-            val allyX = w * currentConfig.allyAvatarCenterX
+            val allyX = w * currentConfig.getAllySlotX(sIdx)
+            val allyAvatarDiam = h * currentConfig.getSlotDiameter(true, sIdx)
+            val allyAvatarRad = allyAvatarDiam / 2f
             
-            // Círculo del avatar del slot aliado (ajustado en x ≈ 0.073f)
+            // Círculo del avatar del slot aliado
             drawCircle(
                 color = Color(0xCC00E5FF),
                 center = Offset(allyX, allyY),
-                radius = avatarRadius,
+                radius = allyAvatarRad,
                 style = Stroke(width = 2.5f)
             )
 
@@ -143,8 +145,8 @@ fun ScannerDebugOverlay(
             // Región de detección OCR para el nombre de campeón y carril aliado
             val allyOcrLeft = w * currentConfig.allyOcrMinX
             val allyOcrRight = w * currentConfig.allyOcrMaxX
-            val allyOcrTop = allyY - (avatarDiameter * 0.40f)
-            val allyOcrHeight = avatarDiameter * 0.80f
+            val allyOcrTop = allyY - (allyAvatarDiam * 0.40f)
+            val allyOcrHeight = allyAvatarDiam * 0.80f
 
             drawRoundRect(
                 color = Color(0x8800E5FF),
@@ -154,17 +156,15 @@ fun ScannerDebugOverlay(
                 style = Stroke(width = 1.2f)
             )
 
-            // Etiqueta del slot / rol aliado dinámico según la línea leída por OCR o campeón detectado
-            // En Wild Rift, el orden de líneas aliadas cambia y los jugadores pueden hacer swap en tiempo real
-            val detectedAllyRole = DraftVisionScanner.allySlotOcrLaneCache[sIdx]?.shortName
-                ?: DraftVisionScanner.allySlotRolesCache[sIdx]?.shortName
-                ?: DraftVisionScanner.allySlotConfirmedChampions[sIdx]?.primaryRole?.shortName
+            // Etiqueta del slot / rol aliado dinámico: único 1 a 1 por equipo sin duplicados
+            val detectedAllyRole = DraftVisionScanner.allySlotRolesCache[sIdx]?.shortName
+                ?: DraftVisionScanner.allySlotOcrLaneCache[sIdx]?.shortName
             val slotLabel = if (detectedAllyRole != null) "Aliado ${sIdx + 1} ($detectedAllyRole)" else "Aliado ${sIdx + 1}"
-            val allyLabelX = (allyX - avatarRadius).coerceAtLeast(8f)
+            val allyLabelX = (allyX - allyAvatarRad).coerceAtLeast(8f)
             drawContext.canvas.nativeCanvas.drawText(
                 slotLabel,
                 allyLabelX,
-                allyY - avatarRadius - 6f,
+                allyY - allyAvatarRad - 6f,
                 allyLabelPaint
             )
             
@@ -182,13 +182,15 @@ fun ScannerDebugOverlay(
             // 2. Columna Rival (Derecha: Círculo de Avatar + Región OCR)
             // -------------------------------------------------------------
             val enemyY = h * currentConfig.enemySlotYRatios.getOrElse(sIdx) { 0.188f + sIdx * 0.136f }
-            val enemyX = w * currentConfig.enemyAvatarCenterX
+            val enemyX = w * currentConfig.getEnemySlotX(sIdx)
+            val enemyAvatarDiam = h * currentConfig.getSlotDiameter(false, sIdx)
+            val enemyAvatarRad = enemyAvatarDiam / 2f
             
-            // Círculo del avatar del slot rival (en x ≈ 0.960f)
+            // Círculo del avatar del slot rival
             drawCircle(
                 color = Color(0xCCFF1744),
                 center = Offset(enemyX, enemyY),
-                radius = avatarRadius,
+                radius = enemyAvatarRad,
                 style = Stroke(width = 2.5f)
             )
 
@@ -202,8 +204,8 @@ fun ScannerDebugOverlay(
             // Región OCR para nombre de rival
             val enemyOcrLeft = w * currentConfig.enemyOcrMinX
             val enemyOcrRight = w * currentConfig.enemyOcrMaxX
-            val enemyOcrTop = enemyY - (avatarDiameter * 0.40f)
-            val enemyOcrHeight = avatarDiameter * 0.80f
+            val enemyOcrTop = enemyY - (enemyAvatarDiam * 0.40f)
+            val enemyOcrHeight = enemyAvatarDiam * 0.80f
 
             drawRoundRect(
                 color = Color(0x88FF1744),
