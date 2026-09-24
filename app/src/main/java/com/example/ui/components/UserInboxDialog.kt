@@ -334,6 +334,11 @@ fun UserInboxDialog(
 
             val isLocallyMarkedRead = localReadIds.contains(id) || localReadIds.contains(reportId)
 
+            // Si es un reporte propio y soporte aún no ha respondido (el usuario envió el reporte y está en espera):
+            if (isSupport && !hasSupportReply && !hasNewAdminReply) {
+                return true
+            }
+
             // Si el equipo de soporte respondió y el usuario no lo ha leído después de esa respuesta:
             if (isSupport && (hasNewAdminReply || isLastReplyFromSupport)) {
                 if (hasNewAdminReply) {

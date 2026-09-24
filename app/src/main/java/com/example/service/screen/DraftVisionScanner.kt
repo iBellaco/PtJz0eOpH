@@ -141,6 +141,8 @@ object DraftVisionScanner {
         enemies: Array<Champion?>
     ): List<DraftPickTurn> {
         val active = mutableListOf<DraftPickTurn>()
+        val totalConfirmed = allies.count { it != null } + enemies.count { it != null }
+
         for (turn in sequence) {
             val isPicked = if (turn.isAlly) {
                 allies.getOrNull(turn.slotIndex) != null
@@ -152,12 +154,27 @@ object DraftVisionScanner {
                 break
             }
         }
+
+        // Si ya hay 7 o más selecciones confirmadas en total y el 10º pick no ha sido confirmado,
+        // incluir explícitamente el 10º turno en activeTurns para que el escaneo dirigido lo procese
+        val tenthTurn = sequence.lastOrNull()
+        if (tenthTurn != null && totalConfirmed >= 7) {
+            val isTenthPicked = if (tenthTurn.isAlly) {
+                allies.getOrNull(tenthTurn.slotIndex) != null
+            } else {
+                enemies.getOrNull(tenthTurn.slotIndex) != null
+            }
+            if (!isTenthPicked && !active.any { it.turnNumber == tenthTurn.turnNumber }) {
+                active.add(tenthTurn)
+            }
+        }
+
         return active
     }
 
     suspend fun scanActiveSlotDirectly(bitmap: Bitmap, turn: DraftPickTurn, context: Context? = null): ScannedSlotInfo? {
         if (turn.turnNumber == 10) {
-            val calib = VisionCalibrationConfig()
+            val calib = calibrationConfig
             val w = bitmap.width
             val h = bitmap.height
             val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
@@ -176,7 +193,7 @@ object DraftVisionScanner {
                 cropBitmap = crop,
                 isAlly = turn.isAlly,
                 confirmedChampionIds = confirmedChampIds,
-                confirmedPicksCount = if (confirmedCount < 9) 9 else confirmedCount,
+                confirmedPicksCount = confirmedCount,
                 slotIndex = turn.slotIndex,
                 context = context
             )
@@ -1194,7 +1211,7 @@ object DraftVisionScanner {
         val targetSlot = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
         val targetAlreadyConfirmed = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] != null else enemySlotConfirmedChampions[tenthSlotIndex] != null
 
-        val shouldRunTenthPick = (confirmedPicksCount >= 8 || (tenthIsAlly && enemyPickedCount >= 4) || (!tenthIsAlly && allyPickedCount >= 4)) && 
+        val shouldRunTenthPick = (confirmedPicksCount >= 7 || (tenthIsAlly && enemyPickedCount >= 3) || (!tenthIsAlly && allyPickedCount >= 4)) && 
                 targetSlot.champion == null && !targetAlreadyConfirmed
 
         if (shouldRunTenthPick) {
@@ -1250,8 +1267,24 @@ object DraftVisionScanner {
 
                 try { tenthCrop?.recycle() } catch (_: Throwable) {}
             }
+        } else if (targetAlreadyConfirmed) {
+            // Preservar la confirmación del 10º pick y mantenerlo en el resultado sin sobreescribir el reporte del motor
+            val cachedChamp = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] else enemySlotConfirmedChampions[tenthSlotIndex]
+            if (cachedChamp != null) {
+                detectedTenthChampion = cachedChamp
+                isTenthConfirmed = true
+                if (tenthIsAlly) {
+                    allySlots[tenthSlotIndex].champion = cachedChamp
+                    allySlots[tenthSlotIndex].confidencePercent = 100
+                    allySlots[tenthSlotIndex].isLikelyUnpicked = false
+                } else {
+                    enemySlots[tenthSlotIndex].champion = cachedChamp
+                    enemySlots[tenthSlotIndex].confidencePercent = 100
+                    enemySlots[tenthSlotIndex].isLikelyUnpicked = false
+                }
+            }
         } else {
-            // Si hay menos de 9 selecciones confirmadas, notificar al motor para que el visor informe al usuario
+            // Solo si aún no ha sido confirmado el 10º pick, notificar estado al motor para actualizar el visor
             LiteRTVisionClassifier.executeTenthPickInference(
                 cropBitmap = null,
                 isAlly = tenthIsAlly,

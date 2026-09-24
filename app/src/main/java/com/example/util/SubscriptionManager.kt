@@ -76,18 +76,25 @@ object SubscriptionManager {
             return
         }
 
-        val userSpecificUnread = if (hasUnreadFromDoc && docUnreadCount > 0) {
-            maxOf(docUnreadCount, unreadMessagesSubcollection + unreadSupportReports + unreadPrivateArray)
-        } else {
-            maxOf(unreadMessagesSubcollection + unreadSupportReports, unreadPrivateArray)
-        }
+        val actualPersonalUnread = (unreadMessagesSubcollection + unreadSupportReports + unreadPrivateArray).coerceAtLeast(0)
+        _unreadMessagesCount.value = actualPersonalUnread
 
-        val total = if (_userRole.value == "moderador" || _userRole.value == "admin" || AuthManager.isCurrentUserAdmin()) {
-            userSpecificUnread + unreadModeratorSupportReports
-        } else {
-            userSpecificUnread
+        if (actualPersonalUnread == 0 && (hasUnreadFromDoc || docUnreadCount > 0)) {
+            hasUnreadFromDoc = false
+            docUnreadCount = 0
+            scope.launch {
+                try {
+                    FirebaseFirestore.getInstance().collection("users").document(user.uid)
+                        .set(
+                            mapOf(
+                                "hasUnreadMessages" to false,
+                                "unreadMessagesCount" to 0
+                            ),
+                            SetOptions.merge()
+                        )
+                } catch (_: Exception) {}
+            }
         }
-        _unreadMessagesCount.value = total.coerceAtLeast(0)
     }
 
     fun setUnreadMessagesCount(count: Int) {
@@ -97,7 +104,7 @@ object SubscriptionManager {
         unreadPrivateArray = clean
         docUnreadCount = clean
         hasUnreadFromDoc = (clean > 0)
-        recalculateUnreadCount()
+        _unreadMessagesCount.value = clean
     }
 
     init {
@@ -263,23 +270,39 @@ object SubscriptionManager {
                 recalculateUnreadCount()
             }
 
+            fun isReportUnreadForUser(doc: com.google.firebase.firestore.DocumentSnapshot): Boolean {
+                val status = doc.getString("status") ?: ""
+                val isClosed = status.equals("SOLUCIONADO", true) || 
+                               status.equals("CERRADO", true) || 
+                               status.equals("CLOSED", true) || 
+                               status.equals("RESUELTO", true) ||
+                               status.equals("ELIMINADO", true) ||
+                               status.equals("DELETED", true)
+                if (isClosed) return false
+
+                val hasNewAdminReply = doc.getBoolean("hasNewAdminReply") == true || doc.getBoolean("hasNewReply") == true
+                if (hasNewAdminReply) return true
+
+                val userRead = doc.getBoolean("userRead")
+                if (userRead == true) return false
+
+                val adminReply = doc.getString("adminReply") ?: ""
+                @Suppress("UNCHECKED_CAST")
+                val conversation = doc.get("conversation") as? List<Map<String, Any>> ?: emptyList()
+                val lastEntry = conversation.lastOrNull()
+                val lastSenderRole = (lastEntry?.get("senderRole") as? String)?.uppercase() ?: ""
+                val isLastReplyFromSupport = lastSenderRole in listOf("SUPPORT", "ADMIN", "MODERADOR") || adminReply.isNotBlank()
+
+                // Si soporte respondió y el usuario aún no lo ha marcado como leído:
+                return isLastReplyFromSupport && (userRead == false || doc.getBoolean("isRead") == false)
+            }
+
             supportReportsListener = db.collection("support_reports")
                 .whereEqualTo("userId", user.uid)
                 .addSnapshotListener { snapshot, error ->
                     if (error == null && snapshot != null) {
                         for (doc in snapshot.documents) {
-                            val isRead = doc.getBoolean("isRead")
-                            val userRead = doc.getBoolean("userRead")
-                            val hasNewAdminReply = doc.getBoolean("hasNewAdminReply") == true
-                            val hasNewReply = doc.getBoolean("hasNewReply") == true
-                            val status = doc.getString("status") ?: ""
-                            val isClosed = status.equals("SOLUCIONADO", true) || status.equals("CERRADO", true) || status.equals("CLOSED", true) || status.equals("RESUELTO", true)
-                            val isUnread = if (isClosed) {
-                                false
-                            } else {
-                                hasNewAdminReply || hasNewReply || (userRead == false) || (isRead == false && (doc.contains("adminReply") || doc.contains("conversation")))
-                            }
-                            unreadSupportMap[doc.id] = isUnread
+                            unreadSupportMap[doc.id] = isReportUnreadForUser(doc)
                         }
                         checkAndUpdateSupportUnread()
                     }
@@ -292,18 +315,7 @@ object SubscriptionManager {
                     .addSnapshotListener { snapshot, error ->
                         if (error == null && snapshot != null) {
                             for (doc in snapshot.documents) {
-                                val isRead = doc.getBoolean("isRead")
-                                val userRead = doc.getBoolean("userRead")
-                                val hasNewAdminReply = doc.getBoolean("hasNewAdminReply") == true
-                                val hasNewReply = doc.getBoolean("hasNewReply") == true
-                                val status = doc.getString("status") ?: ""
-                                val isClosed = status.equals("SOLUCIONADO", true) || status.equals("CERRADO", true) || status.equals("CLOSED", true) || status.equals("RESUELTO", true)
-                                val isUnread = if (isClosed) {
-                                    false
-                                } else {
-                                    hasNewAdminReply || hasNewReply || (userRead == false) || (isRead == false && (doc.contains("adminReply") || doc.contains("conversation")))
-                                }
-                                unreadSupportMap[doc.id] = isUnread
+                                unreadSupportMap[doc.id] = isReportUnreadForUser(doc)
                             }
                             checkAndUpdateSupportUnread()
                         }

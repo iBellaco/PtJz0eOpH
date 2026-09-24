@@ -23,13 +23,13 @@ object WildRiftChampionRunesMeta {
         // --- TOP / BARON LANE ---
         "aatrox" to ChampionRunePair(
             opt1Title = "Duelo & Conquistador (Meta)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos"),
             opt2Title = "Anti-Tanque & Sustain",
             option2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Triunfo")
         ),
         "darius" to ChampionRunePair(
             opt1Title = "Conquistador & Sangrado (Meta)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos"),
             opt2Title = "Movilidad & Persecución (Fantasmal)",
             option2 = listOf("Irrupción de Fase", "Celeridad", "Capa del Nimbo", "Trascendencia", "Triunfo")
         ),
@@ -37,11 +37,11 @@ object WildRiftChampionRunesMeta {
             opt1Title = "Garras & Demoler (Meta)",
             opt2Title = "Conquistador & All-in",
             option1 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Triunfo"),
-            option2 = listOf("Conquistador", "Brutal", "Leyenda: Tenacidad", "Último Esfuerzo", "Inquebrantable")
+            option2 = listOf("Conquistador", "Brutal", "Leyenda: Velocidad", "Último Esfuerzo", "Inquebrantable")
         ),
         "sett" to ChampionRunePair(
             opt1Title = "Conquistador & Traspaso (Meta)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Fuerzas Renovadas"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Fuerzas Renovadas"),
             opt2Title = "Garras & Gran Escudo",
             option2 = listOf("Garras del Inmortal", "Demoler", "Revestimiento de Huesos", "Sobrecrecimiento", "Brutal")
         ),
@@ -71,13 +71,13 @@ object WildRiftChampionRunesMeta {
         ),
         "riven" to ChampionRunePair(
             opt1Title = "Conquistador & Combos (Meta)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos"),
             opt2Title = "Primer Golpe (Burst Letal)",
             option2 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Trascendencia")
         ),
         "renekton" to ChampionRunePair(
             opt1Title = "Conquistador & Furia (Meta)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Golpe de Gracia", "Revestimiento de Huesos"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Golpe de Gracia", "Revestimiento de Huesos"),
             opt2Title = "Garras del Inmortal (Sustain)",
             option2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Brutal")
         ),
@@ -131,19 +131,19 @@ object WildRiftChampionRunesMeta {
         ),
         "volibear" to ChampionRunePair(
             opt1Title = "Compás Letal (Tormenta H2)",
-            option1 = listOf("Compás Letal", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos"),
+            option1 = listOf("Compás Letal", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos"),
             opt2Title = "Garras del Inmortal (Tanque)",
             option2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Triunfo")
         ),
         "nasus" to ChampionRunePair(
             opt1Title = "Pies Veloces (Sustain H1 Farm)",
-            option1 = listOf("Pies Veloces", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Fuerzas Renovadas"),
+            option1 = listOf("Pies Veloces", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Fuerzas Renovadas"),
             opt2Title = "Garras del Inmortal (Demoler Torres)",
             option2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Banda de Maná")
         ),
         "urgot" to ChampionRunePair(
             opt1Title = "Conquistador (Ametralladora H2)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos"),
             opt2Title = "Garras del Inmortal (Escalado)",
             option2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Triunfo")
         ),
@@ -155,13 +155,13 @@ object WildRiftChampionRunesMeta {
         ),
         "mordekaiser" to ChampionRunePair(
             opt1Title = "Conquistador (Reino de la Muerte)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos"),
             opt2Title = "Garras del Inmortal (Sustain)",
             option2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Trascendencia")
         ),
         "singed" to ChampionRunePair(
             opt1Title = "Conquistador (Veneno Continuo)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Celeridad"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Celeridad"),
             opt2Title = "Irrupción de Fase (Velocidad Extrema)",
             option2 = listOf("Irrupción de Fase", "Celeridad", "Capa del Nimbo", "Banda de Maná", "Fuerzas Renovadas")
         ),
@@ -169,11 +169,11 @@ object WildRiftChampionRunesMeta {
             opt1Title = "Garras del Inmortal (Vida Infinita)",
             option1 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Inquebrantable"),
             opt2Title = "Pies Veloces (Kiteo de Cuchillas)",
-            option2 = listOf("Pies Veloces", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Fuerzas Renovadas")
+            option2 = listOf("Pies Veloces", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Fuerzas Renovadas")
         ),
         "ambessa" to ChampionRunePair(
             opt1Title = "Conquistador & Deslizamientos (Meta)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Impacto Repentino"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Impacto Repentino"),
             opt2Title = "Primer Golpe (Iniciación Definitiva Letal)",
             option2 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Triunfo")
         ),
@@ -443,7 +443,7 @@ object WildRiftChampionRunesMeta {
         // --- JUNGLE ---
         "lee_sin" to ChampionRunePair(
             opt1Title = "Conquistador & Onda Sónica (Meta)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Golpe de Gracia", "Impacto Repentino"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Golpe de Gracia", "Impacto Repentino"),
             opt2Title = "Electrocutar (Insec Burst Rápido)",
             option2 = listOf("Electrocutar", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Triunfo")
         ),
@@ -451,7 +451,7 @@ object WildRiftChampionRunesMeta {
             opt1Title = "Primer Golpe (Asesino Sombrío)",
             option1 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Trascendencia"),
             opt2Title = "Conquistador (Rhaast / Darkin)",
-            option2 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos")
+            option2 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos")
         ),
         "viego" to ChampionRunePair(
             opt1Title = "Conquistador & Posesiones (Meta)",
@@ -467,7 +467,7 @@ object WildRiftChampionRunesMeta {
         ),
         "vi" to ChampionRunePair(
             opt1Title = "Conquistador & Rompebóvedas (Meta)",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Golpe de Gracia", "Revestimiento de Huesos"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Golpe de Gracia", "Revestimiento de Huesos"),
             opt2Title = "Electrocutar (Gankeo de Asalto Definitiva)",
             option2 = listOf("Electrocutar", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Triunfo")
         ),
@@ -499,17 +499,17 @@ object WildRiftChampionRunesMeta {
             opt1Title = "Soberano Gélido & Maldición (Meta)",
             option1 = listOf("Soberano Gélido", "Fuente de Vida", "Revestimiento de Huesos", "Sobrecrecimiento", "Trascendencia"),
             opt2Title = "Conquistador (Llantos AP Quemadura)",
-            option2 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Golpe de Gracia", "Fuerzas Renovadas")
+            option2 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Golpe de Gracia", "Fuerzas Renovadas")
         ),
         "hecarim" to ChampionRunePair(
             opt1Title = "Conquistador & Carga Devastadora",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Golpe de Gracia", "Celeridad"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Golpe de Gracia", "Celeridad"),
             opt2Title = "Irrupción de Fase (Velocidad AD)",
             option2 = listOf("Irrupción de Fase", "Celeridad", "Capa del Nimbo", "Trascendencia", "Triunfo")
         ),
         "jarvan_iv" to ChampionRunePair(
             opt1Title = "Conquistador & Estandarte Demaciano",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Golpe de Gracia", "Revestimiento de Huesos"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Golpe de Gracia", "Revestimiento de Huesos"),
             opt2Title = "Electrocutar (Combo H3-H1-Definitiva Burst)",
             option2 = listOf("Electrocutar", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Triunfo")
         ),
@@ -517,7 +517,7 @@ object WildRiftChampionRunesMeta {
             opt1Title = "Compás Letal & Golpe de 3 Garras",
             option1 = listOf("Compás Letal", "Triunfo", "Leyenda: Presteza", "Golpe de Gracia", "Revestimiento de Huesos"),
             opt2Title = "Conquistador (Tanque Guardia Definitiva)",
-            option2 = listOf("Conquistador", "Brutal", "Leyenda: Tenacidad", "Último Esfuerzo", "Fuerzas Renovadas")
+            option2 = listOf("Conquistador", "Brutal", "Leyenda: Velocidad", "Último Esfuerzo", "Fuerzas Renovadas")
         ),
         "wukong" to ChampionRunePair(
             opt1Title = "Conquistador & Asesino / Duelista (Jungla)",
@@ -539,7 +539,7 @@ object WildRiftChampionRunesMeta {
         ),
         "warwick" to ChampionRunePair(
             opt1Title = "Compás Letal & Sed de Sangre (Meta)",
-            option1 = listOf("Compás Letal", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos"),
+            option1 = listOf("Compás Letal", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos"),
             opt2Title = "Garras del Inmortal (Mordisco H1 Sustain)",
             option2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Triunfo")
         ),
@@ -551,7 +551,7 @@ object WildRiftChampionRunesMeta {
         ),
         "lillia" to ChampionRunePair(
             opt1Title = "Conquistador AP & Polvo de Sueños",
-            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Golpe de Gracia", "Celeridad"),
+            option1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Golpe de Gracia", "Celeridad"),
             opt2Title = "Irrupción de Fase (Velocidad de Salto)",
             option2 = listOf("Irrupción de Fase", "Celeridad", "Capa del Nimbo", "Trascendencia", "Triunfo")
         ),
@@ -729,7 +729,7 @@ object WildRiftChampionRunesMeta {
             }
             // Luchador AD / Bruiser
             else -> {
-                opt1 = listOf("Conquistador", "Triunfo", "Leyenda: Tenacidad", "Último Esfuerzo", "Revestimiento de Huesos")
+                opt1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos")
                 opt2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Brutal")
             }
         }

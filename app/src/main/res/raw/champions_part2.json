@@ -1010,7 +1010,7 @@
       "Orianna"
     ],
     "tacticalAdvice": "Haz bolas de nieve gigantes (H2) desde el río para emboscar a gran velocidad y asegura dragones con Voracidad (H1) + Castigo.",
-    "recommendedRunes": "MEJORA GLACIAL,MEJORA GLACIAL,INQUEBRANTABLE,FUERZAS RENOVADAS,SOBRECRECIMIENTO,LEYENDA: TENACIDAD",
+    "recommendedRunes": "MEJORA GLACIAL,MEJORA GLACIAL,INQUEBRANTABLE,FUERZAS RENOVADAS,SOBRECRECIMIENTO,LEYENDA: VELOCIDAD",
     "runeTreeDetails": "Brujería: Capa del Nimbo • Celeridad • Caminar sobre Agua • Triunfo",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/phaserush/phaserush.png",
     "recommendedSpells": [],
@@ -1072,7 +1072,7 @@
     "primaryRunes": [
       "Soberano Gélido"
     ],
-    "build2Runes": "Mejora Glacial,Inquebrantable,Fuerzas Renovadas,Sobrecrecimiento,Leyenda: Tenacidad",
+    "build2Runes": "Mejora Glacial,Inquebrantable,Fuerzas Renovadas,Sobrecrecimiento,Leyenda: Velocidad",
     "build2Spells": [],
     "builds": [
       {
@@ -1099,7 +1099,7 @@
           "Inquebrantable",
           "Fuerzas renovadas",
           "Sobrecrecimiento",
-          "Leyenda: Tenacidad"
+          "Leyenda: Velocidad"
         ],
         "spells": [
           "Castigo",
@@ -1141,7 +1141,7 @@
     ],
     "tacticalAdvice": "Activa Ragnarok (H4) para volverte imparable e ignorar cualquier control de masas mientras persigues al tirador enemigo.",
     "recommendedRunes": "CONQUISTADOR,CONQUISTADOR,TRIUNFO,DERRIBADO,LEYENDA: LINAJE,CAPA DEL NIMBO",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -1537,7 +1537,7 @@
     ],
     "tacticalAdvice": "Carga tu Salto con Escudo (H2) con 5 cargas de pasiva para aturdir y aplicar tres golpes instantáneos. Rota con Gran Descarga Celestial (H4).",
     "recommendedRunes": "Primer Golpe,Impacto Repentino,Asalto Encadenado,Colección De Globos Oculares,Brutal",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/presstheattack/presstheattack.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -2389,7 +2389,7 @@
     ],
     "tacticalAdvice": "Entra con 50+ de furia para romper escudos y aturdir durante 1.5s con Depredador Implacable (H2) potenciado.",
     "recommendedRunes": "Conquistador,Coraje Del Coloso,Revestimiento De Huesos,Sobrecrecimiento,Brutal",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -2651,7 +2651,7 @@
     ],
     "tacticalAdvice": "Cancela las animaciones de Alas Rotas (H1) con ataques básicos (Fast H1 combo) para duplicar tu velocidad de daño.",
     "recommendedRunes": "Conquistador",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Revestimiento de Hueso",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Revestimiento de Hueso",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -3542,7 +3542,7 @@
     ],
     "tacticalAdvice": "Guarda Rompecaras (H2) para cuando tu barra de Agallas esté al máximo y desata el puñetazo de daño verdadero central.",
     "recommendedRunes": "Conquistador,Inquebrantable,Fuerzas Renovadas,Sobrecrecimiento,Último Esfuerzo",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -3804,7 +3804,7 @@
     ],
     "tacticalAdvice": "Asegura todos los dragones para potenciar pasivamente tus estadísticas y habilidades dracónicas.",
     "recommendedRunes": "Conquistador,Brutal,Derribado,Leyenda: Linaje,Sobrecrecimiento",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Cazador de Ojos",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Cazador de Ojos",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -3934,7 +3934,7 @@
     ],
     "tacticalAdvice": "Haz proxy farming tras las torres enemigas para atraer al jungla y corre dejando tu Rastro de Veneno (H1) activo.",
     "recommendedRunes": "Irrupción De Fase,Inquebrantable,Fuerzas Renovadas,Perseverancia,Capa Del Nimbo",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -4874,7 +4874,7 @@
     ],
     "tacticalAdvice": "Mantén Ascensión Demoníaca (H4) activa manteniéndote en rango de los campeones enemigos mientras drenas vida perpetuamente.",
     "recommendedRunes": "Irrupción De Fase,Axioma Arcano,Celeridad,Se Avecina Tormenta,Sobrecrecimiento",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -6245,8 +6245,8 @@
       "Malphite"
     ],
     "tacticalAdvice": "Gira alrededor del objetivo para disparar todas las escopetas de tus piernas con Purga (H2) y ejecuta con Miedo de Ultratumba (H4).",
-    "recommendedRunes": "Fortalecimiento,Brutal,Derribado,Leyenda: Tenacidad,Sobrecrecimiento",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "recommendedRunes": "Fortalecimiento,Brutal,Derribado,Leyenda: Velocidad,Sobrecrecimiento",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/presstheattack/presstheattack.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -6307,7 +6307,7 @@
     "primaryRunes": [
       "Conquistador"
     ],
-    "build2Runes": "Fortalecimiento,Brutal,Derribado,Leyenda: Tenacidad,Sobrecrecimiento",
+    "build2Runes": "Fortalecimiento,Brutal,Derribado,Leyenda: Velocidad,Sobrecrecimiento",
     "build2Spells": [],
     "builds": [
       {
@@ -6335,7 +6335,7 @@
         "secondaryRunes": [
           "Brutal",
           "Derribado",
-          "Leyenda: Tenacidad",
+          "Leyenda: Velocidad",
           "Sobrecrecimiento"
         ],
         "spells": [
@@ -7531,7 +7531,7 @@
       "Jarvan IV"
     ],
     "tacticalAdvice": "Carga tu Transfusión (H1) para desatar el mordisco potenciado y usa Charco de Sangre (H2) para esquivar definitivas enemigas.",
-    "recommendedRunes": "Irrupción De Fase,Fervor De Batalla,Derribado,Leyenda: Tenacidad,Trascendencia",
+    "recommendedRunes": "Irrupción De Fase,Fervor De Batalla,Derribado,Leyenda: Velocidad,Trascendencia",
     "runeTreeDetails": "Brujería: Banda de Maná • Trascendencia • Tormenta Creciente • Triunfo",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/sorcery/phaserush/phaserush.png",
     "recommendedSpells": [],
@@ -7593,7 +7593,7 @@
     "primaryRunes": [
       "Cometa Arcano"
     ],
-    "build2Runes": "Irrupción De Fase,Fervor De Batalla,Derribado,Leyenda: Tenacidad,Trascendencia",
+    "build2Runes": "Irrupción De Fase,Fervor De Batalla,Derribado,Leyenda: Velocidad,Trascendencia",
     "build2Spells": [],
     "builds": [
       {
@@ -7619,7 +7619,7 @@
         "secondaryRunes": [
           "Fervor de batalla",
           "Derribado",
-          "Leyenda: Tenacidad",
+          "Leyenda: Velocidad",
           "Trascendencia"
         ],
         "spells": [
@@ -7896,7 +7896,7 @@
     ],
     "tacticalAdvice": "Sigue el rastro de Cacería de Sangre (H2) para emboscar enemigos bajos de vida y suprime con Opresión Infinita (H4).",
     "recommendedRunes": "Fortalecimiento,Brutal,Golpe De Gracia,Leyenda: Presteza,Sobrecrecimiento",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],

@@ -89,8 +89,8 @@ object WildRiftSpellsAndRunes {
             "último esfuerzo", "ultimo esfuerzo", "last stand" -> "Último Esfuerzo"
             "derribado", "cut down", "cazagigantes", "giant slayer" -> "Derribado"
             "golpe de gracia", "coup de grace" -> "Golpe de Gracia"
-            "leyenda: velocidad", "leyenda velocidad", "velocidad", "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Velocidad"
-            "leyenda: tenacidad", "leyenda tenacidad", "tenacidad", "legend tenacity" -> "Leyenda: Tenacidad"
+            "leyenda: velocidad", "leyenda velocidad", "velocidad", "legend haste", "haste", "leyenda: tenacidad", "leyenda tenacidad", "tenacidad", "legend tenacity" -> "Leyenda: Velocidad"
+            "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Presteza"
             "leyenda: linaje", "leyenda linaje", "linaje", "legend bloodline" -> "Leyenda: Linaje"
             // Dominación / Domination aliases
             "golpe bajo", "cheap shot", "cheapshot" -> "Golpe Bajo"
@@ -170,8 +170,8 @@ object WildRiftSpellsAndRunes {
             "último esfuerzo", "ultimo esfuerzo", "last stand" -> "Último Esfuerzo"
             "derribado", "cut down", "cazagigantes", "giant slayer" -> "Derribado"
             "golpe de gracia", "coup de grace" -> "Golpe de Gracia"
-            "leyenda: velocidad", "leyenda velocidad", "velocidad", "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Velocidad"
-            "leyenda: tenacidad", "leyenda tenacidad", "tenacidad", "legend tenacity" -> "Leyenda: Tenacidad"
+            "leyenda: velocidad", "leyenda velocidad", "velocidad", "legend haste", "haste", "leyenda: tenacidad", "leyenda tenacidad", "tenacidad", "legend tenacity" -> "Leyenda: Velocidad"
+            "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Presteza"
             "leyenda: linaje", "leyenda linaje", "linaje", "legend bloodline" -> "Leyenda: Linaje"
             // Dominación / Domination aliases
             "golpe bajo", "cheap shot", "cheapshot" -> "Golpe Bajo"
@@ -534,17 +534,17 @@ object WildRiftSpellsAndRunes {
         ),
         RuneItem(
             id = "legend_alacrity",
-            name = "Leyenda: Velocidad",
+            name = "Leyenda: Presteza",
             category = "Precisión",
             iconUrl = "file:///android_asset/runes/legend_alacrity.webp",
-            description = "Otorga 0 de velocidad de habilidades al principio de la partida. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de habilidades adicionales. La bonificación total tiene un límite de 15 de velocidad de habilidades."
+            description = "Otorga un 3% de velocidad de ataque adicional. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de ataque adicionales hasta un 18%."
         ),
         RuneItem(
-            id = "legend_tenacity",
-            name = "Leyenda: Tenacidad",
+            id = "legend_haste",
+            name = "Leyenda: Velocidad",
             category = "Precisión",
-            iconUrl = "file:///android_asset/runes/legend_tenacity.webp",
-            description = "Otorga un 3% de tenacidad y un 3% de resistencia a las ralentizaciones. Asesina a monstruos, súbditos y campeones enemigos o consigue asistencias para obtener hasta un 15% de tenacidad adicional y un 20% de resistencia a las ralentizaciones."
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1790113533_9105.webp",
+            description = "Otorga 0 de velocidad de habilidades al principio de la partida. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de habilidades adicionales. La bonificación total tiene un límite de 15 de velocidad de habilidades."
         ),
         RuneItem(
             id = "legend_bloodline",

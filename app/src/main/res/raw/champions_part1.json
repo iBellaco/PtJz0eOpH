@@ -340,7 +340,7 @@
     ],
     "tacticalAdvice": "Entra y sal de tu Velo del Crepúsculo (H2) para activar tu pasiva repetidamente y maximizar tu daño sostenido.",
     "recommendedRunes": "Pies Veloces,Inquebrantable,Revestimiento De Huesos,Sobrecrecimiento,Impacto Repentino",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -418,7 +418,7 @@
           "Morellonomicón",
           "Velo de alma en pena"
         ],
-        "runes": "Pies veloces,Triunfo,Golpe de Gracia,Leyenda: Tenacidad,Impacto Repentino",
+        "runes": "Pies veloces,Triunfo,Golpe de Gracia,Leyenda: Velocidad,Impacto Repentino",
         "spells": [
           "Prender",
           "Destello"
@@ -451,7 +451,7 @@
           "Morellonomicón",
           "Velo de alma en pena"
         ],
-        "runes": "Conquistador,Triunfo,Golpe de Gracia,Leyenda: Tenacidad,Fuerzas Renovadas",
+        "runes": "Conquistador,Triunfo,Golpe de Gracia,Leyenda: Velocidad,Fuerzas Renovadas",
         "spells": [
           "Destello",
           "Prender"
@@ -2881,7 +2881,7 @@
     ],
     "tacticalAdvice": "Acumula 5 marcas de Hemorragia para desatar Furia Noxiana y encadenar ejecuciones con tu Guillotina (H4).",
     "recommendedRunes": "CONQUISTADOR,CONQUISTADOR,AXIOMA ARCANO,CELERIDAD,CAPA DEL NIMBO,SOBRECRECIMIENTO",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -4688,7 +4688,7 @@
     ],
     "tacticalAdvice": "Silencia al enemigo con Golpe Decisivo (H1) para impedir que use habilidades defensivas antes de girar con Juicio (H3) y rematar con tu Habilidad Definitiva (H4).",
     "recommendedRunes": "Garras del inmortal,Garras del inmortal,DEMOLER,FUERZAS RENOVADAS,SOBRECRECIMIENTO,CAPA DEL NIMBO",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -4850,7 +4850,7 @@
       "Malphite"
     ],
     "tacticalAdvice": "Gestiona tu barra de Furia para entrar en forma Mega Gnar justo cuando inicie la pelea en el río y estampar a los rivales contra el muro.",
-    "recommendedRunes": "PIES VELOCES,PIES VELOCES,INQUEBRANTABLE,Revestimiento de huesos,PERSEVERANCIA,LEYENDA: TENACIDAD",
+    "recommendedRunes": "PIES VELOCES,PIES VELOCES,INQUEBRANTABLE,Revestimiento de huesos,PERSEVERANCIA,LEYENDA: VELOCIDAD",
     "runeTreeDetails": "Valor: Fuente de Vida • Revestimiento de Hueso • Sobrecrecimiento • Triunfo",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/graspoftheundying/graspoftheundying.png",
     "recommendedSpells": [],
@@ -4941,7 +4941,7 @@
           "Inquebrantable",
           "Revestimiento de huesos",
           "Perseverancia",
-          "Leyenda: Tenacidad"
+          "Leyenda: Velocidad"
         ],
         "spells": [
           "Prender",
@@ -5015,7 +5015,7 @@
           "Inquebrantable",
           "Revestimiento de huesos",
           "Sobrecrecimiento",
-          "Leyenda: Tenacidad"
+          "Leyenda: Velocidad"
         ],
         "spells": [
           "Prender",
@@ -5529,7 +5529,7 @@
     ],
     "tacticalAdvice": "Carga tu Carga Devastadora (H3) con Fantasmal activo para embestir a toda velocidad y aterrorizar con tu estampida (Definitiva).",
     "recommendedRunes": "Irrupción De Fase,Axioma Arcano,Trascendencia,Capa Del Nimbo,Sobrecrecimiento",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Celeridad",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Celeridad",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -6257,7 +6257,7 @@
     ],
     "tacticalAdvice": "Encierra a campeones sin salto dentro de tu Cataclismo (H4) y combínalo con tu H3+H1 para un derribo aéreo garantizado.",
     "recommendedRunes": "Conquistador,Inquebrantable,Revestimiento De Huesos,Perseverancia,Impacto Repentino",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -7700,7 +7700,7 @@
     ],
     "tacticalAdvice": "Espera a que el rival gaste sus controles de masa principales antes de saltar y canalizar Loto Mortal (H4).",
     "recommendedRunes": "Cosecha Oscura,Impacto Repentino,Asalto Encadenado,Colección De Globos Oculares,Revestimiento De Huesos",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Impacto Repentino",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Impacto Repentino",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -7958,7 +7958,7 @@
     ],
     "tacticalAdvice": "Elige Forma Asesina Sombría contra escuadras frágiles o Rhaast contra composiciones con más de 2 tanques/luchadores.",
     "recommendedRunes": "Conquistador,Triunfo,Derribado,Leyenda: Linaje,Sobrecrecimiento",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Impacto Repentino",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Impacto Repentino",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -8642,7 +8642,7 @@
     ],
     "tacticalAdvice": "Aprovecha el Insec (H1 + H2 centinela + H4) para patear al tirador enemigo hacia la boca de tu equipo.",
     "recommendedRunes": "Conquistador,Triunfo,Derribado,Leyenda: Presteza,Sobrecrecimiento",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Impacto Repentino",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Impacto Repentino",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -8905,7 +8905,7 @@
     ],
     "tacticalAdvice": "Mantén las 4 cargas de velocidad con tus habilidades para bailar alrededor de las peleas y dormir con tu Nana (H4).",
     "recommendedRunes": "Irrupción De Fase,Inquebrantable,Revestimiento De Huesos,Sobrecrecimiento,Trascendencia",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Celeridad",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Celeridad",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],
@@ -10479,7 +10479,7 @@
     ],
     "tacticalAdvice": "Lleva al jungla o carry rival al Reino de las Sombras (H4) para robar sus estadísticas y asegurar el Dragón o Barón.",
     "recommendedRunes": "CONQUISTADOR,CONQUISTADOR,INQUEBRANTABLE,FUERZAS RENOVADAS,SOBRECRECIMIENTO,TRASCENDENCIA",
-    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Tenacidad • Segundo Aire",
+    "runeTreeDetails": "Precisión: Triunfo • Golpe de Gracia • Leyenda: Velocidad • Segundo Aire",
     "primaryRuneIconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/conqueror/conqueror.png",
     "recommendedSpells": [],
     "spellsIcons": [],

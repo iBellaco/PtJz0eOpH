@@ -1140,8 +1140,8 @@ private fun FloatingOverlayContent(
                     val isDraftComplete = (confirmedPicksCount >= 10)
                     val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
-                    // Durante turnos activos (incluyendo el 10º pick), priorizar la ruta de escaneo dirigido ultra rápido (<30ms)
-                    val isGlobalSyncCycle = isDraftComplete || (!hasActiveTurns && loopCycleCounter % 4L == 0L) || (loopCycleCounter % 8L == 0L && !isTenthPickActive)
+                    // Garantizar ciclo de sincronización global periódico (cada 4 ciclos) para evitar bloqueos del motor visual
+                    val isGlobalSyncCycle = isDraftComplete || !hasActiveTurns || (loopCycleCounter % 4L == 0L)
 
                     val dynamicLoopDelay = when {
                         isDraftComplete -> 800L

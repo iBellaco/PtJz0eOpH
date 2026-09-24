@@ -3165,7 +3165,7 @@ private fun RunesTab() {
                             "derribado" -> " Obligatorio si el equipo enemigo tiene muchos tanques y campeones con mucha vida extra."
                             "golpe de gracia" -> " Para asesinos o ADC que buscan asegurar la baja (ejecutar) a enemigos que intenten escapar a baja vida."
                             "leyenda: presteza" -> " Escoge esta runa si priorizas maximizar tu DPS (daño por segundo) a través de ataques básicos rápidos."
-                            "leyenda: tenacidad" -> " Vital si el equipo enemigo está lleno de control de masas (Stun, Inmovilización, etc). Evitará que te eliminen encadenado."
+                            "leyenda: velocidad", "leyenda: tenacidad" -> " Otorga velocidad de habilidades progresiva (hasta +15) al eliminar súbditos, monstruos o campeones para lanzar habilidades más seguido."
                             "leyenda: linaje" -> " Si tu campeón no armará Robo de Vida temprano pero necesita sustento para sobrevivir y farmear."
                             "último esfuerzo" -> " Excelente en duelistas como Olaf o Tryndamere que se vuelven más letales cuando se acercan a la muerte."
                             else -> " Runa situacional: Úsala para complementar el estilo de juego de tu campeón frente a esta composición específica."

@@ -289,8 +289,30 @@ object LiteRTVisionClassifier {
     ): Pair<Champion, Int>? = withContext(Dispatchers.Default) {
         val slotDesc = if (isAlly) "Aliado 5 (10º Pick)" else "Rival 5 (10º Pick)"
 
-        // REGLA FUNDAMENTAL: Requiere que las selecciones 1 a 9 estén presentes
-        if (confirmedPicksCount < 9) {
+        // Si no hay recorte válido disponible:
+        if (cropBitmap == null || cropBitmap.isRecycled || cropBitmap.width < 16 || cropBitmap.height < 16) {
+            resetStabilityTracker()
+            val isWaitingEarly = confirmedPicksCount < 8
+            val status = if (isWaitingEarly) EngineStatus.WAITING_FOR_PICKS_1_TO_9 else EngineStatus.WAITING_FOR_TENTH_PICK
+            val decisionReason = if (isWaitingEarly) {
+                "Esperando selecciones 1 al 9 completas ($confirmedPicksCount/9 detectados)"
+            } else {
+                "Slot final en espera del 10º pick ($confirmedPicksCount/9 detectados)"
+            }
+            _reportFlow.value = LiteRTInferenceReport(
+                status = status,
+                pickedChampion = null,
+                confidencePercent = 0,
+                decisionReason = decisionReason,
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                cropBitmap = null
+            )
+            return@withContext null
+        }
+
+        // Si el draft se encuentra en fases muy tempranas (< 6 selecciones confirmadas en total):
+        if (confirmedPicksCount < 6) {
             resetStabilityTracker()
             _reportFlow.value = LiteRTInferenceReport(
                 status = EngineStatus.WAITING_FOR_PICKS_1_TO_9,
@@ -299,18 +321,7 @@ object LiteRTVisionClassifier {
                 decisionReason = "Esperando selecciones 1 al 9 completas ($confirmedPicksCount/9 detectados)",
                 slotDescription = slotDesc,
                 evaluatedPicksCount = confirmedPicksCount,
-                cropBitmap = try { cropBitmap?.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
-            )
-            return@withContext null
-        }
-
-        if (cropBitmap == null || cropBitmap.isRecycled || cropBitmap.width < 16 || cropBitmap.height < 16) {
-            resetStabilityTracker()
-            _reportFlow.value = LiteRTInferenceReport(
-                status = EngineStatus.NO_DETECTION,
-                decisionReason = "Recorte de imagen no disponible o inválido para inferencia",
-                slotDescription = slotDesc,
-                evaluatedPicksCount = confirmedPicksCount
+                cropBitmap = try { cropBitmap.copy(Bitmap.Config.ARGB_8888, false) } catch (_: Throwable) { null }
             )
             return@withContext null
         }

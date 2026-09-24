@@ -105,19 +105,19 @@
   },
   {
     "id": "legend_alacrity",
+    "name": "Leyenda: Presteza",
+    "tree": "Precisión",
+    "type": "Secundaria",
+    "description": "Otorga un 3% de velocidad de ataque adicional. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de ataque adicionales hasta un 18%.",
+    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/legendalacrity/legendalacrity.png"
+  },
+  {
+    "id": "legend_haste",
     "name": "Leyenda: Velocidad",
     "tree": "Precisión",
     "type": "Secundaria",
     "description": "Otorga 0 de velocidad de habilidades al principio de la partida. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de habilidades adicionales. La bonificación total tiene un límite de 15 de velocidad de habilidades.",
-    "iconUrl": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/precision/legendalacrity/legendalacrity.png"
-  },
-  {
-    "id": "legend_tenacity",
-    "name": "Leyenda: Tenacidad",
-    "tree": "Precisión",
-    "type": "Secundaria",
-    "description": "Otorga un 3% de tenacidad y un 3% de resistencia a las ralentizaciones. Asesina a monstruos, súbditos y campeones enemigos o consigue asistencias para obtener hasta un 15% de tenacidad adicional y un 20% de resistencia a las ralentizaciones.",
-    "iconUrl": "https://i.postimg.cc/8z6xhxrx/legend-tenacity.webp"
+    "iconUrl": "https://wr-meta.com/uploads/posts/2026-09/1790113533_9105.webp"
   },
   {
     "id": "legend_bloodline",
