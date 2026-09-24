@@ -542,7 +542,7 @@ object DraftVisionScanner {
                     val isAllyCol = (xRatio in calib.allyOcrMinX..calib.allyOcrMaxX) ||
                             (xRatio < 0.32f && (boxLeftRatio <= calib.allyOcrMaxX && boxRightRatio >= calib.allyOcrMinX))
                     val isEnemyCol = (xRatio in calib.enemyOcrMinX..calib.enemyOcrMaxX) ||
-                            (xRatio > 0.68f && (boxLeftRatio <= calib.enemyOcrMaxX && boxRightRatio >= calib.enemyOcrMinX))
+                            (xRatio > 0.78f && (boxLeftRatio <= calib.enemyOcrMaxX && boxRightRatio >= calib.enemyOcrMinX))
 
                     // 1.1 COLUMNA ALIADA (Texto a la derecha del avatar aliado)
                     if (isAllyCol) {

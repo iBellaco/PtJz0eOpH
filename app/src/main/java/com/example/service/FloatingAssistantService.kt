@@ -1143,10 +1143,11 @@ private fun FloatingOverlayContent(
                     val isDraftComplete = (confirmedPicksCount >= 10)
                     val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
-                    // Garantizar ciclo de sincronización global periódico (cada 4 ciclos) para evitar bloqueos del motor visual
-                    val isGlobalSyncCycle = isDraftComplete || !hasActiveTurns || (loopCycleCounter % 4L == 0L)
+                    // Garantizar ciclo de sincronización global periódico o continuo si el visor está abierto
+                    val isGlobalSyncCycle = showLiteRTViewer || isDraftComplete || !hasActiveTurns || (loopCycleCounter % 4L == 0L)
 
                     val dynamicLoopDelay = when {
+                        showLiteRTViewer -> 50L // 20 Hz ultra-fluido en vivo para pruebas del usuario
                         isDraftComplete -> 800L
                         !isGlobalSyncCycle && hasActiveTurns -> 50L
                         isTenthPickActive -> 60L
@@ -1795,6 +1796,7 @@ private fun FloatingOverlayContent(
                                     modifier = Modifier
                                         .size(26.dp)
                                         .clickable {
+                                            autoScanEnabled = true
                                             showLiteRTViewer = true
                                         }
                                         .testTag("btn_debug_overlay"),
@@ -2129,7 +2131,10 @@ private fun FloatingOverlayContent(
                                             },
                                             onGoToTierList = { overlayHubTab = OverlayHubTab.TIER_LIST },
                                             onManualEdit = { autoScanEnabled = false },
-                                            onOpenLiteRTViewer = { showLiteRTViewer = true }
+                                            onOpenLiteRTViewer = {
+                                                autoScanEnabled = true
+                                                showLiteRTViewer = true
+                                            }
                                         )
                                     }
                                     OverlayHubTab.TIER_LIST -> {

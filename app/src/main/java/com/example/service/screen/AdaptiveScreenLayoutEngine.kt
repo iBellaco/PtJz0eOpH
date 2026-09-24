@@ -89,9 +89,9 @@ object AdaptiveScreenLayoutEngine {
         val allyOcrMinX = (adaptiveAllyCenterX - 0.022f).coerceAtLeast(0.035f)
         val allyOcrMaxX = (adaptiveAllyCenterX + 0.210f).coerceAtMost(0.315f)
 
-        // El texto del slot rival está a la izquierda del avatar rival.
-        val enemyOcrMinX = (adaptiveEnemyCenterX - 0.260f).coerceAtLeast(0.680f)
-        val enemyOcrMaxX = (adaptiveEnemyCenterX - 0.009f).coerceAtMost(0.965f)
+        // El texto del slot rival está inmediatamente a la izquierda del avatar rival (acotado para no invadir el carrusel central)
+        val enemyOcrMinX = (adaptiveEnemyCenterX - 0.155f).coerceIn(0.790f, 0.825f)
+        val enemyOcrMaxX = (adaptiveEnemyCenterX - 0.034f).coerceIn(0.905f, 0.935f)
 
         // Ajuste de las posiciones horizontales de la barra superior (los 10 avatares de la cabecera)
         // En tablets los avatares superiores están ligeramente más comprimidos hacia el centro; en ultrawide hacia los bordes.

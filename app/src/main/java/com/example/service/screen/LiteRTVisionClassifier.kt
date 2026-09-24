@@ -562,33 +562,6 @@ object LiteRTVisionClassifier {
         // - Lado rival: muestra un borde rojo y un icono de yelmo espartano gris oscuro esperando selección.
         // - Lado aliado: muestra un borde azul y el icono de la línea asignada esperando selección.
         val isWaitingIcon = isSlotWaitingIcon(cropBitmap, isAlly)
-        if (isWaitingIcon) {
-            resetStabilityTracker()
-            val reason = if (isAlly) {
-                "Slot final aliado en espera (icono de línea con borde azul visible). A la espera de que se reemplace por el Avatar del campeón."
-            } else {
-                "Slot final rival en espera (yelmo espartano con borde rojo visible). A la espera de que se reemplace por el Avatar del campeón."
-            }
-            TenthPickDiagnosticManager.recordTenthPickCrop(
-                cropBitmap = persistentCrop ?: cropBitmap,
-                isAlly = isAlly,
-                slotIndex = slotIndex,
-                stage = if (isAlly) "WAITING_LINE_ICON" else "WAITING_HELMET_ICON",
-                context = context
-            )
-            _reportFlow.value = LiteRTInferenceReport(
-                status = EngineStatus.WAITING_FOR_TENTH_PICK,
-                pickedChampion = null,
-                confidencePercent = 0,
-                decisionReason = reason,
-                slotDescription = slotDesc,
-                evaluatedPicksCount = confirmedPicksCount,
-                cropBitmap = persistentCrop,
-                isConfirmed = false
-            )
-            AppLogger.d(TAG, "LiteRT 10º Pick: $reason")
-            return@withContext null
-        }
 
         val startTime = System.currentTimeMillis()
         ensureIndexed(context)
@@ -651,6 +624,36 @@ object LiteRTVisionClassifier {
         val finalConfidence = bestCandidate.confidencePercent
         val margin = bestCandidate.similarityScore - secondScore
         val effectiveThreshold = getEffectiveThreshold(context)
+
+        if (isWaitingIcon) {
+            resetStabilityTracker()
+            val reason = if (isAlly) {
+                "Slot final aliado en espera (icono de línea visible). Analizando tensores en vivo del encuadre actual."
+            } else {
+                "Slot final rival en espera (yelmo espartano visible). Analizando tensores en vivo del encuadre actual."
+            }
+            TenthPickDiagnosticManager.recordTenthPickCrop(
+                cropBitmap = persistentCrop ?: cropBitmap,
+                isAlly = isAlly,
+                slotIndex = slotIndex,
+                stage = if (isAlly) "WAITING_LINE_ICON" else "WAITING_HELMET_ICON",
+                context = context
+            )
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.RUNNING_INFERENCE,
+                pickedChampion = winnerChamp,
+                confidencePercent = finalConfidence,
+                inferenceTimeMs = inferenceDuration,
+                topCandidates = candidateReports,
+                decisionReason = reason,
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                cropBitmap = persistentCrop,
+                isConfirmed = false
+            )
+            AppLogger.d(TAG, "LiteRT 10º Pick (Live Visor): $reason -> Candidato más cercano: ${winnerChamp.name}")
+            return@withContext null
+        }
 
         // MODO EN VIVO CUANDO CONFIRMED PICKS < 9 (Permite al usuario probar el visor todo el tiempo):
         if (confirmedPicksCount < 9) {
