@@ -1140,13 +1140,14 @@ private fun FloatingOverlayContent(
                     val isDraftComplete = (confirmedPicksCount >= 10)
                     val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
-                    val isGlobalSyncCycle = isDraftComplete || (loopCycleCounter % 6L == 0L) || !hasActiveTurns || isTenthPickActive
+                    // Durante turnos activos (incluyendo el 10º pick), priorizar la ruta de escaneo dirigido ultra rápido (<30ms)
+                    val isGlobalSyncCycle = isDraftComplete || (!hasActiveTurns && loopCycleCounter % 4L == 0L) || (loopCycleCounter % 8L == 0L && !isTenthPickActive)
 
                     val dynamicLoopDelay = when {
                         isDraftComplete -> 800L
-                        !isGlobalSyncCycle && hasActiveTurns -> 60L
-                        isTenthPickActive -> 80L
-                        else -> 160L
+                        !isGlobalSyncCycle && hasActiveTurns -> 50L
+                        isTenthPickActive -> 60L
+                        else -> 120L
                     }
 
                     if (screenCaptureManager == null || !screenCaptureManager.isReady()) {
@@ -1167,7 +1168,7 @@ private fun FloatingOverlayContent(
                                     // -----------------------------------------------------------------
                                     val detectedPicks = mutableListOf<Pair<DraftPickTurn, Champion>>()
                                     for (turn in activeTurns) {
-                                        val activeResult = DraftVisionScanner.scanActiveSlotDirectly(bitmap, turn)
+                                        val activeResult = DraftVisionScanner.scanActiveSlotDirectly(bitmap, turn, context)
                                         val champ = activeResult?.champion
                                         if (champ != null) {
                                             detectedPicks.add(turn to champ)

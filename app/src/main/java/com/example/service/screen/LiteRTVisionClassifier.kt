@@ -409,10 +409,17 @@ object LiteRTVisionClassifier {
         val winnerChamp = bestCandidate.champion
         val finalConfidence = bestCandidate.confidencePercent
 
-        // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO (Confidence Threshold) Y FRAMES ESTABLES:
-        // Solicitado expresamente por el usuario para evitar que selecciones aleatorias o parpadeos
-        // en pantalla disparen el décimo pick por error.
-        val passesConfidence = bestCandidate.similarityScore >= MIN_CONFIDENCE_THRESHOLD
+        // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO Y FRAMES ESTABLES ULTRA RÁPIDOS PARA EL 10º PICK:
+        // En Wild Rift el 10º pick dispone de muy pocos segundos antes del cierre de selección.
+        // Si la similitud con el tensor es alta (>= 60%), se confirma de inmediato en 1 frame
+        // para garantizar que la selección se registre antes de que la pantalla de draft desaparezca.
+        val requiredFrames = when {
+            bestCandidate.similarityScore >= 0.60f -> 1 // Confirmación ultra rápida e instantánea
+            bestCandidate.similarityScore >= 0.52f -> 2 // Máximo 2 frames
+            else -> REQUIRED_STABLE_FRAMES
+        }
+
+        val passesConfidence = bestCandidate.similarityScore >= 0.52f
 
         if (passesConfidence) {
             if (winnerChamp.id == lastCandidateId) {
@@ -426,14 +433,14 @@ object LiteRTVisionClassifier {
             lastCandidateId = null
         }
 
-        val isConfirmed = passesConfidence && (stableFramesCounter >= REQUIRED_STABLE_FRAMES)
+        val isConfirmed = passesConfidence && (stableFramesCounter >= requiredFrames)
 
         val decisionReason = when {
             isConfirmed -> {
-                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras superar el umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%) durante $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames estables consecutivos."
+                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras superar el umbral (${(bestCandidate.similarityScore * 100).toInt()}%) en $stableFramesCounter/$requiredFrames frame(s) estable(s)."
             }
             passesConfidence -> {
-                "Candidato ${winnerChamp.name} supera umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). Estabilizando: $stableFramesCounter/$REQUIRED_STABLE_FRAMES frames..."
+                "Candidato ${winnerChamp.name} supera umbral (${(bestCandidate.similarityScore * 100).toInt()}%). Estabilizando: $stableFramesCounter/$requiredFrames frames..."
             }
             else -> {
                 "Puntaje inferior al umbral mínimo (${(bestCandidate.similarityScore * 100).toInt()}% < ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). El motor continúa evaluando los tensores en pantalla."
@@ -466,7 +473,7 @@ object LiteRTVisionClassifier {
             evaluatedPicksCount = confirmedPicksCount,
             isConfirmed = isConfirmed,
             stableFramesCount = stableFramesCounter,
-            requiredStableFrames = REQUIRED_STABLE_FRAMES,
+            requiredStableFrames = requiredFrames,
             minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
         )
 
@@ -482,7 +489,8 @@ object LiteRTVisionClassifier {
      * Determina si el recorte del slot final corresponde al icono de espera:
      * - En el rival: círculo con borde rojo y silueta del yelmo espartano gris oscuro en el centro.
      * - En el aliado: círculo con borde azul y silueta del icono de línea en el centro.
-     * Cuando el jugador selecciona un campeón, este icono se reemplaza por el Avatar (splash portrait).
+     * Cuando el jugador selecciona un campeón (incluso de splash oscuro como Vi, Viego o Zed),
+     * la varianza cromática y luminosidad descartan el icono de espera para inferir inmediatamente.
      */
     fun isSlotWaitingIcon(bitmap: Bitmap, isAlly: Boolean): Boolean {
         val w = bitmap.width
@@ -494,9 +502,9 @@ object LiteRTVisionClassifier {
         val radius = min(cx, cy)
 
         // Muestrear píxeles en el área central (0.15 * radius a 0.55 * radius)
-        // para ignorar el borde exterior rojo/azul y analizar si el slot está verdaderamente vacío
         var totalSamples = 0
         var totalBrightness = 0f
+        var totalColorVariance = 0f
         var maxBrightness = 0
 
         val step = max(1, (radius * 0.08f).toInt())
@@ -517,22 +525,26 @@ object LiteRTVisionClassifier {
                 val g = Color.green(px)
                 val b = Color.blue(px)
                 val lum = (0.299f * r + 0.587f * g + 0.114f * b).toInt()
+                val colorDiff = (max(r, max(g, b)) - min(r, min(g, b))).toFloat()
 
                 totalSamples++
                 totalBrightness += lum
+                totalColorVariance += colorDiff
                 if (lum > maxBrightness) maxBrightness = lum
             }
         }
 
         if (totalSamples == 0) return true
         val avgBrightness = totalBrightness / totalSamples
+        val avgColorDiff = totalColorVariance / totalSamples
 
-        // El yelmo espartano (rival) o el icono de línea (aliado) son siluetas oscuras sobre fondo negro:
-        // - El brillo promedio en su interior es muy bajo (< 45 de 255).
-        // - No contienen ninguna zona con brillo alto (maxBrightness < 115).
-        // Cualquier campeón (como Volibear con su pelaje blanco, Viktor, Ashe, etc.) tiene un maxBrightness > 160
-        // y un brillo promedio superior, por lo que pasa de inmediato a la inferencia LiteRT.
-        val isIcon = (avgBrightness < 45f && maxBrightness < 115)
+        // El yelmo espartano (rival) o el icono de línea (aliado) son siluetas neutras y oscuras sin saturación:
+        // - El brillo promedio en su interior es extremadamente bajo (< 22 de 255).
+        // - No contienen ninguna zona con brillo superior a 55.
+        // - La varianza de color (saturación) es prácticamente nula (< 8).
+        // Cualquier campeón (incluso de tonalidad oscura como Vi con pelo rojizo, Zed o Viego)
+        // posee varianza cromática o zonas de luz superiores, pasando de inmediato a la inferencia LiteRT.
+        val isIcon = (avgBrightness < 22f && maxBrightness < 55 && avgColorDiff < 8f)
         return isIcon
     }
 

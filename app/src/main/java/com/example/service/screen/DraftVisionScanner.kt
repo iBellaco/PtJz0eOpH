@@ -1,5 +1,6 @@
 package com.example.service.screen
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
 import com.example.data.WildRiftRepository
@@ -153,7 +154,44 @@ object DraftVisionScanner {
         return active
     }
 
-    fun scanActiveSlotDirectly(bitmap: Bitmap, turn: DraftPickTurn): ScannedSlotInfo? {
+    suspend fun scanActiveSlotDirectly(bitmap: Bitmap, turn: DraftPickTurn, context: Context? = null): ScannedSlotInfo? {
+        if (turn.turnNumber == 10) {
+            val calib = VisionCalibrationConfig()
+            val w = bitmap.width
+            val h = bitmap.height
+            val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
+                sourceBitmap = bitmap,
+                width = w,
+                height = h,
+                isAlly = turn.isAlly,
+                slotIndex = turn.slotIndex,
+                config = calib
+            ) ?: return null
+
+            val confirmedChampIds = (allySlotConfirmedChampions.mapNotNull { it?.id } + enemySlotConfirmedChampions.mapNotNull { it?.id }).toSet()
+            val confirmedCount = allySlotConfirmedChampions.count { it != null } + enemySlotConfirmedChampions.count { it != null }
+
+            val decision = LiteRTVisionClassifier.executeTenthPickInference(
+                cropBitmap = crop,
+                isAlly = turn.isAlly,
+                confirmedChampionIds = confirmedChampIds,
+                confirmedPicksCount = if (confirmedCount < 9) 9 else confirmedCount,
+                slotIndex = turn.slotIndex,
+                context = context
+            )
+            try { crop.recycle() } catch (_: Throwable) {}
+
+            if (decision != null) {
+                val (champ, conf) = decision
+                return ScannedSlotInfo(
+                    slotIndex = turn.slotIndex,
+                    isAlly = turn.isAlly,
+                    champion = champ,
+                    confidencePercent = conf,
+                    isLikelyUnpicked = false
+                )
+            }
+        }
         return null
     }
 
@@ -1144,6 +1182,9 @@ object DraftVisionScanner {
 
         val confirmedChampIds = (allySlots.mapNotNull { it.champion?.id } + enemySlots.mapNotNull { it.champion?.id }).toSet()
 
+        var detectedTenthChampion: Champion? = null
+        var isTenthConfirmed = false
+
         // REGLA CRÍTICA DEL USUARIO:
         // "únicamente la Selección del décimo pick este pues de haber seleccionado las otras 9"
         // "el escaneo del décimo pick tienes que apuntar al slot final se ve con el yelmo espartano o icono de línea"
@@ -1184,6 +1225,8 @@ object DraftVisionScanner {
 
                 if (liteRTDecision != null) {
                     val (champWinner, confidence) = liteRTDecision
+                    detectedTenthChampion = champWinner
+                    isTenthConfirmed = true
                     if (tenthIsAlly) {
                         allySlots[tenthSlotIndex].champion = champWinner
                         allySlots[tenthSlotIndex].confidencePercent = confidence
@@ -1320,6 +1363,11 @@ object DraftVisionScanner {
             detectedRole = userDetectedLane,
             userExplicitlyDetectedRole = if (userExplicitlyConfirmed) userDetectedLane else null,
             detectedFirstPick = detectedFirstPick,
+            isLastPickImageRecognized = detectedTenthChampion != null,
+            isLastPickConfirmed = isTenthConfirmed,
+            lastPickChampion = detectedTenthChampion,
+            tenthPickIsAlly = tenthIsAlly,
+            tenthPickSlotIndex = tenthSlotIndex,
             detectedRawWords = detectedWords,
             discrepancies = auditList,
             diagnostics = diagnosticsList,
