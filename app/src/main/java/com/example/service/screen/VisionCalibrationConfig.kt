@@ -39,8 +39,8 @@ data class VisionCalibrationConfig(
     val spellYOffsetRatio: Float = 0.0f,
 
     // Rango horizontal OCR para columnas de draft (restringido estrictamente a las columnas de slots, sin tocar el centro)
-    val allyOcrMinX: Float = 0.105f,
-    val allyOcrMaxX: Float = 0.285f,
+    val allyOcrMinX: Float = 0.050f,
+    val allyOcrMaxX: Float = 0.300f,
     val enemyOcrMinX: Float = 0.775f,
     val enemyOcrMaxX: Float = 0.935f,
 

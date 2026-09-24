@@ -158,13 +158,16 @@ object DraftVisionScanner {
     }
 
     fun getAllySlotRole(slotIndex: Int): LaneRole {
-        return allySlotRolesCache[slotIndex] ?: allySlotOcrLaneCache[slotIndex] ?: when (slotIndex) {
-            0 -> LaneRole.TOP
-            1 -> LaneRole.JUNGLE
-            2 -> LaneRole.MID
-            3 -> LaneRole.ADC
-            else -> LaneRole.SUPPORT
-        }
+        return allySlotRolesCache[slotIndex] 
+            ?: allySlotOcrLaneCache[slotIndex] 
+            ?: allySlotConfirmedChampions.getOrNull(slotIndex)?.primaryRole
+            ?: when (slotIndex) {
+                0 -> LaneRole.TOP
+                1 -> LaneRole.JUNGLE
+                2 -> LaneRole.MID
+                3 -> LaneRole.ADC
+                else -> LaneRole.SUPPORT
+            }
     }
 
     
@@ -724,8 +727,10 @@ object DraftVisionScanner {
             val claimedRoles = allySlotRolesCache.values.toMutableSet()
             val availableRoles = allStandardRoles.filterNot { claimedRoles.contains(it) }.toMutableList()
 
-            // 2. Para slots aliados sin carril confirmado que ya tienen campeón seleccionado,
-            // ordenar por flexibilidad (campeones con menos opciones de rol se asignan primero)
+            // 2. Para slots aliados sin carril confirmado que ya tienen campeón seleccionado:
+            // Algoritmo de Asignación Óptima Global (Max Weight Bipartite Matching)
+            // Garantiza que la combinación maximiza la afinidad de rol primario/secundario de cada campeón
+            // y que los 5 roles del equipo sean 100% únicos y no se dupliquen jamás.
             val unassignedSlotsWithChamp = (0..4).filter { !allySlotRolesCache.containsKey(it) }
                 .mapNotNull { i ->
                     val champ = allySlots[i].champion ?: allySlotConfirmedChampions[i] ?: allyOcrChampions[i]
@@ -733,33 +738,63 @@ object DraftVisionScanner {
                 }
 
             if (unassignedSlotsWithChamp.isNotEmpty() && availableRoles.isNotEmpty()) {
-                val sortedByFlexibility = unassignedSlotsWithChamp.sortedBy { (_, champ) ->
-                    val validRolesCount = (listOf(champ.primaryRole) + champ.secondaryRoles).distinct().count { availableRoles.contains(it) }
-                    if (validRolesCount == 0) 99 else validRolesCount
+                val n = unassignedSlotsWithChamp.size
+                var bestScore = -1
+                var bestPermutation: List<LaneRole>? = null
+
+                fun scoreAssignment(roles: List<LaneRole>): Int {
+                    var total = 0
+                    for (idx in 0 until n) {
+                        val champ = unassignedSlotsWithChamp[idx].second
+                        val role = roles[idx]
+                        total += when {
+                            role == champ.primaryRole -> 1000
+                            champ.secondaryRoles.contains(role) -> 500
+                            else -> 10
+                        }
+                    }
+                    return total
                 }
 
-                for ((slotIdx, champ) in sortedByFlexibility) {
-                    val champRoles = (listOf(champ.primaryRole) + champ.secondaryRoles).distinct()
-                    val bestRole = champRoles.firstOrNull { availableRoles.contains(it) }
-                        ?: availableRoles.firstOrNull()
+                fun generatePermutations(current: List<LaneRole>, remaining: List<LaneRole>) {
+                    if (current.size == n) {
+                        val score = scoreAssignment(current)
+                        if (score > bestScore) {
+                            bestScore = score
+                            bestPermutation = current
+                        }
+                        return
+                    }
+                    for (i in remaining.indices) {
+                        val next = remaining[i]
+                        val nextRemaining = remaining.filterIndexed { index, _ -> index != i }
+                        generatePermutations(current + next, nextRemaining)
+                    }
+                }
 
-                    if (bestRole != null) {
-                        allySlotRolesCache[slotIdx] = bestRole
-                        availableRoles.remove(bestRole)
-                        claimedRoles.add(bestRole)
-                        allySlots[slotIdx].explicitRole = bestRole
-                        AppLogger.d(TAG, "Slot Aliado $slotIdx resuelto determinísticamente: ${champ.name} -> ${bestRole.shortName}")
+                generatePermutations(emptyList(), availableRoles)
+
+                bestPermutation?.let { optimalRoles ->
+                    for (idx in 0 until n) {
+                        val slotIdx = unassignedSlotsWithChamp[idx].first
+                        val champ = unassignedSlotsWithChamp[idx].second
+                        val assignedRole = optimalRoles[idx]
+                        allySlotRolesCache[slotIdx] = assignedRole
+                        availableRoles.remove(assignedRole)
+                        claimedRoles.add(assignedRole)
+                        allySlots[slotIdx].explicitRole = assignedRole
+                        AppLogger.d(TAG, "Slot Aliado $slotIdx resuelto por asignación óptima: ${champ.name} -> ${assignedRole.shortName}")
                     }
                 }
             }
 
-            // 3. Completar cualquier slot restante por descarte
+            // 3. Completar cualquier slot restante por descarte (roles restantes únicos)
             for (i in 0..4) {
                 if (!allySlotRolesCache.containsKey(i) && availableRoles.isNotEmpty()) {
                     val role = availableRoles.removeAt(0)
                     allySlotRolesCache[i] = role
                     allySlots[i].explicitRole = role
-                    AppLogger.d(TAG, "Slot Aliado $i completado por descarte de rol -> ${role.shortName}")
+                    AppLogger.d(TAG, "Slot Aliado $i completado por descarte de rol único -> ${role.shortName}")
                 } else if (allySlotRolesCache.containsKey(i)) {
                     allySlots[i].explicitRole = allySlotRolesCache[i]
                 }
