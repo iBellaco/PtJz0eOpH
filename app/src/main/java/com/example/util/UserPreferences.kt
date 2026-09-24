@@ -85,4 +85,16 @@ object UserPreferences {
         val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, PREFS_NAME + "_enc")
         prefs.edit().putBoolean(KEY_TENTH_PICK_DIAGNOSTIC_ENABLED, enabled).apply()
     }
+
+    private const val KEY_LITERT_CONFIDENCE_THRESHOLD = "litert_confidence_threshold"
+
+    fun getLiteRTConfidenceThreshold(context: Context): Float {
+        val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, PREFS_NAME + "_enc")
+        return prefs.getFloat(KEY_LITERT_CONFIDENCE_THRESHOLD, 0.80f)
+    }
+
+    fun setLiteRTConfidenceThreshold(context: Context, threshold: Float) {
+        val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, PREFS_NAME + "_enc")
+        prefs.edit().putFloat(KEY_LITERT_CONFIDENCE_THRESHOLD, threshold.coerceIn(0.50f, 0.95f)).apply()
+    }
 }

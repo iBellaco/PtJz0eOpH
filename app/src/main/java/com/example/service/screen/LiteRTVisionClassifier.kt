@@ -9,6 +9,7 @@ import com.example.data.WildRiftRepository
 import com.example.model.Champion
 import com.example.model.LaneRole
 import com.example.util.AppLogger
+import com.example.util.UserPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,10 +36,32 @@ object LiteRTVisionClassifier {
 
     private const val TAG = "LiteRTVisionClassifier"
     private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
-    private const val EMBEDDING_DIM = 192    // Vector descriptor de 192 dimensiones de alta fidelidad
+    private const val EMBEDDING_DIM = 118    // Vector descriptor de 118 dimensiones de alta fidelidad
 
-    // Umbral de confianza mínimo de MediaPipe / LiteRT (65% similitud de tensor con 3 frames estables)
-    const val MIN_CONFIDENCE_THRESHOLD = 0.65f
+    // Umbral de confianza por defecto (80% de similitud real centrada en cero)
+    const val DEFAULT_CONFIDENCE_THRESHOLD = 0.80f
+    const val MIN_CONFIDENCE_THRESHOLD = 0.80f
+
+    private var customConfidenceThreshold: Float = DEFAULT_CONFIDENCE_THRESHOLD
+
+    fun getEffectiveThreshold(context: Context? = null): Float {
+        val ctx = context ?: WildRiftApp.instance
+        return if (ctx != null) {
+            UserPreferences.getLiteRTConfidenceThreshold(ctx)
+        } else {
+            customConfidenceThreshold
+        }
+    }
+
+    fun setThreshold(threshold: Float, context: Context? = null) {
+        val clamped = threshold.coerceIn(0.50f, 0.95f)
+        customConfidenceThreshold = clamped
+        val ctx = context ?: WildRiftApp.instance
+        if (ctx != null) {
+            UserPreferences.setLiteRTConfidenceThreshold(ctx, clamped)
+        }
+        _reportFlow.value = _reportFlow.value.copy(minConfidenceThreshold = clamped)
+    }
 
     // Cantidad de frames estables consecutivos requeridos para confirmar el 10º pick
     const val REQUIRED_STABLE_FRAMES = 3
@@ -82,7 +105,7 @@ object LiteRTVisionClassifier {
         val isConfirmed: Boolean = false,
         val stableFramesCount: Int = 0,
         val requiredStableFrames: Int = REQUIRED_STABLE_FRAMES,
-        val minConfidenceThreshold: Float = MIN_CONFIDENCE_THRESHOLD
+        val minConfidenceThreshold: Float = DEFAULT_CONFIDENCE_THRESHOLD
     )
 
     private val _reportFlow = MutableStateFlow(LiteRTInferenceReport())
@@ -96,7 +119,9 @@ object LiteRTVisionClassifier {
      * Inicializa y precalcula los embeddings de tensores para los campeones en memoria.
      */
     fun ensureIndexed(context: Context? = null) {
-        if (isCatalogIndexed) return
+        if (isCatalogIndexed && championEmbeddingCache.values.firstOrNull()?.size == EMBEDDING_DIM) return
+        championEmbeddingCache.clear()
+        isCatalogIndexed = false
         val ctx = context ?: WildRiftApp.instance ?: return
         try {
             val champs = WildRiftRepository.champions
@@ -138,14 +163,20 @@ object LiteRTVisionClassifier {
     }
 
     /**
-     * Extrae un vector de embedding normalizado de L2 (192 dimensiones) a partir del mapa de píxeles del avatar.
-     * Simula la arquitectura profunda convolucional de Google MediaPipe / LiteRT Image Embedder:
-     * - Grilla espacial 4x4 (64 dims color + 16 dims varianza de textura)
-     * - Canales HSV con peso de saturación + luminancia (32 dims)
-     * - Gradientes direccionales espaciales Sobel HOG (24 dims)
-     * - Perfiles radiales concéntricos (15 dims)
-     * - Asimetrías morfológicas horizontal y vertical (8 dims)
-     * - Balances cromáticos de alta gama y tonalidades frías/eléctricas (33 dims)
+     * Extrae un vector descriptor de alta fidelidad centrado en cero y normalizado en L2 (118 dimensiones)
+     * a partir del mapa de píxeles del avatar facial del campeón.
+     * 
+     * Invariante a pequeños desplazamientos espaciales, escala, iluminación y bordes de UI:
+     * - Enmascaramiento circular facial interior (radio <= 0.36 * diámetro) para descartar esquinas oscuras
+     *   y el marco exterior de la ranura.
+     * - Filtrado selectivo de píxeles espurios del aro exterior (rojo carmesí en rivales, azul eléctrico en aliados).
+     * - Histograma bidimensional HSV (16 tonalidades x 4 niveles de saturación = 64 dimensiones).
+     * - Histograma de valor/luminancia (8 dimensiones).
+     * - Grilla espacial 3x3 para distribución morfológica (RGB = 27 dimensiones).
+     * - Balances cromáticos y firmas Zaun/Freljord/Noxus (11 dimensiones).
+     * - Histograma de gradientes direccionales Sobel (8 dimensiones).
+     * - Centrado en cero estricto (zero-centering) y normalización L2: convierte la similitud coseno
+     *   en el coeficiente de correlación de Pearson, eliminando falsos positivos globales.
      */
     private fun extractTensorEmbedding(bitmap: Bitmap): FloatArray {
         val scaled = Bitmap.createScaledBitmap(bitmap, TENSOR_INPUT_SIZE, TENSOR_INPUT_SIZE, true)
@@ -155,51 +186,42 @@ object LiteRTVisionClassifier {
             try { scaled.recycle() } catch (_: Throwable) {}
         }
 
-        val embedding = FloatArray(EMBEDDING_DIM)
         val center = TENSOR_INPUT_SIZE / 2f
-        val maxRadiusSq = (TENSOR_INPUT_SIZE * 0.44f) * (TENSOR_INPUT_SIZE * 0.44f)
+        val maxInnerRadius = TENSOR_INPUT_SIZE * 0.36f
+        val maxRadiusSq = maxInnerRadius * maxInnerRadius
 
-        // 1. Acumuladores por zonas espaciales (grilla 4x4)
-        val rZone = FloatArray(16)
-        val gZone = FloatArray(16)
-        val bZone = FloatArray(16)
-        val lumZone = FloatArray(16)
-        val lumSqZone = FloatArray(16)
-        val countZone = FloatArray(16)
+        // 1. Histograma 2D HSV (16 Tonalidades x 4 Niveles de Saturación = 64 bins)
+        val hueSatHist = Array(16) { FloatArray(4) }
+        
+        // 2. Histograma de Luminancia/Valor (8 bins)
+        val valHist = FloatArray(8)
 
-        // 2. Canales cromáticos HSV
-        val hueBins = FloatArray(16)
-        val satBins = FloatArray(8)
-        val lumBins = FloatArray(8)
+        // 3. Grilla espacial 3x3 para distribución morfológica (RGB = 27 bins)
+        val spatialR = FloatArray(9)
+        val spatialG = FloatArray(9)
+        val spatialB = FloatArray(9)
+        val spatialCnt = FloatArray(9)
 
-        // 3. Perfiles radiales concéntricos (Centro / Medio / Borde)
-        val rRadial = FloatArray(3)
-        val gRadial = FloatArray(3)
-        val bRadial = FloatArray(3)
-        val lumRadial = FloatArray(3)
-        val lumSqRadial = FloatArray(3)
-        val countRadial = FloatArray(3)
-
-        // 4. Estadísticas globales
+        // 4. Acumuladores globales y firmas Zaun/Freljord/Noxus
         var totalValidPixels = 0
         var totalR = 0f
         var totalG = 0f
         var totalB = 0f
         var totalLum = 0f
-        var highlightCount = 0f // Zonas de brillo intenso (rayos de Volibear / ojos brillantes / pelaje blanco)
-        var shadowCount = 0f    // Zonas de armadura oscura
+        var totalLumSq = 0f
+        var highlightCount = 0f
+        var shadowCount = 0f
+        var chemtechCount = 0f // Firma de verde tóxico/quimtech (Urgot, Singed, Twitch)
 
-        // Matriz de luminancia 2D para cálculo de gradientes Sobel
+        // Matriz de luminancia para gradientes direccionales Sobel
         val lumGrid = Array(TENSOR_INPUT_SIZE) { FloatArray(TENSOR_INPUT_SIZE) }
 
         for (y in 0 until TENSOR_INPUT_SIZE) {
             val dy = y - center
-            val cellY = (y * 4) / TENSOR_INPUT_SIZE
+            val cellY = ((y * 3) / TENSOR_INPUT_SIZE).coerceIn(0, 2)
             for (x in 0 until TENSOR_INPUT_SIZE) {
                 val dx = x - center
                 val distSq = dx * dx + dy * dy
-                val dist = sqrt(distSq)
-
                 val px = pixels[y * TENSOR_INPUT_SIZE + x]
                 val r = Color.red(px) / 255.0f
                 val g = Color.green(px) / 255.0f
@@ -207,205 +229,145 @@ object LiteRTVisionClassifier {
                 val lum = 0.299f * r + 0.587f * g + 0.114f * b
                 lumGrid[y][x] = lum
 
-                if (distSq > maxRadiusSq) continue // Enmascaramiento circular para descartar borde externo
+                if (distSq > maxRadiusSq) continue // Enmascaramiento circular interno
 
-                val cellX = (x * 4) / TENSOR_INPUT_SIZE
-                val zoneIdx = (cellY * 4 + cellX).coerceIn(0, 15)
+                val dist = sqrt(distSq)
+                // Descartar píxeles periféricos contaminados por el aro exterior de la UI (rojo escarlata o azul cian)
+                if (dist > TENSOR_INPUT_SIZE * 0.26f) {
+                    if ((r > 0.45f && r > g * 1.35f && r > b * 1.35f) || (b > 0.45f && b > r * 1.35f && b > g * 1.15f)) {
+                        continue
+                    }
+                }
 
-                rZone[zoneIdx] += r
-                gZone[zoneIdx] += g
-                bZone[zoneIdx] += b
-                lumZone[zoneIdx] += lum
-                lumSqZone[zoneIdx] += lum * lum
-                countZone[zoneIdx] += 1f
+                // Conversión HSV
+                val maxC = max(r, max(g, b))
+                val minC = min(r, min(g, b))
+                val delta = maxC - minC
+                val sat = if (maxC > 1e-4f) delta / maxC else 0f
+                val value = maxC
+
+                var hue = 0f
+                if (delta > 0.04f) {
+                    val rawHue = when {
+                        maxC == r -> ((g - b) / delta) % 6f
+                        maxC == g -> ((b - r) / delta) + 2f
+                        else -> ((r - g) / delta) + 4f
+                    } * 60f
+                    hue = if (rawHue < 0f) rawHue + 360f else rawHue
+                }
+
+                val hBin = ((hue / 360f) * 16).toInt().coerceIn(0, 15)
+                val sBin = (sat * 4f).toInt().coerceIn(0, 3)
+                val vBin = (value * 8f).toInt().coerceIn(0, 7)
+
+                val weight = max(0.2f, sat)
+                hueSatHist[hBin][sBin] += weight
+                valHist[vBin] += 1f
+
+                val cellX = ((x * 3) / TENSOR_INPUT_SIZE).coerceIn(0, 2)
+                val sIdx = cellY * 3 + cellX
+                spatialR[sIdx] += r
+                spatialG[sIdx] += g
+                spatialB[sIdx] += b
+                spatialCnt[sIdx] += 1f
 
                 totalValidPixels++
                 totalR += r
                 totalG += g
                 totalB += b
                 totalLum += lum
-                if (lum > 0.72f) highlightCount += 1f
+                totalLumSq += lum * lum
+                if (lum > 0.70f) highlightCount += 1f
                 if (lum < 0.18f) shadowCount += 1f
-
-                // Regiones radiales concéntricas
-                val radialIdx = when {
-                    dist < TENSOR_INPUT_SIZE * 0.22f -> 0 // Centro facial
-                    dist < TENSOR_INPUT_SIZE * 0.35f -> 1 // Anillo medio
-                    else -> 2                             // Silueta exterior
-                }
-                rRadial[radialIdx] += r
-                gRadial[radialIdx] += g
-                bRadial[radialIdx] += b
-                lumRadial[radialIdx] += lum
-                lumSqRadial[radialIdx] += lum * lum
-                countRadial[radialIdx] += 1f
-
-                // Espacio HSV con ponderación por saturación
-                val maxC = max(r, max(g, b))
-                val minC = min(r, min(g, b))
-                val delta = maxC - minC
-                val sat = if (maxC > 1e-4f) delta / maxC else 0f
-                val satBinIdx = (sat * 8f).toInt().coerceIn(0, 7)
-                satBins[satBinIdx] += 1f
-
-                if (delta > 0.05f) {
-                    val hue = when {
-                        maxC == r -> ((g - b) / delta) % 6f
-                        maxC == g -> ((b - r) / delta) + 2f
-                        else -> ((r - g) / delta) + 4f
-                    } * 60f
-                    val positiveHue = if (hue < 0f) hue + 360f else hue
-                    val hueBinIdx = ((positiveHue / 360f) * 16).toInt().coerceIn(0, 15)
-                    // Ponderar por saturación para que colores puros tengan más impacto
-                    hueBins[hueBinIdx] += sat.coerceAtLeast(0.1f)
-                }
-
-                val lumBinIdx = (lum * 8f).toInt().coerceIn(0, 7)
-                lumBins[lumBinIdx] += 1f
+                if (g > r + 0.05f && g > b + 0.03f) chemtechCount += 1f
             }
         }
 
         val normCount = totalValidPixels.toFloat().coerceAtLeast(1f)
+        val embedding = FloatArray(EMBEDDING_DIM)
         var embIdx = 0
 
-        // 1. Zonas espaciales 4x4 (Media RGB Lum + Varianza de Textura) = 80 dims
-        for (i in 0 until 16) {
-            val cnt = countZone[i].coerceAtLeast(1f)
-            val meanLum = lumZone[i] / cnt
-            val varLum = max(0f, (lumSqZone[i] / cnt) - (meanLum * meanLum))
-            embedding[embIdx++] = rZone[i] / cnt
-            embedding[embIdx++] = gZone[i] / cnt
-            embedding[embIdx++] = bZone[i] / cnt
-            embedding[embIdx++] = meanLum
-            embedding[embIdx++] = sqrt(varLum) // Desviación estándar (textura)
-        } // 16 * 5 = 80 dims
-
-        // 2. Histogramas HSV y Luminancia = 32 dims
-        val hueSum = hueBins.sum().coerceAtLeast(1e-4f)
-        for (i in 0 until 16) {
-            embedding[embIdx++] = hueBins[i] / hueSum
+        // 1. Histograma 2D HSV (64 dims)
+        var hsSum = 0f
+        for (h in 0 until 16) {
+            for (s in 0 until 4) {
+                hsSum += hueSatHist[h][s]
+            }
         }
-        for (i in 0 until 8) {
-            embedding[embIdx++] = satBins[i] / normCount
-        }
-        for (i in 0 until 8) {
-            embedding[embIdx++] = lumBins[i] / normCount
-        } // 80 + 32 = 112 dims
+        val hsNorm = hsSum.coerceAtLeast(1e-4f)
+        for (h in 0 until 16) {
+            for (s in 0 until 4) {
+                embedding[embIdx++] = hueSatHist[h][s] / hsNorm
+            }
+        } // 64 dims
 
-        // 3. Gradientes espaciales y descriptores de bordes (Sobel dx, dy en 4 cuadrantes) = 24 dims
-        val gradQuadDx = FloatArray(4)
-        val gradQuadDy = FloatArray(4)
-        val gradQuadDiag1 = FloatArray(4)
-        val gradQuadDiag2 = FloatArray(4)
-        val gradHist = FloatArray(8)
-        var totalGradMagnitude = 0f
+        // 2. Histograma de Luminancia/Valor (8 dims)
+        for (v in 0 until 8) {
+            embedding[embIdx++] = valHist[v] / normCount
+        } // 64 + 8 = 72 dims
 
-        for (y in 2 until TENSOR_INPUT_SIZE - 2) {
-            val quadY = if (y < center) 0 else 1
-            for (x in 2 until TENSOR_INPUT_SIZE - 2) {
+        // 3. Grilla espacial 3x3 (27 dims)
+        for (i in 0 until 9) {
+            val c = spatialCnt[i].coerceAtLeast(1f)
+            embedding[embIdx++] = spatialR[i] / c
+            embedding[embIdx++] = spatialG[i] / c
+            embedding[embIdx++] = spatialB[i] / c
+        } // 72 + 27 = 99 dims
+
+        // 4. Balances cromáticos y momentos estadísticos (11 dims)
+        val meanR = totalR / normCount
+        val meanG = totalG / normCount
+        val meanB = totalB / normCount
+        val meanLum = totalLum / normCount
+        val varLum = max(0f, (totalLumSq / normCount) - (meanLum * meanLum))
+
+        embedding[embIdx++] = meanR
+        embedding[embIdx++] = meanG
+        embedding[embIdx++] = meanB
+        embedding[embIdx++] = meanLum
+        embedding[embIdx++] = sqrt(varLum)
+        embedding[embIdx++] = meanG - meanR // Verde Zaun vs Rojo
+        embedding[embIdx++] = meanB - meanR // Azul Freljord vs Rojo
+        embedding[embIdx++] = meanR - meanB // Rojo Noxus vs Azul
+        embedding[embIdx++] = chemtechCount / normCount
+        embedding[embIdx++] = highlightCount / normCount
+        embedding[embIdx++] = shadowCount / normCount
+        // 99 + 11 = 110 dims
+
+        // 5. Histograma de bordes direccionales Sobel (8 bins)
+        val edgeHist = FloatArray(8)
+        var totalGradMag = 0f
+        for (y in 3 until TENSOR_INPUT_SIZE - 3) {
+            for (x in 3 until TENSOR_INPUT_SIZE - 3) {
                 val dx = (x - center).toFloat()
                 val dy = (y - center).toFloat()
                 if (dx * dx + dy * dy > maxRadiusSq) continue
 
-                val quadX = if (x < center) 0 else 1
-                val quadIdx = quadY * 2 + quadX
-
-                // Filtro Sobel 3x3 para dx y dy
                 val gx = (-lumGrid[y-1][x-1] + lumGrid[y-1][x+1] - 2*lumGrid[y][x-1] + 2*lumGrid[y][x+1] - lumGrid[y+1][x-1] + lumGrid[y+1][x+1])
                 val gy = (-lumGrid[y-1][x-1] - 2*lumGrid[y-1][x] - lumGrid[y-1][x+1] + lumGrid[y+1][x-1] + 2*lumGrid[y+1][x] + lumGrid[y+1][x+1])
                 val gMag = sqrt(gx * gx + gy * gy)
-                totalGradMagnitude += gMag
-
-                gradQuadDx[quadIdx] += abs(gx)
-                gradQuadDy[quadIdx] += abs(gy)
-                gradQuadDiag1[quadIdx] += abs(gx + gy) * 0.707f
-                gradQuadDiag2[quadIdx] += abs(gx - gy) * 0.707f
-
-                if (gMag > 0.04f) {
+                if (gMag > 0.05f) {
                     val angle = (kotlin.math.atan2(gy.toDouble(), gx.toDouble()) * 180.0 / Math.PI + 360.0) % 360.0
-                    val bin = ((angle / 360.0) * 8.0).toInt().coerceIn(0, 7)
-                    gradHist[bin] += gMag
+                    val binIdx = ((angle / 360.0) * 8.0).toInt().coerceIn(0, 7)
+                    edgeHist[binIdx] += gMag
+                    totalGradMag += gMag
                 }
             }
         }
-
-        val normGrad = totalGradMagnitude.coerceAtLeast(1e-4f)
-        for (q in 0 until 4) {
-            embedding[embIdx++] = gradQuadDx[q] / normGrad
-            embedding[embIdx++] = gradQuadDy[q] / normGrad
-            embedding[embIdx++] = gradQuadDiag1[q] / normGrad
-            embedding[embIdx++] = gradQuadDiag2[q] / normGrad
-        } // 16 dims
-        val gradHistSum = gradHist.sum().coerceAtLeast(1e-4f)
+        val edgeSum = totalGradMag.coerceAtLeast(1e-4f)
         for (b in 0 until 8) {
-            embedding[embIdx++] = gradHist[b] / gradHistSum
-        } // 8 dims -> 112 + 24 = 136 dims
+            embedding[embIdx++] = edgeHist[b] / edgeSum
+        } // 110 + 8 = 118 dims
 
-        // 4. Perfiles radiales concéntricos (Centro / Medio / Silueta) = 15 dims
-        for (r in 0 until 3) {
-            val cnt = countRadial[r].coerceAtLeast(1f)
-            val meanLum = lumRadial[r] / cnt
-            val varLum = max(0f, (lumSqRadial[r] / cnt) - (meanLum * meanLum))
-            embedding[embIdx++] = rRadial[r] / cnt
-            embedding[embIdx++] = gRadial[r] / cnt
-            embedding[embIdx++] = bRadial[r] / cnt
-            embedding[embIdx++] = meanLum
-            embedding[embIdx++] = sqrt(varLum)
-        } // 136 + 15 = 151 dims
-
-        // 5. Asimetrías morfológicas (Izquierda vs Derecha, Superior vs Inferior) = 8 dims
-        val leftR = (rZone[0] + rZone[4] + rZone[8] + rZone[12]) / 4f
-        val rightR = (rZone[3] + rZone[7] + rZone[11] + rZone[15]) / 4f
-        val leftB = (bZone[0] + bZone[4] + bZone[8] + bZone[12]) / 4f
-        val rightB = (bZone[3] + bZone[7] + bZone[11] + bZone[15]) / 4f
-        val topLum = (lumZone[0] + lumZone[1] + lumZone[2] + lumZone[3]) / 4f
-        val bottomLum = (lumZone[12] + lumZone[13] + lumZone[14] + lumZone[15]) / 4f
-
-        embedding[embIdx++] = abs(leftR - rightR)
-        embedding[embIdx++] = abs(leftB - rightB)
-        embedding[embIdx++] = abs(topLum - bottomLum)
-        embedding[embIdx++] = (topLum - bottomLum) // Diferencia con signo (luz cenital vs armadura baja)
-        embedding[embIdx++] = abs((gZone[0] + gZone[4]) - (gZone[3] + gZone[7]))
-        embedding[embIdx++] = abs((lumZone[0] + lumZone[1]) - (lumZone[2] + lumZone[3]))
-        embedding[embIdx++] = (rRadial[0] - rRadial[2]) // Gradiente centro-borde
-        embedding[embIdx++] = (bRadial[0] - bRadial[2]) // Gradiente de energía azul centro-borde
-        // 151 + 8 = 159 dims
-
-        // 6. Balances cromáticos de alta gama, relámpago/pelaje frío y contrastes = 33 dims
-        val avgR = totalR / normCount
-        val avgG = totalG / normCount
-        val avgB = totalB / normCount
-        val avgLum = totalLum / normCount
-
-        embedding[embIdx++] = avgR
-        embedding[embIdx++] = avgG
-        embedding[embIdx++] = avgB
-        embedding[embIdx++] = avgLum
-        embedding[embIdx++] = abs(avgR - avgG)
-        embedding[embIdx++] = abs(avgR - avgB)
-        embedding[embIdx++] = abs(avgG - avgB)
-        embedding[embIdx++] = highlightCount / normCount // Razón de píxeles hiper-brillantes (fur/lightning)
-        embedding[embIdx++] = shadowCount / normCount    // Razón de sombras profundas
-        embedding[embIdx++] = (avgB - avgR) / (avgB + avgR + 0.01f) // Balance frío vs cálido
-        embedding[embIdx++] = (avgG + avgB - 2f * avgR).coerceIn(-2f, 2f) // Firma eléctrica cian/azul
-
-        // Features adicionales localizadas de alta especificidad en el centro
-        val centerZones = listOf(5, 6, 9, 10)
-        for (z in centerZones) {
-            val cnt = countZone[z].coerceAtLeast(1f)
-            embedding[embIdx++] = rZone[z] / cnt
-            embedding[embIdx++] = gZone[z] / cnt
-            embedding[embIdx++] = bZone[z] / cnt
-            embedding[embIdx++] = lumZone[z] / cnt
-            embedding[embIdx++] = (bZone[z] - rZone[z]) / cnt
-        } // 4 * 5 = 20 dims
-        embedding[embIdx++] = normCount / (TENSOR_INPUT_SIZE * TENSOR_INPUT_SIZE).toFloat()
-        embedding[embIdx++] = totalGradMagnitude / (normCount * 4f)
-        // 159 + 11 + 20 + 2 = 192 dims
-
-        // Normalización L2 del vector embedding para cálculo directo de distancia coseno
+        // CENTRADO EN CERO (Zero-Centering):
+        val meanVal = embedding.sum() / embedding.size
         var sumSquares = 0.0f
-        for (v in embedding) sumSquares += v * v
+        for (i in embedding.indices) {
+            embedding[i] -= meanVal
+            sumSquares += embedding[i] * embedding[i]
+        }
+
+        // Normalización L2
         val l2Norm = sqrt(sumSquares).coerceAtLeast(1e-6f)
         for (i in embedding.indices) {
             embedding[i] /= l2Norm
@@ -576,17 +538,21 @@ object LiteRTVisionClassifier {
 
         val inferenceDuration = System.currentTimeMillis() - startTime
         val bestCandidate = candidateReports.first()
+        val secondScore = sortedCandidates.getOrNull(1)?.second ?: 0f
         val winnerChamp = bestCandidate.champion
         val finalConfidence = bestCandidate.confidencePercent
+        val margin = bestCandidate.similarityScore - secondScore
 
-        // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO Y FRAMES ESTABLES PARA EL 10º PICK:
-        // Evita falsos positivos en slots vacíos o durante animaciones de espera.
+        val effectiveThreshold = getEffectiveThreshold(context)
+
+        // CONTROL DE UMBRAL DE CONFIANZA Y FRAMES ESTABLES:
+        val passesConfidence = bestCandidate.similarityScore >= effectiveThreshold
+
         val requiredFrames = when {
-            bestCandidate.similarityScore >= 0.76f -> 2 // Confirmación rápida para coincidencias muy altas
+            bestCandidate.similarityScore >= 0.88f && margin >= 0.05f -> 2 // Coincidencia dominante e inequívoca
+            margin < 0.03f -> 4 // Muy reñido con el segundo candidato
             else -> 3
         }
-
-        val passesConfidence = bestCandidate.similarityScore >= 0.68f
 
         if (passesConfidence) {
             if (winnerChamp.id == lastCandidateId) {
@@ -604,13 +570,13 @@ object LiteRTVisionClassifier {
 
         val decisionReason = when {
             isConfirmed -> {
-                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras superar el umbral (${(bestCandidate.similarityScore * 100).toInt()}%) en $stableFramesCounter/$requiredFrames frame(s) estable(s)."
+                "Google MediaPipe / LiteRT confirmó a ${winnerChamp.name} tras superar el umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(effectiveThreshold * 100).toInt()}%, margen: +${(margin * 100).toInt()}%) en $stableFramesCounter/$requiredFrames frame(s) estable(s)."
             }
             passesConfidence -> {
-                "Candidato ${winnerChamp.name} supera umbral (${(bestCandidate.similarityScore * 100).toInt()}%). Estabilizando: $stableFramesCounter/$requiredFrames frames..."
+                "Candidato ${winnerChamp.name} supera umbral (${(bestCandidate.similarityScore * 100).toInt()}% >= ${(effectiveThreshold * 100).toInt()}%). Estabilizando: $stableFramesCounter/$requiredFrames frames..."
             }
             else -> {
-                "Puntaje inferior al umbral mínimo (${(bestCandidate.similarityScore * 100).toInt()}% < ${(MIN_CONFIDENCE_THRESHOLD * 100).toInt()}%). El motor continúa evaluando los tensores en pantalla."
+                "Puntaje de ${winnerChamp.name} (${(bestCandidate.similarityScore * 100).toInt()}%) inferior al umbral configurado (${(effectiveThreshold * 100).toInt()}%). El motor continúa analizando los tensores en pantalla."
             }
         }
 
@@ -641,7 +607,7 @@ object LiteRTVisionClassifier {
             isConfirmed = isConfirmed,
             stableFramesCount = stableFramesCounter,
             requiredStableFrames = requiredFrames,
-            minConfidenceThreshold = MIN_CONFIDENCE_THRESHOLD
+            minConfidenceThreshold = effectiveThreshold
         )
 
         if (isConfirmed) {

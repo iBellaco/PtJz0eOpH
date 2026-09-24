@@ -39,6 +39,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -380,6 +382,106 @@ fun LiteRTEngineViewerDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
+                // Control de Calibración de Umbral de Similitud
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                    border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.35f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Tune,
+                                    contentDescription = null,
+                                    tint = Color(0xFF38BDF8),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "CALIBRACIÓN DE UMBRAL DE SIMILITUD",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
+                            Text(
+                                text = "${(report.minConfidenceThreshold * 100).toInt()}%",
+                                color = Color(0xFF00E5FF),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Aumenta el umbral (80%-90%) para evitar falsos positivos con campeones no parecidos, o disminúyelo (70%-75%) si las condiciones de luz son bajas.",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 10.sp,
+                            lineHeight = 14.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    val nextVal = (report.minConfidenceThreshold - 0.05f).coerceIn(0.50f, 0.95f)
+                                    LiteRTVisionClassifier.setThreshold(nextVal, context)
+                                },
+                                modifier = Modifier.height(30.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                border = BorderStroke(1.dp, Color(0xFF475569)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                            ) {
+                                Text("-5%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            Slider(
+                                value = report.minConfidenceThreshold,
+                                onValueChange = { newVal ->
+                                    LiteRTVisionClassifier.setThreshold(newVal, context)
+                                },
+                                valueRange = 0.50f..0.95f,
+                                steps = 8,
+                                modifier = Modifier.weight(1f),
+                                colors = SliderDefaults.colors(
+                                    thumbColor = Color(0xFF00E5FF),
+                                    activeTrackColor = Color(0xFF00E5FF),
+                                    inactiveTrackColor = Color(0xFF334155)
+                                )
+                            )
+
+                            OutlinedButton(
+                                onClick = {
+                                    val nextVal = (report.minConfidenceThreshold + 0.05f).coerceIn(0.50f, 0.95f)
+                                    LiteRTVisionClassifier.setThreshold(nextVal, context)
+                                },
+                                modifier = Modifier.height(30.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                border = BorderStroke(1.dp, Color(0xFF475569)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                            ) {
+                                Text("+5%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
                 // Tabla de Candidatos Comparados por LiteRT
                 Text(
                     text = "COMPARACIÓN DE TENSORES (TOP 5 CANDIDATOS)",
@@ -395,6 +497,7 @@ fun LiteRTEngineViewerDialog(
                     report.topCandidates.forEach { candidate ->
                         CandidateRowItem(
                             candidate = candidate,
+                            minThreshold = report.minConfidenceThreshold,
                             onSelect = { selectedChamp ->
                                 LiteRTVisionClassifier.manuallyConfirmTenthPick(selectedChamp)
                                 val isAlly = report.slotDescription.contains("Aliado", ignoreCase = true)
@@ -983,10 +1086,12 @@ private fun MetricRow(
 @Composable
 private fun CandidateRowItem(
     candidate: LiteRTVisionClassifier.LiteRTCandidateScore,
+    minThreshold: Float = 0.80f,
     onSelect: ((com.example.model.Champion) -> Unit)? = null
 ) {
     val isWinner = candidate.rank == 1
-    val borderColor = if (isWinner) Color(0xFF00E5FF) else Color(0xFF334155)
+    val passes = candidate.similarityScore >= minThreshold
+    val borderColor = if (isWinner && passes) Color(0xFF00E5FF) else if (isWinner) Color(0xFFF59E0B) else Color(0xFF334155)
     val bgColor = if (isWinner) Color(0xFF1E293B) else Color(0xFF0F172A)
 
     Row(
@@ -1020,12 +1125,30 @@ private fun CandidateRowItem(
             Spacer(modifier = Modifier.width(10.dp))
 
             Column {
-                Text(
-                    text = candidate.champion.name,
-                    color = Color.White,
-                    fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Medium,
-                    fontSize = 13.sp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = candidate.champion.name,
+                        color = Color.White,
+                        fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Medium,
+                        fontSize = 13.sp
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    if (passes) {
+                        Text(
+                            text = "APROBADO",
+                            color = Color(0xFF10B981),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Text(
+                            text = "BAJO UMBRAL",
+                            color = Color(0xFFF59E0B),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
                 Text(
                     text = "Probabilidad Softmax: ${(candidate.softmaxProbability * 100).toInt()}%",
                     color = Color(0xFF94A3B8),
@@ -1037,7 +1160,7 @@ private fun CandidateRowItem(
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = "${(candidate.similarityScore * 100).toInt()}% Tensor",
-                color = if (isWinner) Color(0xFF10B981) else Color(0xFFCBD5E1),
+                color = if (passes) Color(0xFF10B981) else Color(0xFFF59E0B),
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp
             )
@@ -1048,7 +1171,7 @@ private fun CandidateRowItem(
                     .width(64.dp)
                     .height(4.dp)
                     .clip(RoundedCornerShape(2.dp)),
-                color = if (isWinner) Color(0xFF00E5FF) else Color(0xFF64748B),
+                color = if (passes) Color(0xFF00E5FF) else Color(0xFFF59E0B),
                 trackColor = Color(0xFF334155)
             )
         }

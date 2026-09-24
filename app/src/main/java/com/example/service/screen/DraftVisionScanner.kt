@@ -122,6 +122,7 @@ object DraftVisionScanner {
 
     val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
     val allySlotOcrLaneCache = mutableMapOf<Int, LaneRole>()
+    val detectedBannedChampionIds = mutableSetOf<String>()
 
     fun recordFrameSkipped() {
         framesSkippedCount.value = framesSkippedCount.value + 1L
@@ -186,7 +187,9 @@ object DraftVisionScanner {
                 config = calib
             ) ?: return null
 
-            val confirmedChampIds = (allySlotConfirmedChampions.mapNotNull { it?.id } + enemySlotConfirmedChampions.mapNotNull { it?.id }).toSet()
+            val confirmedChampIds = (allySlotConfirmedChampions.mapNotNull { it?.id } + 
+                    enemySlotConfirmedChampions.mapNotNull { it?.id } + 
+                    detectedBannedChampionIds).toSet()
             val confirmedCount = allySlotConfirmedChampions.count { it != null } + enemySlotConfirmedChampions.count { it != null }
 
             val decision = LiteRTVisionClassifier.executeTenthPickInference(
@@ -329,6 +332,7 @@ object DraftVisionScanner {
         allySummonerNamesCache.clear()
         allySlotConfirmedChampions.fill(null)
         enemySlotConfirmedChampions.fill(null)
+        detectedBannedChampionIds.clear()
         allySlotFilters.forEach { it.reset() }
         enemySlotFilters.forEach { it.reset() }
         LiteRTVisionClassifier.reset()
@@ -521,9 +525,15 @@ object DraftVisionScanner {
                     
                     detectedWords.add(text)
 
-                    // Ignorar barra de bans superior (< 0.12f) y botones inferiores extremos (> 0.88f)
-                    // Permitir todos los 5 slots (desde y=0.12 hasta y=0.88)
-                    if (yRatio < 0.12f || yRatio > 0.880f) continue
+                    // Detectar en la barra superior (< 0.12f) si aparecen campeones baneados
+                    if (yRatio < 0.12f) {
+                        val bannedChamp = ChampionNameResolver.findChampionInText(text, allChamps)
+                        if (bannedChamp != null) {
+                            detectedBannedChampionIds.add(bannedChamp.id)
+                        }
+                        continue
+                    }
+                    if (yRatio > 0.880f) continue
 
                     val boxLeftRatio = if (box != null && width > 0) box.left.toFloat() / width.toFloat() else xRatio
                     val boxRightRatio = if (box != null && width > 0) box.right.toFloat() / width.toFloat() else xRatio
@@ -1216,7 +1226,8 @@ object DraftVisionScanner {
         val tenthSlotIndex = tenthTurn.slotIndex
 
         val confirmedChampIds = (allySlots.mapNotNull { it.champion?.id } + enemySlots.mapNotNull { it.champion?.id } +
-                allySlotConfirmedChampions.mapNotNull { it?.id } + enemySlotConfirmedChampions.mapNotNull { it?.id }).toSet()
+                allySlotConfirmedChampions.mapNotNull { it?.id } + enemySlotConfirmedChampions.mapNotNull { it?.id } +
+                detectedBannedChampionIds).toSet()
 
         var detectedTenthChampion: Champion? = null
         var isTenthConfirmed = false
