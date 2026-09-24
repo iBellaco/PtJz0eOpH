@@ -1,6 +1,5 @@
 package com.example.data
 
-import com.example.model.ItemCategory
 import com.example.model.WildRiftItem
 
 object WildRiftItemsData {

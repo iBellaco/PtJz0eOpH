@@ -340,11 +340,13 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     backgroundColor = activeTheme.surfaceVariant,
                     borderColor = if (unreadCount > 0) com.example.ui.theme.HextechGold else activeTheme.cardBorder,
                     glowColor = if (unreadCount > 0) com.example.ui.theme.HextechGold else activeTheme.primary,
-                    enablePulse = true,
-                    modifier = Modifier.graphicsLayer {
-                        scaleX = scaleAnim
-                        scaleY = scaleAnim
-                    }
+                    enablePulse = unreadCount > 0,
+                    modifier = if (unreadCount > 0) {
+                        Modifier.graphicsLayer {
+                            scaleX = scaleAnim
+                            scaleY = scaleAnim
+                        }
+                    } else Modifier
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(

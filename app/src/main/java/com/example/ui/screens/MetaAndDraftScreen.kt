@@ -148,7 +148,6 @@ import com.example.util.SubscriptionManager
 import com.example.model.DamageType
 import com.example.model.DraftAnalysisResult
 import com.example.model.DraftSlot
-import com.example.model.ItemCategory
 import com.example.model.LaneRole
 import com.example.model.MapObjectiveItem
 import com.example.model.RuneItem

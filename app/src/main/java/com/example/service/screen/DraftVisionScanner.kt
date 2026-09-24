@@ -300,14 +300,14 @@ object DraftVisionScanner {
         private var lastConfirmedChampion: Champion? = null
 
         fun process(candidate: Champion?, isUnpicked: Boolean, persistentCache: Champion?): Champion? {
+            if (isUnpicked) {
+                lastConfirmedChampion = null
+                return null
+            }
             val champ = candidate ?: persistentCache ?: lastConfirmedChampion
             if (champ != null) {
                 lastConfirmedChampion = champ
                 return champ
-            }
-            if (isUnpicked) {
-                lastConfirmedChampion = null
-                return null
             }
             return null
         }
@@ -754,6 +754,14 @@ object DraftVisionScanner {
                     slot.champion = detectedChampInSlot
                     slot.confidencePercent = 100
                     slot.isLikelyUnpicked = false
+                } else if (detectedRoleInSlot != null) {
+                    // El slot está mostrando el nombre de la línea asignada (ej. "CALLE CENTRAL", "APOYO", "JUNGLA").
+                    // Esto indica de forma concluyente que el jugador AÚN NO ha seleccionado ningún campeón.
+                    allySlotConfirmedChampions[i] = null
+                    allyOcrChampions[i] = null
+                    slot.champion = null
+                    slot.confidencePercent = 0
+                    slot.isLikelyUnpicked = true
                 } else if (allySlotConfirmedChampions[i] != null) {
                     // Mantener el campeón ya confirmado previamente
                     val existingChamp = allySlotConfirmedChampions[i]
@@ -1211,7 +1219,7 @@ object DraftVisionScanner {
         val targetSlot = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
         val targetAlreadyConfirmed = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] != null else enemySlotConfirmedChampions[tenthSlotIndex] != null
 
-        val shouldRunTenthPick = (confirmedPicksCount >= 7 || (tenthIsAlly && enemyPickedCount >= 3) || (!tenthIsAlly && allyPickedCount >= 4)) && 
+        val shouldRunTenthPick = (confirmedPicksCount >= 9) && 
                 targetSlot.champion == null && !targetAlreadyConfirmed
 
         if (shouldRunTenthPick) {

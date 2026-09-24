@@ -3249,26 +3249,15 @@ private fun OverlayVersusDraftBoard(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     // 1. Nombre del Campeón
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = allyChamp.name,
-                                            color = if (isMyRole) HextechCyan else TextPrimary,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 11.sp,
-                                            maxLines = 1,
-                                            softWrap = false,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                        if (isMyRole) {
-                                            Spacer(modifier = Modifier.width(3.dp))
-                                            Text(
-                                                text = "(TÚ)",
-                                                color = HextechCyan,
-                                                fontWeight = FontWeight.ExtraBold,
-                                                fontSize = 7.5.sp
-                                            )
-                                        }
-                                    }
+                                    Text(
+                                        text = allyChamp.name,
+                                        color = if (isMyRole) HextechCyan else TextPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                     // 2. Estadísticas (WR, Ban, Pick)
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,

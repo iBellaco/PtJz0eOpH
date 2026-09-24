@@ -445,6 +445,7 @@ fun UserInboxDialog(
             val uRef = db.collection("users").document(userUid)
 
             if (messages.isEmpty()) {
+                SubscriptionManager.setUnreadMessagesCount(0)
                 uRef.update(
                     "hasUnreadMessages", false,
                     "unreadMessagesCount", 0

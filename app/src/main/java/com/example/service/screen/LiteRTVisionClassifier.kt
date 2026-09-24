@@ -311,8 +311,8 @@ object LiteRTVisionClassifier {
             return@withContext null
         }
 
-        // Si el draft se encuentra en fases muy tempranas (< 6 selecciones confirmadas en total):
-        if (confirmedPicksCount < 6) {
+        // Si el draft se encuentra en fases previas (< 9 selecciones confirmadas en total):
+        if (confirmedPicksCount < 9) {
             resetStabilityTracker()
             _reportFlow.value = LiteRTInferenceReport(
                 status = EngineStatus.WAITING_FOR_PICKS_1_TO_9,
@@ -420,17 +420,14 @@ object LiteRTVisionClassifier {
         val winnerChamp = bestCandidate.champion
         val finalConfidence = bestCandidate.confidencePercent
 
-        // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO Y FRAMES ESTABLES ULTRA RÁPIDOS PARA EL 10º PICK:
-        // En Wild Rift el 10º pick dispone de muy pocos segundos antes del cierre de selección.
-        // Si la similitud con el tensor es alta (>= 60%), se confirma de inmediato en 1 frame
-        // para garantizar que la selección se registre antes de que la pantalla de draft desaparezca.
+        // CONTROL DE UMBRAL DE CONFIANZA MÍNIMO Y FRAMES ESTABLES PARA EL 10º PICK:
+        // Evita falsos positivos en slots vacíos o durante animaciones de espera.
         val requiredFrames = when {
-            bestCandidate.similarityScore >= 0.60f -> 1 // Confirmación ultra rápida e instantánea
-            bestCandidate.similarityScore >= 0.52f -> 2 // Máximo 2 frames
-            else -> REQUIRED_STABLE_FRAMES
+            bestCandidate.similarityScore >= 0.76f -> 2 // Confirmación rápida para coincidencias muy altas
+            else -> 3
         }
 
-        val passesConfidence = bestCandidate.similarityScore >= 0.52f
+        val passesConfidence = bestCandidate.similarityScore >= 0.68f
 
         if (passesConfidence) {
             if (winnerChamp.id == lastCandidateId) {

@@ -27,17 +27,6 @@ enum class DamageType(val displayName: String) {
     TRUE_HYBRID("Híbrido / Verdadero")
 }
 
-@Serializable
-enum class ItemCategory(val displayName: String, val sectionTitle: String, val iconEmoji: String) {
-    FIGHTER("Luchador", "LUCHADOR", "⚔️"),
-    ASSASSIN("Asesino", "ASESINO", "🗡️"),
-    MARKSMAN("Tirador", "TIRADOR", "🏹"),
-    MAGIC("Mágico", "MÁGICO", "🔮"),
-    DEFENSE("Defensa", "DEFENSA", "🛡️"),
-    SUPPORT("Apoyo", "APOYO", "💚"),
-    BOOTS("Botas", "BOTAS", "🥾")
-}
-
 
 @Serializable
 data class ChampionSkill(
