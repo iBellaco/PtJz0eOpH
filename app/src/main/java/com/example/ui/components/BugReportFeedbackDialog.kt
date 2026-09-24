@@ -2045,7 +2045,7 @@ internal fun ItemCatalogSelectionDialog(
         "boots_t2" -> listOf("Botas Nivel 2")
         "boots_t3" -> listOf("Evolución Nivel 3")
         "boots" -> listOf("Botas")
-        else -> listOf("Todos", "Luchador", "Asesino", "Tirador", "Mágico", "Defensa", "Apoyo", "Botas")
+        else -> listOf("Todos", "Físicos", "Mágicos", "Defensivos", "Apoyo", "Activos", "Nivel Medio", "Básicos")
     }
 
     val items = remember(searchQuery, selectedCat, type, excludedItemIds) {
@@ -2093,16 +2093,16 @@ internal fun ItemCatalogSelectionDialog(
                 "boots" -> matchesSearch && (isBootT2 || isBootT3)
                 else -> {
                     val matchesCat = when (selectedCat) {
-                        "Luchador" -> item.category.equals("Luchador", ignoreCase = true) || item.category.contains("luchador", ignoreCase = true)
-                        "Asesino" -> item.category.equals("Asesino", ignoreCase = true) || item.category.contains("asesino", ignoreCase = true)
-                        "Tirador" -> item.category.equals("Tirador", ignoreCase = true) || item.category.contains("tirador", ignoreCase = true)
-                        "Mágico" -> item.category.equals("Mágico", ignoreCase = true) || item.category.contains("mágico", ignoreCase = true) || item.category.contains("magia", ignoreCase = true)
-                        "Defensa" -> item.category.equals("Defensa", ignoreCase = true) || item.category.contains("defensa", ignoreCase = true)
-                        "Apoyo" -> item.category.equals("Apoyo", ignoreCase = true) || item.category.contains("apoyo", ignoreCase = true) || item.category.contains("soporte", ignoreCase = true)
-                        "Botas" -> isBootItem || item.category.equals("Botas", ignoreCase = true) || item.category.contains("bota", ignoreCase = true)
+                        "Físicos" -> item.category.contains("Físic", ignoreCase = true)
+                        "Mágicos" -> item.category.contains("Mágic", ignoreCase = true)
+                        "Defensivos" -> item.category.contains("Defens", ignoreCase = true)
+                        "Apoyo" -> item.category.contains("Apoyo", ignoreCase = true)
+                        "Activos" -> item.category.contains("Activo", ignoreCase = true)
+                        "Nivel Medio" -> item.category.contains("Medio", ignoreCase = true)
+                        "Básicos" -> item.category.contains("Básico", ignoreCase = true)
                         else -> true
                     }
-                    matchesSearch && matchesCat && (selectedCat == "Botas" || !isBootItem)
+                    matchesSearch && matchesCat && !isBootItem
                 }
             }
         }.sortedWith(

@@ -272,7 +272,13 @@ object SubscriptionManager {
                             val userRead = doc.getBoolean("userRead")
                             val hasNewAdminReply = doc.getBoolean("hasNewAdminReply") == true
                             val hasNewReply = doc.getBoolean("hasNewReply") == true
-                            val isUnread = (isRead == false || userRead == false || hasNewAdminReply || hasNewReply)
+                            val status = doc.getString("status") ?: ""
+                            val isClosed = status.equals("SOLUCIONADO", true) || status.equals("CERRADO", true) || status.equals("CLOSED", true) || status.equals("RESUELTO", true)
+                            val isUnread = if (isClosed) {
+                                false
+                            } else {
+                                hasNewAdminReply || hasNewReply || (userRead == false) || (isRead == false && (doc.contains("adminReply") || doc.contains("conversation")))
+                            }
                             unreadSupportMap[doc.id] = isUnread
                         }
                         checkAndUpdateSupportUnread()
@@ -290,7 +296,13 @@ object SubscriptionManager {
                                 val userRead = doc.getBoolean("userRead")
                                 val hasNewAdminReply = doc.getBoolean("hasNewAdminReply") == true
                                 val hasNewReply = doc.getBoolean("hasNewReply") == true
-                                val isUnread = (isRead == false || userRead == false || hasNewAdminReply || hasNewReply)
+                                val status = doc.getString("status") ?: ""
+                                val isClosed = status.equals("SOLUCIONADO", true) || status.equals("CERRADO", true) || status.equals("CLOSED", true) || status.equals("RESUELTO", true)
+                                val isUnread = if (isClosed) {
+                                    false
+                                } else {
+                                    hasNewAdminReply || hasNewReply || (userRead == false) || (isRead == false && (doc.contains("adminReply") || doc.contains("conversation")))
+                                }
                                 unreadSupportMap[doc.id] = isUnread
                             }
                             checkAndUpdateSupportUnread()

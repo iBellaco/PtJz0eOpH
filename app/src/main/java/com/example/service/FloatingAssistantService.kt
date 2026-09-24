@@ -1181,21 +1181,32 @@ private fun FloatingOverlayContent(
                                             for ((turn, champ) in detectedPicks) {
                                                 if (turn.isAlly) {
                                                     val role = DraftVisionScanner.getAllySlotRole(turn.slotIndex)
-                                                    val roleIdx = defaultRoles.indexOf(role).let { if (it != -1) it else turn.slotIndex }
-                                                    if (manualLockedAllySlots[roleIdx] != true && allies[roleIdx]?.id != champ.id) {
-                                                        assignAllySlot(roleIdx, champ)
+                                                    val roleIdx = defaultRoles.indexOf(role)
+                                                    val emptyIdx = allies.indices.firstOrNull { allies[it] == null && manualLockedAllySlots[it] != true }
+                                                    val targetIdx = when {
+                                                        roleIdx != -1 && allies[roleIdx] == null && manualLockedAllySlots[roleIdx] != true -> roleIdx
+                                                        emptyIdx != null -> emptyIdx
+                                                        manualLockedAllySlots[turn.slotIndex] != true -> turn.slotIndex
+                                                        else -> allies.indices.firstOrNull { manualLockedAllySlots[it] != true } ?: turn.slotIndex
+                                                    }
+                                                    if (manualLockedAllySlots[targetIdx] != true && allies[targetIdx]?.id != champ.id) {
+                                                        assignAllySlot(targetIdx, champ)
                                                         DraftVisionScanner.allySlotConfirmedChampions[turn.slotIndex] = champ
                                                         fastPicksAdded++
-                                                        AppLogger.d("HighPriorityLoop", "Slot Aliado Activo ${turn.slotIndex} ($role) fijado: ${champ.name}")
+                                                        AppLogger.d("HighPriorityLoop", "Slot Aliado Activo ${turn.slotIndex} ($role) fijado en $targetIdx: ${champ.name}")
                                                     }
                                                 } else {
-                                                    val enemyRole = defaultRoles.getOrElse(turn.slotIndex) { LaneRole.TOP }
-                                                    val roleIdx = defaultRoles.indexOf(enemyRole).let { if (it != -1) it else turn.slotIndex }
-                                                    if (manualLockedEnemySlots[roleIdx] != true && enemies[roleIdx]?.id != champ.id) {
-                                                        assignEnemySlot(roleIdx, champ, 100)
+                                                    val emptyIdx = enemies.indices.firstOrNull { enemies[it] == null && manualLockedEnemySlots[it] != true }
+                                                    val targetIdx = when {
+                                                        emptyIdx != null -> emptyIdx
+                                                        manualLockedEnemySlots[turn.slotIndex] != true -> turn.slotIndex
+                                                        else -> enemies.indices.firstOrNull { manualLockedEnemySlots[it] != true } ?: turn.slotIndex
+                                                    }
+                                                    if (manualLockedEnemySlots[targetIdx] != true && enemies[targetIdx]?.id != champ.id) {
+                                                        assignEnemySlot(targetIdx, champ, 100)
                                                         DraftVisionScanner.enemySlotConfirmedChampions[turn.slotIndex] = champ
                                                         fastPicksAdded++
-                                                        AppLogger.d("HighPriorityLoop", "Slot Rival Activo ${turn.slotIndex} fijado: ${champ.name}")
+                                                        AppLogger.d("HighPriorityLoop", "Slot Rival Activo ${turn.slotIndex} fijado en $targetIdx: ${champ.name}")
                                                     }
                                                 }
                                             }

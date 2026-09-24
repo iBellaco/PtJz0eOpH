@@ -118,6 +118,7 @@ object DraftVisionScanner {
     val liveScanFps = kotlinx.coroutines.flow.MutableStateFlow(0f)
     val framesSkippedCount = kotlinx.coroutines.flow.MutableStateFlow(0L)
     val lastProcessingDurationMs = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val isFirstPickState = kotlinx.coroutines.flow.MutableStateFlow(false)
 
     val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
     val allySlotOcrLaneCache = mutableMapOf<Int, LaneRole>()
@@ -1164,35 +1165,41 @@ object DraftVisionScanner {
             }
         }
 
-        val effectiveFirstPick = detectedFirstPick ?: currentIsFirstPick ?: false
+        val effectiveFirstPick = currentIsFirstPick ?: detectedFirstPick ?: false
+        isFirstPickState.value = effectiveFirstPick
         val pickSequence = getDraftPickSequence(effectiveFirstPick)
 
         debugVisualMatches.value = emptyMap()
 
         // -----------------------------------------------------------------------------------------
-        // PASO 3.5: MOTOR GOOGLE MEDIAPIPE / LITER TENSOR CLASSIFIER PARA EL 10º PICK
-        // REGLA CRÍTICA: Se activa EXCLUSIVAMENTE cuando las selecciones del 1 al 9 ya están confirmadas.
-        // Google MediaPipe / LiteRT se encarga de realizar las comparaciones de tensores,
-        // decide de forma autónoma quién es el 10º pick y lo selecciona en el draft.
+        // PASO 3.5: MOTOR GOOGLE MEDIAPIPE / LITE RT TENSOR CLASSIFIER PARA EL 10º PICK
+        // REGLA CRÍTICA:
+        // - Si Rival es 1ª Selección (isFirstPick == false) -> 10º Pick es ALIADO 5 (isAlly = true, slotIndex = 4).
+        // - Si Aliado es 1ª Selección (isFirstPick == true) -> 10º Pick es RIVAL 5 (isAlly = false, slotIndex = 4).
+        // Se activa cuando las 9 selecciones previas están listas o el slot objetivo está pendiente.
         // -----------------------------------------------------------------------------------------
-        val confirmedPicksCount = allySlots.count { it.champion != null } + enemySlots.count { it.champion != null }
+        val allyPickedCount = allySlots.count { it.champion != null }
+        val enemyPickedCount = enemySlots.count { it.champion != null }
+        val confirmedPicksCount = allyPickedCount + enemyPickedCount
         val tenthTurn = pickSequence.last()
         val tenthIsAlly = tenthTurn.isAlly
         val tenthSlotIndex = tenthTurn.slotIndex
 
-        val confirmedChampIds = (allySlots.mapNotNull { it.champion?.id } + enemySlots.mapNotNull { it.champion?.id }).toSet()
+        val confirmedChampIds = (allySlots.mapNotNull { it.champion?.id } + enemySlots.mapNotNull { it.champion?.id } +
+                allySlotConfirmedChampions.mapNotNull { it?.id } + enemySlotConfirmedChampions.mapNotNull { it?.id }).toSet()
 
         var detectedTenthChampion: Champion? = null
         var isTenthConfirmed = false
 
-        // REGLA CRÍTICA DEL USUARIO:
-        // "únicamente la Selección del décimo pick este pues de haber seleccionado las otras 9"
-        // "el escaneo del décimo pick tienes que apuntar al slot final se ve con el yelmo espartano o icono de línea"
-        // Google MediaPipe / LiteRT se activa exclusivamente cuando las selecciones 1 al 9 ya están presentes
-        // y apunta estrictamente al círculo del slot final (slot 5 / index 4).
-        if (confirmedPicksCount == 9) {
-            val targetSlot = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
-            if (targetSlot.champion == null) {
+        val targetSlot = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
+        val targetAlreadyConfirmed = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] != null else enemySlotConfirmedChampions[tenthSlotIndex] != null
+
+        val shouldRunTenthPick = (confirmedPicksCount >= 8 || (tenthIsAlly && enemyPickedCount >= 4) || (!tenthIsAlly && allyPickedCount >= 4)) && 
+                targetSlot.champion == null && !targetAlreadyConfirmed
+
+        if (shouldRunTenthPick) {
+            val targetSlotToCrop = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
+            if (targetSlotToCrop.champion == null) {
                 // Obtener recorte adaptativo multipantalla centrado con total precisión y auto-calibración en el slot final
                 val tenthCrop: Bitmap? = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
                     sourceBitmap = bitmap,

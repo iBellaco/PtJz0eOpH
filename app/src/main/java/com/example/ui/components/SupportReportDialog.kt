@@ -624,6 +624,11 @@ fun SupportReportDialog(
                                         "photos" to base64Photos.toList(),
                                         "createdAt" to Timestamp.now(),
                                         "status" to "PENDIENTE",
+                                        "isRead" to true,
+                                        "userRead" to true,
+                                        "hasNewAdminReply" to false,
+                                        "hasNewReply" to false,
+                                        "hasNewUserReply" to true,
                                         "conversation" to initialConversation,
                                         "appVersion" to "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                                         "device" to "${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})"

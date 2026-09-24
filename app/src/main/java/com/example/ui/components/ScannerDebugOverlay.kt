@@ -33,6 +33,7 @@ fun ScannerDebugOverlay(
     val skippedFrames by DraftVisionScanner.framesSkippedCount.collectAsStateWithLifecycle()
     val lastDurationMs by DraftVisionScanner.lastProcessingDurationMs.collectAsStateWithLifecycle()
     val isBusy by DraftVisionScanner.isVisionEngineBusy.collectAsStateWithLifecycle()
+    val isFirstPickAlly by DraftVisionScanner.isFirstPickState.collectAsStateWithLifecycle()
 
     // OPTIMIZACIÓN DE RENDIMIENTO (60-120 FPS):
     // Recordar pinturas nativas fuera de Canvas para eliminar asignaciones masivas de memoria
@@ -252,20 +253,31 @@ fun ScannerDebugOverlay(
         }
 
         // -------------------------------------------------------------
-        // 3. Círculo de Visión del 10º Pick (Slot Rival 5 / 10º Pick Activo)
+        // 3. Círculo de Visión del 10º Pick (Dinámico según 1ª Selección: Aliado 5 o Rival 5)
         // -------------------------------------------------------------
-        val tenthEnemyY = h * currentConfig.enemySlotYRatios.getOrElse(4) { 0.732f }
-        val tenthEnemyX = w * currentConfig.enemyAvatarCenterX
+        val tenthIsAlly = !isFirstPickAlly
+        val tenthTargetY = if (tenthIsAlly) {
+            h * currentConfig.allySlotYRatios.getOrElse(4) { 0.732f }
+        } else {
+            h * currentConfig.enemySlotYRatios.getOrElse(4) { 0.732f }
+        }
+        val tenthTargetX = if (tenthIsAlly) {
+            w * currentConfig.allyAvatarCenterX
+        } else {
+            w * currentConfig.enemyAvatarCenterX
+        }
+        val tenthLabel = if (tenthIsAlly) "10º PICK (Aliado 5)" else "10º PICK (Rival 5)"
+
         drawCircle(
             color = Color(0xFFFFD700),
-            center = Offset(tenthEnemyX, tenthEnemyY),
+            center = Offset(tenthTargetX, tenthTargetY),
             radius = avatarRadius + 4f,
             style = Stroke(width = 3.0f)
         )
         drawContext.canvas.nativeCanvas.drawText(
-            "10º PICK (Rival 5)",
-            tenthEnemyX.coerceAtMost(w - 52f),
-            tenthEnemyY + avatarRadius + 14f,
+            tenthLabel,
+            tenthTargetX.coerceIn(52f, w - 52f),
+            tenthTargetY + avatarRadius + 14f,
             tenthPickPaint
         )
         

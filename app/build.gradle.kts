@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 658
-    versionName = "1.1.4.2"
+    versionCode = 661
+    versionName = "1.1.4.5"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     val supabaseUrl = (project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "https://yreknglctxujpetgqhnw.supabase.co").trim('\"', '\'')
     val supabaseKey = (project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr").trim('\"', '\'')

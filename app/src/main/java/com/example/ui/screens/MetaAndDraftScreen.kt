@@ -1993,12 +1993,21 @@ private fun ItemsCatalogTab() {
     val allItems = WildRiftRepository.items
 
     val allCategories = remember(allItems) {
-        val priority = listOf("Luchador", "Asesino", "Tirador", "Mágico", "Defensa", "Apoyo", "Botas")
-        val catsFromItems = allItems.map { it.category }.distinct()
-        val combined = (priority + catsFromItems).distinct()
-        combined.sortedBy { cat ->
-            val p = priority.indexOfFirst { cat.contains(it, ignoreCase = true) }
-            if (p >= 0) p else 99
+        val desiredOrder = listOf(
+            "Objetos con Daños Físicos",
+            "Objetos de Daño Mágico",
+            "Objetos Defensivos",
+            "Objetos de Apoyo",
+            "Objetos de Hechizo Activos",
+            "Botas Nivel 2",
+            "Botas Nivel 3",
+            "Objetos de Nivel Medio",
+            "Artículos Básicos"
+        )
+        val catsFromItems = allItems.map { it.category }.filter { it.isNotBlank() }.distinct()
+        catsFromItems.sortedBy { cat ->
+            val idx = desiredOrder.indexOfFirst { cat.equals(it, ignoreCase = true) }
+            if (idx >= 0) idx else 99
         }
     }
 
