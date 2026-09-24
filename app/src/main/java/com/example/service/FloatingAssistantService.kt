@@ -1683,36 +1683,14 @@ private fun FloatingOverlayContent(
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                // Toggle Clasificatoria Legendaria / Estándar
-                                Surface(
-                                    modifier = Modifier
-                                        .clickable { isLegendaryQueue = !isLegendaryQueue },
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = if (isLegendaryQueue) Color(0xFF581C87).copy(alpha = 0.5f) else Color(0xFF1E293B),
-                                    border = BorderStroke(1.dp, if (isLegendaryQueue) Color(0xFFC084FC) else HextechGold.copy(alpha = 0.4f))
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center
-                                    ) {
-                                        Text(
-                                            text = if (isLegendaryQueue) tr("Legendaria") else tr("Clasificatoria"),
-                                            color = if (isLegendaryQueue) Color(0xFFE9D5FF) else HextechGold,
-                                            fontSize = 8.5.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-
                                 val isLiveVisionActive by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
-                                // Botón de Visión en Vivo (Superposición en tiempo real sobre la pantalla de Wild Rift)
+                                // Botón de Visión en Vivo (Solo emoji/icono de ojo, sin texto)
                                 Surface(
                                     modifier = Modifier
-                                        .height(28.dp)
+                                        .size(28.dp)
                                         .clickable {
                                             com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !isLiveVisionActive
                                         }
@@ -1721,30 +1699,20 @@ private fun FloatingOverlayContent(
                                     color = if (isLiveVisionActive) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
                                     border = BorderStroke(1.dp, if (isLiveVisionActive) HextechCyan else HextechCyan.copy(alpha = 0.6f))
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
+                                    Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = if (isLiveVisionActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                             contentDescription = "Visión en Vivo",
                                             tint = if (isLiveVisionActive) HextechCyan else TextSecondary,
-                                            modifier = Modifier.size(13.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = if (isLiveVisionActive) tr("Visión ON") else tr("Visión en Vivo"),
-                                            color = if (isLiveVisionActive) HextechCyan else TextSecondary,
-                                            fontSize = 8.5.sp,
-                                            fontWeight = FontWeight.Bold
+                                            modifier = Modifier.size(16.dp)
                                         )
                                     }
                                 }
 
-                                // Botón de Depurado LiteRT
+                                // Botón de Depurado LiteRT (Solo icono)
                                 Surface(
                                     modifier = Modifier
-                                        .height(28.dp)
+                                        .size(28.dp)
                                         .clickable {
                                             showLiteRTViewer = true
                                         }
@@ -1753,22 +1721,12 @@ private fun FloatingOverlayContent(
                                     color = if (showLiteRTViewer) HextechCyan.copy(alpha = 0.35f) else Color(0xFF1E293B),
                                     border = BorderStroke(1.dp, if (showLiteRTViewer) HextechCyan else HextechCyan.copy(alpha = 0.6f))
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
+                                    Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Default.BugReport,
                                             contentDescription = "Depurado",
                                             tint = HextechCyan,
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = tr("Depurar"),
-                                            color = HextechCyan,
-                                            fontSize = 8.5.sp,
-                                            fontWeight = FontWeight.Bold
+                                            modifier = Modifier.size(15.dp)
                                         )
                                     }
                                 }
@@ -1780,17 +1738,18 @@ private fun FloatingOverlayContent(
                                         .clickable {
                                             isExpanded = false
                                             onExpandedChange(false)
-                                        },
+                                        }
+                                        .testTag("btn_minimize_hub"),
                                     shape = RoundedCornerShape(6.dp),
-                                    color = Color(0xFF1E293B),
-                                    border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
+                                    color = HextechGold.copy(alpha = 0.15f),
+                                    border = BorderStroke(1.dp, HextechGold)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Default.UnfoldLess,
                                             contentDescription = "Minimizar a Burbuja",
                                             tint = HextechGold,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(18.dp)
                                         )
                                     }
                                 }
@@ -3093,70 +3052,6 @@ private fun OverlayVersusDraftBoard(
                             fontWeight = FontWeight.Bold,
                             fontSize = 9.5.sp
                         )
-                    }
-                }
-
-                // Botón Visión en Vivo en Versus Board
-                val isBoardLiveVisionActive by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
-                Spacer(modifier = Modifier.width(6.dp))
-                Surface(
-                    modifier = Modifier
-                        .clickable {
-                            com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !isBoardLiveVisionActive
-                        }
-                        .testTag("btn_live_vision_versus_board"),
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (isBoardLiveVisionActive) HextechCyan.copy(alpha = 0.25f) else HextechDarkBg,
-                    border = BorderStroke(1.dp, if (isBoardLiveVisionActive) HextechCyan else HextechCardBorder.copy(alpha = 0.5f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = if (isBoardLiveVisionActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = "Visión en Vivo",
-                            tint = if (isBoardLiveVisionActive) HextechCyan else TextSecondary,
-                            modifier = Modifier.size(11.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = if (isBoardLiveVisionActive) tr("Visión ON") else tr("Visión en Vivo"),
-                            color = if (isBoardLiveVisionActive) HextechCyan else TextSecondary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 9.5.sp
-                        )
-                    }
-                }
-
-                if (onOpenLiteRTViewer != null) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Surface(
-                        modifier = Modifier
-                            .clickable { onOpenLiteRTViewer.invoke() }
-                            .testTag("btn_debug_versus_board"),
-                        shape = RoundedCornerShape(12.dp),
-                        color = HextechCyan.copy(alpha = 0.15f),
-                        border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.6f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.BugReport,
-                                contentDescription = "Depurado",
-                                tint = HextechCyan,
-                                modifier = Modifier.size(11.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = tr("Depurado"),
-                                color = HextechCyan,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 9.5.sp
-                            )
-                        }
                     }
                 }
             }
