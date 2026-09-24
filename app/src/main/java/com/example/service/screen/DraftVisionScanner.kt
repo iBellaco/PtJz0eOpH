@@ -644,19 +644,65 @@ object DraftVisionScanner {
                             ?: DraftValidationLayer.parseRoleFromText(line)
 
                         if (role != null) {
-                            // REGLA ESTRICTA DE UNICIDAD DE LÍNEAS EN WILD RIFT:
-                            // En un equipo nunca se repite una línea. Si otro slot ya tiene esta línea asignada
-                            // (especialmente si ya eligió un campeón o ya tenía su línea confirmada),
-                            // ningún otro slot puede tomar esa misma línea.
-                            val isRoleClaimedByOther = (0..4).any { otherSlot ->
+                            // REGLA ESTRICTA DE UNICIDAD Y DETECCIÓN DE CAMBIOS DE LÍNEA / SWAPS EN WILD RIFT:
+                            // 1. Si ya se detectó una línea, nunca debe repetirse en otro slot (las 5 líneas son únicas).
+                            // 2. Si un campeón ya fue elegido para esa línea, no se debe poner otro campeón en la misma línea.
+                            // 3. Si las líneas cambian de lugar (ej. Soporte y Tirador suben arriba mediante intercambio de turno),
+                            //    debemos detectar dinámicamente el swap y reubicar las líneas en lugar de mantenerlas abajo fijas.
+                            val otherSlotWithRole = (0..4).firstOrNull { otherSlot ->
                                 otherSlot != i && (
-                                    (allySlotConfirmedChampions[otherSlot] != null && allySlotRolesCache[otherSlot] == role) ||
+                                    (allySlotConfirmedChampions[otherSlot] != null && (allySlotRolesCache[otherSlot] == role || allySlotOcrLaneCache[otherSlot] == role)) ||
                                     (allySlots[otherSlot].champion != null && (allySlotRolesCache[otherSlot] == role || allySlots[otherSlot].explicitRole == role)) ||
-                                    (allySlotOcrLaneCache[otherSlot] == role)
+                                    (allySlotOcrLaneCache[otherSlot] == role) ||
+                                    (allySlotRolesCache[otherSlot] == role)
                                 )
                             }
 
-                            if (!isRoleClaimedByOther) {
+                            if (otherSlotWithRole != null) {
+                                val otherHasLockedChamp = allySlotConfirmedChampions[otherSlotWithRole] != null ||
+                                    (allySlots[otherSlotWithRole].champion != null && (allySlotRolesCache[otherSlotWithRole] == role || allySlots[otherSlotWithRole].explicitRole == role))
+
+                                if (otherHasLockedChamp) {
+                                    // El otro slot ya tiene un campeón elegido y confirmado para esta línea;
+                                    // no se permite sobrescribir ni duplicar la línea con otro campeón.
+                                    AppLogger.d(TAG, "Línea ${role.shortName} bloqueada para Slot $i: campeón en Slot $otherSlotWithRole ya eligió para esa línea")
+                                } else {
+                                    // ¡INTERCAMBIO DE POSICIÓN / PICK SWAP DETECTADO!
+                                    // El rol ahora está visible en el Slot i (ej: Soporte o ADC subió a los slots superiores).
+                                    // Realizamos un intercambio limpio entre Slot i y otherSlotWithRole para no duplicar.
+                                    val oldRoleInSlotI = allySlotOcrLaneCache[i] ?: allySlotRolesCache[i] ?: slot.explicitRole
+                                    detectedRoleInSlot = role
+                                    slot.explicitRole = role
+                                    allySlotRolesCache[i] = role
+                                    allySlotOcrLaneCache[i] = role
+
+                                    if (oldRoleInSlotI != null && oldRoleInSlotI != role) {
+                                        // Intercambio simétrico: el otro slot pasa a la línea que tenía este slot
+                                        allySlotRolesCache[otherSlotWithRole] = oldRoleInSlotI
+                                        allySlotOcrLaneCache[otherSlotWithRole] = oldRoleInSlotI
+                                        allySlots[otherSlotWithRole].explicitRole = oldRoleInSlotI
+                                        AppLogger.d(TAG, "¡Swap detectado! Slot $i pasa a ${role.shortName}, Slot $otherSlotWithRole pasa a ${oldRoleInSlotI.shortName}")
+                                    } else {
+                                        // Si el slot i no tenía línea previa, liberamos al otro slot para evitar duplicación
+                                        allySlotRolesCache.remove(otherSlotWithRole)
+                                        allySlotOcrLaneCache.remove(otherSlotWithRole)
+                                        allySlots[otherSlotWithRole].explicitRole = null
+                                        AppLogger.d(TAG, "¡Swap detectado! Slot $i toma ${role.shortName}; liberado Slot $otherSlotWithRole para evitar duplicados")
+                                    }
+
+                                    textDiagnosticsList.add(
+                                        TextBlockDiagnostic(
+                                            text = line,
+                                            rect = box ?: Rect(0, 0, 10, 10),
+                                            isAlly = true,
+                                            slotIndex = i,
+                                            tag = "LÍNEA: ${role.shortName} (Cambio/Swap)",
+                                            color = android.graphics.Color.CYAN
+                                        )
+                                    )
+                                }
+                            } else {
+                                // No hay conflicto: asignación limpia de línea única para este slot
                                 detectedRoleInSlot = role
                                 slot.explicitRole = role
                                 allySlotRolesCache[i] = role
@@ -671,9 +717,7 @@ object DraftVisionScanner {
                                         color = android.graphics.Color.CYAN
                                     )
                                 )
-                                AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea: ${role.shortName} (Esperando selección)")
-                            } else {
-                                AppLogger.d(TAG, "Línea ${role.shortName} descartada en Slot $i: ya asignada y única en otro slot")
+                                AppLogger.d(TAG, "OCR Aliado Slot $i -> Línea asignada: ${role.shortName} (Esperando selección)")
                             }
                         }
                     }

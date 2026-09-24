@@ -67,21 +67,31 @@ object AdaptiveScreenLayoutEngine {
         val ratio = geometry.aspectRatio
 
         // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla:
-        // - Columna aliada (izquierda): el avatar circular está centrado en x ≈ 0.076f (después de los hechizos de invocador)
-        // - Columna rival (derecha): el avatar circular está centrado en x ≈ 0.962f (al extremo derecho del slot rival, tras el texto OCR)
-        val adaptiveAllyCenterX = baseConfig.allyAvatarCenterX
-        val adaptiveEnemyCenterX = if (baseConfig.enemyAvatarCenterX == 0.928f) 0.962f else baseConfig.enemyAvatarCenterX
+        // - Columna aliada (izquierda): avatar circular centrado en x ≈ 0.072f (junto a hechizos de invocador)
+        // - Columna rival (derecha): avatar circular centrado en x ≈ 0.959f (al extremo derecho del slot rival)
+        // En tablets/plegables (ratio < 1.65f), la pantalla es más estrecha respecto al alto; se escala suavemente hacia adentro
+        // para garantizar que los avatares y el texto OCR no colisionen con los bordes físicos.
+        val tabletScale = if (geometry.isTabletOrFoldable) (BASE_ASPECT_RATIO / ratio).coerceIn(1.0f, 1.25f) else 1.0f
+        val adaptiveAllyCenterX = (baseConfig.allyAvatarCenterX * tabletScale).coerceIn(0.065f, 0.110f)
+        val adaptiveEnemyCenterX = (1.0f - (1.0f - baseConfig.enemyAvatarCenterX) * tabletScale).coerceIn(0.890f, 0.965f)
+
+        val adaptiveAllySlotXRatios = baseConfig.allySlotXRatios.map { 
+            (it * tabletScale).coerceIn(0.065f, 0.110f) 
+        }
+        val adaptiveEnemySlotXRatios = baseConfig.enemySlotXRatios.map { 
+            (1.0f - (1.0f - it) * tabletScale).coerceIn(0.890f, 0.965f) 
+        }
 
         // Rango de búsqueda OCR adaptativo:
-        // El texto del slot aliado está a la derecha del avatar (entre x ≈ 0.050 y x ≈ 0.280).
+        // El texto del slot aliado está a la derecha del avatar.
         // Captura tanto nombres cortos ("MID", "APOYO") como nombres largos ("CALLE DEL BARÓN", "CALLE DEL DRAGÓN").
-        // JAMÁS debe invadir el carrusel central de selección de campeones (x >= 0.285).
-        val allyOcrMinX = 0.050f
-        val allyOcrMaxX = 0.280f
+        // JAMÁS debe invadir el carrusel central de selección de campeones (x >= 0.285 en móviles, x >= 0.330 en tablets).
+        val allyOcrMinX = (adaptiveAllyCenterX - 0.022f).coerceAtLeast(0.035f)
+        val allyOcrMaxX = (adaptiveAllyCenterX + 0.210f).coerceAtMost(0.315f)
 
-        // El texto del slot rival está a la izquierda del avatar rival (entre x ≈ 0.700 y x ≈ 0.950).
-        val enemyOcrMinX = 0.700f
-        val enemyOcrMaxX = 0.950f
+        // El texto del slot rival está a la izquierda del avatar rival.
+        val enemyOcrMinX = (adaptiveEnemyCenterX - 0.260f).coerceAtLeast(0.680f)
+        val enemyOcrMaxX = (adaptiveEnemyCenterX - 0.009f).coerceAtMost(0.965f)
 
         // Ajuste de las posiciones horizontales de la barra superior (los 10 avatares de la cabecera)
         // En tablets los avatares superiores están ligeramente más comprimidos hacia el centro; en ultrawide hacia los bordes.
@@ -103,6 +113,8 @@ object AdaptiveScreenLayoutEngine {
             allyAvatarCenterX = adaptiveAllyCenterX,
             enemyAvatarCenterX = adaptiveEnemyCenterX,
             avatarDiameterRatio = baseConfig.avatarDiameterRatio,
+            allySlotXRatios = adaptiveAllySlotXRatios,
+            enemySlotXRatios = adaptiveEnemySlotXRatios,
             allyOcrMinX = allyOcrMinX,
             allyOcrMaxX = allyOcrMaxX,
             enemyOcrMinX = enemyOcrMinX,
@@ -160,8 +172,8 @@ object AdaptiveScreenLayoutEngine {
         val targetDiam = (height * config.getSlotDiameter(isAlly, sIdx)).toInt().coerceAtLeast(32)
         val radius = targetDiam / 2
 
-        // Ventana de búsqueda controlada alrededor de la posición nominal
-        val margin = (targetDiam * 0.12f).toInt()
+        // Ventana de búsqueda adaptativa alrededor de la posición nominal para soporte multidispositivo
+        val margin = (targetDiam * 0.20f).toInt()
         val searchLeft = (cxNominal - radius - margin).coerceIn(0, width - 1)
         val searchRight = (cxNominal + radius + margin).coerceIn(0, width)
         val searchTop = (cyNominal - radius - margin).coerceIn(0, height - 1)
@@ -221,9 +233,9 @@ object AdaptiveScreenLayoutEngine {
         val expectedMinDiam = (targetDiam * 0.75f).toInt()
         val expectedMaxDiam = (targetDiam * 1.25f).toInt()
 
-        // Restricción estricta de desviación máxima respecto al centro nominal (máximo 12%)
-        val maxDevX = (targetDiam * 0.12f).toInt()
-        val maxDevY = (targetDiam * 0.12f).toInt()
+        // Restricción de desviación máxima respecto al centro nominal (máximo 18% para multidispositivo)
+        val maxDevX = (targetDiam * 0.18f).toInt()
+        val maxDevY = (targetDiam * 0.18f).toInt()
 
         val actualCx = if (ringPixelCount >= 18 && (maxRingX - minRingX) in expectedMinDiam..expectedMaxDiam && kotlin.math.abs(((minRingX + maxRingX) / 2) - cxNominal) <= maxDevX) {
             ((minRingX + maxRingX) / 2).coerceIn(radius, width - radius)

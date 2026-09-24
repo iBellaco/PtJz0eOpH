@@ -1255,16 +1255,22 @@ private fun FloatingOverlayContent(
                                                 }
                                             }
 
-                                            // Preservar campeones aliados no asignados
+                                            // Preservar campeones aliados no asignados con correspondencia de rol estricta
                                             for (slotIdx in 0..4) {
                                                 val champ = result.alliesBySlot[slotIdx] ?: continue
                                                 val isAlreadyInAllies = allies.any { it?.id == champ.id }
                                                 if (!isAlreadyInAllies) {
-                                                    val emptyIdx = allies.indices.firstOrNull { allies[it] == null && manualLockedAllySlots[it] != true }
-                                                    if (emptyIdx != null) {
-                                                        assignAllySlot(emptyIdx, champ)
+                                                    val targetRole = DraftVisionScanner.allySlotRolesCache[slotIdx] ?: champ.primaryRole
+                                                    val roleIdx = defaultRoles.indexOf(targetRole)
+                                                    val targetIdx = if (roleIdx in 0..4 && allies[roleIdx] == null && manualLockedAllySlots[roleIdx] != true) {
+                                                        roleIdx
+                                                    } else {
+                                                        allies.indices.firstOrNull { allies[it] == null && manualLockedAllySlots[it] != true }
+                                                    }
+                                                    if (targetIdx != null) {
+                                                        assignAllySlot(targetIdx, champ)
                                                         newAlliesAdded++
-                                                        AppLogger.d(TAG, "Campeón aliado detectado asignado a slot vacío $emptyIdx: ${champ.name}")
+                                                        AppLogger.d(TAG, "Campeón aliado detectado asignado a slot $targetIdx (${defaultRoles[targetIdx].shortName}): ${champ.name}")
                                                     }
                                                 }
                                             }
