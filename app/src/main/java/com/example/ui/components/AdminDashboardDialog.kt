@@ -174,13 +174,9 @@ fun AdminDashboardDialog(
     var showDatabaseConsumptionDialog by remember { mutableStateOf(false) }
     var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
-    var showItemsManagerDialog by remember { mutableStateOf(false) }
     var isMonitoringMinimized by remember { mutableStateOf(false) }
 
     // Sub-dialogs
-    if (showItemsManagerDialog) {
-        AdminItemsManagerDialog(onDismiss = { showItemsManagerDialog = false })
-    }
     if (showReportsPanel) {
         AdminFeedbackBottomSheet(onDismiss = { showReportsPanel = false })
     }
@@ -224,7 +220,6 @@ fun AdminDashboardDialog(
                 showDatabaseConsumptionDialog -> showDatabaseConsumptionDialog = false
                 showSponsorModerationDialog -> showSponsorModerationDialog = false
                 showSponsorPanelDialog -> showSponsorPanelDialog = false
-                showItemsManagerDialog -> showItemsManagerDialog = false
                 else -> onDismiss()
             }
         },
@@ -243,7 +238,6 @@ fun AdminDashboardDialog(
                 showDatabaseConsumptionDialog -> showDatabaseConsumptionDialog = false
                 showSponsorModerationDialog -> showSponsorModerationDialog = false
                 showSponsorPanelDialog -> showSponsorPanelDialog = false
-                showItemsManagerDialog -> showItemsManagerDialog = false
                 else -> onDismiss()
             }
         }
@@ -265,7 +259,6 @@ fun AdminDashboardDialog(
                     onOpenCpmAnalytics = { showCpmAnalyticsDialog = true },
                     onOpenDatabaseConsumption = { showDatabaseConsumptionDialog = true },
                     onOpenSponsorPanel = { showSponsorPanelDialog = true },
-                    onOpenItemsManager = { showItemsManagerDialog = true },
                     isFullAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
                 )
 
@@ -309,7 +302,6 @@ private fun AdminDashboardHeader(
     onOpenCpmAnalytics: () -> Unit = {},
     onOpenDatabaseConsumption: () -> Unit = {},
     onOpenSponsorPanel: () -> Unit = {},
-    onOpenItemsManager: () -> Unit = {},
     isFullAdmin: Boolean = true
 ) {
     Surface(
@@ -380,19 +372,6 @@ private fun AdminDashboardHeader(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Botón Objetos / Categorías
-                AnimatedAdminActionButton(
-                    onClick = onOpenItemsManager,
-                    modifier = Modifier.weight(1.1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold.copy(alpha = 0.25f)),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 6.dp)
-                ) {
-                    Icon(Icons.Default.Category, contentDescription = null, tint = HextechGold, modifier = Modifier.size(12.dp))
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text("Objetos", fontSize = 9.sp, color = HextechGold, fontWeight = FontWeight.Bold, maxLines = 1)
-                }
-
                 // Botón Soporte
                 AnimatedAdminActionButton(
                     onClick = onOpenFeedbackAndSupport,
