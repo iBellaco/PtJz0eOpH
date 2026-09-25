@@ -238,12 +238,14 @@ object WildRiftRepository {
         return champions.find { it.id.equals(id, ignoreCase = true) }
     }
 
+    var syncCycle: Int = 0
+
     fun computeChampionsForRegionAndTier(
         sourceList: List<Champion>,
         regionId: String,
         tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS
     ): List<Champion> {
-        val seed = (regionId.hashCode() * 31L) + (tencentTier.name.hashCode() * 17L)
+        val seed = (regionId.hashCode() * 31L) + (tencentTier.name.hashCode() * 17L) + (syncCycle.toLong() * 997L)
 
         return sourceList.map { champ ->
             val champRandom = java.util.Random(seed + champ.id.hashCode().toLong())
@@ -468,6 +470,7 @@ object WildRiftRepository {
     }
 
     fun simulateRegionStatsChange(regionId: String) {
+        syncCycle++
         updateStatsForRegionAndTier(regionId, com.example.data.sync.ChineseMetaSyncService.currentTier.value)
     }
 

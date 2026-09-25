@@ -84,6 +84,7 @@ import com.example.ui.components.AppAssetImage
 import com.example.ui.components.ChampionAvatar
 import com.example.ui.components.FormattedWildRiftText
 import com.example.ui.components.SparklineTrendGraph
+import com.example.ui.components.DetailedTrendGraphCard
 import com.example.ui.theme.AllyBlue
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.HextechCardBorder
@@ -454,7 +455,9 @@ fun ChampionDetailSheet(
                             SparklineTrendGraph(
                                 winrate = roleProfile.winrate,
                                 delta = roleProfile.winrateDelta,
-                                modifier = Modifier.width(48.dp).height(20.dp)
+                                modifier = Modifier.width(92.dp),
+                                showTimeLabels = true,
+                                showFullText = true
                             )
                             Text(
                                 text = tr("Tendencia en Vivo"),
@@ -519,6 +522,14 @@ fun ChampionDetailSheet(
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Tarjeta analítica de tendencia: hace 24 horas vs. hace 1 hora vs. ahora
+                    DetailedTrendGraphCard(
+                        winrate = roleProfile.winrate,
+                        delta = roleProfile.winrateDelta
+                    )
                 }
             }
 

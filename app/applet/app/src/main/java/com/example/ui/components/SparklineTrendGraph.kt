@@ -34,7 +34,7 @@ fun SparklineTrendGraph(
     delta: Double,
     modifier: Modifier = Modifier,
     showTimeLabels: Boolean = true,
-    showFullText: Boolean = true,
+    showFullText: Boolean = false,
     canvasHeight: Int = 20
 ) {
     val roundedWinrate = Math.round(winrate * 100.0) / 100.0
@@ -184,15 +184,14 @@ fun SparklineTrendGraph(
                     )
                     Text(
                         text = if (showFullText) tr("hace 24 horas") else tr("hace 24h"),
-                        color = HextechCyan.copy(alpha = 0.95f),
-                        fontSize = if (showFullText) 7.2.sp else 7.sp,
+                        color = HextechCyan.copy(alpha = 0.9f),
+                        fontSize = if (showFullText) 8.5.sp else 7.5.sp,
                         fontWeight = FontWeight.SemiBold,
-                        letterSpacing = (-0.3).sp,
-                        maxLines = 1
+                        letterSpacing = (-0.2).sp
                     )
                 }
 
-                // Indicador hace una hora
+                // Indicador hace 1 hora
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(1.5.dp)
@@ -204,12 +203,11 @@ fun SparklineTrendGraph(
                             .background(HextechGold)
                     )
                     Text(
-                        text = if (showFullText) tr("hace una hora") else tr("hace 1h"),
+                        text = if (showFullText) tr("hace 1 hora") else tr("hace 1h"),
                         color = HextechGold,
-                        fontSize = if (showFullText) 7.2.sp else 7.sp,
+                        fontSize = if (showFullText) 8.5.sp else 7.5.sp,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.3).sp,
-                        maxLines = 1
+                        letterSpacing = (-0.2).sp
                     )
                 }
             }
@@ -253,7 +251,7 @@ fun DetailedTrendGraphCard(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "⚡ " + tr("Actualizado hace una hora"),
+                    text = "⚡ " + tr("Actualizado hace 1 hora"),
                     color = HextechCyan,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Medium
@@ -304,7 +302,7 @@ fun DetailedTrendGraphCard(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
-                // Hace una hora
+                // Hace 1 hora
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -314,7 +312,7 @@ fun DetailedTrendGraphCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = tr("hace una hora"),
+                        text = tr("hace 1 hora"),
                         color = HextechGold,
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Medium

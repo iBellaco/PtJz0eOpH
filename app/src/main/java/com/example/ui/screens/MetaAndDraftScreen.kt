@@ -1689,6 +1689,79 @@ fun TierListTab(
             }
         }
 
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = HextechSurface.copy(alpha = 0.85f)),
+                border = androidx.compose.foundation.BorderStroke(0.6.dp, HextechCardBorder)
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "📈 " + tr("Gráfica de Tendencia:"),
+                                color = HextechGold,
+                                fontSize = if (isOverlay) 9.5.sp else 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = tr("hace 24 horas y hace una hora"),
+                                color = HextechCyan,
+                                fontSize = if (isOverlay) 8.5.sp else 10.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF00FF7F))
+                            )
+                            Text(
+                                text = tr("En vivo"),
+                                color = Color(0xFF00FF7F),
+                                fontSize = if (isOverlay) 8.sp else 9.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(HextechCyan))
+                            Text(tr("hace 24 horas"), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                        Text("➔", color = TextMuted, fontSize = 8.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(HextechGold))
+                            Text(tr("hace una hora"), color = HextechGold, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Text("➔", color = TextMuted, fontSize = 8.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(Color(0xFF00FF7F)))
+                            Text(tr("Ahora (Actualizado)"), color = Color(0xFF00FF7F), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+
         if (selectedSort == TierSortOption.BY_TIER) {
             // Tier S+ / T0
             if (tierSPlus.isNotEmpty()) {
@@ -1853,7 +1926,9 @@ fun TierListTab(
                                 if (!isOverlay) { SparklineTrendGraph(
                                     winrate = champ.winrate,
                                     delta = champ.winrateDelta,
-                                    modifier = Modifier.width(46.dp).height(22.dp)
+                                    modifier = Modifier.width(92.dp),
+                                    showTimeLabels = true,
+                                    showFullText = true
                                 ) }
                                 Column(horizontalAlignment = Alignment.End) {
                                     when (selectedSort) {
@@ -1944,7 +2019,9 @@ fun TierSectionCard(
                             if (!isOverlay) { SparklineTrendGraph(
                                 winrate = champ.winrate,
                                 delta = champ.winrateDelta,
-                                modifier = Modifier.width(46.dp).height(22.dp)
+                                modifier = Modifier.width(92.dp),
+                                showTimeLabels = true,
+                                showFullText = true
                             ) }
                             Column(horizontalAlignment = Alignment.End) {
                                 Row(
@@ -5254,6 +5331,35 @@ fun TierSelectionPanel(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Botón Sincronizar / Actualizar Tier List
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(HextechCyan.copy(alpha = 0.2f))
+                            .border(0.8.dp, HextechCyan, RoundedCornerShape(6.dp))
+                            .clickable {
+                                coroutineScope.launch {
+                                    ChineseMetaSyncService.syncChineseMeta(context, currentTier, forceRefresh = true)
+                                }
+                            }
+                            .padding(horizontal = 8.dp, vertical = 3.5.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.Sync,
+                                contentDescription = null,
+                                tint = HextechCyan,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = if (isSyncing) tr("Sincronizando...") else tr("Actualizar"),
+                                color = HextechCyan,
+                                fontSize = if (isOverlay) 8.5.sp else 9.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
                     // Botón Estadísticas Multi-Servidor
                     Box(
                         modifier = Modifier
@@ -5420,7 +5526,7 @@ fun TierSelectionPanel(
                         Text(
                             text = if (isOnline) {
                                 if (isSyncing) "⏳ " + tr("Sincronizando...")
-                                else "⚡ " + tr("Actualizado:") + " $lastSyncFormattedTime"
+                                else "⚡ " + tr("Actualizado hace una hora") + if (lastSyncFormattedTime.isNotBlank()) " ($lastSyncFormattedTime)" else " (" + tr("En vivo") + ")"
                             } else {
                                 "⚠️ " + tr("Sin conexión • Última estadística:") + " $lastSyncFormattedTime"
                             },
