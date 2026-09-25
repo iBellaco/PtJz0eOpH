@@ -227,12 +227,12 @@
         "lane": "TOP",
         "coreItems": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "Guardia gemela de amaranto"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "Guardia gemela de amaranto",
           "Guantelete de Sterak",
           "malla de espinas"
@@ -796,8 +796,8 @@
           "Hoja del Ocaso de Draktharr",
           "Colmillo de serpiente",
           "El rencor de Serylda",
-          "Cielo desgarrado",
-          "Ángel custodio"
+          "Firmamento desgarrado",
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -1606,15 +1606,15 @@
         "lane": "JG",
         "coreItems": [
           "fuerza de vendaval",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Saludos de Dominik"
         ],
         "items": [
           "fuerza de vendaval",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Saludos de Dominik",
           "Filo de la noche",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -1776,12 +1776,12 @@
         "lane": "JG",
         "coreItems": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "La danza de la muerte"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "La danza de la muerte",
           "Guardia gemela de amaranto",
           "Guantelete de Sterak"
@@ -2457,12 +2457,12 @@
         "title": "TOP - Daño con aguante",
         "lane": "TOP",
         "coreItems": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Cuchilla negra",
           "Lanza de Shojin"
         ],
         "items": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Cuchilla negra",
           "Lanza de Shojin",
           "La danza de la muerte",
@@ -2728,7 +2728,7 @@
           "Eclipse",
           "La danza de la muerte",
           "El rencor de Serylda",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -2753,15 +2753,15 @@
         "lane": "TOP",
         "coreItems": [
           "Eclipse",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "La danza de la muerte"
         ],
         "items": [
           "Eclipse",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "La danza de la muerte",
           "El rencor de Serylda",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3189,7 +3189,7 @@
           "sanguinario",
           "Borde infinito",
           "Saludos de Dominik",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3873,12 +3873,12 @@
         "lane": "JG",
         "coreItems": [
           "Fuerza trinitaria",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "La danza de la muerte"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "La danza de la muerte",
           "Guardia gemela de amaranto",
           "Lanza de Shojin"
@@ -3887,7 +3887,7 @@
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [],
         "situationalItems": [
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "primaryRune": "Conquistador",
         "secondaryRunes": [
@@ -4571,7 +4571,7 @@
           "Fuerza trinitaria",
           "El rencor de Serylda",
           "Lanza de Shojin",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "runes": "Pies veloces, Brutal, Derribado, Leyenda: Linaje, Trascendencia",
         "title": "Build Híbrida / Escalar",
@@ -5383,7 +5383,7 @@
           "Grebas codiciosas"
         ],
         "situationalItems": [
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "primaryRune": "Primer golpe",
         "secondaryRunes": [
@@ -5808,8 +5808,8 @@
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [],
         "situationalItems": [
-          "Ángel custodio",
-          "Espada del Rey Arruinado"
+          "Ángel de la guarda",
+          "Hoja del rey arruinado"
         ],
         "primaryRune": "Compás letal",
         "secondaryRunes": [
@@ -5926,16 +5926,16 @@
         "title": "TOP - Daño continuo",
         "lane": "TOP",
         "coreItems": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Blaster magnético",
           "Recordatorio mortal"
         ],
         "items": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Blaster magnético",
           "Recordatorio mortal",
           "Borde infinito",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -6387,7 +6387,7 @@
     "spellsIcons": [],
     "coreItems": [
       "Verdugo de Krakens",
-      "Espada del Rey Arruinado",
+      "Hoja del rey arruinado",
       "Arcoescudo inmortal"
     ],
     "coreItemsIcons": [],
@@ -6454,12 +6454,12 @@
         "lane": "ADC",
         "coreItems": [
           "Verdugo de Krakens",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Terminus"
         ],
         "items": [
           "Verdugo de Krakens",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Terminus",
           "Bailarín Espectral",
           "Ángel de la Guarda"
@@ -6524,7 +6524,7 @@
           "Filo de la noche",
           "El rencor de Serylda",
           "Colmillo de serpiente",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -6647,12 +6647,12 @@
         "coreItems": [
           "Verdugo de Krakens",
           "Hoja de furia de Guinsoo",
-          "Espada del Rey Arruinado"
+          "Hoja del rey arruinado"
         ],
         "items": [
           "Verdugo de Krakens",
           "Hoja de furia de Guinsoo",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Terminus",
           "Guardia gemela de amaranto"
         ],
@@ -7197,12 +7197,12 @@
         "lane": "JG",
         "coreItems": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "La danza de la muerte"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "La danza de la muerte",
           "Guardia gemela de amaranto",
           "Fuerza de la naturaleza"
@@ -7276,7 +7276,7 @@
       "Recordatorio mortal",
       "Muramana",
       "Borde infinito",
-      "La Sanguinaria"
+      "Sanguinaria"
     ],
     "coreItemsIcons": [],
     "situationalItems": [],
@@ -7350,7 +7350,7 @@
           "Recordatorio mortal",
           "Muramana",
           "Borde infinito",
-          "La Sanguinaria"
+          "Sanguinaria"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -7965,15 +7965,15 @@
         "lane": "JG",
         "coreItems": [
           "Fuerza trinitaria",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "La danza de la muerte"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "La danza de la muerte",
           "Hacedor de grietas",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8460,15 +8460,15 @@
         "lane": "JG",
         "coreItems": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "La danza de la muerte"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "La danza de la muerte",
           "El rencor de Serylda",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8601,7 +8601,7 @@
           "Recordatorio mortal",
           "La danza de la muerte",
           "Borde infinito",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -8664,7 +8664,7 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Espada del Rey Arruinado",
+      "Hoja del rey arruinado",
       "La sanguinaria",
       "Cortasendas",
       "Recordatorio mortal",
@@ -8733,12 +8733,12 @@
         "title": "MID - Duelo y Letalidad",
         "lane": "MID",
         "coreItems": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "La sanguinaria",
           "Cortasendas"
         ],
         "items": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "La sanguinaria",
           "Cortasendas",
           "Recordatorio mortal",
@@ -8864,12 +8864,12 @@
         "title": "ADC - Daño continuo",
         "lane": "ADC",
         "coreItems": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "El huracán de Runaan",
           "Hoja de furia de Guinsoo"
         ],
         "items": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "El huracán de Runaan",
           "Hoja de furia de Guinsoo",
           "Terminus",
@@ -9152,7 +9152,7 @@
         ],
         "situationalItems": [
           "El cuchillo fantasma de Youmuu",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "primaryRune": "Conquistador",
         "secondaryRunes": [
@@ -9316,7 +9316,7 @@
         "situationalBoots": [],
         "situationalItems": [
           "Fauces de Malmortius",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "primaryRune": "Conquistador",
         "secondaryRunes": [

@@ -61,7 +61,7 @@
       "Colmillo de serpiente",
       "Fauces de Malmortius",
       "El cuchillo fantasma de Youmuu",
-      "Ángel custodio"
+      "Ángel de la guarda"
     ],
     "situationalItemsIcons": [
       "https://images.ctfassets.net/ekkp7rrkr2gn/6cpCbbyR0eMeikzJvUW0ot/e66bc31cc77810044993d9fe28d09780/comillo_ahnu.png",
@@ -583,7 +583,7 @@
           "Colmillo de serpiente",
           "Fauces de Malmortius",
           "Filo de la noche",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "runes": "Fortalecimiento,Brutal,Golpe de Gracia,Leyenda: Presteza,Revestimiento de Huesos",
         "spells": [
@@ -594,9 +594,9 @@
           "El coleccionista",
           "Borde infinito",
           "Recordatorio mortal",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Blaster magnético",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -879,7 +879,7 @@
           "Lanza de Shojin",
           "El rencor de Serylda",
           "La danza de la muerte",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -910,7 +910,7 @@
           "Lanza de Shojin",
           "La danza de la muerte",
           "Guantelete de Sterak",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -1359,12 +1359,12 @@
         "coreItems": [
           "Verdugo de Krakens",
           "fuerza de vendaval",
-          "Espada del Rey Arruinado"
+          "Hoja del rey arruinado"
         ],
         "items": [
           "Verdugo de Krakens",
           "fuerza de vendaval",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "El huracán de Runaan",
           "Borde infinito"
         ],
@@ -1397,7 +1397,7 @@
           "Hoja de furia de Guinsoo",
           "Verdugo de Krakens",
           "El huracán de Runaan",
-          "Espada del Rey Arruinado"
+          "Hoja del rey arruinado"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -2370,7 +2370,7 @@
           "Blaster magnético",
           "Recordatorio mortal",
           "El huracán de Runaan",
-          "Espada del Rey Arruinado"
+          "Hoja del rey arruinado"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -2492,12 +2492,12 @@
         "lane": "TOP",
         "coreItems": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "Rompecascos"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "Rompecascos",
           "Guantelete de Sterak",
           "Guardia gemela de amaranto"
@@ -2533,7 +2533,7 @@
           "Eclipse",
           "La danza de la muerte",
           "Guardia gemela de amaranto",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -2797,7 +2797,7 @@
           "Fuerza trinitaria",
           "Recordatorio mortal",
           "Blaster magnético",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -2834,7 +2834,7 @@
         "bootUpgrade": "Botas inmortales",
         "situationalBoots": [],
         "situationalItems": [
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "primaryRune": "Conquistador",
         "secondaryRunes": [
@@ -3871,7 +3871,7 @@
       "Fuerza trinitaria",
       "El rencor de Serylda",
       "Lanza de Shojin",
-      "Espada del Rey Arruinado"
+      "Hoja del rey arruinado"
     ],
     "coreItemsIcons": [],
     "situationalItems": [],
@@ -3945,7 +3945,7 @@
           "Fuerza trinitaria",
           "El rencor de Serylda",
           "Lanza de Shojin",
-          "Espada del Rey Arruinado"
+          "Hoja del rey arruinado"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -3979,7 +3979,7 @@
           "Fuerza trinitaria",
           "El rencor de Serylda",
           "Lanza de Shojin",
-          "Espada del Rey Arruinado"
+          "Hoja del rey arruinado"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Cinturón de cohetes hextech",
@@ -4919,12 +4919,12 @@
         "title": "TOP - Solitario (Split push)",
         "lane": "TOP",
         "coreItems": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Fuerza trinitaria",
           "Cuchilla negra"
         ],
         "items": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Fuerza trinitaria",
           "Cuchilla negra",
           "Guantelete de Sterak",
@@ -6063,12 +6063,12 @@
         "lane": "MID",
         "coreItems": [
           "Fuerza trinitaria",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "La danza de la muerte"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "La danza de la muerte",
           "Guardia gemela de amaranto",
           "Guantelete de Sterak"
@@ -6326,15 +6326,15 @@
         "lane": "JG",
         "coreItems": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "Guardia gemela de amaranto"
         ],
         "items": [
           "Fuerza trinitaria",
-          "Cielo desgarrado",
+          "Firmamento desgarrado",
           "Guardia gemela de amaranto",
           "La danza de la muerte",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -6466,7 +6466,7 @@
           "Hacedor de grietas",
           "Bastón vacío",
           "Guardia gemela de amaranto",
-          "Espada del Rey Arruinado"
+          "Hoja del rey arruinado"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -6491,12 +6491,12 @@
         "lane": "TOP",
         "coreItems": [
           "Divino Divino",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Guardia gemela de amaranto"
         ],
         "items": [
           "Divino Divino",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Guardia gemela de amaranto",
           "Lanza de Shojin",
           "Guantelete de Sterak"
@@ -6631,7 +6631,7 @@
           "El cuchillo fantasma de Youmuu",
           "El rencor de Serylda",
           "Filo de la noche",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -6929,7 +6929,7 @@
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [],
         "situationalItems": [
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "primaryRune": "Compás letal",
         "secondaryRunes": [
@@ -7353,7 +7353,7 @@
           "Verdugo de Krakens",
           "Hoja de furia de Guinsoo",
           "El huracán de Runaan",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Terminus"
         ],
         "bootBase": "Grebas de berserker",
@@ -8326,7 +8326,7 @@
           "Hoja del Ocaso de Draktharr",
           "Filo de la noche",
           "El rencor de Serylda",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -8590,7 +8590,7 @@
           "Hoja de furia de Guinsoo",
           "Hojas rápidas de Navori",
           "El huracán de Runaan",
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Terminus"
         ],
         "bootBase": "Grebas de berserker",
@@ -8719,7 +8719,7 @@
           "Fuerza trinitaria",
           "El rencor de Serylda",
           "La danza de la muerte",
-          "Ángel custodio"
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -10023,12 +10023,12 @@
         "title": "JG - Daño continuo",
         "lane": "JG",
         "coreItems": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Hoja de furia de Guinsoo",
           "Terminus"
         ],
         "items": [
-          "Espada del Rey Arruinado",
+          "Hoja del rey arruinado",
           "Hoja de furia de Guinsoo",
           "Terminus",
           "La danza de la muerte",

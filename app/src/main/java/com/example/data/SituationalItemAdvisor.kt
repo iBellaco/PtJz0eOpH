@@ -78,8 +78,8 @@ object SituationalItemAdvisor {
             keyEffect = "Estasis: Te vuelve invulnerable e inalcanzable durante 2.5 segundos (no puedes moverte ni atacar).",
             recommendationTip = "Usa el encanto de Zhonya justo cuando el asesino lance su definitiva sobre ti para anularla por completo."
         ),
-        "Danza de la Muerte" to SituationalItemInfo(
-            name = "Danza de la Muerte",
+        "Baile de la muerte" to SituationalItemInfo(
+            name = "Baile de la muerte",
             iconUrl = "file:///android_asset/offline_images/7f8482a5143b2c02ad323ce93df371f1.png",
             categoryName = "Anti-Burst AD & Supervivencia",
             purpose = "Convierte el daño de ráfaga físico en un sangrado retrasado y cura un porcentaje de vida en derribos.",
@@ -177,8 +177,8 @@ object SituationalItemAdvisor {
             keyEffect = "Anular: Escudo de hechizos que bloquea la siguiente habilidad enemiga.",
             recommendationTip = "Permite a los asesinos saltar sobre el Carry sin ser interrumpidos por habilidades de desenganche."
         ),
-        "Protección Gemela de Amaranth" to SituationalItemInfo(
-            name = "Protección Gemela de Amaranth",
+        "Coraza dual purpúrea" to SituationalItemInfo(
+            name = "Coraza dual purpúrea",
             iconUrl = "file:///android_asset/offline_images/6d9dfa05a285da04d1e7e5f60d48ea70.webp",
             categoryName = "Resistencia Híbrida & Tenacidad",
             purpose = "Aumenta un 30% la armadura y resistencia mágica en combate prolongado, otorgando además tenacidad masiva.",

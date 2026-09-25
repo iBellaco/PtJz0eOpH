@@ -192,12 +192,12 @@ object ChampionRoleAdapter {
         val fallbackLegendaries = when (role) {
             LaneRole.SUPPORT -> when {
                 isAssassinsOrAdcSupport -> listOf(
-                    "Guadaña de la Niebla Negra", "El cuchillo fantasma de Youmuu", "Hoja del Ocaso de Draktharr",
-                    "Colmillo de serpiente", "Fauces de Malmortius", "Ángel custodio"
+                    "Guadaña de la Niebla Negra", "Filo fantasmal de Youmuu", "Filoscuro de Draktharr",
+                    "Colmillo de serpiente", "Fauces de Malmortius", "Ángel de la guarda"
                 )
                 isTank -> listOf(
-                    "Escudo de reliquia", "Voto de caballero", "La convergencia de Zeke",
-                    "Sudario del alba", "Malla de espinas", "Fuerza de la naturaleza", "Relicario de los Solari de Hierro"
+                    "Escudo de reliquia", "Promesa de caballero", "Convergencia de Zeke",
+                    "Velo del amanecer", "Malla de espinas", "Fuerza de la naturaleza", "Medallón de los Solari de Hierro"
                 )
                 else -> listOf(
                     "Guadaña de la Niebla Negra", "Eco armónico", "Bastón de aguas fluidas",
@@ -206,26 +206,26 @@ object ChampionRoleAdapter {
             }
             LaneRole.ADC -> listOf(
                 "Borde infinito", "Blaster magnético", "Saludos de Dominik",
-                "Sanguinario", "El coleccionista", "Bailarina fantasma", "Cañón de fuego rápido"
+                "Sanguinario", "Recaudadora", "Bailarina fantasma", "Cañón de fuego rápido"
             )
             LaneRole.JUNGLE -> if (damageType == DamageType.MAGIC) {
-                listOf("Eco de Luden", "Diente de Nashor", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del vacío", "Hacedor de grietas")
+                listOf("Eco de Luden", "Diente de Nashor", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del Vacío", "Creagrietas")
             } else if (isTank) {
                 listOf("Coraza del muerto", "Malla de espinas", "Fuerza de la naturaleza", "Corona abrasadora", "Guardia gemela de amaranto", "Corazón de acero")
             } else {
-                listOf("Fuerza de la Trinidad", "El coleccionista", "Cuchilla negra", "La danza de la muerte", "Guantelete de Sterak", "Ángel custodio")
+                listOf("Fuerza de trinidad", "Recaudadora", "Cuchilla negra", "La danza de la muerte", "Guantelete de Sterak", "Ángel de la guarda")
             }
             LaneRole.TOP -> if (damageType == DamageType.MAGIC) {
-                listOf("Hacedor de grietas", "Cetro de cristal de Rylai", "Tormento de Liandry", "Vara de las edades", "Sombrero mortal de Rabadon", "Bastón del vacío")
+                listOf("Creagrietas", "Cetro de cristal de Rylai", "Tormento de Liandry", "Vara de las edades", "Sombrero mortal de Rabadon", "Bastón del Vacío")
             } else if (isTank) {
                 listOf("Corazón de acero", "Égida de fuego solar", "Malla de espinas", "Fuerza de la naturaleza", "Presagio de Randuin", "Guardia gemela de amaranto")
             } else {
-                listOf("Fuerza de la Trinidad", "Cuchilla negra", "La danza de la muerte", "Guantelete de Sterak", "Rompecascos", "Ángel custodio")
+                listOf("Fuerza de trinidad", "Cuchilla negra", "La danza de la muerte", "Guantelete de Sterak", "Rompecascos", "Ángel de la guarda")
             }
             LaneRole.MID -> if (damageType == DamageType.MAGIC) {
-                listOf("Eco de Luden", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del vacío", "Impulso cósmico", "Tormento de Liandry")
+                listOf("Eco de Luden", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del Vacío", "Impulso cósmico", "Tormento de Liandry")
             } else {
-                listOf("El cuchillo fantasma de Youmuu", "Hoja del Ocaso de Draktharr", "El coleccionista", "El rencor de Serylda", "La danza de la muerte", "Filo de la noche")
+                listOf("Filo fantasmal de Youmuu", "Filoscuro de Draktharr", "Recaudadora", "El rencor de Serylda", "La danza de la muerte", "Filo de la noche")
             }
         }
 
@@ -240,7 +240,7 @@ object ChampionRoleAdapter {
         val l2 = filteredRawCore.getOrElse(1) { fallbackLegendaries[1] }
         val l3 = filteredRawCore.getOrElse(2) { fallbackLegendaries[2] }
         val l4 = filteredRawCore.getOrElse(3) { fallbackLegendaries[3] }
-        val l5 = filteredRawCore.getOrElse(4) { fallbackLegendaries.getOrElse(4) { "Ángel custodio" } }
+        val l5 = filteredRawCore.getOrElse(4) { fallbackLegendaries.getOrElse(4) { "Ángel de la guarda" } }
         val l6 = filteredRawCore.getOrElse(5) { fallbackLegendaries.getOrElse(5) { "Reloj de arena de Zhonya" } }
 
         val usedCore = listOf(l1, l2, l3, l4, l5, l6)
@@ -256,15 +256,15 @@ object ChampionRoleAdapter {
 
         val defaultSituational = when (role) {
             LaneRole.SUPPORT -> when {
-                isAssassinsOrAdcSupport -> listOf("Colmillo de serpiente", "Ángel custodio", "Fauces de Malmortius", "Fajín de mercurio")
-                isTank -> listOf("Malla de espinas", "Presagio de Randuin", "Relicario de los Solari de Hierro", "Redención")
-                else -> listOf("Incensario ardiente", "Redención", "Relicario de los Solari de Hierro", "Bendición de Mikael")
+                isAssassinsOrAdcSupport -> listOf("Colmillo de serpiente", "Ángel de la guarda", "Fauces de Malmortius", "Fajín de mercurio")
+                isTank -> listOf("Malla de espinas", "Presagio de Randuin", "Medallón de los Solari de Hierro", "Redención")
+                else -> listOf("Incensario ardiente", "Redención", "Medallón de los Solari de Hierro", "Bendición de Mikael")
             }
-            LaneRole.ADC -> listOf("Ángel custodio", "Fajín de mercurio", "Recordatorio mortal", "Sanguinario")
+            LaneRole.ADC -> listOf("Ángel de la guarda", "Fajín de mercurio", "Recordatorio mortal", "Sanguinario")
             LaneRole.JUNGLE, LaneRole.TOP, LaneRole.MID -> when {
                 isTank -> listOf("Malla de espinas", "Presagio de Randuin", "Fuerza de la naturaleza", "Corona abrasadora")
-                damageType == DamageType.MAGIC -> listOf("Morellonomicón", "Reloj de arena de Zhonya", "Velo de alma en pena", "Torreón de Kaenic")
-                else -> listOf("Malla de espinas", "Colmillo de serpiente", "Ángel custodio", "Fajín de mercurio")
+                damageType == DamageType.MAGIC -> listOf("Morellonomicón", "Reloj de arena de Zhonya", "Velo del hada de la muerte", "Rookern kaénico")
+                else -> listOf("Malla de espinas", "Colmillo de serpiente", "Ángel de la guarda", "Fajín de mercurio")
             }
         }
 
@@ -394,31 +394,31 @@ object ChampionRoleAdapter {
         // 2. Dynamic 8 Items for flex role (6 Core Legendaries + 2 Situational, no boots in items row)
         val rawFlexCore: List<String> = when (role) {
             LaneRole.JUNGLE -> if (isAp) {
-                listOf("Diente de Nashor", "Eco de Luden", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del vacío", "Hacedor de grietas")
+                listOf("Diente de Nashor", "Eco de Luden", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del Vacío", "Creagrietas")
             } else if (isTank) {
                 listOf("Coraza del muerto", "Malla de espinas", "Fuerza de la naturaleza", "Corona abrasadora", "Corazón de acero", "Guardia gemela de amaranto")
             } else {
-                listOf("Fuerza de la Trinidad", "El coleccionista", "Borde infinito", "Saludos de Dominik", "La danza de la muerte", "Ángel custodio")
+                listOf("Fuerza de trinidad", "Recaudadora", "Borde infinito", "Saludos de Dominik", "La danza de la muerte", "Ángel de la guarda")
             }
             LaneRole.SUPPORT -> if (isAp) {
                 listOf("Guadaña de la Niebla Negra", "Eco armónico", "Incensario ardiente", "Bastón de aguas fluidas", "Mandato imperial", "Bendición de Mikael")
             } else {
-                listOf("Escudo de reliquia", "La convergencia de Zeke", "Voto de caballero", "Malla de espinas", "Fuerza de la naturaleza", "Relicario de los Solari de Hierro")
+                listOf("Escudo de reliquia", "Convergencia de Zeke", "Promesa de caballero", "Malla de espinas", "Fuerza de la naturaleza", "Medallón de los Solari de Hierro")
             }
             LaneRole.ADC -> listOf(
-                "Borde infinito", "Blaster magnético", "Saludos de Dominik", "Sanguinario", "El coleccionista", "Ángel custodio"
+                "Borde infinito", "Blaster magnético", "Saludos de Dominik", "Sanguinario", "Recaudadora", "Ángel de la guarda"
             )
             LaneRole.TOP -> if (isAp) {
-                listOf("Hacedor de grietas", "Cetro de cristal de Rylai", "Tormento de Liandry", "Sombrero mortal de Rabadon", "Bastón del vacío", "Morellonomicón")
+                listOf("Creagrietas", "Cetro de cristal de Rylai", "Tormento de Liandry", "Sombrero mortal de Rabadon", "Bastón del Vacío", "Morellonomicón")
             } else if (isTank) {
                 listOf("Corazón de acero", "Égida de fuego solar", "Malla de espinas", "Fuerza de la naturaleza", "Presagio de Randuin", "Guardia gemela de amaranto")
             } else {
-                listOf("Fuerza de la Trinidad", "Cuchilla negra", "Guantelete de Sterak", "La danza de la muerte", "Rompecascos", "Ángel custodio")
+                listOf("Fuerza de trinidad", "Cuchilla negra", "Guantelete de Sterak", "La danza de la muerte", "Rompecascos", "Ángel de la guarda")
             }
             LaneRole.MID -> if (isAp) {
-                listOf("Eco de Luden", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del vacío", "Impulso cósmico", "Tormento de Liandry")
+                listOf("Eco de Luden", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del Vacío", "Impulso cósmico", "Tormento de Liandry")
             } else {
-                listOf("El cuchillo fantasma de Youmuu", "Hoja del Ocaso de Draktharr", "El coleccionista", "El rencor de Serylda", "La danza de la muerte", "Filo de la noche")
+                listOf("Filo fantasmal de Youmuu", "Filoscuro de Draktharr", "Recaudadora", "El rencor de Serylda", "La danza de la muerte", "Filo de la noche")
             }
         }
 
@@ -691,7 +691,7 @@ private fun generateSituationalSwaps(
         role: LaneRole? = null,
         fullBuild: List<String> = emptyList()
     ): List<ItemSwap> {
-        val s1 = situationalItems.getOrElse(0) { if (role == LaneRole.SUPPORT) "Relicario de los Solari de Hierro" else "Ángel custodio" }
+        val s1 = situationalItems.getOrElse(0) { if (role == LaneRole.SUPPORT) "Medallón de los Solari de Hierro" else "Ángel de la guarda" }
         val s2 = situationalItems.getOrElse(1) { if (role == LaneRole.SUPPORT) "Redención" else "Morellonomicón" }
 
         if (explicitSwaps.isNotEmpty()) {
@@ -721,8 +721,8 @@ private fun generateSituationalSwaps(
         }
 
         if (role == LaneRole.SUPPORT && !isTank) {
-            val alt1 = getSafeAlt("Redención", "Relicario de los Solari de Hierro", "Mandato imperial")
-            val alt2 = getSafeAlt("Incensario Ardiente", "La bendición de Michael", "Mandato imperial")
+            val alt1 = getSafeAlt("Redención", "Medallón de los Solari de Hierro", "Mandato imperial")
+            val alt2 = getSafeAlt("Incensario ardiente", "Bendición de Mikael", "Mandato imperial")
 
             swaps.add(
                 ItemSwap(
@@ -747,8 +747,8 @@ private fun generateSituationalSwaps(
                 )
             )
         } else if (damageType == DamageType.MAGIC && role != LaneRole.SUPPORT) {
-            val alt1 = getSafeAlt("Morellonomicón", "El reloj de arena de Zhonya", "Orbe infinito")
-            val alt2 = getSafeAlt("El reloj de arena de Zhonya", "Velo de alma en pena", "Impulso Cósmico")
+            val alt1 = getSafeAlt("Morellonomicón", "Reloj de arena de Zhonya", "Orbe infinito")
+            val alt2 = getSafeAlt("Reloj de arena de Zhonya", "Velo del hada de la muerte", "Impulso Cósmico")
 
             swaps.add(
                 ItemSwap(
@@ -773,8 +773,8 @@ private fun generateSituationalSwaps(
                 )
             )
         } else if (isTank) {
-            val alt1 = getSafeAlt("malla de espinas", "El presagio de Randuin", "Corazón congelado")
-            val alt2 = getSafeAlt("Fuerza de la naturaleza", "Corona abrasadora", "Resplandor hueco")
+            val alt1 = getSafeAlt("malla de espinas", "Presagio de Randuin", "Corazón de hielo")
+            val alt2 = getSafeAlt("Fuerza de la naturaleza", "Corona abrasadora", "Fulgor vano")
 
             swaps.add(
                 ItemSwap(
@@ -800,7 +800,7 @@ private fun generateSituationalSwaps(
             )
         } else {
             val alt1 = getSafeAlt("Colmillo de serpiente", "Malla de espinas", "Recordatorio mortal")
-            val alt2 = getSafeAlt("Ángel custodio", "Fajín de mercurio", "Filo de la noche")
+            val alt2 = getSafeAlt("Ángel de la guarda", "Fajín de mercurio", "Filo de la noche")
 
             swaps.add(
                 ItemSwap(

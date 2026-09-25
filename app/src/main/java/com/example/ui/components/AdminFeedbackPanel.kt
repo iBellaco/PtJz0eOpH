@@ -924,7 +924,7 @@ fun AdminFeedbackBottomSheet(
                                     Toast.makeText(context, " Reporte copiado al portapapeles", Toast.LENGTH_SHORT).show()
                                 },
                                 onOpenImage = { bmp -> previewImageBitmap = bmp },
-                                onItemClick = { itemForDetail = it }
+                                onItemClick = {}
                             )
                         }
                     }
@@ -1265,13 +1265,7 @@ fun AdminFeedbackBottomSheet(
         }
     }
 
-    // Diálogo emergente de Detalle de Objeto (al tocar un objeto en la build)
-    itemForDetail?.let { item ->
-        AdminItemDetailDialog(
-            item = item,
-            onDismiss = { itemForDetail = null }
-        )
-    }
+    // Fin del panel de administración
 }
 
 @Composable
@@ -2786,181 +2780,6 @@ private fun BuildItemSlot(
                 fontSize = 8.5.sp,
                 fontWeight = FontWeight.Bold
             )
-        }
-    }
-}
-
-// ==========================================
-// DIÁLOGO DE DETALLE DE OBJETO EN ADMIN
-// ==========================================
-
-@Composable
-private fun AdminItemDetailDialog(
-    item: WildRiftItem,
-    onDismiss: () -> Unit
-) {
-    val statsList = remember(item) {
-        if (item.stats.isNotBlank()) {
-            item.stats.split(Regex("[•\n]")).map { it.trim() }.filter { it.isNotBlank() }
-        } else emptyList()
-    }
-
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .clip(RoundedCornerShape(16.dp))
-                .border(1.5.dp, HextechGold, RoundedCornerShape(16.dp)),
-            colors = CardDefaults.cardColors(containerColor = HextechDarkBg)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // Header con Icono + Nombre + Costo
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(54.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .border(1.5.dp, HextechGold, RoundedCornerShape(10.dp))
-                            .background(HextechSurface)
-                    ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(item.iconUrl)
-.crossfade(true)
-.placeholder(com.example.R.drawable.ic_placeholder_loading)
-                                
-                                .build(),
-                            contentDescription = item.name,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = item.name,
-                            color = HextechGold,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = " ${item.goldCost} oro",
-                                color = Color(0xFFFFD54F),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            if (item.category.isNotBlank()) {
-                                Text(
-                                    text = "• ${item.category}",
-                                    color = HextechCyan,
-                                    fontSize = 11.5.sp
-                                )
-                            }
-                        }
-                    }
-
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier
-                            .size(28.dp)
-                            .background(HextechSurfaceVariant.copy(alpha = 0.5f), CircleShape)
-                    ) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextPrimary, modifier = Modifier.size(16.dp))
-                    }
-                }
-
-                HorizontalDivider(color = HextechCardBorder, thickness = 1.dp)
-
-                // Stats del objeto
-                if (statsList.isNotEmpty()) {
-                    Text(
-                        text = tr("Estadísticas:"),
-                        color = HextechGold,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(HextechSurface.copy(alpha = 0.6f))
-                            .padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        statsList.forEach { stat ->
-                            Text(
-                                text = "• $stat",
-                                color = TextPrimary,
-                                fontSize = 11.5.sp
-                            )
-                        }
-                    }
-                }
-
-                // Pasivas y Coach Tips con formato Wild Rift
-                if (item.passive.isNotBlank() || item.coachTip.isNotBlank()) {
-                    Text(
-                        text = tr("Efectos y Consejos:"),
-                        color = HextechCyan,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(HextechSurface.copy(alpha = 0.6f))
-                            .padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        if (item.passive.isNotBlank()) {
-                            FormattedWildRiftText(
-                                text = item.passive,
-                                fontSize = 11.sp,
-                                lineHeight = 15.sp
-                            )
-                        }
-                        if (item.coachTip.isNotBlank()) {
-                            FormattedWildRiftText(
-                                text = " ${item.coachTip}",
-                                fontSize = 10.5.sp,
-                                lineHeight = 14.5.sp
-                            )
-                        }
-                    }
-                }
-
-                // Botón Entendido / Cerrar
-                Button(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = tr("Entendido"),
-                        color = HextechDarkBg,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
         }
     }
 }

@@ -241,7 +241,7 @@ private fun OverlayItemsTabContent(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            val desiredOrder = listOf(
+            val desiredOrder = com.example.data.WildRiftItemsData.officialCategoryOrder + listOf(
                 "Objetos con Daños Físicos",
                 "Objetos de Daño Mágico",
                 "Objetos Defensivos",

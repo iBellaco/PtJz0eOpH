@@ -1144,8 +1144,10 @@ fun tr(key: String): String {
 }
 
 fun trStr(lang: String, key: String): String {
-    val effectiveLang = if (lang == "auto") "es" else lang
-    if (effectiveLang == "es") {
+    val cleanLang = lang.lowercase().trim()
+    val effectiveLang = if (cleanLang.startsWith("pt")) "pt" else if (cleanLang.startsWith("en")) "en" else "es"
+    val isEs = effectiveLang == "es"
+    if (isEs) {
         return translations["es"]?.get(key) ?: key
     }
     

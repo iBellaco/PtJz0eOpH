@@ -278,8 +278,8 @@ object CustomChampionBuildsManager {
 
     private fun getDefaultBuilds(): List<CustomChampionBuildRecord> {
         val dummyItems = listOf(
-            ItemBuildEntry("La Sanguinaria", "Gran curación en peleas prolongadas."),
-            ItemBuildEntry("Ángel custodio", "Una segunda oportunidad en teamfights.")
+            ItemBuildEntry("Sanguinaria", "Gran curación en peleas prolongadas."),
+            ItemBuildEntry("Ángel de la guarda", "Una segunda oportunidad en teamfights.")
         )
         val dummySituational = listOf(
             ItemBuildEntry("Fuerza de la Naturaleza", "Alta resistencia contra daño mágico.")
@@ -299,7 +299,7 @@ object CustomChampionBuildsManager {
                 championName = "Yasuo",
                 buildTitle = "Yasuo Mid Core",
                 role = "Mid Lane",
-                coreItems = listOf("La Sanguinaria", "Ángel custodio"),
+                coreItems = listOf("Sanguinaria", "Ángel de la guarda"),
                 situationalItems = listOf("Fuerza de la Naturaleza"),
                 runes = "Conquistador",
                 spells = listOf("Destello", "Prender"),
@@ -337,14 +337,14 @@ object CustomChampionBuildsManager {
                 buildTitle = "Jinx Hypercarry",
                 role = "Dragon Lane",
                 coreItems = listOf("Huracán de Runaan", "Filo Infinito"),
-                situationalItems = listOf("Ángel custodio"),
+                situationalItems = listOf("Ángel de la guarda"),
                 runes = "Compás Letal",
                 spells = listOf("Destello", "Curar"),
                 coreItemsWithDesc = listOf(
                     ItemBuildEntry("Huracán de Runaan", "Disparos múltiples a objetivos secundarios."),
                     ItemBuildEntry("Filo Infinito", "Daño crítico devastador.")
                 ),
-                situationalItemsWithDesc = listOf(ItemBuildEntry("Ángel custodio", "Resurrección en peleas.")),
+                situationalItemsWithDesc = listOf(ItemBuildEntry("Ángel de la guarda", "Resurrección en peleas.")),
                 coreRunes = listOf(RuneBuildEntry("Compás Letal", "", "Velocidad de ataque incrementada.")),
                 coreSpells = listOf(
                     SpellBuildEntry("Destello", "", "Teletransporte instantáneo."),
@@ -359,15 +359,15 @@ object CustomChampionBuildsManager {
                 championName = "Lee Sin",
                 buildTitle = "Lee Sin Jungle",
                 role = "Jungle",
-                coreItems = listOf("Cuchilla Negra", "Danza de la Muerte"),
-                situationalItems = listOf("Ángel custodio"),
+                coreItems = listOf("Cuchilla Negra", "Baile de la muerte"),
+                situationalItems = listOf("Ángel de la guarda"),
                 runes = "Conquistador",
                 spells = listOf("Destello", "Aplastar"),
                 coreItemsWithDesc = listOf(
                     ItemBuildEntry("Cuchilla Negra", "Reducción de armadura y salud."),
-                    ItemBuildEntry("Danza de la Muerte", "Mitigación de daño aplazado.")
+                    ItemBuildEntry("Baile de la muerte", "Mitigación de daño aplazado.")
                 ),
-                situationalItemsWithDesc = listOf(ItemBuildEntry("Ángel custodio", "Resurrección clave para iniciar.")),
+                situationalItemsWithDesc = listOf(ItemBuildEntry("Ángel de la guarda", "Resurrección clave para iniciar.")),
                 coreRunes = dummyRunes,
                 coreSpells = listOf(
                     SpellBuildEntry("Destello", "", "Teletransporte instantáneo."),
@@ -382,12 +382,12 @@ object CustomChampionBuildsManager {
                 championName = "Darius",
                 buildTitle = "Darius Bruiser",
                 role = "Baron Lane",
-                coreItems = listOf("Fuerza de la Trinidad", "Calibrador de Sterak"),
+                coreItems = listOf("Fuerza de trinidad", "Calibrador de Sterak"),
                 situationalItems = listOf("Placa del Hombre Muerto"),
                 runes = "Conquistador",
                 spells = listOf("Destello", "Fantasmal"),
                 coreItemsWithDesc = listOf(
-                    ItemBuildEntry("Fuerza de la Trinidad", "Aumento de daño sostenido y movilidad."),
+                    ItemBuildEntry("Fuerza de trinidad", "Aumento de daño sostenido y movilidad."),
                     ItemBuildEntry("Calibrador de Sterak", "Escudo anti-burst vital.")
                 ),
                 situationalItemsWithDesc = listOf(ItemBuildEntry("Placa del Hombre Muerto", "Velocidad de movimiento extra para perseguir.")),
