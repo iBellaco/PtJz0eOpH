@@ -1878,74 +1878,142 @@ fun TierListTab(
                             }
                         )
                     ) {
-                        Row(
-                            modifier = Modifier.padding(10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Rank Badge
-                                Box(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            when (index) {
-                                                0 -> HextechGold
-                                                1 -> HextechCyan
-                                                2 -> Color(0xFFCD7F32)
-                                                else -> HextechSurfaceVariant
-                                            }
-                                        ),
-                                    contentAlignment = Alignment.Center
+                            // Fila Principal: Rango + Avatar + Nombre/Rol (Izquierda) y Estadísticas Clave (Derecha)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f, fill = false)
                                 ) {
-                                    Text(
-                                        text = "${index + 1}",
-                                        color = if (index < 3) HextechDarkBg else TextMuted,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Black
-                                    )
+                                    // Rank Badge
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                when (index) {
+                                                    0 -> HextechGold
+                                                    1 -> HextechCyan
+                                                    2 -> Color(0xFFCD7F32)
+                                                    else -> HextechSurfaceVariant
+                                                }
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "${index + 1}",
+                                            color = if (index < 3) HextechDarkBg else TextMuted,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    ChampionAvatar(champion = champ, size = 42.dp, showTierBadge = true)
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column(modifier = Modifier.padding(end = 4.dp)) {
+                                        Text(
+                                            text = champ.name,
+                                            color = TextPrimary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}",
+                                            color = HextechCyan,
+                                            fontSize = 11.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
-                                Spacer(modifier = Modifier.width(10.dp))
-                                ChampionAvatar(champion = champ, size = 44.dp, showTierBadge = true)
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Text(champ.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                    Text(
-                                        text = "${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}",
-                                        color = HextechCyan,
-                                        fontSize = 11.sp
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        when (selectedSort) {
+                                            TierSortOption.WIN_RATE -> {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    val winDelta = champ.winrateDelta
+                                                    val formattedDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
+                                                    val winDeltaText = if (winDelta >= 0) "+${formattedDelta}%" else "${formattedDelta}%"
+                                                    val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
+                                                    if (!isOverlay) {
+                                                        Text(
+                                                            text = if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText",
+                                                            color = winDeltaColor,
+                                                            fontSize = 10.sp,
+                                                            fontWeight = FontWeight.Bold
+                                                        )
+                                                    }
+                                                    Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                }
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                            }
+                                            TierSortOption.PICK_RATE -> {
+                                                Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                            }
+                                            TierSortOption.BAN_RATE -> {
+                                                Text("Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                            }
+                                            else -> {}
+                                        }
+                                    }
+                                    Icon(
+                                        Icons.Default.ChevronRight,
+                                        contentDescription = null,
+                                        tint = HextechCyan.copy(alpha = 0.8f),
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             }
 
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                if (!isOverlay) { SparklineTrendGraph(
-                                    winrate = champ.winrate,
-                                    delta = champ.winrateDelta,
-                                    modifier = Modifier.width(92.dp),
-                                    showTimeLabels = true,
-                                    showFullText = true
-                                ) }
-                                Column(horizontalAlignment = Alignment.End) {
-                                    when (selectedSort) {
-                                        TierSortOption.WIN_RATE -> {
-                                            Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp)
-                                        }
-                                        TierSortOption.PICK_RATE -> {
-                                            Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp)
-                                        }
-                                        TierSortOption.BAN_RATE -> {
-                                            Text("Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = TextMuted, fontSize = 10.sp)
-                                        }
-                                        else -> {}
-                                    }
+                            // Fila Secundaria: Gráfica de Tendencia (24h vs Actual) con espacio amplio
+                            if (!isOverlay) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(HextechDarkBg.copy(alpha = 0.5f))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = tr("Tendencia") + ":",
+                                        color = TextMuted,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    SparklineTrendGraph(
+                                        winrate = champ.winrate,
+                                        delta = champ.winrateDelta,
+                                        modifier = Modifier.weight(1f).padding(start = 8.dp),
+                                        showTimeLabels = true,
+                                        showFullText = true,
+                                        canvasHeight = 16
+                                    )
                                 }
                             }
                         }
@@ -1994,59 +2062,127 @@ fun TierSectionCard(
             Spacer(modifier = Modifier.height(10.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 champions.forEach { champ ->
-                    Row(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .background(HextechSurfaceVariant.copy(alpha = 0.6f))
-                            .clickable { onSelectChampion(champ) }
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .clickable { onSelectChampion(champ) },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant.copy(alpha = 0.6f)),
+                        border = androidx.compose.foundation.BorderStroke(0.6.dp, HextechCardBorder.copy(alpha = 0.5f))
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            ChampionAvatar(champion = champ, size = 44.dp, showTierBadge = false)
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(champ.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}", color = HextechCyan, fontSize = 11.sp)
-                            }
-                        }
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(9.dp)
                         ) {
-                            if (!isOverlay) { SparklineTrendGraph(
-                                winrate = champ.winrate,
-                                delta = champ.winrateDelta,
-                                modifier = Modifier.width(92.dp),
-                                showTimeLabels = true,
-                                showFullText = true
-                            ) }
-                            Column(horizontalAlignment = Alignment.End) {
+                            // Fila Superior: Avatar + Nombre / Rol (Izquierda) vs WR / Pick / Ban / Flecha (Derecha)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    modifier = Modifier.weight(1f, fill = false)
                                 ) {
-                                    val winDelta = champ.winrateDelta
-                                    val formattedDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
-                                    val winDeltaText = if (winDelta >= 0) "+${formattedDelta}%" else "${formattedDelta}%"
-                                    val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
-                                    if (!isOverlay) {
+                                    ChampionAvatar(champion = champ, size = 42.dp, showTierBadge = false)
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column(modifier = Modifier.padding(end = 4.dp)) {
                                         Text(
-                                            text = if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText",
-                                            color = winDeltaColor,
-                                            fontSize = 9.5.sp,
-                                            fontWeight = FontWeight.Bold
+                                            text = champ.name,
+                                            color = TextPrimary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}",
+                                            color = HextechCyan,
+                                            fontSize = 11.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
-                                    Text(tr("WR") + ": ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
                                 }
-                                if (!isOverlay) {
-                                    Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp)
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            val winDelta = champ.winrateDelta
+                                            val formattedDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
+                                            val winDeltaText = if (winDelta >= 0) "+${formattedDelta}%" else "${formattedDelta}%"
+                                            val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
+                                            if (!isOverlay) {
+                                                Text(
+                                                    text = if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText",
+                                                    color = winDeltaColor,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            Text(
+                                                text = tr("WR") + ": ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%",
+                                                color = HextechGold,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.5.sp
+                                            )
+                                        }
+                                        if (!isOverlay) {
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = "Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%",
+                                                color = TextMuted,
+                                                fontSize = 10.sp,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    }
+                                    Icon(
+                                        Icons.Default.ChevronRight,
+                                        contentDescription = null,
+                                        tint = HextechCyan.copy(alpha = 0.8f),
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
-                            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(18.dp))
+
+                            // Fila Inferior: Gráfica de Tendencia (24h vs Actual) con espacio holgado y estético
+                            if (!isOverlay) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(HextechDarkBg.copy(alpha = 0.5f))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = tr("Tendencia") + ":",
+                                        color = TextMuted,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    SparklineTrendGraph(
+                                        winrate = champ.winrate,
+                                        delta = champ.winrateDelta,
+                                        modifier = Modifier.weight(1f).padding(start = 8.dp),
+                                        showTimeLabels = true,
+                                        showFullText = true,
+                                        canvasHeight = 16
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -5297,6 +5433,7 @@ fun TierSelectionPanel(
 ) {
     val isOnline by BestBuildWrScraper.isOnline.collectAsStateWithLifecycle()
     val isSyncing by BestBuildWrScraper.isSyncing.collectAsStateWithLifecycle()
+    val isLastSyncSuccess by BestBuildWrScraper.isLastSyncSuccess.collectAsStateWithLifecycle()
     val lastSyncFormattedTime by BestBuildWrScraper.lastSyncFormattedTime.collectAsStateWithLifecycle()
     var showMultiServerStats by remember { mutableStateOf(false) }
 
@@ -5502,10 +5639,11 @@ fun TierSelectionPanel(
             }
 
             // Barra de Estado de Conexión, Hora de Captura y Caché Persistente
+            val isAutoSyncActive = isOnline && isLastSyncSuccess
             Surface(
-                color = if (isOnline) Color(0xFF00E5FF).copy(alpha = 0.08f) else Color(0xFFE65100).copy(alpha = 0.12f),
+                color = if (isAutoSyncActive) Color(0xFF00E5FF).copy(alpha = 0.08f) else Color(0xFFE65100).copy(alpha = 0.12f),
                 shape = RoundedCornerShape(6.dp),
-                border = BorderStroke(0.5.dp, if (isOnline) HextechCyan.copy(alpha = 0.4f) else Color(0xFFFF9800).copy(alpha = 0.5f)),
+                border = BorderStroke(0.5.dp, if (isAutoSyncActive) HextechCyan.copy(alpha = 0.4f) else Color(0xFFFF9800).copy(alpha = 0.5f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -5520,17 +5658,18 @@ fun TierSelectionPanel(
                             modifier = Modifier
                                 .size(6.5.dp)
                                 .clip(CircleShape)
-                                .background(if (isOnline) Color(0xFF00FF7F) else Color(0xFFFF5252))
+                                .background(if (isAutoSyncActive) Color(0xFF00FF7F) else Color(0xFFFF5252))
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (isOnline) {
-                                if (isSyncing) "⏳ " + tr("Sincronizando...")
-                                else "⚡ " + tr("Actualizado hace una hora") + if (lastSyncFormattedTime.isNotBlank()) " ($lastSyncFormattedTime)" else " (" + tr("En vivo") + ")"
+                            text = if (isSyncing) {
+                                "⏳ " + tr("Sincronizando datos de la Tier List...")
+                            } else if (isAutoSyncActive) {
+                                "⚡ " + tr("Actualización automática activa • En vivo")
                             } else {
-                                "⚠️ " + tr("Sin conexión • Última estadística:") + " $lastSyncFormattedTime"
+                                "⚠️ " + tr("Sin actualizar • Últimos datos:") + if (lastSyncFormattedTime.isNotBlank()) " $lastSyncFormattedTime" else " " + tr("Caché guardada")
                             },
-                            color = if (isOnline) (if (isSyncing) HextechCyan else Color(0xFF81C784)) else Color(0xFFFFB74D),
+                            color = if (isAutoSyncActive) (if (isSyncing) HextechCyan else Color(0xFF81C784)) else Color(0xFFFFB74D),
                             fontSize = if (isOverlay) 8.sp else 9.5.sp,
                             fontWeight = FontWeight.Medium,
                             maxLines = 1
@@ -5539,11 +5678,11 @@ fun TierSelectionPanel(
 
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = if (isOnline) HextechGold.copy(alpha = 0.15f) else Color(0xFFFF5252).copy(alpha = 0.15f)
+                        color = if (isAutoSyncActive) HextechGold.copy(alpha = 0.15f) else Color(0xFFFF5252).copy(alpha = 0.15f)
                     ) {
                         Text(
-                            text = if (isOnline) tr("Auto-Sync 24/7") else tr("Caché Local"),
-                            color = if (isOnline) HextechGold else Color(0xFFFF8A80),
+                            text = if (isAutoSyncActive) tr("Auto-Sync 24/7") else tr("Caché Local"),
+                            color = if (isAutoSyncActive) HextechGold else Color(0xFFFF8A80),
                             fontSize = if (isOverlay) 7.5.sp else 8.5.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.5.dp)

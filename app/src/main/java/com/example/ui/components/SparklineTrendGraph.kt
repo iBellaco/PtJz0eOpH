@@ -253,7 +253,7 @@ fun DetailedTrendGraphCard(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "⚡ " + tr("Actualizado hace una hora"),
+                    text = "⚡ " + tr("Tendencia en vivo"),
                     color = HextechCyan,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Medium

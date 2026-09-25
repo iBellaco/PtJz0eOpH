@@ -60,6 +60,9 @@ object BestBuildWrScraper {
     private val _isSyncing = MutableStateFlow<Boolean>(false)
     val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
 
+    private val _isLastSyncSuccess = MutableStateFlow<Boolean>(true)
+    val isLastSyncSuccess: StateFlow<Boolean> = _isLastSyncSuccess.asStateFlow()
+
     private val _lastSyncTimestamp = MutableStateFlow<Long>(System.currentTimeMillis())
     val lastSyncTimestamp: StateFlow<Long> = _lastSyncTimestamp.asStateFlow()
 
@@ -150,6 +153,7 @@ object BestBuildWrScraper {
             if (!hasNet) {
                 // Modo Sin Conexión (Offline)
                 _isSyncing.value = false
+                _isLastSyncSuccess.value = false
                 val lastTime = prefs.getLong(KEY_LAST_TIMESTAMP, _lastSyncTimestamp.value)
                 val lastFormatted = prefs.getString(KEY_LAST_FORMATTED, _lastSyncFormattedTime.value) ?: _lastSyncFormattedTime.value
                 _lastSyncTimestamp.value = lastTime
@@ -220,25 +224,33 @@ object BestBuildWrScraper {
             }
             _sourceStatuses.value = updatedMap
 
+            val isSuccess = successCount > 0
+            _isLastSyncSuccess.value = isSuccess
+
             val now = System.currentTimeMillis()
             val formattedDate = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date(now))
-            _lastSyncTimestamp.value = now
-            _lastSyncFormattedTime.value = formattedDate
+            
+            if (isSuccess) {
+                _lastSyncTimestamp.value = now
+                _lastSyncFormattedTime.value = formattedDate
 
-            // Actualizar estadísticas de campeones en el repositorio con datos frescos
-            WildRiftRepository.simulateRegionStatsChange(region)
+                // Actualizar estadísticas de campeones en el repositorio con datos frescos
+                WildRiftRepository.simulateRegionStatsChange(region)
 
-            // Persistir fecha y hora exacta de la última estadística exitosa
-            try {
-                prefs.edit()
-                    .putLong(KEY_LAST_TIMESTAMP, now)
-                    .putString(KEY_LAST_FORMATTED, formattedDate)
-                    .apply()
-            } catch (e: Exception) {
-                // Loguear o ignorar fallo en prefs
+                // Persistir fecha y hora exacta de la última estadística exitosa
+                try {
+                    prefs.edit()
+                        .putLong(KEY_LAST_TIMESTAMP, now)
+                        .putString(KEY_LAST_FORMATTED, formattedDate)
+                        .apply()
+                } catch (e: Exception) {
+                    // Loguear o ignorar fallo en prefs
+                }
+
+                _globalSyncStatus.value = "🟢 En vivo • Sincronizado automáticamente [$successCount/${sources.size} fuentes]"
+            } else {
+                _globalSyncStatus.value = "⚠️ Sin actualizar • Usando últimos datos obtenidos: ${_lastSyncFormattedTime.value}"
             }
-
-            _globalSyncStatus.value = "🟢 En vivo • Actualizado: $formattedDate [$successCount/${sources.size} fuentes]"
             _isSyncing.value = false
         }
     }
