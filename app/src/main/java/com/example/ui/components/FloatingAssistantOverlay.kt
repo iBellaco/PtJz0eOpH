@@ -248,9 +248,7 @@ private fun OverlayItemsTabContent(
                 "Objetos de Apoyo",
                 "Objetos de Hechizo Activos",
                 "Botas Nivel 2",
-                "Botas Nivel 3",
-                "Objetos de Nivel Medio",
-                "Artículos Básicos"
+                "Botas Nivel 3"
             )
             val itemsCats = WildRiftRepository.items.map { it.category }.filter { it.isNotBlank() }.distinct()
             val dynamicCats = itemsCats.sortedBy { cat ->

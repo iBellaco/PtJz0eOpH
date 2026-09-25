@@ -687,6 +687,23 @@ object WildRiftChampionRunesMeta {
         champ: Champion,
         role: LaneRole
     ): Pair<List<String>, List<String>> {
+        val matchingBuild = champ.builds.firstOrNull { 
+            it.role.equals(role.name, ignoreCase = true) || 
+            it.role.equals(role.shortName, ignoreCase = true) ||
+            (role == LaneRole.TOP && (it.role.equals("top", ignoreCase = true) || it.role.equals("baron", ignoreCase = true))) ||
+            (role == LaneRole.JUNGLE && (it.role.equals("jungle", ignoreCase = true) || it.role.equals("jg", ignoreCase = true))) ||
+            (role == LaneRole.MID && (it.role.equals("mid", ignoreCase = true) || it.role.equals("middle", ignoreCase = true))) ||
+            (role == LaneRole.ADC && (it.role.equals("adc", ignoreCase = true) || it.role.equals("duo", ignoreCase = true) || it.role.equals("bot", ignoreCase = true))) ||
+            (role == LaneRole.SUPPORT && (it.role.equals("support", ignoreCase = true) || it.role.equals("supp", ignoreCase = true)))
+        } ?: champ.builds.firstOrNull()
+
+        if (matchingBuild != null && matchingBuild.runes.isNotBlank()) {
+            val parsed = matchingBuild.runes.split(",").map { it.trim() }.filter { it.isNotBlank() }
+            if (parsed.size >= 5) {
+                return Pair(parsed, parsed)
+            }
+        }
+
         val specific = championSpecificRunes[champ.id.lowercase().trim()]
         if (specific != null) {
             return Pair(specific.option1, specific.option2)
@@ -704,7 +721,7 @@ object WildRiftChampionRunesMeta {
             }
             // Mago Control / Rango
             champ.damageType == DamageType.MAGIC && champ.isRanged && role != LaneRole.SUPPORT -> {
-                opt1 = listOf("Cometa Arcano", "Banda de Maná", "Trascendencia", "Piroláser", "Se Avecina Tormenta")
+                opt1 = listOf("Cometa Arcano", "Banda de Maná", "Trascendencia", "Piroláser", "Revestimiento de Huesos")
                 opt2 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Banda de Maná")
             }
             // Soporte Encantador

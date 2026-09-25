@@ -239,13 +239,10 @@ object ChampionRoleAdapter {
         val l1 = filteredRawCore.getOrElse(0) { fallbackLegendaries[0] }
         val l2 = filteredRawCore.getOrElse(1) { fallbackLegendaries[1] }
         val l3 = filteredRawCore.getOrElse(2) { fallbackLegendaries[2] }
-        val l4 = filteredRawCore.getOrElse(3) { fallbackLegendaries[3] }
-        val l5 = filteredRawCore.getOrElse(4) { fallbackLegendaries.getOrElse(4) { "Ángel de la guarda" } }
-        val l6 = filteredRawCore.getOrElse(5) { fallbackLegendaries.getOrElse(5) { "Reloj de arena de Zhonya" } }
 
-        val usedCore = listOf(l1, l2, l3, l4, l5, l6)
+        val usedCore = listOf(l1, l2, l3)
 
-        // 2. Extraer 2 situacionales únicos (Items 7 y 8) con filtros de rol
+        // 2. Extraer 3-4 situacionales únicos respetando que NINGÚN item se repita
         val filteredRawSituational = rawSituational.filter { item ->
             if (isBootItem(item) || usedCore.contains(item)) return@filter false
             if (role == LaneRole.SUPPORT && !isAssassinsOrAdcSupport) {
@@ -256,20 +253,20 @@ object ChampionRoleAdapter {
 
         val defaultSituational = when (role) {
             LaneRole.SUPPORT -> when {
-                isAssassinsOrAdcSupport -> listOf("Colmillo de serpiente", "Ángel de la guarda", "Fauces de Malmortius", "Fajín de mercurio")
-                isTank -> listOf("Malla de espinas", "Presagio de Randuin", "Medallón de los Solari de Hierro", "Redención")
-                else -> listOf("Incensario ardiente", "Redención", "Medallón de los Solari de Hierro", "Bendición de Mikael")
+                isAssassinsOrAdcSupport -> listOf("Colmillo de serpiente", "Ángel de la guarda", "Fauces de Malmortius", "Filo de la noche")
+                isTank -> listOf("Malla de espinas", "Fuerza de la naturaleza", "Corazón de hielo", "Medallón de los Solari de Hierro")
+                else -> listOf("Incensario ardiente", "Bastón de aguas fluidas", "Mandato imperial", "Redención")
             }
-            LaneRole.ADC -> listOf("Ángel de la guarda", "Fajín de mercurio", "Recordatorio letal", "Sanguinario")
+            LaneRole.ADC -> listOf("Recuerdos de Lord Dominik", "Sanguinaria", "Ángel de la guarda", "Arcoescudo Inmortal")
             LaneRole.JUNGLE, LaneRole.TOP, LaneRole.MID -> when {
-                isTank -> listOf("Malla de espinas", "Presagio de Randuin", "Fuerza de la naturaleza", "Corona abrasadora")
-                damageType == DamageType.MAGIC -> listOf("Morellonomicón", "Reloj de arena de Zhonya", "Velo del hada de la muerte", "Rookern kaénico")
-                else -> listOf("Malla de espinas", "Colmillo de serpiente", "Ángel de la guarda", "Fajín de mercurio")
+                isTank -> listOf("Fuerza de la naturaleza", "Presagio de Randuin", "Malla de espinas", "Armadura de Warmog")
+                damageType == DamageType.MAGIC -> listOf("Bastón del Vacío", "Corona de la Reina Fragmentada", "Morellonomicón", "Impulso Cósmico")
+                else -> listOf("Calibrador de Sterak", "Rencor de Serylda", "Ángel de la guarda", "Fauces de Malmortius")
             }
         }
 
         for (item in defaultSituational) {
-            if (filteredRawSituational.size >= 2) break
+            if (filteredRawSituational.size >= 4) break
             if (!filteredRawSituational.contains(item) && !usedCore.contains(item)) {
                 filteredRawSituational.add(item)
             }
@@ -277,11 +274,13 @@ object ChampionRoleAdapter {
 
         val s1 = filteredRawSituational.getOrElse(0) { defaultSituational[0] }
         val s2 = filteredRawSituational.getOrElse(1) { defaultSituational[1] }
+        val s3 = filteredRawSituational.getOrElse(2) { defaultSituational.getOrElse(2) { "Ángel de la guarda" } }
+        val s4 = filteredRawSituational.getOrElse(3) { defaultSituational.getOrElse(3) { "Morellonomicón" } }
 
-        // Build 1..8: 1-6 = Core Legendaries, 7-8 = Situational Legendaries (Zero Boots in slots!)
-        val build8 = listOf(l1, l2, l3, l4, l5, l6, s1, s2)
+        // Build: 3 Core Items + 4 Situacionales únicos (sin duplicados)
+        val build7 = listOf(l1, l2, l3, s1, s2, s3, s4)
 
-        return Triple(build8, baseBoot, bootUpgrade)
+        return Triple(build7, baseBoot, bootUpgrade)
     }
 
     fun generateRunesOptions(
@@ -313,10 +312,10 @@ object ChampionRoleAdapter {
             isAssassinsOrAdcSupport = isSpecialDamageSupport
         )
 
-        val completedCoreItems = build8.take(6)
+        val completedCoreItems = build8.take(3)
         val coreIcons = completedCoreItems.map { WildRiftItemsData.getItemIconByName(it) }
 
-        val situationalItems = build8.drop(6).take(2)
+        val situationalItems = build8.drop(3).take(4)
         val situationalIcons = situationalItems.map { WildRiftItemsData.getItemIconByName(it) }
 
         val resolvedSpells = ensureUniqueSpells(champ.recommendedSpells, champ.primaryRole)
@@ -591,99 +590,84 @@ object ChampionRoleAdapter {
         defaultSpells: List<String>,
         defaultSpellsIcons: List<String>
     ): List<ChampionBuildOption> {
-        if (champ.builds.isNotEmpty()) {
-            val matching = champ.builds.filter { 
-                it.role.isBlank() || 
-                it.role.equals(role.name, ignoreCase = true) || 
-                it.role.equals(role.shortName, ignoreCase = true) ||
-                (role == LaneRole.TOP && (it.role.equals("top", ignoreCase = true) || it.role.equals("baron", ignoreCase = true))) ||
-                (role == LaneRole.JUNGLE && (it.role.equals("jungle", ignoreCase = true) || it.role.equals("jg", ignoreCase = true))) ||
-                (role == LaneRole.MID && (it.role.equals("mid", ignoreCase = true) || it.role.equals("middle", ignoreCase = true))) ||
-                (role == LaneRole.ADC && (it.role.equals("adc", ignoreCase = true) || it.role.equals("duo", ignoreCase = true) || it.role.equals("bot", ignoreCase = true))) ||
-                (role == LaneRole.SUPPORT && (it.role.equals("support", ignoreCase = true) || it.role.equals("supp", ignoreCase = true)))
+        val matchingBuild = champ.builds.firstOrNull { 
+            it.role.equals(role.name, ignoreCase = true) || 
+            it.role.equals(role.shortName, ignoreCase = true) ||
+            (role == LaneRole.TOP && (it.role.equals("top", ignoreCase = true) || it.role.equals("baron", ignoreCase = true))) ||
+            (role == LaneRole.JUNGLE && (it.role.equals("jungle", ignoreCase = true) || it.role.equals("jg", ignoreCase = true))) ||
+            (role == LaneRole.MID && (it.role.equals("mid", ignoreCase = true) || it.role.equals("middle", ignoreCase = true))) ||
+            (role == LaneRole.ADC && (it.role.equals("adc", ignoreCase = true) || it.role.equals("duo", ignoreCase = true) || it.role.equals("bot", ignoreCase = true))) ||
+            (role == LaneRole.SUPPORT && (it.role.equals("support", ignoreCase = true) || it.role.equals("supp", ignoreCase = true)))
+        } ?: champ.builds.firstOrNull()
+
+        if (matchingBuild != null) {
+            val b = matchingBuild
+            val resolvedSpells = ensureUniqueSpells(if (b.spells.isNotEmpty()) b.spells else defaultSpells, role)
+            val resolvedSpellsIcons = resolvedSpells.map { WildRiftSpellsAndRunes.getSpellIconByName(it) }
+            val parsedRunes = b.runes.split(",").map { it.trim() }.filter { it.isNotBlank() }
+            val resolvedRunes = if (parsedRunes.isNotEmpty()) parsedRunes else opt1Runes
+
+            val bRole = when (b.role.lowercase().trim()) {
+                "top", "baron" -> "Top"
+                "jungle", "jg" -> "Jungla"
+                "mid", "middle" -> "Mid"
+                "adc", "duo", "bot" -> "Dúo"
+                "support", "supp" -> "Soporte"
+                else -> b.role.ifBlank { role.shortName }
             }
-            val targetBuilds = if (matching.isNotEmpty()) matching else champ.builds
 
-            return targetBuilds.mapIndexed { idx, b ->
-                val resolvedSpells = ensureUniqueSpells(if (b.spells.isNotEmpty()) b.spells else defaultSpells, role)
-                val resolvedSpellsIcons = resolvedSpells.map { WildRiftSpellsAndRunes.getSpellIconByName(it) }
-                val parsedRunes = b.runes.split(",").map { it.trim() }.filter { it.isNotBlank() }
-                val resolvedRunes = if (parsedRunes.isNotEmpty()) parsedRunes else opt1Runes
+            val cleanCoreItems = (if (b.coreItems.isNotEmpty()) b.coreItems else if (b.items.isNotEmpty()) b.items else defaultBuild8).filter { !isBootItem(it) }.take(3)
+            val sitItems = (if (b.situationalItems.isNotEmpty()) b.situationalItems else defaultBuild8.drop(3)).filter { !isBootItem(it) && !cleanCoreItems.contains(it) }.take(4)
 
-                val bRole = when (b.role.lowercase().trim()) {
-                    "top", "baron" -> "Top"
-                    "jungle", "jg" -> "Jungla"
-                    "mid", "middle" -> "Mid"
-                    "adc", "duo", "bot" -> "Dúo"
-                    "support", "supp" -> "Soporte"
-                    else -> b.role.ifBlank { "Meta" }
-                }
+            val bBootBase = if (b.bootBase.isNotBlank()) b.bootBase else defaultBootBase
+            val bBootUpgrade = if (b.bootUpgrade.isNotBlank()) b.bootUpgrade else getTier3BootUpgrade(bBootBase)
+            val bSituationalBoots = (if (b.situationalBoots.isNotEmpty()) b.situationalBoots else getSituationalBoots(bBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role)).filter { !it.equals(bBootBase, ignoreCase = true) }.distinct()
 
-                val cleanItems = (if (b.items.isNotEmpty()) b.items else defaultBuild8).filter { !isBootItem(it) }
-                val bBootBase = if (b.bootBase.isNotBlank()) b.bootBase else if (bRole == "Top") "Botas blindadas" else if (bRole == "Jungla" && champ.damageType == DamageType.PHYSICAL) "Botas dinámicas" else defaultBootBase
-                val bBootUpgrade = if (b.bootUpgrade.isNotBlank()) b.bootUpgrade else getTier3BootUpgrade(bBootBase)
-                val bSituationalBoots = b.situationalBoots.filter { !it.equals(bBootBase, ignoreCase = true) }.distinct()
-
+            return listOf(
                 ChampionBuildOption(
-                    optionNumber = idx + 1,
-                    title = "Opción ${idx + 1}: ${b.title}",
-                    subtitle = "Rol: $bRole",
-                    source = "Meta Pro",
-                    badge = if (idx == 0) "META CORE" else "SITUACIONAL",
-                    tacticalReason = "Build optimizada para $bRole (${b.title}) extraída directamente de los datos del meta actual.",
-                    items = cleanItems,
+                    optionNumber = 1,
+                    title = b.title.ifBlank { "Build Oficial de Línea ($bRole)" },
+                    subtitle = "Línea: $bRole • Meta Soberano",
+                    source = "Meta Pro / Coach Soberano",
+                    badge = "META SOBERANO",
+                    tacticalReason = "Build oficial de alto rendimiento para $bRole: 3 Core Items indispensables, opciones situacionales y botas evolucionadas a Nivel 3.",
+                    items = cleanCoreItems,
                     bootBase = bBootBase,
                     bootUpgrade = bBootUpgrade,
                     situationalBoots = bSituationalBoots,
-                    situationalItems = b.situationalItems,
+                    situationalItems = sitItems,
                     runes = resolvedRunes,
                     spells = resolvedSpells,
                     spellsIcons = resolvedSpellsIcons
                 )
-            }
+            )
         }
+
         val resolvedSpells1 = ensureUniqueSpells(defaultSpells, role)
         val resolvedSpellsIcons1 = resolvedSpells1.map { WildRiftSpellsAndRunes.getSpellIconByName(it) }
         val defaultSituationalBoots = getSituationalBoots(defaultBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role)
 
-        val opt1 = ChampionBuildOption(
-            optionNumber = 1,
-            title = "Opción 1: Build Principal (Meta Pro)",
-            subtitle = "",
-            source = "Meta Pro",
-            badge = "ESTÁNDAR",
-            tacticalReason = "Build principal extraída directamente del meta actual y los mejores jugadores.",
-            items = champ.coreItems.filter { !isBootItem(it) },
-            bootBase = defaultBootBase,
-            bootUpgrade = defaultBootUpgrade,
-            situationalBoots = defaultSituationalBoots,
-            runes = champ.recommendedRunes.split(",").map { it.trim() }.filter { it.isNotBlank() },
-            spells = resolvedSpells1,
-            spellsIcons = resolvedSpellsIcons1
+        return listOf(
+            ChampionBuildOption(
+                optionNumber = 1,
+                title = "Build Oficial de Línea (${role.shortName})",
+                subtitle = "Línea: ${role.displayName} • Meta Soberano",
+                source = "Meta Pro / Coach Soberano",
+                badge = "META SOBERANO",
+                tacticalReason = "Build oficial de alto rendimiento para ${role.displayName}: 3 Core Items de impacto, opciones situacionales y botas evolucionadas.",
+                items = defaultBuild8.take(3),
+                bootBase = defaultBootBase,
+                bootUpgrade = defaultBootUpgrade,
+                situationalBoots = defaultSituationalBoots,
+                situationalItems = defaultBuild8.drop(3).take(4),
+                runes = opt1Runes.ifEmpty { champ.recommendedRunes.split(",").map { it.trim() }.filter { it.isNotBlank() } },
+                spells = resolvedSpells1,
+                spellsIcons = resolvedSpellsIcons1
+            )
         )
-
-        val resolvedSpells2 = ensureUniqueSpells(if (champ.build2Spells.isNotEmpty()) champ.build2Spells else defaultSpells, role)
-        val resolvedSpellsIcons2 = resolvedSpells2.map { WildRiftSpellsAndRunes.getSpellIconByName(it) }
-
-        val opt2 = ChampionBuildOption(
-            optionNumber = 2,
-            title = "Opción 2: Build Alternativa / Situacional",
-            subtitle = "",
-            source = "Meta Pro / Coach",
-            badge = "ADAPTATIVA",
-            tacticalReason = "Build secundaria y situacional para adaptarte a diferentes composiciones enemigas o ventajas en la fase de líneas.",
-            items = (champ.situationalItems.ifEmpty { champ.coreItems.reversed() }).filter { !isBootItem(it) },
-            bootBase = defaultBootBase,
-            bootUpgrade = defaultBootUpgrade,
-            situationalBoots = defaultSituationalBoots,
-            runes = (if (champ.build2Runes.isNotBlank()) champ.build2Runes else champ.recommendedRunes).split(",").map { it.trim() }.filter { it.isNotBlank() },
-            spells = resolvedSpells2,
-            spellsIcons = resolvedSpellsIcons2
-        )
-
-        return listOf(opt1, opt2)
     }
-private fun generateSituationalSwaps(
+
+    private fun generateSituationalSwaps(
         situationalItems: List<String>,
         damageType: DamageType,
         isTank: Boolean,

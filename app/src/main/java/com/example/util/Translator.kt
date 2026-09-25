@@ -372,13 +372,9 @@ val translations = mapOf(
         "Puedes deslizar el panel hacia abajo en cualquier momento para ocultarlo temporalmente sin detener la herramienta." to "Você pode deslizar o painel para baixo a qualquer momento para ocultá-lo temporariamente sem interromper a ferramenta.",
         "Versión del Parche de Wild Rift:" to "Versão do Patch do Wild Rift:",
         "Build y Runas de" to "Build e Runas de",
-        "Básicos" to "Básicos",
-        "Nivel Medio" to "Nível Médio",
         "Botas N2" to "Botas N2",
         "Botas N3" to "Botas N3",
         "Encantamientos" to "Encantamentos",
-        "ÍTEMS BÁSICOS" to "ITENS BÁSICOS (BASIC ITEMS)",
-        "ÍTEMS DE NIVEL MEDIO" to "ITENS DE NÍVEL MÉDIO (MID TIER)",
         "DAÑO FÍSICO" to "DANO FÍSICO (PHYSICAL DAMAGE)",
         "DAÑO MÁGICO" to "DANO MÁGICO (MAGIC DAMAGE)",
         "DEFENSA" to "DEFESA (DEFENSIVE ITEMS)",
@@ -654,14 +650,6 @@ val translations = mapOf(
         "Objetos Activos" to "Itens Ativos",
         "Botas Nivel 2" to "Botas Nível 2",
         "Botas Nivel 3" to "Botas Nível 3",
-        "Nivel Medio" to "Nível Médio",
-        "Nivel Básico" to "Nível Básico",
-        "Artículos de Nivel Medio" to "Itens de Nível Médio",
-        "ARTÍCULOS DE NIVEL MEDIO" to "ITENS DE NÍVEL MÉDIO",
-        "Objetos de Nivel Medio" to "Itens de Nível Médio",
-        "OBJETOS DE NIVEL MEDIO" to "ITENS DE NÍVEL MÉDIO",
-        "Artículos Básicos" to "Itens Básicos",
-        "ARTÍCULOS BÁSICOS" to "ITENS BÁSICOS",
         "Objetos con Daños Físicos" to "Itens de Dano Físico",
         "OBJETOS CON DAÑOS FÍSICOS" to "ITENS DE DANO FÍSICO",
         "Objetos de Daño Mágico" to "Itens de Dano Mágico",
@@ -1183,8 +1171,6 @@ fun trStr(lang: String, key: String): String {
         replaced = replaced.replace("Defensa", "Defesa", ignoreCase = true)
         replaced = replaced.replace("Magia", "Magia", ignoreCase = true)
         replaced = replaced.replace("Botas", "Botas", ignoreCase = true)
-        replaced = replaced.replace("Básicos", "Básicos", ignoreCase = true)
-        replaced = replaced.replace("Nivel Medio", "Nível Médio", ignoreCase = true)
         replaced = replaced.replace("Encantamientos", "Encantamentos", ignoreCase = true)
         replaced = replaced.replace("Parche", "Patch", ignoreCase = true)
         replaced = replaced.replace("Vida Máxima", "Vida Máxima", ignoreCase = true)

@@ -2045,7 +2045,7 @@ internal fun ItemCatalogSelectionDialog(
         "boots_t2" -> listOf("Botas Nivel 2")
         "boots_t3" -> listOf("Evolución Nivel 3")
         "boots" -> listOf("Botas")
-        else -> listOf("Todos", "Físicos", "Mágicos", "Defensivos", "Apoyo", "Activos", "Nivel Medio", "Básicos")
+        else -> listOf("Todos", "Físicos", "Mágicos", "Defensivos", "Apoyo", "Activos")
     }
 
     val items = remember(searchQuery, selectedCat, type, excludedItemIds) {
@@ -2098,8 +2098,6 @@ internal fun ItemCatalogSelectionDialog(
                         "Defensivos" -> item.category.contains("Defens", ignoreCase = true)
                         "Apoyo" -> item.category.contains("Apoyo", ignoreCase = true)
                         "Activos" -> item.category.contains("Activo", ignoreCase = true)
-                        "Nivel Medio" -> item.category.contains("Medio", ignoreCase = true)
-                        "Básicos" -> item.category.contains("Básico", ignoreCase = true)
                         else -> true
                     }
                     matchesSearch && matchesCat && !isBootItem

@@ -525,7 +525,7 @@ fun ChampionDetailSheet(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Tarjeta analítica de tendencia: hace 24 horas vs. hace 1 hora vs. ahora
+                    // Tarjeta analítica de tendencia: hace 24 horas vs. hace 12 horas vs. actual
                     DetailedTrendGraphCard(
                         winrate = roleProfile.winrate,
                         delta = roleProfile.winrateDelta
@@ -706,63 +706,78 @@ fun ChampionDetailSheet(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "${tr("Builds tácticas")} • ${selectedRole.shortName}",
+                    text = "${tr("Build Táctica Oficial")} • ${selectedRole.shortName}",
                     color = HextechGold,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(HextechCyan.copy(alpha = 0.15f))
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "↔ " + tr("Desliza opciones"),
-                        color = HextechCyan,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                if (buildOptionsList.size > 1) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(HextechCyan.copy(alpha = 0.15f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "↔ " + tr("Desliza opciones"),
+                            color = HextechCyan,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(HextechGold.copy(alpha = 0.15f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "ÚNICA POR LÍNEA",
+                            color = HextechGold,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(10.dp))
+            if (buildOptionsList.size > 1) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    buildOptionsList.forEachIndexed { idx, opt ->
+                        val isSelected = selectedBuildOptionIndex == idx
+                        val rawTitle = opt.title.replace(Regex("^Opción \\d: "), "")
+                        val label = "${idx + 1}. $rawTitle"
 
-            // 4-Option Selector Tabs
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Los títulos se extraerán directamente de opt.title
-
-                buildOptionsList.forEachIndexed { idx, opt ->
-                    val isSelected = selectedBuildOptionIndex == idx
-                    val rawTitle = opt.title.replace(Regex("^Opción \\d: "), "")
-                    val label = "${idx + 1}. $rawTitle"
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(
-                                if (isSelected) HextechGold.copy(alpha = 0.2f) else HextechSurface
-                            )
-                            .border(
-                                width = if (isSelected) 1.5.dp else 1.dp,
-                                color = if (isSelected) HextechGold else HextechCardBorder,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .clickable { selectedBuildOptionIndex = idx }
-                            .padding(horizontal = if (isCompact) 8.dp else 12.dp, vertical = if (isCompact) 4.dp else 7.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = label,
-                                color = if (isSelected) HextechGold else TextMuted,
-                                fontSize = if (isCompact) 10.sp else 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                            )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (isSelected) HextechGold.copy(alpha = 0.2f) else HextechSurface
+                                )
+                                .border(
+                                    width = if (isSelected) 1.5.dp else 1.dp,
+                                    color = if (isSelected) HextechGold else HextechCardBorder,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .clickable { selectedBuildOptionIndex = idx }
+                                .padding(horizontal = if (isCompact) 8.dp else 12.dp, vertical = if (isCompact) 4.dp else 7.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = label,
+                                    color = if (isSelected) HextechGold else TextMuted,
+                                    fontSize = if (isCompact) 10.sp else 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }
@@ -882,23 +897,31 @@ fun ChampionDetailSheet(
 
                     Spacer(modifier = Modifier.height(if (isCompact) 6.dp else 12.dp))
 
-                    // Items List
+                    // Items List - 3 Core Items
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = tr("Objetos de la Build"),
-                            color = HextechCyan,
-                            fontSize = if (isCompact) 9.5.sp else 11.sp,
-                            fontWeight = FontWeight.SemiBold
+                            text = tr("3 Core Items (Pico de Poder)"),
+                            color = HextechGold,
+                            fontSize = if (isCompact) 10.sp else 11.5.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = "↔ " + tr("Desliza objetos"),
-                            color = TextMuted,
-                            fontSize = if (isCompact) 8.sp else 9.sp
-                        )
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(HextechGold.copy(alpha = 0.15f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "CORE ESSENTIALS",
+                                color = HextechGold,
+                                fontSize = 8.5.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(if (isCompact) 4.dp else 6.dp))
 
@@ -970,7 +993,7 @@ fun ChampionDetailSheet(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = tr("Objetos Situacionales:"),
+                                text = tr("Objetos Situacionales") + " (${activeOption.situationalItems.size}):",
                                 color = HextechGold,
                                 fontSize = if (isCompact) 10.sp else 11.sp,
                                 fontWeight = FontWeight.Bold

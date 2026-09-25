@@ -25,8 +25,8 @@ import java.util.Locale
 
 /**
  * Micro-Gráfico de Tendencia (Sparkline) para tarjetas de Campeones en la Tier List.
- * Dibuja una curva suavizada con relleno degradado y etiquetas temporales explícitas
- * que muestran la comparativa de win rate entre "hace 24 horas" y "hace 1 hora".
+ * Dibuja una curva suavizada con relleno degradado y marcadores explícitos
+ * para los 3 momentos clave: hace 24 horas, hace 12 horas y el momento actual.
  */
 @Composable
 fun SparklineTrendGraph(
@@ -43,19 +43,19 @@ fun SparklineTrendGraph(
     val trendColor = if (isPositive) Color(0xFF00FF7F) else Color(0xFFFF453A)
     val glowColor = if (isPositive) Color(0xFF00E5FF) else Color(0xFFFF6B6B)
 
-    // Calculamos puntos de tendencia:
+    // Calculamos puntos de tendencia para los 3 momentos:
     // Punto 0: Hace 24 horas (base - d)
-    // Punto 1: Hace 12 horas (intermedio)
-    // Punto 2: Hace 6 horas (intermedio)
-    // Punto 3: Hace 1 hora (base - d * 0.15)
+    // Punto 1: Transición 18h (base - d * 0.75)
+    // Punto 2: Hace 12 horas (base - d * 0.50)
+    // Punto 3: Transición 6h (base - d * 0.25)
     // Punto 4: Actual / En vivo (base)
     val base = roundedWinrate.toFloat()
     val d = roundedDelta.toFloat().coerceIn(-4f, 4f)
     val points = listOf(
         base - d,
-        base - d * 0.65f,
-        base - d * 0.35f,
-        base - d * 0.12f,
+        base - d * 0.75f,
+        base - d * 0.50f,
+        base - d * 0.25f,
         base
     )
     val minVal = points.minOrNull() ?: 45f
@@ -129,23 +129,24 @@ fun SparklineTrendGraph(
                         )
                     )
 
-                    // 3. Marcador de inicio: Punto de hace 24 horas
+                    // 3. Marcador Punto 1: Hace 24 horas (inicio)
                     drawCircle(
-                        color = HextechCyan.copy(alpha = 0.85f),
+                        color = HextechCyan.copy(alpha = 0.9f),
                         radius = 2.dp.toPx(),
                         center = coords.first()
                     )
 
-                    // 4. Marcador de hace 1 hora (penúltimo punto)
-                    if (coords.size >= 4) {
+                    // 4. Marcador Punto 2: Hace 12 horas (punto medio)
+                    if (coords.size >= 3) {
+                        val midPoint = coords[coords.size / 2]
                         drawCircle(
-                            color = HextechGold.copy(alpha = 0.9f),
+                            color = HextechGold.copy(alpha = 0.95f),
                             radius = 2.2.dp.toPx(),
-                            center = coords[coords.size - 2]
+                            center = midPoint
                         )
                     }
 
-                    // 5. Punto final con halo de brillo neón (Actual / Live)
+                    // 5. Marcador Punto 3: Actual / En vivo (final con brillo neón)
                     val lastPoint = coords.last()
                     drawCircle(
                         color = glowColor.copy(alpha = 0.45f),
@@ -161,7 +162,7 @@ fun SparklineTrendGraph(
             }
         }
 
-        // Etiquetas explícitas: "hace 24 horas" y "hace 1 hora"
+        // Etiquetas explícitas de los 3 momentos: "hace 24 horas", "hace 12 horas", "actual"
         if (showTimeLabels) {
             Spacer(modifier = Modifier.height(2.dp))
             Row(
@@ -185,14 +186,14 @@ fun SparklineTrendGraph(
                     Text(
                         text = if (showFullText) tr("hace 24 horas") else tr("hace 24h"),
                         color = HextechCyan.copy(alpha = 0.95f),
-                        fontSize = if (showFullText) 7.2.sp else 7.sp,
+                        fontSize = if (showFullText) 6.8.sp else 6.5.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = (-0.3).sp,
                         maxLines = 1
                     )
                 }
 
-                // Indicador hace una hora
+                // Indicador hace 12 horas
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(1.5.dp)
@@ -204,9 +205,30 @@ fun SparklineTrendGraph(
                             .background(HextechGold)
                     )
                     Text(
-                        text = if (showFullText) tr("hace una hora") else tr("hace 1h"),
+                        text = if (showFullText) tr("hace 12 horas") else tr("hace 12h"),
                         color = HextechGold,
-                        fontSize = if (showFullText) 7.2.sp else 7.sp,
+                        fontSize = if (showFullText) 6.8.sp else 6.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.3).sp,
+                        maxLines = 1
+                    )
+                }
+
+                // Indicador actual
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(1.5.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(3.5.dp)
+                            .clip(CircleShape)
+                            .background(trendColor)
+                    )
+                    Text(
+                        text = if (showFullText) tr("actual") else tr("actual"),
+                        color = trendColor,
+                        fontSize = if (showFullText) 6.8.sp else 6.5.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = (-0.3).sp,
                         maxLines = 1
@@ -219,7 +241,7 @@ fun SparklineTrendGraph(
 
 /**
  * Tarjeta detallada de tendencia para la hoja de detalles de campeones o pantallas expandidas,
- * mostrando la comparativa analítica completa entre hace 24 horas, hace 1 hora y el momento actual.
+ * mostrando la comparativa analítica completa entre hace 24 horas, hace 12 horas y el momento actual.
  */
 @Composable
 fun DetailedTrendGraphCard(
@@ -230,7 +252,7 @@ fun DetailedTrendGraphCard(
     val roundedWinrate = Math.round(winrate * 100.0) / 100.0
     val roundedDelta = Math.round(delta * 100.0) / 100.0
     val winrate24h = Math.round((winrate - delta) * 100.0) / 100.0
-    val winrate1h = Math.round((winrate - delta * 0.15) * 100.0) / 100.0
+    val winrate12h = Math.round((winrate - delta * 0.50) * 100.0) / 100.0
     val isPositive = roundedDelta >= 0
     val trendColor = if (isPositive) Color(0xFF00FF7F) else Color(0xFFFF453A)
 
@@ -247,13 +269,13 @@ fun DetailedTrendGraphCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "📈 " + tr("Evolución del Win Rate"),
+                    text = tr("Evolución del Win Rate"),
                     color = HextechGold,
                     fontSize = 11.5.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "⚡ " + tr("Tendencia en vivo"),
+                    text = tr("Tendencia en vivo"),
                     color = HextechCyan,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Medium
@@ -262,7 +284,7 @@ fun DetailedTrendGraphCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Gráfica expandida con etiquetas completas
+            // Gráfica expandida con etiquetas completas de los 3 momentos
             SparklineTrendGraph(
                 winrate = winrate,
                 delta = delta,
@@ -274,7 +296,7 @@ fun DetailedTrendGraphCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Comparativa de los 3 momentos clave: Hace 24 horas, Hace 1 hora y Actual
+            // Comparativa de los 3 momentos clave: Hace 24 horas, Hace 12 horas y Actual
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -304,7 +326,7 @@ fun DetailedTrendGraphCard(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
-                // Hace una hora
+                // Hace 12 horas
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -314,13 +336,13 @@ fun DetailedTrendGraphCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = tr("hace una hora"),
+                        text = tr("hace 12 horas"),
                         color = HextechGold,
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "${String.format(Locale.US, "%.2f", winrate1h)}%",
+                        text = "${String.format(Locale.US, "%.2f", winrate12h)}%",
                         color = HextechGoldLight,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -329,7 +351,7 @@ fun DetailedTrendGraphCard(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
-                // Ahora (En vivo)
+                // Actual (En vivo)
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -339,7 +361,7 @@ fun DetailedTrendGraphCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = tr("Ahora (En vivo)"),
+                        text = tr("actual"),
                         color = trendColor,
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Bold
@@ -356,3 +378,4 @@ fun DetailedTrendGraphCard(
         }
     }
 }
+
