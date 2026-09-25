@@ -137,7 +137,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "mortal_reminder",
-            name = "Recordatorio mortal",
+            name = "Recordatorio letal",
             nameEn = "Mortal Reminder",
             category = "Objetos con Daños Físicos",
             goldCost = 3300,
@@ -263,7 +263,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "wit_s_end",
-            name = "Al Final del Ingenio",
+            name = "Final del ingenio",
             nameEn = "Wit's End",
             category = "Objetos con Daños Físicos",
             goldCost = 2800,
@@ -277,7 +277,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "essence_reaver",
-            name = "Saqueador de Esencias",
+            name = "Segador de esencia",
             nameEn = "Essence Reaver",
             category = "Objetos con Daños Físicos",
             goldCost = 3000,
@@ -305,7 +305,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "navori_quickblades",
-            name = "Hojas rápidas de Navori",
+            name = "Filoveloz de Navori",
             nameEn = "Navori Quickblades",
             category = "Objetos con Daños Físicos",
             goldCost = 2700,
@@ -431,7 +431,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "terminus",
-            name = "Terminus",
+            name = "El final",
             nameEn = "Terminus",
             category = "Objetos con Daños Físicos",
             goldCost = 3300,
@@ -1313,7 +1313,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "wild_rift__overlord_s_bloodmail",
-            name = "Armadura de sangre del Señor Supremo",
+            name = "Sangría del soberano",
             nameEn = "Overlord's Bloodmail",
             category = "Objetos Defensivos",
             goldCost = 3200,
@@ -1677,7 +1677,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "galeforce",
-            name = "Fuerza del Viento",
+            name = "Viento huracanado",
             nameEn = "Galeforce",
             category = "Objetos de Hechizo Activos",
             goldCost = 3100,
@@ -2882,7 +2882,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "galeforce",
-            name = "Fuerza del Viento",
+            name = "Viento huracanado",
             nameEn = "Galeforce",
             category = "Objetos con Daños Físicos",
             goldCost = 3100,
@@ -2966,7 +2966,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "yun_tal_wildarrows",
-            name = "Flechas Salvajes de Yun Tal",
+            name = "Flechas de los Yun Tal",
             nameEn = "Yun Tal Wildarrows",
             category = "Objetos con Daños Físicos",
             goldCost = 3200,
@@ -3008,7 +3008,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "hextech_mirror",
-            name = "Espejo Hextech",
+            name = "Óptica hextech C44",
             nameEn = "Hextech Mirror",
             category = "Objetos con Daños Físicos",
             goldCost = 3000,
@@ -3142,8 +3142,8 @@ object WildRiftItemsData {
         "lord dominik" to "lord_dominik_s_regards",
         "dominik" to "lord_dominik_s_regards",
         "mortal reminder" to "mortal_reminder",
-        "recordatorio mortal" to "mortal_reminder",
-        "el recordatorio mortal" to "mortal_reminder",
+        "recordatorio letal" to "mortal_reminder",
+        "el recordatorio letal" to "mortal_reminder",
         "bloodthirster" to "bloodthirster",
         "sanguinario" to "bloodthirster",
         "la sanguinaria" to "bloodthirster",
@@ -3368,8 +3368,8 @@ object WildRiftItemsData {
         "la cimitarra mercurial" to "mercurial_scimitar",
         "yun tal wildarrows" to "yun_tal_wildarrows",
         "yun tal" to "yun_tal_wildarrows",
-        "flechas salvajes de yun tal" to "yun_tal_wildarrows",
-        "las flechas salvajes de yun tal" to "yun_tal_wildarrows",
+        "flechas de los yun tal" to "yun_tal_wildarrows",
+        "las flechas de los yun tal" to "yun_tal_wildarrows",
         "flecha salvaje de yun tal" to "yun_tal_wildarrows",
         "la flecha salvaje de yun tal" to "yun_tal_wildarrows",
         "statikk shiv" to "statikk_shiv",
@@ -3386,8 +3386,8 @@ object WildRiftItemsData {
         "ecos de helia" to "echoes_of_helia",
         "los ecos de helia" to "echoes_of_helia",
         "hextech mirror" to "hextech_mirror",
-        "espejo hextech" to "hextech_mirror",
-        "el espejo hextech" to "hextech_mirror",
+        "óptica hextech c44" to "hextech_mirror",
+        "la óptica hextech c44" to "hextech_mirror",
         "hexoptics" to "hextech_mirror",
         "hexoptics c-44" to "hextech_mirror"
     )
@@ -3502,7 +3502,7 @@ object WildRiftItemsData {
             cleaned.contains("yun tal") || cleaned.contains("yuntal") -> return list.find { it.id == "yun_tal_wildarrows" }
             cleaned.contains("statikk") || cleaned.contains("estatikk") -> return list.find { it.id == "statikk_shiv" }
             cleaned.contains("helia") -> return list.find { it.id == "echoes_of_helia" }
-            cleaned.contains("espejo hextech") || cleaned.contains("hextech mirror") || cleaned.contains("hexoptics") -> return list.find { it.id == "hextech_mirror" }
+            cleaned.contains("óptica hextech c44") || cleaned.contains("hextech mirror") || cleaned.contains("hexoptics") -> return list.find { it.id == "hextech_mirror" }
             cleaned.contains("dardo") || cleaned.contains("rastreademonio") || cleaned.contains("fiendhunter") -> return list.find { it.id == "fiendhunter_bolts" }
         }
 
@@ -3525,7 +3525,11 @@ object WildRiftItemsData {
         "Tirador",
         "Mágico",
         "Defensa",
-        "Apoyo"
+        "Apoyo",
+        "Botas Nivel 2",
+        "Botas Nivel 3",
+        "Objetos de Nivel Medio",
+        "Artículos Básicos"
     )
 
     val categoryItemIds: Map<String, List<String>> = mapOf(
@@ -3604,11 +3608,38 @@ object WildRiftItemsData {
             "midday_tunic", "locket_of_the_iron_solari", "imperial_mandate",
             "oceanid_s_trident", "morellonomicon", "radiant_virtue_wild_rift", "thornmail",
             "dawnshroud", "cryptbloom"
+        ),
+        "Botas Nivel 2" to listOf(
+            "gluttonous_greaves", "berserker_s_greaves", "mercury_s_treads", "plated_steelcaps", "ionian_boots_of_lucidity", "boots_of_mana", "boots_of_dynamism"
+        ),
+        "Botas Nivel 3" to listOf(
+            "immortal_treds", "gunmetal_greaves", "chainlaced_crushers", "armored_advance", "crimson_lucidity", "spellslinger_s_shoes", "armorcrusher_boots"
+        ),
+        "Objetos de Nivel Medio" to listOf(
+            "quicksilver_sash_mid_tier", "lol_wild_rift_seeker_s_armguard", "vampiric_scepter_wild_rift", "zeal_wild_rift", "kircheis_shard_wild_rift", "serrated_dirk_wild_rift", "recurve_bow_wild_rift", "b__f__sword_wild_rift", "cloak_of_agility_wild_rift", "last_whisper_wild_rift", "executioner_s_calling_wild_rift", "phage_wild_rift", "stinger_wild_rift", "caulfield_s_warhammer_wild_rift", "jaurim_s_fist_wild_rift", "aether_wisp_wild_rift", "lost_chapter_wild_rift", "fiendish_codex_wild_rift", "blasting_wand_wild_rift", "needlessly_large_rod_wild_rift", "haunting_guise_wild_rift", "sheen_wild_rift", "oblivion_orb_wild_rift", "bami_s_cinder_wild_rift", "spectre_s_cowl_wild_rift", "kindlegem_wild_rift", "giant_s_belt_wild_rift", "warden_s_mail_wild_rift", "catalyst_of_aeons_wild_rift", "chain_vest_wild_rift", "bramble_vest_wild_rift", "hexdrinker_wild_rift", "negatron_cloak_wild_rift", "glacial_shroud_wild_rift", "winged_moonplate_wild_rift", "nashor_s_talon_wild_rift", "noonquiver_wild_rift", "hextech_alternator_wild_rift", "mejai_s_soulstealer_wild_rift", "surging_scales_wild_rift", "forbidden_idol_wild_rift", "fated_ashes", "void_amethyst", "verdant_barrier"
+        ),
+        "Artículos Básicos" to listOf(
+            "boots_of_speed", "long_sword", "brawler_s_gloves", "dagger", "shimmering_spark", "tear_of_the_goddess_wild_rift", "amplifying_tome", "ruby_crystal", "cloth_armor", "null_magic_mantle", "ring_of_revelation", "relic_shield", "spectral_sickle"
         )
     )
 
     fun getItemsForCategory(category: String): List<WildRiftItem> {
-        val ids = categoryItemIds[category] ?: return emptyList()
-        return ids.mapNotNull { getItemById(it) }
+        val mappedIds = categoryItemIds[category]
+        if (mappedIds != null) {
+            val mapped = mappedIds.mapNotNull { getItemById(it) }
+            if (mapped.isNotEmpty()) return mapped.distinctBy { it.id }
+        }
+        
+        val norm = category.lowercase().trim()
+        val directMatches = list.filter { item ->
+            val ic = item.category.lowercase().trim()
+            ic == norm ||
+            (norm.contains("bota") && ic.contains("bota")) ||
+            (norm.contains("medio") && ic.contains("medio")) ||
+            ((norm.contains("básico") || norm.contains("basico")) && (ic.contains("básico") || ic.contains("basico")))
+        }
+        if (directMatches.isNotEmpty()) return directMatches.distinctBy { it.id }
+
+        return emptyList()
     }
 }

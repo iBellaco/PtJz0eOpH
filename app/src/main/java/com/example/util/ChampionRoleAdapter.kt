@@ -260,7 +260,7 @@ object ChampionRoleAdapter {
                 isTank -> listOf("Malla de espinas", "Presagio de Randuin", "Medallón de los Solari de Hierro", "Redención")
                 else -> listOf("Incensario ardiente", "Redención", "Medallón de los Solari de Hierro", "Bendición de Mikael")
             }
-            LaneRole.ADC -> listOf("Ángel de la guarda", "Fajín de mercurio", "Recordatorio mortal", "Sanguinario")
+            LaneRole.ADC -> listOf("Ángel de la guarda", "Fajín de mercurio", "Recordatorio letal", "Sanguinario")
             LaneRole.JUNGLE, LaneRole.TOP, LaneRole.MID -> when {
                 isTank -> listOf("Malla de espinas", "Presagio de Randuin", "Fuerza de la naturaleza", "Corona abrasadora")
                 damageType == DamageType.MAGIC -> listOf("Morellonomicón", "Reloj de arena de Zhonya", "Velo del hada de la muerte", "Rookern kaénico")
@@ -799,7 +799,7 @@ private fun generateSituationalSwaps(
                 )
             )
         } else {
-            val alt1 = getSafeAlt("Colmillo de serpiente", "Malla de espinas", "Recordatorio mortal")
+            val alt1 = getSafeAlt("Colmillo de serpiente", "Malla de espinas", "Recordatorio letal")
             val alt2 = getSafeAlt("Ángel de la guarda", "Fajín de mercurio", "Filo de la noche")
 
             swaps.add(

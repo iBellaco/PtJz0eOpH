@@ -2019,7 +2019,7 @@ private fun ItemsCatalogTab() {
                 }
             }
         } else {
-            val allCatItems = allCategories.flatMap { cat -> com.example.data.WildRiftItemsData.getItemsForCategory(cat) }
+            val allCatItems = com.example.data.WildRiftItemsData.list.distinctBy { it.id }
             if (searchQuery.isBlank()) {
                 allCatItems
             } else {
@@ -2216,7 +2216,7 @@ private fun ItemsCatalogTab() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 filterOptions.forEach { (key, label) ->
-                    val count = if (key == "TODOS") 141 else com.example.data.WildRiftItemsData.getItemsForCategory(key).size
+                    val count = if (key == "TODOS") com.example.data.WildRiftItemsData.list.distinctBy { it.id }.size else com.example.data.WildRiftItemsData.getItemsForCategory(key).size
                     val isSelected = (selectedCategory == null && key == "TODOS") || (selectedCategory != null && selectedCategory.equals(key, ignoreCase = true))
                     FilterChip(
                         selected = isSelected,
@@ -2257,6 +2257,9 @@ private fun ItemsCatalogTab() {
                         categoryName.contains("Mágico", ignoreCase = true) || categoryName.contains("Magico", ignoreCase = true) -> Color(0xFF60A5FA)
                         categoryName.contains("Defensa", ignoreCase = true) -> Color(0xFF4ADE80)
                         categoryName.contains("Apoyo", ignoreCase = true) -> Color(0xFFE879F9)
+                        categoryName.contains("Bota", ignoreCase = true) -> Color(0xFF38BDF8)
+                        categoryName.contains("Medio", ignoreCase = true) -> Color(0xFFA855F7)
+                        categoryName.contains("Básico", ignoreCase = true) || categoryName.contains("Basico", ignoreCase = true) -> Color(0xFF9CA3AF)
                         else -> HextechCyan
                     }
 
