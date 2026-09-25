@@ -188,6 +188,56 @@ enum class MetaScreenMode {
 
 private data class MetaNavTabItem(val title: String, val count: Int? = null)
 
+// Gestor de sesión persistente y estable para el Draft (sin rotaciones aleatorias involuntarias)
+object DraftSessionManager {
+    private var isInitialized = false
+    val allySlots = mutableStateListOf<DraftSlot>()
+    val enemySlots = mutableStateListOf<DraftSlot>()
+
+    fun initDefaults() {
+        if (isInitialized && (allySlots.isNotEmpty() || enemySlots.isNotEmpty())) return
+
+        if (allySlots.isEmpty()) {
+            val defaultAllies = listOf(
+                "aatrox" to LaneRole.TOP,
+                "lee_sin" to LaneRole.JUNGLE,
+                "ahri" to LaneRole.MID,
+                "kaisa" to LaneRole.ADC,
+                "thresh" to LaneRole.SUPPORT
+            )
+            defaultAllies.forEach { (id, role) ->
+                val champ = WildRiftRepository.getChampionById(id) ?: WildRiftRepository.champions.firstOrNull { it.primaryRole == role }
+                if (champ != null && !allySlots.any { it.assignedRole == role }) {
+                    allySlots.add(DraftSlot(champ, role))
+                }
+            }
+        }
+
+        if (enemySlots.isEmpty()) {
+            val defaultEnemies = listOf(
+                "renekton" to LaneRole.TOP,
+                "khazix" to LaneRole.JUNGLE,
+                "zed" to LaneRole.MID,
+                "ezreal" to LaneRole.ADC,
+                "leona" to LaneRole.SUPPORT
+            )
+            defaultEnemies.forEach { (id, role) ->
+                val champ = WildRiftRepository.getChampionById(id) ?: WildRiftRepository.champions.firstOrNull { it.primaryRole == role && !allySlots.any { a -> a.champion.id == it.id } }
+                if (champ != null && !enemySlots.any { it.assignedRole == role }) {
+                    enemySlots.add(DraftSlot(champ, role))
+                }
+            }
+        }
+        isInitialized = true
+    }
+
+    fun clearAll() {
+        allySlots.clear()
+        enemySlots.clear()
+        isInitialized = true
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MetaAndDraftScreen(
@@ -224,43 +274,12 @@ fun MetaAndDraftScreen(
 
     LaunchedEffect(Unit) {
         com.example.data.local.CustomChampionBuildsManager.init(screenContext)
+        DraftSessionManager.initDefaults()
     }
 
-    val defaultChamp = WildRiftRepository.champions.firstOrNull() ?: Champion(
-        id = "garen",
-        name = "Garen",
-        title = "El Poder de Demacia",
-        primaryRole = LaneRole.TOP
-    )
-
-    // Generador dinámico de composiciones de draft iniciales basadas estrictamente en el rol
-    fun generateRoleBasedDraft(excludeIds: MutableSet<String>): List<DraftSlot> {
-        val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
-        return roles.mapNotNull { role ->
-            val rolePool = WildRiftRepository.champions.filter { champ ->
-                !excludeIds.contains(champ.id) && (champ.primaryRole == role || champ.secondaryRoles.contains(role))
-            }
-            val chosen = rolePool.shuffled().firstOrNull()
-                ?: WildRiftRepository.champions.filter { !excludeIds.contains(it.id) }.shuffled().firstOrNull()
-                ?: defaultChamp
-            excludeIds.add(chosen.id)
-            DraftSlot(chosen, role)
-        }
-    }
-
-    // Draft State con asignación dinámica por rol en cada apertura
-    val usedDraftChampIds = remember { mutableSetOf<String>() }
-    val allySlots = remember(WildRiftRepository.champions.toList()) {
-        mutableStateListOf<DraftSlot>().apply {
-            addAll(generateRoleBasedDraft(usedDraftChampIds))
-        }
-    }
-
-    val enemySlots = remember(WildRiftRepository.champions.toList()) {
-        mutableStateListOf<DraftSlot>().apply {
-            addAll(generateRoleBasedDraft(usedDraftChampIds))
-        }
-    }
+    // Draft State estable que se mantiene fijo sin rotar aleatoriamente
+    val allySlots = DraftSessionManager.allySlots
+    val enemySlots = DraftSessionManager.enemySlots
 
     // Modal Champion Picker & Detail State
     var pickingForTeam by remember { mutableStateOf<String?>(null) } // "ALLY", "ENEMY", "MYSELF"

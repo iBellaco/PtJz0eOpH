@@ -338,10 +338,10 @@ object ChampionRoleAdapter {
             defaultSpellsIcons = resolvedSpellsIcons
         )
 
-        val (laneAdv, laneCounters, laneSyn) = getLaneMatchupsAndSynergies(champ, champ.primaryRole)
-        val resolvedAdvantage = if (champ.advantageAgainst.isNotEmpty()) champ.advantageAgainst else laneAdv
-        val resolvedCountered = if (champ.counteredBy.isNotEmpty()) champ.counteredBy else laneCounters
-        val resolvedSynergies = if (champ.synergies.isNotEmpty()) champ.synergies else laneSyn
+        val matchup = ChampionRoleMatchupAdvisor.getMatchups(champ, champ.primaryRole)
+        val resolvedAdvantage = matchup.advantages
+        val resolvedCountered = matchup.counters
+        val resolvedSynergies = matchup.synergies
 
         return ChampionRoleProfile(
             role = champ.primaryRole,
@@ -464,7 +464,10 @@ object ChampionRoleAdapter {
         )
 
         // 3. Dynamic Lane Matchups & Synergies for Flex Role
-        val (flexAdvantages, flexCounters, flexSynergies) = getLaneMatchupsAndSynergies(champ, role)
+        val flexMatchup = ChampionRoleMatchupAdvisor.getMatchups(champ, role)
+        val flexAdvantages = flexMatchup.advantages
+        val flexCounters = flexMatchup.counters
+        val flexSynergies = flexMatchup.synergies
         val flexTacticalAdvice = CoachingGenerator.generateTacticalAnalysis(champ, role, "es")
 
         return ChampionRoleProfile(
@@ -504,57 +507,8 @@ object ChampionRoleAdapter {
      * para evitar mostrar los matchups del rol principal cuando se selecciona otra línea.
      */
     private fun getLaneMatchupsAndSynergies(champ: Champion, role: LaneRole): Triple<List<String>, List<String>, List<String>> {
-        val isAp = champ.damageType == DamageType.MAGIC
-        val isRanged = champ.isRanged
-        val isTank = champ.isFrontline
-
-        return when (role) {
-            LaneRole.TOP -> {
-                val advantages = if (isRanged) listOf("Darius", "Garen", "Sion", "Sett")
-                else if (isAp) listOf("Malphite", "Dr. Mundo", "Sion", "Shen")
-                else listOf("Teemo", "Kayle", "Irelia", "Yasuo")
-
-                val counters = if (isRanged) listOf("Irelia", "Camille", "Jax", "Malphite")
-                else if (isTank) listOf("Gwen", "Fiora", "Vayne", "Aatrox")
-                else listOf("Renekton", "Darius", "Fiora", "Jax")
-
-                val synergies = listOf("Lee Sin", "Jarvan IV", "Vi", "Orianna")
-                Triple(advantages, counters, synergies)
-            }
-            LaneRole.JUNGLE -> {
-                val advantages = if (isTank) listOf("Master Yi", "Kha'Zix", "Evelynn", "Kayn")
-                else if (isAp) listOf("Rammus", "Amumu", "Shyvana", "Xin Zhao")
-                else listOf("Shyvana", "Evelynn", "Amumu", "Gragas")
-
-                val counters = listOf("Lee Sin", "Xin Zhao", "Olaf", "Warwick")
-                val synergies = listOf("Yasuo", "Ahri", "Darius", "Nautilus")
-                Triple(advantages, counters, synergies)
-            }
-            LaneRole.MID -> {
-                val advantages = if (isAp) listOf("Yasuo", "Galio", "Kassadin", "Twisted Fate")
-                else listOf("Veigar", "Lux", "Aurelion Sol", "Ziggs")
-
-                val counters = listOf("Zed", "Akali", "Yone", "Syndra")
-                val synergies = listOf("Lee Sin", "Jarvan IV", "Vi", "Nautilus")
-                Triple(advantages, counters, synergies)
-            }
-            LaneRole.ADC -> {
-                val advantages = listOf("Vayne", "Kai'Sa", "Samira", "Tristana")
-                val counters = listOf("Caitlyn", "Draven", "Varus", "Miss Fortune")
-                val synergies = listOf("Thresh", "Nautilus", "Leona", "Lulu")
-                Triple(advantages, counters, synergies)
-            }
-            LaneRole.SUPPORT -> {
-                val advantages = if (isTank) listOf("Sona", "Soraka", "Yuumi", "Nami")
-                else listOf("Blitzcrank", "Nautilus", "Braum", "Alistar")
-
-                val counters = if (isTank) listOf("Morgana", "Janna", "Lulu", "Zyra")
-                else listOf("Pyke", "Thresh", "Leona", "Nautilus")
-
-                val synergies = listOf("Jinx", "Kai'Sa", "Samira", "Lucian")
-                Triple(advantages, counters, synergies)
-            }
-        }
+        val matchup = ChampionRoleMatchupAdvisor.getMatchups(champ, role)
+        return Triple(matchup.advantages, matchup.counters, matchup.synergies)
     }
 
     private fun ensureUniqueSpells(spells: List<String>, role: LaneRole): List<String> {

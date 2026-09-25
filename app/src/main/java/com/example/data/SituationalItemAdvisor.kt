@@ -179,12 +179,66 @@ object SituationalItemAdvisor {
         ),
         "Coraza dual purpúrea" to SituationalItemInfo(
             name = "Coraza dual purpúrea",
-            iconUrl = "file:///android_asset/offline_images/6d9dfa05a285da04d1e7e5f60d48ea70.webp",
-            categoryName = "Resistencia Híbrida & Tenacidad",
+            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp",
+            categoryName = "Resistencia Híbrida & Tenacidad (Parche 7.3)",
             purpose = "Aumenta un 30% la armadura y resistencia mágica en combate prolongado, otorgando además tenacidad masiva.",
             bestAgainst = listOf("Composiciones de daño mixto (AD + AP)", "Peleas grupales largas 5v5"),
             keyEffect = "Resistencia: A cargas máximas otorga +30% Armadura, +30% Resistencia Mágica y +20% Tenacidad.",
             recommendationTip = "El mejor objeto defensivo de late-game para tanques e iniciadores frente a daño variado."
+        ),
+        "Segador de esencia" to SituationalItemInfo(
+            name = "Segador de esencia",
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1790080912_essence_reaver_item_hd.webp",
+            categoryName = "Crítico, Maná & Daño por Habilidad (Parche 7.3)",
+            purpose = "Potencia los ataques básicos tras lanzar habilidades e inflige daño crítico amplificado mientras restaura maná.",
+            bestAgainst = listOf("Carries basados en habilidades (Lucian, Ezreal, Corki, Xayah, Gangplank)"),
+            keyEffect = "Espada Hechizada: Las habilidades potencian el siguiente básico infligiendo daño adicional y restaurando maná faltante.",
+            recommendationTip = "Core item indiscutible para tiradores y duelistas que consumen gran cantidad de maná y rotan habilidades constantemente."
+        ),
+        "Navaja de asalto" to SituationalItemInfo(
+            name = "Navaja de asalto",
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789129106_stormrazor.webp",
+            categoryName = "Energizado, Kiting & Burst AD (Parche 7.3)",
+            purpose = "Genera un impacto energizado con daño relámpago, otorga un aumento explosivo de velocidad de movimiento y ralentiza al enemigo.",
+            bestAgainst = listOf("Enemigos móviles difíciles de alcanzar", "Tiradores de kiting a distancia (Caitlyn, Jinx, Tristana, Kai'Sa)"),
+            keyEffect = "Paralizar: Los ataques energizados infligen daño mágico adicional, ralentizan 75% por 0.5s y otorgan velocidad de movimiento.",
+            recommendationTip = "Excelente primer o segundo objeto para tener control de espaciado y atrapar rivales con el primer impacto."
+        ),
+        "Diadema susurrante" to SituationalItemInfo(
+            name = "Diadema susurrante",
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789999586_2526.webp",
+            categoryName = "Poder de Habilidad & Penetración AP (Parche 7.3)",
+            purpose = "Otorga daño mágico explosivo y amplificación continua para magos de rotación rápida de habilidades.",
+            bestAgainst = listOf("Composiciones de daño mágico", "Magos de ráfaga y desgaste (Syndra, Ahri, Orianna, Vex)"),
+            keyEffect = "Resonancia: Incrementa el daño de las habilidades mágicas sucesivas e ignora resistencia mágica enemiga.",
+            recommendationTip = "Potencia los picos de poder intermedios para dominar escaramuzas en el río y peleas por Dragones."
+        ),
+        "Túnica del mediodía" to SituationalItemInfo(
+            name = "Túnica del mediodía",
+            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389204_mantle-of-the-twelfth-hour.webp",
+            categoryName = "Supervivencia Crítica & Desenganche (Parche 7.3)",
+            purpose = "Otorga una inyección masiva de vida adicional, curación y resistencia a ralentizaciones al caer por debajo del 35% de vida.",
+            bestAgainst = listOf("Asesinos de ejecución rápida", "Peleas cerradas al límite de vida"),
+            keyEffect = "Línea de Vida: Otorga hasta 45% de vida adicional y 50% de resistencia a ralentizaciones al bajar del 35% HP.",
+            recommendationTip = "Perfecto para colosos e iniciadores (Aatrox, Sett, Darius, Renekton) que se sumergen en la línea trasera enemiga."
+        ),
+        "Desesperanza eterna" to SituationalItemInfo(
+            name = "Desesperanza eterna",
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-03/1772630350_unending-despair.webp",
+            categoryName = "Drenado de Vida & Armadura para Tanques (Parche 7.3)",
+            purpose = "Drena continuamente la vida de los enemigos cercanos cada pocos segundos en combate, curando al portador.",
+            bestAgainst = listOf("Peleas grupales cuerpo a cuerpo prolongadas", "Enemigos que se agrupan en cuellos de botella"),
+            keyEffect = "Angustia: Cada 4 segundos en combate con campeones, inflige daño mágico a enemigos cercanos y te cura por el daño infligido.",
+            recommendationTip = "Objeto obligatorio para tanques de primera línea (Ornn, Sion, Malphite, Nautilus, Amumu) en peleas 5v5."
+        ),
+        "Ecos de Helia" to SituationalItemInfo(
+            name = "Ecos de Helia",
+            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1790000547_6620.webp",
+            categoryName = "Soporte Encantador, Daño & Curación (Parche 7.3)",
+            purpose = "Acumula fragmentos de alma al dañar a campeones enemigos y los consume al curar o escudar a un aliado para sanarlo e infligir daño.",
+            bestAgainst = listOf("Soportes de utilidad agresivos (Nami, Sona, Karma, Milio, Seraphine, Lulu)"),
+            keyEffect = "Sifón de Almas: Infligir daño a un enemigo otorga un fragmento de alma. Curar o poner escudo a un aliado consume fragmentos para curar al aliado y dañar al enemigo más cercano.",
+            recommendationTip = "El mejor objeto para maximizar el impacto de los encantadores en intercambios 2v2 de carril y peleas de dragón."
         ),
         "Rookern Kaénico" to SituationalItemInfo(
             name = "Rookern Kaénico",

@@ -292,7 +292,7 @@ fun InfoScreen(
             // Section 4: Desarrollador & Derechos de Autor
             val context = LocalContext.current
             InfoCard(
-                title = tr("4. Desarrollador y Derechos de Autor"),
+                title = tr("4. Desarrollador, Derechos y Legal"),
                 icon = Icons.Default.Person
             ) {
                 Text(
@@ -308,7 +308,7 @@ fun InfoScreen(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = tr("Diseñado para la comunidad competitiva de League of Legends: Wild Rift."),
                     color = TextSecondary,
@@ -317,8 +317,15 @@ fun InfoScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Alfa v${com.example.BuildConfig.VERSION_NAME} (${com.example.BuildConfig.VERSION_CODE})",
-                    color = TextMuted.copy(alpha = 0.9f),
+                    text = tr("Coach no cuenta con el respaldo de Riot Games y no refleja las opiniones ni los puntos de vista de Riot Games ni de ninguna persona involucrada oficialmente en la producción o administración de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas comerciales registradas de Riot Games, Inc."),
+                    color = TextMuted,
+                    fontSize = 10.5.sp,
+                    lineHeight = 14.5.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • Parche 7.3",
+                    color = HextechCyan.copy(alpha = 0.9f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold
                 )

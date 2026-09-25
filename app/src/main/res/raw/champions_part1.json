@@ -18,7 +18,7 @@
     "advantageAgainst": [
       "Sion",
       "Dr. Mundo",
-      "Nasus"
+      "Shen"
     ],
     "counteredBy": [
       "Fiora",
@@ -26,9 +26,9 @@
       "Camille"
     ],
     "synergies": [
-      "Yasuo",
-      "Malphite",
-      "Diana"
+      "Lee Sin",
+      "Jarvan IV",
+      "Orianna"
     ],
     "tacticalAdvice": "Conecta los filos de tu Habilidad 1 (H1) en el Línea de Barón para castigar campeones inmóviles. Usa tu Habilidad 3 (H3) para reposicionar la espada durante la animación.",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
@@ -203,18 +203,18 @@
     "summary": "Ahri es una raposa vastaya conectada de forma innata a la magia del reino de los espíritus. Es capaz de manipular las emociones de su presa antes de consumir su esencia, proceso que le transmite los recuerdos de cada alma que consume. Otrora una...",
     "advantageAgainst": [
       "Lux",
-      "Veigar",
-      "Orianna"
+      "Ziggs",
+      "Aurelion Sol"
     ],
     "counteredBy": [
       "Yasuo",
-      "Fizz",
-      "Zed"
+      "Zed",
+      "Kassadin"
     ],
     "synergies": [
-      "Jarvan IV",
+      "Lee Sin",
       "Vi",
-      "Lee Sin"
+      "Jarvan IV"
     ],
     "tacticalAdvice": "Guarda tu Encanto (H3) para interrumpir las entradas del rival o asegurar una rotación de carril con tu jungla.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
@@ -353,19 +353,19 @@
     "damageType": "MAGIC",
     "summary": "Tras abandonar la Orden Kinkou y su título de Puño de la Sombra, Akali actúa ahora en solitario y está lista para convertirse en el arma mortal que necesita su gente. Aunque no renuncia a las enseñanzas de Shen, su maestro, ha jurado defender Jonia de...",
     "advantageAgainst": [
-      "Kassadin",
-      "Zed",
-      "Katarina"
+      "Lux",
+      "Veigar",
+      "Twisted Fate"
     ],
     "counteredBy": [
       "Galio",
-      "Annie",
-      "Pantheon"
+      "Pantheon",
+      "Vex"
     ],
     "synergies": [
+      "Jarvan IV",
       "Diana",
-      "Amumu",
-      "Rakan"
+      "Nautilus"
     ],
     "tacticalAdvice": "Entra y sal de tu Velo del Crepúsculo (H2) para activar tu pasiva repetidamente y maximizar tu daño sostenido.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Revestimiento de Huesos",
@@ -536,19 +536,19 @@
     "damageType": "PHYSICAL",
     "summary": "Impávido ante el peligro, Akshan combate el mal con gran carisma, ganas de impartir justa venganza y una evidente falta de camisetas. Domina el arte del combate sigiloso, por lo que es capaz de desaparecer a los ojos de sus enemigos y volver a aparecer...",
     "advantageAgainst": [
-      "Twisted Fate",
       "Aurelion Sol",
-      "Kassadin"
+      "Kassadin",
+      "Veigar"
     ],
     "counteredBy": [
-      "Yasuo",
       "Zed",
-      "Irelia"
+      "Yasuo",
+      "Akali"
     ],
     "synergies": [
       "Nautilus",
-      "Leona",
-      "Braum"
+      "Jarvan IV",
+      "Vi"
     ],
     "tacticalAdvice": "Busca ángulos limpios con tu Gancho de Hereje (H3) para rodear al enemigo y reiniciar tu cuerda tras cada derribo.",
     "recommendedRunes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
@@ -747,19 +747,19 @@
     "damageType": "MAGIC",
     "summary": "Alistar, un poderoso guerrero con una reputación temible, busca venganza por la muerte de su clan a manos del imperio noxiano. Aunque fue esclavizado y forzado a vivir como gladiador, fue su voluntad inquebrantable lo que le impidió convertirse en una...",
     "advantageAgainst": [
-      "Leona",
-      "Rakan",
-      "Nautilus"
+      "Sona",
+      "Soraka",
+      "Yuumi"
     ],
     "counteredBy": [
-      "Janna",
       "Morgana",
-      "Vayne"
+      "Janna",
+      "Braum"
     ],
     "synergies": [
-      "Yasuo",
       "Samira",
-      "Kai'Sa"
+      "Kai'Sa",
+      "Yasuo"
     ],
     "tacticalAdvice": "Ejecuta el combo H2+H1 para levantar enemigos en cadena. En peleas de equipo, usa tu Habilidad Definitiva (H4) para absorber el daño masivo inicial.",
     "recommendedRunes": "Irrupción de Fase, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
@@ -899,18 +899,18 @@
     "summary": "Ambessa Medarda comanda el campo de batalla con implacable disciplina militar. Sus cadenas y hojas gemelas le permiten deslizarse continuamente entre habilidades para desgarrar a sus rivales.",
     "advantageAgainst": [
       "Sion",
-      "Nasus",
-      "Darius"
+      "Garen",
+      "Aatrox"
     ],
     "counteredBy": [
       "Fiora",
       "Jax",
-      "Poppy"
+      "Renekton"
     ],
     "synergies": [
-      "Diana",
-      "Orianna",
-      "Malphite"
+      "Lee Sin",
+      "Jarvan IV",
+      "Orianna"
     ],
     "tacticalAdvice": "Encadena los deslizamientos de tu pasiva tras cada habilidad para mantener el control de distancia y castigar en intercambios cortos.",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
@@ -1081,18 +1081,18 @@
     "summary": "Cuenta la leyenda que Amumu es un alma solitaria y melancólica de la vieja Shurima que vaga por el mundo en busca de un amigo. Condenado por una maldición ancestral, su destino es permanecer solo para siempre, pues su tacto es muerte y su cariño, la...",
     "advantageAgainst": [
       "Maestro Yi",
-      "Kha'Zix",
-      "Rengar"
+      "Rammus",
+      "Xin Zhao"
     ],
     "counteredBy": [
       "Olaf",
       "Lee Sin",
-      "Morgana"
+      "Kha'Zix"
     ],
     "synergies": [
       "Miss Fortune",
-      "Kennen",
-      "Samira"
+      "Samira",
+      "Katarina"
     ],
     "tacticalAdvice": "Guarda tu segunda carga de Vendaje (H1) para cuando el enemigo gaste su Destello o salto. Tu Definitiva es la mejor iniciación en equipo.",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Revestimiento de Huesos",
@@ -1121,7 +1121,7 @@
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
-      "file:///android_asset/offline_images/7376c76166faaa7452d5b6300438cf56.webp",
+      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp",
       "file:///android_asset/offline_images/8c585684ae11f4bd1818521dc47bcc3d.webp",
       "file:///android_asset/offline_images/c08d478db157d63bf53cc63e98254f91.webp"
     ],
@@ -1264,17 +1264,17 @@
     "advantageAgainst": [
       "Yasuo",
       "Katarina",
-      "Irelia"
+      "Akali"
     ],
     "counteredBy": [
-      "Orianna",
       "Syndra",
+      "Orianna",
       "Lux"
     ],
     "synergies": [
       "Jarvan IV",
       "Amumu",
-      "Malphite"
+      "Diana"
     ],
     "tacticalAdvice": "Mantén 3 cargas de pasiva para sorprender con Escudo (H3) instantáneo + Tibbers con aturdimiento en área.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
@@ -1446,12 +1446,12 @@
     "advantageAgainst": [
       "Vayne",
       "Kai'Sa",
-      "Samira"
+      "Sivir"
     ],
     "counteredBy": [
       "Draven",
-      "Blitzcrank",
-      "Nautilus"
+      "Caitlyn",
+      "Tristana"
     ],
     "synergies": [
       "Braum",
@@ -1624,14 +1624,14 @@
     "damageType": "MAGIC",
     "summary": "Aurelion Sol solía agraciar al vasto vacío del cosmos con las maravillas celestiales que él mismo ideaba. Ahora, se ve forzado a hacer uso de su increíble poder para satisfacer los deseos de un imperio espacial que lo ha engañado para convertirlo en su...",
     "advantageAgainst": [
-      "Malzahar",
       "Veigar",
-      "Vladimir"
+      "Malphite",
+      "Annie"
     ],
     "counteredBy": [
       "Fizz",
-      "Kassadin",
-      "Akali"
+      "Zed",
+      "Katarina"
     ],
     "synergies": [
       "Jarvan IV",
@@ -1775,19 +1775,19 @@
     "damageType": "MAGIC",
     "summary": "Desde que nació, Aurora ha tenido una visión única de la vida gracias a su capacidad para moverse entre los reinos material y espiritual. Decidida a conocer mejor a los habitantes del reino espiritual, abandonó su hogar para ampliar sus conocimientos...",
     "advantageAgainst": [
-      "Darius",
-      "Garen",
-      "Sion"
+      "Lux",
+      "Veigar",
+      "Ziggs"
     ],
     "counteredBy": [
       "Zed",
-      "Kha'Zix",
-      "Irelia"
+      "Akali",
+      "Kassadin"
     ],
     "synergies": [
-      "Amumu",
-      "Diana",
-      "Malphite"
+      "Jarvan IV",
+      "Vi",
+      "Nautilus"
     ],
     "tacticalAdvice": "Atrapa a los rivales dentro de tu Dominio Espiritual (H4) y salta entre los extremos para esquivar habilidades y desgastar.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
@@ -1957,7 +1957,7 @@
     "advantageAgainst": [
       "Braum",
       "Alistar",
-      "Sona"
+      "Thresh"
     ],
     "counteredBy": [
       "Blitzcrank",
@@ -1966,8 +1966,8 @@
     ],
     "synergies": [
       "Jhin",
-      "Caitlyn",
-      "Ezreal"
+      "Ezreal",
+      "Caitlyn"
     ],
     "tacticalAdvice": "Recolecta campanas en el mapa cuando tu tirador esté seguro bajo torre. Usa tu Destino Templado (H4) para congelar torres u objetivos neutrales.",
     "recommendedRunes": "Soberano Gélido, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
@@ -2106,17 +2106,17 @@
     "advantageAgainst": [
       "Sona",
       "Soraka",
-      "Janna"
+      "Yuumi"
     ],
     "counteredBy": [
       "Morgana",
-      "Nautilus",
-      "Sivir"
+      "Leona",
+      "Braum"
     ],
     "synergies": [
       "Jinx",
-      "Draven",
-      "Samira"
+      "Samira",
+      "Draven"
     ],
     "tacticalAdvice": "Elige momentos sin súbditos enfrente para amenazar con el Gancho (H1). Tu silencio en área con la Habilidad Definitiva (H4) destruye escudos enemigos al instante.",
     "recommendedRunes": "Soberano Gélido, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Hextello",
@@ -2258,17 +2258,17 @@
     "advantageAgainst": [
       "Braum",
       "Alistar",
-      "Leona"
+      "Nautilus"
     ],
     "counteredBy": [
       "Blitzcrank",
       "Pyke",
-      "Nautilus"
+      "Leona"
     ],
     "synergies": [
-      "Amumu",
-      "Miss Fortune",
-      "Jarvan IV"
+      "Jhin",
+      "Ashe",
+      "Miss Fortune"
     ],
     "tacticalAdvice": "Aplica tu pasiva ardiente sobre tanques agrupados para activar detonaciones en cadena durante las peleas por el dragón.",
     "recommendedRunes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
@@ -2467,13 +2467,13 @@
     "damageType": "MAGIC",
     "summary": "Bendecido con bíceps enormes y un corazón aún más grande, Braum es un héroe muy apreciado en Freljord. Todas las tabernas al norte del Fuerte Helado brindan por su fuerza legendaria. Se dice que taló un bosque de robles en una sola noche y convirtió una...",
     "advantageAgainst": [
-      "Miss Fortune",
-      "Ornn",
-      "Ezreal"
+      "Leona",
+      "Nautilus",
+      "Thresh"
     ],
     "counteredBy": [
       "Morgana",
-      "Brand",
+      "Senna",
       "Zyra"
     ],
     "synergies": [
@@ -2623,7 +2623,7 @@
     "counteredBy": [
       "Draven",
       "Tristana",
-      "Nautilus"
+      "Varus"
     ],
     "synergies": [
       "Morgana",
@@ -2767,19 +2767,19 @@
     "damageType": "PHYSICAL",
     "summary": "Convertida en un arma viviente diseñada para operar fuera de la ley, Camille es la jefa de espías del clan Ferros, una elegante agente de élite que se asegura de que nada amenace el funcionamiento de Piltover ni de Zaun. Su adaptabilidad y minuciosidad...",
     "advantageAgainst": [
-      "Garen",
+      "Gnar",
       "Sion",
-      "Nasus"
+      "Garen"
     ],
     "counteredBy": [
-      "Jax",
       "Fiora",
+      "Jax",
       "Renekton"
     ],
     "synergies": [
       "Galio",
-      "Diana",
-      "Orianna"
+      "Shen",
+      "Jarvan IV"
     ],
     "tacticalAdvice": "Espera a cargar el segundo golpe de tu Habilidad 1 (H1) para infligir daño verdadero demoledor. Tu Definitiva aísla al tirador oponente sin escapatoria.",
     "recommendedRunes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
@@ -2950,18 +2950,18 @@
     "summary": "Desde el momento en que Cho'Gath emergió por primera vez a la dura luz solar de Runaterra, a la bestia solo le impulsaba el hambre más pura e insaciable. La perfecta expresión del deseo del Vacío de acabar con la vida, la compleja biología de Cho'Gath...",
     "advantageAgainst": [
       "Malphite",
-      "Singed",
-      "Sion"
+      "Shen",
+      "Dr. Mundo"
     ],
     "counteredBy": [
-      "Vayne",
       "Fiora",
-      "Gwen"
+      "Gwen",
+      "Vayne"
     ],
     "synergies": [
       "Yasuo",
-      "Kennen",
-      "Orianna"
+      "Orianna",
+      "Jarvan IV"
     ],
     "tacticalAdvice": "Asegura dragones y barones sincronizando tu Festín (H4) con el Castigo de tu jungla para infligir daño verdadero instantáneo.",
     "recommendedRunes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
@@ -2992,7 +2992,7 @@
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
       "file:///android_asset/offline_images/f141ec3263251399bc6226e325c1d998.webp",
-      "file:///android_asset/offline_images/7376c76166faaa7452d5b6300438cf56.webp"
+      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -3132,17 +3132,17 @@
     "summary": "El piloto yordle Corki adora dos cosas por encima de todas las demás: volar y su glamuroso bigote. Aunque no necesariamente en ese orden. Tras abandonar la Ciudad de Bandle, se estableció en Piltover y se enamoró de las máquinas maravillosas que allí...",
     "advantageAgainst": [
       "Veigar",
-      "Twisted Fate",
-      "Azir"
+      "Lux",
+      "Twisted Fate"
     ],
     "counteredBy": [
-      "Yasuo",
       "Zed",
+      "Yasuo",
       "Akali"
     ],
     "synergies": [
-      "Leona",
-      "Nautilus",
+      "Jarvan IV",
+      "Vi",
       "Amumu"
     ],
     "tacticalAdvice": "Recoge el Paquete en base antes de pelear por dragones para partir al equipo rival en dos con Entrega Especial.",
@@ -3311,19 +3311,19 @@
     "damageType": "PHYSICAL",
     "summary": "No hay mayor símbolo del poder de Noxus que Darius, el comandante más temido y más curtido en batallas de toda la nación. Pasando de orígenes humildes a convertirse en la Mano de Noxus, se abre paso a tajos entre los enemigos del imperio, muchos de...",
     "advantageAgainst": [
-      "Garen",
       "Sion",
-      "Nasus"
+      "Garen",
+      "Sett"
     ],
     "counteredBy": [
       "Vayne",
-      "Fiora",
-      "Teemo"
+      "Teemo",
+      "Fiora"
     ],
     "synergies": [
-      "Ghost",
-      "Yuumi",
-      "Lulu"
+      "Sejuani",
+      "Jarvan IV",
+      "Vi"
     ],
     "tacticalAdvice": "Acumula 5 marcas de Hemorragia para desatar Furia Noxiana y encadenar ejecuciones con tu Guillotina (H4).",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
@@ -3462,19 +3462,19 @@
     "damageType": "MAGIC",
     "summary": "Portadora de una espada en forma de media luna, Diana es una guerrera de los Lunari, una fe rechazada en casi todas las tierras a los pies del Monte Targon. Ataviada con una armadura reluciente del color de la nieve en una noche de invierno, es la...",
     "advantageAgainst": [
-      "Katarina",
-      "Kassadin",
-      "Zed"
+      "Amumu",
+      "Shyvana",
+      "Maestro Yi"
     ],
     "counteredBy": [
-      "Galio",
-      "Mordekaiser",
-      "Pantheon"
+      "Lee Sin",
+      "Xin Zhao",
+      "Kha'Zix"
     ],
     "synergies": [
       "Yasuo",
       "Orianna",
-      "Amumu"
+      "Kennen"
     ],
     "tacticalAdvice": "Acierta Impacto Creciente (H1) sobre múltiples objetivos para reiniciar tu Impulso Lunar (H3) y agrupar al equipo enemigo con la Habilidad Definitiva (H4).",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
@@ -3645,18 +3645,18 @@
     "summary": "Loco de remate, trágicamente homicida, terriblemente morado: el Dr. Mundo es lo que mantiene en sus casas a muchos habitantes de Zaun en las noches especialmente oscuras. Este autoproclamado doctor fue paciente del psiquiátrico más infame de Zaun. Tras...",
     "advantageAgainst": [
       "Malphite",
-      "Singed",
-      "Teemo"
+      "Sion",
+      "Shen"
     ],
     "counteredBy": [
-      "Vayne",
       "Fiora",
-      "Gwen"
+      "Gwen",
+      "Aatrox"
     ],
     "synergies": [
-      "Yuumi",
-      "Lulu",
-      "Seraphine"
+      "Lee Sin",
+      "Vi",
+      "Jarvan IV"
     ],
     "tacticalAdvice": "Recoge el bote químico de tu pasiva para recuperar vida y mantenerte inmune al primer control de masas que te lancen.",
     "recommendedRunes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
@@ -3831,7 +3831,7 @@
     "counteredBy": [
       "Caitlyn",
       "Varus",
-      "Nautilus"
+      "Ashe"
     ],
     "synergies": [
       "Thresh",
@@ -3975,19 +3975,19 @@
     "damageType": "MAGIC",
     "summary": "Ekko, un prodigio surgido de las implacables calles de Zaun, manipula el tiempo para sacar ventaja de todas las situaciones. Con una máquina de su invención llamada Dispositivo Z, explora las distintas posibilidades de la realidad hasta alcanzar el...",
     "advantageAgainst": [
-      "Lux",
-      "Veigar",
-      "Ziggs"
+      "Amumu",
+      "Shyvana",
+      "Maestro Yi"
     ],
     "counteredBy": [
-      "Kassadin",
-      "Pantheon",
-      "Galio"
+      "Lee Sin",
+      "Xin Zhao",
+      "Kha'Zix"
     ],
     "synergies": [
-      "Diana",
-      "Amumu",
-      "Malphite"
+      "Galio",
+      "Malphite",
+      "Nautilus"
     ],
     "tacticalAdvice": "Predice el movimiento del enemigo para colocar Convergencia Paralela (H2) desde la niebla de guerra y conseguir un aturdimiento masivo.",
     "recommendedRunes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
@@ -4155,19 +4155,19 @@
     "damageType": "MAGIC",
     "summary": "En los oscuros adentros de Runaterra, el súcubo Evelynn deambula en busca de su siguiente víctima. Acecha a sus presas con una voluptuosa fachada femenina, pero cuando alguien sucumbe a sus encantos, Evelynn libera su auténtica forma. Después somete a...",
     "advantageAgainst": [
-      "Master Yi",
-      "Twitch",
-      "Kindred"
+      "Maestro Yi",
+      "Amumu",
+      "Shyvana"
     ],
     "counteredBy": [
       "Lee Sin",
       "Rengar",
-      "Kha'Zix"
+      "Warwick"
     ],
     "synergies": [
       "Shen",
-      "Twisted Fate",
-      "Galio"
+      "Galio",
+      "Yuumi"
     ],
     "tacticalAdvice": "Llega por la espalda con camuflaje demoníaco nivel 5+, aplica la marca de Encanto (H2) y sal ilesa ejecutando con Última Caricia (H4).",
     "recommendedRunes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
@@ -4307,17 +4307,17 @@
     "summary": "Ezreal, un aventurero aficionado a deslizarse y dotado de artes mágicas sin saberlo, saquea catacumbas perdidas, lidia con maldiciones ancestrales y supera con facilidad adversidades imposibles. De valor y chulería sin límites, prefiere improvisar para...",
     "advantageAgainst": [
       "Jinx",
-      "Miss Fortune",
-      "Ashe"
+      "Vayne",
+      "Kai'Sa"
     ],
     "counteredBy": [
       "Draven",
-      "Samira",
+      "Caitlyn",
       "Tristana"
     ],
     "synergies": [
-      "Yuumi",
       "Karma",
+      "Yuumi",
       "Lux"
     ],
     "tacticalAdvice": "Mantén las 5 cargas de tu pasiva golpeando con tu Habilidad 1 (H1) antes de pelear. Guarda tu Desplazamiento Arcano (H3) para esquivar iniciaciones clave.",
@@ -4488,19 +4488,19 @@
     "damageType": "MAGIC",
     "summary": "Algo ha despertado en Runaterra. Algo ancestral. Algo terrible. El horror conocido como Fiddlesticks acecha en las lindes de la sociedad, en las zonas en las que impera la paranoia, donde se alimenta de aquellos a los que aterroriza. Armada con una...",
     "advantageAgainst": [
-      "Master Yi",
-      "Kha'Zix",
-      "Viego"
+      "Amumu",
+      "Rammus",
+      "Maestro Yi"
     ],
     "counteredBy": [
       "Lee Sin",
-      "Olaf",
-      "Xin Zhao"
+      "Xin Zhao",
+      "Olaf"
     ],
     "synergies": [
-      "Amumu",
+      "Kennen",
       "Miss Fortune",
-      "Kennen"
+      "Galio"
     ],
     "tacticalAdvice": "Canaliza Tormenta de Cuervos (H4) fuera de la visión enemiga para aterrorizar a todo el equipo rival simultáneamente.",
     "recommendedRunes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
@@ -4670,17 +4670,17 @@
     "advantageAgainst": [
       "Aatrox",
       "Sion",
-      "K'Sante"
+      "Cho'Gath"
     ],
     "counteredBy": [
       "Malphite",
       "Jax",
-      "Kennen"
+      "Renekton"
     ],
     "synergies": [
-      "Shen",
-      "Galio",
-      "Twisted Fate"
+      "Sejuani",
+      "Jarvan IV",
+      "Vi"
     ],
     "tacticalAdvice": "Usa Estocada (H2) para bloquear el control de masas crucial de tu oponente y aturdirlo de vuelta.",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Linaje, Último Esfuerzo, Revestimiento de Huesos",
@@ -4818,8 +4818,8 @@
     "summary": "Fizz es un yordle anfibio que habita entre los arrecifes de alrededor de Aguas Estancadas. Suele recuperar y devolver los diezmos arrojados al mar por capitanes supersticiosos, pero incluso los marineros más agudos saben que no hay que plantarle cara...",
     "advantageAgainst": [
       "Twisted Fate",
-      "Veigar",
-      "Syndra"
+      "Lux",
+      "Veigar"
     ],
     "counteredBy": [
       "Galio",
@@ -4828,8 +4828,8 @@
     ],
     "synergies": [
       "Jarvan IV",
-      "Amumu",
-      "Vi"
+      "Vi",
+      "Amumu"
     ],
     "tacticalAdvice": "Lanza Carnaza para Tiburones (H4) a máxima distancia para maximizar el tamaño del tiburón y esquiva el contraataque con Juguetón/Gamberro (H3).",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
@@ -4970,17 +4970,17 @@
     "advantageAgainst": [
       "Katarina",
       "Akali",
-      "Diana"
+      "Ahri"
     ],
     "counteredBy": [
-      "Lucian",
-      "Tristana",
-      "Jayce"
+      "Zed",
+      "Yasuo",
+      "Lucian"
     ],
     "synergies": [
       "Camille",
       "Jarvan IV",
-      "Diana"
+      "Pantheon"
     ],
     "tacticalAdvice": "Utiliza tu Entrada Heroica (H4) sobre el iniciador de tu equipo para otorgar escudo mágico y noquear a los rivales agrupados.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Revestimiento de Huesos",
@@ -5153,14 +5153,14 @@
       "Irelia"
     ],
     "counteredBy": [
-      "Vayne",
-      "Teemo",
-      "Darius"
+      "Darius",
+      "Fiora",
+      "Vayne"
     ],
     "synergies": [
-      "Yuumi",
-      "Lulu",
-      "Orianna"
+      "Jarvan IV",
+      "Vi",
+      "Lee Sin"
     ],
     "tacticalAdvice": "Silencia al enemigo con Golpe Decisivo (H1) para impedir que use habilidades defensivas antes de girar con Juicio (H3) y rematar con tu Habilidad Definitiva (H4).",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
@@ -5304,12 +5304,12 @@
     "counteredBy": [
       "Irelia",
       "Yasuo",
-      "Wukong"
+      "Malphite"
     ],
     "synergies": [
-      "Jarvan IV",
+      "Yasuo",
       "Orianna",
-      "Malphite"
+      "Jarvan IV"
     ],
     "tacticalAdvice": "Gestiona tu barra de Furia para entrar en forma Mega Gnar justo cuando inicie la pelea en el río y estampar a los rivales contra el muro.",
     "recommendedRunes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
@@ -5449,19 +5449,19 @@
     "damageType": "MAGIC",
     "summary": "Alegre e imponente por partes iguales, Gragas es un cervecero enorme y provocador en su propia búsqueda de la pinta de cerveza perfecta. Proveniente de lugares desconocidos, ahora busca ingredientes raros entre los intactos páramos de Freljord, probando...",
     "advantageAgainst": [
-      "Katarina",
-      "Jax",
-      "Riven"
+      "Maestro Yi",
+      "Kha'Zix",
+      "Shyvana"
     ],
     "counteredBy": [
-      "Morgana",
       "Olaf",
-      "Vayne"
+      "Xin Zhao",
+      "Lee Sin"
     ],
     "synergies": [
       "Yasuo",
-      "Samira",
-      "Diana"
+      "Orianna",
+      "Ahri"
     ],
     "tacticalAdvice": "Lanza Tonel Explosivo (H4) para desarmar la formación enemiga o empujar al tirador rival hacia tu equipo.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
@@ -5662,19 +5662,19 @@
     "damageType": "PHYSICAL",
     "summary": "Malcolm Graves es un famoso mercenario, jugador y ladrón. Un hombre buscado en todas las ciudades e imperios que ha visitado. A pesar de su temperamento explosivo, posee un firme sentido del honor criminal, que a menudo ejecuta con su escopeta de doble...",
     "advantageAgainst": [
-      "Lee Sin",
       "Kha'Zix",
-      "Xin Zhao"
+      "Evelynn",
+      "Maestro Yi"
     ],
     "counteredBy": [
       "Rammus",
-      "Evelynn",
-      "Amumu"
+      "Amumu",
+      "Xin Zhao"
     ],
     "synergies": [
-      "Leona",
+      "Galio",
       "Nautilus",
-      "Galio"
+      "Shen"
     ],
     "tacticalAdvice": "Acumula Cierto Valor (H3) con monstruos de la jungla para ganar hasta 40+ de armadura pasiva antes de invadir.",
     "recommendedRunes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
@@ -5845,8 +5845,8 @@
     "summary": "Gwen, una muñeca a la que la magia confirió vida, va armada con los mismos utensilios que en su día la confeccionaron. Lleva consigo la fuerza del amor de su creadora en cada paso que da y es consciente de la maravilla de vivir. La Niebla consagrada...",
     "advantageAgainst": [
       "Sion",
-      "Dr. Mundo",
-      "Cho'Gath"
+      "Malphite",
+      "Dr. Mundo"
     ],
     "counteredBy": [
       "Fiora",
@@ -5855,8 +5855,8 @@
     ],
     "synergies": [
       "Jarvan IV",
-      "Diana",
-      "Amumu"
+      "Vi",
+      "Orianna"
     ],
     "tacticalAdvice": "Usa Niebla Sagrada (H2) para volverte inmune a los proyectiles y habilidades de los tiradores enemigos fuera de la zona.",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
@@ -6024,19 +6024,19 @@
     "damageType": "PHYSICAL",
     "summary": "Hecarim es una fusión espectral de hombre y bestia, condenado a arrollar las almas de los vivos por toda la eternidad. Cuando las Islas Bendecidas cayeron en la sombra, este orgulloso caballero fue aniquilado por las energías destructivas de la Ruina...",
     "advantageAgainst": [
-      "Kha'Zix",
-      "Kindred",
-      "Master Yi"
+      "Maestro Yi",
+      "Amumu",
+      "Shyvana"
     ],
     "counteredBy": [
-      "Rammus",
-      "Morgana",
-      "Thresh"
+      "Olaf",
+      "Warwick",
+      "Lee Sin"
     ],
     "synergies": [
+      "Yuumi",
       "Orianna",
-      "Lulu",
-      "Yuumi"
+      "Lulu"
     ],
     "tacticalAdvice": "Carga tu Carga Devastadora (H3) con Fantasmal activo para embestir a toda velocidad y aterrorizar con tu estampida (Definitiva).",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Celeridad",
@@ -6176,19 +6176,19 @@
     "damageType": "MAGIC",
     "summary": "El profesor Cecil B. Heimerdinger, un científico yordle excéntrico pero brillante, es considerado una de las mentes más innovadoras y uno de los inventores más admirados de la historia de Piltover. Tiene una dedicación incesante en su trabajo hasta el...",
     "advantageAgainst": [
-      "Garen",
-      "Darius",
-      "Nasus"
+      "Katarina",
+      "Fizz",
+      "Talon"
     ],
     "counteredBy": [
       "Syndra",
-      "Sion",
+      "Lux",
       "Ziggs"
     ],
     "synergies": [
-      "Amumu",
       "Jarvan IV",
-      "Nautilus"
+      "Vi",
+      "Amumu"
     ],
     "tacticalAdvice": "Coloca tu nido de tres torretas en triángulo y utiliza tu Granada (H3) mejorada con tu Habilidad Definitiva (H4) para aturdir en área.",
     "recommendedRunes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
@@ -6398,24 +6398,18 @@
     "summary": "Hwei es un pintor melancólico de Jonia que crea arte deslumbrante para confrontar a los criminales de su tierra y consolar a sus víctimas. En Wild Rift es un mago de control con un repertorio dinámico de 10 habilidades, capaz de desatar daño explosivo a distancia, otorgar escudos y velocidad a sus aliados, y controlar peleas grupales con poderosos efectos de miedo y ralentización.",
     "advantageAgainst": [
       "Veigar",
-      "Orianna",
       "Twisted Fate",
-      "Lux",
-      "Brand"
+      "Aurelion Sol"
     ],
     "counteredBy": [
       "Zed",
       "Fizz",
-      "Kassadin",
-      "Akali",
-      "Yasuo"
+      "Akali"
     ],
     "synergies": [
-      "Amumu",
-      "Malphite",
       "Jarvan IV",
-      "Nautilus",
-      "Leona"
+      "Vi",
+      "Amumu"
     ],
     "tacticalAdvice": "En la Línea Central, gestiona tus pinceladas según el estado de la línea: usa tu Habilidad 2 (H2 - Luces Provocadoras) para restaurar maná con ataques básicos y tu Habilidad 1 (H1 - Fuego Devastador o Rayo Destrozador) para castigar el posicionamiento enemigo. En peleas de equipo, bloquea el paso o agrupa a los rivales con tu Habilidad 3 (H3 - Fauces Trituradoras) antes de conectar tu Definitiva (H4 - Desesperación en Espiral) para activar detonaciones masivas de tu Pasiva.",
     "recommendedRunes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
@@ -6605,12 +6599,12 @@
     "counteredBy": [
       "Jax",
       "Fiora",
-      "Volibear"
+      "Sett"
     ],
     "synergies": [
-      "Lulu",
-      "Diana",
-      "Malphite"
+      "Sejuani",
+      "Lee Sin",
+      "Jarvan IV"
     ],
     "tacticalAdvice": "Acumula las 4 cargas de Fervor Jonio saltando con Embate de Espada (H1) a los súbditos bajos de vida antes de iniciar el duelo.",
     "recommendedRunes": "Conquistador, Brutal, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
@@ -6784,13 +6778,13 @@
     ],
     "counteredBy": [
       "Blitzcrank",
-      "Nami",
+      "Nautilus",
       "Sona"
     ],
     "synergies": [
       "Jinx",
-      "Caitlyn",
-      "Twitch"
+      "Vayne",
+      "Zeri"
     ],
     "tacticalAdvice": "Carga tu Vendaval (H1) oculto en la maleza para cortar los saltos de iniciación enemigos. Tu Definitiva expulsa a los asesinos y cura a todo tu equipo.",
     "recommendedRunes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
@@ -6929,19 +6923,19 @@
     "damageType": "PHYSICAL",
     "summary": "El príncipe Jarvan, descendiente de la dinastía Escudo de Luz, es heredero al trono de Demacia. Criado para ser ejemplo de las mayores virtudes de su nación, se ve obligado a equilibrar las grandes expectativas que se le imponen con su propio deseo de...",
     "advantageAgainst": [
-      "Jinx",
-      "Twisted Fate",
-      "Miss Fortune"
+      "Maestro Yi",
+      "Shyvana",
+      "Evelynn"
     ],
     "counteredBy": [
-      "Vayne",
-      "Ezreal",
-      "Olaf"
+      "Olaf",
+      "Xin Zhao",
+      "Lee Sin"
     ],
     "synergies": [
+      "Galio",
       "Orianna",
-      "Miss Fortune",
-      "Yasuo"
+      "Miss Fortune"
     ],
     "tacticalAdvice": "Encierra a campeones sin salto dentro de tu Cataclismo (H4) y combínalo con tu H3+H1 para un derribo aéreo garantizado.",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
@@ -7111,8 +7105,8 @@
     "damageType": "TRUE_HYBRID",
     "summary": "Incomparable en su habilidad con armas especiales y su mordaz sarcasmo, Jax es el último maestro de armas conocido de Icathia. Después de que su tierra natal fuera devastada por su propia arrogancia al desatar el Vacío, Jax y los suyos juraron proteger...",
     "advantageAgainst": [
-      "Master Yi",
-      "Tryndamere",
+      "Camille",
+      "Fiora",
       "Irelia"
     ],
     "counteredBy": [
@@ -7121,9 +7115,9 @@
       "Gragas"
     ],
     "synergies": [
-      "Yuumi",
-      "Lulu",
-      "Orianna"
+      "Sejuani",
+      "Jarvan IV",
+      "Lee Sin"
     ],
     "tacticalAdvice": "Activa Contraataque (H3) para esquivar todos los ataques básicos y reactívalo para aturdir al instante.",
     "recommendedRunes": "Compás Letal, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
@@ -7299,12 +7293,12 @@
     ],
     "counteredBy": [
       "Irelia",
-      "Wukong",
-      "Camille"
+      "Malphite",
+      "Wukong"
     ],
     "synergies": [
+      "Sejuani",
       "Jarvan IV",
-      "Vi",
       "Lee Sin"
     ],
     "tacticalAdvice": "Dispara Descarga de Choque (H1) y coloca la Puerta de Aceleración (H3) justo frente a tu cañón para un disparo veloz e impredecible.",
@@ -7473,19 +7467,19 @@
     "damageType": "PHYSICAL",
     "summary": "Jhin es un meticuloso criminal psicópata que ve el asesinato como arte. Otrora prisionero jonio, fue liberado gracias a los sombríos tejemanejes del consejo de Jonia. Ahora, el asesino en serie trabaja como sicario de la secta. Con su pistola como...",
     "advantageAgainst": [
-      "Ashe",
-      "Senna",
-      "Miss Fortune"
+      "Vayne",
+      "Kai'Sa",
+      "Ezreal"
     ],
     "counteredBy": [
       "Draven",
       "Tristana",
-      "Nautilus"
+      "Lucian"
     ],
     "synergies": [
-      "Leona",
       "Morgana",
-      "Thresh"
+      "Leona",
+      "Nautilus"
     ],
     "tacticalAdvice": "Guarda tu 4º disparo para ejecutar objetivos con poca vida. Tu Florecer Mortal (H2) atrapa a cualquier enemigo dañado por tus aliados.",
     "recommendedRunes": "Pies Veloces, Brutal, Leyenda: Linaje, Golpe de Gracia, Celeridad",
@@ -7622,19 +7616,19 @@
     "damageType": "PHYSICAL",
     "summary": "Jinx, una criminal perturbada e impulsiva de Zaun, vive para sembrar el caos sin importarle las consecuencias. Provoca las explosiones más ruidosas y cegadoras con su arsenal de armas letales para dejar un rastro de terror y destrucción a su paso. Jinx...",
     "advantageAgainst": [
-      "Aphelios",
-      "Varus",
-      "Ashe"
+      "Vayne",
+      "Kai'Sa",
+      "Varus"
     ],
     "counteredBy": [
       "Draven",
-      "Blitzcrank",
-      "Zed"
+      "Lucian",
+      "Tristana"
     ],
     "synergies": [
-      "Lulu",
       "Thresh",
-      "Janna"
+      "Lulu",
+      "Nautilus"
     ],
     "tacticalAdvice": "Aprovecha ¡Comienza a Emocionarte! tras cada derribo para reposicionarte a máxima velocidad y limpiar la pelea con Carapescado.",
     "recommendedRunes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
@@ -7772,18 +7766,18 @@
     "summary": "K'Sante, un guerrero desafiante y valiente, lucha contra gigantescas bestias y despiadados Ascendidos para proteger su hogar, Nazumah, un codiciado oasis ubicado entre las dunas shurimanas. Tras cortar lazos con su pareja, K'Sante se percata de que...",
     "advantageAgainst": [
       "Sion",
-      "Dr. Mundo",
-      "Malphite"
+      "Malphite",
+      "Dr. Mundo"
     ],
     "counteredBy": [
       "Fiora",
       "Gwen",
-      "Vayne"
+      "Darius"
     ],
     "synergies": [
-      "Samira",
-      "Yasuo",
-      "Diana"
+      "Lee Sin",
+      "Jarvan IV",
+      "Orianna"
     ],
     "tacticalAdvice": "Arrastra al carry rival a través del muro con Todo Fuera (H4) para convertirte en duelista y rematarlo en 1v1.",
     "recommendedRunes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
@@ -7814,7 +7808,7 @@
       "file:///android_asset/offline_images/0ec5d7a3b173c4f04ca3cc32e35c2e43.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
-      "file:///android_asset/offline_images/7376c76166faaa7452d5b6300438cf56.webp"
+      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8069,19 +8063,19 @@
     "damageType": "PHYSICAL",
     "summary": "Kalista, un espectro de cólera y castigo, es el inmortal espíritu de la venganza, una pesadilla acorazada que llega desde las Islas de la Sombra para dar caza a los embusteros y los traidores. Puede que todos los que han sido traicionados pidan venganza...",
     "advantageAgainst": [
-      "Jinx",
-      "Sivir",
-      "Ashe"
+      "Ezreal",
+      "Jhin",
+      "Sivir"
     ],
     "counteredBy": [
       "Ashe",
-      "Nasus",
-      "Nautilus"
+      "Draven",
+      "Caitlyn"
     ],
     "synergies": [
       "Thresh",
-      "Alistar",
-      "Braum"
+      "Nautilus",
+      "Blitzcrank"
     ],
     "tacticalAdvice": "Acumula lanzas con Desgarrar (H3) para asegurar monstruos neutrales por encima del daño del Castigo rival.",
     "recommendedRunes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
@@ -8220,19 +8214,19 @@
     "damageType": "MAGIC",
     "summary": "No hay mortal que ejemplifique las tradiciones espirituales de Jonia mejor que Karma. Es la personificación de un alma antigua reencarnada un sinfín de veces, que acumula en cada vida sucesiva los recuerdos de las vidas pasadas y que ha sido bendecida...",
     "advantageAgainst": [
-      "Leona",
       "Braum",
-      "Alistar"
+      "Alistar",
+      "Thresh"
     ],
     "counteredBy": [
       "Blitzcrank",
-      "Pyke",
-      "Nautilus"
+      "Nautilus",
+      "Leona"
     ],
     "synergies": [
       "Ezreal",
-      "Caitlyn",
-      "Lucian"
+      "Lucian",
+      "Caitlyn"
     ],
     "tacticalAdvice": "Usa Mantra (H4) + Escudo (H3) en peleas de equipo para acelerar y proteger a todos tus aliados a la vez.",
     "recommendedRunes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
@@ -8400,19 +8394,19 @@
     "damageType": "MAGIC",
     "summary": "Dejando tras sí una huella ardiente por los lugares más oscuros del mundo, Kassadin sabe que sus días están contados. Guía y aventurero de Shurima que ha viajado por medio mundo, había elegido formar a una familia entre las pacíficas tribus del sur...",
     "advantageAgainst": [
-      "Aurelion Sol",
-      "Veigar",
-      "Katarina"
+      "Ahri",
+      "Katarina",
+      "Ekko"
     ],
     "counteredBy": [
-      "Lucian",
-      "Tristana",
-      "Zed"
+      "Zed",
+      "Talon",
+      "Lucian"
     ],
     "synergies": [
+      "Jarvan IV",
       "Amumu",
-      "Malphite",
-      "Jarvan IV"
+      "Vi"
     ],
     "tacticalAdvice": "Alcanza el nivel 13+ con 4 cargas de Ruptura en el Camino (H4) para eliminar a los objetivos frágiles en menos de un segundo.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
@@ -8555,13 +8549,13 @@
     ],
     "counteredBy": [
       "Galio",
-      "Pantheon",
-      "Malzahar"
+      "Kassadin",
+      "Pantheon"
     ],
     "synergies": [
       "Amumu",
-      "Diana",
-      "Leona"
+      "Malphite",
+      "Diana"
     ],
     "tacticalAdvice": "Espera a que el rival gaste sus controles de masa principales antes de saltar y canalizar Loto Mortal (H4).",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
@@ -8700,19 +8694,19 @@
     "damageType": "TRUE_HYBRID",
     "summary": "Kayle, nacida de un Aspecto de Targon en el punto álgido de las Guerras Rúnicas, honró el legado de su madre al continuar la lucha por la justicia con sus alas de llamas divinas. Durante muchos años, ella y su hermana gemela Morgana fueron las...",
     "advantageAgainst": [
+      "Singed",
       "Garen",
-      "Sion",
-      "Singed"
+      "Sion"
     ],
     "counteredBy": [
       "Irelia",
       "Jax",
-      "Riven"
+      "Renekton"
     ],
     "synergies": [
-      "Lulu",
-      "Yuumi",
-      "Morgana"
+      "Sejuani",
+      "Jarvan IV",
+      "Shen"
     ],
     "tacticalAdvice": "Juega seguro hasta el nivel 5 (rango) y nivel 10 (ondas de fuego). Tu Juicio Divino (H4) vuelve invulnerable al carry aliado o a ti misma.",
     "recommendedRunes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Sobrecrecimiento",
@@ -8880,19 +8874,19 @@
     "damageType": "PHYSICAL",
     "summary": "Shieda Kayn, un practicante sin par de la mortífera magia sombría, lucha por alcanzar su verdadero destino: llegar a guiar algún día a la Orden de la Sombra hacia una nueva era de supremacía jonia. Empuña la oscura arma viviente Rhaast, impasible ante...",
     "advantageAgainst": [
-      "Jinx",
-      "Twitch",
-      "Lux"
+      "Shyvana",
+      "Amumu",
+      "Maestro Yi"
     ],
     "counteredBy": [
-      "Master Yi",
-      "Graves",
-      "Lee Sin"
+      "Lee Sin",
+      "Xin Zhao",
+      "Graves"
     ],
     "synergies": [
-      "Yuumi",
-      "Diana",
-      "Orianna"
+      "Galio",
+      "Nautilus",
+      "Shen"
     ],
     "tacticalAdvice": "Elige Forma Asesina Sombría contra escuadras frágiles o Rhaast contra composiciones con más de 2 tanques/luchadores.",
     "recommendedRunes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
@@ -9037,13 +9031,13 @@
     ],
     "counteredBy": [
       "Irelia",
-      "Jayce",
-      "Malphite"
+      "Malphite",
+      "Jayce"
     ],
     "synergies": [
       "Amumu",
-      "Diana",
-      "Samira"
+      "Jarvan IV",
+      "Diana"
     ],
     "tacticalAdvice": "Flanquea con Impulso del Rayo (H3) + Destello + Tempestad Cercenante (H4) y activa Zhonya en el centro del equipo enemigo.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
@@ -9211,19 +9205,19 @@
     "damageType": "PHYSICAL",
     "summary": "El Vacío crece y el Vacío se adapta; verdades que son más evidentes en Kha'Zix que en ningún otro de sus innumerables engendros. La evolución impulsa el núcleo de este horror mutante, nacido para sobrevivir y matar a los fuertes. Cuando se esfuerza por...",
     "advantageAgainst": [
-      "Master Yi",
-      "Kindred",
-      "Twitch"
+      "Maestro Yi",
+      "Evelynn",
+      "Shyvana"
     ],
     "counteredBy": [
-      "Rammus",
       "Lee Sin",
-      "Evelynn"
+      "Rammus",
+      "Warwick"
     ],
     "synergies": [
-      "Yuumi",
-      "Shen",
-      "Diana"
+      "Galio",
+      "Nautilus",
+      "Shen"
     ],
     "tacticalAdvice": "Evoluciona tus Garras (H1) primero para daño masivo y busca siempre objetivos aislados para triplicar tu daño.",
     "recommendedRunes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
@@ -9362,19 +9356,19 @@
     "damageType": "PHYSICAL",
     "summary": "Divididos, pero nunca separados, Kindred representan las dos esencias de la muerte. El arco de Cordera ofrece una rápida liberación de los pesares del reino mortal a aquellos que aceptan su destino. Lobo da caza a quienes intentan escapar de él y les...",
     "advantageAgainst": [
-      "Sion",
-      "Dr. Mundo",
-      "Cho'Gath"
+      "Amumu",
+      "Shyvana",
+      "Rammus"
     ],
     "counteredBy": [
       "Lee Sin",
       "Kha'Zix",
-      "Rengar"
+      "Xin Zhao"
     ],
     "synergies": [
-      "Taric",
       "Galio",
-      "Lulu"
+      "Bardo",
+      "Shen"
     ],
     "tacticalAdvice": "Caza las marcas de la Muerte en campamentos de la jungla y usa Alivio de Cordero (H4) para anular el daño explosivo enemigo.",
     "recommendedRunes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
@@ -9544,19 +9538,19 @@
     "damageType": "TRUE_HYBRID",
     "summary": "Escupido de una incursión deteriorada del Vacío en los yermos de Icathia, Kog'Maw es una criatura curiosa y pútrida con una boca enorme y cáustica. Esta particular criatura necesita morder y babear todo lo que esté a su alcance para comprenderlo. Aunque...",
     "advantageAgainst": [
-      "Sion",
-      "Cho'Gath",
-      "Dr. Mundo"
+      "Vayne",
+      "Ezreal",
+      "Sivir"
     ],
     "counteredBy": [
-      "Blitzcrank",
-      "Nautilus",
-      "Zed"
+      "Draven",
+      "Lucian",
+      "Tristana"
     ],
     "synergies": [
       "Lulu",
       "Milio",
-      "Braum"
+      "Janna"
     ],
     "tacticalAdvice": "Activa Andanada Bioarcana (H2) para derretir la barra de vida de cualquier tanque a máxima distancia.",
     "recommendedRunes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
@@ -9724,19 +9718,19 @@
     "damageType": "PHYSICAL",
     "summary": "Lee Sin, maestro de las artes marciales ancestrales de Jonia, es un luchador con principios que canaliza la esencia del espíritu del dragón para enfrentarse a cualquier desafío. Aunque perdió la vista hace muchos años, el monje guerrero ha dedicado su...",
     "advantageAgainst": [
-      "Kha'Zix",
-      "Master Yi",
-      "Evelynn"
+      "Maestro Yi",
+      "Shyvana",
+      "Kha'Zix"
     ],
     "counteredBy": [
-      "Poppy",
-      "Rammus",
-      "Jax"
+      "Olaf",
+      "Warwick",
+      "Rammus"
     ],
     "synergies": [
       "Yasuo",
-      "Orianna",
-      "Ahri"
+      "Ahri",
+      "Galio"
     ],
     "tacticalAdvice": "Aprovecha el Insec (H1 + H2 centinela + H4) para patear al tirador enemigo hacia la boca de tu equipo.",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
@@ -9884,7 +9878,7 @@
     ],
     "synergies": [
       "Samira",
-      "Tristana",
+      "Kai'Sa",
       "Miss Fortune"
     ],
     "tacticalAdvice": "Encadena Espada del Cénit (H3) + H1 + Llamarada Solar (H4) para mantener inmovilizado al objetivo durante más de 3 segundos.",
@@ -10024,19 +10018,19 @@
     "damageType": "MAGIC",
     "summary": "Lillia es una tímida cervatilla feérica que merodea a su antojo por los bosques jonios. Se oculta de los mortales, cuya misteriosa naturaleza la cautiva y la intimida a partes iguales, con la esperanza de descubrir por qué los sueños humanos han dejado...",
     "advantageAgainst": [
-      "Sion",
-      "Darius",
-      "Dr. Mundo"
+      "Rammus",
+      "Amumu",
+      "Shyvana"
     ],
     "counteredBy": [
-      "Master Yi",
       "Kha'Zix",
-      "Jarvan IV"
+      "Lee Sin",
+      "Rengar"
     ],
     "synergies": [
-      "Amumu",
-      "Miss Fortune",
-      "Yasuo"
+      "Yone",
+      "Yasuo",
+      "Galio"
     ],
     "tacticalAdvice": "Mantén las 4 cargas de velocidad con tus habilidades para bailar alrededor de las peleas y dormir con tu Nana (H4).",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Celeridad",
@@ -10067,7 +10061,7 @@
       "file:///android_asset/offline_images/8ab6dc6493eda1a50bf731f8fa715087.webp",
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/7376c76166faaa7452d5b6300438cf56.webp"
+      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -10205,18 +10199,18 @@
     "summary": "La magia de Lissandra convierte el poder del hielo en algo oscuro y terrible. Con la fuerza de su hielo negro, además de congelar a aquellos que se le oponen, los empala y los destruye sin mostrar piedad. Se la conoce como ''la Bruja de Hielo'' entre...",
     "advantageAgainst": [
       "Zed",
-      "Katarina",
-      "Yasuo"
+      "Yasuo",
+      "Katarina"
     ],
     "counteredBy": [
-      "Kassadin",
+      "Syndra",
       "Orianna",
-      "Syndra"
+      "Lux"
     ],
     "synergies": [
-      "Amumu",
       "Jarvan IV",
-      "Diana"
+      "Vi",
+      "Amumu"
     ],
     "tacticalAdvice": "Lánzate con Camino Glacial (H3) al corazón de la pelea enemiga y usa Tumba Congelada (H4) sobre ti misma para invulnerabilidad y daño en área.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
@@ -10355,19 +10349,19 @@
     "damageType": "PHYSICAL",
     "summary": "Lucian, antiguo Centinela de la Luz, es un sombrío cazador de espíritus eternos a los que persigue implacablemente y los aniquila con sus pistolas reliquias. Después de que el macabro espectro Thresh asesinara a su mujer, Lucian se dejó llevar por el...",
     "advantageAgainst": [
-      "Kassadin",
-      "Kayle",
-      "Twisted Fate"
+      "Vayne",
+      "Kai'Sa",
+      "Ezreal"
     ],
     "counteredBy": [
       "Draven",
       "Caitlyn",
-      "Vayne"
+      "Varus"
     ],
     "synergies": [
       "Nami",
       "Braum",
-      "Yuumi"
+      "Leona"
     ],
     "tacticalAdvice": "Intercala un ataque doble de tu pasiva entre cada habilidad para reiniciar rápidamente tu Deslizamiento (H3).",
     "recommendedRunes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Brutal",
@@ -10535,19 +10529,19 @@
     "damageType": "MAGIC",
     "summary": "Lulu, la yordle maga, es conocida por invocar ilusiones oníricas y criaturas imaginarias en sus viajes por Runaterra con su hada compañera, Pix. Lulu le da forma a la realidad a su antojo, transforma el tejido del mundo y de lo que ve como los límites...",
     "advantageAgainst": [
-      "Zed",
-      "Katarina",
-      "Master Yi"
+      "Braum",
+      "Alistar",
+      "Leona"
     ],
     "counteredBy": [
       "Blitzcrank",
-      "Pyke",
-      "Soraka"
+      "Nautilus",
+      "Pyke"
     ],
     "synergies": [
       "Jinx",
       "Kog'Maw",
-      "Twitch"
+      "Vayne"
     ],
     "tacticalAdvice": "Usa Polimorfia (H2) sobre los asesinos enemigos cuando se lancen a por tu carry para neutralizarlos al instante.",
     "recommendedRunes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
@@ -10687,18 +10681,18 @@
     "summary": "Luxanna Crownguard procede de Demacia, un reino insular en el que las habilidades mágicas se observan con temor y suspicacia. Capaz de manipular la luz a su voluntad, creció temiendo que la descubriesen y la exiliaran, por lo que se vio obligada a...",
     "advantageAgainst": [
       "Veigar",
-      "Annie",
-      "Twisted Fate"
+      "Ziggs",
+      "Annie"
     ],
     "counteredBy": [
-      "Yasuo",
       "Zed",
-      "Fizz"
+      "Fizz",
+      "Yasuo"
     ],
     "synergies": [
-      "Caitlyn",
-      "Jhin",
-      "Ezreal"
+      "Jarvan IV",
+      "Vi",
+      "Nautilus"
     ],
     "tacticalAdvice": "Acierta Hechizo Luminoso (H1) a través de un súbdito para atrapar al objetivo y desatar Chispa Final (H4) inmediatamente.",
     "recommendedRunes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Golpe Bajo",
@@ -10871,12 +10865,12 @@
     "advantageAgainst": [
       "Tryndamere",
       "Jax",
-      "Yasuo"
+      "Fiora"
     ],
     "counteredBy": [
-      "Sylas",
       "Gwen",
-      "Mordekaiser"
+      "Mordekaiser",
+      "Dr. Mundo"
     ],
     "synergies": [
       "Yasuo",
@@ -10912,7 +10906,7 @@
       "file:///android_asset/offline_images/0ec5d7a3b173c4f04ca3cc32e35c2e43.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
-      "file:///android_asset/offline_images/7376c76166faaa7452d5b6300438cf56.webp"
+      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11089,13 +11083,13 @@
     ],
     "counteredBy": [
       "Morgana",
-      "Olaf",
-      "Vayne"
+      "Janna",
+      "Thresh"
     ],
     "synergies": [
-      "Miss Fortune",
       "Samira",
-      "Jhin"
+      "Kai'Sa",
+      "Jinx"
     ],
     "tacticalAdvice": "Lanza Garras de la Naturaleza (H4) desde la maleza para bloquear una línea completa durante el asedio a torretas.",
     "recommendedRunes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
@@ -11294,19 +11288,19 @@
     "damageType": "TRUE_HYBRID",
     "summary": "Maestro Yi ha atemperado su cuerpo y agudizado su mente, de modo que el pensamiento y la acción se han convertido casi en uno. Aunque elige emplear la violencia solo como último recurso, la gracia y la velocidad de su espada aseguran que el final...",
     "advantageAgainst": [
-      "Sion",
-      "Dr. Mundo",
-      "Cho'Gath"
+      "Shyvana",
+      "Amumu",
+      "Dr. Mundo"
     ],
     "counteredBy": [
       "Rammus",
-      "Jax",
-      "Malzahar"
+      "Lee Sin",
+      "Xin Zhao"
     ],
     "synergies": [
       "Lulu",
       "Yuumi",
-      "Taric"
+      "Morgana"
     ],
     "tacticalAdvice": "Guarda tu Golpe Alfa (H1) para esquivar habilidades de control o proyectiles letales del rival.",
     "recommendedRunes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Impacto Repentino",
@@ -11447,17 +11441,17 @@
     "advantageAgainst": [
       "Veigar",
       "Lux",
-      "Orianna"
+      "Ziggs"
     ],
     "counteredBy": [
       "Zed",
       "Fizz",
-      "Kassadin"
+      "Akali"
     ],
     "synergies": [
-      "Amumu",
       "Jarvan IV",
-      "Diana"
+      "Vi",
+      "Amumu"
     ],
     "tacticalAdvice": "Aprovecha tus habilidades de control a distancia para sellar los pasos estrechos antes de pelear por objetivos.",
     "recommendedRunes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
@@ -11627,17 +11621,17 @@
     "advantageAgainst": [
       "Leona",
       "Nautilus",
-      "Amumu"
+      "Thresh"
     ],
     "counteredBy": [
       "Blitzcrank",
       "Pyke",
-      "Soraka"
+      "Zyra"
     ],
     "synergies": [
-      "Caitlyn",
       "Jinx",
-      "Kog'Maw"
+      "Kog'Maw",
+      "Caitlyn"
     ],
     "tacticalAdvice": "Usa Fuego Reconfortante (H2) para extender el rango de ataque de tu tirador y tu Habilidad Definitiva (H4) para purgar controles de masa en área.",
     "recommendedRunes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
@@ -11778,17 +11772,17 @@
     "advantageAgainst": [
       "Vayne",
       "Kai'Sa",
-      "Ashe"
+      "Sivir"
     ],
     "counteredBy": [
-      "Braum",
-      "Yasuo",
-      "Samira"
+      "Draven",
+      "Tristana",
+      "Lucian"
     ],
     "synergies": [
       "Amumu",
       "Leona",
-      "Sona"
+      "Nautilus"
     ],
     "tacticalAdvice": "Rebota Doble Bala (H1) sobre súbditos moribundos para infligir daño crítico garantizado al campeón enemigo detrás.",
     "recommendedRunes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Brutal",
@@ -11959,8 +11953,8 @@
     "summary": "Mordekaiser es un sanguinario señor de la guerra proveniente de tiempos olvidados al que los siglos han visto nacer en tres ocasiones y morir en otras dos. Utiliza sus poderes necrománticos para atar almas perdidas a una vida eterna a su servicio. Ya no...",
     "advantageAgainst": [
       "Sion",
-      "Dr. Mundo",
-      "Malphite"
+      "Malphite",
+      "Garen"
     ],
     "counteredBy": [
       "Fiora",
@@ -11968,9 +11962,9 @@
       "Olaf"
     ],
     "synergies": [
-      "Diana",
-      "Orianna",
-      "Amumu"
+      "Jarvan IV",
+      "Sejuani",
+      "Vi"
     ],
     "tacticalAdvice": "Lleva al jungla o carry rival al Reino de las Sombras (H4) para robar sus estadísticas y asegurar el Dragón o Barón.",
     "recommendedRunes": "Conquistador, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
@@ -12001,7 +11995,7 @@
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp",
-      "file:///android_asset/offline_images/7376c76166faaa7452d5b6300438cf56.webp"
+      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12143,12 +12137,12 @@
     "advantageAgainst": [
       "Blitzcrank",
       "Nautilus",
-      "Leona"
+      "Thresh"
     ],
     "counteredBy": [
-      "Sivir",
-      "Karma",
-      "Lulu"
+      "Sona",
+      "Soraka",
+      "Zyra"
     ],
     "synergies": [
       "Caitlyn",

@@ -16,7 +16,7 @@ object CoachingGenerator {
         val targetRole = targetChamp?.primaryRole ?: LaneRole.MID
         val targetDamage = targetChamp?.damageType?.displayName ?: "mixto"
 
-        val mySkill = champion.skills.find { it.slot == "1" }?.name ?: champion.skills.firstOrNull()?.name ?: "habilidades"
+        val mySkill = champion.skills.find { it.slot == "1" }?.let { "su H1 (${it.name})" } ?: "su Habilidad 1 (H1)"
         val isMeRanged = champion.isRanged
         val isTargetRanged = targetChamp?.isRanged ?: false
         
@@ -27,11 +27,11 @@ object CoachingGenerator {
                 } else {
                     if (targetChamp != null) {
                         if (isMeRanged && !isTargetRanged) {
-                            "${champion.name} puede abusar de su rango contra $target. Castígalo con $mySkill cada vez que intente farmear, y mantén la distancia para ganar la línea sin recibir daño ${targetDamage.lowercase()}."
+                            "${champion.name} abusa de su ventaja de rango frente a $target. Castígalo con $mySkill cada vez que intente dar último golpe a súbditos y mantén el espaciado para evitar su daño ${targetDamage.lowercase()}."
                         } else if (!isMeRanged && isTargetRanged) {
-                            "${champion.name} tiene un all-in superior al de $target. Soporta el desgaste inicial y usa $mySkill para acortar distancias; una vez encima, no podrá sobrevivir a tu daño."
+                            "${champion.name} tiene un all-in superior al de $target. Soporta el desgaste inicial, acorta distancias con $mySkill y busca la eliminación en tus ventanas de poder tras nivel 3 y 5."
                         } else {
-                            "${champion.name} domina este enfrentamiento. Aprovecha el enfriamiento de las habilidades de $target para intercambiar daño con $mySkill, forzándolo a jugar bajo su torre."
+                            "${champion.name} domina este enfrentamiento. Aprovecha los enfriamientos de $target para intercambiar daño con $mySkill y ganar la prioridad de carril."
                         }
                     } else {
                         "${champion.name} tiene un kit superior frente a $target. Castiga sus errores de posicionamiento para conseguir prioridad de mapa."
@@ -44,11 +44,11 @@ object CoachingGenerator {
                 } else {
                     if (targetChamp != null) {
                         if (!isMeRanged && isTargetRanged) {
-                            "$target te castigará constantemente por tu falta de rango. Sacrifica algunos súbditos si es necesario, usa $mySkill solo para asegurar oro seguro y espera la rotación de tu jungla o el Fruto de Miel (1:15 min)."
+                            "$target te castigará fuertemente por tu falta de rango. No regales vida por súbditos lejanos, usa $mySkill para farmear de forma segura y espera el Fruto de Miel (1:15 min) o el gank de tu jungla."
                         } else if (targetDamage.equals("Mágico", true)) {
-                            "El daño mágico explosivo de $target es letal para ${champion.name}. Considera botas de resistencia, evita los intercambios largos y guarda $mySkill para protegerte o escapar."
+                            "El daño mágico explosivo de $target es letal para ${champion.name}. Prioriza Botas de Resistencia Mágica, evita intercambios largos y reserva $mySkill para reposicionarte."
                         } else {
-                            "$target supera a ${champion.name} en 1vs1. Respeta su daño ${targetDamage.lowercase()}, no fuerces peleas innecesarias y maximiza tu farmeo bajo torre."
+                            "$target supera a ${champion.name} en 1v1. Respeta su daño ${targetDamage.lowercase()}, congela la oleada cerca de tu torre y maximiza tu economía."
                         }
                     } else {
                         "${champion.name} sufre mucho contra el kit de $target. Juega de forma conservadora y pide rotaciones tempranas."
@@ -83,8 +83,8 @@ object CoachingGenerator {
         val isPt = cleanLang.startsWith("pt")
         val roleStr = activeRole.displayName
         
-        val qSkill = champion.skills.find { it.slot == "1" }?.name ?: if (isPt) "suas habilidades" else "sus habilidades"
-        val ultSkill = champion.skills.find { it.slot == "4" }?.name ?: if (isPt) "sua ultimate" else "sua definitiva"
+        val qSkill = champion.skills.find { it.slot == "1" }?.let { "su H1 (${it.name})" } ?: if (isPt) "sua Habilidade 1 (H1)" else "su Habilidad 1 (H1)"
+        val ultSkill = champion.skills.find { it.slot == "4" }?.let { "su Definitiva (${it.name})" } ?: if (isPt) "sua Definitiva (H4)" else "su Definitiva (H4)"
         
         val base = if (isPt) {
             when (activeRole) {

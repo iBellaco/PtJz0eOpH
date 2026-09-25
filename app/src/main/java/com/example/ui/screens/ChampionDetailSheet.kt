@@ -1365,22 +1365,64 @@ fun ChampionDetailSheet(
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, AllyBlue.copy(alpha = 0.5f))
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
-                        Text(tr("Ventaja Contra:"), color = AllyBlue, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = tr("Ventaja Contra:"),
+                            color = AllyBlue,
+                            fontSize = if (isCompact) 10.sp else 11.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
                         val advantageList = roleProfile.advantageAgainst.take(3)
-                        advantageList.forEach { target ->
+                        if (advantageList.isEmpty()) {
+                            Text("—", color = TextMuted, fontSize = 11.sp)
+                        } else {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        matchupExplanationTarget = target
-                                        matchupExplanationType = "Ventaja"
-                                    }
-                                    .padding(vertical = 3.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("• $target", color = TextPrimary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                advantageList.forEach { target ->
+                                    val targetChamp = resolveTargetChampion(target)
+                                    Box(
+                                        modifier = Modifier.clickable {
+                                            matchupExplanationTarget = target
+                                            matchupExplanationType = "Ventaja"
+                                        }
+                                    ) {
+                                        if (targetChamp != null) {
+                                            ChampionAvatar(
+                                                champion = targetChamp,
+                                                size = if (isCompact) 28.dp else 34.dp,
+                                                showTierBadge = false,
+                                                borderColor = AllyBlue
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(if (isCompact) 28.dp else 34.dp)
+                                                    .clip(CircleShape)
+                                                    .background(HextechDarkBg)
+                                                    .border(1.2.dp, AllyBlue, CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = target.take(2).uppercase(),
+                                                    color = TextPrimary,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -1393,22 +1435,64 @@ fun ChampionDetailSheet(
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f))
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
-                        Text(tr("Débil Contra:"), color = DangerRed, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = tr("Débil Contra:"),
+                            color = DangerRed,
+                            fontSize = if (isCompact) 10.sp else 11.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
                         val counteredList = roleProfile.counteredBy.take(3)
-                        counteredList.forEach { counter ->
+                        if (counteredList.isEmpty()) {
+                            Text("—", color = TextMuted, fontSize = 11.sp)
+                        } else {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        matchupExplanationTarget = counter
-                                        matchupExplanationType = "Debilidad"
-                                    }
-                                    .padding(vertical = 3.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("• $counter", color = TextPrimary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                counteredList.forEach { counter ->
+                                    val targetChamp = resolveTargetChampion(counter)
+                                    Box(
+                                        modifier = Modifier.clickable {
+                                            matchupExplanationTarget = counter
+                                            matchupExplanationType = "Debilidad"
+                                        }
+                                    ) {
+                                        if (targetChamp != null) {
+                                            ChampionAvatar(
+                                                champion = targetChamp,
+                                                size = if (isCompact) 28.dp else 34.dp,
+                                                showTierBadge = false,
+                                                borderColor = DangerRed
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(if (isCompact) 28.dp else 34.dp)
+                                                    .clip(CircleShape)
+                                                    .background(HextechDarkBg)
+                                                    .border(1.2.dp, DangerRed, CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = counter.take(2).uppercase(),
+                                                    color = TextPrimary,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -1423,9 +1507,21 @@ fun ChampionDetailSheet(
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
-                        Text(tr("Sinergias:"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Spacer(modifier = Modifier.height(4.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = tr("Sinergias:"),
+                            color = HextechGold,
+                            fontSize = if (isCompact) 10.sp else 11.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
                         val rawSynergies = if (roleProfile.synergies.isNotEmpty()) {
                             roleProfile.synergies
                         } else if (champion.synergies.isNotEmpty()) {
@@ -1437,18 +1533,44 @@ fun ChampionDetailSheet(
                         if (synergyList.isEmpty()) {
                             Text("—", color = TextMuted, fontSize = 11.sp)
                         } else {
-                            synergyList.forEach { partner ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                synergyList.forEach { partner ->
+                                    val targetChamp = resolveTargetChampion(partner)
+                                    Box(
+                                        modifier = Modifier.clickable {
                                             matchupExplanationTarget = partner
                                             matchupExplanationType = "Sinergia"
                                         }
-                                        .padding(vertical = 3.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("• $partner", color = TextPrimary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    ) {
+                                        if (targetChamp != null) {
+                                            ChampionAvatar(
+                                                champion = targetChamp,
+                                                size = if (isCompact) 28.dp else 34.dp,
+                                                showTierBadge = false,
+                                                borderColor = HextechGold
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(if (isCompact) 28.dp else 34.dp)
+                                                    .clip(CircleShape)
+                                                    .background(HextechDarkBg)
+                                                    .border(1.2.dp, HextechGold, CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = partner.take(2).uppercase(),
+                                                    color = TextPrimary,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1731,11 +1853,27 @@ fun AdaptiveDetailAlertDialog(
             isOverlay = isOverlay,
             onDismissRequest = { matchupExplanationTarget = null },
             title = {
-                Text(
-                    text = titleText,
-                    color = HextechGold,
-                    fontWeight = FontWeight.Bold
-                )
+                val targetChamp = resolveTargetChampion(target)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (targetChamp != null) {
+                        ChampionAvatar(
+                            champion = targetChamp,
+                            size = 36.dp,
+                            showTierBadge = false,
+                            borderColor = when (type) {
+                                "Ventaja" -> AllyBlue
+                                "Debilidad" -> DangerRed
+                                else -> HextechGold
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                    }
+                    Text(
+                        text = titleText,
+                        color = HextechGold,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             },
             text = {
                 Text(descText, color = TextPrimary)
@@ -2025,4 +2163,15 @@ fun AdaptiveDetailAlertDialog(
         )
     }
 
+}
+
+private fun resolveTargetChampion(nameOrId: String): Champion? {
+    val clean = nameOrId.trim()
+    return WildRiftRepository.getChampionByName(clean)
+        ?: WildRiftRepository.getChampionById(clean.lowercase().replace(" ", "_").replace("-", "_").replace("'", ""))
+        ?: WildRiftRepository.champions.find {
+            it.name.equals(clean, ignoreCase = true) ||
+            it.id.equals(clean, ignoreCase = true) ||
+            it.ddragonId.equals(clean, ignoreCase = true)
+        }
 }
