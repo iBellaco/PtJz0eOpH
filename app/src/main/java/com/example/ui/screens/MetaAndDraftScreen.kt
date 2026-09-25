@@ -198,34 +198,16 @@ object DraftSessionManager {
         if (isInitialized && (allySlots.isNotEmpty() || enemySlots.isNotEmpty())) return
 
         if (allySlots.isEmpty()) {
-            val defaultAllies = listOf(
-                "aatrox" to LaneRole.TOP,
-                "lee_sin" to LaneRole.JUNGLE,
-                "ahri" to LaneRole.MID,
-                "kaisa" to LaneRole.ADC,
-                "thresh" to LaneRole.SUPPORT
-            )
-            defaultAllies.forEach { (id, role) ->
-                val champ = WildRiftRepository.getChampionById(id) ?: WildRiftRepository.champions.firstOrNull { it.primaryRole == role }
-                if (champ != null && !allySlots.any { it.assignedRole == role }) {
-                    allySlots.add(DraftSlot(champ, role))
-                }
+            val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
+            roles.forEach { role ->
+                allySlots.add(DraftSlot(champion = WildRiftRepository.EMPTY_CHAMPION, assignedRole = role))
             }
         }
 
         if (enemySlots.isEmpty()) {
-            val defaultEnemies = listOf(
-                "renekton" to LaneRole.TOP,
-                "khazix" to LaneRole.JUNGLE,
-                "zed" to LaneRole.MID,
-                "ezreal" to LaneRole.ADC,
-                "leona" to LaneRole.SUPPORT
-            )
-            defaultEnemies.forEach { (id, role) ->
-                val champ = WildRiftRepository.getChampionById(id) ?: WildRiftRepository.champions.firstOrNull { it.primaryRole == role && !allySlots.any { a -> a.champion.id == it.id } }
-                if (champ != null && !enemySlots.any { it.assignedRole == role }) {
-                    enemySlots.add(DraftSlot(champ, role))
-                }
+            val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
+            roles.forEach { role ->
+                enemySlots.add(DraftSlot(champion = WildRiftRepository.EMPTY_CHAMPION, assignedRole = role))
             }
         }
         isInitialized = true
@@ -234,7 +216,8 @@ object DraftSessionManager {
     fun clearAll() {
         allySlots.clear()
         enemySlots.clear()
-        isInitialized = true
+        isInitialized = false
+        initDefaults()
     }
 }
 

@@ -172,7 +172,8 @@ fun DraftTeamPositionCard(
                     val champ = slot?.champion
                     val isMyRole = !isEnemy && role == activeUserRole
 
-                    val isOccupied = champ != null
+                    val isOccupied = champ != null && champ.id != "empty"
+                    val displayChamp = if (isOccupied) champ else null
 
                     val borderColor by animateColorAsState(
                         targetValue = when {
@@ -254,7 +255,7 @@ fun DraftTeamPositionCard(
                             contentAlignment = Alignment.Center
                         ) {
                             AnimatedContent(
-                                targetState = champ,
+                                targetState = displayChamp,
                                 transitionSpec = {
                                     if (targetState != null) {
                                         (fadeIn(animationSpec = tween(220, easing = FastOutSlowInEasing)) +
@@ -364,17 +365,17 @@ fun DraftTeamPositionCard(
                         }
 
                         // Nombre del campeón debajo de la casilla si está seleccionado
-                        if (champ != null) {
+                        if (displayChamp != null) {
                             Spacer(modifier = Modifier.height(if (isMyRole) 8.dp else 3.dp))
                             Text(
-                                text = champ.name,
+                                text = displayChamp.name,
                                 color = if (isMyRole) HextechCyan else TextPrimary,
                                 fontSize = if (isOverlay) 6.sp else 8.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.clickable { onChampionClick(champ) }
+                                modifier = Modifier.clickable { onChampionClick(displayChamp) }
                             )
                             // Indicador de certeza / confianza SOLO para el equipo rival (desconocimiento de línea hasta loading screen)
                             if (isEnemy && slot?.confidence != null) {

@@ -179,16 +179,16 @@ object SituationalItemAdvisor {
         ),
         "Coraza dual purpúrea" to SituationalItemInfo(
             name = "Coraza dual purpúrea",
-            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp",
+            iconUrl = "file:///android_asset/offline_images/amaranths_twinguard.webp",
             categoryName = "Resistencia Híbrida & Tenacidad (Parche 7.3)",
             purpose = "Aumenta un 30% la armadura y resistencia mágica en combate prolongado, otorgando además tenacidad masiva.",
             bestAgainst = listOf("Composiciones de daño mixto (AD + AP)", "Peleas grupales largas 5v5"),
-            keyEffect = "Resistencia: A cargas máximas otorga +30% Armadura, +30% Resistencia Mágica y +20% Tenacidad.",
+            keyEffect = "Resistencia: Otorga +30% Armadura, +30% Resistencia Mágica y +20% Tenacidad a cargas máximas.",
             recommendationTip = "El mejor objeto defensivo de late-game para tanques e iniciadores frente a daño variado."
         ),
         "Segador de esencia" to SituationalItemInfo(
             name = "Segador de esencia",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1790080912_essence_reaver_item_hd.webp",
+            iconUrl = "file:///android_asset/offline_images/essence_reaver.webp",
             categoryName = "Crítico, Maná & Daño por Habilidad (Parche 7.3)",
             purpose = "Potencia los ataques básicos tras lanzar habilidades e inflige daño crítico amplificado mientras restaura maná.",
             bestAgainst = listOf("Carries basados en habilidades (Lucian, Ezreal, Corki, Xayah, Gangplank)"),
@@ -197,7 +197,7 @@ object SituationalItemAdvisor {
         ),
         "Navaja de asalto" to SituationalItemInfo(
             name = "Navaja de asalto",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789129106_stormrazor.webp",
+            iconUrl = "file:///android_asset/offline_images/stormrazor.webp",
             categoryName = "Energizado, Kiting & Burst AD (Parche 7.3)",
             purpose = "Genera un impacto energizado con daño relámpago, otorga un aumento explosivo de velocidad de movimiento y ralentiza al enemigo.",
             bestAgainst = listOf("Enemigos móviles difíciles de alcanzar", "Tiradores de kiting a distancia (Caitlyn, Jinx, Tristana, Kai'Sa)"),
@@ -206,7 +206,7 @@ object SituationalItemAdvisor {
         ),
         "Diadema susurrante" to SituationalItemInfo(
             name = "Diadema susurrante",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789999586_2526.webp",
+            iconUrl = "file:///android_asset/offline_images/whispering_diadem.webp",
             categoryName = "Poder de Habilidad & Penetración AP (Parche 7.3)",
             purpose = "Otorga daño mágico explosivo y amplificación continua para magos de rotación rápida de habilidades.",
             bestAgainst = listOf("Composiciones de daño mágico", "Magos de ráfaga y desgaste (Syndra, Ahri, Orianna, Vex)"),
@@ -215,7 +215,7 @@ object SituationalItemAdvisor {
         ),
         "Túnica del mediodía" to SituationalItemInfo(
             name = "Túnica del mediodía",
-            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389204_mantle-of-the-twelfth-hour.webp",
+            iconUrl = "file:///android_asset/offline_images/mantle_twelfth_hour.webp",
             categoryName = "Supervivencia Crítica & Desenganche (Parche 7.3)",
             purpose = "Otorga una inyección masiva de vida adicional, curación y resistencia a ralentizaciones al caer por debajo del 35% de vida.",
             bestAgainst = listOf("Asesinos de ejecución rápida", "Peleas cerradas al límite de vida"),
@@ -224,7 +224,7 @@ object SituationalItemAdvisor {
         ),
         "Desesperanza eterna" to SituationalItemInfo(
             name = "Desesperanza eterna",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-03/1772630350_unending-despair.webp",
+            iconUrl = "file:///android_asset/offline_images/unending_despair.webp",
             categoryName = "Drenado de Vida & Armadura para Tanques (Parche 7.3)",
             purpose = "Drena continuamente la vida de los enemigos cercanos cada pocos segundos en combate, curando al portador.",
             bestAgainst = listOf("Peleas grupales cuerpo a cuerpo prolongadas", "Enemigos que se agrupan en cuellos de botella"),
@@ -233,7 +233,7 @@ object SituationalItemAdvisor {
         ),
         "Ecos de Helia" to SituationalItemInfo(
             name = "Ecos de Helia",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1790000547_6620.webp",
+            iconUrl = "file:///android_asset/offline_images/echoes_of_helia.webp",
             categoryName = "Soporte Encantador, Daño & Curación (Parche 7.3)",
             purpose = "Acumula fragmentos de alma al dañar a campeones enemigos y los consume al curar o escudar a un aliado para sanarlo e infligir daño.",
             bestAgainst = listOf("Soportes de utilidad agresivos (Nami, Sona, Karma, Milio, Seraphine, Lulu)"),

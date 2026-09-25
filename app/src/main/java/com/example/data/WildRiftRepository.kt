@@ -230,11 +230,35 @@ object WildRiftRepository {
         }
     }
 
+    val EMPTY_CHAMPION = Champion(
+        id = "empty",
+        name = "Ninguno",
+        primaryRole = LaneRole.MID,
+        tier = "D",
+        winrate = 0.0,
+        pickRate = 0.0,
+        banRate = 0.0,
+        damageType = com.example.model.DamageType.PHYSICAL,
+        summary = "Ninguno",
+        advantageAgainst = emptyList(),
+        counteredBy = emptyList(),
+        synergies = emptyList(),
+        tacticalAdvice = "",
+        recommendedRunes = "",
+        isFrontline = false,
+        isRanged = false,
+        winrateDelta = 0.0,
+        pickRateDelta = 0.0,
+        banRateDelta = 0.0
+    )
+
     fun getChampionByName(name: String): Champion? {
+        if (name.equals("Ninguno", ignoreCase = true) || name.equals("empty", ignoreCase = true)) return EMPTY_CHAMPION
         return champions.find { it.name.equals(name, ignoreCase = true) }
     }
 
     fun getChampionById(id: String): Champion? {
+        if (id.equals("empty", ignoreCase = true)) return EMPTY_CHAMPION
         return champions.find { it.id.equals(id, ignoreCase = true) }
     }
 

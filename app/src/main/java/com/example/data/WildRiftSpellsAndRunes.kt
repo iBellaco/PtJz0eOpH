@@ -543,7 +543,7 @@ object WildRiftSpellsAndRunes {
             id = "legend_haste",
             name = "Leyenda: Velocidad",
             category = "Precisión",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1790113533_9105.webp",
+            iconUrl = "file:///android_asset/offline_images/first_strike_rune.webp",
             description = "Otorga 0 de velocidad de habilidades al principio de la partida. Derrotar monstruos, campeones enemigos o súbditos otorga bonificaciones de velocidad de habilidades adicionales. La bonificación total tiene un límite de 15 de velocidad de habilidades."
         ),
         RuneItem(

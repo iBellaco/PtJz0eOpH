@@ -20,7 +20,7 @@ object WildRiftItemsData {
             coachTip = "Objeto ideal contra composiciones con varios tanques o cuando necesitas movilidad rápida y daño verdadero continuo en peleas prolongadas.",
             coachTipEn = "Ideal against multi-tank compositions or when you need fast mobility and sustained true damage in extended skirmishes.",
             coachTipPt = "Item essencial para atiradores dependentes da ultimate. Aumenta a velocidade de ataque e garante rajadas de dano crítico imediato após ativar a ultimate.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789129862_fiendhunter-bolts.webp"
+            iconUrl = "file:///android_asset/offline_images/fiendhunter-bolts.webp"
         ),
         WildRiftItem(
             id = "stormrazor",
@@ -35,7 +35,7 @@ object WildRiftItemsData {
             passiveEn = "Paralyze: Energized attacks deal bonus magic damage and slow the target by 75% for 0.75s.",
             coachTip = "Facilita la persecución de enemigos y la colocación de ataques gracias a su potente ralentización inicial.",
             coachTipEn = "Facilitates chasing enemies and setup auto attacks thanks to its heavy initial slow.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789129106_stormrazor.webp"
+            iconUrl = "file:///android_asset/offline_images/stormrazor.webp"
         ),
         WildRiftItem(
             id = "bloodthirster",
@@ -287,7 +287,7 @@ object WildRiftItemsData {
             passiveEn = "Essence Flare: Abilities (H1, H2, H3, H4) and critical strikes grant bonus damage and restore 3% missing mana.",
             coachTip = "Perfecto para tiradores que dependen de usar sus habilidades constantemente para maximizar su daño por segundo.",
             coachTipEn = "Perfect for caster marksmen who rely on frequent ability usage alongside critical strikes.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1790080912_essence_reaver_item_hd.webp"
+            iconUrl = "file:///android_asset/offline_images/essence_reaver.webp"
         ),
         WildRiftItem(
             id = "serylda_s_grudge",
@@ -1127,7 +1127,7 @@ object WildRiftItemsData {
             passiveEn = "Dawnbringer: When you immobilize a champion champion or are immobilized within 400 units of an enemy champion, reveal all nearby enemy champions for 3 seconds, deal magic damage equal to 40 + 2.5% bonusand gain 20% Armor and Magic Resistance (3s Cooldown)",
             coachTip = "Otorga vision y daño en area adicional cuando aplicas o sufres inmovilizaciones, genial para soportes tanques de choque.",
             coachTipEn = "This item is great for tanks and support initiators. When you immobilize an enemy or are immobilized near foes, it reveals nearby champions, deals an explosive burst of magic damage, and briefly boosts your defenses. Perfect for zone control, reliable engages, and countering enemy dive attempts.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389204_mantle-of-the-twelfth-hour.webp"
+            iconUrl = "file:///android_asset/offline_images/mantle_twelfth_hour.webp"
         ),
         WildRiftItem(
             id = "amaranth_s_twinguard",
@@ -1141,7 +1141,7 @@ object WildRiftItemsData {
             passiveEn = "Endurance: Gain 1 stacks of Endurance every 1 seconds while in combat with enemy champions (max 5 stacks). At maximum stacks, gain 20% size, 20% Tenacity, and increase Armor by 30% and Magic Resistance by 30% until out of combat with champion.",
             coachTip = "Este objeto es perfecto para campeones que pasan mucho tiempo en medio de las peleas y necesitan mayor durabilidad y resistencia al control de multitudes. Proporciona bonificaciones a la armadura y la resistencia mágica. La pasiva",
             coachTipEn = "This item is perfect for champions who spend a lot of time in the thick of fights and need extra durability and crowd control resistance. It provides bonuses to armor and magic resistance. The “Endurance” passive stacks up to five times during combat, and at full stacks you increase in size, gain enhanced tenacity, and receive bonus armor and magic resistance until you exit combat. This allows you to stay in the frontline longer and withstand enemy attacks more effectively. Due to its versatile utility, this item is one of the most popular defensive choices in the game and is used by the majority of tanks, fighters, and other classes.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+            iconUrl = "file:///android_asset/offline_images/amaranths_twinguard.webp"
         ),
         WildRiftItem(
             id = "mantle_of_the_twelfth_hour",
@@ -1267,7 +1267,7 @@ object WildRiftItemsData {
             passiveEn = "Adaptive Resistance: Upon taking damage from champions, grants bonus Armor and Magic Resist during combat.",
             coachTip = "Objeto defensivo muy costo-eficiente que otorga armadura y salud ideal para tanques y soportes en la fase media de la partida.",
             coachTipEn = "Cost-effective defensive item providing armor and health, ideal for tanks and supports in mid game.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389204_mantle-of-the-twelfth-hour.webp"
+            iconUrl = "file:///android_asset/offline_images/mantle_twelfth_hour.webp"
         ),
         WildRiftItem(
             id = "abyssal_mask",
@@ -1337,7 +1337,7 @@ object WildRiftItemsData {
             passiveEn = "Anguish: Every 4 second(s) while in combat with a champion, deal 3% of your max Health as magic damage to nearby champions and heal for 250% of the damage dealt. Anguish is unaffected by Item Ability Haste.",
             coachTip = "Este objeto te convierte en una primera línea autosostenible: mientras luchas, periódicamente infliges daño mágico a tu alrededor y te curas una parte de ese daño. Excelente para tanques y soldados de primera línea: te ayuda a concentrarte, permanecer en el centro de las peleas por más tiempo y sobresalir en enfrentamientos prolongados en equipo. Menos efectivo en intercambios de ráfagas muy breves o en campeones que evitan permanecer en el centro del combate.",
             coachTipEn = "This item turns you into a self-sustaining frontline: while fighting you periodically deal magic damage around you and heal for a portion of that damage. Great for tanks and frontliners — it helps you soak focus, remain in the heart of fights longer, and excel in extended team engagements. Less effective in very short burst trades or on champions that avoid standing in the center of combat.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-03/1772630350_unending-despair.webp"
+            iconUrl = "file:///android_asset/offline_images/unending_despair.webp"
         ),
         WildRiftItem(
             id = "banshee_s_veil",
@@ -1533,7 +1533,7 @@ object WildRiftItemsData {
             passiveEn = "Dawnbringer: When you immobilize a champion champion or are immobilized within 400 units of an enemy champion, reveal all nearby enemy champions for 3 seconds, deal magic damage equal to 40 + 2.5% bonusand gain 20% Armor and Magic Resistance (3s Cooldown)",
             coachTip = "Otorga vision y daño en area adicional cuando aplicas o sufres inmovilizaciones, genial para soportes tanques de choque.",
             coachTipEn = "This item is great for tanks and support initiators. When you immobilize an enemy or are immobilized near foes, it reveals nearby champions, deals an explosive burst of magic damage, and briefly boosts your defenses. Perfect for zone control, reliable engages, and countering enemy dive attempts.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389204_mantle-of-the-twelfth-hour.webp"
+            iconUrl = "file:///android_asset/offline_images/mantle_twelfth_hour.webp"
         ),
         WildRiftItem(
             id = "yordle_trap",
@@ -2165,7 +2165,7 @@ object WildRiftItemsData {
             passiveEn = "Lifeline: Taking damage that reduces health below 35% grants a 250-550 shield for 5s and 10% bonus physical vamp.",
             coachTip = "Objeto defensivo prioritario contra composiciones enemigas de dive y asesinos físicos agresivos.",
             coachTipEn = "Top defensive option against dive heavy enemy comps and physical burst assassins.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+            iconUrl = "file:///android_asset/offline_images/immortal_shieldbow.webp"
         ),
         WildRiftItem(
             id = "crown_of_the_shattered_queen",
@@ -2193,7 +2193,7 @@ object WildRiftItemsData {
             passiveEn = "Amaranth's Armor: Each second in combat with champions grants a stack (max 5). At max stacks, increases bonus Armor and Magic Resist by 30% and grants 20% tenacity until out of combat.",
             coachTip = "El objeto defensivo por excelencia para tanques e hiper-resistencias en teamfights prolongadas.",
             coachTipEn = "The ultimate defensive capstone for tanks and bruisers in prolonged teamfights.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+            iconUrl = "file:///android_asset/offline_images/amaranths_twinguard.webp"
         ),
         WildRiftItem(
             id = "unending_despair",
@@ -2207,7 +2207,7 @@ object WildRiftItemsData {
             passiveEn = "Anguish: Every 4s in combat with enemy champions, deal magic damage equal to 3% max Health to nearby enemies and heal for 100% of the damage dealt.",
             coachTip = "Proporciona daño sostenido en área y autocuración constante para tanques en peleas grupales.",
             coachTipEn = "Provides sustained AoE damage and constant self-healing for tanks in group fights.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-03/1772630350_unending-despair.webp"
+            iconUrl = "file:///android_asset/offline_images/unending_despair.webp"
         ),
         WildRiftItem(
             id = "rapid_firecannon",
@@ -2221,7 +2221,7 @@ object WildRiftItemsData {
             passiveEn = "Energized: Moving and attacking generates an Energized attack.\nSniper: Energized attacks gain bonus attack range and deal bonus magic damage on hit.",
             coachTip = "Esencial para tiradores que necesitan iniciar desde una distancia segura o pokear antes de entablar una pelea de equipo completa.",
             coachTipEn = "Essential for marksmen who need to initiate or poke safely from range before entering full teamfights.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp"
+            iconUrl = "file:///android_asset/offline_images/rapid_firecannon.webp"
         ),
         WildRiftItem(
             id = "yun_tal_wildarrows",
@@ -2235,7 +2235,7 @@ object WildRiftItemsData {
             passiveEn = "Serrated Blades: Critical strikes apply a bleed dealing bonus physical damage over 2s.",
             coachTip = "Suma un daño por segundo devastador al acumular probabilidad de crítico, convirtiendo cada crítico en sangrado prolongado.",
             coachTipEn = "Adds devastating DPS when stacking crit chance, turning every crit into sustained bleed damage.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789128227_yun-tal-wildarrows.webp"
+            iconUrl = "file:///android_asset/offline_images/yun_tal.webp"
         ),
         WildRiftItem(
             id = "statikk_shiv",
@@ -2249,7 +2249,7 @@ object WildRiftItemsData {
             passiveEn = "Shiv Lightning: Energized attacks unleash a chain lightning dealing bonus magic damage to up to 5 targets.",
             coachTip = "Aumenta significativamente la velocidad para despejar oleadas de súbditos y el daño de área en escaramuzas tempranas.",
             coachTipEn = "Greatly increases wave clear speed and AoE burst in early/mid game teamfights.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789130448_statikk-shiv.webp"
+            iconUrl = "file:///android_asset/offline_images/statikk_shiv.webp"
         ),
         WildRiftItem(
             id = "echoes_of_helia",
@@ -2263,7 +2263,7 @@ object WildRiftItemsData {
             passiveEn = "Soul Siphon: Damaging enemy champions stores soul shards (up to 2). Healing or shielding an ally consumes shards to heal the ally for 80-250 and damage the nearest enemy champion.",
             coachTip = "Excelente objeto para apoyos encantadores que buscan maximizar el sostén del equipo en peleas prolongadas. Permite convertir el daño infligido a enemigos en potentes curaciones adicionales para tus aliados.",
             coachTipEn = "Ideal item for aggressive enchanters (Lulu, Nami, Karma, Sona, Seraphine) weaving harass with ally shields and heals.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1790000547_6620.webp"
+            iconUrl = "file:///android_asset/offline_images/echoes_of_helia.webp"
         ),
         WildRiftItem(
             id = "hextech_mirror",
@@ -2277,7 +2277,7 @@ object WildRiftItemsData {
             passiveEn = "Hextech Overcharge: Using ultimate ability (H4/Ult) empowers next attack/ability with bonus adaptive magic damage and cooldown reduction.",
             coachTip = "Aumenta el impacto explosivo inmediatamente después de activar tu definitiva (H4/Ulti).",
             coachTipEn = "Maximizes burst damage right after activating your ultimate (H4/Ult).",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789127657_hexoptics-c44.webp"
+            iconUrl = "file:///android_asset/offline_images/hexoptics.webp"
         ),
         WildRiftItem(
             id = "whispering_headband",
@@ -2291,7 +2291,7 @@ object WildRiftItemsData {
             passiveEn = "Whisper of Life: Increases the strength of your heals and shields granted to allies.",
             coachTip = "Ideal para campeones de apoyo que consumen mucho maná y dependen de escudos y curaciones. Proporciona regeneración de maná sostenida y escala tu efectividad de apoyo según tu reserva de maná total.",
             coachTipEn = "Great for enchanter supports looking to maximize healing and shield mitigation for their team.",
-            iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789999586_2526.webp"
+            iconUrl = "file:///android_asset/offline_images/whispering_diadem.webp"
         ),
     )
 
