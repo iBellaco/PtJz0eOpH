@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.data.WildRiftItemsData
 import com.example.utils.parseHtmlColorToAnnotatedString
 
 import androidx.activity.compose.BackHandler
@@ -1991,26 +1992,9 @@ private fun ItemsCatalogTab() {
 
     val allItems = WildRiftRepository.items
 
-    val allCategories = remember(allItems) {
-        val desiredOrder = listOf(
-            "Objetos con Daños Físicos",
-            "Objetos de Daño Mágico",
-            "Objetos Defensivos",
-            "Objetos de Apoyo",
-            "Objetos de Hechizo Activos",
-            "Botas Nivel 2",
-            "Botas Nivel 3",
-            "Objetos de Nivel Medio",
-            "Artículos Básicos"
-        )
-        val catsFromItems = allItems.map { it.category }.filter { it.isNotBlank() }.distinct()
-        catsFromItems.sortedBy { cat ->
-            val idx = desiredOrder.indexOfFirst { cat.equals(it, ignoreCase = true) }
-            if (idx >= 0) idx else 99
-        }
-    }
+    val allCategories = WildRiftItemsData.officialCategoryOrder
 
-    val filterOptions = remember(allCategories, allItems) {
+    val filterOptions = remember(allCategories) {
         val options = mutableListOf("TODOS" to "Todos")
         allCategories.forEach { cat ->
             options.add(cat to cat)
@@ -2019,52 +2003,57 @@ private fun ItemsCatalogTab() {
     }
 
     val lang = LocalLanguage.current
-    val filteredItems = remember(selectedCategory, searchQuery, allItems, lang) {
-        allItems.filter { item ->
-            val matchesCategory = selectedCategory == null || item.category.equals(selectedCategory, ignoreCase = true)
-            val matchesSearch = searchQuery.isBlank() ||
+    val filteredItems = remember(selectedCategory, searchQuery, lang) {
+        if (selectedCategory != null) {
+            val catItems = com.example.data.WildRiftItemsData.getItemsForCategory(selectedCategory!!)
+            if (searchQuery.isBlank()) {
+                catItems
+            } else {
+                catItems.filter { item ->
                     item.getLocalizedName(lang).contains(searchQuery, ignoreCase = true) ||
                     item.name.contains(searchQuery, ignoreCase = true) ||
                     item.nameEn.contains(searchQuery, ignoreCase = true) ||
                     item.namePt.contains(searchQuery, ignoreCase = true) ||
                     item.getLocalizedStats(lang).contains(searchQuery, ignoreCase = true) ||
-                    item.getLocalizedPassive(lang).contains(searchQuery, ignoreCase = true) ||
-                    item.category.contains(searchQuery, ignoreCase = true)
-            matchesCategory && matchesSearch
+                    item.getLocalizedPassive(lang).contains(searchQuery, ignoreCase = true)
+                }
+            }
+        } else {
+            val allCatItems = allCategories.flatMap { cat -> com.example.data.WildRiftItemsData.getItemsForCategory(cat) }
+            if (searchQuery.isBlank()) {
+                allCatItems
+            } else {
+                allCatItems.filter { item ->
+                    item.getLocalizedName(lang).contains(searchQuery, ignoreCase = true) ||
+                    item.name.contains(searchQuery, ignoreCase = true) ||
+                    item.nameEn.contains(searchQuery, ignoreCase = true) ||
+                    item.namePt.contains(searchQuery, ignoreCase = true) ||
+                    item.getLocalizedStats(lang).contains(searchQuery, ignoreCase = true) ||
+                    item.getLocalizedPassive(lang).contains(searchQuery, ignoreCase = true)
+                }
+            }
         }
     }
 
-    val treeCategories = remember(filteredItems, allCategories) {
+    val treeCategories = remember(selectedCategory, searchQuery, lang) {
         val result = mutableListOf<Pair<String, List<WildRiftItem>>>()
-        val groups = filteredItems.groupBy { it.category }
-        
-        fun getItemTierOrder(item: WildRiftItem): Int {
-            return when {
-                item.goldCost >= 2000 || item.category.equals("Botas", ignoreCase = true) -> 1 // MEJORADAS
-                item.goldCost in 700..1999 -> 2 // NIVEL MEDIO
-                else -> 3 // BÁSICO
+        val catsToProcess = if (selectedCategory != null) listOf(selectedCategory!!) else allCategories
+        catsToProcess.forEach { cat ->
+            val catItems = com.example.data.WildRiftItemsData.getItemsForCategory(cat)
+            val filteredCatItems = if (searchQuery.isBlank()) {
+                catItems
+            } else {
+                catItems.filter { item ->
+                    item.getLocalizedName(lang).contains(searchQuery, ignoreCase = true) ||
+                    item.name.contains(searchQuery, ignoreCase = true) ||
+                    item.nameEn.contains(searchQuery, ignoreCase = true) ||
+                    item.namePt.contains(searchQuery, ignoreCase = true) ||
+                    item.getLocalizedStats(lang).contains(searchQuery, ignoreCase = true) ||
+                    item.getLocalizedPassive(lang).contains(searchQuery, ignoreCase = true)
+                }
             }
-        }
-
-        allCategories.forEach { cat ->
-            val itemsInCat = groups[cat]
-            if (!itemsInCat.isNullOrEmpty()) {
-                val sortedItems = itemsInCat.sortedWith(
-                    compareBy<WildRiftItem> { getItemTierOrder(it) }
-                        .thenBy { it.goldCost }
-                        .thenBy { it.name }
-                )
-                result.add(cat to sortedItems)
-            }
-        }
-        groups.forEach { (cat, itemsInCat) ->
-            if (result.none { it.first == cat }) {
-                val sortedItems = itemsInCat.sortedWith(
-                    compareBy<WildRiftItem> { getItemTierOrder(it) }
-                        .thenBy { it.goldCost }
-                        .thenBy { it.name }
-                )
-                result.add(cat to sortedItems)
+            if (filteredCatItems.isNotEmpty()) {
+                result.add(cat to filteredCatItems)
             }
         }
         result
@@ -2227,7 +2216,7 @@ private fun ItemsCatalogTab() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 filterOptions.forEach { (key, label) ->
-                    val count = if (key == "TODOS") allItems.size else allItems.count { it.category.equals(key, ignoreCase = true) }
+                    val count = if (key == "TODOS") 141 else com.example.data.WildRiftItemsData.getItemsForCategory(key).size
                     val isSelected = (selectedCategory == null && key == "TODOS") || (selectedCategory != null && selectedCategory.equals(key, ignoreCase = true))
                     FilterChip(
                         selected = isSelected,
@@ -2262,11 +2251,12 @@ private fun ItemsCatalogTab() {
             treeCategories.forEachIndexed { catIdx, (categoryName, itemsInCat) ->
                 item(key = "item_cat_${catIdx}_${categoryName}") {
                     val catColor = when {
-                        categoryName.contains("físic", ignoreCase = true) || categoryName.contains("physic", ignoreCase = true) || categoryName.contains("ataque", ignoreCase = true) -> Color(0xFFFF8C00)
-                        categoryName.contains("magi", ignoreCase = true) || categoryName.contains("magic", ignoreCase = true) || categoryName.contains("habilidad", ignoreCase = true) -> Color(0xFF60A5FA)
-                        categoryName.contains("defen", ignoreCase = true) || categoryName.contains("tanque", ignoreCase = true) || categoryName.contains("vida", ignoreCase = true) -> Color(0xFF4ADE80)
-                        categoryName.contains("bota", ignoreCase = true) || categoryName.contains("boot", ignoreCase = true) -> HextechGold
-                        categoryName.contains("encant", ignoreCase = true) || categoryName.contains("enchant", ignoreCase = true) -> Color(0xFFE879F9)
+                        categoryName.contains("Luchador", ignoreCase = true) -> Color(0xFFFF8C00)
+                        categoryName.contains("Asesino", ignoreCase = true) -> Color(0xFFEF4444)
+                        categoryName.contains("Tirador", ignoreCase = true) -> Color(0xFFF59E0B)
+                        categoryName.contains("Mágico", ignoreCase = true) || categoryName.contains("Magico", ignoreCase = true) -> Color(0xFF60A5FA)
+                        categoryName.contains("Defensa", ignoreCase = true) -> Color(0xFF4ADE80)
+                        categoryName.contains("Apoyo", ignoreCase = true) -> Color(0xFFE879F9)
                         else -> HextechCyan
                     }
 

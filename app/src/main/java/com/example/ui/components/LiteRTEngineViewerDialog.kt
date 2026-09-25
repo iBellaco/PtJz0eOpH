@@ -412,7 +412,8 @@ fun LiteRTEngineViewerDialog(
                                 } else {
                                     Text(
                                         text = when (report.status) {
-                                            LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9 -> "A la espera de picks 1 a 9"
+                                            LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9,
+                                            LiteRTVisionClassifier.EngineStatus.RUNNING_INFERENCE -> "Analizando tensores en vivo..."
                                             LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> "Slot final en espera"
                                             else -> "Evaluando tensores..."
                                         },
@@ -424,9 +425,9 @@ fun LiteRTEngineViewerDialog(
                                         text = when (report.status) {
                                             LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> {
                                                 if (report.slotDescription.contains("Aliado", ignoreCase = true)) {
-                                                    "Mostrando icono de línea. Esperando Avatar."
+                                                    "Mostrando icono de línea. Visor escaneando tensores."
                                                 } else {
-                                                    "Mostrando yelmo espartano. Esperando Avatar."
+                                                    "Mostrando yelmo espartano. Visor escaneando tensores."
                                                 }
                                             }
                                             else -> report.slotDescription.ifBlank { "Slot 5 (10º Pick)" }

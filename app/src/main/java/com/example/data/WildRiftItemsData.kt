@@ -23,6 +23,21 @@ object WildRiftItemsData {
             iconUrl = "https://wr-meta.com/uploads/posts/2026-09/1789129862_fiendhunter-bolts.webp"
         ),
         WildRiftItem(
+            id = "stormrazor",
+            name = "Navaja de asalto",
+            nameEn = "Stormrazor",
+            namePt = "Navalha de Rapidez",
+            category = "Tirador",
+            goldCost = 2900,
+            stats = "+40 Daño de Ataque • +25% Tasa Crítica • +20% Velocidad de Ataque",
+            statsEn = "+40 Attack Damage • +25% Critical Rate • +20% Attack Speed",
+            passive = "Energizado: Moverse y atacar genera un ataque energizado. Los ataques energizados infligen 65 de daño mágico adicional al impactar y otorgan un 0.5 s de velocidad de movimiento.",
+            passiveEn = "Energized: Moving and attacking generates an Energized attack. Energized attacks deal 65 bonus magic damage on-hit and grant 0.5s Movement Speed.",
+            coachTip = "Objeto energizado excelente para tiradores que buscan movilidad y daño de ráfaga al iniciar el combate.",
+            coachTipEn = "Great energized item for marksmen seeking mobility and initial burst damage in trades.",
+            iconUrl = "file:///android_asset/offline_images/stormrazor.webp"
+        ),
+        WildRiftItem(
             id = "bloodthirster",
             name = "La Sanguinaria",
             nameEn = "Bloodthirster",
@@ -3468,5 +3483,84 @@ object WildRiftItemsData {
 
     fun getItemIconByName(name: String): String {
         return getItemByName(name)?.iconUrl ?: ""
+    }
+
+    fun getItemById(id: String): WildRiftItem? {
+        val cleanId = id.trim()
+        if (cleanId.isBlank()) return null
+        return list.firstOrNull { it.id.equals(cleanId, ignoreCase = true) }
+    }
+
+    val officialCategoryOrder: List<String> = listOf(
+        "Luchador",
+        "Asesino",
+        "Tirador",
+        "Mágico",
+        "Defensa",
+        "Apoyo"
+    )
+
+    val categoryItemIds: Map<String, List<String>> = mapOf(
+        "Luchador" to listOf(
+            "chempunk_chainsword", "manamune", "eclipse", "sundered_sky",
+            "experimental_hexplate", "maw_of_malmortius", "black_cleaver",
+            "titanic_hydra", "stridebreaker", "goredrinker", "mercurial_scimitar",
+            "blade_of_the_ruined_king", "serylda_s_grudge", "spear_of_shojin",
+            "hullbreaker", "wild_rift__overlord_s_bloodmail", "guardian_angel", "bloodthirster",
+            "sterak_s_gage", "death_s_dance", "trinity_force", "divine_sunderer"
+        ),
+        "Asesino" to listOf(
+            "serpent_s_fang", "manamune", "youmuu_s_ghostblade",
+            "duskblade_of_draktharr", "maw_of_malmortius", "edge_of_night",
+            "the_collector", "mercurial_scimitar", "serylda_s_grudge", "guardian_angel"
+        ),
+        "Tirador" to listOf(
+            "fiendhunter_bolts", "rapid_firecannon", "runaan_s_hurricane",
+            "phantom_dancer", "navori_quickblades", "wit_s_end",
+            "hextech_mirror", "kraken_slayer", "nashor_s_tooth", "manamune",
+            "statikk_shiv", "guinsoo_s_rageblade", "mortal_reminder",
+            "maw_of_malmortius", "essence_reaver", "immortal_shieldbow",
+            "the_collector", "terminus", "stormrazor", "yun_tal_wildarrows",
+            "galeforce", "mercurial_scimitar", "blade_of_the_ruined_king",
+            "guardian_angel", "bloodthirster", "lord_dominik_s_regards",
+            "trinity_force", "infinity_edge"
+        ),
+        "Mágico" to listOf(
+            "crown_of_the_shattered_queen", "redemption", "imperial_mandate", "oceanid_s_trident",
+            "morellonomicon", "hextech_roketbelt", "rylai_s_crystal_scepter",
+            "rod_of_ages", "horizon_focus", "malignance",
+            "stormsurge", "blackfire_torch", "luden_s_echo",
+            "lich_bane", "bloodletter_s_curse", "nashor_s_tooth",
+            "statikk_shiv", "banshees_veil", "cryptbloom",
+            "void_staff", "guinsoo_s_rageblade", "liandry_s_torment",
+            "archangel_s_staff", "cosmic_drive", "dusk_and_dawn",
+            "infinity_orb", "riftmaker", "zhonya_s_hourglass", "rabadon_s_deathcap"
+        ),
+        "Defensa" to listOf(
+            "abyssal_mask", "zeke_s_convergence", "yordle_trap",
+            "knight_s_vow", "frozen_heart", "noonquiver_wild_rift",
+            "locket_of_the_iron_solari", "winter_s_approach", "radiant_virtue_wild_rift",
+            "thornmail", "dawnshroud", "hollow_radiance", "randuin_s_omen",
+            "dead_man_s_plate", "force_of_nature", "heartsteel",
+            "kaenic_rookern", "warmog_s_armor", "gargoyle_stoneplate",
+            "sunfire_aegis", "banshees_veil", "unending_despair",
+            "iceborn_gauntlet", "titanic_hydra", "wild_rift__overlord_s_bloodmail",
+            "guardian_angel", "sterak_s_gage", "amaranth_twinguard",
+            "death_s_dance", "zhonya_s_hourglass"
+        ),
+        "Apoyo" to listOf(
+            "echoes_of_helia", "crown_of_the_shattered_queen", "abyssal_mask", "ardent_censer",
+            "staff_of_flowing_water", "zeke_s_convergence", "yordle_trap",
+            "redemption", "knight_s_vow", "mikael_s_blessing",
+            "shurelya_s_battlesong", "harmonic_echo", "frozen_heart",
+            "noonquiver_wild_rift", "locket_of_the_iron_solari", "imperial_mandate",
+            "oceanid_s_trident", "morellonomicon", "radiant_virtue_wild_rift", "thornmail",
+            "dawnshroud", "cryptbloom"
+        )
+    )
+
+    fun getItemsForCategory(category: String): List<WildRiftItem> {
+        val ids = categoryItemIds[category] ?: return emptyList()
+        return ids.mapNotNull { getItemById(it) }
     }
 }
