@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.example.data.AvatarCatalog
 import com.example.data.WildRiftRepository
-import com.example.data.WildRiftSpellsAndRunes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,8 +27,7 @@ data class GameAssetItem(
     val id: String,
     val name: String,
     val category: String, // "Habilidad", "Hechizo", "Runa", "Objeto", "Campeón"
-    val assetPath: String, // ruta local si existe
-    val remoteUrl: String = "", // URL remota CDN en la nube
+    val remoteUrl: String, // URL remota CDN en la nube
     val targetFileName: String,
     val estimatedBytes: Long = 120 * 1024L
 )
@@ -52,6 +50,9 @@ object GameAssetDownloadManager {
     private const val PREFS_NAME = "game_asset_download_prefs"
     private const val ASSETS_FOLDER_NAME = "game_assets"
     private const val KEY_IS_FULLY_DOWNLOADED = "is_fully_downloaded"
+    private const val KEY_AUTO_DOWNLOAD_DISABLED = "auto_download_disabled"
+
+    private const val DDRAGON_CDN = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img"
 
     private val _downloadProgress = MutableStateFlow(DownloadManagerProgress())
     val downloadProgress: StateFlow<DownloadManagerProgress> = _downloadProgress.asStateFlow()
@@ -69,7 +70,7 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Verifica si un recurso específico ya está descargado en el almacenamiento local.
+     * Verifica si un recurso específico ya está descargado en el almacenamiento local interno.
      */
     fun isAssetDownloaded(context: Context, fileName: String): Boolean {
         val cleanName = fileName.substringAfterLast("/")
@@ -117,56 +118,64 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Construye el catálogo de recursos descargables del juego:
+     * Construye el catálogo dinámico de recursos en la nube listos para ser descargados:
      * - Habilidades de Campeones
      * - Hechizos de Invocador
-     * - Runas y Árboles
-     * - Objetos Situacionales y Core
-     * - Avatares de Campeones
+     * - Runas
+     * - Objetos
+     * - Retratos de Campeones
      */
     suspend fun getDownloadCatalog(context: Context): List<GameAssetItem> = withContext(Dispatchers.IO) {
         val itemsMap = mutableMapOf<String, GameAssetItem>()
-        val userFiles = getExcludedUserFiles()
 
         try {
             // 1. Hechizos de Invocador (Spells)
-            val spellFiles = listOf(
-                "flash.webp", "ignite.webp", "smite.webp", "barrier.webp",
-                "exhaust.webp", "ghost.webp", "heal.webp", "clarity.jpg",
-                "mark.jpg", "teleport.png", "cleanse.webp"
+            val spellMap = mapOf(
+                "flash.webp" to "SummonerFlash",
+                "ignite.webp" to "SummonerDot",
+                "smite.webp" to "SummonerSmite",
+                "barrier.webp" to "SummonerBarrier",
+                "exhaust.webp" to "SummonerExhaust",
+                "ghost.webp" to "SummonerHaste",
+                "heal.webp" to "SummonerHeal",
+                "clarity.jpg" to "SummonerMana",
+                "mark.jpg" to "SummonerSnowball",
+                "teleport.png" to "SummonerTeleport",
+                "cleanse.webp" to "SummonerBoost"
             )
-            for (spell in spellFiles) {
-                val clean = spell.substringBeforeLast(".")
-                itemsMap[spell] = GameAssetItem(
-                    id = "spell_$spell",
-                    name = "Hechizo $clean",
+            for ((fileName, ddragonSpell) in spellMap) {
+                val spellName = fileName.substringBeforeLast(".")
+                itemsMap[fileName] = GameAssetItem(
+                    id = "spell_$fileName",
+                    name = "Hechizo: ${spellName.replaceFirstChar { it.uppercase() }}",
                     category = "Hechizo",
-                    assetPath = "spells/$spell",
-                    remoteUrl = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img/spell/Summoner$clean.png",
-                    targetFileName = spell,
-                    estimatedBytes = 95 * 1024L
+                    remoteUrl = "$DDRAGON_CDN/spell/$ddragonSpell.png",
+                    targetFileName = fileName,
+                    estimatedBytes = 90 * 1024L
                 )
             }
 
             // 2. Runas (Runes)
-            val runeFiles = listOf(
-                "conqueror.png", "electrocute.png", "dark_harvest.png", "first_strike.png",
-                "phase_rush.png", "lethal_tempo.png", "fleet_footwork.png", "grasp_undying.png",
-                "arcane_comet.png", "guardian.webp", "demolish.webp", "font_of_life.webp",
-                "bone_plating.webp", "second_wind.webp", "overgrowth.webp", "revitalize.webp",
-                "triumph.webp", "coup_de_grace.webp", "cut_down.png", "last_stand.webp",
-                "sudden_impact.webp", "cheap_shot.webp", "eyeball_collection.webp", "zombie_ward.webp",
-                "gathering_storm.webp", "scorch.webp", "transcendence.webp", "celerity.webp",
-                "manaflow_band.webp", "nimbus_cloak.webp", "absolute_focus.webp", "brutal.webp"
+            val runeMap = mapOf(
+                "conqueror.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/precision/conqueror/conqueror.png",
+                "electrocute.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/domination/electrocute/electrocute.png",
+                "dark_harvest.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/domination/darkharvest/darkharvest.png",
+                "first_strike.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/inspiration/firststrike/firststrike.png",
+                "phase_rush.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/sorcery/phaserush/phaserush.png",
+                "lethal_tempo.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/precision/lethaltempo/lethaltempotemp.png",
+                "fleet_footwork.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/precision/fleetfootwork/fleetfootwork.png",
+                "grasp_undying.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/resolve/graspoftheundying/graspoftheundying.png",
+                "arcane_comet.png" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/sorcery/arcanecomet/arcanecomet.png",
+                "guardian.webp" to "https://raw.communitydragon.org/latest/game/assets/perks/styles/resolve/guardian/guardian.png"
             )
-            for (rune in runeFiles) {
-                val clean = rune.substringBeforeLast(".").replace("_", " ")
-                itemsMap[rune] = GameAssetItem(
-                    id = "rune_$rune",
-                    name = "Runa $clean",
+            for ((fileName, url) in runeMap) {
+                val runeName = fileName.substringBeforeLast(".").replace("_", " ")
+                itemsMap[fileName] = GameAssetItem(
+                    id = "rune_$fileName",
+                    name = "Runa: ${runeName.replaceFirstChar { it.uppercase() }}",
                     category = "Runa",
-                    assetPath = "runes/$rune",
-                    targetFileName = rune,
+                    remoteUrl = url,
+                    targetFileName = fileName,
                     estimatedBytes = 110 * 1024L
                 )
             }
@@ -176,15 +185,15 @@ object GameAssetDownloadManager {
             val championList = WildRiftRepository.champions.toList()
             for (champ in championList) {
                 val champFile = "${champ.id}.png"
+                val ddragonChamp = champ.ddragonId.ifBlank { champ.id.replaceFirstChar { it.uppercase() } }
                 if (!itemsMap.containsKey(champFile)) {
                     itemsMap[champFile] = GameAssetItem(
                         id = "champ_${champ.id}",
                         name = "Campeón ${champ.name}",
                         category = "Campeón",
-                        assetPath = "champions/$champFile",
-                        remoteUrl = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img/champion/${champ.ddragonId.ifBlank { champ.id }}.png",
+                        remoteUrl = "$DDRAGON_CDN/champion/$ddragonChamp.png",
                         targetFileName = "champions_$champFile",
-                        estimatedBytes = 140 * 1024L
+                        estimatedBytes = 135 * 1024L
                     )
                 }
 
@@ -193,43 +202,21 @@ object GameAssetDownloadManager {
                     if (skill.iconUrl.isNotBlank()) {
                         val fileName = skill.iconUrl.substringAfterLast("/")
                         if (fileName.isNotBlank() && !itemsMap.containsKey(fileName)) {
+                            val remoteSkillUrl = if (skill.slot.equals("P", ignoreCase = true)) {
+                                "$DDRAGON_CDN/passive/${ddragonChamp}P.png"
+                            } else {
+                                "$DDRAGON_CDN/spell/${ddragonChamp}${skill.slot}.png"
+                            }
                             itemsMap[fileName] = GameAssetItem(
                                 id = "skill_${champ.id}_${skill.slot}",
                                 name = "${champ.name} - ${skill.slotName}: ${skill.name}",
                                 category = "Habilidad",
-                                assetPath = "offline_images/$fileName",
+                                remoteUrl = remoteSkillUrl,
                                 targetFileName = fileName,
-                                estimatedBytes = 125 * 1024L
+                                estimatedBytes = 120 * 1024L
                             )
                         }
                     }
-                }
-            }
-
-            // 4. Objetos y demás imágenes de offline_images/
-            val offlineFiles = context.assets.list("offline_images") ?: emptyArray()
-            for (file in offlineFiles) {
-                if (file.isBlank()) continue
-                val lower = file.lowercase()
-                if (lower.startsWith("frame_") || lower in userFiles || lower.contains("avatar_")) {
-                    continue
-                }
-                if (!itemsMap.containsKey(file)) {
-                    val category = when {
-                        lower.contains("rune") || lower.contains("strike") -> "Runa"
-                        lower.contains("spell") || lower.contains("flash") -> "Hechizo"
-                        lower.contains("item") || lower.contains("boots") || lower.contains("blade") || lower.contains("guard") -> "Objeto"
-                        else -> "Habilidad"
-                    }
-                    val clean = file.substringBeforeLast(".").replace("_", " ").replace("-", " ")
-                    itemsMap[file] = GameAssetItem(
-                        id = "offline_$file",
-                        name = "$category: $clean",
-                        category = category,
-                        assetPath = "offline_images/$file",
-                        targetFileName = file,
-                        estimatedBytes = 120 * 1024L
-                    )
                 }
             }
         } catch (e: Exception) {
@@ -279,7 +266,7 @@ object GameAssetDownloadManager {
             downloadedBytes = downloadedBytesAcc,
             remainingBytes = remaining,
             progressPercent = percent,
-            currentAssetName = if (isAllCompleted) "Todos los recursos descargados" else _downloadProgress.value.currentAssetName
+            currentAssetName = if (isAllCompleted) "Todos los recursos del juego están listos" else _downloadProgress.value.currentAssetName
         )
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -287,7 +274,18 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Inicia o reanuda la descarga de los recursos del juego de forma pausable.
+     * Inicio automático al entrar a la aplicación (si aún no se han descargado todos los recursos).
+     */
+    fun autoStartOnLaunch(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val isCompleted = prefs.getBoolean(KEY_IS_FULLY_DOWNLOADED, false)
+        if (!isCompleted && _downloadProgress.value.status != AssetDownloadStatus.DOWNLOADING && _downloadProgress.value.status != AssetDownloadStatus.PAUSED) {
+            startOrResumeDownload(context)
+        }
+    }
+
+    /**
+     * Inicia o reanuda la descarga de los recursos del juego de forma pausable desde la nube.
      */
     fun startOrResumeDownload(context: Context) {
         if (_downloadProgress.value.status == AssetDownloadStatus.DOWNLOADING) return
@@ -309,7 +307,6 @@ object GameAssetDownloadManager {
                 var downloadedCount = 0
                 var downloadedBytesAcc = 0L
 
-                // Contar los ya existentes
                 for (item in catalog) {
                     val localFile = File(downloadDir, item.targetFileName)
                     if (localFile.exists() && localFile.length() > 0) {
@@ -343,17 +340,15 @@ object GameAssetDownloadManager {
                     var inputStream: InputStream? = null
                     var outputStream: FileOutputStream? = null
                     try {
-                        // 1. Intentar abrir desde assets o red
-                        inputStream = try {
-                            context.assets.open(item.assetPath)
-                        } catch (_: Exception) {
-                            if (item.remoteUrl.isNotBlank()) {
-                                val url = URL(item.remoteUrl)
-                                val conn = url.openConnection() as HttpURLConnection
-                                conn.connectTimeout = 5000
-                                conn.readTimeout = 5000
-                                conn.inputStream
-                            } else null
+                        if (item.remoteUrl.isNotBlank()) {
+                            val url = URL(item.remoteUrl)
+                            val conn = url.openConnection() as HttpURLConnection
+                            conn.connectTimeout = 6000
+                            conn.readTimeout = 6000
+                            conn.setRequestProperty("User-Agent", "CoachWildRift/1.1")
+                            if (conn.responseCode in 200..299) {
+                                inputStream = conn.inputStream
+                            }
                         }
 
                         if (inputStream != null) {
@@ -389,10 +384,10 @@ object GameAssetDownloadManager {
                                 tempFile.renameTo(targetFile)
                             }
                             downloadedCount++
-                            delay(12)
+                            delay(10)
                         }
                     } catch (e: Exception) {
-                        Log.w(TAG, "Error descargando recurso ${item.name}: ${e.message}")
+                        Log.w(TAG, "Descarga remota en cola para ${item.name}: ${e.message}")
                     } finally {
                         try { inputStream?.close() } catch (_: Exception) {}
                         try { outputStream?.close() } catch (_: Exception) {}
@@ -414,7 +409,7 @@ object GameAssetDownloadManager {
                 prefs.edit().putBoolean(KEY_IS_FULLY_DOWNLOADED, true).apply()
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error fatal en gestor de descarga: ${e.message}", e)
+                Log.e(TAG, "Error en gestor de descarga: ${e.message}", e)
                 _downloadProgress.value = _downloadProgress.value.copy(
                     status = AssetDownloadStatus.ERROR,
                     errorMessage = e.localizedMessage ?: e.message

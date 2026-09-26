@@ -346,6 +346,7 @@ class MainActivity : ComponentActivity() {    private val requestPermissionLaunc
         }
         askNotificationPermission()
         com.example.data.GlobalAnnouncementManager.init(this)
+        com.example.data.download.GameAssetDownloadManager.autoStartOnLaunch(this)
         if (intent.getBooleanExtra("extra_open_global_announcement", false)) {
             com.example.data.GlobalAnnouncementManager.showAnnouncementModal()
             intent.removeExtra("extra_open_global_announcement")
