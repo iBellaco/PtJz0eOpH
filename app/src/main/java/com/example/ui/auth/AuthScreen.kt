@@ -193,10 +193,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val isPremium by SubscriptionManager.isPremium.collectAsState()
     val isVerified by SubscriptionManager.isVerified.collectAsState()
     val userRole by SubscriptionManager.userRole.collectAsState()
+    val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
     val premiumUntil by SubscriptionManager.premiumUntil.collectAsState()
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
+    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_vip", "streamer")
     var showAvatarDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
@@ -439,7 +441,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 subtitle = "Sesión iniciada correctamente"
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(if (hasRoleFrame) 2.dp else 12.dp))
 
             if (showInboxDialog) {
                 com.example.ui.components.UserInboxDialog(
@@ -589,16 +591,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 finishedListener = { avatarTapped = false }
             )
 
-            val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_vip", "streamer")
-
             // Avatar in center
             Box(
                 modifier = Modifier
                     .padding(
-                        top = if (hasRoleFrame) 12.dp else 6.dp,
-                        bottom = if (hasRoleFrame) 8.dp else 6.dp,
-                        start = if (hasRoleFrame) 12.dp else 8.dp,
-                        end = if (hasRoleFrame) 12.dp else 8.dp
+                        top = if (hasRoleFrame) 0.dp else 6.dp,
+                        bottom = if (hasRoleFrame) 0.dp else 6.dp,
+                        start = if (hasRoleFrame) 0.dp else 8.dp,
+                        end = if (hasRoleFrame) 0.dp else 8.dp
                     )
                     .graphicsLayer {
                         scaleX = avatarScale
@@ -646,8 +646,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .offset(
-                            x = if (hasRoleFrame) 6.dp else 2.dp,
-                            y = if (hasRoleFrame) 6.dp else 2.dp
+                            x = if (hasRoleFrame) 12.dp else 2.dp,
+                            y = if (hasRoleFrame) 10.dp else 2.dp
                         )
                         .size(32.dp)
                         .clip(CircleShape)
@@ -671,7 +671,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 }
             }
 
-            Spacer(modifier = Modifier.height(if (isAdminUser) 54.dp else 12.dp))
+            Spacer(modifier = Modifier.height(if (hasRoleFrame) 22.dp else 12.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -704,13 +704,27 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             Spacer(modifier = Modifier.height(4.dp))
 
             // Rol visualizado directamente debajo del usuario, únicamente el rol sin tanto contexto
-            RoleBadge(
-                role = userRole,
-                isPremiumActive = isPremium,
-                isBanned = (userRole == "banned"),
-                isExpiringSoon = isExpiringSoon,
-                size = RoleBadgeSize.NORMAL
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RoleBadge(
+                    role = userRole,
+                    isPremiumActive = isPremium,
+                    isBanned = (userRole == "banned"),
+                    isExpiringSoon = isExpiringSoon,
+                    size = RoleBadgeSize.NORMAL
+                )
+                if (secondaryRole.isNotBlank()) {
+                    RoleBadge(
+                        role = secondaryRole,
+                        isPremiumActive = false,
+                        isBanned = false,
+                        isExpiringSoon = false,
+                        size = RoleBadgeSize.NORMAL
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -1152,8 +1166,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(14.dp))
             
-            if (userRole == "admin") {
-                // Panel de Administración
+            if (userRole == "admin" || userRole == "moderador") {
+                // Panel de Administración / Gestión
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showAdminDashboard = true },
                     backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(

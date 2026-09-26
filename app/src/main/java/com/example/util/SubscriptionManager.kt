@@ -19,6 +19,8 @@ import kotlinx.coroutines.Dispatchers
 object SubscriptionManager {
     private val _userRole = MutableStateFlow("free")
     val userRole: StateFlow<String> = _userRole.asStateFlow()
+    private val _secondaryRole = MutableStateFlow("")
+    val secondaryRole: StateFlow<String> = _secondaryRole.asStateFlow()
     private val _userName = MutableStateFlow("")
     val userName: StateFlow<String> = _userName.asStateFlow()
 
@@ -112,6 +114,7 @@ object SubscriptionManager {
             val user = it.currentUser
             if (AuthManager.isGuestOrUnauthenticated(user)) {
                 _userRole.value = "free"
+                _secondaryRole.value = ""
                 _userName.value = ""
                 _isPremium.value = false
                 _isBanned.value = false
@@ -353,6 +356,7 @@ object SubscriptionManager {
                         _userName.value = name
                     }
                     _userRole.value = role
+                    _secondaryRole.value = listenSnapshot.getString("secondaryRole") ?: ""
                     _isBanned.value = (role == "banned" || banned)
                     _premiumUntil.value = until
                     _blueEssence.value = blueEs
@@ -389,6 +393,7 @@ object SubscriptionManager {
                     val fallbackRole = if (isEmailAdmin) "admin" else "free"
                     _userName.value = user.displayName?.takeIf { it.isNotBlank() } ?: user.email?.substringBefore("@") ?: ""
                     _userRole.value = fallbackRole
+                    _secondaryRole.value = ""
                     _isPremium.value = isEmailAdmin
                     _isVerified.value = isEmailAdmin
                     _premiumUntil.value = null

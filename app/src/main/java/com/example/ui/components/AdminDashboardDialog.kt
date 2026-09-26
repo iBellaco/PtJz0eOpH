@@ -159,9 +159,9 @@ fun AdminDashboardDialog(
 ) {
     val context = LocalContext.current
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
-    val isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin()
+    val isAdminOrMod = userRole == "admin" || userRole == "moderador" || AuthManager.isCurrentUserAdmin()
 
-    if (!isAdmin) {
+    if (!isAdminOrMod) {
         LaunchedEffect(Unit) { onDismiss() }
         return
     }
@@ -2851,14 +2851,22 @@ fun UserDetailManagementDialog(
     val email = user["email"] as? String ?: ""
     var currentEmailInput by remember { mutableStateOf(email) }
     var currentRole by remember { mutableStateOf(user["role"] as? String ?: "free") }
+    var currentSecondaryRole by remember { mutableStateOf(user["secondaryRole"] as? String ?: "") }
     var currentBanned by remember { mutableStateOf((user["banned"] as? Boolean) == true || currentRole == "banned") }
     var currentVerified by remember { mutableStateOf((user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true || currentRole == "admin" || currentRole == "moderador") }
     var currentPremiumUntil by remember { mutableStateOf((user["premiumUntil"] as? Number)?.toLong()) }
     val avatarId = user["avatarId"] as? String ?: "default_poro"
     val rankBorder = user["rankBorder"] as? String ?: "NONE"
 
+    val currentLoggedInRole by com.example.util.SubscriptionManager.userRole.collectAsState()
+    val isMod = currentLoggedInRole == "moderador"
+    val isAdmin = currentLoggedInRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+    val canAssignSecondaryOrVerify = isAdmin || isMod
+
     var roleToConfirm by remember { mutableStateOf<AppUserRole?>(null) }
+    var secondaryRoleToConfirm by remember { mutableStateOf<AppUserRole?>(null) }
     var isChangingRole by remember { mutableStateOf(false) }
+    var isChangingSecondaryRole by remember { mutableStateOf(false) }
 
     var isProcessing by remember { mutableStateOf(false) }
     var customDaysInput by remember { mutableStateOf("") }
@@ -2884,6 +2892,7 @@ fun UserDetailManagementDialog(
                 showPrivateMessageDialog -> showPrivateMessageDialog = false
                 showUserMessagesViewerDialog -> showUserMessagesViewerDialog = false
                 roleToConfirm != null -> roleToConfirm = null
+                secondaryRoleToConfirm != null -> secondaryRoleToConfirm = null
                 else -> onDismiss()
             }
         },
@@ -2899,6 +2908,7 @@ fun UserDetailManagementDialog(
                 showPrivateMessageDialog -> showPrivateMessageDialog = false
                 showUserMessagesViewerDialog -> showUserMessagesViewerDialog = false
                 roleToConfirm != null -> roleToConfirm = null
+                secondaryRoleToConfirm != null -> secondaryRoleToConfirm = null
                 else -> onDismiss()
             }
         }
@@ -3207,7 +3217,7 @@ fun UserDetailManagementDialog(
                         }
                     }
 
-                    // SECCIÓN: GESTIÓN Y ASIGNACIÓN DE ROL DE USUARIO
+                    // SECCIÓN: GESTIÓN Y ASIGNACIÓN DE ROL PRINCIPAL
                     item {
                         Surface(
                             color = HextechSurfaceBg,
@@ -3229,7 +3239,7 @@ fun UserDetailManagementDialog(
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = "Gestión y Cambio de Rol",
+                                            text = "Gestión de Rol Principal",
                                             fontWeight = FontWeight.Bold,
                                             color = HextechGold,
                                             fontSize = 13.sp
@@ -3247,7 +3257,7 @@ fun UserDetailManagementDialog(
 
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Asigna o modifica el rango del usuario en la plataforma. Por directivas de seguridad institucional, la asignación de rol Administrador está excluida.",
+                                    text = "Asigna o modifica el rango principal de usuario. Por directiva institucional, la asignación del rol Administrador está excluida. Solo Administradores pueden cambiar este rol.",
                                     color = TextSecondary,
                                     fontSize = 11.5.sp,
                                     lineHeight = 15.sp
@@ -3282,18 +3292,45 @@ fun UserDetailManagementDialog(
                                         }
                                     }
                                 } else {
-                                    // Lista de roles asignables (EXCLUYENDO ADMIN)
+                                    if (!isAdmin) {
+                                        Surface(
+                                            color = Color.Yellow.copy(alpha = 0.08f),
+                                            shape = RoundedCornerShape(8.dp),
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, Color.Yellow.copy(alpha = 0.25f)),
+                                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                                        ) {
+                                            Text(
+                                                text = "Solo los Administradores principales tienen privilegios para cambiar el Rol Principal.",
+                                                color = Color.Yellow,
+                                                fontSize = 11.sp,
+                                                modifier = Modifier.padding(8.dp)
+                                            )
+                                        }
+                                    }
+
+                                    // Lista de roles asignables principales
+                                    val primaryRoles = listOf(
+                                        AppUserRole.FREE,
+                                        AppUserRole.PATROCINADOR,
+                                        AppUserRole.PREMIUM,
+                                        AppUserRole.MODERATOR,
+                                        AppUserRole.CREATOR_VIP,
+                                        AppUserRole.STREAMER,
+                                        AppUserRole.CREATOR,
+                                        AppUserRole.BANNED
+                                    )
+
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        AppUserRole.assignableRoles.forEach { targetRole ->
+                                        primaryRoles.forEach { targetRole ->
                                             val isSelected = (currentRole.equals(targetRole.id, ignoreCase = true) && (!currentBanned || targetRole == AppUserRole.BANNED))
                                             
                                             Surface(
                                                 onClick = {
-                                                    if (!isSelected && !isChangingRole) {
+                                                    if (!isSelected && !isChangingRole && isAdmin) {
                                                         roleToConfirm = targetRole
                                                     }
                                                 },
-                                                enabled = !isSelected && !isChangingRole,
+                                                enabled = !isSelected && !isChangingRole && isAdmin,
                                                 color = if (isSelected) targetRole.primaryColor.copy(alpha = 0.15f) else HextechDarkBg,
                                                 shape = RoundedCornerShape(8.dp),
                                                 border = androidx.compose.foundation.BorderStroke(
@@ -3353,7 +3390,7 @@ fun UserDetailManagementDialog(
                                                             tint = targetRole.primaryColor,
                                                             modifier = Modifier.size(16.dp)
                                                         )
-                                                    } else {
+                                                    } else if (isAdmin) {
                                                         Surface(
                                                             color = targetRole.primaryColor.copy(alpha = 0.12f),
                                                             shape = RoundedCornerShape(4.dp),
@@ -3367,6 +3404,214 @@ fun UserDetailManagementDialog(
                                                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                                             )
                                                         }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+							}
+						}
+					}
+
+                    // SECCIÓN: GESTIÓN Y ASIGNACIÓN DE ROL SECUNDARIO (RANGOS DE ELO COMPETITIVO)
+                    item {
+                        Surface(
+                            color = HextechSurfaceBg,
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Default.Badge,
+                                            contentDescription = null,
+                                            tint = HextechCyan,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "Gestión de Rol Secundario",
+                                            fontWeight = FontWeight.Bold,
+                                            color = HextechCyan,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+
+                                    // Badge animado del rol secundario actual
+                                    if (currentSecondaryRole.isNotBlank()) {
+                                        RoleBadge(
+                                            role = currentSecondaryRole,
+                                            isPremiumActive = false,
+                                            isBanned = false,
+                                            size = RoleBadgeSize.NORMAL
+                                        )
+                                    } else {
+                                        Surface(
+                                            color = Color.White.copy(alpha = 0.08f),
+                                            shape = RoundedCornerShape(4.dp),
+                                            border = androidx.compose.foundation.BorderStroke(0.5.dp, HextechCardBorder)
+                                        ) {
+                                            Text(
+                                                text = "SIN ROL SECUNDARIO",
+                                                color = TextMuted,
+                                                fontSize = 9.5.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "Asigna un rol secundario (Rango de Elo competitivo) que no posee ningun privilegio en el sistema. Este rol puede ser asignado tanto por Administradores como por Moderadores.",
+                                    color = TextSecondary,
+                                    fontSize = 11.5.sp,
+                                    lineHeight = 15.sp
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                val secondaryRoles = listOf(
+                                    AppUserRole.ESMERALDA,
+                                    AppUserRole.DIAMANTE,
+                                    AppUserRole.MAESTRO,
+                                    AppUserRole.GRAN_MAESTRO,
+                                    AppUserRole.ASPIRANTE,
+                                    AppUserRole.SOBERANO
+                                )
+
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    // Opción para quitar/limpiar rol secundario
+                                    val isSecondaryEmpty = currentSecondaryRole.isBlank()
+                                    Surface(
+                                        onClick = {
+                                            if (!isSecondaryEmpty && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
+                                                secondaryRoleToConfirm = AppUserRole.FREE
+                                            }
+                                        },
+                                        enabled = !isSecondaryEmpty && !isChangingSecondaryRole && canAssignSecondaryOrVerify,
+                                        color = if (isSecondaryEmpty) HextechCyan.copy(alpha = 0.12f) else HextechDarkBg,
+                                        shape = RoundedCornerShape(8.dp),
+                                        border = androidx.compose.foundation.BorderStroke(
+                                            width = if (isSecondaryEmpty) 1.2.dp else 0.8.dp,
+                                            color = if (isSecondaryEmpty) HextechCyan else HextechCardBorder
+                                        ),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column {
+                                                Text("Ninguno (Quitar)", color = if (isSecondaryEmpty) HextechCyan else TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                                Text("Remueve el rol secundario actual de la cuenta", color = TextMuted, fontSize = 10.5.sp)
+                                            }
+                                            if (isSecondaryEmpty) {
+                                                Text("• ACTIVO", color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                                            } else if (canAssignSecondaryOrVerify) {
+                                                Surface(
+                                                    color = DangerRed.copy(alpha = 0.12f),
+                                                    shape = RoundedCornerShape(4.dp),
+                                                    border = androidx.compose.foundation.BorderStroke(0.5.dp, DangerRed.copy(alpha = 0.4f))
+                                                ) {
+                                                    Text(
+                                                        text = "Remover",
+                                                        color = DangerRed,
+                                                        fontSize = 10.5.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Lista de roles secundarios
+                                    secondaryRoles.forEach { targetRole ->
+                                        val isSelected = currentSecondaryRole.equals(targetRole.id, ignoreCase = true)
+                                        
+                                        Surface(
+                                            onClick = {
+                                                if (!isSelected && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
+                                                    secondaryRoleToConfirm = targetRole
+                                                }
+                                            },
+                                            enabled = !isSelected && !isChangingSecondaryRole && canAssignSecondaryOrVerify,
+                                            color = if (isSelected) targetRole.primaryColor.copy(alpha = 0.15f) else HextechDarkBg,
+                                            shape = RoundedCornerShape(8.dp),
+                                            border = androidx.compose.foundation.BorderStroke(
+                                                width = if (isSelected) 1.2.dp else 0.8.dp,
+                                                color = if (isSelected) targetRole.primaryColor else HextechCardBorder
+                                            ),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier.weight(1f)
+                                                ) {
+                                                    Column {
+                                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                                            Text(
+                                                                text = targetRole.displayName,
+                                                                color = if (isSelected) targetRole.primaryColor else TextPrimary,
+                                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                                                fontSize = 12.sp
+                                                            )
+                                                            if (isSelected) {
+                                                                Spacer(modifier = Modifier.width(6.dp))
+                                                                Text(
+                                                                    text = "• ACTIVO",
+                                                                    color = targetRole.primaryColor,
+                                                                    fontSize = 10.sp,
+                                                                    fontWeight = FontWeight.ExtraBold
+                                                                )
+                                                            }
+                                                        }
+                                                        Text(
+                                                            text = targetRole.description,
+                                                            color = TextMuted,
+                                                            fontSize = 10.5.sp,
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
+                                                }
+
+                                                if (isSelected) {
+                                                    Icon(
+                                                        Icons.Default.CheckCircle,
+                                                        contentDescription = null,
+                                                        tint = targetRole.primaryColor,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                } else if (canAssignSecondaryOrVerify) {
+                                                    Surface(
+                                                        color = targetRole.primaryColor.copy(alpha = 0.12f),
+                                                        shape = RoundedCornerShape(4.dp),
+                                                        border = androidx.compose.foundation.BorderStroke(0.5.dp, targetRole.primaryColor.copy(alpha = 0.4f))
+                                                    ) {
+                                                        Text(
+                                                            text = "Asignar",
+                                                            color = targetRole.primaryColor,
+                                                            fontSize = 10.5.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                        )
                                                     }
                                                 }
                                             }
@@ -3442,6 +3687,7 @@ fun UserDetailManagementDialog(
                                             })
                                         }
                                     },
+                                    enabled = canAssignSecondaryOrVerify,
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = if (currentVerified) DangerRed.copy(alpha = 0.18f) else HextechCyan,
@@ -3942,6 +4188,122 @@ fun UserDetailManagementDialog(
                 TextButton(
                     onClick = { if (!isChangingRole) roleToConfirm = null },
                     enabled = !isChangingRole
+                ) {
+                    Text("Cancelar", color = TextSecondary)
+                }
+            },
+            containerColor = HextechSurfaceBg,
+            shape = RoundedCornerShape(14.dp)
+        )
+    }
+
+    if (secondaryRoleToConfirm != null) {
+        val target = secondaryRoleToConfirm!!
+        val isRemoving = target == AppUserRole.FREE
+        AlertDialog(
+            onDismissRequest = { if (!isChangingSecondaryRole) secondaryRoleToConfirm = null },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.ManageAccounts,
+                        contentDescription = null,
+                        tint = target.primaryColor,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (isRemoving) "Quitar Rol Secundario" else "Cambiar Rol Secundario a ${target.displayName}",
+                        color = HextechGold,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = if (isRemoving) {
+                            "¿Confirmas quitar el rol secundario asignado al usuario '$currentName'?"
+                        } else {
+                            "¿Confirmas asignar el rol secundario '${target.displayName}' al usuario '$currentName'?"
+                        },
+                        color = TextPrimary,
+                        fontSize = 13.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    if (!isRemoving) {
+                        Surface(
+                            color = HextechDarkBg,
+                            shape = RoundedCornerShape(8.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, target.primaryColor.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "NUEVO ROL SECUNDARIO",
+                                    color = TextMuted,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                RoleBadge(
+                                    role = target.id,
+                                    isPremiumActive = false,
+                                    isBanned = false,
+                                    size = RoleBadgeSize.LARGE
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = target.description,
+                                    color = TextSecondary,
+                                    fontSize = 11.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        isChangingSecondaryRole = true
+                        val targetRoleId = if (isRemoving) "" else target.id
+                        updateUserSecondaryRoleInCloud(context, uid, targetRoleId) { newSecondaryRole ->
+                            isChangingSecondaryRole = false
+                            secondaryRoleToConfirm = null
+                            currentSecondaryRole = newSecondaryRole
+                            onUserUpdated(user.toMutableMap().apply {
+                                put("secondaryRole", newSecondaryRole)
+                            })
+                            onReloadAll()
+                        }
+                    },
+                    enabled = !isChangingSecondaryRole,
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    if (isChangingSecondaryRole) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = HextechDarkBg, strokeWidth = 2.dp)
+                    } else {
+                        Text(
+                            text = "Confirmar",
+                            color = HextechDarkBg,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { if (!isChangingSecondaryRole) secondaryRoleToConfirm = null },
+                    enabled = !isChangingSecondaryRole
                 ) {
                     Text("Cancelar", color = TextSecondary)
                 }
@@ -4776,6 +5138,34 @@ private fun updateUserRoleInCloud(
         }
         .addOnFailureListener { e ->
             Toast.makeText(context, "Error al actualizar rol: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+}
+
+private fun updateUserSecondaryRoleInCloud(
+    context: Context,
+    uid: String,
+    targetSecondaryRoleId: String,
+    onSuccess: (newSecondaryRole: String) -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val updatePayload = hashMapOf<String, Any>(
+        "secondaryRole" to targetSecondaryRoleId,
+        "last_secondary_role_update" to System.currentTimeMillis()
+    )
+
+    db.collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            val roleName = if (targetSecondaryRoleId.isNotBlank()) {
+                AppUserRole.fromId(targetSecondaryRoleId).displayName
+            } else {
+                "Ninguno"
+            }
+            Toast.makeText(context, "Rol secundario actualizado a $roleName", Toast.LENGTH_SHORT).show()
+            onSuccess(targetSecondaryRoleId)
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, "Error al actualizar rol secundario: ${e.message}", Toast.LENGTH_LONG).show()
         }
 }
 

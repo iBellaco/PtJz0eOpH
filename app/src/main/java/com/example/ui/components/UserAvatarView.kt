@@ -150,7 +150,7 @@ fun UserAvatarView(
     }
 
     val hasFrame = localFrameAsset != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
-    val avatarSize = if (hasFrame) size * 0.85f else size
+    val avatarSize = if (hasFrame) size * 0.76f else size
 
     Box(
         modifier = modifier
@@ -238,7 +238,7 @@ fun UserAvatarView(
                 contentDescription = "Marco de Rol",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .requiredSize(size * 1.14f)
+                    .requiredSize(size * 1.36f)
                     .align(Alignment.Center)
             )
         } else if (isAdmin) {
