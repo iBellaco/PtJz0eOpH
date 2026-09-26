@@ -683,22 +683,6 @@ fun UserInboxDialog(
         val title = (targetMsg?.get("title") as? String ?: "").trim()
         val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
 
-        // Protección estricta: Los mensajes/tickets de soporte únicamente pueden ser eliminados por el administrador
-        val isTargetSupport = targetMsg != null && (
-            (targetMsg["tag"] as? String)?.equals("SUPPORT", ignoreCase = true) == true ||
-            (targetMsg["reportId"] as? String)?.isNotBlank() == true ||
-            (targetMsg["ticketId"] as? String)?.isNotBlank() == true ||
-            FeedbackRepository.isSupportMessage(targetMsg) ||
-            title.contains("Soporte", ignoreCase = true) ||
-            title.contains("Ticket", ignoreCase = true) ||
-            title.contains("Reporte", ignoreCase = true) ||
-            (targetMsg["category"] as? String)?.isNotBlank() == true ||
-            (targetMsg["isSupport"] as? Boolean) == true
-        )
-        if (isTargetSupport) {
-            return
-        }
-
         val newDeleted = deletedIds + id +
             (if (reportId.isNotBlank()) listOf(reportId) else emptyList()) +
             (if (title.isNotBlank()) listOf(title) else emptyList()) +

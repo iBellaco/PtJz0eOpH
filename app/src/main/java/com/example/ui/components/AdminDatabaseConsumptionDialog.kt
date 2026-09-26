@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,21 +19,34 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.data.CloudDatabaseCleaner
+import com.example.data.sync.FirebaseAssetSyncManager
 import com.example.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminDatabaseConsumptionDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    val firebaseCapacityMb = 1000.0 // 1 GB Cuota Gratuita Firebase
-    val firebaseConsumedMb = 4.25
+    val (syncedCount, syncedBytes) = remember { FirebaseAssetSyncManager.getSyncedStats(context) }
+    val syncedMb = syncedBytes / (1024.0 * 1024.0)
+
+    val firebaseCapacityMb = 1000.0 // 1 GB Cuota Gratuita
+    val baseDataConsumedMb = 4.25
+    val firebaseConsumedMb = baseDataConsumedMb + syncedMb
     val firebaseRemainingMb = (firebaseCapacityMb - firebaseConsumedMb).coerceAtLeast(0.0)
     val firebasePercentage = (firebaseConsumedMb / firebaseCapacityMb).toFloat().coerceIn(0f, 1f)
 
+    var isPurging by remember { mutableStateOf(false) }
+    var purgeStatusMsg by remember { mutableStateOf<String?>(null) }
+
     Dialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            if (!isPurging) onDismiss()
+        },
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Surface(
@@ -47,7 +61,7 @@ fun AdminDatabaseConsumptionDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Header
                 Row(
@@ -63,8 +77,10 @@ fun AdminDatabaseConsumptionDialog(
                             Text("Almacenamiento Cloud en Tiempo Real", color = TextSecondary, fontSize = 11.sp)
                         }
                     }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                    if (!isPurging) {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                        }
                     }
                 }
 
@@ -78,16 +94,86 @@ fun AdminDatabaseConsumptionDialog(
                     consumedMb = firebaseConsumedMb,
                     remainingMb = firebaseRemainingMb,
                     percentage = firebasePercentage,
-                    description = "Perfiles, reportes, sugerencias, avisos y sincronización en tiempo real."
+                    description = if (syncedCount > 0) {
+                        "Perfiles, reportes, avisos y $syncedCount imágenes del juego sincronizadas (${String.format(java.util.Locale.US, "%.2f MB", syncedMb)})."
+                    } else {
+                        "Perfiles, reportes, sugerencias, avisos y sincronización en tiempo real."
+                    }
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                // Botón y panel de purga de datos residuales
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                    border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.35f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.DeleteSweep, contentDescription = null, tint = DangerRed, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Limpieza y Purga de Datos Residuales", color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        }
+                        Text(
+                            "Elimina notificaciones globales huérfanas, mensajes de prueba y tickets eliminados de la nube.",
+                            color = TextSecondary,
+                            fontSize = 11.sp,
+                            lineHeight = 14.sp
+                        )
+
+                        if (purgeStatusMsg != null) {
+                            Text(
+                                text = purgeStatusMsg!!,
+                                color = HextechCyan,
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    isPurging = true
+                                    purgeStatusMsg = "Purgando notificaciones y bandejas en la nube..."
+                                    val result = CloudDatabaseCleaner.purgeAllResidualCloudData(context)
+                                    isPurging = false
+                                    if (result.success) {
+                                        purgeStatusMsg = "Limpieza exitosa: ${result.globalNotificationsDeleted} notificaciones y ${result.userInboxesCleaned} bandejas purgadas."
+                                        Toast.makeText(context, "Base de datos purgada con éxito.", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        purgeStatusMsg = "Error en la purga: ${result.errorMessage}"
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.85f)),
+                            enabled = !isPurging,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            if (isPurging) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Limpiando registros...", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            } else {
+                                Icon(Icons.Default.CleaningServices, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Purgar Datos Residuales de la Nube", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Button(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = !isPurging
                 ) {
                     Text("Cerrar Panel", color = HextechDarkBg, fontWeight = FontWeight.Bold)
                 }
@@ -125,7 +211,7 @@ fun CloudServiceConsumptionCard(
             ) {
                 Text(title, color = color, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Text(
-                    text = "${(percentage * 100).toInt()}% Usado",
+                    text = "${String.format(java.util.Locale.US, "%.1f", percentage * 100)}% Usado",
                     color = if (percentage > 0.85f) Color(0xFFE57373) else HextechCyan,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold

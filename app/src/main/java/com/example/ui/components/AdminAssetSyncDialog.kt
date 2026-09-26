@@ -2,8 +2,11 @@ package com.example.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -12,7 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,16 +28,22 @@ import com.example.data.sync.FirebaseAssetSyncManager
 import com.example.ui.theme.*
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminAssetSyncDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
     val syncState by FirebaseAssetSyncManager.syncProgress.collectAsState()
 
     var totalGameAssets by remember { mutableStateOf(0) }
     var localUserAssetsCount by remember { mutableStateOf(0) }
+    var customBucket by remember { mutableStateOf(FirebaseAssetSyncManager.getCustomBucket(context)) }
+    var testResult by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
+    var isTestingConnection by remember { mutableStateOf(false) }
+    var showRulesHint by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         val gameAssets = FirebaseAssetSyncManager.getGameAssetsToUpload(context)
@@ -48,16 +60,18 @@ fun AdminAssetSyncDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .fillMaxHeight(0.92f)
+                .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
             color = HextechDarkBg,
             border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxSize()
+                    .padding(18.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Header
                 Row(
@@ -78,10 +92,10 @@ fun AdminAssetSyncDialog(
                                 "Sincronizador de Recursos",
                                 color = HextechGold,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
+                                fontSize = 17.sp
                             )
                             Text(
-                                "Carga de imágenes del juego a la nube",
+                                "Almacenamiento Cloud de imágenes del juego",
                                 color = TextSecondary,
                                 fontSize = 11.sp
                             )
@@ -96,12 +110,50 @@ fun AdminAssetSyncDialog(
 
                 Divider(color = HextechSurfaceVariant)
 
-                // Info Cards
+                // Resumen de imágenes
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                        border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.3f))
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text("Para la Nube", color = TextSecondary, fontSize = 11.sp)
+                            Text("$totalGameAssets archivos", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Objetos, runas, campeones...", color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                        }
+                    }
+
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.3f))
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text("Locales (Excluidos)", color = TextSecondary, fontSize = 11.sp)
+                            Text("$localUserAssetsCount archivos", color = HextechGoldLight, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Avatares y marcos de perfil", color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                        }
+                    }
+                }
+
+                // Diagnóstico y prueba de conexión
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.3f))
+                    border = BorderStroke(1.dp, HextechSurfaceVariant)
                 ) {
                     Column(
                         modifier = Modifier
@@ -111,51 +163,134 @@ fun AdminAssetSyncDialog(
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Imágenes del juego a sincronizar:", color = TextSecondary, fontSize = 12.sp)
-                            Text("$totalGameAssets archivos", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text(
+                                "Diagnóstico de Almacenamiento",
+                                color = TextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.5.sp
+                            )
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch {
+                                        isTestingConnection = true
+                                        testResult = FirebaseAssetSyncManager.testConnection(context)
+                                        isTestingConnection = false
+                                    }
+                                },
+                                enabled = !isTestingConnection && !syncState.isRunning,
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                shape = RoundedCornerShape(6.dp),
+                                border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f))
+                            ) {
+                                if (isTestingConnection) {
+                                    CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = HextechCyan)
+                                } else {
+                                    Text("Probar Conexión", fontSize = 11.sp, color = HextechCyan)
+                                }
+                            }
                         }
-                        Text(
-                            "Incluye: Campeones, habilidades, objetos, runas y hechizos.",
-                            color = TextMuted,
-                            fontSize = 11.sp
-                        )
+
+                        testResult?.let { (success, msg) ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (success) Color(0xFF1B5E20).copy(alpha = 0.3f) else Color(0xFFB71C1C).copy(alpha = 0.3f))
+                                    .border(1.dp, if (success) Color(0xFF4CAF50) else Color(0xFFE57373), RoundedCornerShape(6.dp))
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = msg,
+                                    color = if (success) Color(0xFF81C784) else Color(0xFFFF8A80),
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
                     }
                 }
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                    border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.3f))
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                // Error detallado si ocurrió
+                if (syncState.lastError != null || (syncState.isFinished && syncState.errorCount > 0)) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF3B1515)),
+                        border = BorderStroke(1.dp, Color(0xFFE57373))
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text("Recursos locales (Excluidos):", color = TextSecondary, fontSize = 12.sp)
-                            Text("$localUserAssetsCount archivos", color = HextechGoldLight, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFFF8A80), modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Motivo del Fallo", color = Color(0xFFFF8A80), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
+                            Text(
+                                text = syncState.lastError ?: "Error de permisos en el servicio de almacenamiento.",
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                text = "Comprueba que las reglas del servicio de almacenamiento en la nube permitan la escritura pública.",
+                                color = HextechGoldLight,
+                                fontSize = 10.5.sp
+                            )
+                            Button(
+                                onClick = { showRulesHint = !showRulesHint },
+                                colors = ButtonDefaults.buttonColors(containerColor = HextechGold.copy(alpha = 0.2f)),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(if (showRulesHint) "Ocultar Reglas de Seguridad" else "Ver Reglas de Seguridad", fontSize = 11.sp, color = HextechGold)
+                            }
                         }
-                        Text(
-                            "Avatares del panel de usuario y marcos de rango se mantienen 100% locales.",
-                            color = HextechGold.copy(alpha = 0.8f),
-                            fontSize = 11.sp
-                        )
                     }
                 }
 
-                // Status & Progress Section
+                if (showRulesHint) {
+                    val rulesCode = "rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    match /{allPaths=**} {\n      allow read, write: if true;\n    }\n  }\n}"
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                        border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.4f))
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Reglas de Almacenamiento en la Nube", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                IconButton(
+                                    onClick = { clipboardManager.setText(AnnotatedString(rulesCode)) },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = HextechCyan, modifier = Modifier.size(14.dp))
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = rulesCode,
+                                color = TextSecondary,
+                                fontSize = 10.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                    }
+                }
+
+                // Progreso
                 if (syncState.isRunning || syncState.isFinished) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -166,12 +301,12 @@ fun AdminAssetSyncDialog(
                                 text = if (syncState.isRunning) "Sincronizando..." else "Estado",
                                 color = TextPrimary,
                                 fontWeight = FontWeight.SemiBold,
-                                fontSize = 13.sp
+                                fontSize = 12.5.sp
                             )
                             if (syncState.totalFiles > 0) {
                                 Text(
                                     text = "${syncState.processedFiles} / ${syncState.totalFiles}",
-                                    color = HextechCyan,
+                                    color = if (syncState.errorCount > 0 && !syncState.isRunning) Color(0xFFE57373) else HextechCyan,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp
                                 )
@@ -188,8 +323,8 @@ fun AdminAssetSyncDialog(
                                 .fillMaxWidth()
                                 .height(8.dp)
                                 .clip(RoundedCornerShape(4.dp)),
-                            color = HextechCyan,
-                            trackColor = HextechDarkBg
+                            color = if (syncState.errorCount > 0 && !syncState.isRunning) Color(0xFFE57373) else HextechCyan,
+                            trackColor = HextechSurface
                         )
 
                         Text(
@@ -199,6 +334,8 @@ fun AdminAssetSyncDialog(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(4.dp))
 
                 // Action Buttons
                 Row(
@@ -218,6 +355,7 @@ fun AdminAssetSyncDialog(
 
                     Button(
                         onClick = {
+                            FirebaseAssetSyncManager.setCustomBucket(context, customBucket)
                             scope.launch {
                                 FirebaseAssetSyncManager.startSync(context)
                             }
