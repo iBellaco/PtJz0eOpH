@@ -56,7 +56,9 @@ object GameAssetDownloadManager {
     private const val PREFS_NAME = "game_asset_download_prefs"
     private const val ASSETS_FOLDER_NAME = "game_assets"
     private const val KEY_IS_FULLY_DOWNLOADED = "is_fully_downloaded"
-    private const val PARALLEL_DOWNLOAD_THREADS = 6 // Descarga ultra rápida y concurrente
+    
+    // Concurrencia controlada para descargas simultáneas ultrarrápidas
+    private const val CONCURRENCY_LIMIT = 8
 
     private const val DDRAGON_CDN = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img"
     private const val CDRAGON_PERK_CDN = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles"
@@ -77,21 +79,30 @@ object GameAssetDownloadManager {
     }
 
     fun isAssetDownloaded(context: Context, fileName: String): Boolean {
-        val cleanName = fileName.substringAfterLast("/")
-        val dir = getDownloadDirectory(context)
-        val file1 = File(dir, cleanName)
-        if (file1.exists() && file1.length() > 0) return true
-        val file2 = File(dir, "champions_$cleanName")
-        return file2.exists() && file2.length() > 0
+        return getDownloadedFile(context, fileName) != null
     }
 
     fun getDownloadedFile(context: Context, rawUrlOrPath: String): File? {
+        if (rawUrlOrPath.isBlank()) return null
         val cleanName = rawUrlOrPath.substringAfterLast("/")
+        val nameNoExt = cleanName.substringBeforeLast(".")
         val dir = getDownloadDirectory(context)
-        val file1 = File(dir, cleanName)
-        if (file1.exists() && file1.length() > 0) return file1
-        val file2 = File(dir, "champions_$cleanName")
-        if (file2.exists() && file2.length() > 0) return file2
+
+        // 1. Coincidencia exacta
+        var file = File(dir, cleanName)
+        if (file.exists() && file.length() > 0) return file
+
+        // 2. Prefijo de campeones
+        file = File(dir, "champions_$cleanName")
+        if (file.exists() && file.length() > 0) return file
+
+        // 3. Extensiones alternativas (.png, .webp, .jpg)
+        for (ext in listOf("png", "webp", "jpg")) {
+            file = File(dir, "$nameNoExt.$ext")
+            if (file.exists() && file.length() > 0) return file
+            file = File(dir, "champions_$nameNoExt.$ext")
+            if (file.exists() && file.length() > 0) return file
+        }
         return null
     }
 
@@ -352,7 +363,8 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Inicia o reanuda la descarga de forma multi-hilo ultra rápida sólo al pulsar el botón.
+     * Inicia o reanuda la descarga concurrente utilizando Dispatchers.IO con Semaphore para
+     * descarga simultánea de múltiples imágenes y actualización reactiva de la UI tras cada archivo.
      */
     fun startOrResumeDownload(context: Context) {
         if (_downloadProgress.value.status == AssetDownloadStatus.DOWNLOADING) return
@@ -404,13 +416,14 @@ object GameAssetDownloadManager {
                     return@launch
                 }
 
-                val semaphore = Semaphore(PARALLEL_DOWNLOAD_THREADS)
+                // Concurrencia controlada en Dispatchers.IO
+                val semaphore = Semaphore(CONCURRENCY_LIMIT)
 
                 coroutineScope {
                     for (item in missingItems) {
                         if (isPauseRequested) break
 
-                        launch {
+                        launch(Dispatchers.IO) {
                             semaphore.withPermit {
                                 if (isPauseRequested) return@withPermit
 
@@ -424,8 +437,8 @@ object GameAssetDownloadManager {
                                 try {
                                     val url = URL(item.remoteUrl)
                                     val conn = (url.openConnection() as HttpURLConnection).apply {
-                                        connectTimeout = 3500
-                                        readTimeout = 3500
+                                        connectTimeout = 4000
+                                        readTimeout = 4000
                                         setRequestProperty("User-Agent", "CoachWildRift/1.1")
                                     }
 
@@ -433,8 +446,9 @@ object GameAssetDownloadManager {
                                         inputStream = conn.inputStream
                                         outputStream = FileOutputStream(tempFile)
 
-                                        val buffer = ByteArray(8192)
+                                        val buffer = ByteArray(16384) // Buffer optimizado de 16KB
                                         var bytesRead: Int
+                                        var fileBytesTotal = 0L
                                         while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                                             if (isPauseRequested) {
                                                 outputStream.flush()
@@ -443,7 +457,7 @@ object GameAssetDownloadManager {
                                                 return@withPermit
                                             }
                                             outputStream.write(buffer, 0, bytesRead)
-                                            downloadedBytesAcc.addAndGet(bytesRead.toLong())
+                                            fileBytesTotal += bytesRead
                                         }
                                         outputStream.flush()
                                         outputStream.close()
@@ -452,11 +466,13 @@ object GameAssetDownloadManager {
                                         if (tempFile.exists()) {
                                             tempFile.renameTo(targetFile)
                                         }
+
                                         val curCount = downloadedCount.incrementAndGet()
-                                        val curBytes = downloadedBytesAcc.get()
+                                        val curBytes = downloadedBytesAcc.addAndGet(fileBytesTotal)
                                         val remBytes = (totalBytesAcc - curBytes).coerceAtLeast(0L)
                                         val percent = if (totalBytesAcc > 0) (curBytes.toFloat() / totalBytesAcc.toFloat()).coerceIn(0f, 1f) else 0f
 
+                                        // Notificación reactiva inmediata a la UI al completarse cada archivo
                                         _downloadProgress.value = DownloadManagerProgress(
                                             status = AssetDownloadStatus.DOWNLOADING,
                                             totalFiles = total,
