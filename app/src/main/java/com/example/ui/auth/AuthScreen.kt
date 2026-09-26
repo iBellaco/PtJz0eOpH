@@ -205,6 +205,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     var showHistoryDialog by remember { mutableStateOf(false) }
     var showInboxDialog by remember { mutableStateOf(false) }
     var showAdminDashboard by remember { mutableStateOf(false) }
+    var showModeratorDashboard by remember { mutableStateOf(false) }
     var showAdminCreatorDialog by remember { mutableStateOf(false) }
     var showSupportPanel by remember { mutableStateOf(false) }
     var showSponsorPanel by remember { mutableStateOf(false) }
@@ -267,6 +268,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     if (showAdminDashboard) {
         com.example.ui.components.AdminDashboardDialog(
             onDismiss = { showAdminDashboard = false }
+        )
+    }
+
+    if (showModeratorDashboard) {
+        com.example.ui.components.ModeratorDashboardDialog(
+            onDismiss = { showModeratorDashboard = false }
         )
     }
 
@@ -640,7 +647,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     size = if (hasRoleFrame) 100.dp else 76.dp,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser,
-                    secondaryRole = secondaryRole
+                    secondaryRole = secondaryRole,
+                    isCurrentUser = true
                 )
                 // Botón interactivo de cambio de avatar (Lápiz)
                 Box(
@@ -1167,8 +1175,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(14.dp))
             
-            if (userRole == "admin" || userRole == "moderador") {
-                // Panel de Administración / Gestión
+            if (userRole == "admin") {
+                // Panel de Administración / Gestión (Solo para Administradores)
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showAdminDashboard = true },
                     backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
@@ -1197,7 +1205,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Panel de Moderador
+                // Panel de Moderador / Patrocinios (Solo para Administradores)
                 val allNoticesForSponsor by com.example.data.AppNoticeManager.notices.collectAsState()
                 val hasPendingSponsorsForAuth = remember(allNoticesForSponsor) {
                     allNoticesForSponsor.any { (it.tag.equals("Publicidad", true) || it.sponsorEmail.isNotBlank()) && !it.isApproved }
@@ -1250,42 +1258,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Panel Patrocinador CPM
-                com.example.ui.components.HextechAnimatedButton(
-                    onClick = { showSponsorPanel = true },
-                    backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        listOf(Color(0xFFEC4899), Color(0xFFDB2777))
-                    ),
-                    borderColor = com.example.ui.theme.HextechGold,
-                    glowColor = Color(0xFFEC4899),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    enableShimmer = true,
-                    enablePulse = true
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Panel Patrocinador CPM",
-                        color = Color.White,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
             } else if (userRole == "moderador") {
-                val unreadSupportForMod by com.example.util.SubscriptionManager.unreadModeratorSupportCount.collectAsState()
+                // Panel de Soporte y Moderación Exclusivo de Moderadores
                 com.example.ui.components.HextechAnimatedButton(
-                    onClick = { showSupportPanel = true },
+                    onClick = { showModeratorDashboard = true },
                     backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        listOf(com.example.ui.theme.HextechCyan, com.example.ui.theme.HextechBlue)
+                        listOf(com.example.ui.theme.HextechCyan, Color(0xFF2563EB))
                     ),
                     borderColor = com.example.ui.theme.HextechGold,
                     glowColor = com.example.ui.theme.HextechCyan,
@@ -1294,42 +1272,21 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     enableShimmer = true,
-                    enablePulse = (unreadSupportForMod > 0)
+                    enablePulse = true
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SupportAgent,
-                            contentDescription = null,
-                            tint = com.example.ui.theme.HextechDarkBg
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Panel de Soporte",
-                            color = com.example.ui.theme.HextechDarkBg,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                        )
-                        if (unreadSupportForMod > 0) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = com.example.ui.theme.DangerRed
-                            ) {
-                                Text(
-                                    text = "$unreadSupportForMod",
-                                    color = Color.White,
-                                    fontSize = 11.sp,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.SupportAgent,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Panel de Soporte y Moderación",
+                        color = Color.White,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
             }
 
             if (userRole == "patrocinador") {

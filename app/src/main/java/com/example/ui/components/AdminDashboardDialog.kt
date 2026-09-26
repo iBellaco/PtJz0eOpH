@@ -159,9 +159,9 @@ fun AdminDashboardDialog(
 ) {
     val context = LocalContext.current
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
-    val isAdminOrMod = userRole == "admin" || userRole == "moderador" || AuthManager.isCurrentUserAdmin()
-
-    if (!isAdminOrMod) {
+    val isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin()
+    
+    if (!isAdmin) {
         LaunchedEffect(Unit) { onDismiss() }
         return
     }
@@ -2543,6 +2543,7 @@ fun EnhancedUserAdminCard(
                         fallbackInitial = name.take(1).uppercase(),
                         rankBorder = rankBorder,
                         isAdmin = (role == "admin"),
+                        role = role,
                         secondaryRole = user["secondaryRole"] as? String
                     )
                     // Indicador de conexión verde/gris
@@ -3001,6 +3002,7 @@ fun UserDetailManagementDialog(
                             fallbackInitial = currentName.take(1).uppercase(),
                             rankBorder = rankBorder,
                             isAdmin = (currentRole == "admin"),
+                            role = currentRole,
                             secondaryRole = currentSecondaryRole
                         )
                         Spacer(modifier = Modifier.width(10.dp))

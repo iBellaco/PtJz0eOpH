@@ -363,7 +363,8 @@ fun MainDraftingScreen(
                                     rankBorder = currentRankBorder,
                                     size = 36.dp,
                                     fallbackInitial = authUser.displayName ?: authUser.email ?: "U",
-                                    secondaryRole = secondaryRole
+                                    secondaryRole = secondaryRole,
+                                    isCurrentUser = true
                                 )
                             }
                         }

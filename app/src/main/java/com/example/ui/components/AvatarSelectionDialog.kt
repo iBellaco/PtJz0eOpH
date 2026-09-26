@@ -195,7 +195,8 @@ fun AvatarSelectionBottomSheet(
                             rankBorder = currentRankBorder,
                             size = 84.dp,
                             isAdmin = isAdmin,
-                            secondaryRole = secondaryRole
+                            secondaryRole = secondaryRole,
+                            isCurrentUser = true
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))

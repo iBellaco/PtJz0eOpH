@@ -60,13 +60,24 @@ fun UserAvatarView(
     adminFrameResId: Int = 0,
     adminFrameUrl: String? = null,
     role: String? = null,
-    secondaryRole: String? = null
+    secondaryRole: String? = null,
+    isCurrentUser: Boolean = false
 ) {
     val currentRoleFlowValue = com.example.util.SubscriptionManager.userRole.collectAsState().value
-    val resolvedRole = role ?: if (isAdmin) "admin" else currentRoleFlowValue
+    val resolvedRole = role ?: if (isCurrentUser) {
+        currentRoleFlowValue
+    } else if (isAdmin) {
+        "admin"
+    } else {
+        ""
+    }
 
     val currentSecondaryRoleFlowValue = com.example.util.SubscriptionManager.secondaryRole.collectAsState().value
-    val resolvedSecondaryRole = secondaryRole ?: currentSecondaryRoleFlowValue
+    val resolvedSecondaryRole = secondaryRole ?: if (isCurrentUser) {
+        currentSecondaryRoleFlowValue
+    } else {
+        ""
+    }
 
     val rankFrameUrl = when {
         resolvedSecondaryRole.lowercase().trim() == "esmeralda" || rankBorder.uppercase() == "ESMERALDA" -> "https://i.postimg.cc/06M6psFc/Esmeralda.png"
