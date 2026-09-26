@@ -496,10 +496,6 @@ object SubscriptionManager {
             onError("Inicia sesión para cambiar de marco")
             return
         }
-        if (!_isPremium.value && _userRole.value != "admin" && borderId != "NONE") {
-            onError("Esta característica es exclusiva para usuarios Premium.")
-            return
-        }
         val db = FirebaseFirestore.getInstance()
         val userRef = db.collection("users").document(user!!.uid)
         userRef.set(hashMapOf("rankBorder" to borderId), SetOptions.merge())

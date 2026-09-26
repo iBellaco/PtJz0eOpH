@@ -188,6 +188,16 @@ CREATE POLICY "Allow public read wr_patches" ON public.wr_patches FOR SELECT USI
 ALTER TABLE public.feedbacks ENABLE ROW LEVEL SECURITY;
 -- Los usuarios solo pueden insertar nuevos reportes, nunca leer los de otros ni modificarlos
 CREATE POLICY "Allow public insert feedbacks" ON public.feedbacks FOR INSERT WITH CHECK (true);
+
+-- 4. BUCKET DE ALMACENAMIENTO DE IMÁGENES (OBJETOS, RUNAS, HECHIZOS, CAMPEONES)
+-- Almacena todas las imágenes del juego excepto avatares y marcos de perfil que se quedan locales.
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('wildrift_assets', 'wildrift_assets', true)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Allow public read wildrift_assets"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'wildrift_assets');
         """.trimIndent()
     }
 }

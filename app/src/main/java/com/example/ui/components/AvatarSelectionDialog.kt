@@ -598,65 +598,37 @@ fun AvatarSelectionBottomSheet(
             } // End of forEach
             } // End of LazyVerticalGrid
         } else {
-                    // MARCOS (BORDERS) SECTION
-                    val borders = listOf(
-                        "NONE",
-                        "MASTER",
-                        "GRANDMASTER",
-                        "CHALLENGER",
-                        "ESMERALDA",
-                        "DIAMANTE",
-                        "MAESTRO_FRAME",
-                        "GRAN_MAESTRO_FRAME",
-                        "ASPIRANTE",
-                        "SOBERANO"
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    if (!isPremium && userRole != "admin") {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(HextechGold.copy(alpha = 0.1f))
-                                .border(1.dp, HextechGold, RoundedCornerShape(12.dp))
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = Icons.Filled.Diamond,
-                                    contentDescription = null,
-                                    tint = HextechGold,
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Desbloquea Marcos Dinámicos",
-                                    color = HextechGold,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Sube de nivel tu perfil con los impresionantes marcos animados de Retador, Gran Maestro y Maestro. Exclusivo para usuarios Premium.",
-                                    color = TextSecondary,
-                                    fontSize = 13.sp,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
-                                HextechAnimatedButton(
-                                    onClick = onOpenPremiumPlans,
-                                    backgroundColor = HextechGold,
-                                    borderColor = HextechCyan,
-                                    glowColor = HextechGold,
-                                    enableShimmer = true
-                                ) {
-                                    Text("Ver Planes Premium", color = HextechDarkBg, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
+                    // MARCOS (BORDERS) SECTION: Solamente marcos asignados al rol principal y secundario del usuario
+                    val mainRoleFrame = when (userRole.lowercase().trim()) {
+                        "admin" -> "ADMIN"
+                        "moderador" -> "MODERADOR"
+                        "creador", "creador_vip" -> "CREADOR"
+                        "streamer" -> "STREAMER"
+                        else -> null
                     }
+                    val secRoleFrame = when (secondaryRole.lowercase().trim()) {
+                        "esmeralda" -> "ESMERALDA"
+                        "diamante" -> "DIAMANTE"
+                        "maestro" -> "MAESTRO_FRAME"
+                        "gran_maestro", "gran maestro" -> "GRAN_MAESTRO_FRAME"
+                        "aspirante" -> "ASPIRANTE"
+                        "soberano" -> "SOBERANO"
+                        else -> null
+                    }
+
+                    val borders = remember(userRole, secondaryRole) {
+                        val list = mutableListOf<String>()
+                        list.add("NONE") // Siempre disponible la opción Sin Marco
+                        if (mainRoleFrame != null && !list.contains(mainRoleFrame)) {
+                            list.add(mainRoleFrame)
+                        }
+                        if (secRoleFrame != null && !list.contains(secRoleFrame)) {
+                            list.add(secRoleFrame)
+                        }
+                        list
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
                         columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
@@ -667,14 +639,18 @@ fun AvatarSelectionBottomSheet(
                     ) {
                         items(borders.size) { index ->
                             val border = borders[index]
-                            val isSelected = currentRankBorder == border
-                            val isAvailable = isPremium || userRole == "admin" || border == "NONE"
+                            val activeBorder = if (currentRankBorder == "DEFAULT" || currentRankBorder.isBlank()) {
+                                mainRoleFrame ?: secRoleFrame ?: "NONE"
+                            } else {
+                                currentRankBorder
+                            }
+                            val isSelected = activeBorder.equals(border, ignoreCase = true)
 
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .aspectRatio(0.85f)
-                                    .clickable(enabled = isAvailable) {
+                                    .clickable {
                                         SubscriptionManager.changeRankBorder(
                                             borderId = border,
                                             onSuccess = {
@@ -686,7 +662,7 @@ fun AvatarSelectionBottomSheet(
                                         )
                                     },
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) HextechGold.copy(alpha = 0.1f) else HextechDarkBg
+                                    containerColor = if (isSelected) HextechGold.copy(alpha = 0.15f) else HextechDarkBg
                                 ),
                                 border = BorderStroke(
                                     width = if (isSelected) 2.dp else 1.dp,
@@ -709,31 +685,23 @@ fun AvatarSelectionBottomSheet(
                                             size = 64.dp,
                                             rankBorder = border,
                                             showBorder = false,
+                                            role = "",
                                             secondaryRole = ""
                                         )
-                                        if (!isAvailable) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .background(Color.Black.copy(alpha = 0.6f), CircleShape),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(Icons.Filled.Lock, contentDescription = null, tint = Color.White)
-                                            }
-                                        }
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))
                                     val borderLabel = when (border) {
                                         "NONE" -> "Sin Marco"
-                                        "MASTER" -> "Maestro (Vector)"
-                                        "GRANDMASTER" -> "Gran Maestro (Vector)"
-                                        "CHALLENGER" -> "Retador (Vector)"
-                                        "ESMERALDA" -> "Esmeralda (Especial)"
-                                        "DIAMANTE" -> "Diamante (Especial)"
-                                        "MAESTRO_FRAME" -> "Maestro (Especial)"
-                                        "GRAN_MAESTRO_FRAME" -> "Gran Maestro (Especial)"
-                                        "ASPIRANTE" -> "Aspirante (Especial)"
-                                        "SOBERANO" -> "Soberano (Especial)"
+                                        "ADMIN" -> "Administrador"
+                                        "MODERADOR" -> "Moderador"
+                                        "CREADOR" -> "Creador"
+                                        "STREAMER" -> "Streamer"
+                                        "ESMERALDA" -> "Esmeralda"
+                                        "DIAMANTE" -> "Diamante"
+                                        "MAESTRO_FRAME" -> "Maestro"
+                                        "GRAN_MAESTRO_FRAME" -> "Gran Maestro"
+                                        "ASPIRANTE" -> "Aspirante"
+                                        "SOBERANO" -> "Soberano"
                                         else -> border
                                     }
                                     Text(

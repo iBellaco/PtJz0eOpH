@@ -79,22 +79,31 @@ fun UserAvatarView(
         ""
     }
 
-    val rankFrameUrl = when {
-        resolvedSecondaryRole.lowercase().trim() == "esmeralda" || rankBorder.uppercase() == "ESMERALDA" -> "file:///android_asset/offline_images/frame_esmeralda.png"
-        resolvedSecondaryRole.lowercase().trim() == "diamante" || rankBorder.uppercase() == "DIAMANTE" -> "file:///android_asset/offline_images/frame_diamante.png"
-        resolvedSecondaryRole.lowercase().trim() == "maestro" || rankBorder.uppercase() == "MAESTRO_FRAME" -> "file:///android_asset/offline_images/frame_maestro.png"
-        resolvedSecondaryRole.lowercase().trim() in listOf("gran_maestro", "gran maestro") || rankBorder.uppercase() == "GRAN_MAESTRO_FRAME" -> "file:///android_asset/offline_images/frame_gran_maestro.png"
-        resolvedSecondaryRole.lowercase().trim() == "aspirante" || rankBorder.uppercase() == "ASPIRANTE" -> "file:///android_asset/offline_images/frame_aspirante.png"
-        resolvedSecondaryRole.lowercase().trim() == "soberano" || rankBorder.uppercase() == "SOBERANO" -> "file:///android_asset/offline_images/frame_soberano.png"
-        else -> null
-    }
-
-    val localFrameAsset = when {
-        resolvedRole.lowercase() == "admin" -> "file:///android_asset/offline_images/frame_administrador.png"
-        resolvedRole.lowercase() == "moderador" -> "file:///android_asset/offline_images/frame_moderador.png"
-        resolvedRole.lowercase() in listOf("creador", "creador_vip") -> "file:///android_asset/offline_images/frame_creador.png"
-        resolvedRole.lowercase() == "streamer" -> "file:///android_asset/offline_images/frame_streamer.png"
-        else -> null
+    val activeFrameAsset: String? = when {
+        rankBorder.equals("NONE", ignoreCase = true) -> null
+        rankBorder.equals("ADMIN", ignoreCase = true) || rankBorder.equals("ADMINISTRADOR", ignoreCase = true) -> "file:///android_asset/offline_images/frame_administrador.png"
+        rankBorder.equals("MODERADOR", ignoreCase = true) || rankBorder.equals("MODERATOR", ignoreCase = true) -> "file:///android_asset/offline_images/frame_moderador.png"
+        rankBorder.equals("CREADOR", ignoreCase = true) || rankBorder.equals("CREATOR", ignoreCase = true) -> "file:///android_asset/offline_images/frame_creador.png"
+        rankBorder.equals("STREAMER", ignoreCase = true) -> "file:///android_asset/offline_images/frame_streamer.png"
+        rankBorder.equals("ESMERALDA", ignoreCase = true) -> "file:///android_asset/offline_images/frame_esmeralda.png"
+        rankBorder.equals("DIAMANTE", ignoreCase = true) -> "file:///android_asset/offline_images/frame_diamante.png"
+        rankBorder.equals("MAESTRO_FRAME", ignoreCase = true) || rankBorder.equals("MASTER", ignoreCase = true) -> "file:///android_asset/offline_images/frame_maestro.png"
+        rankBorder.equals("GRAN_MAESTRO_FRAME", ignoreCase = true) || rankBorder.equals("GRANDMASTER", ignoreCase = true) -> "file:///android_asset/offline_images/frame_gran_maestro.png"
+        rankBorder.equals("ASPIRANTE", ignoreCase = true) || rankBorder.equals("CHALLENGER", ignoreCase = true) -> "file:///android_asset/offline_images/frame_aspirante.png"
+        rankBorder.equals("SOBERANO", ignoreCase = true) -> "file:///android_asset/offline_images/frame_soberano.png"
+        else -> when {
+            resolvedRole.lowercase().trim() == "admin" -> "file:///android_asset/offline_images/frame_administrador.png"
+            resolvedRole.lowercase().trim() == "moderador" -> "file:///android_asset/offline_images/frame_moderador.png"
+            resolvedRole.lowercase().trim() in listOf("creador", "creador_vip") -> "file:///android_asset/offline_images/frame_creador.png"
+            resolvedRole.lowercase().trim() == "streamer" -> "file:///android_asset/offline_images/frame_streamer.png"
+            resolvedSecondaryRole.lowercase().trim() == "esmeralda" -> "file:///android_asset/offline_images/frame_esmeralda.png"
+            resolvedSecondaryRole.lowercase().trim() == "diamante" -> "file:///android_asset/offline_images/frame_diamante.png"
+            resolvedSecondaryRole.lowercase().trim() == "maestro" -> "file:///android_asset/offline_images/frame_maestro.png"
+            resolvedSecondaryRole.lowercase().trim() in listOf("gran_maestro", "gran maestro") -> "file:///android_asset/offline_images/frame_gran_maestro.png"
+            resolvedSecondaryRole.lowercase().trim() == "aspirante" -> "file:///android_asset/offline_images/frame_aspirante.png"
+            resolvedSecondaryRole.lowercase().trim() == "soberano" -> "file:///android_asset/offline_images/frame_soberano.png"
+            else -> null
+        }
     }
 
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
@@ -174,7 +183,7 @@ fun UserAvatarView(
         }
     }
 
-    val hasFrame = localFrameAsset != null || rankFrameUrl != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
+    val hasFrame = activeFrameAsset != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
     val avatarSize = if (hasFrame) size * 0.76f else size
 
     Box(
@@ -203,13 +212,13 @@ fun UserAvatarView(
                     )
                 )
                 .then(
-                    if (rankBorder != "NONE" && !isAdmin && localFrameAsset == null) {
+                    if (rankBorder != "NONE" && !isAdmin && activeFrameAsset == null) {
                         Modifier.rankedBorderPainter(
                             rank = rankBorder,
                             glowPulse = glowPulse,
                             rotation = rotation
                         )
-                    } else if (actualShowBorder && !isAdmin && localFrameAsset == null) {
+                    } else if (actualShowBorder && !isAdmin && activeFrameAsset == null) {
                         val isCom = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
                         if (!isCom) {
                             Modifier.premiumBorderPainter(
@@ -251,30 +260,16 @@ fun UserAvatarView(
             }
         }
 
-        // Marco de Rol local / exclusivo
-        if (localFrameAsset != null) {
+        // Marco de Perfil local / exclusivo
+        if (activeFrameAsset != null) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(localFrameAsset)
+                    .data(activeFrameAsset)
                     .crossfade(true)
                     .diskCachePolicy(CachePolicy.ENABLED)
                     .memoryCachePolicy(CachePolicy.ENABLED)
                     .build(),
-                contentDescription = "Marco de Rol",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .requiredSize(size * 1.36f)
-                    .align(Alignment.Center)
-            )
-        } else if (rankFrameUrl != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(rankFrameUrl)
-                    .crossfade(true)
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .memoryCachePolicy(CachePolicy.ENABLED)
-                    .build(),
-                contentDescription = "Marco de Rol Secundario",
+                contentDescription = "Marco de Perfil",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .requiredSize(size * 1.36f)
