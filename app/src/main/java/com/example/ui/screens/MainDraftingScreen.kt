@@ -685,6 +685,11 @@ fun MainDraftingScreen(
                     textAlign = TextAlign.Center
                 )
 
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Gestor de Descarga de Recursos del Juego (Pausable y con desglose de peso en MB)
+                com.example.ui.components.AssetDownloadManagerCard()
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                     // Derechos de autor y créditos
