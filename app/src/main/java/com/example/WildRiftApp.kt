@@ -116,12 +116,6 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
             AppLogger.e("WildRiftApp", "Unhandled background exception caught safely", throwable)
         }
         CoroutineScope(Dispatchers.IO + handler).launch {
-                        try {
-                // com.example.data.supabase.SupabaseClientManager.fetchCurrentPatchVersion()
-                AppLogger.d("WildRiftApp", "Parche sincronizado desde Supabase.")
-            } catch (e: Exception) {
-                AppLogger.e("WildRiftApp", "Error sincronizando parche desde Supabase", e)
-            }
             try {
                 ChineseMetaSyncService.loadRegion(this@WildRiftApp)
                 val region = ChineseMetaSyncService.currentRegion.value

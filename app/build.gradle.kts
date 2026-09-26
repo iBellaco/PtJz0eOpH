@@ -20,13 +20,9 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 727
-    versionName = "1.1.11.1"
+    versionCode = 729
+    versionName = "1.1.11.3"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    val supabaseUrl = (project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "https://yreknglctxujpetgqhnw.supabase.co").trim('\"', '\'')
-    val supabaseKey = (project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr").trim('\"', '\'')
-    buildConfigField("String", "SUPABASE_URL", "\"${supabaseUrl}\"")
-    buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseKey}\"")
   }
 
   signingConfigs {
@@ -148,9 +144,6 @@ dependencies {
   // implementation(libs.generativeai) // Removido para funcionamiento 100% offline y reduccion de peso
   implementation("com.squareup.retrofit2:retrofit:2.12.0")
   implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.12.0")
-  implementation(libs.supabase.postgrest)
-  implementation(libs.ktor.client.okhttp)
-  implementation(libs.supabase.auth)
 
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)

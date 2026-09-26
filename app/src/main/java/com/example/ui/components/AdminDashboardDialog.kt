@@ -174,9 +174,14 @@ fun AdminDashboardDialog(
     var showDatabaseConsumptionDialog by remember { mutableStateOf(false) }
     var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
+    var showAssetSyncDialog by remember { mutableStateOf(false) }
     var isMonitoringMinimized by remember { mutableStateOf(false) }
 
     // Sub-dialogs
+    if (showAssetSyncDialog) {
+        AdminAssetSyncDialog(onDismiss = { showAssetSyncDialog = false })
+    }
+
     if (showReportsPanel) {
         AdminFeedbackBottomSheet(onDismiss = { showReportsPanel = false })
     }
@@ -220,6 +225,7 @@ fun AdminDashboardDialog(
                 showDatabaseConsumptionDialog -> showDatabaseConsumptionDialog = false
                 showSponsorModerationDialog -> showSponsorModerationDialog = false
                 showSponsorPanelDialog -> showSponsorPanelDialog = false
+                showAssetSyncDialog -> showAssetSyncDialog = false
                 else -> onDismiss()
             }
         },
@@ -238,6 +244,7 @@ fun AdminDashboardDialog(
                 showDatabaseConsumptionDialog -> showDatabaseConsumptionDialog = false
                 showSponsorModerationDialog -> showSponsorModerationDialog = false
                 showSponsorPanelDialog -> showSponsorPanelDialog = false
+                showAssetSyncDialog -> showAssetSyncDialog = false
                 else -> onDismiss()
             }
         }
@@ -259,6 +266,7 @@ fun AdminDashboardDialog(
                     onOpenCpmAnalytics = { showCpmAnalyticsDialog = true },
                     onOpenDatabaseConsumption = { showDatabaseConsumptionDialog = true },
                     onOpenSponsorPanel = { showSponsorPanelDialog = true },
+                    onOpenAssetSync = { showAssetSyncDialog = true },
                     isFullAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
                 )
 
@@ -302,6 +310,7 @@ private fun AdminDashboardHeader(
     onOpenCpmAnalytics: () -> Unit = {},
     onOpenDatabaseConsumption: () -> Unit = {},
     onOpenSponsorPanel: () -> Unit = {},
+    onOpenAssetSync: () -> Unit = {},
     isFullAdmin: Boolean = true
 ) {
     Surface(
@@ -427,7 +436,7 @@ private fun AdminDashboardHeader(
                 // Botón Base de Datos
                 AnimatedAdminActionButton(
                     onClick = onOpenDatabaseConsumption,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(0.9f),
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold.copy(alpha = 0.2f)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 2.dp, vertical = 6.dp)
@@ -435,6 +444,19 @@ private fun AdminDashboardHeader(
                     Icon(Icons.Default.Storage, contentDescription = null, tint = HextechGold, modifier = Modifier.size(12.dp))
                     Spacer(modifier = Modifier.width(2.dp))
                     Text("Base Datos", fontSize = 9.sp, color = HextechGold, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                }
+
+                // Botón Sincronizar Recursos Nube
+                AnimatedAdminActionButton(
+                    onClick = onOpenAssetSync,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.25f)),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 6.dp)
+                ) {
+                    Icon(Icons.Default.CloudUpload, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(12.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text("Recursos", fontSize = 9.sp, color = HextechCyan, fontWeight = FontWeight.SemiBold, maxLines = 1)
                 }
             }
         }

@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.WildRiftRepository
 import com.example.data.supabase.FeedbackRepository
-import com.example.data.supabase.SupabaseClientManager
 import com.example.ui.components.AdminFeedbackBottomSheet
 import com.example.ui.theme.*
 import com.example.util.tr
@@ -56,8 +55,6 @@ fun InfoScreen(
     onNavigateToFAQ: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    var supabaseStatus by remember { mutableStateOf("") }
-    var isTestingSupabase by remember { mutableStateOf(false) }
     var isPurging by remember { mutableStateOf(false) }
     var purgeStatus by remember { mutableStateOf("") }
     var showDonationDialog by remember { mutableStateOf(false) }
