@@ -1,7 +1,6 @@
 package com.example.ui.components
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -30,17 +29,17 @@ fun AssetDownloadManagerCard(
 ) {
     val context = LocalContext.current
     val progressState by GameAssetDownloadManager.downloadProgress.collectAsState()
-    var isExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         GameAssetDownloadManager.refreshProgress(context)
     }
 
-    val isCompleted = progressState.status == AssetDownloadStatus.COMPLETED
+    val isCompleted = progressState.status == AssetDownloadStatus.COMPLETED ||
+            (progressState.totalFiles > 0 && progressState.downloadedFiles >= progressState.totalFiles)
     val isDownloading = progressState.status == AssetDownloadStatus.DOWNLOADING
     val isPaused = progressState.status == AssetDownloadStatus.PAUSED
 
-    // Al terminar la descarga completa de recursos, el gestor desaparece automáticamente de la interfaz
+    // Si ya se tienen todos los archivos descargados, no se muestra nada
     AnimatedVisibility(
         visible = !isCompleted,
         enter = fadeIn() + expandVertically(),
@@ -67,7 +66,7 @@ fun AssetDownloadManagerCard(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Header: Título y Estado
+                // Header: Título y Porcentaje
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -110,13 +109,13 @@ fun AssetDownloadManagerCard(
 
                         Column {
                             Text(
-                                text = "Paquete de Recursos en la Nube",
+                                text = "Habilidades, Hechizos, Runas y Objetos",
                                 color = HextechGoldLight,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.5.sp
                             )
                             Text(
-                                text = "Habilidades, hechizos, runas y objetos",
+                                text = "Descargando recursos faltantes de la nube",
                                 color = TextMuted,
                                 fontSize = 10.5.sp,
                                 maxLines = 1,
@@ -125,7 +124,7 @@ fun AssetDownloadManagerCard(
                         }
                     }
 
-                    // Badge de Estado
+                    // Badge de Estado y Porcentaje
                     Surface(
                         shape = RoundedCornerShape(20.dp),
                         color = when {
@@ -205,7 +204,7 @@ fun AssetDownloadManagerCard(
                     }
                 }
 
-                // Archivo en descarga actual
+                // Archivo que se está descargando en vivo
                 if (isDownloading && progressState.currentAssetName.isNotBlank()) {
                     Row(
                         modifier = Modifier
@@ -241,7 +240,7 @@ fun AssetDownloadManagerCard(
                         isDownloading -> {
                             Button(
                                 onClick = { GameAssetDownloadManager.pauseDownload() },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(vertical = 8.dp)
@@ -254,7 +253,7 @@ fun AssetDownloadManagerCard(
                         isPaused -> {
                             Button(
                                 onClick = { GameAssetDownloadManager.startOrResumeDownload(context) },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = HextechCyan),
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(vertical = 8.dp)
@@ -268,74 +267,15 @@ fun AssetDownloadManagerCard(
                             val totalStr = GameAssetDownloadManager.formatBytesToMb(progressState.totalBytes)
                             Button(
                                 onClick = { GameAssetDownloadManager.startOrResumeDownload(context) },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(containerColor = HextechCyan),
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(vertical = 8.dp)
                             ) {
                                 Icon(Icons.Default.Download, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Descargar Recursos de la Nube ($totalStr)", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Descargar Faltantes ($totalStr)", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
-                        }
-                    }
-
-                    IconButton(
-                        onClick = { isExpanded = !isExpanded },
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(HextechSurfaceVariant)
-                    ) {
-                        Icon(
-                            imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Detalles",
-                            tint = HextechGoldLight,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-                // Desplegable de Detalles de Recursos
-                AnimatedVisibility(
-                    visible = isExpanded,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(HextechDarkBg.copy(alpha = 0.7f))
-                            .padding(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = "Ahorro de Peso y Descarga Nube:",
-                            color = HextechGold,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("• Habilidades e Íconos de Campeones", color = TextSecondary, fontSize = 10.5.sp)
-                            Text("Descarga Remota", color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("• Hechizos, Runas y Objetos", color = TextSecondary, fontSize = 10.5.sp)
-                            Text("Descarga Remota", color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("• Avatares y Marcos de Perfil", color = TextSecondary, fontSize = 10.5.sp)
-                            Text("100% Local", color = HextechGoldLight, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
