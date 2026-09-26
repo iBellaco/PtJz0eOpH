@@ -5517,9 +5517,9 @@ fun TierSelectionPanel(
                     )
                     if (isPanelMinimized) {
                         val activeLabel = when (currentRegion) {
-                            "CN" -> tr("Servidor Chino")
-                            "NA" -> tr("América (NA)")
-                            else -> tr("Global")
+                            "CN" -> tr("🇨🇳 Servidor Chino")
+                            "NA" -> tr("🇺🇸 América (NA)")
+                            else -> tr("🌐 Global")
                         }
                         Surface(
                             shape = RoundedCornerShape(4.dp),
@@ -5595,9 +5595,9 @@ fun TierSelectionPanel(
                         horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
                     ) {
                         val regionItems = listOf(
-                            Triple("CN", tr("Servidor Chino"), "Meta CN"),
-                            Triple("Global", tr("Global"), "Meta Live"),
-                            Triple("NA", tr("América (NA)"), "Local Cache")
+                            Triple("CN", tr("🇨🇳 Servidor Chino"), "Meta CN"),
+                            Triple("Global", tr("🌐 Global"), "Meta Live"),
+                            Triple("NA", tr("🇺🇸 América (NA)"), "Local Cache")
                         )
                         regionItems.forEach { (regionId, label, sub) ->
                             val isSelected = (regionId == "CN" && currentRegion == "CN") ||

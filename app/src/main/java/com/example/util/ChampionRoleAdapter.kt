@@ -112,17 +112,17 @@ object ChampionRoleAdapter {
                 return "Botas de maná"
             }
             if (clean.contains("blindad") || clean.contains("avance") || clean.contains("steelcaps")) return "Botas blindadas"
-            if (clean.contains("mercurio") || clean.contains("trituradora") || clean.contains("treads")) return "Botas de mercurio"
+            if (clean.contains("mercurio") || clean.contains("trituradora") || clean.contains("trituradoras") || clean.contains("treads")) return "Botas de mercurio"
             if (clean.contains("berserker") || clean.contains("metal") || clean.contains("gunmetal")) {
                 if (role == LaneRole.SUPPORT) return "Botas blindadas"
                 return "Grebas de berserker"
             }
             if (clean.contains("jonia") || clean.contains("lucidez") || clean.contains("carmesí") || clean.contains("carmesi")) return "Botas jonias de la lucidez"
-            if (clean.contains("dinámica") || clean.contains("dinamica") || clean.contains("quebrantarmadura") || clean.contains("penetraci")) {
+            if (clean.contains("dinámica") || clean.contains("dinamica") || clean.contains("quebrantarmadura") || clean.contains("quebrantarmaduras") || clean.contains("penetraci")) {
                 if (role == LaneRole.SUPPORT) return "Botas jonias de la lucidez"
                 return "Botas dinámicas"
             }
-            if (clean.contains("codiciosa") || clean.contains("inmortal")) return "Grebas codiciosas"
+            if (clean.contains("codiciosa") || clean.contains("codiciosas") || clean.contains("inmortal") || clean.contains("inmortales")) return "Grebas codiciosas"
         }
         return when {
             role == LaneRole.SUPPORT -> if (isTank) "Botas blindadas" else "Botas jonias de la lucidez"
@@ -139,11 +139,11 @@ object ChampionRoleAdapter {
         return when {
             clean.contains("maná") || clean.contains("mana") || clean.contains("lanzahechizos") -> "Botas del lanzahechizos"
             clean.contains("blindad") || clean.contains("avance") || clean.contains("steelcaps") -> "Avance blindado"
-            clean.contains("mercurio") || clean.contains("trituradora") || clean.contains("treads") -> "Trituradoras encadenadas"
+            clean.contains("mercurio") || clean.contains("trituradora") || clean.contains("trituradoras") || clean.contains("treads") -> "Trituradoras encadenadas"
             clean.contains("berserker") || clean.contains("metal") || clean.contains("gunmetal") -> "Grebas de metal"
             clean.contains("jonia") || clean.contains("lucidez") || clean.contains("carmesí") || clean.contains("carmesi") -> "Lucidez carmesí"
-            clean.contains("dinámica") || clean.contains("dinamica") || clean.contains("quebrantarmadura") || clean.contains("penetraci") -> "Botas quebrantarmaduras"
-            clean.contains("codiciosa") || clean.contains("inmortal") -> "Botas inmortales"
+            clean.contains("dinámica") || clean.contains("dinamica") || clean.contains("quebrantarmadura") || clean.contains("quebrantarmaduras") || clean.contains("penetraci") -> "Botas quebrantarmaduras"
+            clean.contains("codiciosa") || clean.contains("codiciosas") || clean.contains("inmortal") || clean.contains("inmortales") -> "Botas inmortales"
             else -> "Lucidez carmesí"
         }
     }

@@ -272,6 +272,7 @@ fun AppAssetImage(
                     .data(modelData)
                     .crossfade(true)
                     .placeholder(com.example.R.drawable.ic_placeholder_loading)
+                    .error(com.example.R.drawable.ic_placeholder_loading)
                     .diskCachePolicy(CachePolicy.ENABLED)
                     .memoryCacheKey(modelData.toString() + "_v1365")
                     .diskCacheKey(modelData.toString() + "_v1365")

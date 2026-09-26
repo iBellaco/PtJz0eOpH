@@ -1062,6 +1062,52 @@ fun ChampionDetailSheet(
                 }
             }
 
+            // Comentarios tácticos de por qué y contra quiénes comprar cada objeto situacional
+            if (activeOption.situationalItems.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                    border = androidx.compose.foundation.BorderStroke(0.8.dp, HextechCardBorder)
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Text(
+                            text = tr("Por qué y contra quiénes comprar los objetos situacionales:"),
+                            color = HextechGold,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        activeOption.situationalItems.forEach { sitItemName ->
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                                    .border(0.5.dp, HextechGoldLight.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                            ) {
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    Text(
+                                        text = "• $sitItemName:",
+                                        color = HextechGold,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = getSituationalItemExplanation(sitItemName),
+                                        color = TextSecondary,
+                                        fontSize = 9.5.sp,
+                                        lineHeight = 13.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             // ==========================================
@@ -1089,7 +1135,7 @@ fun ChampionDetailSheet(
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         Text(
-                            text = tr("Botas y Mejoras"),
+                            text = tr("Botas y Mejoras (Evoluciones)"),
                             color = HextechGold,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -1197,6 +1243,42 @@ fun ChampionDetailSheet(
                                             fallbackText = tr(sitBootName),
                                             modifier = Modifier.fillMaxSize(),
                                             shape = RoundedCornerShape(6.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (allBootCandidates.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = tr("Por qué y contra quiénes las botas situacionales:"),
+                                color = HextechCyan,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            allBootCandidates.forEach { sitBootName ->
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(HextechDarkBg.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                                        .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                ) {
+                                    Column(modifier = Modifier.padding(6.dp)) {
+                                        Text(
+                                            text = "• $sitBootName:",
+                                            color = HextechCyan,
+                                            fontSize = 9.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(1.dp))
+                                        Text(
+                                            text = getSituationalItemExplanation(sitBootName),
+                                            color = TextSecondary,
+                                            fontSize = 9.sp,
+                                            lineHeight = 12.sp
                                         )
                                     }
                                 }
@@ -2174,4 +2256,20 @@ private fun resolveTargetChampion(nameOrId: String): Champion? {
             it.id.equals(clean, ignoreCase = true) ||
             it.ddragonId.equals(clean, ignoreCase = true)
         }
+}
+
+private fun getSituationalItemExplanation(itemName: String): String {
+    val clean = itemName.lowercase()
+    return when {
+        clean.contains("malmortius") || clean.contains("fauces") -> "• Por qué y contra quiénes: Comprar contra composiciones con daño mágico pesado o asesinos AP de ráfaga (ej. Akali, Lux, Veigar) para obtener un escudo mágico salvavidas."
+        clean.contains("ángel") || clean.contains("angel") || clean.contains("guardian") -> "• Por qué y contra quiénes: Comprar en el late game o contra equipos con alto daño de dive para asegurar una segunda oportunidad en teamfights decisivas."
+        clean.contains("corta") || clean.contains("morellonomicón") || clean.contains("morellonomicon") || clean.contains("recordatorio") || clean.contains("mortal") -> "• Por qué y contra quiénes: Comprar contra campeones con curación sostenida o vampirismo (ej. Mundo, Soraka, Aatrox, Yuumi) para cortar su regeneración."
+        clean.contains("espinas") || clean.contains("thornmail") -> "• Por qué y contra quiénes: Comprar contra equipos con atacantes físicos automáticos y curaciones en línea para devolver daño y aplicar heridas graves."
+        clean.contains("mercurio") || clean.contains("trituradoras") || clean.contains("treads") -> "• Por qué y contra quiénes: Comprar contra equipos con control de masas pesado (CC) y magos de control (ej. Morgana, Lux, Ashe)."
+        clean.contains("blindada") || clean.contains("avance") || clean.contains("steelcaps") -> "• Por qué y contra quiénes: Comprar contra tiradores (ADCs) y luchadores centrados en ataques básicos físicos."
+        clean.contains("codiciosa") || clean.contains("inmortal") -> "• Por qué y contra quiénes: Comprar cuando requieres sustain prolongado (Omnivamp) y daño adaptable en duelos largos."
+        clean.contains("jonia") || clean.contains("lucidez") || clean.contains("carmesí") -> "• Por qué y contra quiénes: Comprar con magos o soportes para reducir al máximo los tiempos de reutilización de habilidades y hechizos de invocador."
+        clean.contains("dinámica") || clean.contains("dinamica") || clean.contains("quebrantarmadura") -> "• Por qué y contra quiénes: Comprar contra objetivos con armadura moderada para maximizar la penetración física y rotaciones rápidas."
+        else -> "• Por qué y contra quiénes: Objeto táctico situacional para adaptar tu build según las amenazas principales y la composición rival."
+    }
 }
