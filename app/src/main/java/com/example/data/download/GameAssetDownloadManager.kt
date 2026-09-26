@@ -7,6 +7,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -17,6 +19,8 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 enum class AssetDownloadStatus {
     IDLE,
@@ -29,7 +33,7 @@ enum class AssetDownloadStatus {
 data class GameAssetItem(
     val id: String,
     val name: String,
-    val category: String, // "Campeón", "Habilidad", "Hechizo", "Runa", "Objeto"
+    val category: String,
     val remoteUrl: String,
     val targetFileName: String,
     val estimatedBytes: Long = 20 * 1024L
@@ -42,7 +46,6 @@ data class DownloadManagerProgress(
     val totalBytes: Long = 0L,
     val downloadedBytes: Long = 0L,
     val remainingBytes: Long = 0L,
-    val currentAssetName: String = "",
     val progressPercent: Float = 0f,
     val errorMessage: String? = null
 )
@@ -53,6 +56,7 @@ object GameAssetDownloadManager {
     private const val PREFS_NAME = "game_asset_download_prefs"
     private const val ASSETS_FOLDER_NAME = "game_assets"
     private const val KEY_IS_FULLY_DOWNLOADED = "is_fully_downloaded"
+    private const val PARALLEL_DOWNLOAD_THREADS = 6 // Descarga ultra rápida y concurrente
 
     private const val DDRAGON_CDN = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img"
     private const val CDRAGON_PERK_CDN = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles"
@@ -92,19 +96,14 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Construye el catálogo de todos los recursos dinámicos en la nube:
-     * - Campeones (Avatares)
-     * - Habilidades
-     * - Hechizos
-     * - Runas
-     * - Objetos
+     * Construye el catálogo de recursos descargables del juego.
      */
     suspend fun getFullGameAssetsCatalog(context: Context): List<GameAssetItem> = withContext(Dispatchers.IO) {
         val items = mutableListOf<GameAssetItem>()
         val seenTargetFiles = mutableSetOf<String>()
 
         try {
-            // 1. Avatares de Campeones (Champions)
+            // 1. Campeones (Avatares)
             WildRiftRepository.initChampions(context)
             val championList = WildRiftRepository.champions.toList()
             for (champ in championList) {
@@ -114,7 +113,7 @@ object GameAssetDownloadManager {
                     items.add(
                         GameAssetItem(
                             id = "champ_${champ.id}",
-                            name = "Campeón: ${champ.name}",
+                            name = champ.name,
                             category = "Campeón",
                             remoteUrl = "$DDRAGON_CDN/champion/$ddragonChamp.png",
                             targetFileName = champFile,
@@ -141,12 +140,10 @@ object GameAssetDownloadManager {
 
             for ((targetName, url) in spellsMap) {
                 if (seenTargetFiles.add(targetName)) {
-                    val spellName = targetName.substringBeforeLast(".")
-                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
                     items.add(
                         GameAssetItem(
                             id = "spell_$targetName",
-                            name = "Hechizo: $spellName",
+                            name = targetName.substringBeforeLast("."),
                             category = "Hechizo",
                             remoteUrl = url,
                             targetFileName = targetName,
@@ -196,12 +193,10 @@ object GameAssetDownloadManager {
 
             for ((targetName, url) in runesMap) {
                 if (seenTargetFiles.add(targetName)) {
-                    val runeName = targetName.substringBeforeLast(".").replace("_", " ")
-                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
                     items.add(
                         GameAssetItem(
                             id = "rune_$targetName",
-                            name = "Runa: $runeName",
+                            name = targetName.substringBeforeLast("."),
                             category = "Runa",
                             remoteUrl = url,
                             targetFileName = targetName,
@@ -211,7 +206,7 @@ object GameAssetDownloadManager {
                 }
             }
 
-            // 4. Objetos Situacionales y Core (Items)
+            // 4. Objetos (Items)
             val itemsMap = mapOf(
                 "ab38f2866c6c041524f8f14b1749fc1c.png" to "$DDRAGON_CDN/item/3075.png",
                 "3b9e64690847f3bc956e9db35a455f32.png" to "$DDRAGON_CDN/item/3033.png",
@@ -249,7 +244,7 @@ object GameAssetDownloadManager {
                     items.add(
                         GameAssetItem(
                             id = "item_$targetName",
-                            name = "Objeto: ${targetName.substringBeforeLast(".")}",
+                            name = targetName.substringBeforeLast("."),
                             category = "Objeto",
                             remoteUrl = url,
                             targetFileName = targetName,
@@ -266,8 +261,6 @@ object GameAssetDownloadManager {
 
                 for (element in jsonArray) {
                     val obj = element.jsonObject
-                    val champName = obj["championName"]?.jsonPrimitive?.content ?: ""
-                    val slotName = obj["slotName"]?.jsonPrimitive?.content ?: ""
                     val skillName = obj["name"]?.jsonPrimitive?.content ?: ""
                     val iconUrl = obj["iconUrl"]?.jsonPrimitive?.content ?: ""
 
@@ -277,7 +270,7 @@ object GameAssetDownloadManager {
                             items.add(
                                 GameAssetItem(
                                     id = "skill_$fileName",
-                                    name = "$champName • $slotName: $skillName",
+                                    name = skillName,
                                     category = "Habilidad",
                                     remoteUrl = iconUrl,
                                     targetFileName = fileName,
@@ -299,9 +292,16 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Verifica qué archivos faltan realmente en el almacenamiento local y actualiza el estado.
-     * Si ya se tienen todos los archivos, el estado se marca automáticamente como COMPLETED
-     * para que el gestor se oculte de inmediato.
+     * Consulta el progreso actual de forma asíncrona sin iniciar ninguna descarga automática.
+     */
+    fun refreshProgressAsync(context: Context) {
+        CoroutineScope(Dispatchers.IO).launch {
+            refreshProgress(context)
+        }
+    }
+
+    /**
+     * Comprueba exactamente los archivos descargados y faltantes en el almacenamiento local.
      */
     suspend fun refreshProgress(context: Context) = withContext(Dispatchers.IO) {
         val catalog = getFullGameAssetsCatalog(context)
@@ -344,7 +344,7 @@ object GameAssetDownloadManager {
             downloadedBytes = downloadedBytesAcc,
             remainingBytes = remaining,
             progressPercent = percent,
-            currentAssetName = if (isAllCompleted) "Todos los recursos están listos" else _downloadProgress.value.currentAssetName
+            errorMessage = null
         )
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -352,22 +352,7 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Comprobación rápida y descarga automática en segundo plano al entrar a la app.
-     */
-    fun autoStartOnLaunch(context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
-            refreshProgress(context)
-            if (_downloadProgress.value.status != AssetDownloadStatus.COMPLETED &&
-                _downloadProgress.value.status != AssetDownloadStatus.DOWNLOADING &&
-                _downloadProgress.value.status != AssetDownloadStatus.PAUSED
-            ) {
-                startOrResumeDownload(context)
-            }
-        }
-    }
-
-    /**
-     * Inicia o reanuda la descarga de los archivos faltantes de manera fluida y visible.
+     * Inicia o reanuda la descarga de forma multi-hilo ultra rápida sólo al pulsar el botón.
      */
     fun startOrResumeDownload(context: Context) {
         if (_downloadProgress.value.status == AssetDownloadStatus.DOWNLOADING) return
@@ -385,9 +370,11 @@ object GameAssetDownloadManager {
                 val downloadDir = getDownloadDirectory(context)
                 val total = catalog.size
 
-                var downloadedCount = 0
-                var downloadedBytesAcc = 0L
+                val downloadedCount = AtomicInteger(0)
+                val downloadedBytesAcc = AtomicLong(0L)
                 var totalBytesAcc = 0L
+
+                val missingItems = mutableListOf<GameAssetItem>()
 
                 for (item in catalog) {
                     val localFile = File(downloadDir, item.targetFileName)
@@ -395,103 +382,134 @@ object GameAssetDownloadManager {
                     val size = if (isDownloaded) localFile.length() else item.estimatedBytes
                     totalBytesAcc += size
                     if (isDownloaded) {
-                        downloadedCount++
-                        downloadedBytesAcc += localFile.length()
+                        downloadedCount.incrementAndGet()
+                        downloadedBytesAcc.addAndGet(localFile.length())
+                    } else {
+                        missingItems.add(item)
                     }
                 }
 
-                // Descargar sólo los que realmente faltan
-                for (item in catalog) {
-                    if (isPauseRequested) {
-                        _downloadProgress.value = _downloadProgress.value.copy(
-                            status = AssetDownloadStatus.PAUSED,
-                            currentAssetName = "Descarga en pausa"
-                        )
-                        return@launch
-                    }
+                if (missingItems.isEmpty()) {
+                    _downloadProgress.value = DownloadManagerProgress(
+                        status = AssetDownloadStatus.COMPLETED,
+                        totalFiles = total,
+                        downloadedFiles = total,
+                        totalBytes = totalBytesAcc,
+                        downloadedBytes = totalBytesAcc,
+                        remainingBytes = 0L,
+                        progressPercent = 1f
+                    )
+                    context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                        .edit().putBoolean(KEY_IS_FULLY_DOWNLOADED, true).apply()
+                    return@launch
+                }
 
-                    val targetFile = File(downloadDir, item.targetFileName)
-                    if (targetFile.exists() && targetFile.length() > 0) {
-                        continue
-                    }
+                val semaphore = Semaphore(PARALLEL_DOWNLOAD_THREADS)
 
+                coroutineScope {
+                    for (item in missingItems) {
+                        if (isPauseRequested) break
+
+                        launch {
+                            semaphore.withPermit {
+                                if (isPauseRequested) return@withPermit
+
+                                val targetFile = File(downloadDir, item.targetFileName)
+                                if (targetFile.exists() && targetFile.length() > 0) return@withPermit
+
+                                var inputStream: InputStream? = null
+                                var outputStream: FileOutputStream? = null
+                                val tempFile = File(downloadDir, "${item.targetFileName}.tmp")
+
+                                try {
+                                    val url = URL(item.remoteUrl)
+                                    val conn = (url.openConnection() as HttpURLConnection).apply {
+                                        connectTimeout = 3500
+                                        readTimeout = 3500
+                                        setRequestProperty("User-Agent", "CoachWildRift/1.1")
+                                    }
+
+                                    if (conn.responseCode in 200..299) {
+                                        inputStream = conn.inputStream
+                                        outputStream = FileOutputStream(tempFile)
+
+                                        val buffer = ByteArray(8192)
+                                        var bytesRead: Int
+                                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                            if (isPauseRequested) {
+                                                outputStream.flush()
+                                                outputStream.close()
+                                                tempFile.delete()
+                                                return@withPermit
+                                            }
+                                            outputStream.write(buffer, 0, bytesRead)
+                                            downloadedBytesAcc.addAndGet(bytesRead.toLong())
+                                        }
+                                        outputStream.flush()
+                                        outputStream.close()
+                                        outputStream = null
+
+                                        if (tempFile.exists()) {
+                                            tempFile.renameTo(targetFile)
+                                        }
+                                        val curCount = downloadedCount.incrementAndGet()
+                                        val curBytes = downloadedBytesAcc.get()
+                                        val remBytes = (totalBytesAcc - curBytes).coerceAtLeast(0L)
+                                        val percent = if (totalBytesAcc > 0) (curBytes.toFloat() / totalBytesAcc.toFloat()).coerceIn(0f, 1f) else 0f
+
+                                        _downloadProgress.value = DownloadManagerProgress(
+                                            status = AssetDownloadStatus.DOWNLOADING,
+                                            totalFiles = total,
+                                            downloadedFiles = curCount,
+                                            totalBytes = totalBytesAcc,
+                                            downloadedBytes = curBytes,
+                                            remainingBytes = remBytes,
+                                            progressPercent = percent
+                                        )
+                                    }
+                                } catch (_: Exception) {
+                                } finally {
+                                    try { inputStream?.close() } catch (_: Exception) {}
+                                    try { outputStream?.close() } catch (_: Exception) {}
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (isPauseRequested) {
                     _downloadProgress.value = _downloadProgress.value.copy(
-                        currentAssetName = item.name,
-                        downloadedFiles = downloadedCount,
-                        downloadedBytes = downloadedBytesAcc,
-                        remainingBytes = (totalBytesAcc - downloadedBytesAcc).coerceAtLeast(0L),
-                        progressPercent = if (totalBytesAcc > 0) (downloadedBytesAcc.toFloat() / totalBytesAcc.toFloat()).coerceIn(0f, 1f) else 0f
+                        status = AssetDownloadStatus.PAUSED
+                    )
+                } else {
+                    // Recalcular estado final
+                    var finalDownloadedCount = 0
+                    var finalDownloadedBytes = 0L
+                    for (item in catalog) {
+                        val f = File(downloadDir, item.targetFileName)
+                        if (f.exists() && f.length() > 0) {
+                            finalDownloadedCount++
+                            finalDownloadedBytes += f.length()
+                        }
+                    }
+
+                    val isFinished = finalDownloadedCount >= total
+                    _downloadProgress.value = DownloadManagerProgress(
+                        status = if (isFinished) AssetDownloadStatus.COMPLETED else AssetDownloadStatus.IDLE,
+                        totalFiles = total,
+                        downloadedFiles = finalDownloadedCount,
+                        totalBytes = totalBytesAcc,
+                        downloadedBytes = finalDownloadedBytes,
+                        remainingBytes = (totalBytesAcc - finalDownloadedBytes).coerceAtLeast(0L),
+                        progressPercent = if (totalBytesAcc > 0) (finalDownloadedBytes.toFloat() / totalBytesAcc.toFloat()).coerceIn(0f, 1f) else 0f
                     )
 
-                    var inputStream: InputStream? = null
-                    var outputStream: FileOutputStream? = null
-                    try {
-                        val url = URL(item.remoteUrl)
-                        val conn = (url.openConnection() as HttpURLConnection).apply {
-                            connectTimeout = 4000
-                            readTimeout = 4000
-                            setRequestProperty("User-Agent", "CoachWildRift/1.1")
-                        }
-
-                        if (conn.responseCode in 200..299) {
-                            inputStream = conn.inputStream
-                            val tempFile = File(downloadDir, "${item.targetFileName}.tmp")
-                            outputStream = FileOutputStream(tempFile)
-
-                            val buffer = ByteArray(4096)
-                            var bytesRead: Int
-                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                                if (isPauseRequested) {
-                                    outputStream.flush()
-                                    outputStream.close()
-                                    tempFile.delete()
-                                    _downloadProgress.value = _downloadProgress.value.copy(
-                                        status = AssetDownloadStatus.PAUSED,
-                                        currentAssetName = "Descarga en pausa"
-                                    )
-                                    return@launch
-                                }
-                                outputStream.write(buffer, 0, bytesRead)
-                                downloadedBytesAcc += bytesRead
-                                _downloadProgress.value = _downloadProgress.value.copy(
-                                    downloadedBytes = downloadedBytesAcc,
-                                    remainingBytes = (totalBytesAcc - downloadedBytesAcc).coerceAtLeast(0L),
-                                    progressPercent = if (totalBytesAcc > 0) (downloadedBytesAcc.toFloat() / totalBytesAcc.toFloat()).coerceIn(0f, 1f) else 0f
-                                )
-                            }
-                            outputStream.flush()
-                            outputStream.close()
-                            outputStream = null
-
-                            if (tempFile.exists()) {
-                                tempFile.renameTo(targetFile)
-                            }
-                            downloadedCount++
-                        }
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Error descargando ${item.name}: ${e.message}")
-                    } finally {
-                        try { inputStream?.close() } catch (_: Exception) {}
-                        try { outputStream?.close() } catch (_: Exception) {}
-                    }
+                    context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                        .edit().putBoolean(KEY_IS_FULLY_DOWNLOADED, isFinished).apply()
                 }
 
-                _downloadProgress.value = DownloadManagerProgress(
-                    status = AssetDownloadStatus.COMPLETED,
-                    totalFiles = total,
-                    downloadedFiles = total,
-                    totalBytes = totalBytesAcc,
-                    downloadedBytes = totalBytesAcc,
-                    remainingBytes = 0L,
-                    progressPercent = 1f,
-                    currentAssetName = "¡Todos los recursos del juego están listos!"
-                )
-
-                val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                prefs.edit().putBoolean(KEY_IS_FULLY_DOWNLOADED, true).apply()
-
             } catch (e: Exception) {
-                Log.e(TAG, "Error en descarga de recursos: ${e.message}", e)
+                Log.e(TAG, "Error en descarga concurrente: ${e.message}", e)
                 _downloadProgress.value = _downloadProgress.value.copy(
                     status = AssetDownloadStatus.ERROR,
                     errorMessage = e.localizedMessage ?: e.message
@@ -503,8 +521,7 @@ object GameAssetDownloadManager {
     fun pauseDownload() {
         isPauseRequested = true
         _downloadProgress.value = _downloadProgress.value.copy(
-            status = AssetDownloadStatus.PAUSED,
-            currentAssetName = "Descarga en pausa"
+            status = AssetDownloadStatus.PAUSED
         )
     }
 

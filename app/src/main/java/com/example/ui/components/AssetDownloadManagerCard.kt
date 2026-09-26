@@ -13,10 +13,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.download.AssetDownloadStatus
@@ -39,7 +37,7 @@ fun AssetDownloadManagerCard(
     val isDownloading = progressState.status == AssetDownloadStatus.DOWNLOADING
     val isPaused = progressState.status == AssetDownloadStatus.PAUSED
 
-    // Si ya se tienen todos los archivos descargados, no se muestra nada
+    // Al completarse todos los recursos, el gestor se oculta automáticamente
     AnimatedVisibility(
         visible = !isCompleted,
         enter = fadeIn() + expandVertically(),
@@ -109,22 +107,20 @@ fun AssetDownloadManagerCard(
 
                         Column {
                             Text(
-                                text = "Habilidades, Hechizos, Runas y Objetos",
+                                text = "Paquete de Recursos del Juego",
                                 color = HextechGoldLight,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.5.sp
                             )
                             Text(
-                                text = "Descargando recursos faltantes de la nube",
+                                text = "Campeones, habilidades, hechizos, runas y objetos",
                                 color = TextMuted,
-                                fontSize = 10.5.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                fontSize = 10.5.sp
                             )
                         }
                     }
 
-                    // Badge de Estado y Porcentaje
+                    // Badge de Porcentaje / Estado
                     Surface(
                         shape = RoundedCornerShape(20.dp),
                         color = when {
@@ -178,7 +174,7 @@ fun AssetDownloadManagerCard(
                         trackColor = HextechDarkBg
                     )
 
-                    // Métricas de Peso y Cantidad
+                    // Cantidad descargada y faltante
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -187,6 +183,7 @@ fun AssetDownloadManagerCard(
                         val downloadedStr = GameAssetDownloadManager.formatBytesToMb(progressState.downloadedBytes)
                         val totalStr = GameAssetDownloadManager.formatBytesToMb(progressState.totalBytes)
                         val remainingStr = GameAssetDownloadManager.formatBytesToMb(progressState.remainingBytes)
+                        val missingCount = (progressState.totalFiles - progressState.downloadedFiles).coerceAtLeast(0)
 
                         Text(
                             text = "Descargado: $downloadedStr de $totalStr",
@@ -196,7 +193,7 @@ fun AssetDownloadManagerCard(
                         )
 
                         Text(
-                            text = "Faltan: $remainingStr (${(progressState.totalFiles - progressState.downloadedFiles).coerceAtLeast(0)})",
+                            text = "Faltan: $remainingStr ($missingCount)",
                             color = HextechCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold
@@ -204,78 +201,46 @@ fun AssetDownloadManagerCard(
                     }
                 }
 
-                // Archivo que se está descargando en vivo
-                if (isDownloading && progressState.currentAssetName.isNotBlank()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(HextechDarkBg.copy(alpha = 0.6f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(12.dp),
-                            strokeWidth = 1.5.dp,
-                            color = HextechCyan
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = progressState.currentAssetName,
-                            color = TextPrimary.copy(alpha = 0.9f),
-                            fontSize = 10.5.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                // Botón de Acción (Descargar / Pausar / Reanudar)
+                when {
+                    isDownloading -> {
+                        Button(
+                            onClick = { GameAssetDownloadManager.pauseDownload() },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            Icon(Icons.Default.Pause, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Pausar Descarga", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
                     }
-                }
-
-                // Botones de Control (Descargar / Pausar / Reanudar)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    when {
-                        isDownloading -> {
-                            Button(
-                                onClick = { GameAssetDownloadManager.pauseDownload() },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(vertical = 8.dp)
-                            ) {
-                                Icon(Icons.Default.Pause, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Pausar Descarga", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
+                    isPaused -> {
+                        Button(
+                            onClick = { GameAssetDownloadManager.startOrResumeDownload(context) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechCyan),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Reanudar Descarga", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
-                        isPaused -> {
-                            Button(
-                                onClick = { GameAssetDownloadManager.startOrResumeDownload(context) },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = HextechCyan),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(vertical = 8.dp)
-                            ) {
-                                Icon(Icons.Default.PlayArrow, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Reanudar Descarga", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
-                        }
-                        else -> {
-                            val totalStr = GameAssetDownloadManager.formatBytesToMb(progressState.totalBytes)
-                            Button(
-                                onClick = { GameAssetDownloadManager.startOrResumeDownload(context) },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = HextechCyan),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(vertical = 8.dp)
-                            ) {
-                                Icon(Icons.Default.Download, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Descargar Faltantes ($totalStr)", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
+                    }
+                    else -> {
+                        val totalStr = GameAssetDownloadManager.formatBytesToMb(progressState.totalBytes)
+                        Button(
+                            onClick = { GameAssetDownloadManager.startOrResumeDownload(context) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechCyan),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            Icon(Icons.Default.Download, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Descargar Recursos ($totalStr)", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
                 }
