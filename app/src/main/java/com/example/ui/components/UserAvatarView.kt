@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Path
 import coil.compose.AsyncImage
@@ -57,8 +58,20 @@ fun UserAvatarView(
     rankBorder: String = "NONE",
     isAdmin: Boolean = false,
     adminFrameResId: Int = 0,
-    adminFrameUrl: String? = null
+    adminFrameUrl: String? = null,
+    role: String? = null
 ) {
+    val currentRoleFlowValue = com.example.util.SubscriptionManager.userRole.collectAsState().value
+    val resolvedRole = role ?: if (isAdmin) "admin" else currentRoleFlowValue
+
+    val localFrameAsset = when {
+        resolvedRole.lowercase() == "admin" -> "file:///android_asset/offline_images/frame_administrador.png"
+        resolvedRole.lowercase() == "moderador" -> "file:///android_asset/offline_images/frame_moderador.png"
+        resolvedRole.lowercase() in listOf("creador", "creador_vip") -> "file:///android_asset/offline_images/frame_creador.png"
+        resolvedRole.lowercase() == "streamer" -> "file:///android_asset/offline_images/frame_streamer.png"
+        else -> null
+    }
+
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")
     val parsedBorderColor = customBorderColor ?: try {
         Color(android.graphics.Color.parseColor(avatar.borderHex))
@@ -136,6 +149,9 @@ fun UserAvatarView(
         }
     }
 
+    val hasFrame = localFrameAsset != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
+    val avatarSize = if (hasFrame) size * 0.74f else size
+
     Box(
         modifier = modifier
             .size(size)
@@ -150,7 +166,7 @@ fun UserAvatarView(
         // Círculo base del Avatar
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .size(avatarSize)
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
@@ -162,13 +178,13 @@ fun UserAvatarView(
                     )
                 )
                 .then(
-                    if (rankBorder != "NONE" && !isAdmin) {
+                    if (rankBorder != "NONE" && !isAdmin && localFrameAsset == null) {
                         Modifier.rankedBorderPainter(
                             rank = rankBorder,
                             glowPulse = glowPulse,
                             rotation = rotation
                         )
-                    } else if (actualShowBorder && !isAdmin) {
+                    } else if (actualShowBorder && !isAdmin && localFrameAsset == null) {
                         val isCom = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
                         if (!isCom) {
                             Modifier.premiumBorderPainter(
@@ -189,7 +205,7 @@ fun UserAvatarView(
                 text = fallbackInitial.take(1).uppercase(),
                 color = HextechGoldLight,
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = (size.value * 0.38f).sp,
+                fontSize = (avatarSize.value * 0.38f).sp,
                 fontFamily = FontFamily.Serif
             )
             if (avatar.imageUrl.isNotBlank()) {
@@ -210,8 +226,22 @@ fun UserAvatarView(
             }
         }
 
-        // Marco exclusivo de Administrador (rodeando el avatar por fuera)
-        if (isAdmin) {
+        // Marco de Rol local / exclusivo
+        if (localFrameAsset != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(localFrameAsset)
+                    .crossfade(true)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build(),
+                contentDescription = "Marco de Rol",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .requiredSize(size * 1.35f)
+                    .align(Alignment.Center)
+            )
+        } else if (isAdmin) {
             if (adminFrameResId != 0) {
                 Image(
                     painter = painterResource(id = adminFrameResId),

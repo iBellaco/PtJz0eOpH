@@ -74,6 +74,54 @@ enum class AppUserRole(
         secondaryColor = Color(0xFF64748B),
         description = "Plan estándar con funciones básicas"
     ),
+    ESMERALDA(
+        id = "esmeralda",
+        displayName = "Esmeralda",
+        emoji = "",
+        primaryColor = Color(0xFF10B981),
+        secondaryColor = Color(0xFF047857),
+        description = "Rol secundario sin privilegios de sistema"
+    ),
+    DIAMANTE(
+        id = "diamante",
+        displayName = "Diamante",
+        emoji = "",
+        primaryColor = Color(0xFF38BDF8),
+        secondaryColor = Color(0xFF0284C7),
+        description = "Rol secundario sin privilegios de sistema"
+    ),
+    MAESTRO(
+        id = "maestro",
+        displayName = "Maestro",
+        emoji = "",
+        primaryColor = Color(0xFFA855F7),
+        secondaryColor = Color(0xFF7C3AED),
+        description = "Rol secundario sin privilegios de sistema"
+    ),
+    GRAN_MAESTRO(
+        id = "gran_maestro",
+        displayName = "Gran Maestro",
+        emoji = "",
+        primaryColor = Color(0xFFF43F5E),
+        secondaryColor = Color(0xFFBE123C),
+        description = "Rol secundario sin privilegios de sistema"
+    ),
+    ASPIRANTE(
+        id = "aspirante",
+        displayName = "Aspirante",
+        emoji = "",
+        primaryColor = Color(0xFFFBBF24),
+        secondaryColor = Color(0xFFD97706),
+        description = "Rol secundario sin privilegios de sistema"
+    ),
+    SOBERANO(
+        id = "soberano",
+        displayName = "Soberano",
+        emoji = "",
+        primaryColor = Color(0xFF22D3EE),
+        secondaryColor = Color(0xFF0891B2),
+        description = "Rol secundario sin privilegios de sistema"
+    ),
     BANNED(
         id = "banned",
         displayName = "Baneado",
@@ -94,6 +142,12 @@ enum class AppUserRole(
                 "creador", "creator" -> CREATOR
                 "patrocinador", "sponsor" -> PATROCINADOR
                 "premium", "pro" -> PREMIUM
+                "esmeralda" -> ESMERALDA
+                "diamante" -> DIAMANTE
+                "maestro" -> MAESTRO
+                "gran_maestro", "gran maestro" -> GRAN_MAESTRO
+                "aspirante" -> ASPIRANTE
+                "soberano" -> SOBERANO
                 "banned", "suspendido", "bloqueado" -> BANNED
                 else -> FREE
             }
@@ -105,6 +159,12 @@ enum class AppUserRole(
             FREE,
             PATROCINADOR,
             PREMIUM,
+            ESMERALDA,
+            DIAMANTE,
+            MAESTRO,
+            GRAN_MAESTRO,
+            ASPIRANTE,
+            SOBERANO,
             MODERATOR,
             CREATOR_VIP,
             STREAMER,
