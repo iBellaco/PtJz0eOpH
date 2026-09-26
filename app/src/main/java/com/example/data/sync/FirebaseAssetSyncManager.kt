@@ -22,7 +22,8 @@ data class AssetSyncProgress(
     val isFinished: Boolean = false,
     val statusMessage: String = "Inactivo",
     val lastError: String? = null,
-    val syncedBytes: Long = 0L
+    val syncedBytes: Long = 0L,
+    val activeBucket: String = ""
 )
 
 object FirebaseAssetSyncManager {
@@ -43,8 +44,9 @@ object FirebaseAssetSyncManager {
     }
 
     fun setCustomBucket(context: Context, bucket: String) {
+        val cleanBucket = bucket.trim().removePrefix("gs://").removeSuffix("/")
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_CUSTOM_BUCKET, bucket.trim()).apply()
+        prefs.edit().putString(KEY_CUSTOM_BUCKET, cleanBucket).apply()
     }
 
     fun getSyncedStats(context: Context): Pair<Int, Long> {
@@ -54,36 +56,81 @@ object FirebaseAssetSyncManager {
         return Pair(count, bytes)
     }
 
-    private fun getStorageInstance(context: Context): FirebaseStorage {
-        val custom = getCustomBucket(context)
-        return if (custom.isNotBlank()) {
-            if (custom.startsWith("gs://")) {
-                FirebaseStorage.getInstance(custom)
-            } else {
-                FirebaseStorage.getInstance("gs://$custom")
-            }
+    private fun getStorageInstanceForBucket(bucket: String): FirebaseStorage {
+        val clean = bucket.trim().removePrefix("gs://").removeSuffix("/")
+        return if (clean.isNotBlank()) {
+            FirebaseStorage.getInstance("gs://$clean")
         } else {
             FirebaseStorage.getInstance()
         }
     }
 
+    fun getStorageInstance(context: Context): FirebaseStorage {
+        val custom = getCustomBucket(context)
+        return getStorageInstanceForBucket(custom)
+    }
+
     /**
-     * Prueba rápida de conexión al servicio de almacenamiento en la nube subiendo una sonda de prueba.
+     * Prueba rápida de conexión con un bucket específico subiendo y borrando una pequeña sonda.
      */
-    suspend fun testConnection(context: Context): Pair<Boolean, String> = withContext(Dispatchers.IO) {
+    suspend fun probeBucket(bucket: String): Pair<Boolean, String> = withContext(Dispatchers.IO) {
         try {
-            val storage = getStorageInstance(context)
+            val storage = getStorageInstanceForBucket(bucket)
             val probeRef = storage.reference.child(STORAGE_FOLDER).child(".probe_connection.txt")
             val probeData = "probe_test_${System.currentTimeMillis()}".toByteArray()
             probeRef.putBytes(probeData).await()
-            // Limpiar sonda
             try { probeRef.delete().await() } catch (_: Exception) {}
-            Pair(true, "Conexión exitosa con el servicio de almacenamiento en la nube.")
+            Pair(true, "Conexión exitosa con el bucket: ${if (bucket.isBlank()) "Default" else bucket}")
         } catch (e: Exception) {
             val msg = e.localizedMessage ?: e.message ?: "Error desconocido"
-            Log.w(TAG, "Test de almacenamiento fallido: $msg", e)
+            Log.w(TAG, "Fallo al probar bucket '$bucket': $msg")
             Pair(false, msg)
         }
+    }
+
+    /**
+     * Prueba de conexión con Auto-Detección de Bucket.
+     * Si el bucket predeterminado falla (por ejemplo con 404 / Object does not exist),
+     * prueba automáticamente candidatos conocidos del proyecto.
+     */
+    suspend fun testConnection(context: Context): Pair<Boolean, String> = withContext(Dispatchers.IO) {
+        val custom = getCustomBucket(context)
+        val candidateBuckets = mutableListOf<String>()
+
+        if (custom.isNotBlank()) candidateBuckets.add(custom)
+        candidateBuckets.addAll(
+            listOf(
+                "wild-rift-drafting.firebasestorage.app",
+                "wild-rift-drafting.appspot.com",
+                "coach-wildrift.firebasestorage.app",
+                "coach-wildrift.appspot.com",
+                ""
+            )
+        )
+
+        var lastError = "No se pudo conectar a ningún bucket de almacenamiento."
+
+        for (bucket in candidateBuckets.distinct()) {
+            val (success, msg) = probeBucket(bucket)
+            if (success) {
+                if (bucket.isNotBlank()) {
+                    setCustomBucket(context, bucket)
+                }
+                return@withContext Pair(true, "Conectado exitosamente al almacenamiento: ${if (bucket.isBlank()) "Bucket Predeterminado" else bucket}")
+            } else {
+                lastError = msg
+            }
+        }
+
+        val humanError = when {
+            lastError.contains("Object does not exist", ignoreCase = true) || lastError.contains("404", ignoreCase = true) ->
+                "El bucket de almacenamiento no existe o no ha sido inicializado. Ve a la sección Storage de tu consola en la nube y asegúrate de hacer clic en 'Empezar' (Get Started), o ingresa el nombre exacto de tu bucket arriba."
+            lastError.contains("permission", ignoreCase = true) || lastError.contains("denied", ignoreCase = true) || lastError.contains("403", ignoreCase = true) ->
+                "Permiso denegado por las reglas de seguridad. Revisa las reglas de Storage en tu consola."
+            else -> lastError
+        }
+
+        Pair(false, humanError)
     }
 
     /**
@@ -116,9 +163,6 @@ object FirebaseAssetSyncManager {
         return set
     }
 
-    /**
-     * Determina si un archivo debe permanecer localmente (avatares y marcos de perfil de usuario).
-     */
     fun isLocalUserAsset(fileName: String): Boolean {
         val lower = fileName.lowercase().trim()
         if (lower.startsWith("frame_") || lower.contains("avatar_") || lower.contains("user_avatar")) {
@@ -127,10 +171,6 @@ object FirebaseAssetSyncManager {
         return getUserLocalFileNames().contains(lower)
     }
 
-    /**
-     * Obtiene la lista de todos los recursos del juego (objetos, runas, hechizos, campeones, habilidades)
-     * listos para ser sincronizados con el almacenamiento en la nube.
-     */
     suspend fun getGameAssetsToUpload(context: Context): List<Pair<String, String>> = withContext(Dispatchers.IO) {
         val assetsList = mutableListOf<Pair<String, String>>()
         val userFiles = getUserLocalFileNames()
@@ -164,33 +204,30 @@ object FirebaseAssetSyncManager {
         assetsList
     }
 
-    /**
-     * Inicia el proceso de sincronización y subida de todas las imágenes del juego al almacenamiento en la nube.
-     */
     suspend fun startSync(context: Context) = withContext(Dispatchers.IO) {
         if (_syncProgress.value.isRunning) return@withContext
 
         _syncProgress.value = AssetSyncProgress(
             isRunning = true,
-            statusMessage = "Verificando acceso al almacenamiento..."
+            statusMessage = "Verificando acceso y resolviendo bucket de almacenamiento..."
         )
 
         try {
-            val storage = getStorageInstance(context)
-            val baseRef = storage.reference.child(STORAGE_FOLDER)
-
-            // Test de verificación inicial
             val (connected, connError) = testConnection(context)
             if (!connected) {
                 _syncProgress.value = AssetSyncProgress(
                     isRunning = false,
                     isFinished = true,
                     errorCount = 1,
-                    statusMessage = "No se pudo acceder al almacenamiento en la nube.",
+                    statusMessage = "No se pudo acceder al almacenamiento.",
                     lastError = connError
                 )
                 return@withContext
             }
+
+            val storage = getStorageInstance(context)
+            val baseRef = storage.reference.child(STORAGE_FOLDER)
+            val activeBucketName = getCustomBucket(context).ifBlank { "Predeterminado" }
 
             val assetsToUpload = getGameAssetsToUpload(context)
             val total = assetsToUpload.size
@@ -203,7 +240,8 @@ object FirebaseAssetSyncManager {
                 isRunning = true,
                 totalFiles = total,
                 processedFiles = 0,
-                statusMessage = "Sincronizando $total recursos con la nube..."
+                statusMessage = "Sincronizando $total recursos con $activeBucketName...",
+                activeBucket = activeBucketName
             )
 
             for ((assetPath, cloudFileName) in assetsToUpload) {
@@ -248,7 +286,7 @@ object FirebaseAssetSyncManager {
             }
 
             val finalMsg = if (errors == 0) {
-                "Sincronización completada ($processed recursos subidos con éxito)."
+                "Sincronización completada ($processed recursos subidos con éxito a la nube)."
             } else {
                 "Sincronización finalizada: $processed subidos, $errors fallos."
             }
@@ -261,10 +299,10 @@ object FirebaseAssetSyncManager {
                 isFinished = true,
                 statusMessage = finalMsg,
                 lastError = lastErrStr,
-                syncedBytes = totalBytesUploaded
+                syncedBytes = totalBytesUploaded,
+                activeBucket = activeBucketName
             )
 
-            // Guardar métricas persistentes de sincronización
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             prefs.edit()
                 .putLong("last_sync_timestamp", System.currentTimeMillis())

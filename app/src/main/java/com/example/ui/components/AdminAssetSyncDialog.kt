@@ -3,6 +3,7 @@ package com.example.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +45,7 @@ fun AdminAssetSyncDialog(
     var testResult by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
     var isTestingConnection by remember { mutableStateOf(false) }
     var showRulesHint by remember { mutableStateOf(false) }
+    var showBucketSettings by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         val gameAssets = FirebaseAssetSyncManager.getGameAssetsToUpload(context)
@@ -172,23 +174,110 @@ fun AdminAssetSyncDialog(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.5.sp
                             )
-                            OutlinedButton(
-                                onClick = {
-                                    scope.launch {
-                                        isTestingConnection = true
-                                        testResult = FirebaseAssetSyncManager.testConnection(context)
-                                        isTestingConnection = false
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                IconButton(
+                                    onClick = { showBucketSettings = !showBucketSettings },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Settings,
+                                        contentDescription = "Configurar Bucket",
+                                        tint = if (showBucketSettings) HextechGold else TextSecondary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        scope.launch {
+                                            isTestingConnection = true
+                                            testResult = FirebaseAssetSyncManager.testConnection(context)
+                                            customBucket = FirebaseAssetSyncManager.getCustomBucket(context)
+                                            isTestingConnection = false
+                                        }
+                                    },
+                                    enabled = !isTestingConnection && !syncState.isRunning,
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                    shape = RoundedCornerShape(6.dp),
+                                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f))
+                                ) {
+                                    if (isTestingConnection) {
+                                        CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = HextechCyan)
+                                    } else {
+                                        Text("Probar Conexión", fontSize = 11.sp, color = HextechCyan)
                                     }
-                                },
-                                enabled = !isTestingConnection && !syncState.isRunning,
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                shape = RoundedCornerShape(6.dp),
-                                border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f))
+                                }
+                            }
+                        }
+
+                        // Panel de configuración manual de bucket si está abierto o si falló
+                        if (showBucketSettings) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(HextechDarkBg)
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                if (isTestingConnection) {
-                                    CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = HextechCyan)
-                                } else {
-                                    Text("Probar Conexión", fontSize = 11.sp, color = HextechCyan)
+                                Text(
+                                    "Nombre del Bucket de Almacenamiento:",
+                                    color = HextechGold,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                OutlinedTextField(
+                                    value = customBucket,
+                                    onValueChange = {
+                                        customBucket = it
+                                        FirebaseAssetSyncManager.setCustomBucket(context, it)
+                                    },
+                                    placeholder = { Text("ej. wild-rift-drafting.firebasestorage.app", color = TextMuted, fontSize = 11.sp) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = TextPrimary,
+                                        unfocusedTextColor = TextPrimary,
+                                        focusedBorderColor = HextechCyan,
+                                        unfocusedBorderColor = HextechSurfaceVariant
+                                    )
+                                )
+                                Text(
+                                    "Sugerencias de tu proyecto (toca para aplicar):",
+                                    color = TextMuted,
+                                    fontSize = 10.sp
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    val sug1 = "wild-rift-drafting.firebasestorage.app"
+                                    val sug2 = "wild-rift-drafting.appspot.com"
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(HextechSurface)
+                                            .clickable {
+                                                customBucket = sug1
+                                                FirebaseAssetSyncManager.setCustomBucket(context, sug1)
+                                            }
+                                            .padding(6.dp)
+                                    ) {
+                                        Text(sug1, color = HextechCyan, fontSize = 9.5.sp, maxLines = 1)
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(HextechSurface)
+                                            .clickable {
+                                                customBucket = sug2
+                                                FirebaseAssetSyncManager.setCustomBucket(context, sug2)
+                                            }
+                                            .padding(6.dp)
+                                    ) {
+                                        Text(sug2, color = HextechGoldLight, fontSize = 9.5.sp, maxLines = 1)
+                                    }
                                 }
                             }
                         }
@@ -229,25 +318,35 @@ fun AdminAssetSyncDialog(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFFF8A80), modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Motivo del Fallo", color = Color(0xFFFF8A80), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Diagnóstico de Error", color = Color(0xFFFF8A80), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                             Text(
-                                text = syncState.lastError ?: "Error de permisos en el servicio de almacenamiento.",
+                                text = syncState.lastError ?: "Error en el servicio de almacenamiento.",
                                 color = Color.White.copy(alpha = 0.9f),
                                 fontSize = 11.sp
                             )
-                            Text(
-                                text = "Comprueba que las reglas del servicio de almacenamiento en la nube permitan la escritura pública.",
-                                color = HextechGoldLight,
-                                fontSize = 10.5.sp
-                            )
-                            Button(
-                                onClick = { showRulesHint = !showRulesHint },
-                                colors = ButtonDefaults.buttonColors(containerColor = HextechGold.copy(alpha = 0.2f)),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                shape = RoundedCornerShape(6.dp)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(if (showRulesHint) "Ocultar Reglas de Seguridad" else "Ver Reglas de Seguridad", fontSize = 11.sp, color = HextechGold)
+                                Button(
+                                    onClick = { showRulesHint = !showRulesHint },
+                                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold.copy(alpha = 0.25f)),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                    shape = RoundedCornerShape(6.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(if (showRulesHint) "Ocultar Reglas" else "Reglas de Seguridad", fontSize = 10.5.sp, color = HextechGold)
+                                }
+                                Button(
+                                    onClick = { showBucketSettings = true },
+                                    colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.25f)),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                    shape = RoundedCornerShape(6.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Ajustar Bucket", fontSize = 10.5.sp, color = HextechCyan)
+                                }
                             }
                         }
                     }
@@ -267,7 +366,7 @@ fun AdminAssetSyncDialog(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Reglas de Almacenamiento en la Nube", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("Reglas de Almacenamiento (Storage)", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 IconButton(
                                     onClick = { clipboardManager.setText(AnnotatedString(rulesCode)) },
                                     modifier = Modifier.size(24.dp)
