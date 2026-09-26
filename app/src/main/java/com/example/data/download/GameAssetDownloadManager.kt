@@ -3,6 +3,8 @@ package com.example.data.download
 import android.content.Context
 import android.util.Log
 import com.example.data.AvatarCatalog
+import com.example.data.WildRiftRepository
+import com.example.data.WildRiftSpellsAndRunes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,10 +27,11 @@ enum class AssetDownloadStatus {
 data class GameAssetItem(
     val id: String,
     val name: String,
-    val category: String, // "Habilidad", "Campeón", "Objeto", "Runa", "Hechizo"
-    val assetPath: String, // path in assets (e.g. offline_images/... or champions/...)
+    val category: String, // "Habilidad", "Hechizo", "Runa", "Objeto", "Campeón"
+    val assetPath: String, // ruta local si existe
+    val remoteUrl: String = "", // URL remota CDN en la nube
     val targetFileName: String,
-    val estimatedBytes: Long = 128 * 1024L // ~128 KB promedio por imagen
+    val estimatedBytes: Long = 120 * 1024L
 )
 
 data class DownloadManagerProgress(
@@ -75,7 +78,7 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Obtiene el archivo local si ya fue descargado.
+     * Obtiene el archivo local si ya fue descargado por el gestor.
      */
     fun getDownloadedFile(context: Context, rawUrlOrPath: String): File? {
         val cleanName = rawUrlOrPath.substringAfterLast("/")
@@ -87,7 +90,7 @@ object GameAssetDownloadManager {
      * Identifica los nombres de archivo excluidos (avatares de usuario y marcos de rango),
      * que deben permanecer estrictamente guardados de forma local en la app.
      */
-    private fun getExcludedUserFiles(): Set<String> {
+    fun getExcludedUserFiles(): Set<String> {
         val set = mutableSetOf<String>()
         AvatarCatalog.avatars.forEach { avatar ->
             val fileName = avatar.imageUrl.substringAfterLast("/")
@@ -114,15 +117,96 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Genera la lista de todos los recursos del juego (habilidades, campeones, objetos, runas y hechizos)
-     * listos para ser descargados y gestionados.
+     * Construye el catálogo de recursos descargables del juego:
+     * - Habilidades de Campeones
+     * - Hechizos de Invocador
+     * - Runas y Árboles
+     * - Objetos Situacionales y Core
+     * - Avatares de Campeones
      */
     suspend fun getDownloadCatalog(context: Context): List<GameAssetItem> = withContext(Dispatchers.IO) {
-        val items = mutableListOf<GameAssetItem>()
+        val itemsMap = mutableMapOf<String, GameAssetItem>()
         val userFiles = getExcludedUserFiles()
 
         try {
-            // 1. Escaneo de offline_images/ (Objetos, Habilidades, Runas, Hechizos)
+            // 1. Hechizos de Invocador (Spells)
+            val spellFiles = listOf(
+                "flash.webp", "ignite.webp", "smite.webp", "barrier.webp",
+                "exhaust.webp", "ghost.webp", "heal.webp", "clarity.jpg",
+                "mark.jpg", "teleport.png", "cleanse.webp"
+            )
+            for (spell in spellFiles) {
+                val clean = spell.substringBeforeLast(".")
+                itemsMap[spell] = GameAssetItem(
+                    id = "spell_$spell",
+                    name = "Hechizo $clean",
+                    category = "Hechizo",
+                    assetPath = "spells/$spell",
+                    remoteUrl = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img/spell/Summoner$clean.png",
+                    targetFileName = spell,
+                    estimatedBytes = 95 * 1024L
+                )
+            }
+
+            // 2. Runas (Runes)
+            val runeFiles = listOf(
+                "conqueror.png", "electrocute.png", "dark_harvest.png", "first_strike.png",
+                "phase_rush.png", "lethal_tempo.png", "fleet_footwork.png", "grasp_undying.png",
+                "arcane_comet.png", "guardian.webp", "demolish.webp", "font_of_life.webp",
+                "bone_plating.webp", "second_wind.webp", "overgrowth.webp", "revitalize.webp",
+                "triumph.webp", "coup_de_grace.webp", "cut_down.png", "last_stand.webp",
+                "sudden_impact.webp", "cheap_shot.webp", "eyeball_collection.webp", "zombie_ward.webp",
+                "gathering_storm.webp", "scorch.webp", "transcendence.webp", "celerity.webp",
+                "manaflow_band.webp", "nimbus_cloak.webp", "absolute_focus.webp", "brutal.webp"
+            )
+            for (rune in runeFiles) {
+                val clean = rune.substringBeforeLast(".").replace("_", " ")
+                itemsMap[rune] = GameAssetItem(
+                    id = "rune_$rune",
+                    name = "Runa $clean",
+                    category = "Runa",
+                    assetPath = "runes/$rune",
+                    targetFileName = rune,
+                    estimatedBytes = 110 * 1024L
+                )
+            }
+
+            // 3. Campeones y Habilidades (Champions & Skills)
+            WildRiftRepository.initChampions(context)
+            val championList = WildRiftRepository.champions.toList()
+            for (champ in championList) {
+                val champFile = "${champ.id}.png"
+                if (!itemsMap.containsKey(champFile)) {
+                    itemsMap[champFile] = GameAssetItem(
+                        id = "champ_${champ.id}",
+                        name = "Campeón ${champ.name}",
+                        category = "Campeón",
+                        assetPath = "champions/$champFile",
+                        remoteUrl = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img/champion/${champ.ddragonId.ifBlank { champ.id }}.png",
+                        targetFileName = "champions_$champFile",
+                        estimatedBytes = 140 * 1024L
+                    )
+                }
+
+                // Habilidades del campeón
+                champ.skills.forEach { skill ->
+                    if (skill.iconUrl.isNotBlank()) {
+                        val fileName = skill.iconUrl.substringAfterLast("/")
+                        if (fileName.isNotBlank() && !itemsMap.containsKey(fileName)) {
+                            itemsMap[fileName] = GameAssetItem(
+                                id = "skill_${champ.id}_${skill.slot}",
+                                name = "${champ.name} - ${skill.slotName}: ${skill.name}",
+                                category = "Habilidad",
+                                assetPath = "offline_images/$fileName",
+                                targetFileName = fileName,
+                                estimatedBytes = 125 * 1024L
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 4. Objetos y demás imágenes de offline_images/
             val offlineFiles = context.assets.list("offline_images") ?: emptyArray()
             for (file in offlineFiles) {
                 if (file.isBlank()) continue
@@ -130,71 +214,29 @@ object GameAssetDownloadManager {
                 if (lower.startsWith("frame_") || lower in userFiles || lower.contains("avatar_")) {
                     continue
                 }
-
-                val category = when {
-                    lower.contains("rune") || lower.contains("strike") || lower.contains("conqueror") || lower.contains("electrocute") -> "Runa"
-                    lower.contains("spell") || lower.contains("flash") || lower.contains("ignite") || lower.contains("smite") -> "Hechizo"
-                    lower.contains("item") || lower.contains("boots") || lower.contains("guard") || lower.contains("blade") -> "Objeto"
-                    else -> "Habilidad"
-                }
-
-                val readableName = file.substringBeforeLast(".")
-                    .replace("_", " ")
-                    .replace("-", " ")
-                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-
-                val estSize = try {
-                    context.assets.open("offline_images/$file").use { it.available().toLong() }
-                } catch (_: Exception) {
-                    120 * 1024L
-                }
-
-                items.add(
-                    GameAssetItem(
+                if (!itemsMap.containsKey(file)) {
+                    val category = when {
+                        lower.contains("rune") || lower.contains("strike") -> "Runa"
+                        lower.contains("spell") || lower.contains("flash") -> "Hechizo"
+                        lower.contains("item") || lower.contains("boots") || lower.contains("blade") || lower.contains("guard") -> "Objeto"
+                        else -> "Habilidad"
+                    }
+                    val clean = file.substringBeforeLast(".").replace("_", " ").replace("-", " ")
+                    itemsMap[file] = GameAssetItem(
                         id = "offline_$file",
-                        name = readableName,
+                        name = "$category: $clean",
                         category = category,
                         assetPath = "offline_images/$file",
                         targetFileName = file,
-                        estimatedBytes = estSize.coerceAtLeast(32 * 1024L)
+                        estimatedBytes = 120 * 1024L
                     )
-                )
-            }
-
-            // 2. Escaneo de champions/ (Imágenes y avatares de campeones)
-            val champFiles = context.assets.list("champions") ?: emptyArray()
-            for (file in champFiles) {
-                if (file.isBlank()) continue
-                val lower = file.lowercase()
-                if (lower.startsWith("frame_") || lower in userFiles || lower.contains("avatar_")) {
-                    continue
                 }
-
-                val champName = file.substringBeforeLast(".")
-                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-
-                val estSize = try {
-                    context.assets.open("champions/$file").use { it.available().toLong() }
-                } catch (_: Exception) {
-                    145 * 1024L
-                }
-
-                items.add(
-                    GameAssetItem(
-                        id = "champ_$file",
-                        name = "Campeón $champName",
-                        category = "Campeón",
-                        assetPath = "champions/$file",
-                        targetFileName = "champions_$file",
-                        estimatedBytes = estSize.coerceAtLeast(40 * 1024L)
-                    )
-                )
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error construyendo catálogo de descarga: ${e.message}", e)
+            Log.e(TAG, "Error construyendo catálogo de recursos: ${e.message}", e)
         }
 
-        items
+        itemsMap.values.toList()
     }
 
     /**
@@ -245,7 +287,7 @@ object GameAssetDownloadManager {
     }
 
     /**
-     * Inicia o reanuda la descarga de los recursos del juego de forma pausables.
+     * Inicia o reanuda la descarga de los recursos del juego de forma pausable.
      */
     fun startOrResumeDownload(context: Context) {
         if (_downloadProgress.value.status == AssetDownloadStatus.DOWNLOADING) return
@@ -277,7 +319,6 @@ object GameAssetDownloadManager {
                 }
 
                 for (item in catalog) {
-                    // Si se solicitó pausa, detenemos el bucle
                     if (isPauseRequested) {
                         _downloadProgress.value = _downloadProgress.value.copy(
                             status = AssetDownloadStatus.PAUSED,
@@ -288,7 +329,7 @@ object GameAssetDownloadManager {
 
                     val targetFile = File(downloadDir, item.targetFileName)
                     if (targetFile.exists() && targetFile.length() > 0) {
-                        continue // Ya está descargado
+                        continue
                     }
 
                     _downloadProgress.value = _downloadProgress.value.copy(
@@ -299,46 +340,57 @@ object GameAssetDownloadManager {
                         progressPercent = if (totalBytesAcc > 0) (downloadedBytesAcc.toFloat() / totalBytesAcc.toFloat()).coerceIn(0f, 1f) else 0f
                     )
 
-                    // Descarga / Extracción segura del recurso hacia el almacenamiento interno
                     var inputStream: InputStream? = null
                     var outputStream: FileOutputStream? = null
                     try {
-                        inputStream = context.assets.open(item.assetPath)
-                        val tempFile = File(downloadDir, "${item.targetFileName}.tmp")
-                        outputStream = FileOutputStream(tempFile)
+                        // 1. Intentar abrir desde assets o red
+                        inputStream = try {
+                            context.assets.open(item.assetPath)
+                        } catch (_: Exception) {
+                            if (item.remoteUrl.isNotBlank()) {
+                                val url = URL(item.remoteUrl)
+                                val conn = url.openConnection() as HttpURLConnection
+                                conn.connectTimeout = 5000
+                                conn.readTimeout = 5000
+                                conn.inputStream
+                            } else null
+                        }
 
-                        val buffer = ByteArray(8192)
-                        var bytesRead: Int
-                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                            if (isPauseRequested) {
-                                outputStream.flush()
-                                outputStream.close()
-                                tempFile.delete()
+                        if (inputStream != null) {
+                            val tempFile = File(downloadDir, "${item.targetFileName}.tmp")
+                            outputStream = FileOutputStream(tempFile)
+
+                            val buffer = ByteArray(8192)
+                            var bytesRead: Int
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                if (isPauseRequested) {
+                                    outputStream.flush()
+                                    outputStream.close()
+                                    tempFile.delete()
+                                    _downloadProgress.value = _downloadProgress.value.copy(
+                                        status = AssetDownloadStatus.PAUSED,
+                                        currentAssetName = "Descarga en pausa"
+                                    )
+                                    return@launch
+                                }
+                                outputStream.write(buffer, 0, bytesRead)
+                                downloadedBytesAcc += bytesRead
                                 _downloadProgress.value = _downloadProgress.value.copy(
-                                    status = AssetDownloadStatus.PAUSED,
-                                    currentAssetName = "Descarga en pausa"
+                                    downloadedBytes = downloadedBytesAcc,
+                                    remainingBytes = (totalBytesAcc - downloadedBytesAcc).coerceAtLeast(0L),
+                                    progressPercent = if (totalBytesAcc > 0) (downloadedBytesAcc.toFloat() / totalBytesAcc.toFloat()).coerceIn(0f, 1f) else 0f
                                 )
-                                return@launch
                             }
-                            outputStream.write(buffer, 0, bytesRead)
-                            downloadedBytesAcc += bytesRead
-                            _downloadProgress.value = _downloadProgress.value.copy(
-                                downloadedBytes = downloadedBytesAcc,
-                                remainingBytes = (totalBytesAcc - downloadedBytesAcc).coerceAtLeast(0L),
-                                progressPercent = if (totalBytesAcc > 0) (downloadedBytesAcc.toFloat() / totalBytesAcc.toFloat()).coerceIn(0f, 1f) else 0f
-                            )
-                        }
-                        outputStream.flush()
-                        outputStream.close()
-                        outputStream = null
+                            outputStream.flush()
+                            outputStream.close()
+                            outputStream = null
 
-                        // Renombrar temporal a destino final
-                        if (tempFile.exists()) {
-                            tempFile.renameTo(targetFile)
+                            if (tempFile.exists()) {
+                                tempFile.renameTo(targetFile)
+                            }
+                            downloadedCount++
+                            delay(12)
                         }
-                        downloadedCount++
-                        // Pequeña pausa para simular flujo de red suave y no congelar UI
-                        delay(15)
                     } catch (e: Exception) {
                         Log.w(TAG, "Error descargando recurso ${item.name}: ${e.message}")
                     } finally {
@@ -347,7 +399,6 @@ object GameAssetDownloadManager {
                     }
                 }
 
-                val finalRemaining = (totalBytesAcc - downloadedBytesAcc).coerceAtLeast(0L)
                 _downloadProgress.value = DownloadManagerProgress(
                     status = AssetDownloadStatus.COMPLETED,
                     totalFiles = total,
@@ -356,7 +407,7 @@ object GameAssetDownloadManager {
                     downloadedBytes = downloadedBytesAcc,
                     remainingBytes = 0L,
                     progressPercent = 1f,
-                    currentAssetName = "¡Todos los recursos del juego están listos!"
+                    currentAssetName = "¡Habilidades, hechizos, runas y campeones listos!"
                 )
 
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -383,9 +434,6 @@ object GameAssetDownloadManager {
         )
     }
 
-    /**
-     * Formatea bytes a MB legible con 1 decimal.
-     */
     fun formatBytesToMb(bytes: Long): String {
         val mb = bytes / (1024.0 * 1024.0)
         return String.format(Locale.US, "%.1f MB", mb)
