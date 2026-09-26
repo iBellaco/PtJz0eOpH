@@ -130,11 +130,24 @@ object LiteRTVisionClassifier {
             for (champ in champs) {
                 if (championEmbeddingCache.containsKey(champ.id)) continue
                 var bmp: Bitmap? = null
-                try {
-                    val stream = ctx.assets.open("champions/${champ.id}.png")
-                    bmp = BitmapFactory.decodeStream(stream)
-                    stream.close()
-                } catch (_: Throwable) {}
+                
+                // 1. Verificar si está descargado en almacenamiento interno
+                val downloadedFile = com.example.data.download.GameAssetDownloadManager.getDownloadedFile(ctx, "${champ.id}.png")
+                    ?: com.example.data.download.GameAssetDownloadManager.getDownloadedFile(ctx, champ.avatarUrl)
+                if (downloadedFile != null && downloadedFile.exists()) {
+                    try {
+                        bmp = BitmapFactory.decodeFile(downloadedFile.absolutePath)
+                    } catch (_: Throwable) {}
+                }
+
+                // 2. Fallback assets si existiera
+                if (bmp == null) {
+                    try {
+                        val stream = ctx.assets.open("champions/${champ.id}.png")
+                        bmp = BitmapFactory.decodeStream(stream)
+                        stream.close()
+                    } catch (_: Throwable) {}
+                }
 
                 if (bmp == null && champ.avatarUrl.isNotBlank()) {
                     try {

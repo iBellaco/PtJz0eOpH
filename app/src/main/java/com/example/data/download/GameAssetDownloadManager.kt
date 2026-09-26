@@ -2,6 +2,7 @@ package com.example.data.download
 
 import android.content.Context
 import android.util.Log
+import com.example.data.WildRiftRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,7 @@ enum class AssetDownloadStatus {
 data class GameAssetItem(
     val id: String,
     val name: String,
-    val category: String, // "Habilidad", "Hechizo", "Runa", "Objeto"
+    val category: String, // "Campeón", "Habilidad", "Hechizo", "Runa", "Objeto"
     val remoteUrl: String,
     val targetFileName: String,
     val estimatedBytes: Long = 20 * 1024L
@@ -53,7 +54,7 @@ object GameAssetDownloadManager {
     private const val ASSETS_FOLDER_NAME = "game_assets"
     private const val KEY_IS_FULLY_DOWNLOADED = "is_fully_downloaded"
 
-    private const val DDRAGON_ITEM_CDN = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item"
+    private const val DDRAGON_CDN = "https://ddragon.leagueoflegends.com/cdn/14.23.1/img"
     private const val CDRAGON_PERK_CDN = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles"
 
     private val _downloadProgress = MutableStateFlow(DownloadManagerProgress())
@@ -73,25 +74,57 @@ object GameAssetDownloadManager {
 
     fun isAssetDownloaded(context: Context, fileName: String): Boolean {
         val cleanName = fileName.substringAfterLast("/")
-        val file = File(getDownloadDirectory(context), cleanName)
-        return file.exists() && file.length() > 0
+        val dir = getDownloadDirectory(context)
+        val file1 = File(dir, cleanName)
+        if (file1.exists() && file1.length() > 0) return true
+        val file2 = File(dir, "champions_$cleanName")
+        return file2.exists() && file2.length() > 0
     }
 
     fun getDownloadedFile(context: Context, rawUrlOrPath: String): File? {
         val cleanName = rawUrlOrPath.substringAfterLast("/")
-        val file = File(getDownloadDirectory(context), cleanName)
-        return if (file.exists() && file.length() > 0) file else null
+        val dir = getDownloadDirectory(context)
+        val file1 = File(dir, cleanName)
+        if (file1.exists() && file1.length() > 0) return file1
+        val file2 = File(dir, "champions_$cleanName")
+        if (file2.exists() && file2.length() > 0) return file2
+        return null
     }
 
     /**
-     * Construye el catálogo dinámico de Habilidades, Hechizos, Runas y Objetos del juego.
+     * Construye el catálogo de todos los recursos dinámicos en la nube:
+     * - Campeones (Avatares)
+     * - Habilidades
+     * - Hechizos
+     * - Runas
+     * - Objetos
      */
     suspend fun getFullGameAssetsCatalog(context: Context): List<GameAssetItem> = withContext(Dispatchers.IO) {
         val items = mutableListOf<GameAssetItem>()
         val seenTargetFiles = mutableSetOf<String>()
 
         try {
-            // 1. Hechizos de Invocador (Spells)
+            // 1. Avatares de Campeones (Champions)
+            WildRiftRepository.initChampions(context)
+            val championList = WildRiftRepository.champions.toList()
+            for (champ in championList) {
+                val champFile = "${champ.id}.png"
+                val ddragonChamp = if (champ.ddragonId.isNotBlank()) champ.ddragonId else champ.id.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+                if (seenTargetFiles.add(champFile)) {
+                    items.add(
+                        GameAssetItem(
+                            id = "champ_${champ.id}",
+                            name = "Campeón: ${champ.name}",
+                            category = "Campeón",
+                            remoteUrl = "$DDRAGON_CDN/champion/$ddragonChamp.png",
+                            targetFileName = champFile,
+                            estimatedBytes = 28 * 1024L
+                        )
+                    )
+                }
+            }
+
+            // 2. Hechizos de Invocador (Spells)
             val spellsMap = mapOf(
                 "flash.webp" to "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/4.png",
                 "ignite.webp" to "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/summoner-spells/14.png",
@@ -107,22 +140,23 @@ object GameAssetDownloadManager {
             )
 
             for ((targetName, url) in spellsMap) {
-                val spellName = targetName.substringBeforeLast(".")
-                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-                items.add(
-                    GameAssetItem(
-                        id = "spell_$targetName",
-                        name = "Hechizo: $spellName",
-                        category = "Hechizo",
-                        remoteUrl = url,
-                        targetFileName = targetName,
-                        estimatedBytes = 18 * 1024L
+                if (seenTargetFiles.add(targetName)) {
+                    val spellName = targetName.substringBeforeLast(".")
+                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+                    items.add(
+                        GameAssetItem(
+                            id = "spell_$targetName",
+                            name = "Hechizo: $spellName",
+                            category = "Hechizo",
+                            remoteUrl = url,
+                            targetFileName = targetName,
+                            estimatedBytes = 18 * 1024L
+                        )
                     )
-                )
-                seenTargetFiles.add(targetName)
+                }
             }
 
-            // 2. Runas desde runes.json o catálogo canónico
+            // 3. Runas (Runes)
             val runesMap = mapOf(
                 "conqueror.png" to "$CDRAGON_PERK_CDN/precision/conqueror/conqueror.png",
                 "electrocute.png" to "$CDRAGON_PERK_CDN/domination/electrocute/electrocute.png",
@@ -177,37 +211,37 @@ object GameAssetDownloadManager {
                 }
             }
 
-            // 3. Objetos Situacionales y Core (Items)
+            // 4. Objetos Situacionales y Core (Items)
             val itemsMap = mapOf(
-                "ab38f2866c6c041524f8f14b1749fc1c.png" to "$DDRAGON_ITEM_CDN/3075.png", // Cota de Espinas
-                "3b9e64690847f3bc956e9db35a455f32.png" to "$DDRAGON_ITEM_CDN/3033.png", // Recordatorio Mortal
-                "473e58dc0df0c96012529455146ce012.png" to "$DDRAGON_ITEM_CDN/3165.png", // Morellonomicón
-                "8d0a2f1589e177a2bf2ad148cb31a65f.png" to "$DDRAGON_ITEM_CDN/6695.png", // Colmillo de Serpiente
-                "1420e397855c6263e113cf0a16d4bb71.png" to "$DDRAGON_ITEM_CDN/3143.png", // Presagio de Randuin
-                "e1f9d816eb318d20e5c768c4fa05290d.png" to "$DDRAGON_ITEM_CDN/3065.png", // Rostro Espiritual
-                "3b32bd3dbf4245dc0952c48bc603bcc8.png" to "$DDRAGON_ITEM_CDN/3139.png", // Cimitarra Mercurial
-                "7f8482a5143b2c02ad323ce93df371f1.png" to "$DDRAGON_ITEM_CDN/3102.png", // Velo del Hada
-                "422b305b36178590bc9ddd6e826c22ba.png" to "$DDRAGON_ITEM_CDN/3814.png", // Filo de la Noche
-                "c3893b84c990398e6ed58b03c16cafa0.webp" to "$DDRAGON_ITEM_CDN/3110.png", // Corazón Helado
-                "dddefc0a5f24a544b89699b38a9a35e1.png" to "$DDRAGON_ITEM_CDN/3001.png", // Máscara Abisal
-                "89889a5db477564f0dded7057e9a1916.png" to "$DDRAGON_ITEM_CDN/4401.png", // Fuerza de la Naturaleza
-                "f4c23d99ec30ef6893a81208846a8831.png" to "$DDRAGON_ITEM_CDN/3025.png", // Guantelete de Hielo
-                "3a33fd10d1e6f9e3f55dd6b553970311.png" to "$DDRAGON_ITEM_CDN/3036.png", // Recuerdos de Lord Dominik
-                "e361b2bafad7a688cb9f134d5c210943.png" to "$DDRAGON_ITEM_CDN/3053.png", // Guantelete de Sterak
-                "989ee173a52f7cfc8ea3fd107415dc38.png" to "$DDRAGON_ITEM_CDN/3026.png", // Ángel Guardián
-                "8501d4d39cb74524631ed6ef74b1f410.png" to "$DDRAGON_ITEM_CDN/3157.png", // Zhonya
-                "e450b4ac7163f1de8de7cfe932744c45.png" to "$DDRAGON_ITEM_CDN/3135.png", // Báculo del Vacío
-                "amaranths_twinguard.webp" to "$DDRAGON_ITEM_CDN/6665.png",
-                "essence_reaver.webp" to "$DDRAGON_ITEM_CDN/3508.png",
-                "stormrazor.webp" to "$DDRAGON_ITEM_CDN/3095.png",
-                "whispering_headband.webp" to "$DDRAGON_ITEM_CDN/3140.png",
-                "yun_tal_wildarrows.webp" to "$DDRAGON_ITEM_CDN/6676.png",
-                "dawnshroud.webp" to "$DDRAGON_ITEM_CDN/6664.png",
-                "unending_despair.webp" to "$DDRAGON_ITEM_CDN/6667.png",
-                "echoes_of_helia.webp" to "$DDRAGON_ITEM_CDN/6620.png",
-                "statikk_shiv.webp" to "$DDRAGON_ITEM_CDN/3087.png",
-                "rapid_firecannon.webp" to "$DDRAGON_ITEM_CDN/3094.png",
-                "immortal_shieldbow.webp" to "$DDRAGON_ITEM_CDN/6673.png"
+                "ab38f2866c6c041524f8f14b1749fc1c.png" to "$DDRAGON_CDN/item/3075.png",
+                "3b9e64690847f3bc956e9db35a455f32.png" to "$DDRAGON_CDN/item/3033.png",
+                "473e58dc0df0c96012529455146ce012.png" to "$DDRAGON_CDN/item/3165.png",
+                "8d0a2f1589e177a2bf2ad148cb31a65f.png" to "$DDRAGON_CDN/item/6695.png",
+                "1420e397855c6263e113cf0a16d4bb71.png" to "$DDRAGON_CDN/item/3143.png",
+                "e1f9d816eb318d20e5c768c4fa05290d.png" to "$DDRAGON_CDN/item/3065.png",
+                "3b32bd3dbf4245dc0952c48bc603bcc8.png" to "$DDRAGON_CDN/item/3139.png",
+                "7f8482a5143b2c02ad323ce93df371f1.png" to "$DDRAGON_CDN/item/3102.png",
+                "422b305b36178590bc9ddd6e826c22ba.png" to "$DDRAGON_CDN/item/3814.png",
+                "c3893b84c990398e6ed58b03c16cafa0.webp" to "$DDRAGON_CDN/item/3110.png",
+                "dddefc0a5f24a544b89699b38a9a35e1.png" to "$DDRAGON_CDN/item/3001.png",
+                "89889a5db477564f0dded7057e9a1916.png" to "$DDRAGON_CDN/item/4401.png",
+                "f4c23d99ec30ef6893a81208846a8831.png" to "$DDRAGON_CDN/item/3025.png",
+                "3a33fd10d1e6f9e3f55dd6b553970311.png" to "$DDRAGON_CDN/item/3036.png",
+                "e361b2bafad7a688cb9f134d5c210943.png" to "$DDRAGON_CDN/item/3053.png",
+                "989ee173a52f7cfc8ea3fd107415dc38.png" to "$DDRAGON_CDN/item/3026.png",
+                "8501d4d39cb74524631ed6ef74b1f410.png" to "$DDRAGON_CDN/item/3157.png",
+                "e450b4ac7163f1de8de7cfe932744c45.png" to "$DDRAGON_CDN/item/3135.png",
+                "amaranths_twinguard.webp" to "$DDRAGON_CDN/item/6665.png",
+                "essence_reaver.webp" to "$DDRAGON_CDN/item/3508.png",
+                "stormrazor.webp" to "$DDRAGON_CDN/item/3095.png",
+                "whispering_headband.webp" to "$DDRAGON_CDN/item/3140.png",
+                "yun_tal_wildarrows.webp" to "$DDRAGON_CDN/item/6676.png",
+                "dawnshroud.webp" to "$DDRAGON_CDN/item/6664.png",
+                "unending_despair.webp" to "$DDRAGON_CDN/item/6667.png",
+                "echoes_of_helia.webp" to "$DDRAGON_CDN/item/6620.png",
+                "statikk_shiv.webp" to "$DDRAGON_CDN/item/3087.png",
+                "rapid_firecannon.webp" to "$DDRAGON_CDN/item/3094.png",
+                "immortal_shieldbow.webp" to "$DDRAGON_CDN/item/6673.png"
             )
 
             for ((targetName, url) in itemsMap) {
@@ -225,7 +259,7 @@ object GameAssetDownloadManager {
                 }
             }
 
-            // 4. Habilidades de Campeones desde habilidades.json
+            // 5. Habilidades de Campeones desde habilidades.json
             try {
                 val jsonString = context.assets.open("habilidades.json").bufferedReader().use { it.readText() }
                 val jsonArray = Json.parseToJsonElement(jsonString).jsonArray
@@ -310,7 +344,7 @@ object GameAssetDownloadManager {
             downloadedBytes = downloadedBytesAcc,
             remainingBytes = remaining,
             progressPercent = percent,
-            currentAssetName = if (isAllCompleted) "Recursos del juego listos" else _downloadProgress.value.currentAssetName
+            currentAssetName = if (isAllCompleted) "Todos los recursos están listos" else _downloadProgress.value.currentAssetName
         )
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -450,7 +484,7 @@ object GameAssetDownloadManager {
                     downloadedBytes = totalBytesAcc,
                     remainingBytes = 0L,
                     progressPercent = 1f,
-                    currentAssetName = "Habilidades, hechizos, runas y objetos listos"
+                    currentAssetName = "¡Todos los recursos del juego están listos!"
                 )
 
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
