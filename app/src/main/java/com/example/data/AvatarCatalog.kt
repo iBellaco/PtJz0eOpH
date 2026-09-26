@@ -9,7 +9,7 @@ object AvatarCatalog {
         title = "Espíritu de la Grieta",
         region = "Poro",
         rarity = "Clásico",
-        imageUrl = "file:///android_asset/offline_images/763bd901dd7903b0ef0081f2f1109dbd.png",
+        imageUrl = "file:///android_asset/poros/poro_akali.jpg",
         borderHex = "#C8AA6E",
         description = "El leal compañero de todo Invocador de Wild Rift.",
         isDefault = true
@@ -17,66 +17,6 @@ object AvatarCatalog {
 
     val avatars: List<AvatarItem> = listOf(
         DEFAULT_AVATAR,
-        AvatarItem(
-            id = "poro_wukong",
-            name = "Poro Wukong",
-            title = "El Rey Mono",
-            region = "Poro",
-            rarity = "Común",
-            imageUrl = "file:///android_asset/offline_images/e8a4313a1a6195419ea38509e182357f.jpg",
-            borderHex = "#A0A0A0",
-            description = "Un poro listo para la batalla con su bastón mágico."
-        ),
-        AvatarItem(
-            id = "poro_volibear",
-            name = "Poro Volibear",
-            title = "El Rugido del Trueno",
-            region = "Poro",
-            rarity = "Raro",
-            imageUrl = "file:///android_asset/offline_images/0e2476c9fb4f0a4f0bba0ca15a867c0f.jpg",
-            borderHex = "#00BFFF",
-            description = "Un poro imbuido con el poder de la tormenta."
-        ),
-        AvatarItem(
-            id = "poro_nashor",
-            name = "Poro Nashor",
-            title = "El Rey de la Grieta",
-            region = "Poro",
-            rarity = "Épico",
-            imageUrl = "file:///android_asset/offline_images/0ff726a7d53de0d252297216e58ee357.jpg",
-            borderHex = "#8A2BE2",
-            description = "El poro más temible del río."
-        ),
-        AvatarItem(
-            id = "poro_ahri",
-            name = "Poro Ahri",
-            title = "La Mujer Zorro",
-            region = "Poro",
-            rarity = "Épico",
-            imageUrl = "file:///android_asset/offline_images/03fa2d4274a2a4a79b70f0b8b40a26e2.jpg",
-            borderHex = "#8A2BE2",
-            description = "Un poro con un encanto irresistible."
-        ),
-        AvatarItem(
-            id = "poro_kaisa",
-            name = "Poro Kai'Sa",
-            title = "Hija del Vacío",
-            region = "Poro",
-            rarity = "Épico",
-            imageUrl = "file:///android_asset/offline_images/e461f7b0e02a95ba7f0413a4981e2aa9.jpg",
-            borderHex = "#8A2BE2",
-            description = "Un poro que sobrevivió al vacío."
-        ),
-        AvatarItem(
-            id = "poro_irelia",
-            name = "Poro Irelia",
-            title = "La Danza de las Cuchillas",
-            region = "Poro",
-            rarity = "Común",
-            imageUrl = "file:///android_asset/offline_images/930c937ac0438948c6eadfb2bea29a30.jpg",
-            borderHex = "#A0A0A0",
-            description = "Un poro que danza en el campo de batalla."
-        ),
         AvatarItem(
             id = "poro_aatrox",
             name = "Poro Aatrox",
