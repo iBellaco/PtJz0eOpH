@@ -213,14 +213,14 @@ object SituationalItemAdvisor {
             keyEffect = "Resonancia: Incrementa el daño de las habilidades mágicas sucesivas e ignora resistencia mágica enemiga.",
             recommendationTip = "Potencia los picos de poder intermedios para dominar escaramuzas en el río y peleas por Dragones."
         ),
-        "Túnica del mediodía" to SituationalItemInfo(
-            name = "Túnica del mediodía",
-            iconUrl = "file:///android_asset/offline_images/mantle_twelfth_hour.webp",
-            categoryName = "Supervivencia Crítica & Desenganche (Parche 7.3)",
-            purpose = "Otorga una inyección masiva de vida adicional, curación y resistencia a ralentizaciones al caer por debajo del 35% de vida.",
-            bestAgainst = listOf("Asesinos de ejecución rápida", "Peleas cerradas al límite de vida"),
-            keyEffect = "Línea de Vida: Otorga hasta 45% de vida adicional y 50% de resistencia a ralentizaciones al bajar del 35% HP.",
-            recommendationTip = "Perfecto para colosos e iniciadores (Aatrox, Sett, Darius, Renekton) que se sumergen en la línea trasera enemiga."
+        "Velo del amanecer" to SituationalItemInfo(
+            name = "Velo del amanecer",
+            iconUrl = "file:///android_asset/offline_images/dawnshroud.webp",
+            categoryName = "Inmovilización & Revelación Defensiva (Parche 7.3)",
+            purpose = "Otorga daño en área y revelación al inmovilizar o sufrir inmovilizaciones de campeones enemigos.",
+            bestAgainst = listOf("Iniciadores y buceadores enemigos", "Peleas de equipo en zonas cerradas"),
+            keyEffect = "Luz solar: Al inmovilizar o sufrir inmovilización, revela y daña a los enemigos cercanos.",
+            recommendationTip = "Ideal para tanques y soportes de iniciación (Leona, Nautilus, Alistar, Thresh)."
         ),
         "Desesperanza eterna" to SituationalItemInfo(
             name = "Desesperanza eterna",

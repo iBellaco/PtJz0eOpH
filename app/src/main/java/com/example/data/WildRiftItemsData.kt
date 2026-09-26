@@ -1117,7 +1117,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "dawnshroud",
-            name = "Túnica del mediodía",
+            name = "Velo del amanecer",
             nameEn = "Dawnshroud",
             category = "Objetos Defensivos",
             goldCost = 2550,
@@ -1127,7 +1127,7 @@ object WildRiftItemsData {
             passiveEn = "Dawnbringer: When you immobilize a champion champion or are immobilized within 400 units of an enemy champion, reveal all nearby enemy champions for 3 seconds, deal magic damage equal to 40 + 2.5% bonusand gain 20% Armor and Magic Resistance (3s Cooldown)",
             coachTip = "Otorga vision y daño en area adicional cuando aplicas o sufres inmovilizaciones, genial para soportes tanques de choque.",
             coachTipEn = "This item is great for tanks and support initiators. When you immobilize an enemy or are immobilized near foes, it reveals nearby champions, deals an explosive burst of magic damage, and briefly boosts your defenses. Perfect for zone control, reliable engages, and countering enemy dive attempts.",
-            iconUrl = "file:///android_asset/offline_images/mantle_twelfth_hour.webp"
+            iconUrl = "file:///android_asset/offline_images/dawnshroud.webp"
         ),
         WildRiftItem(
             id = "amaranth_s_twinguard",
@@ -1523,7 +1523,7 @@ object WildRiftItemsData {
         ),
         WildRiftItem(
             id = "dawnshroud",
-            name = "Túnica del mediodía",
+            name = "Velo del amanecer",
             nameEn = "Dawnshroud",
             category = "Objetos de Apoyo",
             goldCost = 2550,
@@ -1533,7 +1533,7 @@ object WildRiftItemsData {
             passiveEn = "Dawnbringer: When you immobilize a champion champion or are immobilized within 400 units of an enemy champion, reveal all nearby enemy champions for 3 seconds, deal magic damage equal to 40 + 2.5% bonusand gain 20% Armor and Magic Resistance (3s Cooldown)",
             coachTip = "Otorga vision y daño en area adicional cuando aplicas o sufres inmovilizaciones, genial para soportes tanques de choque.",
             coachTipEn = "This item is great for tanks and support initiators. When you immobilize an enemy or are immobilized near foes, it reveals nearby champions, deals an explosive burst of magic damage, and briefly boosts your defenses. Perfect for zone control, reliable engages, and countering enemy dive attempts.",
-            iconUrl = "file:///android_asset/offline_images/mantle_twelfth_hour.webp"
+            iconUrl = "file:///android_asset/offline_images/dawnshroud.webp"
         ),
         WildRiftItem(
             id = "yordle_trap",
