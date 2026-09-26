@@ -59,10 +59,24 @@ fun UserAvatarView(
     isAdmin: Boolean = false,
     adminFrameResId: Int = 0,
     adminFrameUrl: String? = null,
-    role: String? = null
+    role: String? = null,
+    secondaryRole: String? = null
 ) {
     val currentRoleFlowValue = com.example.util.SubscriptionManager.userRole.collectAsState().value
     val resolvedRole = role ?: if (isAdmin) "admin" else currentRoleFlowValue
+
+    val currentSecondaryRoleFlowValue = com.example.util.SubscriptionManager.secondaryRole.collectAsState().value
+    val resolvedSecondaryRole = secondaryRole ?: currentSecondaryRoleFlowValue
+
+    val rankFrameUrl = when (resolvedSecondaryRole.lowercase().trim()) {
+        "esmeralda" -> "https://i.postimg.cc/06M6psFc/Esmeralda.png"
+        "diamante" -> "https://i.postimg.cc/1zMp1RKT/diamante.png"
+        "maestro" -> "https://i.postimg.cc/PqKmnfM9/maestro.png"
+        "gran_maestro", "gran maestro" -> "https://i.postimg.cc/N0b1vGxZ/gran-maestro.png"
+        "aspirante" -> "https://i.postimg.cc/94R4GhKp/aspirante.png"
+        "soberano" -> "https://i.postimg.cc/pmd5L8Bg/soberano.png"
+        else -> null
+    }
 
     val localFrameAsset = when {
         resolvedRole.lowercase() == "admin" -> "file:///android_asset/offline_images/frame_administrador.png"
@@ -149,7 +163,7 @@ fun UserAvatarView(
         }
     }
 
-    val hasFrame = localFrameAsset != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
+    val hasFrame = localFrameAsset != null || rankFrameUrl != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
     val avatarSize = if (hasFrame) size * 0.76f else size
 
     Box(
@@ -236,6 +250,20 @@ fun UserAvatarView(
                     .memoryCachePolicy(CachePolicy.ENABLED)
                     .build(),
                 contentDescription = "Marco de Rol",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .requiredSize(size * 1.36f)
+                    .align(Alignment.Center)
+            )
+        } else if (rankFrameUrl != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(rankFrameUrl)
+                    .crossfade(true)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build(),
+                contentDescription = "Marco de Rol Secundario",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .requiredSize(size * 1.36f)

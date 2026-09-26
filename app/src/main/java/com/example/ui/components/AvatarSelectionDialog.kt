@@ -65,6 +65,7 @@ fun AvatarSelectionBottomSheet(
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
     val unlockedAvatars by SubscriptionManager.unlockedAvatars.collectAsState()
     val userRole by SubscriptionManager.userRole.collectAsState()
+    val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
     val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
 
     val validRegions = remember {
@@ -196,7 +197,8 @@ fun AvatarSelectionBottomSheet(
                             avatarId = currentAvatarId,
                             rankBorder = currentRankBorder,
                             size = if (isAdmin) 46.dp else 54.dp,
-                            isAdmin = isAdmin
+                            isAdmin = isAdmin,
+                            secondaryRole = secondaryRole
                         )
                     }
                     Spacer(modifier = Modifier.width(if (isAdmin) 8.dp else 12.dp))

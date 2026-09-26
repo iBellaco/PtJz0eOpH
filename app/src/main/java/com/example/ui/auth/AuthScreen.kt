@@ -198,7 +198,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
-    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_vip", "streamer")
+    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_vip", "streamer") || secondaryRole.isNotBlank()
     var showAvatarDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
@@ -639,7 +639,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     rankBorder = currentRankBorder,
                     size = if (hasRoleFrame) 100.dp else 76.dp,
                     fallbackInitial = finalUserName,
-                    isAdmin = isAdminUser
+                    isAdmin = isAdminUser,
+                    secondaryRole = secondaryRole
                 )
                 // Botón interactivo de cambio de avatar (Lápiz)
                 Box(

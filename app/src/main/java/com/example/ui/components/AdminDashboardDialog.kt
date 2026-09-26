@@ -1913,6 +1913,25 @@ fun EnhancedUserManagementPanel(
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(UserFilterTab.ALL) }
 
+    var pendingRequestsCount by remember { mutableStateOf(0) }
+    var showRequestsDialog by remember { mutableStateOf(false) }
+
+    val userRoleForRequests = com.example.util.SubscriptionManager.userRole.collectAsState().value
+    val isAdminUserForRequests = userRoleForRequests == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
+
+    if (isAdminUserForRequests) {
+        DisposableEffect(Unit) {
+            val listener = FirebaseFirestore.getInstance().collection("moderator_requests")
+                .whereEqualTo("status", "PENDIENTE")
+                .addSnapshotListener { snapshot, e ->
+                    if (snapshot != null) {
+                        pendingRequestsCount = snapshot.size()
+                    }
+                }
+            onDispose { listener.remove() }
+        }
+    }
+
     // Dialogs
     var selectedUserForManage by remember { mutableStateOf<Map<String, Any>?>(null) }
     var selectedUserForAvatarGift by remember { mutableStateOf<Map<String, Any>?>(null) }
@@ -2111,6 +2130,49 @@ fun EnhancedUserManagementPanel(
                     ),
                     singleLine = true
                 )
+
+                if (isAdminUserForRequests && pendingRequestsCount > 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        onClick = { showRequestsDialog = true },
+                        color = HextechGold.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(10.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.35f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.PendingActions,
+                                    contentDescription = null,
+                                    tint = HextechGold,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Tienes $pendingRequestsCount solicitudes de moderador pendientes",
+                                    color = HextechGold,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Text(
+                                text = "Revisar",
+                                color = HextechCyan,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
+                }
+
+                if (showRequestsDialog) {
+                    AdminModeratorRequestsDialog(onDismiss = { showRequestsDialog = false })
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -2480,7 +2542,8 @@ fun EnhancedUserAdminCard(
                         size = if (role == "admin") 34.dp else 46.dp,
                         fallbackInitial = name.take(1).uppercase(),
                         rankBorder = rankBorder,
-                        isAdmin = (role == "admin")
+                        isAdmin = (role == "admin"),
+                        secondaryRole = user["secondaryRole"] as? String
                     )
                     // Indicador de conexión verde/gris
                     Box(
@@ -2937,7 +3000,8 @@ fun UserDetailManagementDialog(
                             size = 48.dp,
                             fallbackInitial = currentName.take(1).uppercase(),
                             rankBorder = rankBorder,
-                            isAdmin = (currentRole == "admin")
+                            isAdmin = (currentRole == "admin"),
+                            secondaryRole = currentSecondaryRole
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
@@ -3679,12 +3743,25 @@ fun UserDetailManagementDialog(
                                 Button(
                                     onClick = {
                                         val newStatus = !currentVerified
-                                        updateUserVerification(context, uid, newStatus) {
-                                            currentVerified = newStatus
-                                            onUserUpdated(user.toMutableMap().apply {
-                                                put("isVerified", newStatus)
-                                                put("verified", newStatus)
-                                            })
+                                        if (isAdmin) {
+                                            updateUserVerification(context, uid, newStatus) {
+                                                currentVerified = newStatus
+                                                onUserUpdated(user.toMutableMap().apply {
+                                                    put("isVerified", newStatus)
+                                                    put("verified", newStatus)
+                                                })
+                                            }
+                                        } else if (isMod) {
+                                            createModeratorApprovalRequest(
+                                                context = context,
+                                                requestType = "VERIFICATION",
+                                                targetUid = uid,
+                                                targetName = currentName,
+                                                targetEmail = email,
+                                                newValue = newStatus.toString()
+                                            ) {
+                                                // Success callback
+                                            }
                                         }
                                     },
                                     enabled = canAssignSecondaryOrVerify,
@@ -4275,14 +4352,28 @@ fun UserDetailManagementDialog(
                     onClick = {
                         isChangingSecondaryRole = true
                         val targetRoleId = if (isRemoving) "" else target.id
-                        updateUserSecondaryRoleInCloud(context, uid, targetRoleId) { newSecondaryRole ->
-                            isChangingSecondaryRole = false
-                            secondaryRoleToConfirm = null
-                            currentSecondaryRole = newSecondaryRole
-                            onUserUpdated(user.toMutableMap().apply {
-                                put("secondaryRole", newSecondaryRole)
-                            })
-                            onReloadAll()
+                        if (isAdmin) {
+                            updateUserSecondaryRoleInCloud(context, uid, targetRoleId) { newSecondaryRole ->
+                                isChangingSecondaryRole = false
+                                secondaryRoleToConfirm = null
+                                currentSecondaryRole = newSecondaryRole
+                                onUserUpdated(user.toMutableMap().apply {
+                                    put("secondaryRole", newSecondaryRole)
+                                })
+                                onReloadAll()
+                            }
+                        } else if (isMod) {
+                            createModeratorApprovalRequest(
+                                context = context,
+                                requestType = "SECONDARY_ROLE",
+                                targetUid = uid,
+                                targetName = currentName,
+                                targetEmail = email,
+                                newValue = targetRoleId
+                            ) {
+                                isChangingSecondaryRole = false
+                                secondaryRoleToConfirm = null
+                            }
                         }
                     },
                     enabled = !isChangingSecondaryRole,
@@ -5347,4 +5438,384 @@ private fun updateUserEmail(
         .addOnFailureListener { e ->
             Toast.makeText(context, "Error al actualizar correo: ${e.message}", Toast.LENGTH_LONG).show()
         }
+}
+
+private fun createModeratorApprovalRequest(
+    context: Context,
+    requestType: String,
+    targetUid: String,
+    targetName: String,
+    targetEmail: String,
+    newValue: String,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+    val moderator = auth.currentUser
+    
+    val reqId = db.collection("moderator_requests").document().id
+    val payload = hashMapOf<String, Any>(
+        "id" to reqId,
+        "requestType" to requestType,
+        "targetUid" to targetUid,
+        "targetName" to targetName,
+        "targetEmail" to targetEmail,
+        "newValue" to newValue,
+        "requestedByUid" to (moderator?.uid ?: ""),
+        "requestedByName" to (moderator?.displayName ?: moderator?.email?.substringBefore("@") ?: "Moderador"),
+        "status" to "PENDIENTE",
+        "timestamp" to System.currentTimeMillis()
+    )
+    
+    db.collection("moderator_requests").document(reqId)
+        .set(payload)
+        .addOnSuccessListener {
+            Toast.makeText(context, "Solicitud enviada para aprobación del Administrador", Toast.LENGTH_LONG).show()
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, "Error al crear solicitud: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdminModeratorRequestsDialog(
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val db = FirebaseFirestore.getInstance()
+    var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var showHistory by remember { mutableStateOf(false) }
+
+    fun loadRequests() {
+        isLoading = true
+        db.collection("moderator_requests")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.map { doc ->
+                    val data = doc.data?.toMutableMap() ?: mutableMapOf()
+                    data["id"] = doc.id
+                    data
+                }.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
+                
+                requests = list
+                isLoading = false
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Error al cargar solicitudes: ${e.message}", Toast.LENGTH_LONG).show()
+                isLoading = false
+            }
+    }
+
+    LaunchedEffect(Unit) {
+        loadRequests()
+    }
+
+    val filtered = requests.filter { req ->
+        val status = req["status"] as? String ?: "PENDIENTE"
+        if (showHistory) {
+            status != "PENDIENTE"
+        } else {
+            status == "PENDIENTE"
+        }
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.85f),
+            color = HextechSurfaceBg,
+            shape = RoundedCornerShape(16.dp),
+            border = androidx.compose.foundation.BorderStroke(1.2.dp, HextechGold)
+        ) {
+            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.PendingActions,
+                            contentDescription = null,
+                            tint = HextechGold,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Solicitudes de Moderadores",
+                            color = HextechGold,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextPrimary)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Toggle history
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = if (showHistory) "Mostrando: Historial de Solicitudes" else "Mostrando: Pendientes de Aprobación",
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    TextButton(onClick = { showHistory = !showHistory }) {
+                        Text(
+                            text = if (showHistory) "Ver Pendientes" else "Ver Historial",
+                            color = HextechCyan,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                if (isLoading) {
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = HextechGold)
+                    }
+                } else if (filtered.isEmpty()) {
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(48.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = if (showHistory) "No hay historial de solicitudes registrado" else "¡Todo al día! No tienes solicitudes pendientes",
+                                color = TextMuted,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(filtered) { req ->
+                            val id = req["id"] as? String ?: ""
+                            val type = req["requestType"] as? String ?: ""
+                            val targetUid = req["targetUid"] as? String ?: ""
+                            val targetName = req["targetName"] as? String ?: "Usuario"
+                            val targetEmail = req["targetEmail"] as? String ?: ""
+                            val newValue = req["newValue"] as? String ?: ""
+                            val requestedByName = req["requestedByName"] as? String ?: "Moderador"
+                            val status = req["status"] as? String ?: "PENDIENTE"
+                            val timestamp = (req["timestamp"] as? Number)?.toLong() ?: 0L
+                            
+                            val formattedTime = try {
+                                val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+                                sdf.format(java.util.Date(timestamp))
+                            } catch (e: Exception) {
+                                "Reciente"
+                            }
+
+                            Surface(
+                                color = HextechDarkBg,
+                                shape = RoundedCornerShape(10.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    when (status) {
+                                        "PENDIENTE" -> HextechGold.copy(alpha = 0.5f)
+                                        "APROBADA" -> Color(0xFF00FF7F).copy(alpha = 0.5f)
+                                        else -> DangerRed.copy(alpha = 0.5f)
+                                    }
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    // Row 1: Tipo + Fecha
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            color = when (type) {
+                                                "VERIFICATION" -> HextechCyan.copy(alpha = 0.15f)
+                                                else -> HextechGold.copy(alpha = 0.15f)
+                                            },
+                                            shape = RoundedCornerShape(4.dp)
+                                        ) {
+                                            Text(
+                                                text = if (type == "VERIFICATION") "VERIFICACIÓN" else "ROL SECUNDARIO",
+                                                color = if (type == "VERIFICATION") HextechCyan else HextechGold,
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                        Text(
+                                            text = formattedTime,
+                                            color = TextMuted,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    // Row 2: Target Info
+                                    Text(
+                                        text = "Para: $targetName",
+                                        color = TextPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        text = targetEmail,
+                                        color = TextSecondary,
+                                        fontSize = 11.sp
+                                    )
+
+                                    Spacer(modifier = Modifier.height(6.dp))
+
+                                    // Row 3: Proposed Value
+                                    Surface(
+                                        color = HextechSurfaceBg,
+                                        shape = RoundedCornerShape(6.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "Cambio propuesto: ",
+                                                color = TextMuted,
+                                                fontSize = 11.sp
+                                            )
+                                            if (type == "VERIFICATION") {
+                                                val verifyVal = newValue.toBoolean()
+                                                Surface(
+                                                    color = if (verifyVal) HextechCyan.copy(alpha = 0.12f) else DangerRed.copy(alpha = 0.12f),
+                                                    shape = RoundedCornerShape(4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = if (verifyVal) "VERIFICAR" else "QUITAR VERIFICACIÓN",
+                                                        color = if (verifyVal) HextechCyan else DangerRed,
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                    )
+                                                }
+                                            } else {
+                                                if (newValue.isBlank()) {
+                                                    Text(
+                                                        text = "QUITAR ROL SECUNDARIO",
+                                                        color = DangerRed,
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                } else {
+                                                    RoleBadge(
+                                                        role = newValue,
+                                                        isPremiumActive = false,
+                                                        isBanned = false,
+                                                        size = RoleBadgeSize.COMPACT
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(6.dp))
+
+                                    // Requested by
+                                    Text(
+                                        text = "Solicitado por moderador: $requestedByName",
+                                        color = TextSecondary,
+                                        fontSize = 11.sp,
+                                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                    )
+
+                                    if (status == "PENDIENTE") {
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            // Reject
+                                            OutlinedButton(
+                                                onClick = {
+                                                    db.collection("moderator_requests").document(id)
+                                                        .update("status", "RECHAZADA")
+                                                        .addOnSuccessListener {
+                                                            Toast.makeText(context, "Solicitud rechazada", Toast.LENGTH_SHORT).show()
+                                                            loadRequests()
+                                                        }
+                                                },
+                                                modifier = Modifier.weight(1f),
+                                                colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
+                                                border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed),
+                                                shape = RoundedCornerShape(6.dp),
+                                                contentPadding = PaddingValues(vertical = 6.dp)
+                                            ) {
+                                                Text("Rechazar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+
+                                            // Approve
+                                            Button(
+                                                onClick = {
+                                                    // Apply change first
+                                                    if (type == "VERIFICATION") {
+                                                        val verifyVal = newValue.toBoolean()
+                                                        updateUserVerification(context, targetUid, verifyVal) {
+                                                            db.collection("moderator_requests").document(id)
+                                                                .update("status", "APROBADA")
+                                                                .addOnSuccessListener {
+                                                                    loadRequests()
+                                                                }
+                                                        }
+                                                    } else {
+                                                        updateUserSecondaryRoleInCloud(context, targetUid, newValue) {
+                                                            db.collection("moderator_requests").document(id)
+                                                                .update("status", "APROBADA")
+                                                                .addOnSuccessListener {
+                                                                    loadRequests()
+                                                                }
+                                                        }
+                                                    }
+                                                },
+                                                modifier = Modifier.weight(1f),
+                                                colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg),
+                                                shape = RoundedCornerShape(6.dp),
+                                                contentPadding = PaddingValues(vertical = 6.dp)
+                                            ) {
+                                                Text("Aprobar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    } else {
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = "ESTADO: $status",
+                                            color = if (status == "APROBADA") Color(0xFF00FF7F) else DangerRed,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

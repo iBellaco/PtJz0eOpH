@@ -178,6 +178,7 @@ fun MainDraftingScreen(
     var showPlansDialog by remember { mutableStateOf(false) }
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
+    val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
 
     // Sincronizar estado del servicio cuando la app pasa a primer plano
     DisposableEffect(lifecycleOwner) {
@@ -361,7 +362,8 @@ fun MainDraftingScreen(
                                     avatarId = currentAvatarId,
                                     rankBorder = currentRankBorder,
                                     size = 36.dp,
-                                    fallbackInitial = authUser.displayName ?: authUser.email ?: "U"
+                                    fallbackInitial = authUser.displayName ?: authUser.email ?: "U",
+                                    secondaryRole = secondaryRole
                                 )
                             }
                         }
