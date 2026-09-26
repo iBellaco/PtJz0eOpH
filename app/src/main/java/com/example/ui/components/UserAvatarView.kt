@@ -80,12 +80,12 @@ fun UserAvatarView(
     }
 
     val rankFrameUrl = when {
-        resolvedSecondaryRole.lowercase().trim() == "esmeralda" || rankBorder.uppercase() == "ESMERALDA" -> "https://i.postimg.cc/06M6psFc/Esmeralda.png"
-        resolvedSecondaryRole.lowercase().trim() == "diamante" || rankBorder.uppercase() == "DIAMANTE" -> "https://i.postimg.cc/1zMp1RKT/diamante.png"
-        resolvedSecondaryRole.lowercase().trim() == "maestro" || rankBorder.uppercase() == "MAESTRO_FRAME" -> "https://i.postimg.cc/PqKmnfM9/maestro.png"
-        resolvedSecondaryRole.lowercase().trim() in listOf("gran_maestro", "gran maestro") || rankBorder.uppercase() == "GRAN_MAESTRO_FRAME" -> "https://i.postimg.cc/N0b1vGxZ/gran-maestro.png"
-        resolvedSecondaryRole.lowercase().trim() == "aspirante" || rankBorder.uppercase() == "ASPIRANTE" -> "https://i.postimg.cc/94R4GhKp/aspirante.png"
-        resolvedSecondaryRole.lowercase().trim() == "soberano" || rankBorder.uppercase() == "SOBERANO" -> "https://i.postimg.cc/pmd5L8Bg/soberano.png"
+        resolvedSecondaryRole.lowercase().trim() == "esmeralda" || rankBorder.uppercase() == "ESMERALDA" -> "file:///android_asset/offline_images/frame_esmeralda.png"
+        resolvedSecondaryRole.lowercase().trim() == "diamante" || rankBorder.uppercase() == "DIAMANTE" -> "file:///android_asset/offline_images/frame_diamante.png"
+        resolvedSecondaryRole.lowercase().trim() == "maestro" || rankBorder.uppercase() == "MAESTRO_FRAME" -> "file:///android_asset/offline_images/frame_maestro.png"
+        resolvedSecondaryRole.lowercase().trim() in listOf("gran_maestro", "gran maestro") || rankBorder.uppercase() == "GRAN_MAESTRO_FRAME" -> "file:///android_asset/offline_images/frame_gran_maestro.png"
+        resolvedSecondaryRole.lowercase().trim() == "aspirante" || rankBorder.uppercase() == "ASPIRANTE" -> "file:///android_asset/offline_images/frame_aspirante.png"
+        resolvedSecondaryRole.lowercase().trim() == "soberano" || rankBorder.uppercase() == "SOBERANO" -> "file:///android_asset/offline_images/frame_soberano.png"
         else -> null
     }
 

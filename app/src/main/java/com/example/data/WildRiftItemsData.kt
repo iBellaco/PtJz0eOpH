@@ -1337,7 +1337,7 @@ object WildRiftItemsData {
             passiveEn = "Anguish: Every 4 second(s) while in combat with a champion, deal 3% of your max Health as magic damage to nearby champions and heal for 250% of the damage dealt. Anguish is unaffected by Item Ability Haste.",
             coachTip = "Este objeto te convierte en una primera línea autosostenible: mientras luchas, periódicamente infliges daño mágico a tu alrededor y te curas una parte de ese daño. Excelente para tanques y soldados de primera línea: te ayuda a concentrarte, permanecer en el centro de las peleas por más tiempo y sobresalir en enfrentamientos prolongados en equipo. Menos efectivo en intercambios de ráfagas muy breves o en campeones que evitan permanecer en el centro del combate.",
             coachTipEn = "This item turns you into a self-sustaining frontline: while fighting you periodically deal magic damage around you and heal for a portion of that damage. Great for tanks and frontliners — it helps you soak focus, remain in the heart of fights longer, and excel in extended team engagements. Less effective in very short burst trades or on champions that avoid standing in the center of combat.",
-            iconUrl = "file:///android_asset/offline_images/thornmail.webp"
+            iconUrl = "file:///android_asset/offline_images/unending_despair.webp"
         ),
         WildRiftItem(
             id = "banshee_s_veil",
@@ -2207,7 +2207,7 @@ object WildRiftItemsData {
             passiveEn = "Anguish: Every 4s in combat with enemy champions, deal magic damage equal to 3% max Health to nearby enemies and heal for 100% of the damage dealt.",
             coachTip = "Proporciona daño sostenido en área y autocuración constante para tanques en peleas grupales.",
             coachTipEn = "Provides sustained AoE damage and constant self-healing for tanks in group fights.",
-            iconUrl = "file:///android_asset/offline_images/thornmail.webp"
+            iconUrl = "file:///android_asset/offline_images/unending_despair.webp"
         ),
         WildRiftItem(
             id = "rapid_firecannon",
@@ -2235,7 +2235,7 @@ object WildRiftItemsData {
             passiveEn = "Serrated Blades: Critical strikes apply a bleed dealing bonus physical damage over 2s.",
             coachTip = "Suma un daño por segundo devastador al acumular probabilidad de crítico, convirtiendo cada crítico en sangrado prolongado.",
             coachTipEn = "Adds devastating DPS when stacking crit chance, turning every crit into sustained bleed damage.",
-            iconUrl = "file:///android_asset/offline_images/stormrazor.webp"
+            iconUrl = "file:///android_asset/offline_images/yun_tal_wildarrows.webp"
         ),
         WildRiftItem(
             id = "statikk_shiv",
@@ -2291,7 +2291,7 @@ object WildRiftItemsData {
             passiveEn = "Whisper of Life: Increases the strength of your heals and shields granted to allies.",
             coachTip = "Ideal para campeones de apoyo que consumen mucho maná y dependen de escudos y curaciones. Proporciona regeneración de maná sostenida y escala tu efectividad de apoyo según tu reserva de maná total.",
             coachTipEn = "Great for enchanter supports looking to maximize healing and shield mitigation for their team.",
-            iconUrl = "file:///android_asset/offline_images/echoes_of_helia.webp"
+            iconUrl = "file:///android_asset/offline_images/whispering_headband.webp"
         ),
     )
 

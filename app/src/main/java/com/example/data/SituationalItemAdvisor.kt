@@ -206,12 +206,21 @@ object SituationalItemAdvisor {
         ),
         "Diadema susurrante" to SituationalItemInfo(
             name = "Diadema susurrante",
-            iconUrl = "file:///android_asset/offline_images/whispering_diadem.webp",
+            iconUrl = "file:///android_asset/offline_images/whispering_headband.webp",
             categoryName = "Poder de Habilidad & Penetración AP (Parche 7.3)",
             purpose = "Otorga daño mágico explosivo y amplificación continua para magos de rotación rápida de habilidades.",
             bestAgainst = listOf("Composiciones de daño mágico", "Magos de ráfaga y desgaste (Syndra, Ahri, Orianna, Vex)"),
             keyEffect = "Resonancia: Incrementa el daño de las habilidades mágicas sucesivas e ignora resistencia mágica enemiga.",
             recommendationTip = "Potencia los picos de poder intermedios para dominar escaramuzas en el río y peleas por Dragones."
+        ),
+        "Flechas de los Yun Tal" to SituationalItemInfo(
+            name = "Flechas de los Yun Tal",
+            iconUrl = "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
+            categoryName = "Daño Físico & Crítico con Sangrado (Parche 7.3)",
+            purpose = "Los impactos críticos aplican un sangrado devastador que inflige daño físico adicional durante 2 s.",
+            bestAgainst = listOf("Tiradores y asesinos de impacto crítico", "Enemigos que requieren daño por segundo continuo"),
+            keyEffect = "Hojas sangrientas: Los críticos aplican sangrado continuo.",
+            recommendationTip = "Suma un daño por segundo devastador al acumular probabilidad de crítico."
         ),
         "Velo del amanecer" to SituationalItemInfo(
             name = "Velo del amanecer",
