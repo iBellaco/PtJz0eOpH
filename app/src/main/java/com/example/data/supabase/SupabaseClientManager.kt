@@ -193,10 +193,22 @@ CREATE POLICY "Allow public insert feedbacks" ON public.feedbacks FOR INSERT WIT
 -- Almacena todas las imágenes del juego excepto avatares y marcos de perfil que se quedan locales.
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('wildrift_assets', 'wildrift_assets', true)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET public = true;
 
 CREATE POLICY "Allow public read wildrift_assets"
 ON storage.objects FOR SELECT
+USING (bucket_id = 'wildrift_assets');
+
+CREATE POLICY "Allow public insert wildrift_assets"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'wildrift_assets');
+
+CREATE POLICY "Allow public update wildrift_assets"
+ON storage.objects FOR UPDATE
+USING (bucket_id = 'wildrift_assets');
+
+CREATE POLICY "Allow public delete wildrift_assets"
+ON storage.objects FOR DELETE
 USING (bucket_id = 'wildrift_assets');
         """.trimIndent()
     }
