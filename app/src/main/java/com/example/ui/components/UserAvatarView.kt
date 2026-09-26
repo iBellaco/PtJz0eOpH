@@ -68,13 +68,13 @@ fun UserAvatarView(
     val currentSecondaryRoleFlowValue = com.example.util.SubscriptionManager.secondaryRole.collectAsState().value
     val resolvedSecondaryRole = secondaryRole ?: currentSecondaryRoleFlowValue
 
-    val rankFrameUrl = when (resolvedSecondaryRole.lowercase().trim()) {
-        "esmeralda" -> "https://i.postimg.cc/06M6psFc/Esmeralda.png"
-        "diamante" -> "https://i.postimg.cc/1zMp1RKT/diamante.png"
-        "maestro" -> "https://i.postimg.cc/PqKmnfM9/maestro.png"
-        "gran_maestro", "gran maestro" -> "https://i.postimg.cc/N0b1vGxZ/gran-maestro.png"
-        "aspirante" -> "https://i.postimg.cc/94R4GhKp/aspirante.png"
-        "soberano" -> "https://i.postimg.cc/pmd5L8Bg/soberano.png"
+    val rankFrameUrl = when {
+        resolvedSecondaryRole.lowercase().trim() == "esmeralda" || rankBorder.uppercase() == "ESMERALDA" -> "https://i.postimg.cc/06M6psFc/Esmeralda.png"
+        resolvedSecondaryRole.lowercase().trim() == "diamante" || rankBorder.uppercase() == "DIAMANTE" -> "https://i.postimg.cc/1zMp1RKT/diamante.png"
+        resolvedSecondaryRole.lowercase().trim() == "maestro" || rankBorder.uppercase() == "MAESTRO_FRAME" -> "https://i.postimg.cc/PqKmnfM9/maestro.png"
+        resolvedSecondaryRole.lowercase().trim() in listOf("gran_maestro", "gran maestro") || rankBorder.uppercase() == "GRAN_MAESTRO_FRAME" -> "https://i.postimg.cc/N0b1vGxZ/gran-maestro.png"
+        resolvedSecondaryRole.lowercase().trim() == "aspirante" || rankBorder.uppercase() == "ASPIRANTE" -> "https://i.postimg.cc/94R4GhKp/aspirante.png"
+        resolvedSecondaryRole.lowercase().trim() == "soberano" || rankBorder.uppercase() == "SOBERANO" -> "https://i.postimg.cc/pmd5L8Bg/soberano.png"
         else -> null
     }
 

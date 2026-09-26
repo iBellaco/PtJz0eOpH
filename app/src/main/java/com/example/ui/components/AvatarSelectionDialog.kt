@@ -183,25 +183,22 @@ fun AvatarSelectionBottomSheet(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp, vertical = if (isAdmin) 6.dp else 10.dp),
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
-                        modifier = Modifier.size(
-                            width = if (isAdmin) 116.dp else 60.dp,
-                            height = if (isAdmin) 120.dp else 60.dp
-                        ),
+                        modifier = Modifier.size(100.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         UserAvatarView(
                             avatarId = currentAvatarId,
                             rankBorder = currentRankBorder,
-                            size = if (isAdmin) 46.dp else 54.dp,
+                            size = 84.dp,
                             isAdmin = isAdmin,
                             secondaryRole = secondaryRole
                         )
                     }
-                    Spacer(modifier = Modifier.width(if (isAdmin) 8.dp else 12.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
@@ -238,6 +235,45 @@ fun AvatarSelectionBottomSheet(
                             fontSize = 11.5.sp
                         )
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Selector de Categoría: Avatares vs Marcos de Perfil
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(HextechSurface, RoundedCornerShape(10.dp))
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Button(
+                    onClick = { selectedCategory = "Avatares" },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedCategory == "Avatares") HextechGold else Color.Transparent,
+                        contentColor = if (selectedCategory == "Avatares") HextechDarkBg else TextSecondary
+                    ),
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                    elevation = null
+                ) {
+                    Text("Avatares", fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
+                }
+
+                Button(
+                    onClick = { selectedCategory = "Marcos" },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedCategory == "Marcos") HextechGold else Color.Transparent,
+                        contentColor = if (selectedCategory == "Marcos") HextechDarkBg else TextSecondary
+                    ),
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                    elevation = null
+                ) {
+                    Text("Marcos de Perfil", fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
                 }
             }
 
@@ -416,7 +452,8 @@ fun AvatarSelectionBottomSheet(
                                     UserAvatarView(
                                         avatarId = avatar.id,
                                         size = 54.dp,
-                                        customBorderColor = rarityColor
+                                        customBorderColor = rarityColor,
+                                        secondaryRole = ""
                                     )
     
                                     if (isEquipped) {
@@ -561,7 +598,18 @@ fun AvatarSelectionBottomSheet(
             } // End of LazyVerticalGrid
         } else {
                     // MARCOS (BORDERS) SECTION
-                    val borders = listOf("NONE", "MASTER", "GRANDMASTER", "CHALLENGER")
+                    val borders = listOf(
+                        "NONE",
+                        "MASTER",
+                        "GRANDMASTER",
+                        "CHALLENGER",
+                        "ESMERALDA",
+                        "DIAMANTE",
+                        "MAESTRO_FRAME",
+                        "GRAN_MAESTRO_FRAME",
+                        "ASPIRANTE",
+                        "SOBERANO"
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     if (!isPremium && userRole != "admin") {
@@ -657,9 +705,10 @@ fun AvatarSelectionBottomSheet(
                                     ) {
                                         UserAvatarView(
                                             avatarId = currentAvatarId,
-                                    size = 64.dp,
+                                            size = 64.dp,
                                             rankBorder = border,
-                                            showBorder = false
+                                            showBorder = false,
+                                            secondaryRole = ""
                                         )
                                         if (!isAvailable) {
                                             Box(
@@ -673,10 +722,25 @@ fun AvatarSelectionBottomSheet(
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))
+                                    val borderLabel = when (border) {
+                                        "NONE" -> "Sin Marco"
+                                        "MASTER" -> "Maestro (Vector)"
+                                        "GRANDMASTER" -> "Gran Maestro (Vector)"
+                                        "CHALLENGER" -> "Retador (Vector)"
+                                        "ESMERALDA" -> "Esmeralda (Especial)"
+                                        "DIAMANTE" -> "Diamante (Especial)"
+                                        "MAESTRO_FRAME" -> "Maestro (Especial)"
+                                        "GRAN_MAESTRO_FRAME" -> "Gran Maestro (Especial)"
+                                        "ASPIRANTE" -> "Aspirante (Especial)"
+                                        "SOBERANO" -> "Soberano (Especial)"
+                                        else -> border
+                                    }
                                     Text(
-                                        text = if (border == "NONE") "Sin Marco" else border,
+                                        text = borderLabel,
                                         color = if (isSelected) HextechGold else TextPrimary,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        fontSize = 11.sp
                                     )
                                 }
                             }
