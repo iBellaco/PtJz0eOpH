@@ -589,14 +589,16 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 finishedListener = { avatarTapped = false }
             )
 
+            val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_vip", "streamer")
+
             // Avatar in center
             Box(
                 modifier = Modifier
                     .padding(
-                        top = if (isAdminUser) 24.dp else 6.dp,
-                        bottom = if (isAdminUser) 10.dp else 6.dp,
-                        start = if (isAdminUser) 24.dp else 8.dp,
-                        end = if (isAdminUser) 24.dp else 8.dp
+                        top = if (hasRoleFrame) 12.dp else 6.dp,
+                        bottom = if (hasRoleFrame) 8.dp else 6.dp,
+                        start = if (hasRoleFrame) 12.dp else 8.dp,
+                        end = if (hasRoleFrame) 12.dp else 8.dp
                     )
                     .graphicsLayer {
                         scaleX = avatarScale
@@ -608,7 +610,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     },
                 contentAlignment = Alignment.Center
             ) {
-                if (!isAdminUser) {
+                if (!hasRoleFrame) {
                     Box(
                         modifier = Modifier
                             .size(86.dp)
@@ -635,7 +637,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 UserAvatarView(
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
-                    size = if (isAdminUser) 74.dp else 72.dp,
+                    size = if (hasRoleFrame) 100.dp else 76.dp,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser
                 )
@@ -644,8 +646,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .offset(
-                            x = if (isAdminUser) 8.dp else 2.dp,
-                            y = if (isAdminUser) 6.dp else 2.dp
+                            x = if (hasRoleFrame) 6.dp else 2.dp,
+                            y = if (hasRoleFrame) 6.dp else 2.dp
                         )
                         .size(32.dp)
                         .clip(CircleShape)
