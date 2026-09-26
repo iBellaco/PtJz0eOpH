@@ -364,10 +364,10 @@ fun CustomBuildDetailDialog(
                     }
                 }
 
-                // Botas Core (Nivel 2 + Evolución Nivel 3)
+                // Botas Core (Nivel 2 + Mejora Nivel 3)
                 if (record.bootsT2Item != null || record.bootsT3Item != null) {
                     item {
-                        Text("Botas y Evolución (Opcional)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Botas y Mejoras (Opcional)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.bootsT2Item?.let { boot ->
@@ -436,7 +436,7 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text("[Evolución N3] ${enchant.itemName}", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Text("[Mejora N3] ${enchant.itemName}", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                             if (enchant.description.isNotBlank()) Text(enchant.description, color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }

@@ -577,48 +577,107 @@ object ChampionRoleAdapter {
             val bBootUpgrade = if (b.bootUpgrade.isNotBlank()) b.bootUpgrade else getTier3BootUpgrade(bBootBase)
             val bSituationalBoots = (if (b.situationalBoots.isNotEmpty()) b.situationalBoots else getSituationalBoots(bBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role)).filter { !it.equals(bBootBase, ignoreCase = true) }.distinct()
 
-            return listOf(
-                ChampionBuildOption(
-                    optionNumber = 1,
-                    title = b.title.ifBlank { "Build Oficial de Línea ($bRole)" },
-                    subtitle = "Línea: $bRole • Meta Soberano",
-                    source = "Meta Pro / Coach Soberano",
-                    badge = "META SOBERANO",
-                    tacticalReason = "Build oficial de alto rendimiento para $bRole: 3 Core Items indispensables, opciones situacionales y botas evolucionadas a Nivel 3.",
-                    items = cleanCoreItems,
-                    bootBase = bBootBase,
-                    bootUpgrade = bBootUpgrade,
-                    situationalBoots = bSituationalBoots,
-                    situationalItems = sitItems,
-                    runes = resolvedRunes,
-                    spells = resolvedSpells,
-                    spellsIcons = resolvedSpellsIcons
-                )
+            val opt1 = ChampionBuildOption(
+                optionNumber = 1,
+                title = b.title.ifBlank { "Build Oficial de Línea ($bRole)" },
+                subtitle = "Línea: $bRole • Meta Soberano",
+                source = "Meta Pro / Coach Soberano",
+                badge = "META SOBERANO",
+                tacticalReason = "Build oficial de alto rendimiento para $bRole: 3 Core Items indispensables, opciones situacionales y botas de Nivel 3 adaptadas.",
+                items = cleanCoreItems,
+                bootBase = bBootBase,
+                bootUpgrade = bBootUpgrade,
+                situationalBoots = bSituationalBoots,
+                situationalItems = sitItems,
+                runes = resolvedRunes,
+                spells = resolvedSpells,
+                spellsIcons = resolvedSpellsIcons
             )
+
+            val opt2BootBase = bSituationalBoots.firstOrNull() ?: if (bBootBase.contains("blindad", true)) "Botas de mercurio" else "Botas blindadas"
+            val opt2BootUpgrade = getTier3BootUpgrade(opt2BootBase)
+            val opt2SituationalBoots = (listOf(bBootBase) + bSituationalBoots).filter { !it.equals(opt2BootBase, ignoreCase = true) }
+            val resolvedOpt2Runes = if (opt2Runes.isNotEmpty() && opt2Runes != resolvedRunes) {
+                opt2Runes
+            } else {
+                val b2 = champ.build2Runes.split(",").map { it.trim() }.filter { it.isNotBlank() }
+                if (b2.size >= 5) b2 else resolvedRunes
+            }
+            val opt2Spells = if (champ.build2Spells.isNotEmpty()) ensureUniqueSpells(champ.build2Spells, role) else resolvedSpells
+            val opt2SpellsIcons = opt2Spells.map { WildRiftSpellsAndRunes.getSpellIconByName(it) }
+
+            val opt2Items = if (sitItems.isNotEmpty()) {
+                cleanCoreItems.take(2) + sitItems.take(1)
+            } else cleanCoreItems
+
+            val opt2SitItems = (cleanCoreItems.drop(2) + sitItems.drop(1)).distinct().filter { !opt2Items.contains(it) }
+
+            val opt2 = ChampionBuildOption(
+                optionNumber = 2,
+                title = "Opción 2: Situacional & Adaptativa",
+                subtitle = "Línea: $bRole • Situacional",
+                source = "Meta Pro / Coach Soberano",
+                badge = "SITUACIONAL",
+                tacticalReason = "Configuración situacional optimizada para responder a composiciones rivales con daño concentrado o control de masas, adaptando las botas de Nivel 3 y objetos situacionales.",
+                items = opt2Items,
+                bootBase = opt2BootBase,
+                bootUpgrade = opt2BootUpgrade,
+                situationalBoots = opt2SituationalBoots,
+                situationalItems = opt2SitItems,
+                runes = resolvedOpt2Runes,
+                spells = opt2Spells,
+                spellsIcons = opt2SpellsIcons
+            )
+
+            return listOf(opt1, opt2)
         }
 
         val resolvedSpells1 = ensureUniqueSpells(defaultSpells, role)
         val resolvedSpellsIcons1 = resolvedSpells1.map { WildRiftSpellsAndRunes.getSpellIconByName(it) }
         val defaultSituationalBoots = getSituationalBoots(defaultBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role)
 
-        return listOf(
-            ChampionBuildOption(
-                optionNumber = 1,
-                title = "Build Oficial de Línea (${role.shortName})",
-                subtitle = "Línea: ${role.displayName} • Meta Soberano",
-                source = "Meta Pro / Coach Soberano",
-                badge = "META SOBERANO",
-                tacticalReason = "Build oficial de alto rendimiento para ${role.displayName}: 3 Core Items de impacto, opciones situacionales y botas evolucionadas.",
-                items = defaultBuild8.take(3),
-                bootBase = defaultBootBase,
-                bootUpgrade = defaultBootUpgrade,
-                situationalBoots = defaultSituationalBoots,
-                situationalItems = defaultBuild8.drop(3).take(4),
-                runes = opt1Runes.ifEmpty { champ.recommendedRunes.split(",").map { it.trim() }.filter { it.isNotBlank() } },
-                spells = resolvedSpells1,
-                spellsIcons = resolvedSpellsIcons1
-            )
+        val fallbackOpt1 = ChampionBuildOption(
+            optionNumber = 1,
+            title = "Build Oficial de Línea (${role.shortName})",
+            subtitle = "Línea: ${role.displayName} • Meta Soberano",
+            source = "Meta Pro / Coach Soberano",
+            badge = "META SOBERANO",
+            tacticalReason = "Build oficial de alto rendimiento para ${role.displayName}: 3 Core Items de impacto, opciones situacionales y botas de Nivel 3 adaptadas.",
+            items = defaultBuild8.take(3),
+            bootBase = defaultBootBase,
+            bootUpgrade = defaultBootUpgrade,
+            situationalBoots = defaultSituationalBoots,
+            situationalItems = defaultBuild8.drop(3).take(4),
+            runes = opt1Runes.ifEmpty { champ.recommendedRunes.split(",").map { it.trim() }.filter { it.isNotBlank() } },
+            spells = resolvedSpells1,
+            spellsIcons = resolvedSpellsIcons1
         )
+
+        val fallbackOpt2BootBase = defaultSituationalBoots.firstOrNull() ?: if (defaultBootBase.contains("blindad", true)) "Botas de mercurio" else "Botas blindadas"
+        val fallbackOpt2BootUpgrade = getTier3BootUpgrade(fallbackOpt2BootBase)
+        val fallbackOpt2SituationalBoots = (listOf(defaultBootBase) + defaultSituationalBoots).filter { !it.equals(fallbackOpt2BootBase, ignoreCase = true) }
+        val fallbackSitItems = defaultBuild8.drop(3).take(4)
+        val fallbackOpt2Items = if (fallbackSitItems.isNotEmpty()) defaultBuild8.take(2) + fallbackSitItems.take(1) else defaultBuild8.take(3)
+        val fallbackOpt2SitItems = (defaultBuild8.take(3).drop(2) + fallbackSitItems.drop(1)).distinct().filter { !fallbackOpt2Items.contains(it) }
+
+        val fallbackOpt2 = ChampionBuildOption(
+            optionNumber = 2,
+            title = "Opción 2: Situacional & Adaptativa",
+            subtitle = "Línea: ${role.displayName} • Situacional",
+            source = "Meta Pro / Coach Soberano",
+            badge = "SITUACIONAL",
+            tacticalReason = "Configuración situacional adaptada para responder a composiciones rivales con amenazas defensivas u ofensivas específicas.",
+            items = fallbackOpt2Items,
+            bootBase = fallbackOpt2BootBase,
+            bootUpgrade = fallbackOpt2BootUpgrade,
+            situationalBoots = fallbackOpt2SituationalBoots,
+            situationalItems = fallbackOpt2SitItems,
+            runes = opt2Runes.ifEmpty { fallbackOpt1.runes },
+            spells = resolvedSpells1,
+            spellsIcons = resolvedSpellsIcons1
+        )
+
+        return listOf(fallbackOpt1, fallbackOpt2)
     }
 
     private fun generateSituationalSwaps(

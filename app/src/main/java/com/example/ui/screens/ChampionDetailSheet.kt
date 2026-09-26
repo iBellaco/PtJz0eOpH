@@ -1073,7 +1073,7 @@ fun ChampionDetailSheet(
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         Text(
-                            text = tr("Por qué y contra quiénes comprar los objetos situacionales:"),
+                            text = tr("Situaciones recomendadas y objetivos a contrarrestar:"),
                             color = HextechGold,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -1115,7 +1115,13 @@ fun ChampionDetailSheet(
             // ==========================================
             var selectedBootBaseOverride by remember(activeOption) { mutableStateOf<String?>(null) }
             val currentBootBase = selectedBootBaseOverride ?: activeOption.bootBase.ifBlank { "Botas blindadas" }
-            val currentBootUpgrade = if (activeOption.bootUpgrade.isNotBlank()) activeOption.bootUpgrade else ChampionRoleAdapter.getTier3BootUpgrade(currentBootBase)
+            val currentBootUpgrade = if (selectedBootBaseOverride != null) {
+                ChampionRoleAdapter.getTier3BootUpgrade(currentBootBase)
+            } else if (activeOption.bootUpgrade.isNotBlank() && activeOption.bootUpgrade.equals(ChampionRoleAdapter.getTier3BootUpgrade(activeOption.bootBase), ignoreCase = true)) {
+                activeOption.bootUpgrade
+            } else {
+                ChampionRoleAdapter.getTier3BootUpgrade(currentBootBase)
+            }
 
             val bootBoxSize = if (isCompact) 26.dp else 38.dp
             val spellBoxSize = if (isCompact) 26.dp else 38.dp
@@ -1135,7 +1141,7 @@ fun ChampionDetailSheet(
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         Text(
-                            text = tr("Botas y Mejoras (Evoluciones)"),
+                            text = tr("Botas y Mejoras"),
                             color = HextechGold,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -1252,7 +1258,7 @@ fun ChampionDetailSheet(
                         if (allBootCandidates.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = tr("Por qué y contra quiénes las botas situacionales:"),
+                                text = tr("Situaciones recomendadas para botas situacionales:"),
                                 color = HextechCyan,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -1812,10 +1818,10 @@ fun AdaptiveDetailAlertDialog(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // ¿Por qué comprarlo?
+                    // Situación recomendada
                     Column {
                         Text(
-                            text = tr("¿Por qué comprar este objeto?"),
+                            text = tr("Situación de uso recomendada:"),
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
@@ -2261,15 +2267,25 @@ private fun resolveTargetChampion(nameOrId: String): Champion? {
 private fun getSituationalItemExplanation(itemName: String): String {
     val clean = itemName.lowercase()
     return when {
-        clean.contains("malmortius") || clean.contains("fauces") -> "• Por qué y contra quiénes: Comprar contra composiciones con daño mágico pesado o asesinos AP de ráfaga (ej. Akali, Lux, Veigar) para obtener un escudo mágico salvavidas."
-        clean.contains("ángel") || clean.contains("angel") || clean.contains("guardian") -> "• Por qué y contra quiénes: Comprar en el late game o contra equipos con alto daño de dive para asegurar una segunda oportunidad en teamfights decisivas."
-        clean.contains("corta") || clean.contains("morellonomicón") || clean.contains("morellonomicon") || clean.contains("recordatorio") || clean.contains("mortal") -> "• Por qué y contra quiénes: Comprar contra campeones con curación sostenida o vampirismo (ej. Mundo, Soraka, Aatrox, Yuumi) para cortar su regeneración."
-        clean.contains("espinas") || clean.contains("thornmail") -> "• Por qué y contra quiénes: Comprar contra equipos con atacantes físicos automáticos y curaciones en línea para devolver daño y aplicar heridas graves."
-        clean.contains("mercurio") || clean.contains("trituradoras") || clean.contains("treads") -> "• Por qué y contra quiénes: Comprar contra equipos con control de masas pesado (CC) y magos de control (ej. Morgana, Lux, Ashe)."
-        clean.contains("blindada") || clean.contains("avance") || clean.contains("steelcaps") -> "• Por qué y contra quiénes: Comprar contra tiradores (ADCs) y luchadores centrados en ataques básicos físicos."
-        clean.contains("codiciosa") || clean.contains("inmortal") -> "• Por qué y contra quiénes: Comprar cuando requieres sustain prolongado (Omnivamp) y daño adaptable en duelos largos."
-        clean.contains("jonia") || clean.contains("lucidez") || clean.contains("carmesí") -> "• Por qué y contra quiénes: Comprar con magos o soportes para reducir al máximo los tiempos de reutilización de habilidades y hechizos de invocador."
-        clean.contains("dinámica") || clean.contains("dinamica") || clean.contains("quebrantarmadura") -> "• Por qué y contra quiénes: Comprar contra objetivos con armadura moderada para maximizar la penetración física y rotaciones rápidas."
-        else -> "• Por qué y contra quiénes: Objeto táctico situacional para adaptar tu build según las amenazas principales y la composición rival."
+        clean.contains("malmortius") || clean.contains("fauces") -> "Usar contra composiciones con daño mágico pesado o asesinos AP de ráfaga (ej. Akali, Lux, Veigar) para activar un escudo protector salvavidas."
+        clean.contains("ángel") || clean.contains("angel") || clean.contains("guardian") -> "Usar en el juego tardío o frente a composiciones con alto daño de dive para garantizar una segunda oportunidad en peleas de equipo decisivas."
+        clean.contains("corta") || clean.contains("morellonomicón") || clean.contains("morellonomicon") || clean.contains("recordatorio") || clean.contains("mortal") -> "Usar contra campeones con alta regeneración de salud, robo de vida o sanación continua (ej. Dr. Mundo, Soraka, Aatrox, Yuumi) para aplicar heridas graves."
+        clean.contains("espinas") || clean.contains("thornmail") -> "Usar frente a atacantes físicos constantes y duelistas con curaciones en línea para devolver daño y frenar su sostenimiento."
+        clean.contains("mercurio") || clean.contains("trituradoras") || clean.contains("treads") -> "Usar frente a equipos con múltiples habilidades de control de masas pesado (aturdimientos, ralentizaciones, provocaciones) y magos de control (ej. Morgana, Lux, Ashe)."
+        clean.contains("blindada") || clean.contains("avance") || clean.contains("steelcaps") -> "Usar contra tiradores enemigos (ADCs) y duelistas con alto daño físico constante basado en ataques básicos directos."
+        clean.contains("codiciosa") || clean.contains("inmortal") -> "Usar cuando requieras omnivampirismo prolongado, sustentación de vida en duelos largos y capacidad de supervivencia adaptativa."
+        clean.contains("jonia") || clean.contains("lucidez") || clean.contains("carmesí") -> "Usar con magos, soportes o tiradores basados en habilidades para maximizar la aceleración de enfriamiento de habilidades y hechizos de invocador."
+        clean.contains("dinámica") || clean.contains("dinamica") || clean.contains("quebrantarmadura") -> "Usar contra objetivos con armadura moderada para maximizar la penetración física temprana y ganar velocidad en rotaciones rápidas."
+        clean.contains("maná") || clean.contains("mana") || clean.contains("lanzahechizos") -> "Usar con magos de alto gasto de maná y daño de ráfaga para amplificar la penetración mágica y acelerar la limpieza de oleadas."
+        clean.contains("berserker") || clean.contains("metal") || clean.contains("gunmetal") -> "Usar con tiradores y duelistas de ataque rápido para maximizar la velocidad de ataque y optimizar el daño continuo."
+        clean.contains("colmillo") || clean.contains("serpiente") -> "Usar contra composiciones con exceso de escudos protectores (ej. Sett, Karma, Lulu, Shen) para reducirlos drásticamente al impactar."
+        clean.contains("randuin") -> "Usar contra tiradores críticos y campeones con daño crítico masivo (ej. Yasuo, Yone, Jinx, Caitlyn) para mitigar el impacto y reducir su velocidad de ataque."
+        clean.contains("naturaleza") -> "Usar frente a equipos con dos o más magos de daño mágico continuo en el tiempo o quemaduras (ej. Brand, Aurelion Sol, Swain, Lillia)."
+        clean.contains("zhonya") || clean.contains("estasis") -> "Usar para esquivar habilidades definitivas fatales y combos explosivos de asesinos mediante 2.5 segundos de invulnerabilidad."
+        clean.contains("sterak") -> "Usar con luchadores y colosos para obtener un gran escudo de vida al recibir daño crítico y aumentar la tenacidad en peleas."
+        clean.contains("serylda") -> "Usar para penetrar armaduras y aplicar ralentización continua con habilidades, facilitando el kiteo y persecución de tanques."
+        clean.contains("dominik") -> "Usar con tiradores frente a equipos con múltiples tanques y colosos de alta vida para maximizar el daño por golpe crítico."
+        clean.contains("corona") || clean.contains("fragmentada") -> "Usar con magos contra asesinos o iniciadores para reducir drásticamente el daño recibido al iniciar un enfrentamiento."
+        else -> "Usar como reemplazo táctico para contrarrestar las mayores amenazas del equipo rival según la composición de la partida."
     }
 }
