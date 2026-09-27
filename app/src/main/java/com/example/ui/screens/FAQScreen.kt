@@ -346,7 +346,7 @@ fun FAQScreen(
                             Icon(Icons.Default.Info, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = pair.first,
+                                text = tr(pair.first),
                                 color = HextechGoldLight,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
@@ -369,7 +369,7 @@ fun FAQScreen(
                     Icon(Icons.Default.Info, contentDescription = null, tint = HextechGold, modifier = Modifier.size(22.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = selectedFaq!!.first,
+                        text = tr(selectedFaq!!.first),
                         color = HextechGold,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
@@ -379,7 +379,7 @@ fun FAQScreen(
             },
             text = {
                 Text(
-                    text = selectedFaq!!.second,
+                    text = tr(selectedFaq!!.second),
                     color = TextPrimary,
                     fontSize = 13.5.sp,
                     lineHeight = 20.sp

@@ -4660,11 +4660,11 @@ fun DraftAnalysisTab(
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(myEval.tacticalReason, color = TextPrimary.copy(alpha = 0.9f), fontSize = 12.sp, lineHeight = 16.sp)
+                    Text(tr(myEval.tacticalReason), color = TextPrimary.copy(alpha = 0.9f), fontSize = 12.sp, lineHeight = 16.sp)
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = tr("Toca para ver build completa"),
+                        text = tr("Toca para ver la build completa y el análisis táctico"),
                         color = TextPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -4819,7 +4819,7 @@ fun DraftAnalysisTab(
                                     )
                                 }
                                 Text(
-                                    text = topPick.advantageBadge,
+                                    text = tr(topPick.advantageBadge),
                                     color = HextechCyan,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -4830,7 +4830,7 @@ fun DraftAnalysisTab(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = topPick.tacticalReason,
+                            text = tr(topPick.tacticalReason),
                             color = TextPrimary.copy(alpha = 0.95f),
                             fontSize = 12.sp,
                             lineHeight = 16.sp
@@ -4857,7 +4857,7 @@ fun DraftAnalysisTab(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = topPick.synergyDetails,
+                                            text = tr(topPick.synergyDetails),
                                             color = TextPrimary,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Medium
@@ -4874,7 +4874,7 @@ fun DraftAnalysisTab(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = topPick.counterDetails,
+                                            text = tr(topPick.counterDetails),
                                             color = TextPrimary,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Medium
@@ -4892,7 +4892,7 @@ fun DraftAnalysisTab(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = tr("Toca para ver build completa"),
+                                text = tr("Toca para ver la build completa y el análisis táctico"),
                                 color = TextMuted,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
@@ -4957,9 +4957,9 @@ fun DraftAnalysisTab(
                                         Text(rec.champion.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                         Text("WR: ${rec.estimatedWinrate}%", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                     }
-                                    Text(rec.advantageBadge, color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(tr(rec.advantageBadge), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text(rec.tacticalReason, color = TextMuted, fontSize = 11.sp, lineHeight = 14.sp)
+                                    Text(tr(rec.tacticalReason), color = TextMuted, fontSize = 11.sp, lineHeight = 14.sp)
                                 }
                                 Spacer(modifier = Modifier.width(6.dp))
                                 IconButton(

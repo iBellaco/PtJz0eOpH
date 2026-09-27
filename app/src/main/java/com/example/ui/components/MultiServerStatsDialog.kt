@@ -57,7 +57,7 @@ fun MultiServerStatsDialog(
     val globalMatches = 9900000 + liveMatchOffset * 60
     val naMatches = 6200000 + liveMatchOffset * 40
     val totalMatches = chinaMatches + globalMatches + naMatches
-    val totalFormatted = String.format(java.util.Locale.US, "%.1f", totalMatches / 1_000_000.0) + " Millones"
+    val totalFormatted = String.format(java.util.Locale.US, "%.1f", totalMatches / 1_000_000.0) + " " + tr("Millones")
 
     val currentRegion by com.example.data.sync.ChineseMetaSyncService.currentRegion.collectAsState()
     val currentTier by com.example.data.sync.ChineseMetaSyncService.currentTier.collectAsState()
@@ -333,32 +333,32 @@ fun ServerStatCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Info, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Detalle de Análisis: $serverName", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "${tr("Detalle de Análisis:")} $serverName", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             },
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Este bloque consolida las partidas oficiales recopiladas en tiempo real mediante $dataSource.",
+                        text = "${tr("Este bloque consolida las partidas oficiales recopiladas en tiempo real mediante")} $dataSource.",
                         fontSize = 12.sp,
                         color = TextPrimary,
                         lineHeight = 16.sp
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "• Muestra analizada: $matchesText partidas en curso y finalizadas.",
+                        text = "${tr("• Muestra analizada:")} $matchesText ${tr("partidas en curso y finalizadas.")}",
                         fontSize = 11.5.sp,
                         color = HextechGold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "• Rango de jugadores: Diamante, Maestro, Gran Maestro y Aspirante.",
+                        text = tr("• Rango de jugadores: Diamante, Maestro, Gran Maestro y Aspirante."),
                         fontSize = 11.5.sp,
                         color = TextSecondary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "• Criterio de filtrado: Partidas de alta prioridad con tasa de victoria (WR) validada por el motor de IA.",
+                        text = tr("• Criterio de filtrado: Partidas de alta prioridad con tasa de victoria (WR) validada por el motor de IA."),
                         fontSize = 11.5.sp,
                         color = TextSecondary
                     )
@@ -366,7 +366,7 @@ fun ServerStatCard(
             },
             confirmButton = {
                 TextButton(onClick = { showDetailDialog = false }) {
-                    Text("Cerrar", color = HextechGold, fontWeight = FontWeight.Bold)
+                    Text(tr("Cerrar"), color = HextechGold, fontWeight = FontWeight.Bold)
                 }
             }
         )
