@@ -618,16 +618,8 @@ fun AvatarSelectionBottomSheet(
 
                     val borders = remember(userRole, secondaryRole, isPremium) {
                         val list = mutableListOf<String>()
-                        list.add("DEFAULT") // Marco por Defecto (según avatar y rol)
-                        list.add("NONE")    // Sin Marco especial
-                        
-                        // Marcos de Rangos Wild Rift (orden jerárquico competitivo)
-                        list.add("ESMERALDA")
-                        list.add("DIAMANTE")
-                        list.add("MAESTRO_FRAME")
-                        list.add("GRAN_MAESTRO_FRAME")
-                        list.add("ASPIRANTE")
-                        list.add("SOBERANO")
+                        list.add("NONE")    // Sin Marco especial (avatar limpio)
+                        list.add("DEFAULT") // Marco por Defecto (animación de rareza del avatar y marcos de rol asignados)
                         
                         // Marcos de Roles Especiales (disponibles para admins o usuarios con dicho rol)
                         if (userRole.equals("admin", ignoreCase = true)) {
@@ -640,6 +632,20 @@ fun AvatarSelectionBottomSheet(
                                 list.add(mainRoleFrame)
                             }
                         }
+
+                        // Marco del rol secundario del usuario (si lo tiene asignado)
+                        if (secRoleFrame != null && !list.contains(secRoleFrame)) {
+                            list.add(secRoleFrame)
+                        }
+
+                        // Marcos de Rangos Wild Rift (orden jerárquico competitivo)
+                        list.add("ESMERALDA")
+                        list.add("DIAMANTE")
+                        list.add("MAESTRO_FRAME")
+                        list.add("GRAN_MAESTRO_FRAME")
+                        list.add("ASPIRANTE")
+                        list.add("SOBERANO")
+                        
                         list.distinct()
                     }
 
@@ -654,8 +660,10 @@ fun AvatarSelectionBottomSheet(
                     ) {
                         items(borders.size) { index ->
                             val border = borders[index]
-                            val activeBorder = if (currentRankBorder.isBlank()) "DEFAULT" else currentRankBorder
+                            val activeBorder = if (currentRankBorder.isBlank()) "NONE" else currentRankBorder
                             val isSelected = activeBorder.equals(border, ignoreCase = true)
+                            val isNone = border.equals("NONE", ignoreCase = true)
+                            val isDefault = border.equals("DEFAULT", ignoreCase = true)
 
                             Card(
                                 modifier = Modifier
@@ -695,9 +703,9 @@ fun AvatarSelectionBottomSheet(
                                             avatarId = currentAvatarId,
                                             size = 64.dp,
                                             rankBorder = border,
-                                            showBorder = true,
-                                            role = if (border == "DEFAULT") userRole else "",
-                                            secondaryRole = if (border == "DEFAULT") secondaryRole else ""
+                                            showBorder = !isNone,
+                                            role = if (isDefault || border == mainRoleFrame) userRole else "",
+                                            secondaryRole = if (isDefault || border == secRoleFrame) secondaryRole else ""
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))

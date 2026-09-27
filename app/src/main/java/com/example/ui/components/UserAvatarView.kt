@@ -212,7 +212,9 @@ fun UserAvatarView(
                     )
                 )
                 .then(
-                    if (rankBorder != "NONE" && !isAdmin && activeFrameAsset == null) {
+                    if (rankBorder.equals("NONE", ignoreCase = true)) {
+                        Modifier
+                    } else if (rankBorder != "DEFAULT" && rankBorder.isNotBlank() && !isAdmin && activeFrameAsset == null) {
                         Modifier.rankedBorderPainter(
                             rank = rankBorder,
                             glowPulse = glowPulse,

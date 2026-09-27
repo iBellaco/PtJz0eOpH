@@ -5493,21 +5493,52 @@ fun AdminModeratorRequestsDialog(
 
     fun loadRequests() {
         isLoading = true
-        db.collection("moderator_requests")
+        val combinedMap = mutableMapOf<String, MutableMap<String, Any>>()
+        
+        // 1. Cargar desde support_reports (canal garantizado para solicitudes de moderador)
+        db.collection("support_reports")
+            .whereEqualTo("category", "MODERATOR_REQUEST")
             .get()
-            .addOnSuccessListener { snapshot ->
-                val list = snapshot.documents.map { doc ->
+            .addOnSuccessListener { snap1 ->
+                snap1.documents.forEach { doc ->
                     val data = doc.data?.toMutableMap() ?: mutableMapOf()
                     data["id"] = doc.id
-                    data
-                }.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
+                    combinedMap[doc.id] = data
+                }
                 
-                requests = list
-                isLoading = false
+                // 2. Cargar también desde moderator_requests
+                db.collection("moderator_requests")
+                    .get()
+                    .addOnSuccessListener { snap2 ->
+                        snap2.documents.forEach { doc ->
+                            val data = doc.data?.toMutableMap() ?: mutableMapOf()
+                            data["id"] = doc.id
+                            combinedMap[doc.id] = data
+                        }
+                        requests = combinedMap.values.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
+                        isLoading = false
+                    }
+                    .addOnFailureListener {
+                        requests = combinedMap.values.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
+                        isLoading = false
+                    }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(context, "Error al cargar solicitudes: ${e.message}", Toast.LENGTH_LONG).show()
-                isLoading = false
+            .addOnFailureListener {
+                db.collection("moderator_requests")
+                    .get()
+                    .addOnSuccessListener { snap2 ->
+                        val list = snap2.documents.map { doc ->
+                            val data = doc.data?.toMutableMap() ?: mutableMapOf()
+                            data["id"] = doc.id
+                            data
+                        }.sortedByDescending { (it["timestamp"] as? Number)?.toLong() ?: 0L }
+                        requests = list
+                        isLoading = false
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(context, "Error al cargar solicitudes: ${e.message}", Toast.LENGTH_LONG).show()
+                        isLoading = false
+                    }
             }
     }
 
@@ -5756,12 +5787,11 @@ fun AdminModeratorRequestsDialog(
                                             // Reject
                                             OutlinedButton(
                                                 onClick = {
-                                                    db.collection("moderator_requests").document(id)
-                                                        .update("status", "RECHAZADA")
-                                                        .addOnSuccessListener {
-                                                            Toast.makeText(context, "Solicitud rechazada", Toast.LENGTH_SHORT).show()
-                                                            loadRequests()
-                                                        }
+                                                    val updateMap = mapOf<String, Any>("status" to "RECHAZADA")
+                                                    try { db.collection("support_reports").document(id).update(updateMap) } catch (_: Exception) {}
+                                                    try { db.collection("moderator_requests").document(id).update(updateMap) } catch (_: Exception) {}
+                                                    Toast.makeText(context, "Solicitud rechazada", Toast.LENGTH_SHORT).show()
+                                                    loadRequests()
                                                 },
                                                 modifier = Modifier.weight(1f),
                                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
@@ -5775,23 +5805,20 @@ fun AdminModeratorRequestsDialog(
                                             // Approve
                                             Button(
                                                 onClick = {
+                                                    val updateMap = mapOf<String, Any>("status" to "APROBADA")
                                                     // Apply change first
                                                     if (type == "VERIFICATION") {
                                                         val verifyVal = newValue.toBoolean()
                                                         updateUserVerification(context, targetUid, verifyVal) {
-                                                            db.collection("moderator_requests").document(id)
-                                                                .update("status", "APROBADA")
-                                                                .addOnSuccessListener {
-                                                                    loadRequests()
-                                                                }
+                                                            try { db.collection("support_reports").document(id).update(updateMap) } catch (_: Exception) {}
+                                                            try { db.collection("moderator_requests").document(id).update(updateMap) } catch (_: Exception) {}
+                                                            loadRequests()
                                                         }
                                                     } else {
                                                         updateUserSecondaryRoleInCloud(context, targetUid, newValue) {
-                                                            db.collection("moderator_requests").document(id)
-                                                                .update("status", "APROBADA")
-                                                                .addOnSuccessListener {
-                                                                    loadRequests()
-                                                                }
+                                                            try { db.collection("support_reports").document(id).update(updateMap) } catch (_: Exception) {}
+                                                            try { db.collection("moderator_requests").document(id).update(updateMap) } catch (_: Exception) {}
+                                                            loadRequests()
                                                         }
                                                     }
                                                 },

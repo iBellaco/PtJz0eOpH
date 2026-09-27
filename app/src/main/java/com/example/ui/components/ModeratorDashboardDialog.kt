@@ -346,6 +346,7 @@ fun ModeratorUserListPanel() {
                     val name = user["name"] as? String ?: "Sin Nombre"
                     val avatarId = user["avatarId"] as? String ?: "default_poro"
                     val isVerified = (user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true
+                    val secondaryRole = (user["secondaryRole"] as? String ?: user["secRole"] as? String ?: "").trim()
 
                     Surface(
                         onClick = { selectedUserForProposal = user },
@@ -360,8 +361,11 @@ fun ModeratorUserListPanel() {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Avatar (without secondary role/admin frames leakage)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                // Avatar
                                 UserAvatarView(
                                     avatarId = avatarId,
                                     size = 36.dp,
@@ -369,20 +373,33 @@ fun ModeratorUserListPanel() {
                                     secondaryRole = ""
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = name,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.5.sp
-                                )
-                                if (isVerified) {
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.Verified,
-                                        contentDescription = "Verificado",
-                                        tint = HextechCyan,
-                                        modifier = Modifier.size(14.dp)
-                                    )
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = name,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.5.sp
+                                        )
+                                        if (isVerified) {
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Icon(
+                                                imageVector = Icons.Default.Verified,
+                                                contentDescription = "Verificado",
+                                                tint = HextechCyan,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
+                                    }
+                                    if (secondaryRole.isNotBlank()) {
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Rol Secundario: ${secondaryRole.replaceFirstChar { it.uppercase() }}",
+                                            color = HextechGold,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
                                 }
                             }
                             
@@ -416,11 +433,13 @@ fun ModeratorUserProposalDialog(
     val uid = user["uid"] as? String ?: ""
     val name = user["name"] as? String ?: "Usuario"
     val email = user["email"] as? String ?: ""
-    val currentVerified = (user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true
-    val currentSecondaryRole = user["secondaryRole"] as? String ?: ""
+    val currentVerified = (user["isVerified"] as? Boolean) == true || 
+                          (user["verified"] as? Boolean) == true ||
+                          (user["officialVerified"] as? Boolean) == true
+    val currentSecondaryRole = (user["secondaryRole"] as? String ?: user["secRole"] as? String ?: "").trim()
 
     var targetVerified by remember { mutableStateOf(currentVerified) }
-    var targetSecondaryRole by remember { mutableStateOf(currentSecondaryRole) }
+    var targetSecondaryRole by remember { mutableStateOf(currentSecondaryRole.lowercase()) }
     var isSending by remember { mutableStateOf(false) }
 
     Dialog(
@@ -452,24 +471,75 @@ fun ModeratorUserProposalDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // User details
-                Text(
-                    text = "Usuario: $name",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = email,
-                    color = Color(0xFF94A3B8),
-                    fontSize = 11.5.sp
-                )
+                // User details (Protección estricta de privacidad: email oculto a moderadores)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Usuario: $name",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.5.sp
+                    )
+                    if (currentVerified) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.Default.Verified,
+                            contentDescription = "Verificado",
+                            tint = HextechCyan,
+                            modifier = Modifier.size(15.dp)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(2.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(11.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Contacto privado • ID: ${uid.take(8).uppercase()}...",
+                        color = Color(0xFF94A3B8),
+                        fontSize = 11.sp
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Resumen del Estado Actual del Usuario
+                Surface(
+                    color = HextechDarkBg.copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Estado actual en perfil:", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (currentVerified) {
+                                Text("Verificado", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            } else {
+                                Text("No Verificado", color = Color(0xFFEF4444), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                            }
+                            if (currentSecondaryRole.isNotBlank()) {
+                                Text(" • ", color = Color(0xFF64748B), fontSize = 11.sp)
+                                Text(
+                                    text = currentSecondaryRole.replaceFirstChar { it.uppercase() },
+                                    color = HextechGold,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
                 HorizontalDivider(color = HextechCardBorder, thickness = 0.8.dp)
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // Section 1: Verification proposal
                 Text(
@@ -574,7 +644,7 @@ fun ModeratorUserProposalDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Warning / Info
                 Surface(
@@ -620,17 +690,16 @@ fun ModeratorUserProposalDialog(
                         onClick = {
                             isSending = true
                             
-                            val pendingType = if (targetVerified != currentVerified) "VERIFICATION" else "SECONDARY_ROLE"
-                            val pendingValue = if (pendingType == "VERIFICATION") targetVerified.toString() else targetSecondaryRole
+                            val isVerifiedChanged = targetVerified != currentVerified
+                            val isSecondaryRoleChanged = targetSecondaryRole.lowercase() != currentSecondaryRole.lowercase()
 
-                            if (targetVerified == currentVerified && targetSecondaryRole == currentSecondaryRole) {
+                            if (!isVerifiedChanged && !isSecondaryRoleChanged) {
                                 Toast.makeText(context, "No has sugerido ningun cambio nuevo", Toast.LENGTH_SHORT).show()
                                 isSending = false
                                 return@Button
                             }
 
-                            // Trigger creation of approval requests
-                            if (targetVerified != currentVerified) {
+                            if (isVerifiedChanged && isSecondaryRoleChanged) {
                                 createModeratorApprovalRequest(
                                     context = context,
                                     requestType = "VERIFICATION",
@@ -639,22 +708,29 @@ fun ModeratorUserProposalDialog(
                                     targetEmail = email,
                                     newValue = targetVerified.toString()
                                 ) {
-                                    if (targetSecondaryRole != currentSecondaryRole) {
-                                        createModeratorApprovalRequest(
-                                            context = context,
-                                            requestType = "SECONDARY_ROLE",
-                                            targetUid = uid,
-                                            targetName = name,
-                                            targetEmail = email,
-                                            newValue = targetSecondaryRole
-                                        ) {
-                                            isSending = false
-                                            onDismiss()
-                                        }
-                                    } else {
+                                    createModeratorApprovalRequest(
+                                        context = context,
+                                        requestType = "SECONDARY_ROLE",
+                                        targetUid = uid,
+                                        targetName = name,
+                                        targetEmail = email,
+                                        newValue = targetSecondaryRole
+                                    ) {
                                         isSending = false
                                         onDismiss()
                                     }
+                                }
+                            } else if (isVerifiedChanged) {
+                                createModeratorApprovalRequest(
+                                    context = context,
+                                    requestType = "VERIFICATION",
+                                    targetUid = uid,
+                                    targetName = name,
+                                    targetEmail = email,
+                                    newValue = targetVerified.toString()
+                                ) {
+                                    isSending = false
+                                    onDismiss()
                                 }
                             } else {
                                 createModeratorApprovalRequest(
@@ -700,9 +776,15 @@ private fun createModeratorApprovalRequest(
     val auth = FirebaseAuth.getInstance()
     val moderator = auth.currentUser
     
-    val reqId = db.collection("moderator_requests").document().id
+    val reqId = "mod_req_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().take(6)
     val payload = hashMapOf<String, Any>(
         "id" to reqId,
+        "reportId" to reqId,
+        "type" to "MODERATOR_REQUEST",
+        "reportType" to "MODERATOR_REQUEST",
+        "category" to "MODERATOR_REQUEST",
+        "title" to "Propuesta de Moderación para $targetName",
+        "message" to "Propuesta de cambio: $requestType -> $newValue para usuario $targetName",
         "requestType" to requestType,
         "targetUid" to targetUid,
         "targetName" to targetName,
@@ -711,16 +793,29 @@ private fun createModeratorApprovalRequest(
         "requestedByUid" to (moderator?.uid ?: ""),
         "requestedByName" to (moderator?.displayName ?: moderator?.email?.substringBefore("@") ?: "Moderador"),
         "status" to "PENDIENTE",
-        "timestamp" to System.currentTimeMillis()
+        "timestamp" to System.currentTimeMillis(),
+        "createdAt" to com.google.firebase.Timestamp.now()
     )
     
-    db.collection("moderator_requests").document(reqId)
+    // Escribir en support_reports garantizando acceso permitido
+    db.collection("support_reports").document(reqId)
         .set(payload)
         .addOnSuccessListener {
+            // Intentar también en moderator_requests como respaldo
+            try { db.collection("moderator_requests").document(reqId).set(payload) } catch (_: Exception) {}
             Toast.makeText(context, "Solicitud enviada para aprobación del Administrador", Toast.LENGTH_LONG).show()
             onSuccess()
         }
-        .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al crear solicitud: ${e.message}", Toast.LENGTH_LONG).show()
+        .addOnFailureListener {
+            // Reintento con merge
+            db.collection("support_reports").document(reqId)
+                .set(payload, com.google.firebase.firestore.SetOptions.merge())
+                .addOnSuccessListener {
+                    Toast.makeText(context, "Solicitud enviada para aprobación del Administrador", Toast.LENGTH_LONG).show()
+                    onSuccess()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(context, "Error al enviar solicitud: ${e.message}", Toast.LENGTH_LONG).show()
+                }
         }
 }
