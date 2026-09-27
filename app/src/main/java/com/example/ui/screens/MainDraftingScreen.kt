@@ -1033,7 +1033,7 @@ fun NoticeCategoryCard(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = displayTag,
+                            text = tr(displayTag),
                             color = tagColor,
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold
@@ -1049,7 +1049,7 @@ fun NoticeCategoryCard(
                                 border = BorderStroke(1.dp, HextechGold)
                             ) {
                                 Text(
-                                    text = "Patrocinado",
+                                    text = tr("Patrocinado"),
                                     color = HextechGold,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Bold,

@@ -260,7 +260,7 @@ fun HextechOrbButton(
                 ) {
                     // Etiqueta de la Región Actual de Runaterra (Dinámica según el tema)
                     Text(
-                        text = theme.regionTag.uppercase(),
+                        text = tr(theme.regionTag).uppercase(),
                         color = secondaryLight,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold,
@@ -311,7 +311,7 @@ fun HextechOrbButton(
 
                     // Nombre del Tema / Estado Regional
                     Text(
-                        text = if (!enabled) tr("OFF") else if (isActive) "ONLINE" else theme.titleKey.uppercase(),
+                        text = if (!enabled) tr("OFF") else if (isActive) "ONLINE" else tr(theme.titleKey).uppercase(),
                         color = if (!enabled) TextMuted else if (isActive) Color(0xFF00FFC2) else TextMuted,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,

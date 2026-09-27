@@ -16,14 +16,17 @@ object CoachingGenerator {
         val targetRole = targetChamp?.primaryRole ?: LaneRole.MID
         val targetDamage = targetChamp?.damageType?.displayName ?: "mixto"
 
-        val mySkill = champion.skills.find { it.slot == "1" }?.let { "su H1 (${it.name})" } ?: "su Habilidad 1 (H1)"
+        val mySkill = champion.skills.find { it.slot == "1" }?.let { 
+            if (isPt) "sua H1 (${it.getLocalizedName("pt")})" else "su H1 (${it.name})" 
+        } ?: if (isPt) "sua Habilidade 1 (H1)" else "su Habilidad 1 (H1)"
         val isMeRanged = champion.isRanged
         val isTargetRanged = targetChamp?.isRanged ?: false
+        val localizedTargetName = if (isPt) trStr("pt", target) else target
         
         return when (type) {
             "Ventaja" -> {
                 if (isPt) {
-                    "${champion.name} tem forte vantagem sobre $target. Puna-o com $mySkill sempre que tentar farmar."
+                    "${champion.getLocalizedName("pt")} tem forte vantagem sobre $localizedTargetName. Puna-o com $mySkill sempre que tentar farmar."
                 } else {
                     if (targetChamp != null) {
                         if (isMeRanged && !isTargetRanged) {
@@ -40,7 +43,7 @@ object CoachingGenerator {
             }
             "Debilidad" -> {
                 if (isPt) {
-                    "$target é extremamente letal contra ${champion.name}. Jogue recuado e reserve $mySkill para defesa."
+                    "$localizedTargetName é extremamente letal contra ${champion.getLocalizedName("pt")}. Jogue recuado e reserve $mySkill para defesa."
                 } else {
                     if (targetChamp != null) {
                         if (!isMeRanged && isTargetRanged) {
@@ -57,20 +60,20 @@ object CoachingGenerator {
             }
             "Situacional" -> {
                 val advice = com.example.data.SituationalItemAdvisor.getAdvice(target)
-                val localizedName = trStr(advice.name, lang)
-                val localizedCat = trStr(advice.categoryName, lang)
-                val localizedPurpose = trStr(advice.purpose, lang)
-                val localizedKeyEffect = trStr(advice.keyEffect, lang)
-                val localizedTip = trStr(advice.recommendationTip, lang)
+                val localizedName = trStr(lang, advice.name)
+                val localizedCat = trStr(lang, advice.categoryName)
+                val localizedPurpose = trStr(lang, advice.purpose)
+                val localizedKeyEffect = trStr(lang, advice.keyEffect)
+                val localizedTip = trStr(lang, advice.recommendationTip)
                 if (isPt) {
-                    "️ **$localizedName ($localizedCat)**\n\n$localizedPurpose\n\n• **Eficaz contra:** ${advice.bestAgainst.joinToString(", ")}\n• **Efeito chave:** $localizedKeyEffect\n\n **Dica:** $localizedTip"
+                    "️ **$localizedName ($localizedCat)**\n\n$localizedPurpose\n\n• **Eficaz contra:** ${advice.bestAgainst.map { trStr("pt", it) }.joinToString(", ")}\n• **Efeito chave:** $localizedKeyEffect\n\n **Dica:** $localizedTip"
                 } else {
                     "️ **$localizedName ($localizedCat)**\n\n$localizedPurpose\n\n• **Efectivo contra:** ${advice.bestAgainst.joinToString(", ")}\n• **Efecto clave:** $localizedKeyEffect\n\n **Consejo:** $localizedTip"
                 }
             }
             else -> { // Sinergia
                 if (isPt) {
-                    "Excelente sinergia com $target. A combinação de habilidades garante grande vantagem nas lutas de equipe e objetivos neutros."
+                    "Excelente sinergia com $localizedTargetName. A combinação de habilidades garante grande vantagem nas lutas de equipe e objetivos neutros."
                 } else {
                     "Excelente sinergia con $target. La combinación de control de masas, daño y protección de ambos campeones garantiza una superioridad aplastante en peleas de equipo y toma de objetivos."
                 }
@@ -129,7 +132,9 @@ object CoachingGenerator {
         val cleanLang = lang.lowercase().trim()
         val isPt = cleanLang.startsWith("pt")
         
-        val specificAdvice = if (champion.tacticalAdvice.isNotBlank()) champion.tacticalAdvice else ""
+        val specificAdvice = if (champion.tacticalAdvice.isNotBlank()) {
+            if (isPt) trStr("pt", champion.tacticalAdvice) else champion.tacticalAdvice
+        } else ""
         
         val roleAdvice = when (activeRole) {
             LaneRole.ADC -> if (isPt) "Concentre-se em seu posicionamento e acumular ouro." else "Concéntrate en tu posicionamiento y acumular oro."

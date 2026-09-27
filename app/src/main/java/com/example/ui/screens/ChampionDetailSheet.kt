@@ -597,6 +597,8 @@ fun ChampionDetailSheet(
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f)) {
+                                    val localizedSkillName = skill.getLocalizedName(com.example.util.LocalLanguage.current)
+                                    val localizedSkillDesc = skill.getLocalizedDescription(com.example.util.LocalLanguage.current)
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -604,14 +606,14 @@ fun ChampionDetailSheet(
                                     ) {
                                         val slotTranslation = when {
                                             skill.slotName.contains("Pasiva", true) || skill.slot.equals("P", true) || skill.slot.equals("Passive", true) -> tr("Pasiva:")
-                                            skill.slotName.contains("Habilidad 1", true) || skill.slot == "1" || skill.slot.equals("Q", true) -> tr("Habilidad") + " 1:"
-                                            skill.slotName.contains("Habilidad 2", true) || skill.slot == "2" || skill.slot.equals("W", true) -> tr("Habilidad") + " 2:"
-                                            skill.slotName.contains("Habilidad 3", true) || skill.slot == "3" || skill.slot.equals("E", true) -> tr("Habilidad") + " 3:"
+                                            skill.slotName.contains("Habilidad 1", true) || skill.slot == "1" || skill.slot.equals("Q", true) -> tr("Habilidad 1:")
+                                            skill.slotName.contains("Habilidad 2", true) || skill.slot == "2" || skill.slot.equals("W", true) -> tr("Habilidad 2:")
+                                            skill.slotName.contains("Habilidad 3", true) || skill.slot == "3" || skill.slot.equals("E", true) -> tr("Habilidad 3:")
                                             skill.slotName.contains("Definitiva", true) || skill.slot == "4" || skill.slot.equals("R", true) -> tr("Definitiva:")
-                                            else -> if (skill.slotName.isNotBlank()) skill.slotName else if (skill.slot.isNotBlank()) "Habilidad ${skill.slot}:" else ""
+                                            else -> if (skill.slotName.isNotBlank()) tr(skill.slotName) else if (skill.slot.isNotBlank()) "${tr("Habilidad")} ${skill.slot}:" else ""
                                         }
                                         Text(
-                                            text = if (slotTranslation.isNotBlank()) "$slotTranslation ${skill.name}" else skill.name,
+                                            text = if (slotTranslation.isNotBlank()) "$slotTranslation $localizedSkillName" else localizedSkillName,
                                             color = TextPrimary,
                                             fontSize = if (isCompact) 11.sp else 13.sp,
                                             fontWeight = FontWeight.Bold
@@ -627,7 +629,7 @@ fun ChampionDetailSheet(
                                     }
                                     Spacer(modifier = Modifier.height(3.dp))
                                     FormattedWildRiftText(
-                                        text = tr(skill.description),
+                                        text = tr(localizedSkillDesc),
                                         color = TextPrimary.copy(alpha = 0.9f),
                                         fontSize = if (isCompact) 9.5.sp else 12.sp,
                                         lineHeight = if (isCompact) 13.sp else 16.sp
@@ -801,7 +803,7 @@ fun ChampionDetailSheet(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = activeOption.title,
+                                text = tr(activeOption.title),
                                 color = HextechGold,
                                 fontSize = if (isCompact) 11.5.sp else 14.sp,
                                 fontWeight = FontWeight.Bold
@@ -809,23 +811,26 @@ fun ChampionDetailSheet(
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             val context = androidx.compose.ui.platform.LocalContext.current
+                            val currentLang = com.example.util.LocalLanguage.current
+                            val shareTitle = tr("Compartir Build")
+                            val shareDesc = tr("Compartir")
                             val shareBuild = {
                                 val shareText = buildString {
-                                    appendLine("🛡️ Build: ${activeOption.title} para ${champion.name}")
-                                    appendLine("👤 Rol: ${selectedRole.name}")
-                                    appendLine("⚔️ Core: ${activeOption.items.joinToString(", ")}")
-                                    if (activeOption.situationalItems.isNotEmpty()) appendLine("🔄 Situacionales: ${activeOption.situationalItems.joinToString(", ")}")
-                                    appendLine("💎 Runas: ${activeOption.runes.joinToString(", ")}")
+                                    appendLine("🛡️ Build: ${com.example.util.trStr(currentLang, activeOption.title)} para ${champion.getLocalizedName(currentLang)}")
+                                    appendLine("👤 Rol: ${selectedRole.getLocalizedName(currentLang)}")
+                                    appendLine("⚔️ Core: ${activeOption.items.map { com.example.util.trStr(currentLang, it) }.joinToString(", ")}")
+                                    if (activeOption.situationalItems.isNotEmpty()) appendLine("🔄 Situacionales: ${activeOption.situationalItems.map { com.example.util.trStr(currentLang, it) }.joinToString(", ")}")
+                                    appendLine("💎 Runas: ${activeOption.runes.map { com.example.util.trStr(currentLang, it) }.joinToString(", ")}")
                                     appendLine("🔥 ¡Comparte desde Coach App!")
                                 }
                                 val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                                     type = "text/plain"
                                     putExtra(android.content.Intent.EXTRA_TEXT, shareText)
                                 }
-                                context.startActivity(android.content.Intent.createChooser(intent, "Compartir Build"))
+                                context.startActivity(android.content.Intent.createChooser(intent, shareTitle))
                             }
                             IconButton(onClick = shareBuild, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.Share, contentDescription = "Compartir", tint = HextechCyan, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Share, contentDescription = shareDesc, tint = HextechCyan, modifier = Modifier.size(16.dp))
                             }
                             Box(
                                 modifier = Modifier
@@ -851,7 +856,7 @@ fun ChampionDetailSheet(
                                     .padding(horizontal = 8.dp, vertical = 3.dp)
                             ) {
                                 Text(
-                                    text = activeOption.badge,
+                                    text = tr(activeOption.badge),
                                     color = when (activeOption.optionNumber) {
                                         2 -> Color(0xFFFF5252)
                                         3 -> Color(0xFFFFB74D)
@@ -879,7 +884,7 @@ fun ChampionDetailSheet(
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "🎯 OBJETIVO TÁCTICO & CUÁNDO USAR",
+                                    text = tr("🎯 OBJETIVO TÁCTICO & CUÁNDO USAR"),
                                     color = HextechGold,
                                     fontSize = if (isCompact) 9.5.sp else 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -887,7 +892,7 @@ fun ChampionDetailSheet(
                             }
                             Spacer(modifier = Modifier.height(if (isCompact) 2.dp else 4.dp))
                             Text(
-                                text = activeOption.tacticalReason,
+                                text = tr(activeOption.tacticalReason),
                                 color = TextPrimary,
                                 fontSize = if (isCompact) 9.5.sp else 11.5.sp,
                                 lineHeight = if (isCompact) 13.sp else 16.sp
@@ -1089,14 +1094,14 @@ fun ChampionDetailSheet(
                             ) {
                                 Column(modifier = Modifier.padding(8.dp)) {
                                     Text(
-                                        text = "• $sitItemName:",
+                                        text = "• ${tr(sitItemName)}:",
                                         color = HextechGold,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = getSituationalItemExplanation(sitItemName),
+                                        text = tr(getSituationalItemExplanation(sitItemName)),
                                         color = TextSecondary,
                                         fontSize = 9.5.sp,
                                         lineHeight = 13.sp
@@ -1274,14 +1279,14 @@ fun ChampionDetailSheet(
                                 ) {
                                     Column(modifier = Modifier.padding(6.dp)) {
                                         Text(
-                                            text = "• $sitBootName:",
+                                            text = "• ${tr(sitBootName)}:",
                                             color = HextechCyan,
                                             fontSize = 9.5.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Spacer(modifier = Modifier.height(1.dp))
                                         Text(
-                                            text = getSituationalItemExplanation(sitBootName),
+                                            text = tr(getSituationalItemExplanation(sitBootName)),
                                             color = TextSecondary,
                                             fontSize = 9.sp,
                                             lineHeight = 12.sp
@@ -1372,13 +1377,13 @@ fun ChampionDetailSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Runa Clave: " + tr(runesForActiveOption.firstOrNull() ?: "Principal"),
+                            text = "${tr("Runa Clave:")} ${tr(runesForActiveOption.firstOrNull() ?: "Principal")}",
                             color = HextechGold,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Secundarias: " + runesForActiveOption.drop(1).joinToString(" • "),
+                            text = "${tr("Secundarias:")} ${runesForActiveOption.drop(1).map { tr(it) }.joinToString(" • ")}",
                             color = HextechCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,

@@ -18,6 +18,24 @@ enum class LaneRole(val displayName: String, val shortName: String) {
             ADC -> com.example.R.drawable.ic_role_dragon
             SUPPORT -> com.example.R.drawable.ic_role_support
         }
+
+    fun getLocalizedName(lang: String): String = when (lang) {
+        "pt" -> when (this) {
+            TOP -> "Rota do Barão (Topo)"
+            JUNGLE -> "Selva"
+            MID -> "Rota do Meio"
+            ADC -> "Rota do Dragão (Duo)"
+            SUPPORT -> "Suporte"
+        }
+        "en" -> when (this) {
+            TOP -> "Baron Lane (Top)"
+            JUNGLE -> "Jungle"
+            MID -> "Mid Lane"
+            ADC -> "Dragon Lane (ADC)"
+            SUPPORT -> "Support"
+        }
+        else -> displayName
+    }
 }
 
 @Serializable
@@ -37,8 +55,22 @@ data class ChampionSkill(
     val namePt: String = "",
     val iconUrl: String = "",
     val description: String = "",
+    val descriptionEn: String = "",
+    val descriptionPt: String = "",
     val cooldown: String = ""
-)
+) {
+    fun getLocalizedName(lang: String): String = when (lang) {
+        "en" -> nameEn.ifBlank { name }
+        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
+        else -> name
+    }
+
+    fun getLocalizedDescription(lang: String): String = when (lang) {
+        "en" -> descriptionEn.ifBlank { description }
+        "pt" -> descriptionPt.ifBlank { com.example.util.trStr("pt", description) }
+        else -> description
+    }
+}
 
 
 @Serializable
@@ -117,6 +149,18 @@ data class Champion(
     , val builds: List<ChampionBuild> = emptyList()
 ) {
     fun getLocalAvatarUri(): String = "file:///android_asset/champions/$id.png"
+
+    fun getLocalizedName(lang: String): String = when (lang) {
+        "en" -> nameEn.ifBlank { name }
+        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
+        else -> name
+    }
+
+    fun getLocalizedTitle(lang: String): String = when (lang) {
+        "en" -> titleEn.ifBlank { title }
+        "pt" -> titlePt.ifBlank { com.example.util.trStr("pt", title) }
+        else -> title
+    }
 }
 
 @Serializable
@@ -141,25 +185,25 @@ data class WildRiftItem(
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
-        "pt" -> namePt.ifBlank { name }
+        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
         else -> name
     }
 
     fun getLocalizedStats(lang: String): String = when (lang) {
         "en" -> statsEn.ifBlank { stats }
-        "pt" -> statsPt.ifBlank { stats }
+        "pt" -> statsPt.ifBlank { com.example.util.trStr("pt", stats) }
         else -> stats
     }
 
     fun getLocalizedPassive(lang: String): String = when (lang) {
         "en" -> passiveEn.ifBlank { passive }
-        "pt" -> passivePt.ifBlank { passive }
+        "pt" -> passivePt.ifBlank { com.example.util.trStr("pt", passive) }
         else -> passive
     }
 
     fun getLocalizedCoachTip(lang: String): String = when (lang) {
         "en" -> coachTipEn.ifBlank { coachTip }
-        "pt" -> coachTipPt.ifBlank { coachTip }
+        "pt" -> coachTipPt.ifBlank { com.example.util.trStr("pt", coachTip) }
         else -> coachTip
     }
 
@@ -197,13 +241,13 @@ data class SummonerSpellItem(
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
-        "pt" -> namePt.ifBlank { name }
+        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
         else -> name
     }
 
     fun getLocalizedDescription(lang: String): String = when (lang) {
         "en" -> descriptionEn.ifBlank { description }
-        "pt" -> descriptionPt.ifBlank { description }
+        "pt" -> descriptionPt.ifBlank { com.example.util.trStr("pt", description) }
         else -> description
     }
 }
@@ -219,7 +263,19 @@ data class RuneItem(
     val description: String,
     val descriptionEn: String = "",
     val descriptionPt: String = ""
-)
+) {
+    fun getLocalizedName(lang: String): String = when (lang) {
+        "en" -> nameEn.ifBlank { name }
+        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
+        else -> name
+    }
+
+    fun getLocalizedDescription(lang: String): String = when (lang) {
+        "en" -> descriptionEn.ifBlank { description }
+        "pt" -> descriptionPt.ifBlank { com.example.util.trStr("pt", description) }
+        else -> description
+    }
+}
 
 @Serializable
 data class MapObjectiveItem(
