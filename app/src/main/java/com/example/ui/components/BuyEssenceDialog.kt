@@ -10,6 +10,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,14 +43,19 @@ import kotlinx.coroutines.launch
 @Composable
 fun BuyEssenceDialog(
     isAdmin: Boolean,
+    initialCurrency: String = "BLUE", // "BLUE" or "ORANGE"
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var selectedPackIndex by remember { mutableStateOf(1) }
+    var selectedCurrency by remember { mutableStateOf(initialCurrency) }
+    var selectedPackIndex by remember { mutableStateOf(0) }
     var isPurchasing by remember { mutableStateOf(false) }
 
-    val packs = listOf(
+    val blueEssenceBalance by SubscriptionManager.blueEssence.collectAsState()
+    val orangeEssenceBalance by SubscriptionManager.orangeEssence.collectAsState()
+
+    val bluePacks = listOf(
         Triple("10 EA", 10L, "$1.00 USD"),
         Triple("20 EA", 20L, "$2.00 USD"),
         Triple("30 EA", 30L, "$3.00 USD"),
@@ -64,6 +71,22 @@ fun BuyEssenceDialog(
         Triple("1,000 EA", 1000L, "$100.00 USD")
     )
 
+    // Esencia Naranja: 1$ por 1 esencia
+    val orangePacks = listOf(
+        Triple("1 EN", 1L, "$1.00 USD"),
+        Triple("5 EN", 5L, "$5.00 USD"),
+        Triple("10 EN", 10L, "$10.00 USD"),
+        Triple("25 EN", 25L, "$25.00 USD"),
+        Triple("50 EN", 50L, "$50.00 USD"),
+        Triple("100 EN", 100L, "$100.00 USD")
+    )
+
+    val currentPacks = if (selectedCurrency == "BLUE") bluePacks else orangePacks
+    val isOrange = selectedCurrency == "ORANGE"
+    val accentColor = if (isOrange) HextechGold else HextechCyan
+    val currentIconRes = if (isOrange) R.drawable.ic_orange_essence else R.drawable.ic_blue_essence
+    val currentCurrencyName = if (isOrange) "Esencia Naranja" else "Esencia Azul"
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -71,17 +94,18 @@ fun BuyEssenceDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.92f)
-                .wrapContentHeight(),
+                .fillMaxHeight(0.85f),
             shape = RoundedCornerShape(16.dp),
             color = Color(0xFF0F172A),
-            border = BorderStroke(1.5.dp, HextechCyan)
+            border = BorderStroke(1.5.dp, accentColor)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Top Header Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -89,20 +113,105 @@ fun BuyEssenceDialog(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         androidx.compose.foundation.Image(
-                            painter = painterResource(id = R.drawable.ic_blue_essence),
-                            contentDescription = "Esencia Azul",
-                            modifier = Modifier.size(24.dp)
+                            painter = painterResource(id = currentIconRes),
+                            contentDescription = currentCurrencyName,
+                            modifier = Modifier.size(26.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Comprar Esencia Azul",
-                            fontWeight = FontWeight.Bold,
-                            color = HextechCyan,
-                            fontSize = 17.sp
-                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                "Comprar $currentCurrencyName",
+                                fontWeight = FontWeight.Bold,
+                                color = accentColor,
+                                fontSize = 16.sp
+                            )
+                            Text(
+                                text = if (isOrange) "Saldo actual: $orangeEssenceBalance EN" else "Saldo actual: $blueEssenceBalance EA",
+                                color = Color(0xFF94A3B8),
+                                fontSize = 11.5.sp
+                            )
+                        }
                     }
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.Gray)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Selector de Moneda: Esencia Azul vs Esencia Naranja
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFF1E293B))
+                        .padding(3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                if (selectedCurrency != "BLUE") {
+                                    selectedCurrency = "BLUE"
+                                    selectedPackIndex = 0
+                                }
+                            },
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (!isOrange) HextechCyan.copy(alpha = 0.25f) else Color.Transparent,
+                        border = if (!isOrange) BorderStroke(1.dp, HextechCyan) else null
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            androidx.compose.foundation.Image(
+                                painter = painterResource(id = R.drawable.ic_blue_essence),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "Esencia Azul",
+                                color = if (!isOrange) HextechCyan else Color(0xFF94A3B8),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                if (selectedCurrency != "ORANGE") {
+                                    selectedCurrency = "ORANGE"
+                                    selectedPackIndex = 0
+                                }
+                            },
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isOrange) HextechGold.copy(alpha = 0.25f) else Color.Transparent,
+                        border = if (isOrange) BorderStroke(1.dp, HextechGold) else null
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            androidx.compose.foundation.Image(
+                                painter = painterResource(id = R.drawable.ic_orange_essence),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "Esencia Naranja",
+                                color = if (isOrange) HextechGold else Color(0xFF94A3B8),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
@@ -128,90 +237,98 @@ fun BuyEssenceDialog(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "En mantenimiento: Las compras de Esencia Azul están temporalmente deshabilitadas por mantenimiento técnico.",
+                                text = "En mantenimiento: Las compras de $currentCurrencyName están temporalmente deshabilitadas por mantenimiento técnico.",
                                 color = Color.White,
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 } else {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
-                        color = HextechGold.copy(alpha = 0.15f),
-                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.4f))
+                        color = accentColor.copy(alpha = 0.15f),
+                        border = BorderStroke(1.dp, accentColor.copy(alpha = 0.4f))
                     ) {
                         Text(
-                            text = "👑 Modo Administrador Activo: Acceso de compra y recarga sin restricciones.",
-                            color = HextechGold,
+                            text = if (isOrange) "👑 Modo Administrador: Recarga de Esencia Naranja ($1 USD = 1 EN)" else "👑 Modo Administrador: Recarga de Esencia Azul sin restricciones.",
+                            color = accentColor,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                // Selección de paquetes
-                packs.forEachIndexed { index, pack ->
-                    val isSelected = selectedPackIndex == index
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clickable { selectedPackIndex = index },
-                        shape = RoundedCornerShape(10.dp),
-                        color = if (isSelected) HextechCyan.copy(alpha = 0.15f) else Color(0xFF1E293B),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isSelected) HextechCyan else Color(0xFF334155)
-                        )
-                    ) {
-                        Row(
+                // Selección de paquetes scrollable
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    itemsIndexed(currentPacks) { index, pack ->
+                        val isSelected = selectedPackIndex == index
+                        Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .clickable { selectedPackIndex = index },
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (isSelected) accentColor.copy(alpha = 0.15f) else Color(0xFF1E293B),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) accentColor else Color(0xFF334155)
+                            )
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                androidx.compose.foundation.Image(
-                                    painter = painterResource(id = R.drawable.ic_blue_essence),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    androidx.compose.foundation.Image(
+                                        painter = painterResource(id = currentIconRes),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = pack.first,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp
+                                    )
+                                }
                                 Text(
-                                    text = pack.first,
-                                    color = Color.White,
+                                    text = pack.third,
+                                    color = accentColor,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    fontSize = 13.sp
                                 )
                             }
-                            Text(
-                                text = pack.third,
-                                color = HextechCyan,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
-                            )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Botón de Comprar
-                Spacer(modifier = Modifier.height(16.dp))
-
                 HextechAnimatedButton(
                     onClick = {
                         if (isAdmin) {
                             isPurchasing = true
                             scope.launch {
-                                val pack = packs[selectedPackIndex]
-                                SubscriptionManager.addBlueEssence(pack.second)
+                                val pack = currentPacks[selectedPackIndex.coerceIn(0, currentPacks.lastIndex)]
+                                if (isOrange) {
+                                    SubscriptionManager.addOrangeEssence(pack.second)
+                                } else {
+                                    SubscriptionManager.addBlueEssence(pack.second)
+                                }
                                 isPurchasing = false
                                 Toast.makeText(context, "¡Recarga de ${pack.first} aplicada exitosamente!", Toast.LENGTH_LONG).show()
                                 onDismiss()
@@ -223,9 +340,9 @@ fun BuyEssenceDialog(
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(10.dp),
-                    backgroundColor = if (isAdmin) HextechCyan else Color(0xFF334155),
+                    backgroundColor = if (isAdmin) accentColor else Color(0xFF334155),
                     borderColor = if (isAdmin) HextechGold else Color.Transparent,
-                    glowColor = if (isAdmin) HextechCyan else Color.Transparent,
+                    glowColor = if (isAdmin) accentColor else Color.Transparent,
                     enableShimmer = isAdmin && !isPurchasing,
                     enablePulse = isAdmin && !isPurchasing
                 ) {
@@ -246,3 +363,4 @@ fun BuyEssenceDialog(
         }
     }
 }
+

@@ -48,6 +48,9 @@ object SubscriptionManager {
     private val _blueEssence = MutableStateFlow(0L)
     val blueEssence: StateFlow<Long> = _blueEssence.asStateFlow()
 
+    private val _orangeEssence = MutableStateFlow(0L)
+    val orangeEssence: StateFlow<Long> = _orangeEssence.asStateFlow()
+
     private val _unreadMessagesCount = MutableStateFlow(0)
     val unreadMessagesCount: StateFlow<Int> = _unreadMessagesCount.asStateFlow()
 
@@ -122,6 +125,7 @@ object SubscriptionManager {
                 _currentAvatarId.value = "default_poro"
                 _unlockedAvatars.value = emptyList()
                 _blueEssence.value = 0L
+                _orangeEssence.value = 0L
                 _unreadMessagesCount.value = 0
                 _unreadModeratorSupportCount.value = 0
                 unreadMessagesSubcollection = 0
@@ -360,6 +364,7 @@ object SubscriptionManager {
                     _isBanned.value = (role == "banned" || banned)
                     _premiumUntil.value = until
                     _blueEssence.value = blueEs
+                    _orangeEssence.value = listenSnapshot.getLong("orangeEssence") ?: 0L
                     
                     val isVerifiedDoc = listenSnapshot.getBoolean("isVerified") ?: listenSnapshot.getBoolean("verified") ?: false
                     _isVerified.value = isVerifiedDoc || isAdminClaim || role == "admin" || role == "moderador"
@@ -565,6 +570,19 @@ object SubscriptionManager {
             _blueEssence.value = _blueEssence.value + amount
         } catch (e: Exception) {
             Log.e("SubscriptionManager", "Error incrementing blue essence", e)
+        }
+    }
+
+    suspend fun addOrangeEssence(amount: Long) {
+        val user = AuthManager.getAuth()?.currentUser ?: return
+        if (AuthManager.isGuestOrUnauthenticated(user)) return
+        val db = FirebaseFirestore.getInstance()
+        try {
+            val userRef = db.collection("users").document(user.uid)
+            userRef.update("orangeEssence", FieldValue.increment(amount)).await()
+            _orangeEssence.value = _orangeEssence.value + amount
+        } catch (e: Exception) {
+            Log.e("SubscriptionManager", "Error incrementing orange essence", e)
         }
     }
 }

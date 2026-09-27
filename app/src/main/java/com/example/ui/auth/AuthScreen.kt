@@ -323,6 +323,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            var showBuyEssenceDialog by remember { mutableStateOf(false) }
+            var buyEssenceCurrency by remember { mutableStateOf("BLUE") }
+
             // Top Row with Inbox (top-left), Blue Essence (top-center), and History (top-right)
             Row(
                 modifier = Modifier
@@ -377,48 +380,100 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     }
                 }
 
-                // Top-Center: Blue Essence compact badge
+                // Top-Center: Blue Essence & Orange Essence side-by-side badges
                 val currentBlueEssence by SubscriptionManager.blueEssence.collectAsState()
-                var essenceBounce by remember { mutableStateOf(false) }
-                val essenceScale by animateFloatAsState(
-                    targetValue = if (essenceBounce) 1.08f else 1f,
+                val currentOrangeEssence by SubscriptionManager.orangeEssence.collectAsState()
+                var blueBounce by remember { mutableStateOf(false) }
+                val blueScale by animateFloatAsState(
+                    targetValue = if (blueBounce) 1.08f else 1f,
                     animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                    label = "essenceScale",
-                    finishedListener = { essenceBounce = false }
+                    label = "blueScale",
+                    finishedListener = { blueBounce = false }
+                )
+                var orangeBounce by remember { mutableStateOf(false) }
+                val orangeScale by animateFloatAsState(
+                    targetValue = if (orangeBounce) 1.08f else 1f,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                    label = "orangeScale",
+                    finishedListener = { orangeBounce = false }
                 )
 
-                Surface(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .graphicsLayer {
-                            scaleX = essenceScale
-                            scaleY = essenceScale
-                        }
-                        .tactileClickable {
-                            essenceBounce = true
-                            showBuyEssenceDialog = true
-                        },
-                    shape = RoundedCornerShape(20.dp),
-                    color = activeTheme.surfaceVariant.copy(alpha = 0.9f),
-                    border = BorderStroke(1.2.dp, activeTheme.primary.copy(alpha = 0.6f))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    // Blue Essence compact badge
+                    Surface(
+                        modifier = Modifier
+                            .height(38.dp)
+                            .graphicsLayer {
+                                scaleX = blueScale
+                                scaleY = blueScale
+                            }
+                            .tactileClickable {
+                                blueBounce = true
+                                buyEssenceCurrency = "BLUE"
+                                showBuyEssenceDialog = true
+                            },
+                        shape = RoundedCornerShape(19.dp),
+                        color = activeTheme.surfaceVariant.copy(alpha = 0.9f),
+                        border = BorderStroke(1.2.dp, activeTheme.primary.copy(alpha = 0.6f))
                     ) {
-                        Image(
-                            painter = painterResource(id = com.example.R.drawable.ic_blue_essence),
-                            contentDescription = "Esencia Azul",
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "$currentBlueEssence EA",
-                            color = HextechCyan,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = com.example.R.drawable.ic_blue_essence),
+                                contentDescription = "Esencia Azul",
+                                modifier = Modifier.size(17.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$currentBlueEssence EA",
+                                color = HextechCyan,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    // Orange Essence compact badge
+                    Surface(
+                        modifier = Modifier
+                            .height(38.dp)
+                            .graphicsLayer {
+                                scaleX = orangeScale
+                                scaleY = orangeScale
+                            }
+                            .tactileClickable {
+                                orangeBounce = true
+                                buyEssenceCurrency = "ORANGE"
+                                showBuyEssenceDialog = true
+                            },
+                        shape = RoundedCornerShape(19.dp),
+                        color = activeTheme.surfaceVariant.copy(alpha = 0.9f),
+                        border = BorderStroke(1.2.dp, Color(0xFFFF8C00).copy(alpha = 0.7f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = com.example.R.drawable.ic_orange_essence),
+                                contentDescription = "Esencia Naranja",
+                                modifier = Modifier.size(17.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$currentOrangeEssence EN",
+                                color = Color(0xFFFF9E1B),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
@@ -441,8 +496,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            var showBuyEssenceDialog by remember { mutableStateOf(false) }
-
             AuthHeader(
                 title = "Perfil de Invocador",
                 subtitle = "Sesión iniciada correctamente"
@@ -459,6 +512,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             if (showBuyEssenceDialog) {
                 com.example.ui.components.BuyEssenceDialog(
                     isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin(),
+                    initialCurrency = buyEssenceCurrency,
                     onDismiss = { showBuyEssenceDialog = false }
                 )
             }

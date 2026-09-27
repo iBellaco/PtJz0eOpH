@@ -20,6 +20,14 @@ data class BlueEssencePurchase(
 )
 
 @Serializable
+data class OrangeEssencePurchase(
+    val amount: Int,
+    val price: Double,
+    val currency: String = "USD",
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+@Serializable
 data class AccountProfile(
     val id: String,
     val name: String,
@@ -28,7 +36,9 @@ data class AccountProfile(
     val isDefault: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val blueEssence: Int = 0,
-    val purchaseHistory: List<BlueEssencePurchase> = emptyList()
+    val orangeEssence: Int = 0,
+    val purchaseHistory: List<BlueEssencePurchase> = emptyList(),
+    val orangePurchaseHistory: List<OrangeEssencePurchase> = emptyList()
 )
 
 object AccountProfileManager {
@@ -172,6 +182,21 @@ object AccountProfileManager {
         }
     }
 
+    fun buyOrangeEssence(context: Context, profileId: String, amount: Int, price: Double) {
+        val currentProfiles = _allProfiles.value.toMutableList()
+        val index = currentProfiles.indexOfFirst { it.id == profileId }
+        if (index != -1) {
+            val prof = currentProfiles[index]
+            val newPurchase = OrangeEssencePurchase(amount, price)
+            val updatedProf = prof.copy(
+                orangeEssence = prof.orangeEssence + amount,
+                orangePurchaseHistory = prof.orangePurchaseHistory + newPurchase
+            )
+            currentProfiles[index] = updatedProf
+            saveProfiles(context, currentProfiles)
+        }
+    }
+
     fun spendBlueEssence(context: Context, profileId: String, amount: Int): Boolean {
         val currentProfiles = _allProfiles.value.toMutableList()
         val index = currentProfiles.indexOfFirst { it.id == profileId }
@@ -180,6 +205,23 @@ object AccountProfileManager {
             if (prof.blueEssence >= amount) {
                 val updatedProf = prof.copy(
                     blueEssence = prof.blueEssence - amount
+                )
+                currentProfiles[index] = updatedProf
+                saveProfiles(context, currentProfiles)
+                return true
+            }
+        }
+        return false
+    }
+
+    fun spendOrangeEssence(context: Context, profileId: String, amount: Int): Boolean {
+        val currentProfiles = _allProfiles.value.toMutableList()
+        val index = currentProfiles.indexOfFirst { it.id == profileId }
+        if (index != -1) {
+            val prof = currentProfiles[index]
+            if (prof.orangeEssence >= amount) {
+                val updatedProf = prof.copy(
+                    orangeEssence = prof.orangeEssence - amount
                 )
                 currentProfiles[index] = updatedProf
                 saveProfiles(context, currentProfiles)
