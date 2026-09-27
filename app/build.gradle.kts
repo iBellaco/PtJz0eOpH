@@ -9,10 +9,6 @@ plugins {
 }
 
 android {
-  androidResources {
-    noCompress.add("json")
-  }
-
   namespace = "com.example"
   compileSdk = 36
 
@@ -20,8 +16,12 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 727
-    versionName = "1.1.10.11"
+    versionCode = 728
+    versionName = "1.1.10.12"
+    resourceConfigurations += listOf("es", "pt", "en")
+    ndk {
+      abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
+    }
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     val supabaseUrl = (project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "https://yreknglctxujpetgqhnw.supabase.co").trim('\"', '\'')
     val supabaseKey = (project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr").trim('\"', '\'')
@@ -139,15 +139,15 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.mlkit.text.recognition)
   implementation(libs.androidx.work.runtime.ktx)
-  implementation(libs.jsoup)
-  implementation("androidx.documentfile:documentfile:1.0.1")
+  // implementation(libs.jsoup) // No utilizado
+  // implementation("androidx.documentfile:documentfile:1.0.1") // No utilizado
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.kotlinx.coroutines.play.services)
   implementation(libs.okhttp)
   // implementation(libs.generativeai) // Removido para funcionamiento 100% offline y reduccion de peso
-  implementation("com.squareup.retrofit2:retrofit:2.12.0")
-  implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.12.0")
+  // implementation("com.squareup.retrofit2:retrofit:2.12.0") // No utilizado
+  // implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.12.0") // No utilizado
   implementation(libs.supabase.postgrest)
   implementation(libs.ktor.client.okhttp)
   implementation(libs.supabase.auth)

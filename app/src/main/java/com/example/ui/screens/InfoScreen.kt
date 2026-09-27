@@ -150,7 +150,7 @@ fun InfoScreen(
                             .border(1.5.dp, HextechGold, RoundedCornerShape(14.dp))
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.custom_app_icon),
+                            painter = painterResource(id = R.drawable.ic_app_logo),
                             contentDescription = "Coach Icon",
                             modifier = Modifier.fillMaxSize()
                         )
