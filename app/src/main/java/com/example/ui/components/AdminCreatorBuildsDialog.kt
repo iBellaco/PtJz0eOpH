@@ -25,8 +25,6 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.WorkspacePremium
@@ -41,7 +39,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,12 +53,19 @@ import java.util.Locale
 import com.example.util.CreatorSubscriptionManager
 import com.example.util.SubscriptionManager
 import androidx.compose.ui.window.Dialog
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Lock
-
 
 enum class BuildsFilterTab {
     ALL,
     FAVORITES
+}
+
+enum class CreatorPodiumTab {
+    OFFICIAL,
+    POPULARITY
 }
 
 data class CreatorPodiumEntry(
@@ -119,8 +123,50 @@ fun AdminCreatorBuildsDialog(
         } catch (_: Exception) {}
     }
 
-    // Cálculo dinámico del Top 3 de Creadores para el Podio
-    val podiumCreators = remember(customBuilds, registeredUsers) {
+    // Fallback en caso de que no haya creadores suficientes para completar el podio de 3
+    val defaultLegends = remember {
+        listOf(
+            CreatorPodiumEntry(
+                name = "Coach Sovereign",
+                avatarId = "avatar_soberano_wr",
+                rankBorder = "CHALLENGER",
+                isAdmin = true,
+                role = "admin",
+                buildsCount = 6,
+                totalVotes = 84,
+                averageRating = 5.0,
+                score = 300.0,
+                subscribersCount = 254
+            ),
+            CreatorPodiumEntry(
+                name = "Wild Rift Pro",
+                avatarId = "avatar_kaisa",
+                rankBorder = "GRANDMASTER",
+                isAdmin = false,
+                role = "creador_lvl2",
+                buildsCount = 4,
+                totalVotes = 52,
+                averageRating = 4.9,
+                score = 220.0,
+                subscribersCount = 142
+            ),
+            CreatorPodiumEntry(
+                name = "Hextech Master",
+                avatarId = "avatar_zed",
+                rankBorder = "MASTER",
+                isAdmin = false,
+                role = "creador",
+                buildsCount = 3,
+                totalVotes = 31,
+                averageRating = 4.8,
+                score = 160.0,
+                subscribersCount = 89
+            )
+        )
+    }
+
+    // Cálculo dinámico de creadores y métricas para el Podio
+    val baseRankingList = remember(customBuilds, registeredUsers) {
         val userMapByName = registeredUsers.associateBy { (it["name"] as? String ?: "").trim().lowercase(Locale.ROOT) }
         val userMapByUid = registeredUsers.associateBy { (it["uid"] as? String ?: "") }
 
@@ -210,63 +256,65 @@ fun AdminCreatorBuildsDialog(
                 }
             }
         }
+        rankingList
+    }
 
-        // 3. Fallback en caso de que no haya creadores suficientes para completar el podio de 3
-        val defaultLegends = listOf(
-            CreatorPodiumEntry(
-                name = "Coach Sovereign",
-                avatarId = "avatar_soberano_wr",
-                rankBorder = "CHALLENGER",
-                isAdmin = true,
-                role = "admin",
-                buildsCount = 6,
-                totalVotes = 84,
-                averageRating = 5.0,
-                score = 300.0,
-                subscribersCount = 254
-            ),
-            CreatorPodiumEntry(
-                name = "Wild Rift Pro",
-                avatarId = "avatar_kaisa",
-                rankBorder = "GRANDMASTER",
-                isAdmin = false,
-                role = "creador_lvl2",
-                buildsCount = 4,
-                totalVotes = 52,
-                averageRating = 4.9,
-                score = 220.0,
-                subscribersCount = 142
-            ),
-            CreatorPodiumEntry(
-                name = "Hextech Master",
-                avatarId = "avatar_zed",
-                rankBorder = "MASTER",
-                isAdmin = false,
-                role = "creador",
-                buildsCount = 3,
-                totalVotes = 31,
-                averageRating = 4.8,
-                score = 160.0,
-                subscribersCount = 89
-            )
-        )
-
-        val finalList = rankingList.sortedWith(
+    // Podio por Popularidad (Subs, Votos, Valoración)
+    val popularityPodiumCreators = remember(baseRankingList, defaultLegends) {
+        val popList = baseRankingList.sortedWith(
             compareByDescending<CreatorPodiumEntry> { it.subscribersCount }
                 .thenByDescending { it.totalVotes }
                 .thenByDescending { it.score }
+                .thenByDescending { it.averageRating }
         ).toMutableList()
         var fallbackIdx = 0
-        while (finalList.size < 3 && fallbackIdx < defaultLegends.size) {
+        while (popList.size < 3 && fallbackIdx < defaultLegends.size) {
             val fallback = defaultLegends[fallbackIdx]
-            if (finalList.none { it.name.equals(fallback.name, ignoreCase = true) }) {
-                finalList.add(fallback)
+            if (popList.none { it.name.equals(fallback.name, ignoreCase = true) }) {
+                popList.add(fallback)
             }
             fallbackIdx++
         }
-
-        finalList.take(3)
+        popList.take(3)
     }
+
+    // Podio Oficial (Jerarquía de creadores oficiales, verificados y con builds oficiales)
+    val officialPodiumCreators = remember(baseRankingList, defaultLegends) {
+        val offList = baseRankingList.filter { entry ->
+            val r = entry.role.lowercase()
+            entry.isAdmin || r in listOf("admin", "streamer", "creador_lvl5", "creador_lvl4", "creador_lvl3", "creador_lvl2", "creador")
+        }.sortedWith(
+            compareByDescending<CreatorPodiumEntry> { entry ->
+                when (entry.role.lowercase()) {
+                    "admin" -> 100
+                    "streamer" -> 90
+                    "creador_lvl5" -> 80
+                    "creador_lvl4" -> 70
+                    "creador_lvl3" -> 60
+                    "creador_lvl2" -> 50
+                    "creador" -> 40
+                    else -> if (entry.isAdmin) 100 else 10
+                }
+            }.thenByDescending { it.buildsCount }
+            .thenByDescending { it.subscribersCount }
+            .thenByDescending { it.totalVotes }
+        ).toMutableList()
+        var fallbackIdx = 0
+        while (offList.size < 3 && fallbackIdx < defaultLegends.size) {
+            val fallback = defaultLegends[fallbackIdx]
+            if (offList.none { it.name.equals(fallback.name, ignoreCase = true) }) {
+                offList.add(fallback)
+            }
+            fallbackIdx++
+        }
+        offList.take(3)
+    }
+
+    var podiumTab by remember { mutableStateOf(CreatorPodiumTab.OFFICIAL) }
+    var isPodiumExpanded by remember { mutableStateOf(true) }
+    var isCreatorsListExpanded by remember { mutableStateOf(true) }
+
+    val currentPodiumCreators = if (podiumTab == CreatorPodiumTab.POPULARITY) popularityPodiumCreators else officialPodiumCreators
 
     val officialCreatorsList = remember(registeredUsers, customBuilds) {
         registeredUsers.filter { u ->
@@ -336,16 +384,15 @@ fun AdminCreatorBuildsDialog(
         )
     }
 
-// Commented out due to unresolved reference, investigate definition of CreatorProfileDialog
-// if (selectedCreatorForProfile != null) {
-//     CreatorProfileDialog(
-//         entry = selectedCreatorForProfile!!,
-//         registeredUsers = registeredUsers,
-//         customBuilds = customBuilds,
-//         onDismiss = { selectedCreatorForProfile = null },
-//         onOpenBuild = { selectedBuildForDetail = it }
-//     )
-// }
+    if (selectedCreatorForProfile != null) {
+        CreatorProfileDialog(
+            entry = selectedCreatorForProfile!!,
+            registeredUsers = registeredUsers,
+            customBuilds = customBuilds,
+            onDismiss = { selectedCreatorForProfile = null },
+            onOpenBuild = { selectedBuildForDetail = it }
+        )
+    }
 
     androidx.activity.compose.BackHandler {
         if (selectedBuildForDetail != null) {
@@ -416,56 +463,55 @@ fun AdminCreatorBuildsDialog(
 
             HorizontalDivider(color = HextechCardBorder)
 
-            // Podio de Creadores (1er, 2do y 3er Lugar con Avatar, Nombre y Marco)
-            if (podiumCreators.size >= 3) {
-                // Título dinámico para podio (por popularidad)
-                Text(
-                    text = "🏆 PODIO POR POPULARIDAD",
-                    color = HextechGold,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 11.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
+            // Podio de Creadores (1er, 2do y 3er Lugar con Avatar, Nombre y Marco, modos Oficial y Popularidad, y colapsable)
+            if (currentPodiumCreators.size >= 3) {
                 CreatorPodiumCard(
-                    first = podiumCreators[0],
-                    second = podiumCreators[1],
-                    third = podiumCreators[2],
+                    first = currentPodiumCreators[0],
+                    second = currentPodiumCreators[1],
+                    third = currentPodiumCreators[2],
                     selectedCreator = selectedCreatorFilter,
+                    podiumTab = podiumTab,
+                    onTabChange = { podiumTab = it },
+                    isExpanded = isPodiumExpanded,
+                    onToggleExpand = { isPodiumExpanded = !isPodiumExpanded },
                     onSelectCreator = { entry ->
                         selectedCreatorForProfile = entry
                     }
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
             if (officialCreatorsList.isNotEmpty()) {
-                var isExpanded by remember { mutableStateOf(true) }
-                
                 Row(
-                    modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isCreatorsListExpanded = !isCreatorsListExpanded }
+                        .padding(top = 2.dp, bottom = 1.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "👥 " + com.example.util.tr("Lista de Creadores Oficiales"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp,
-                        modifier = Modifier.padding(vertical = 4.dp).weight(1f)
+                        fontSize = 11.5.sp
                     )
-                    Icon(
-                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = HextechGold,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    IconButton(
+                        onClick = { isCreatorsListExpanded = !isCreatorsListExpanded },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isCreatorsListExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (isCreatorsListExpanded) "Minimizar lista de creadores" else "Expandir lista de creadores",
+                            tint = HextechGold,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
                 
-                if (isExpanded) {
+                AnimatedVisibility(visible = isCreatorsListExpanded) {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
                     ) {
                         items(officialCreatorsList) { creator ->
                             Surface(
@@ -474,52 +520,62 @@ fun AdminCreatorBuildsDialog(
                                 },
                                 color = HextechSurface.copy(alpha = 0.5f),
                                 border = BorderStroke(1.dp, HextechCardBorder),
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.width(105.dp)
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.width(112.dp)
                             ) {
                                 Column(
-                                modifier = Modifier.padding(6.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(3.dp)
-                            ) {
-                                UserAvatarView(
-                                    avatarId = creator.avatarId,
-                                    size = 32.dp,
-                                    fallbackInitial = creator.name.take(1).uppercase(Locale.ROOT),
-                                    rankBorder = creator.rankBorder,
-                                    isAdmin = creator.isAdmin
-                                )
-                                Text(
-                                    text = creator.name,
-                                    color = TextPrimary,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                
-                                val displayLabel = when (creator.role) {
-                                    "creador" -> "Creador Lvl 1"
-                                    "creador_lvl2" -> "Creador Lvl 2"
-                                    "creador_lvl3" -> "Creador Lvl 3"
-                                    "creador_lvl4" -> "Creador Lvl 4"
-                                    "creador_lvl5" -> "Creador Lvl 5"
-                                    "streamer" -> "Streamer"
-                                    else -> creator.role.replaceFirstChar { it.uppercase() }
+                                    modifier = Modifier.padding(top = 10.dp, bottom = 8.dp, start = 6.dp, end = 6.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                                ) {
+                                    val hasCreatorFrame = creator.rankBorder.isNotBlank() &&
+                                        !creator.rankBorder.equals("NONE", ignoreCase = true) &&
+                                        !creator.rankBorder.equals("DEFAULT", ignoreCase = true)
+
+                                    Box(
+                                        modifier = Modifier.size(if (hasCreatorFrame) 46.dp else 36.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        UserAvatarView(
+                                            avatarId = creator.avatarId,
+                                            size = 34.dp,
+                                            fallbackInitial = creator.name.take(1).uppercase(Locale.ROOT),
+                                            rankBorder = creator.rankBorder,
+                                            isAdmin = creator.isAdmin
+                                        )
+                                    }
+                                    Text(
+                                        text = creator.name,
+                                        color = TextPrimary,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    
+                                    val displayLabel = when (creator.role) {
+                                        "creador" -> "Creador Lvl 1"
+                                        "creador_lvl2" -> "Creador Lvl 2"
+                                        "creador_lvl3" -> "Creador Lvl 3"
+                                        "creador_lvl4" -> "Creador Lvl 4"
+                                        "creador_lvl5" -> "Creador Lvl 5"
+                                        "streamer" -> "Streamer"
+                                        else -> creator.role.replaceFirstChar { it.uppercase() }
+                                    }
+                                    
+                                    Text(
+                                        text = displayLabel,
+                                        color = HextechGoldLight,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    
+                                    Text(
+                                        text = "👥 ${creator.subscribersCount} subs",
+                                        color = TextSecondary,
+                                        fontSize = 8.5.sp
+                                    )
                                 }
-                                
-                                Text(
-                                    text = displayLabel,
-                                    color = HextechGoldLight,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                
-                                Text(
-                                    text = "👥 ${creator.subscribersCount} subs",
-                                    color = TextSecondary,
-                                    fontSize = 8.5.sp
-                                )
                             }
                         }
                     }
@@ -737,9 +793,9 @@ fun AdminCreatorBuildsDialog(
 }
 
 /**
- * Podio oficial para los 3 mejores creadores de la comunidad.
+ * Podio oficial y por popularidad para los 3 mejores creadores de la comunidad.
  * Visualiza el 1er lugar (centro, más alto), 2do lugar (izquierda) y 3er lugar (derecha)
- * mostrando Avatar, Nombre de Usuario y Marco correspondiente.
+ * mostrando Avatar, Nombre de Usuario y Marco correspondiente sin recortar ni colisionar.
  */
 @Composable
 fun CreatorPodiumCard(
@@ -747,6 +803,10 @@ fun CreatorPodiumCard(
     second: CreatorPodiumEntry,
     third: CreatorPodiumEntry,
     selectedCreator: String?,
+    podiumTab: CreatorPodiumTab = CreatorPodiumTab.OFFICIAL,
+    onTabChange: (CreatorPodiumTab) -> Unit = {},
+    isExpanded: Boolean = true,
+    onToggleExpand: () -> Unit = {},
     onSelectCreator: (CreatorPodiumEntry) -> Unit
 ) {
     Surface(
@@ -761,7 +821,7 @@ fun CreatorPodiumCard(
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Encabezado del podio
+            // Encabezado del podio con selector de modo y botón para minimizar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -769,7 +829,8 @@ fun CreatorPodiumCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.clickable { onToggleExpand() }
                 ) {
                     Icon(
                         imageVector = Icons.Default.EmojiEvents,
@@ -785,98 +846,182 @@ fun CreatorPodiumCard(
                         letterSpacing = 0.5.sp
                     )
                 }
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = HextechGold.copy(alpha = 0.15f),
-                    border = BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.4f))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // Selector interactivo: Podio Oficial vs Podio por Popularidad
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color(0xFF0F172A),
+                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.35f))
+                    ) {
+                        Row(modifier = Modifier.padding(2.dp)) {
+                            Surface(
+                                onClick = { onTabChange(CreatorPodiumTab.OFFICIAL) },
+                                shape = RoundedCornerShape(14.dp),
+                                color = if (podiumTab == CreatorPodiumTab.OFFICIAL) HextechGold else Color.Transparent
+                            ) {
+                                Text(
+                                    text = "Oficial",
+                                    color = if (podiumTab == CreatorPodiumTab.OFFICIAL) HextechDarkBg else HextechGold,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                            Surface(
+                                onClick = { onTabChange(CreatorPodiumTab.POPULARITY) },
+                                shape = RoundedCornerShape(14.dp),
+                                color = if (podiumTab == CreatorPodiumTab.POPULARITY) HextechGold else Color.Transparent
+                            ) {
+                                Text(
+                                    text = "Popularidad",
+                                    color = if (podiumTab == CreatorPodiumTab.POPULARITY) HextechDarkBg else HextechGold,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    // Botón para minimizar / expandir podio
+                    IconButton(
+                        onClick = onToggleExpand,
+                        modifier = Modifier.size(26.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (isExpanded) "Minimizar podio" else "Expandir podio",
+                            tint = HextechGold,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            // Vista colapsada (resumen minimalista en una sola línea)
+            if (!isExpanded) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onToggleExpand() }
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "TOP 3 OFICIAL",
-                        color = HextechGold,
+                        text = "👑 1° ${first.name}  •  🥈 2° ${second.name}  •  🥉 3° ${third.name}",
+                        color = HextechGoldLight,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = if (podiumTab == CreatorPodiumTab.OFFICIAL) "TOP 3 OFICIAL" else "TOP 3 POPULARIDAD",
+                        color = HextechGold.copy(alpha = 0.85f),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(start = 6.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            // Vista expandida con pedestales y avatares con marcos
+            AnimatedVisibility(visible = isExpanded) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(modifier = Modifier.height(10.dp))
 
-            // Estructura del Podio (2do Lugar, 1er Lugar, 3er Lugar)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                // 🥈 2DO LUGAR (Izquierda)
-                PodiumColumn(
-                    entry = second,
-                    rank = 2,
-                    rankBadgeText = "🥈 2° Lugar",
-                    badgeColor = Color(0xFF94A3B8),
-                    badgeBgColor = Color(0xFF64748B).copy(alpha = 0.25f),
-                    avatarSize = 52.dp,
-                    pedestalHeight = 60.dp,
-                    pedestalBrush = Brush.verticalGradient(
-                        listOf(Color(0xFF475569), Color(0xFF1E293B))
-                    ),
-                    pedestalBorderColor = Color(0xFF94A3B8),
-                    numeralColor = Color(0xFFCBD5E1),
-                    isSelected = selectedCreator.equals(second.name, ignoreCase = true),
-                    onClick = { onSelectCreator(second) },
-                    modifier = Modifier.weight(1f)
-                )
+                    // Estructura del Podio (2do Lugar, 1er Lugar, 3er Lugar)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        // 🥈 2DO LUGAR (Izquierda)
+                        PodiumColumn(
+                            entry = second,
+                            rank = 2,
+                            rankBadgeText = "🥈 2° Lugar",
+                            badgeColor = Color(0xFF94A3B8),
+                            badgeBgColor = Color(0xFF64748B).copy(alpha = 0.25f),
+                            avatarSize = 52.dp,
+                            pedestalHeight = 60.dp,
+                            pedestalBrush = Brush.verticalGradient(
+                                listOf(Color(0xFF475569), Color(0xFF1E293B))
+                            ),
+                            pedestalBorderColor = Color(0xFF94A3B8),
+                            numeralColor = Color(0xFFCBD5E1),
+                            isSelected = selectedCreator.equals(second.name, ignoreCase = true),
+                            isPopularityMode = (podiumTab == CreatorPodiumTab.POPULARITY),
+                            onClick = { onSelectCreator(second) },
+                            modifier = Modifier.weight(1f)
+                        )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                // 👑 1ER LUGAR (Centro - Elevado y Destacado)
-                PodiumColumn(
-                    entry = first,
-                    rank = 1,
-                    rankBadgeText = "👑 1° Lugar",
-                    badgeColor = HextechGold,
-                    badgeBgColor = HextechGold.copy(alpha = 0.25f),
-                    avatarSize = 64.dp,
-                    pedestalHeight = 82.dp,
-                    pedestalBrush = Brush.verticalGradient(
-                        listOf(HextechGold.copy(alpha = 0.5f), Color(0xFF854D0E), HextechDarkBg)
-                    ),
-                    pedestalBorderColor = HextechGold,
-                    numeralColor = HextechGold,
-                    isSelected = selectedCreator.equals(first.name, ignoreCase = true),
-                    onClick = { onSelectCreator(first) },
-                    modifier = Modifier.weight(1.15f)
-                )
+                        // 👑 1ER LUGAR (Centro - Elevado y Destacado)
+                        PodiumColumn(
+                            entry = first,
+                            rank = 1,
+                            rankBadgeText = "👑 1° Lugar",
+                            badgeColor = HextechGold,
+                            badgeBgColor = HextechGold.copy(alpha = 0.25f),
+                            avatarSize = 64.dp,
+                            pedestalHeight = 82.dp,
+                            pedestalBrush = Brush.verticalGradient(
+                                listOf(HextechGold.copy(alpha = 0.5f), Color(0xFF854D0E), HextechDarkBg)
+                            ),
+                            pedestalBorderColor = HextechGold,
+                            numeralColor = HextechGold,
+                            isSelected = selectedCreator.equals(first.name, ignoreCase = true),
+                            isPopularityMode = (podiumTab == CreatorPodiumTab.POPULARITY),
+                            onClick = { onSelectCreator(first) },
+                            modifier = Modifier.weight(1.15f)
+                        )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                // 🥉 3ER LUGAR (Derecha)
-                PodiumColumn(
-                    entry = third,
-                    rank = 3,
-                    rankBadgeText = "🥉 3° Lugar",
-                    badgeColor = Color(0xFFFDBA74),
-                    badgeBgColor = Color(0xFF9A3412).copy(alpha = 0.25f),
-                    avatarSize = 48.dp,
-                    pedestalHeight = 46.dp,
-                    pedestalBrush = Brush.verticalGradient(
-                        listOf(Color(0xFF78350F), Color(0xFF451A03))
-                    ),
-                    pedestalBorderColor = Color(0xFFB45309),
-                    numeralColor = Color(0xFFFDBA74),
-                    isSelected = selectedCreator.equals(third.name, ignoreCase = true),
-                    onClick = { onSelectCreator(third) },
-                    modifier = Modifier.weight(1f)
-                )
+                        // 🥉 3ER LUGAR (Derecha)
+                        PodiumColumn(
+                            entry = third,
+                            rank = 3,
+                            rankBadgeText = "🥉 3° Lugar",
+                            badgeColor = Color(0xFFFDBA74),
+                            badgeBgColor = Color(0xFF9A3412).copy(alpha = 0.25f),
+                            avatarSize = 48.dp,
+                            pedestalHeight = 46.dp,
+                            pedestalBrush = Brush.verticalGradient(
+                                listOf(Color(0xFF78350F), Color(0xFF451A03))
+                            ),
+                            pedestalBorderColor = Color(0xFFB45309),
+                            numeralColor = Color(0xFFFDBA74),
+                            isSelected = selectedCreator.equals(third.name, ignoreCase = true),
+                            isPopularityMode = (podiumTab == CreatorPodiumTab.POPULARITY),
+                            onClick = { onSelectCreator(third) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
         }
     }
 }
 
+/**
+ * Columna individual de cada posición en el podio.
+ * Muestra insignia, Avatar + Marco con UserAvatarView con espacio reservado para evitar colisiones visuales,
+ * Nombre de Usuario, Stats y Pedestal metálico.
+ */
 @Composable
-fun PodiumColumn(
+private fun PodiumColumn(
     entry: CreatorPodiumEntry,
     rank: Int,
     rankBadgeText: String,
@@ -888,15 +1033,25 @@ fun PodiumColumn(
     pedestalBorderColor: Color,
     numeralColor: Color,
     isSelected: Boolean,
+    isPopularityMode: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val hasFrame = (entry.rankBorder.isNotBlank() &&
+        !entry.rankBorder.equals("NONE", ignoreCase = true) &&
+        !entry.rankBorder.equals("DEFAULT", ignoreCase = true)) ||
+        entry.isAdmin
+
+    // Espacio reservado para el avatar con marco sin recortar ni colisionar
+    val avatarContainerSize = if (hasFrame) avatarSize * 1.36f else avatarSize
+
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
             .clickable { onClick() }
             .then(
-                if (isSelected) Modifier.border(1.dp, HextechCyan, RoundedCornerShape(8.dp)).background(HextechCyan.copy(alpha = 0.08f))
+                if (isSelected) Modifier
+                    .background(HextechCyan.copy(alpha = 0.08f), RoundedCornerShape(8.dp))
+                    .border(1.dp, HextechCyan, RoundedCornerShape(8.dp))
                 else Modifier
             )
             .padding(vertical = 4.dp, horizontal = 2.dp),
@@ -918,11 +1073,12 @@ fun PodiumColumn(
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(if (hasFrame) 4.dp else 6.dp))
 
         // Avatar de usuario con marco integrado (UserAvatarView)
+        // Reservamos exactamente el tamaño que el marco necesita para no colisionar con la insignia ni el nombre
         Box(
-            modifier = Modifier.padding(horizontal = if (entry.isAdmin) 4.dp else 0.dp),
+            modifier = Modifier.size(avatarContainerSize),
             contentAlignment = Alignment.Center
         ) {
             UserAvatarView(
@@ -934,7 +1090,7 @@ fun PodiumColumn(
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(if (hasFrame) 4.dp else 6.dp))
 
         // Nombre de usuario
         Text(
@@ -947,9 +1103,13 @@ fun PodiumColumn(
             textAlign = TextAlign.Center
         )
 
-        // Resumen de estadísticas del creador mostrando cantidad de suscriptores en vez de votos
+        // Resumen de estadísticas del creador según el modo activo (popularidad vs oficial)
         Text(
-            text = "${entry.buildsCount} builds • 👥 ${entry.subscribersCount} Subs",
+            text = if (isPopularityMode) {
+                "👥 ${entry.subscribersCount} Subs • ⭐ ${entry.totalVotes} v."
+            } else {
+                "${entry.buildsCount} builds • 👥 ${entry.subscribersCount} Subs"
+            },
             color = if (rank == 1) HextechGoldLight else TextSecondary,
             fontSize = if (rank == 1) 9.5.sp else 8.5.sp,
             fontWeight = if (rank == 1) FontWeight.SemiBold else FontWeight.Normal,
@@ -1448,5 +1608,3 @@ fun CreatorProfileDialog(
         }
     }
 }
-
-
