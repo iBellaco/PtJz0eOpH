@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,6 +57,7 @@ import com.example.util.CreatorSubscriptionManager
 import com.example.util.SubscriptionManager
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material.icons.filled.Lock
+
 
 enum class BuildsFilterTab {
     ALL,
@@ -334,15 +336,16 @@ fun AdminCreatorBuildsDialog(
         )
     }
 
-    if (selectedCreatorForProfile != null) {
-        CreatorProfileDialog(
-            entry = selectedCreatorForProfile!!,
-            registeredUsers = registeredUsers,
-            customBuilds = customBuilds,
-            onDismiss = { selectedCreatorForProfile = null },
-            onOpenBuild = { selectedBuildForDetail = it }
-        )
-    }
+// Commented out due to unresolved reference, investigate definition of CreatorProfileDialog
+// if (selectedCreatorForProfile != null) {
+//     CreatorProfileDialog(
+//         entry = selectedCreatorForProfile!!,
+//         registeredUsers = registeredUsers,
+//         customBuilds = customBuilds,
+//         onDismiss = { selectedCreatorForProfile = null },
+//         onOpenBuild = { selectedBuildForDetail = it }
+//     )
+// }
 
     androidx.activity.compose.BackHandler {
         if (selectedBuildForDetail != null) {
@@ -1445,3 +1448,5 @@ fun CreatorProfileDialog(
         }
     }
 }
+
+
