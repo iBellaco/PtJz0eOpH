@@ -90,7 +90,10 @@ object DraftHistoryRepository {
         matchResult: String = "PENDING",
         accountProfileId: String? = null,
         accountProfileName: String? = null,
-        isLegendary: Boolean = false
+        isLegendary: Boolean = false,
+        matchMode: String = if (isLegendary) "LEGENDARY" else "RANKED",
+        myScore: String = "",
+        allowDuplicate: Boolean = false
     ): Long {
         val activeProfile = AccountProfileManager.getActiveProfile(context)
         val profileId = accountProfileId ?: activeProfile.id
@@ -162,16 +165,22 @@ object DraftHistoryRepository {
             notes = notes,
             accountProfileId = profileId,
             accountProfileName = profileName,
-            isLegendary = isLegendary
+            isLegendary = isLegendary || matchMode == "LEGENDARY",
+            matchMode = matchMode,
+            myScore = myScore
         )
 
         val draftDao = AppDatabase.getDatabase(context).draftDao()
-        val existingDraft = draftDao.findExistingDraft(
-            profileId = profileId,
-            userRole = myRole.name,
-            allyPicksJson = entity.allyPicksJson,
-            enemyPicksJson = entity.enemyPicksJson
-        )
+        val existingDraft = if (!allowDuplicate) {
+            draftDao.findExistingDraft(
+                profileId = profileId,
+                userRole = myRole.name,
+                allyPicksJson = entity.allyPicksJson,
+                enemyPicksJson = entity.enemyPicksJson
+            )
+        } else {
+            null // Al confirmar guardar duplicado, se inserta una partida nueva e independiente
+        }
 
         return if (existingDraft != null) {
             val updated = existingDraft.copy(
@@ -180,12 +189,23 @@ object DraftHistoryRepository {
                 matchResult = matchResult,
                 estimatedWinrate = estimatedWr,
                 timestamp = System.currentTimeMillis(),
-                accountProfileName = profileName
+                accountProfileName = profileName,
+                isLegendary = isLegendary || matchMode == "LEGENDARY",
+                matchMode = matchMode,
+                myScore = if (myScore.isNotBlank()) myScore else existingDraft.myScore
             )
             draftDao.updateDraft(updated)
             existingDraft.id
         } else {
-            draftDao.insertDraft(entity)
+            val freshEntity = if (allowDuplicate) {
+                entity.copy(
+                    id = 0L,
+                    timestamp = System.currentTimeMillis()
+                )
+            } else {
+                entity
+            }
+            draftDao.insertDraft(freshEntity)
         }
     }
 

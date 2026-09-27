@@ -52,6 +52,8 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -176,6 +178,7 @@ fun MainDraftingScreen(
     var showBugReportDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
     val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
@@ -326,6 +329,20 @@ fun MainDraftingScreen(
                                     .testTag("nav_theme_button")
                             ) {
                                 Text("🎨", fontSize = 18.sp)
+                            }
+
+                            Spacer(modifier = Modifier.width(6.dp))
+
+                            IconButton(
+                                onClick = { showLanguageDialog = true },
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(HextechSurface)
+                                    .border(1.dp, HextechGold.copy(alpha = 0.6f), CircleShape)
+                                    .size(38.dp)
+                                    .testTag("nav_language_button")
+                            ) {
+                                Text(if (currentLanguage == "pt") "🇧🇷" else "🇲🇽", fontSize = 18.sp)
                             }
                         }
                     },
@@ -792,6 +809,77 @@ fun MainDraftingScreen(
         if (showPlansDialog) {
             com.example.ui.components.SubscriptionPlansBottomSheet(
                 onDismiss = { showPlansDialog = false }
+            )
+        }
+
+        if (showLanguageDialog) {
+            AlertDialog(
+                onDismissRequest = { showLanguageDialog = false },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Language, contentDescription = null, tint = HextechGold, modifier = Modifier.size(22.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(tr("Seleccionar Idioma"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (currentLanguage == "es") HextechCyan.copy(alpha = 0.15f) else HextechSurface)
+                                .border(1.5.dp, if (currentLanguage == "es") HextechCyan else HextechCardBorder.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                                .clickable {
+                                    onLanguageChange("es")
+                                    showLanguageDialog = false
+                                }
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🇲🇽", fontSize = 24.sp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Español", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text("Español Oficial • 100% Activo", color = HextechGoldLight, fontSize = 11.5.sp)
+                            }
+                            if (currentLanguage == "es") {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (currentLanguage == "pt") HextechCyan.copy(alpha = 0.15f) else HextechSurface)
+                                .border(1.5.dp, if (currentLanguage == "pt") HextechCyan else HextechCardBorder.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                                .clickable {
+                                    onLanguageChange("pt")
+                                    showLanguageDialog = false
+                                }
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🇧🇷", fontSize = 24.sp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Português", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text("Português Oficial • 100% Ativo", color = HextechGoldLight, fontSize = 11.5.sp)
+                            }
+                            if (currentLanguage == "pt") {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showLanguageDialog = false }) {
+                        Text(tr("Cerrar"), color = HextechCyan, fontWeight = FontWeight.Bold)
+                    }
+                },
+                containerColor = HextechSurface,
+                shape = RoundedCornerShape(16.dp)
             )
         }
     }

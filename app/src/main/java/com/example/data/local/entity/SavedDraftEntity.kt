@@ -38,5 +38,7 @@ data class SavedDraftEntity(
     val notes: String = "",
     val accountProfileId: String = "default",
     val accountProfileName: String = "Cuenta Principal",
-    val isLegendary: Boolean = false
+    val isLegendary: Boolean = false,
+    val matchMode: String = "RANKED", // "RANKED", "LEGENDARY", "NORMAL"
+    val myScore: String = "" // e.g. "12/2/8" or "KDA 5.0"
 )

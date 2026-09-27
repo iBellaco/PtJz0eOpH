@@ -11,7 +11,7 @@ import com.example.data.local.entity.FavoriteBuildEntity
 
 @Database(
     entities = [SavedDraftEntity::class, FavoriteBuildEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -560,7 +560,7 @@ object SubscriptionManager {
         return formatDuration(until)
     }
 
-    suspend fun addBlueEssence(amount: Long) {
+    suspend fun addBlueEssence(amount: Long, reason: String? = null) {
         val user = AuthManager.getAuth()?.currentUser ?: return
         if (AuthManager.isGuestOrUnauthenticated(user)) return
         val db = FirebaseFirestore.getInstance()
@@ -568,12 +568,26 @@ object SubscriptionManager {
             val userRef = db.collection("users").document(user.uid)
             userRef.update("blueEssence", FieldValue.increment(amount)).await()
             _blueEssence.value = _blueEssence.value + amount
+
+            val isSub = reason?.contains("Suscrip", ignoreCase = true) == true
+            val isAdmin = reason?.contains("Admin", ignoreCase = true) == true
+            val effectiveReason = reason ?: if (amount > 0) "Recarga de Esencia Azul" else "Consumo de Esencia Azul"
+            val status = when {
+                isSub && amount < 0 -> "Descontado por Suscripción"
+                isSub && amount > 0 -> "Añadido por Suscripción"
+                isAdmin && amount < 0 -> "Descontado por Administrador"
+                isAdmin && amount > 0 -> "Añadido por Administrador"
+                amount > 0 -> "Añadido"
+                else -> "Descontado"
+            }
+            val amountStr = if (amount > 0) "+$amount EA" else "$amount EA"
+            SubscriptionHistoryManager.addRecordForUser(user.uid, 0L, effectiveReason, status, amountStr)
         } catch (e: Exception) {
             Log.e("SubscriptionManager", "Error incrementing blue essence", e)
         }
     }
 
-    suspend fun addOrangeEssence(amount: Long) {
+    suspend fun addOrangeEssence(amount: Long, reason: String? = null) {
         val user = AuthManager.getAuth()?.currentUser ?: return
         if (AuthManager.isGuestOrUnauthenticated(user)) return
         val db = FirebaseFirestore.getInstance()
@@ -581,6 +595,20 @@ object SubscriptionManager {
             val userRef = db.collection("users").document(user.uid)
             userRef.update("orangeEssence", FieldValue.increment(amount)).await()
             _orangeEssence.value = _orangeEssence.value + amount
+
+            val isSub = reason?.contains("Suscrip", ignoreCase = true) == true
+            val isAdmin = reason?.contains("Admin", ignoreCase = true) == true
+            val effectiveReason = reason ?: if (amount > 0) "Recarga de Esencia Naranja" else "Consumo de Esencia Naranja"
+            val status = when {
+                isSub && amount < 0 -> "Descontado por Suscripción"
+                isSub && amount > 0 -> "Añadido por Suscripción"
+                isAdmin && amount < 0 -> "Descontado por Administrador"
+                isAdmin && amount > 0 -> "Añadido por Administrador"
+                amount > 0 -> "Añadido"
+                else -> "Descontado"
+            }
+            val amountStr = if (amount > 0) "+$amount EN" else "$amount EN"
+            SubscriptionHistoryManager.addRecordForUser(user.uid, 0L, effectiveReason, status, amountStr)
         } catch (e: Exception) {
             Log.e("SubscriptionManager", "Error incrementing orange essence", e)
         }

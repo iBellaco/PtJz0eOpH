@@ -144,99 +144,7 @@ object CreatorSubscriptionManager {
         context: Context,
         onResult: (Boolean, String) -> Unit
     ) {
-        val currentEssence = SubscriptionManager.blueEssence.value
-        if (currentEssence < SUBSCRIPTION_EA_COST) {
-            onResult(false, "Necesitas al menos $SUBSCRIPTION_EA_COST de Esencia Azul para suscribirte.")
-            return
-        }
-
-        val cleanKey = if (creatorUid.isNotBlank()) creatorUid else creatorName.trim()
-        if (cleanKey.isBlank()) {
-            onResult(false, "Creador no válido.")
-            return
-        }
-
-        val currentSet = _subscribedCreatorKeys.value.toMutableSet()
-        if (currentSet.contains(cleanKey)) {
-            onResult(true, "Ya estás suscrito a este creador.")
-            return
-        }
-
-        currentSet.add(cleanKey)
-        _subscribedCreatorKeys.value = currentSet
-        saveToLocalStorage(context, currentSet)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                var creatorRole = "creador"
-                if (creatorUid.isNotBlank()) {
-                    val db = FirebaseFirestore.getInstance()
-                    val doc = db.collection("users").document(creatorUid).get().await()
-                    if (doc.exists()) {
-                        creatorRole = doc.getString("role") ?: "creador"
-                    }
-                }
-
-                val percentage = when (creatorRole.trim().lowercase()) {
-                    "creador" -> 0.50
-                    "creador_lvl2" -> 0.60
-                    "creador_lvl3" -> 0.70
-                    "creador_lvl4" -> 0.80
-                    "creador_lvl5" -> 0.80
-                    "moderador" -> 0.80
-                    "streamer" -> 0.80
-                    else -> 0.50
-                }
-                val eaRewarded = (SUBSCRIPTION_EA_COST * percentage).toLong()
-
-                SubscriptionManager.addBlueEssence(-SUBSCRIPTION_EA_COST)
-                val user = FirebaseAuth.getInstance().currentUser
-                if (user != null && !user.isAnonymous) {
-                    val db = FirebaseFirestore.getInstance()
-                    db.collection("users").document(user.uid)
-                        .set(
-                            mapOf("subscribedCreators" to FieldValue.arrayUnion(cleanKey)),
-                            SetOptions.merge()
-                        ).await()
-                }
-
-                // Reward creator and notify
-                if (creatorUid.isNotBlank()) {
-                    val db = FirebaseFirestore.getInstance()
-                    db.collection("users").document(creatorUid)
-                        .update("blueEssence", FieldValue.increment(eaRewarded))
-                        .await()
-
-                    // Send notification to creator
-                    val subscriberName = SubscriptionManager.userName.value.ifBlank { "Un invocador" }
-                    val messageId = java.util.UUID.randomUUID().toString()
-                    val messageData = hashMapOf<String, Any>(
-                        "id" to messageId,
-                        "title" to "¡Nueva Suscripción Recibida!",
-                        "content" to "¡Felicidades! El invocador $subscriberName se ha suscrito a tu perfil. De acuerdo con tu nivel de creador ($creatorRole), has recibido un pago de $eaRewarded Esencias Azules (el ${ (percentage * 100).toInt() }% de la suscripción). ¡Sigue publicando builds grandiosas!",
-                        "tag" to "GENERAL",
-                        "timestamp" to System.currentTimeMillis(),
-                        "isRead" to false
-                    )
-                    val creatorDocRef = db.collection("users").document(creatorUid)
-                    creatorDocRef.collection("messages").document(messageId).set(messageData).await()
-                    creatorDocRef.update(
-                        "hasUnreadMessages", true,
-                        "unreadMessagesCount", FieldValue.increment(1),
-                        "privateMessages", FieldValue.arrayUnion(messageData)
-                    ).await()
-                }
-
-                CoroutineScope(Dispatchers.Main).launch {
-                    onResult(true, "¡Te has suscrito con éxito a $creatorName!")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error subscribing to creator: ${e.message}")
-                CoroutineScope(Dispatchers.Main).launch {
-                    onResult(true, "Suscripción guardada localmente.")
-                }
-            }
-        }
+        onResult(false, "Las suscripciones a perfiles de creadores ahora se realizan exclusivamente con Esencia Naranja (${SUBSCRIPTION_EN_COST} EN).")
     }
 
     fun subscribeWithOrangeEssence(
@@ -291,7 +199,7 @@ object CreatorSubscriptionManager {
                 }
                 val enRewarded = kotlin.math.round(SUBSCRIPTION_EN_COST * percentage).toLong()
 
-                SubscriptionManager.addOrangeEssence(-SUBSCRIPTION_EN_COST)
+                SubscriptionManager.addOrangeEssence(-SUBSCRIPTION_EN_COST, "Suscripción a Creador: $creatorName")
                 val user = FirebaseAuth.getInstance().currentUser
                 if (user != null && !user.isAnonymous) {
                     val db = FirebaseFirestore.getInstance()
@@ -309,8 +217,17 @@ object CreatorSubscriptionManager {
                         .update("orangeEssence", FieldValue.increment(enRewarded))
                         .await()
 
-                    // Send notification to creator
+                    // Log history for creator
                     val subscriberName = SubscriptionManager.userName.value.ifBlank { "Un invocador" }
+                    SubscriptionHistoryManager.addRecordForUser(
+                        creatorUid,
+                        0L,
+                        "Pago por Suscriptor: $subscriberName ($creatorRole)",
+                        "Añadido por Suscripción",
+                        "+$enRewarded EN"
+                    )
+
+                    // Send notification to creator
                     val messageId = java.util.UUID.randomUUID().toString()
                     val messageData = hashMapOf<String, Any>(
                         "id" to messageId,

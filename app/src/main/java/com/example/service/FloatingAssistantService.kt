@@ -2578,7 +2578,9 @@ private fun FloatingSaveMatchDialog(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var selectedResult by remember { mutableStateOf("PENDING") }
-    var isLegendaryMatch by remember(isLegendary) { mutableStateOf(isLegendary) }
+    var selectedMatchMode by remember(isLegendary) { mutableStateOf(if (isLegendary) "LEGENDARY" else "RANKED") }
+    val isLegendaryMatch = selectedMatchMode == "LEGENDARY"
+    var myScoreText by remember { mutableStateOf("") }
     var notesText by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
     var showDuplicateConfirmation by remember { mutableStateOf(false) }
@@ -2712,6 +2714,44 @@ private fun FloatingSaveMatchDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                Text(
+                    text = tr("Tipo de Partida:"),
+                    color = TextPrimary,
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    val modes = listOf(
+                        Triple("RANKED", tr("Clasificatoria"), HextechGold),
+                        Triple("LEGENDARY", tr("Legendaria"), Color(0xFFAB47BC)),
+                        Triple("NORMAL", tr("Normal"), HextechCyan)
+                    )
+                    modes.forEach { (mode, label, accentColor) ->
+                        val isSel = selectedMatchMode == mode
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSel) accentColor.copy(alpha = 0.25f) else HextechSurface)
+                                .border(1.dp, if (isSel) accentColor else HextechCardBorder, RoundedCornerShape(6.dp))
+                                .clickable { selectedMatchMode = mode }
+                                .padding(vertical = 5.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                color = if (isSel) accentColor else TextMuted,
+                                fontSize = 10.sp,
+                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
@@ -2784,6 +2824,30 @@ private fun FloatingSaveMatchDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
+                    text = tr("Tu Score / KDA (Opcional):"),
+                    color = TextPrimary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                OutlinedTextField(
+                    value = myScoreText,
+                    onValueChange = { myScoreText = it },
+                    placeholder = { Text(tr("Ej: 12/2/8 o 5.0 KDA"), fontSize = 9.5.sp) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 10.sp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = HextechGold,
+                        unfocusedBorderColor = HextechCardBorder
+                    ),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
                     text = tr("Notas tácticas / Matchup:"),
                     color = TextPrimary,
                     fontSize = 10.sp,
@@ -2831,7 +2895,10 @@ private fun FloatingSaveMatchDialog(
                                         context = context,
                                         myRole = activeRole,
                                         isFirstPick = isFirstPick,
-                                        isLegendary = isLegendaryMatch,
+                                        isLegendary = selectedMatchMode == "LEGENDARY",
+                                        matchMode = selectedMatchMode,
+                                        myScore = myScoreText,
+                                        allowDuplicate = false,
                                         allies = allies,
                                         enemies = enemies,
                                         analysis = analysis,
@@ -2885,7 +2952,10 @@ private fun FloatingSaveMatchDialog(
                                     context = context,
                                     myRole = activeRole,
                                     isFirstPick = isFirstPick,
-                                    isLegendary = isLegendaryMatch,
+                                    isLegendary = selectedMatchMode == "LEGENDARY",
+                                    matchMode = selectedMatchMode,
+                                    myScore = myScoreText,
+                                    allowDuplicate = true,
                                     allies = allies,
                                     enemies = enemies,
                                     analysis = analysis,

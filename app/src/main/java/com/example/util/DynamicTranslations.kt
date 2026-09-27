@@ -28,16 +28,18 @@ object DynamicTranslations {
     fun loadSync(context: Context) {
         if (ptMap != null) return
         try {
-            if (ptMap == null) {
-                val jsonStr = context.assets.open("translations_pt.json").bufferedReader().use { it.readText() }
-                val json = JSONObject(jsonStr)
-                val map = mutableMapOf<String, String>()
-                val iter = json.keys()
-                while (iter.hasNext()) {
-                    val key = iter.next()
-                    map[key] = json.getString(key)
+            synchronized(this) {
+                if (ptMap == null) {
+                    val jsonStr = context.assets.open("translations_pt.json").bufferedReader().use { it.readText() }
+                    val json = JSONObject(jsonStr)
+                    val map = HashMap<String, String>(json.length() * 2)
+                    val iter = json.keys()
+                    while (iter.hasNext()) {
+                        val key = iter.next()
+                        map[key] = json.getString(key)
+                    }
+                    ptMap = map
                 }
-                ptMap = map
             }
         } catch (e: Exception) {
             AppLogger.e("Translations", "Failed to load dynamic translations", e)
@@ -46,11 +48,14 @@ object DynamicTranslations {
 
     fun get(lang: String, key: String): String? {
         if (lang != "pt") return null
-        val staticTranslation = ptMap?.get(key)
+        if (ptMap == null) {
+            com.example.WildRiftApp.instance?.let { loadSync(it) }
+        }
+        val staticTranslation = ptMap?.get(key) ?: ptMap?.get(key.trim())
         if (staticTranslation != null) return staticTranslation
         
         // ----------------------------------------------------
-        // DYNAMIC REPOSITORY LOOKUP (PORTUGUÊS EM MANUTENÇÃO)
+        // DYNAMIC REPOSITORY LOOKUP
         // ----------------------------------------------------
         val itemByName = WildRiftRepository.items.find { it.name.equals(key, ignoreCase = true) }
         if (itemByName != null && itemByName.namePt.isNotBlank()) return itemByName.namePt

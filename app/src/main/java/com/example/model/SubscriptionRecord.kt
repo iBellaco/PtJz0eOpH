@@ -13,6 +13,59 @@ data class SubscriptionRecord(
     val status: String = "",
     val amount: String = ""
 ) {
+    val isDeduction: Boolean
+        get() = amount.startsWith("-") ||
+                status.contains("Descontad", ignoreCase = true) ||
+                status.contains("Consumo", ignoreCase = true) ||
+                status.contains("Deducc", ignoreCase = true) ||
+                planName.contains("Suscripción a Creador", ignoreCase = true) ||
+                planName.contains("Consumo", ignoreCase = true)
+
+    val isAddition: Boolean
+        get() = !isDeduction && (amount.startsWith("+") ||
+                status.contains("Añadid", ignoreCase = true) ||
+                status.contains("Acreditad", ignoreCase = true) ||
+                status.contains("Recarga", ignoreCase = true) ||
+                status.contains("Recompensa", ignoreCase = true) ||
+                planName.contains("Pago por Suscriptor", ignoreCase = true) ||
+                planName.contains("Recompensa", ignoreCase = true) ||
+                planName.contains("Recarga", ignoreCase = true) ||
+                (planName.contains("Ajuste de Administrador", ignoreCase = true) && !amount.startsWith("-")))
+
+    val isEssenceTransaction: Boolean
+        get() = isDeduction || isAddition ||
+                amount.contains("EA", ignoreCase = true) ||
+                amount.contains("EN", ignoreCase = true) ||
+                planName.contains("Esencia", ignoreCase = true) ||
+                status.contains("Esencia", ignoreCase = true) ||
+                status.contains("Descontad", ignoreCase = true) ||
+                status.contains("Añadid", ignoreCase = true)
+
+    val isOrangeEssence: Boolean
+        get() = amount.contains("EN", ignoreCase = true) ||
+                planName.contains("Naranja", ignoreCase = true) ||
+                status.contains("Naranja", ignoreCase = true) ||
+                planName.contains("Suscripción a Creador", ignoreCase = true) ||
+                planName.contains("Pago por Suscriptor", ignoreCase = true)
+
+    val isBlueEssence: Boolean
+        get() = amount.contains("EA", ignoreCase = true) ||
+                planName.contains("Azul", ignoreCase = true) ||
+                status.contains("Azul", ignoreCase = true)
+
+    val isFromAdmin: Boolean
+        get() = planName.contains("Admin", ignoreCase = true) ||
+                status.contains("Admin", ignoreCase = true) ||
+                planName.contains("Asignación Manual", ignoreCase = true) ||
+                planName.contains("Regalo Admin", ignoreCase = true)
+
+    val isFromSubscription: Boolean
+        get() = planName.contains("Suscrip", ignoreCase = true) ||
+                planName.contains("Suscriptor", ignoreCase = true) ||
+                status.contains("Suscrip", ignoreCase = true) ||
+                status.contains("Suscriptor", ignoreCase = true) ||
+                planName.contains("Creador", ignoreCase = true)
+
     companion object {
         fun fromDocument(doc: DocumentSnapshot): SubscriptionRecord? {
             return try {

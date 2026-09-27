@@ -62,6 +62,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.SportsKabaddi
 import androidx.compose.material.icons.filled.History
 import android.widget.Toast
 import com.example.data.local.FavoriteChampionsManager
@@ -3861,7 +3862,9 @@ data class PendingSaveData(
     val notes: String,
     val profileId: String,
     val profileName: String,
-    val isLegendaryMatch: Boolean
+    val isLegendaryMatch: Boolean,
+    val matchMode: String = if (isLegendaryMatch) "LEGENDARY" else "RANKED",
+    val myScore: String = ""
 )
 
 @Composable
@@ -3940,7 +3943,8 @@ fun DraftAnalysisTab(
             userRole = activeRole ?: LaneRole.MID,
             estimatedWinrate = analysis.bestOverallPick?.estimatedWinrate ?: 50.0,
             onDismiss = { showSaveDraftDialog = false },
-            onSave = { result, notes, profileId, profileName, isLegendaryMatch ->
+            onSave = { result, notes, profileId, profileName, isLegendaryMatch, matchMode, myScore ->
+                showSaveDraftDialog = false
                 coroutineScope.launch {
                     val exists = DraftHistoryRepository.checkDraftExists(
                         context = tabContext,
@@ -3951,13 +3955,16 @@ fun DraftAnalysisTab(
                     )
                     
                     if (exists) {
-                        pendingSaveData = PendingSaveData(result, notes, profileId, profileName, isLegendaryMatch)
+                        pendingSaveData = PendingSaveData(result, notes, profileId, profileName, isLegendaryMatch, matchMode, myScore)
                     } else {
                         DraftHistoryRepository.saveDraft(
                             context = tabContext,
                             myRole = activeRole ?: LaneRole.MID,
                             isFirstPick = isFirstPick,
                             isLegendary = isLegendaryMatch,
+                            matchMode = matchMode,
+                            myScore = myScore,
+                            allowDuplicate = false,
                             allies = allySlots,
                             enemies = enemySlots,
                             analysis = analysis,
@@ -3966,7 +3973,6 @@ fun DraftAnalysisTab(
                             accountProfileId = profileId,
                             accountProfileName = profileName
                         )
-                        showSaveDraftDialog = false
                         val toastMsg = when (result) {
                             "VICTORY" -> victoryToastText
                             "DEFEAT" -> defeatToastText
@@ -3990,13 +3996,15 @@ fun DraftAnalysisTab(
                     onClick = {
                         val data = pendingSaveData!!
                         pendingSaveData = null
-                        showSaveDraftDialog = false
                         coroutineScope.launch {
                             DraftHistoryRepository.saveDraft(
                                 context = tabContext,
                                 myRole = activeRole ?: LaneRole.MID,
                                 isFirstPick = isFirstPick,
                                 isLegendary = data.isLegendaryMatch,
+                                matchMode = data.matchMode,
+                                myScore = data.myScore,
+                                allowDuplicate = true,
                                 allies = allySlots,
                                 enemies = enemySlots,
                                 analysis = analysis,
@@ -4390,6 +4398,103 @@ fun DraftAnalysisTab(
                     Column {
                         Text(tr("Alerta Táctica de Matchup"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         Text(analysis.directMatchupWarning, color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        // Cálculo Automático de Matchup 1v1 vs Rival de Línea
+        if (enemyLaneOpponent != null) {
+            val allSavedDraftsState by DraftHistoryRepository.getAllDrafts(tabContext).collectAsState(initial = emptyList())
+            val matchesVsOpponent = remember(allSavedDraftsState, enemyLaneOpponent.name, myChampion?.name) {
+                allSavedDraftsState.filter { draft ->
+                    val opp = draft.enemyLaneOpponentName.ifBlank {
+                        val enemies = DraftHistoryRepository.parseDraftSlots(draft.enemyPicksJson)
+                        enemies.find { it.assignedRole.name == draft.userRole }?.champion?.name ?: ""
+                    }
+                    opp.equals(enemyLaneOpponent.name, ignoreCase = true)
+                }
+            }
+            val winsVsOpp = matchesVsOpponent.count { it.matchResult.equals("VICTORY", ignoreCase = true) }
+            val lossesVsOpp = matchesVsOpponent.count { it.matchResult.equals("DEFEAT", ignoreCase = true) }
+            val totalDecidedOpp = winsVsOpp + lossesVsOpp
+            val wrVsOpp = if (totalDecidedOpp > 0) (winsVsOpp.toDouble() / totalDecidedOpp * 100.0).toInt() else null
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                border = BorderStroke(1.dp, if (wrVsOpp != null && wrVsOpp >= 50) Color(0xFF81C784).copy(alpha = 0.6f) else HextechCardBorder)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.SportsKabaddi,
+                                contentDescription = null,
+                                tint = HextechGold,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "${tr("Cálculo 1v1 Automático")}: vs ${enemyLaneOpponent.name}",
+                                color = HextechGold,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.5.sp
+                            )
+                        }
+
+                        if (wrVsOpp != null) {
+                            val badgeColor = if (wrVsOpp >= 50) Color(0xFF81C784) else DangerRed
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = badgeColor.copy(alpha = 0.15f),
+                                border = BorderStroke(1.dp, badgeColor)
+                            ) {
+                                Text(
+                                    text = "$wrVsOpp% WR",
+                                    color = badgeColor,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    if (totalDecidedOpp > 0) {
+                        Text(
+                            text = "${winsVsOpp}W - ${lossesVsOpp}L (${totalDecidedOpp} ${tr("partidas registradas")})",
+                            color = TextSecondary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        val adviceText = if (wrVsOpp != null && wrVsOpp >= 50) {
+                            "Tus cálculos automáticos confirman ventaja en el 1v1. Domina el control de la primera oleada usando tu Habilidad 1 (H1) y busca intercambios cortos aprovechando sus enfriamientos."
+                        } else {
+                            "Historial desfavorable en el 1v1. No te expongas a niveles 1-3; farmea con seguridad usando tu Habilidad 1 o Habilidad 2 desde distancia y espera tu pico de poder con Definitiva (H4)."
+                        }
+                        Text(
+                            text = adviceText,
+                            color = TextMuted,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp
+                        )
+                    } else {
+                        Text(
+                            text = tr("Sin duelos 1v1 registrados previamente contra este rival. Al finalizar y guardar esta partida se calibrará automáticamente tu tasa de victoria directa."),
+                            color = TextMuted,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp
+                        )
                     }
                 }
             }

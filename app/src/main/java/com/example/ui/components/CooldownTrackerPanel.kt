@@ -50,7 +50,7 @@ val DEFAULT_TRACKED_SPELLS = listOf(
     TrackedCooldown("heal", "Curar", 120, "HEA", com.example.data.WildRiftSpellsAndRunes.SPELL_HEAL, Color(0xFF66BB6A)),
     TrackedCooldown("ghost", "Fantasma", 90, "GHO", com.example.data.WildRiftSpellsAndRunes.SPELL_GHOST, Color(0xFF26C6DA)),
     TrackedCooldown("zhonya", "Estasis", 120, "ZHO", "file:///android_asset/offline_images/75b1f5c74f47e4997255bd4e93052816.png", HextechGoldLight),
-    TrackedCooldown("ult", "Definitiva", 60, "R", "", TierSPlusColor)
+    TrackedCooldown("ult", "Definitiva", 60, "H4", "", TierSPlusColor)
 )
 
 data class CDNotification(

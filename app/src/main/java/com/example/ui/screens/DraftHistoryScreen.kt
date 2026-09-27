@@ -1936,18 +1936,48 @@ private fun SavedDraftCard(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    if (draft.isLegendary) {
+                    val modeColor = when {
+                        draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true) -> Color(0xFFC084FC)
+                        draft.matchMode.equals("NORMAL", ignoreCase = true) -> HextechCyan
+                        else -> HextechGold
+                    }
+                    val modeBg = when {
+                        draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true) -> Color(0xFF9333EA).copy(alpha = 0.25f)
+                        draft.matchMode.equals("NORMAL", ignoreCase = true) -> HextechCyan.copy(alpha = 0.15f)
+                        else -> HextechGold.copy(alpha = 0.15f)
+                    }
+                    val modeLabel = when {
+                        draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true) -> tr("Legendaria")
+                        draft.matchMode.equals("NORMAL", ignoreCase = true) -> tr("Normal")
+                        else -> tr("Clasificatoria")
+                    }
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Surface(
+                        color = modeBg,
+                        shape = RoundedCornerShape(4.dp),
+                        border = BorderStroke(0.8.dp, modeColor)
+                    ) {
+                        Text(
+                            text = modeLabel,
+                            color = modeColor,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                        )
+                    }
+
+                    if (draft.myScore.isNotBlank()) {
                         Spacer(modifier = Modifier.width(5.dp))
                         Surface(
-                            color = Color(0xFF9333EA).copy(alpha = 0.25f),
+                            color = HextechGold.copy(alpha = 0.15f),
                             shape = RoundedCornerShape(4.dp),
-                            border = BorderStroke(0.8.dp, Color(0xFFC084FC))
+                            border = BorderStroke(0.8.dp, HextechGold.copy(alpha = 0.7f))
                         ) {
                             Text(
-                                text = "🏆 " + tr("Legendaria"),
-                                color = Color(0xFFE9D5FF),
+                                text = "Score: ${draft.myScore}",
+                                color = HextechGold,
                                 fontSize = 9.sp,
-                                fontWeight = FontWeight.ExtraBold,
+                                fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                             )
                         }
@@ -2324,9 +2354,15 @@ private fun DraftDetailInnerContent(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
+                    val detailModeText = when {
+                        draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true) -> " • 🏆 " + tr("Legendaria")
+                        draft.matchMode.equals("NORMAL", ignoreCase = true) -> " • 🎯 " + tr("Normal")
+                        else -> " • ⚔️ " + tr("Clasificatoria")
+                    }
+                    val detailScoreText = if (draft.myScore.isNotBlank()) " • 🏅 Score: ${draft.myScore}" else ""
                     Text(
-                        text = tr("Línea:") + " ${com.example.util.tr(roleObj.displayName)} • " + (if (draft.isFirstPick) tr("Primer Pick") else tr("Counter Pick")) + (if (draft.isLegendary) " • 🏆 " + tr("Legendaria") else " • ⚔️ " + tr("Clasificatoria")),
-                        color = if (draft.isLegendary) Color(0xFFC084FC) else HextechGold,
+                        text = tr("Línea:") + " ${com.example.util.tr(roleObj.displayName)} • " + (if (draft.isFirstPick) tr("Primer Pick") else tr("Counter Pick")) + detailModeText + detailScoreText,
+                        color = if (draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true)) Color(0xFFC084FC) else HextechGold,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )

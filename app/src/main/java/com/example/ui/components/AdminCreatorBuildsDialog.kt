@@ -1283,13 +1283,17 @@ fun CreatorProfileDialog(
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = HextechDarkBg)
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_orange_essence),
+                            contentDescription = "Esencia Naranja",
+                            modifier = Modifier.size(18.dp)
+                        )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Suscribirse (${CreatorSubscriptionManager.SUBSCRIPTION_EA_COST} EA / ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)",
+                            text = "Suscribirse por ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN",
                             color = HextechDarkBg,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.5.sp
+                            fontSize = 13.sp
                         )
                     }
                 } else {
@@ -1460,15 +1464,13 @@ fun CreatorProfileDialog(
                 }
 
                 if (showSubscribeConfirm) {
-                    val currentBlueBalance by SubscriptionManager.blueEssence.collectAsStateWithLifecycle()
                     val currentOrangeBalance by SubscriptionManager.orangeEssence.collectAsStateWithLifecycle()
-                    var subCurrency by remember { mutableStateOf("BLUE") }
 
                     Dialog(onDismissRequest = { showSubscribeConfirm = false }) {
                         Card(
                             shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                            border = BorderStroke(1.dp, if (subCurrency == "BLUE") HextechGold else Color(0xFFFF8C00)),
+                            border = BorderStroke(1.dp, Color(0xFFFF8C00)),
                             modifier = Modifier.fillMaxWidth(0.95f)
                         ) {
                             Column(
@@ -1479,110 +1481,70 @@ fun CreatorProfileDialog(
                                 Icon(
                                     Icons.Default.WorkspacePremium,
                                     contentDescription = null,
-                                    tint = if (subCurrency == "BLUE") HextechGold else Color(0xFFFF8C00),
+                                    tint = Color(0xFFFF8C00),
                                     modifier = Modifier.size(32.dp)
                                 )
                                 Text(
                                     text = "Suscripción al Creador",
-                                    color = if (subCurrency == "BLUE") HextechGold else Color(0xFFFF8C00),
+                                    color = Color(0xFFFF9E1B),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
 
-                                Text(
-                                    text = "Elige la divisa para suscribirte al perfil oficial de ${entry.name}:",
-                                    color = Color.LightGray,
-                                    fontSize = 12.sp,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-
-                                // Currency Selection Row
-                                Row(
+                                // Card showing Orange Essence cost & user balance
+                                Card(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFF8C00).copy(alpha = 0.12f)),
+                                    border = BorderStroke(1.dp, Color(0xFFFF8C00).copy(alpha = 0.5f))
                                 ) {
-                                    // Blue Essence Option
-                                    Card(
-                                        onClick = { subCurrency = "BLUE" },
-                                        modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(8.dp),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = if (subCurrency == "BLUE") HextechCyan.copy(alpha = 0.2f) else HextechDarkBg
-                                        ),
-                                        border = BorderStroke(
-                                            1.5.dp,
-                                            if (subCurrency == "BLUE") HextechCyan else Color.Gray.copy(alpha = 0.3f)
-                                        )
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Column(
-                                            modifier = Modifier.padding(8.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
-                                            androidx.compose.foundation.Image(
-                                                painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_blue_essence),
-                                                contentDescription = "Esencia Azul",
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                            Text(
-                                                text = "${CreatorSubscriptionManager.SUBSCRIPTION_EA_COST} EA",
-                                                color = HextechCyan,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.sp
-                                            )
-                                            Text(
-                                                text = "Saldo: $currentBlueBalance",
-                                                color = Color.Gray,
-                                                fontSize = 10.sp
-                                            )
-                                        }
-                                    }
-
-                                    // Orange Essence Option
-                                    Card(
-                                        onClick = { subCurrency = "ORANGE" },
-                                        modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(8.dp),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = if (subCurrency == "ORANGE") Color(0xFFFF8C00).copy(alpha = 0.2f) else HextechDarkBg
-                                        ),
-                                        border = BorderStroke(
-                                            1.5.dp,
-                                            if (subCurrency == "ORANGE") Color(0xFFFF8C00) else Color.Gray.copy(alpha = 0.3f)
-                                        )
-                                    ) {
-                                        Column(
-                                            modifier = Modifier.padding(8.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
                                             androidx.compose.foundation.Image(
                                                 painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_orange_essence),
                                                 contentDescription = "Esencia Naranja",
-                                                modifier = Modifier.size(24.dp)
+                                                modifier = Modifier.size(28.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            Column {
+                                                Text(
+                                                    text = "Costo de Suscripción",
+                                                    color = Color.LightGray,
+                                                    fontSize = 11.sp
+                                                )
+                                                Text(
+                                                    text = "${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas",
+                                                    color = Color(0xFFFF9E1B),
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 13.5.sp
+                                                )
+                                            }
+                                        }
+                                        Column(horizontalAlignment = Alignment.End) {
+                                            Text(
+                                                text = "Tu saldo",
+                                                color = Color.LightGray,
+                                                fontSize = 10.sp
                                             )
                                             Text(
-                                                text = "${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN",
-                                                color = Color(0xFFFF9E1B),
+                                                text = "$currentOrangeBalance EN",
+                                                color = if (currentOrangeBalance >= CreatorSubscriptionManager.SUBSCRIPTION_EN_COST) Color.White else DangerRed,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.sp
-                                            )
-                                            Text(
-                                                text = "Saldo: $currentOrangeBalance",
-                                                color = Color.Gray,
-                                                fontSize = 10.sp
                                             )
                                         }
                                     }
                                 }
 
                                 Text(
-                                    text = if (subCurrency == "BLUE") {
-                                        "Se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EA_COST} Esencias Azules (EA) de tu cuenta de forma definitiva. Un porcentaje será entregado al creador según su rango oficial."
-                                    } else {
-                                        "Se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas (EN) de tu cuenta de forma definitiva. Un porcentaje será entregado al creador según su rango oficial."
-                                    },
+                                    text = "Al suscribirte al perfil oficial de ${entry.name}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas (EN) de tu cuenta de forma definitiva. Un porcentaje será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?",
                                     color = Color.White,
                                     fontSize = 11.5.sp,
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -1603,33 +1565,22 @@ fun CreatorProfileDialog(
                                     Button(
                                         onClick = {
                                             showSubscribeConfirm = false
-                                            if (subCurrency == "BLUE") {
-                                                CreatorSubscriptionManager.subscribeWithBlueEssence(
-                                                    creatorKey = creatorKey,
-                                                    creatorName = entry.name,
-                                                    creatorUid = entry.userId,
-                                                    context = context
-                                                ) { success, msg ->
-                                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                                }
-                                            } else {
-                                                CreatorSubscriptionManager.subscribeWithOrangeEssence(
-                                                    creatorKey = creatorKey,
-                                                    creatorName = entry.name,
-                                                    creatorUid = entry.userId,
-                                                    context = context
-                                                ) { success, msg ->
-                                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                                }
+                                            CreatorSubscriptionManager.subscribeWithOrangeEssence(
+                                                creatorKey = creatorKey,
+                                                creatorName = entry.name,
+                                                creatorUid = entry.userId,
+                                                context = context
+                                            ) { success, msg ->
+                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                             }
                                         },
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = if (subCurrency == "BLUE") HextechGold else Color(0xFFFF8C00)
+                                            containerColor = Color(0xFFFF8C00)
                                         ),
                                         shape = RoundedCornerShape(8.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("Confirmar", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = HextechDarkBg)
+                                        Text("Confirmar (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = HextechDarkBg)
                                     }
                                 }
                             }

@@ -85,7 +85,7 @@ fun SaveDraftDialog(
     userRole: LaneRole,
     estimatedWinrate: Double,
     onDismiss: () -> Unit,
-    onSave: (result: String, notes: String, profileId: String, profileName: String, isLegendary: Boolean) -> Unit
+    onSave: (result: String, notes: String, profileId: String, profileName: String, isLegendary: Boolean, matchMode: String, myScore: String) -> Unit
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -95,7 +95,9 @@ fun SaveDraftDialog(
     var profileDropdownExpanded by remember { mutableStateOf(false) }
 
     var selectedResult by remember { mutableStateOf("PENDING") } // "PENDING", "VICTORY", "DEFEAT"
-    var isLegendaryMatch by remember { mutableStateOf(false) }
+    var selectedMatchMode by remember { mutableStateOf("RANKED") } // "RANKED", "LEGENDARY", "NORMAL"
+    val isLegendaryMatch = selectedMatchMode == "LEGENDARY"
+    var myScore by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
 
     val dialogContent = @Composable {
@@ -333,7 +335,51 @@ fun SaveDraftDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Match Mode Selector (Clasificatoria Normal, Legendaria, Normal)
+                Text(
+                    text = tr("Tipo de Partida"),
+                    color = TextPrimary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    val modes = listOf(
+                        Triple("RANKED", tr("Clasificatoria"), HextechGold),
+                        Triple("LEGENDARY", tr("Legendaria"), Color(0xFFAB47BC)),
+                        Triple("NORMAL", tr("Normal"), HextechCyan)
+                    )
+                    modes.forEach { (mode, label, accentColor) ->
+                        val isSel = selectedMatchMode == mode
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSel) accentColor.copy(alpha = 0.22f) else HextechSurface)
+                                .border(1.dp, if (isSel) accentColor else HextechCardBorder, RoundedCornerShape(8.dp))
+                                .clickable { selectedMatchMode = mode }
+                                .padding(vertical = 8.dp, horizontal = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                color = if (isSel) accentColor else TextSecondary,
+                                fontSize = 11.sp,
+                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // Result selector title
                 Text(
@@ -474,6 +520,37 @@ fun SaveDraftDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
+                // Score Field (Optional)
+                OutlinedTextField(
+                    value = myScore,
+                    onValueChange = { myScore = it },
+                    label = { Text(tr("Tu Score / KDA (Opcional)"), fontSize = 11.5.sp) },
+                    placeholder = { Text(tr("Ej: 12/2/8 o 5.0 KDA"), fontSize = 11.sp, color = TextMuted) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = HextechGold,
+                        unfocusedBorderColor = HextechCardBorder,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        focusedContainerColor = HextechSurface,
+                        unfocusedContainerColor = HextechSurface,
+                        focusedLabelColor = HextechGold,
+                        unfocusedLabelColor = TextMuted
+                    ),
+                    singleLine = true,
+                    supportingText = {
+                        Text(
+                            text = tr("Refina el cálculo automático de tu Tier List Personal y enfrentamientos 1v1."),
+                            fontSize = 10.sp,
+                            color = HextechCyan
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 // Notes Field
                 OutlinedTextField(
                     value = notes,
@@ -520,7 +597,7 @@ fun SaveDraftDialog(
                     Button(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onSave(selectedResult, notes, selectedProfile.id, selectedProfile.name, isLegendaryMatch)
+                            onSave(selectedResult, notes, selectedProfile.id, selectedProfile.name, isLegendaryMatch, selectedMatchMode, myScore)
                         },
                         modifier = Modifier
                             .weight(1.2f)

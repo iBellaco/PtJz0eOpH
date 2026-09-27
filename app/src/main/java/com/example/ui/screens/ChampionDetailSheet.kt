@@ -1919,19 +1919,32 @@ fun AdaptiveDetailAlertDialog(
         val type = matchupExplanationType!!
         val target = matchupExplanationTarget!!
 
-        val titleText = if (com.example.util.LocalLanguage.current == "es" || com.example.util.LocalLanguage.current == "auto") {
-            when (type) {
-                "Ventaja" -> "Ventaja contra $target"
-                "Debilidad" -> "Débil contra $target"
-                "Situacional" -> "Objeto Situacional: $target"
-                else -> "Sinergia con $target"
+        val currentLang = com.example.util.LocalLanguage.current
+        val localizedTarget = if (currentLang == "pt") com.example.util.trStr("pt", target) else target
+        val titleText = when (currentLang) {
+            "pt" -> {
+                when (type) {
+                    "Ventaja" -> "Vantagem contra $localizedTarget"
+                    "Debilidad" -> "Fraco contra $localizedTarget"
+                    "Situacional" -> "Item Situacional: $localizedTarget"
+                    else -> "Sinergia com $localizedTarget"
+                }
             }
-        } else {
-            when (type) {
-                "Ventaja" -> "Strong against $target"
-                "Debilidad" -> "Weak against $target"
-                "Situacional" -> "Situational Item: $target"
-                else -> "Synergy with $target"
+            "es", "auto" -> {
+                when (type) {
+                    "Ventaja" -> "Ventaja contra $target"
+                    "Debilidad" -> "Débil contra $target"
+                    "Situacional" -> "Objeto Situacional: $target"
+                    else -> "Sinergia con $target"
+                }
+            }
+            else -> {
+                when (type) {
+                    "Ventaja" -> "Strong against $target"
+                    "Debilidad" -> "Weak against $target"
+                    "Situacional" -> "Situational Item: $target"
+                    else -> "Synergy with $target"
+                }
             }
         }
 

@@ -60,7 +60,10 @@ data class PersonalChampionStats(
     val matchups: List<MatchupRecord>,
     val allies: List<AllySynergyRecord>,
     val draftMatches: List<SavedDraftEntity>,
-    val coachVerdict: String
+    val coachVerdict: String,
+    val avgScore: String = "",
+    val avgKda: Double = 0.0,
+    val best1v1Matchup: MatchupRecord? = null
 )
 
 data class PersonalOverviewStats(
@@ -73,7 +76,11 @@ data class PersonalOverviewStats(
     val bestRole: LaneRole?,
     val bestRoleWinRate: Double,
     val nemesisOpponent: MatchupRecord?,
-    val bestAllySynergy: AllySynergyRecord?
+    val bestAllySynergy: AllySynergyRecord?,
+    val best1v1Matchup: MatchupRecord? = null,
+    val top1v1Matchups: List<MatchupRecord> = emptyList(),
+    val worst1v1Matchups: List<MatchupRecord> = emptyList(),
+    val coach1v1Analysis: String = ""
 )
 
 data class PersonalTierListResult(
@@ -244,9 +251,21 @@ object PersonalTierListManager {
                 )
             }.sortedWith(compareByDescending<AllySynergyRecord> { it.total }.thenByDescending { it.winRate })
 
-            // Asignación de Tier por Win Rate real
+            // Asignación de Tier por Win Rate real y Score personal
+            val scoresList = matches.mapNotNull { it.myScore.trim().ifBlank { null } }
+            val kdaValues = scoresList.mapNotNull { parseKdaFromScore(it) }
+            val avgKda = if (kdaValues.isNotEmpty()) kdaValues.average() else 0.0
+            val avgScoreStr = if (scoresList.isNotEmpty()) {
+                if (avgKda > 0.0) String.format(java.util.Locale.US, "%.1f KDA", avgKda) else scoresList.last()
+            } else ""
+
+            val bestChamp1v1 = matchupList.filter { it.wins >= 1 }.maxWithOrNull(
+                compareBy<MatchupRecord> { it.winRate }.thenBy { it.wins }
+            )
+
             val volumeBonus = Math.min(15.0, totalDecided * 2.0)
-            val tierScore = if (totalDecided > 0) (winRate + volumeBonus) else 0.0
+            val kdaBonus = if (avgKda > 0.0) Math.min(10.0, (avgKda - 2.0).coerceAtLeast(0.0) * 2.0) else 0.0
+            val tierScore = if (totalDecided > 0) (winRate + volumeBonus + kdaBonus) else 0.0
 
             val tierGrade = when {
                 totalDecided == 0 -> TierGrade.C // Sin partidas decididas se ubica en el escalón más bajo con 0% WR
@@ -277,7 +296,10 @@ object PersonalTierListManager {
                     matchups = matchupList,
                     allies = allyList,
                     draftMatches = matches.sortedByDescending { it.timestamp },
-                    coachVerdict = coachVerdict
+                    coachVerdict = coachVerdict,
+                    avgScore = avgScoreStr,
+                    avgKda = avgKda,
+                    best1v1Matchup = bestChamp1v1
                 )
             )
         }
@@ -394,7 +416,21 @@ object PersonalTierListManager {
                 val wr = if (tot > 0) (w.toDouble() / tot * 100.0) else 0.0
                 MatchupRecord(name, list.firstOrNull()?.opponentAvatarUrl ?: "", w, l, tot, wr)
             }
-        val nemesis = allMatchups.filter { it.losses >= 1 }.minByOrNull { it.winRate }
+        // 1v1 Matchups globales y análisis del Coach
+        val decidedMatchups = allMatchups.filter { it.total > 0 }
+        val top1v1 = decidedMatchups.filter { it.wins >= 1 }.sortedWith(
+            compareByDescending<MatchupRecord> { it.winRate }
+                .thenByDescending { it.wins }
+                .thenByDescending { it.total }
+        )
+        val best1v1 = top1v1.firstOrNull()
+
+        val worst1v1 = decidedMatchups.filter { it.losses >= 1 }.sortedWith(
+            compareBy<MatchupRecord> { it.winRate }
+                .thenByDescending { it.losses }
+                .thenByDescending { it.total }
+        )
+        val nemesis = worst1v1.firstOrNull() ?: allMatchups.filter { it.losses >= 1 }.minByOrNull { it.winRate }
 
         val allAllies = championStatsList.flatMap { it.allies }
             .groupBy { it.allyName }
@@ -408,6 +444,8 @@ object PersonalTierListManager {
             }
         val bestAlly = allAllies.filter { it.wins >= 1 }.maxByOrNull { it.winRate * 0.6 + it.total * 4.0 }
 
+        val coach1v1Analysis = generateCoach1v1Analysis(top1v1, worst1v1, best1v1, nemesis, lang)
+
         val overview = PersonalOverviewStats(
             totalGames = totalGames,
             totalWins = totalWins,
@@ -418,7 +456,11 @@ object PersonalTierListManager {
             bestRole = bestRoleRecord?.role,
             bestRoleWinRate = bestRoleRecord?.winRate ?: 0.0,
             nemesisOpponent = nemesis,
-            bestAllySynergy = bestAlly
+            bestAllySynergy = bestAlly,
+            best1v1Matchup = best1v1,
+            top1v1Matchups = top1v1,
+            worst1v1Matchups = worst1v1,
+            coach1v1Analysis = coach1v1Analysis
         )
 
         return PersonalTierListResult(
@@ -490,5 +532,52 @@ object PersonalTierListManager {
                 else "❌ Dificultad en Fase de Líneas. Evita enfrentamientos desfavorables sin visión y practica combos clave en partidas normales."
             }
         }
+    }
+
+    fun parseKdaFromScore(scoreStr: String): Double? {
+        val clean = scoreStr.trim()
+        if (clean.isBlank()) return null
+        
+        // Formato "12/2/8" o "12-2-8" o "12 2 8"
+        val slashParts = clean.split("/", "-", " ").filter { it.isNotBlank() }
+        if (slashParts.size == 3) {
+            val k = slashParts[0].filter { it.isDigit() || it == '.' }.toDoubleOrNull() ?: return null
+            val d = slashParts[1].filter { it.isDigit() || it == '.' }.toDoubleOrNull() ?: return null
+            val a = slashParts[2].filter { it.isDigit() || it == '.' }.toDoubleOrNull() ?: return null
+            return if (d == 0.0) (k + a) else (k + a) / d
+        }
+        
+        // Formato "5.0 KDA" o "4.2"
+        val numMatch = Regex("""(\d+(\.\d+)?)""").find(clean)
+        return numMatch?.value?.toDoubleOrNull()
+    }
+
+    fun generateCoach1v1Analysis(
+        topMatchups: List<MatchupRecord>,
+        worstMatchups: List<MatchupRecord>,
+        bestMatchup: MatchupRecord?,
+        nemesis: MatchupRecord?,
+        lang: String = "es"
+    ): String {
+        if (topMatchups.isEmpty() && worstMatchups.isEmpty()) {
+            return "Aún no registras suficientes duelos 1v1 finalizados en tus partidas guardadas. Registra victorias y derrotas para calcular automáticamente tus probabilidades contra cada rival de línea."
+        }
+
+        val sb = StringBuilder()
+        if (bestMatchup != null) {
+            sb.append("🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **${bestMatchup.opponentName}** con un **${bestMatchup.winRate.toInt()}% de Win Rate** (${bestMatchup.wins}V - ${bestMatchup.losses}D en ${bestMatchup.total} partidas).")
+            if (topMatchups.size > 1) {
+                val others = topMatchups.drop(1).take(2).joinToString(", ") { "${it.opponentName} (${it.winRate.toInt()}% WR)" }
+                sb.append(" También dominas los duelos contra $others.")
+            }
+            sb.append(" Tu timing con H1 y H2 para castigar cuando gastan recursos te da la prioridad absoluta de carril.\n\n")
+        }
+
+        if (nemesis != null) {
+            sb.append("⚠️ **Rival Más Desafiante (Némesis):** Has tenido mayores dificultades contra **${nemesis.opponentName}** (${nemesis.wins}V - ${nemesis.losses}D, ${nemesis.winRate.toInt()}% WR).")
+            sb.append(" En este enfrentamiento, evita intercambios largos en niveles 1 a 3. Mantén el control de la oleada cerca de tu torre, respeta sus ventanas de daño explosivo y guarda tu H3 o Definitiva (H4) para contraatacar o escapar de emboscadas.")
+        }
+
+        return sb.toString()
     }
 }

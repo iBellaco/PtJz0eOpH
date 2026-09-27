@@ -718,6 +718,171 @@ private fun PersonalOverviewCard(
                     }
                 }
 
+                // Sección de Cálculo Automático 1v1 y Análisis de Matchups
+                if (overview.best1v1Matchup != null || overview.nemesisOpponent != null) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = HextechDarkBg.copy(alpha = 0.85f)),
+                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.45f))
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SportsKabaddi,
+                                    contentDescription = null,
+                                    tint = HextechGold,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = tr("Cálculo Automático de Matchups 1v1"),
+                                    color = HextechGold,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Mejor rival 1v1
+                                if (overview.best1v1Matchup != null) {
+                                    val best = overview.best1v1Matchup
+                                    Surface(
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = HextechSurface,
+                                        border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.6f))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(6.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            if (best.opponentAvatarUrl.isNotBlank()) {
+                                                AppAssetImage(
+                                                    url = best.opponentAvatarUrl,
+                                                    contentDescription = best.opponentName,
+                                                    fallbackText = best.opponentName.take(2),
+                                                    modifier = Modifier
+                                                        .size(26.dp)
+                                                        .clip(CircleShape)
+                                                        .border(1.dp, Color(0xFF81C784), CircleShape)
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                            }
+                                            Column {
+                                                Text(
+                                                    text = tr("Mayor Ventaja 1v1"),
+                                                    color = Color(0xFF81C784),
+                                                    fontSize = 8.5.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = best.opponentName,
+                                                    color = TextPrimary,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 1
+                                                )
+                                                Text(
+                                                    text = "${best.wins}W - ${best.losses}L (${best.winRate.toInt()}% WR)",
+                                                    color = Color(0xFF81C784),
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Némesis 1v1
+                                if (overview.nemesisOpponent != null) {
+                                    val nem = overview.nemesisOpponent
+                                    Surface(
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = HextechSurface,
+                                        border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.6f))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(6.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            if (nem.opponentAvatarUrl.isNotBlank()) {
+                                                AppAssetImage(
+                                                    url = nem.opponentAvatarUrl,
+                                                    contentDescription = nem.opponentName,
+                                                    fallbackText = nem.opponentName.take(2),
+                                                    modifier = Modifier
+                                                        .size(26.dp)
+                                                        .clip(CircleShape)
+                                                        .border(1.dp, DangerRed, CircleShape)
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                            }
+                                            Column {
+                                                Text(
+                                                    text = tr("Mayor Desafío (Némesis)"),
+                                                    color = DangerRed,
+                                                    fontSize = 8.5.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = nem.opponentName,
+                                                    color = TextPrimary,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 1
+                                                )
+                                                Text(
+                                                    text = "${nem.wins}W - ${nem.losses}L (${nem.winRate.toInt()}% WR)",
+                                                    color = DangerRed,
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Veredicto y Respuesta del Coach según sus cálculos automáticos
+                            if (overview.coach1v1Analysis.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = HextechSurfaceVariant.copy(alpha = 0.6f),
+                                    border = BorderStroke(0.8.dp, HextechCyan.copy(alpha = 0.35f))
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text(
+                                            text = tr("Veredicto del Coach (Cálculo Automático 1v1):"),
+                                            color = HextechCyan,
+                                            fontSize = 9.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = overview.coach1v1Analysis,
+                                            color = TextSecondary,
+                                            fontSize = 10.sp,
+                                            lineHeight = 14.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (overview.totalGames == 0) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Surface(
