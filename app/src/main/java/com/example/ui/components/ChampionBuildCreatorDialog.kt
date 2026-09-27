@@ -171,6 +171,7 @@ fun ChampionBuildCreatorDialog(
         }
     }
     var gameplayVideoUri by remember { mutableStateOf<String?>(existingRecord?.gameplayVideoUri) }
+    var comboVideoUri by remember { mutableStateOf<String?>(existingRecord?.comboVideoUri) }
 
     val videoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -188,6 +189,26 @@ fun ChampionBuildCreatorDialog(
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Error al adjuntar video", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val comboVideoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val size = inputStream?.available() ?: 0
+                inputStream?.close()
+                if (size > 20 * 1024 * 1024) {
+                    Toast.makeText(context, "El video supera el límite máximo de 20MB", Toast.LENGTH_SHORT).show()
+                } else {
+                    comboVideoUri = uri.toString()
+                    Toast.makeText(context, "Video de combos adjuntado con éxito", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error al adjuntar video de combos", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -350,23 +371,29 @@ fun ChampionBuildCreatorDialog(
                         )
                     )
 
-                    // 3. Objetos Core (Con descripción obligatoria)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "3. Objetos Core (${coreItems.size}/6) *Desc. Obligatoria",
-                            color = HextechCyan,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                        TextButton(onClick = { showItemPickerForCore = true }) {
-                            Text("+ Añadir", color = HextechGold, fontSize = 11.sp)
-                        }
-                    }
+                     // 3. Objetos Core (Con descripción obligatoria)
+                     Row(
+                         modifier = Modifier.fillMaxWidth(),
+                         horizontalArrangement = Arrangement.SpaceBetween,
+                         verticalAlignment = Alignment.CenterVertically
+                     ) {
+                         Text(
+                             text = "3. Objetos Core (${coreItems.size}/3) *Desc. Obligatoria",
+                             color = HextechCyan,
+                             fontWeight = FontWeight.Bold,
+                             fontSize = 13.sp,
+                             modifier = Modifier.weight(1f)
+                         )
+                         TextButton(onClick = {
+                             if (coreItems.size >= 3) {
+                                 Toast.makeText(context, "Límite de 3 objetos core alcanzado", Toast.LENGTH_SHORT).show()
+                             } else {
+                                 showItemPickerForCore = true
+                             }
+                         }) {
+                             Text("+ Añadir", color = HextechGold, fontSize = 11.sp)
+                         }
+                     }
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         coreItems.forEachIndexed { index, entry ->
                             Card(
@@ -803,61 +830,121 @@ fun ChampionBuildCreatorDialog(
                         }
                     }
 
-                    // 7. Subir Gameplay MP4 (Máximo 20MB)
-                    Text("7. Gameplay Demostrativo (MP4, Máx 20MB)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    Button(
-                        onClick = { videoPickerLauncher.launch("video/mp4") },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
-                        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.7f)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(Icons.Default.Videocam, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (gameplayVideoUri != null) "✓ Gameplay MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)",
-                            color = if (gameplayVideoUri != null) HextechGold else Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
-                    }
+                     // 7. Subir Gameplay MP4 (Máximo 20MB)
+                     Text("7. Gameplay Demostrativo (MP4, Máx 20MB)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                     Text("Recomendado: Horizontal 16:9 (ej. 1920x1080 o 1280x720), duración < 1 min", color = TextSecondary, fontSize = 11.sp)
+                     Button(
+                         onClick = { videoPickerLauncher.launch("video/mp4") },
+                         modifier = Modifier.fillMaxWidth(),
+                         colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
+                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.7f)),
+                         shape = RoundedCornerShape(8.dp)
+                     ) {
+                         Icon(Icons.Default.Videocam, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
+                         Spacer(modifier = Modifier.width(8.dp))
+                         Text(
+                             text = if (gameplayVideoUri != null) "✓ Gameplay MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)",
+                             color = if (gameplayVideoUri != null) HextechGold else Color.White,
+                             fontWeight = FontWeight.Bold,
+                             fontSize = 12.sp
+                         )
+                     }
+ 
+                     if (gameplayVideoUri != null) {
+                         Spacer(modifier = Modifier.height(4.dp))
+                         Card(
+                             modifier = Modifier
+                                 .fillMaxWidth()
+                                 .height(160.dp),
+                             shape = RoundedCornerShape(8.dp),
+                             colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                             border = BorderStroke(1.dp, HextechGold)
+                         ) {
+                             Box(modifier = Modifier.fillMaxSize()) {
+                                 AndroidView(
+                                     factory = { ctx ->
+                                         VideoView(ctx).apply {
+                                             setVideoURI(Uri.parse(gameplayVideoUri))
+                                             setOnPreparedListener { mp ->
+                                                 mp.isLooping = true
+                                                 start()
+                                             }
+                                         }
+                                     },
+                                     modifier = Modifier.fillMaxSize()
+                                 )
+                                 IconButton(
+                                     onClick = { gameplayVideoUri = null },
+                                     modifier = Modifier
+                                         .align(Alignment.TopEnd)
+                                         .padding(4.dp)
+                                         .size(28.dp)
+                                         .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
+                                 ) {
+                                     Icon(Icons.Default.Close, contentDescription = "Eliminar video", tint = Color.White, modifier = Modifier.size(16.dp))
+                                 }
+                             }
+                         }
+                     }
 
-                    if (gameplayVideoUri != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
-                            border = BorderStroke(1.dp, HextechGold)
-                        ) {
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                AndroidView(
-                                    factory = { ctx ->
-                                        VideoView(ctx).apply {
-                                            setVideoURI(Uri.parse(gameplayVideoUri))
-                                            setOnPreparedListener { mp ->
-                                                mp.isLooping = true
-                                                start()
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                                IconButton(
-                                    onClick = { gameplayVideoUri = null },
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(4.dp)
-                                        .size(28.dp)
-                                        .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
-                                ) {
-                                    Icon(Icons.Default.Close, contentDescription = "Eliminar video", tint = Color.White, modifier = Modifier.size(16.dp))
-                                }
-                            }
-                        }
-                    }
+                     Spacer(modifier = Modifier.height(12.dp))
+
+                     // 8. Subir Guía de Combos MP4 (Máximo 20MB)
+                     Text("8. Guía de Combos y Habilidades (MP4, Máx 20MB)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                     Text("Recomendado: Vertical 9:16 o Cuadrado 1:1 (ej. 1080x1920), duración < 45s", color = TextSecondary, fontSize = 11.sp)
+                     Button(
+                         onClick = { comboVideoPickerLauncher.launch("video/mp4") },
+                         modifier = Modifier.fillMaxWidth(),
+                         colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
+                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.7f)),
+                         shape = RoundedCornerShape(8.dp)
+                     ) {
+                         Icon(Icons.Default.Videocam, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
+                         Spacer(modifier = Modifier.width(8.dp))
+                         Text(
+                             text = if (comboVideoUri != null) "✓ Video de Combos MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)",
+                             color = if (comboVideoUri != null) HextechGold else Color.White,
+                             fontWeight = FontWeight.Bold,
+                             fontSize = 12.sp
+                         )
+                     }
+
+                     if (comboVideoUri != null) {
+                         Spacer(modifier = Modifier.height(4.dp))
+                         Card(
+                             modifier = Modifier
+                                 .fillMaxWidth()
+                                 .height(160.dp),
+                             shape = RoundedCornerShape(8.dp),
+                             colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                             border = BorderStroke(1.dp, HextechGold)
+                         ) {
+                             Box(modifier = Modifier.fillMaxSize()) {
+                                 AndroidView(
+                                     factory = { ctx ->
+                                         VideoView(ctx).apply {
+                                             setVideoURI(Uri.parse(comboVideoUri))
+                                             setOnPreparedListener { mp ->
+                                                 mp.isLooping = true
+                                                 start()
+                                             }
+                                         }
+                                     },
+                                     modifier = Modifier.fillMaxSize()
+                                 )
+                                 IconButton(
+                                     onClick = { comboVideoUri = null },
+                                     modifier = Modifier
+                                         .align(Alignment.TopEnd)
+                                         .padding(4.dp)
+                                         .size(28.dp)
+                                         .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
+                                 ) {
+                                     Icon(Icons.Default.Close, contentDescription = "Eliminar video combos", tint = Color.White, modifier = Modifier.size(16.dp))
+                                 }
+                             }
+                         }
+                     }
                 }
 
                 // Footer Action Buttons
@@ -881,10 +968,10 @@ fun ChampionBuildCreatorDialog(
                                 Toast.makeText(context, "Ingresa un título para la build", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
-                            if (coreItems.isEmpty()) {
-                                Toast.makeText(context, "Debes añadir al menos un objeto core", Toast.LENGTH_SHORT).show()
-                                return@Button
-                            }
+                             if (coreItems.size != 3) {
+                                 Toast.makeText(context, "Debes añadir exactamente 3 objetos core", Toast.LENGTH_SHORT).show()
+                                 return@Button
+                             }
                             if (coreItems.any { it.description.trim().isBlank() }) {
                                 Toast.makeText(context, "Todos los objetos core deben tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
                                 return@Button
@@ -944,6 +1031,7 @@ fun ChampionBuildCreatorDialog(
                                 coreSpells = coreSpells.map { SpellBuildEntry(it.name, it.iconUrl, it.description.trim()) },
                                 situationalSpells = situationalSpells.map { SpellBuildEntry(it.name, it.iconUrl, it.description.trim()) },
                                 gameplayVideoUri = gameplayVideoUri,
+                                comboVideoUri = comboVideoUri,
                                 creatorName = existingRecord?.creatorName ?: if (creatorName.isBlank()) "Creador Oficial" else creatorName,
                                 creatorAvatarId = existingRecord?.creatorAvatarId ?: currentAvatarId,
                                 creatorRankBorder = existingRecord?.creatorRankBorder ?: currentRankBorder,
@@ -988,9 +1076,10 @@ fun ChampionBuildCreatorDialog(
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true
                     )
-                    val filtered = remember(searchFilterQuery, champions) {
-                        if (searchFilterQuery.isBlank()) champions else champions.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
-                    }
+                     val filtered = remember(searchFilterQuery, champions) {
+                         val base = if (searchFilterQuery.isBlank()) champions else champions.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
+                         base.sortedBy { it.name }
+                     }
                     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         items(filtered) { champ ->
                             Row(
@@ -1043,49 +1132,70 @@ fun ChampionBuildCreatorDialog(
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true
                     )
-                    val filteredItems = remember(searchFilterQuery, items, showItemPickerForCore, coreItems, situationalItems) {
-                        val base = if (searchFilterQuery.isBlank()) items else items.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
-                        if (showItemPickerForCore) {
-                            base.filter { item -> coreItems.none { it.name.equals(item.name, ignoreCase = true) } }
-                        } else {
-                            base.filter { item -> 
-                                coreItems.none { it.name.equals(item.name, ignoreCase = true) } &&
-                                situationalItems.none { it.name.equals(item.name, ignoreCase = true) }
-                            }
-                        }
-                    }
-                    LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        items(filteredItems) { item ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        if (showItemPickerForCore) {
-                                            coreItems.add(EditableItemEntry(item.name, item.iconUrl))
-                                            showItemPickerForCore = false
-                                        } else {
-                                            situationalItems.add(EditableItemEntry(item.name, item.iconUrl))
-                                            showItemPickerForSituational = false
-                                        }
-                                        searchFilterQuery = ""
-                                    }
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                AppAssetImage(
-                                    url = item.iconUrl,
-                                    contentDescription = item.name,
-                                    fallbackText = item.name.take(2),
-                                    modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
-                                )
-                                Column {
-                                    Text(item.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                    Text("Oro: ${item.goldCost}", color = HextechGold, fontSize = 10.sp)
-                                }
-                            }
-                        }
-                    }
+                     val filteredItems = remember(searchFilterQuery, items, showItemPickerForCore, coreItems, situationalItems) {
+                         val base = if (searchFilterQuery.isBlank()) items else items.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
+                         val pool = if (showItemPickerForCore) {
+                             base.filter { item -> coreItems.none { it.name.equals(item.name, ignoreCase = true) } }
+                         } else {
+                             base.filter { item -> 
+                                 coreItems.none { it.name.equals(item.name, ignoreCase = true) } &&
+                                 situationalItems.none { it.name.equals(item.name, ignoreCase = true) }
+                             }
+                         }
+                         pool.sortedWith(compareBy<com.example.model.WildRiftItem> { it.category }.thenBy { it.name })
+                     }
+                     val groupedItems = remember(filteredItems) {
+                         filteredItems.groupBy { it.category }
+                     }
+                     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                         groupedItems.forEach { (categoryName, list) ->
+                             item {
+                                 Surface(
+                                     color = HextechGold.copy(alpha = 0.15f),
+                                     shape = RoundedCornerShape(4.dp),
+                                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp)
+                                 ) {
+                                     Text(
+                                         text = categoryName,
+                                         color = HextechGold,
+                                         fontWeight = FontWeight.Bold,
+                                         fontSize = 11.sp,
+                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                     )
+                                 }
+                             }
+                             items(list) { item ->
+                                 Row(
+                                     modifier = Modifier
+                                         .fillMaxWidth()
+                                         .clickable {
+                                             if (showItemPickerForCore) {
+                                                 coreItems.add(EditableItemEntry(item.name, item.iconUrl))
+                                                 showItemPickerForCore = false
+                                             } else {
+                                                 situationalItems.add(EditableItemEntry(item.name, item.iconUrl))
+                                                 showItemPickerForSituational = false
+                                             }
+                                             searchFilterQuery = ""
+                                         }
+                                         .padding(8.dp),
+                                     verticalAlignment = Alignment.CenterVertically,
+                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                 ) {
+                                     AppAssetImage(
+                                         url = item.iconUrl,
+                                         contentDescription = item.name,
+                                         fallbackText = item.name.take(2),
+                                         modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
+                                     )
+                                     Column {
+                                         Text(item.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                         Text("Oro: ${item.goldCost}", color = HextechGold, fontSize = 10.sp)
+                                     }
+                                 }
+                             }
+                         }
+                     }
                 }
             }
         }
@@ -1124,52 +1234,73 @@ fun ChampionBuildCreatorDialog(
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true
                     )
-                    val filteredRunes = remember(searchFilterQuery, runes, showRunePickerForKeystone, showRunePickerForSecondary, coreKeystone, coreSecondaryRunes, situationalRunes) {
-                        val base = if (searchFilterQuery.isBlank()) runes else runes.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
-                        base.filter { rune ->
-                            val alreadyKeystone = coreKeystone?.name?.equals(rune.name, ignoreCase = true) == true
-                            val alreadySecondary = coreSecondaryRunes.any { it.name.equals(rune.name, ignoreCase = true) }
-                            val alreadySituational = situationalRunes.any { it.name.equals(rune.name, ignoreCase = true) }
-                            !alreadyKeystone && !alreadySecondary && !alreadySituational
-                        }
-                    }
-                    LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        items(filteredRunes) { rune ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        if (showRunePickerForKeystone) {
-                                            coreKeystone = EditableRuneEntry(rune.name, rune.iconUrl)
-                                            showRunePickerForKeystone = false
-                                        } else if (showRunePickerForSecondary) {
-                                            if (coreSecondaryRunes.size < 4) {
-                                                coreSecondaryRunes.add(EditableRuneEntry(rune.name, rune.iconUrl))
-                                            }
-                                            showRunePickerForSecondary = false
-                                        } else {
-                                            situationalRunes.add(EditableRuneEntry(rune.name, rune.iconUrl))
-                                            showRunePickerForSituational = false
-                                        }
-                                        searchFilterQuery = ""
-                                    }
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                AppAssetImage(
-                                    url = rune.iconUrl,
-                                    contentDescription = rune.name,
-                                    fallbackText = rune.name.take(2),
-                                    modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
-                                )
-                                Column {
-                                    Text(rune.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                    Text("Categoría: ${rune.category}", color = HextechGold, fontSize = 10.sp)
-                                }
-                            }
-                        }
-                    }
+                     val filteredRunes = remember(searchFilterQuery, runes, showRunePickerForKeystone, showRunePickerForSecondary, coreKeystone, coreSecondaryRunes, situationalRunes) {
+                         val base = if (searchFilterQuery.isBlank()) runes else runes.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
+                         val pool = base.filter { rune ->
+                             val alreadyKeystone = coreKeystone?.name?.equals(rune.name, ignoreCase = true) == true
+                             val alreadySecondary = coreSecondaryRunes.any { it.name.equals(rune.name, ignoreCase = true) }
+                             val alreadySituational = situationalRunes.any { it.name.equals(rune.name, ignoreCase = true) }
+                             !alreadyKeystone && !alreadySecondary && !alreadySituational
+                         }
+                         pool.sortedWith(compareBy<com.example.model.RuneItem> { it.category }.thenBy { it.name })
+                     }
+                     val groupedRunes = remember(filteredRunes) {
+                         filteredRunes.groupBy { it.category }
+                     }
+                     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                         groupedRunes.forEach { (categoryName, list) ->
+                             item {
+                                 Surface(
+                                     color = HextechCyan.copy(alpha = 0.15f),
+                                     shape = RoundedCornerShape(4.dp),
+                                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp)
+                                 ) {
+                                     Text(
+                                         text = categoryName,
+                                         color = HextechCyan,
+                                         fontWeight = FontWeight.Bold,
+                                         fontSize = 11.sp,
+                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                     )
+                                 }
+                             }
+                             items(list) { rune ->
+                                 Row(
+                                     modifier = Modifier
+                                         .fillMaxWidth()
+                                         .clickable {
+                                             if (showRunePickerForKeystone) {
+                                                 coreKeystone = EditableRuneEntry(rune.name, rune.iconUrl)
+                                                 showRunePickerForKeystone = false
+                                             } else if (showRunePickerForSecondary) {
+                                                 if (coreSecondaryRunes.size < 4) {
+                                                     coreSecondaryRunes.add(EditableRuneEntry(rune.name, rune.iconUrl))
+                                                 }
+                                                 showRunePickerForSecondary = false
+                                             } else {
+                                                 situationalRunes.add(EditableRuneEntry(rune.name, rune.iconUrl))
+                                                 showRunePickerForSituational = false
+                                             }
+                                             searchFilterQuery = ""
+                                         }
+                                         .padding(8.dp),
+                                     verticalAlignment = Alignment.CenterVertically,
+                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                 ) {
+                                     AppAssetImage(
+                                         url = rune.iconUrl,
+                                         contentDescription = rune.name,
+                                         fallbackText = rune.name.take(2),
+                                         modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
+                                     )
+                                     Column {
+                                         Text(rune.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                         Text("Categoría: ${rune.category}", color = HextechGold, fontSize = 10.sp)
+                                     }
+                                 }
+                             }
+                         }
+                     }
                 }
             }
         }

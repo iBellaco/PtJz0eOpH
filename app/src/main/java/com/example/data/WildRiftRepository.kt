@@ -706,11 +706,14 @@ object WildRiftRepository {
         val serverRegion = com.example.data.sync.ChineseMetaSyncService.currentRegion.value
         val rankTier = com.example.data.sync.ChineseMetaSyncService.currentTier.value.displayName
 
+        val activeEnemies = enemies.filter { it.id != "empty" }
+        val activeAllies = allies.filter { it.id != "empty" }
+
         var physCount = 0
         var magicCount = 0
         var trueCount = 0
 
-        enemies.forEach { champ ->
+        activeEnemies.forEach { champ ->
             when (champ.damageType) {
                 DamageType.PHYSICAL -> physCount++
                 DamageType.MAGIC -> magicCount++
@@ -718,26 +721,35 @@ object WildRiftRepository {
             }
         }
 
-        val totalEnemies = (physCount + magicCount + trueCount).coerceAtLeast(1)
-        val physPct = (physCount * 100) / totalEnemies
-        val magicPct = (magicCount * 100) / totalEnemies
-        val truePct = (100 - (physPct + magicPct)).coerceAtLeast(0)
+        val physPct: Int
+        val magicPct: Int
+        val truePct: Int
+        if (activeEnemies.isEmpty()) {
+            physPct = 0
+            magicPct = 0
+            truePct = 0
+        } else {
+            val totalEnemies = (physCount + magicCount + trueCount).coerceAtLeast(1)
+            physPct = (physCount * 100) / totalEnemies
+            magicPct = (magicCount * 100) / totalEnemies
+            truePct = (100 - (physPct + magicPct)).coerceAtLeast(0)
+        }
 
         // Ally Damage Profile
-        val allyPhysCount = allies.count { it.damageType == DamageType.PHYSICAL }
-        val allyMagicCount = allies.count { it.damageType == DamageType.MAGIC }
-        val isAllyFullAd = allies.isNotEmpty() && allyPhysCount >= 3 && allyMagicCount == 0
-        val isAllyFullAp = allies.isNotEmpty() && allyMagicCount >= 3 && allyPhysCount == 0
+        val allyPhysCount = activeAllies.count { it.damageType == DamageType.PHYSICAL }
+        val allyMagicCount = activeAllies.count { it.damageType == DamageType.MAGIC }
+        val isAllyFullAd = activeAllies.isNotEmpty() && allyPhysCount >= 3 && allyMagicCount == 0
+        val isAllyFullAp = activeAllies.isNotEmpty() && allyMagicCount >= 3 && allyPhysCount == 0
         
         var allyPhysPct = 0
         var allyMagicPct = 0
         var allyTruePct = 0
         var allyCompositionWarning: String? = null
-        if (allies.isNotEmpty()) {
+        if (activeAllies.isNotEmpty()) {
             var aPhys = 0
             var aMag = 0
             var aTrue = 0
-            allies.forEach { 
+            activeAllies.forEach { 
                 when (it.damageType) {
                     DamageType.PHYSICAL -> aPhys++
                     DamageType.MAGIC -> aMag++
@@ -756,8 +768,9 @@ object WildRiftRepository {
             }
         }
 
-        val frontlineAllies = allies.count { it.isFrontline }
+        val frontlineAllies = activeAllies.count { it.isFrontline }
         val frontlineStatus = when {
+            activeAllies.isEmpty() -> "No hay campeones aliados"
             frontlineAllies >= 2 -> "Frontline Sólida (${frontlineAllies} Tanques/Luchadores)"
             frontlineAllies == 1 -> "Frontline Moderada (1 Tanque)"
             else -> "¡Alerta! Falta Frontline e Iniciación aliada"
@@ -782,12 +795,12 @@ object WildRiftRepository {
         var directMatchupWarning: String? = null
         var directCounterBestPick: String? = null
 
-        val enemyAssassins = enemies.filter { it.id in listOf("zed", "kayn", "talon", "khazix", "akali", "evelynn", "katarina", "fizz", "pyke") }
-        val enemyTanks = enemies.filter { it.isFrontline }
-        val enemyRangedAdvantage = enemies.filter { it.id in listOf("caitlyn", "lux", "xerath", "varus", "ezreal", "ziggs", "corki") }
-        val enemyDashHeavy = enemies.filter { it.id in listOf("yasuo", "yone", "irelia", "riven", "lee_sin", "akali", "katarina", "fizz") }
+        val enemyAssassins = activeEnemies.filter { it.id in listOf("zed", "kayn", "talon", "khazix", "akali", "evelynn", "katarina", "fizz", "pyke") }
+        val enemyTanks = activeEnemies.filter { it.isFrontline }
+        val enemyRangedAdvantage = activeEnemies.filter { it.id in listOf("caitlyn", "lux", "xerath", "varus", "ezreal", "ziggs", "corki") }
+        val enemyDashHeavy = activeEnemies.filter { it.id in listOf("yasuo", "yone", "irelia", "riven", "lee_sin", "akali", "katarina", "fizz") }
         
-        if (enemyLaneOpponent != null) {
+        if (enemyLaneOpponent != null && enemyLaneOpponent.id != "empty") {
             val opponent = enemyLaneOpponent
             if (myRole == LaneRole.TOP && opponent.isRanged) {
                 val topAlert = when (lang) {
@@ -809,7 +822,7 @@ object WildRiftRepository {
             }
         }
         
-        if (directMatchupWarning == null) {
+        if (directMatchupWarning == null && (activeAllies.isNotEmpty() || activeEnemies.isNotEmpty())) {
             if (isAllyFullAd && myRole != LaneRole.SUPPORT && myRole != LaneRole.ADC) {
                 directMatchupWarning = com.example.util.trStr(lang, "Nuestra composición es full Daño Físico (AD). El enemigo acumulará armadura.")
                 directCounterBestPick = com.example.util.trStr(lang, "Selecciona daño mágico (AP) para balancear")

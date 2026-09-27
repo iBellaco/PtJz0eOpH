@@ -13,6 +13,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -245,7 +246,11 @@ fun AdminCreatorBuildsDialog(
             )
         )
 
-        val finalList = rankingList.sortedByDescending { it.score }.toMutableList()
+        val finalList = rankingList.sortedWith(
+            compareByDescending<CreatorPodiumEntry> { it.subscribersCount }
+                .thenByDescending { it.totalVotes }
+                .thenByDescending { it.score }
+        ).toMutableList()
         var fallbackIdx = 0
         while (finalList.size < 3 && fallbackIdx < defaultLegends.size) {
             val fallback = defaultLegends[fallbackIdx]
@@ -256,6 +261,42 @@ fun AdminCreatorBuildsDialog(
         }
 
         finalList.take(3)
+    }
+
+    val officialCreatorsList = remember(registeredUsers, customBuilds) {
+        registeredUsers.filter { u ->
+            val uRole = u["role"] as? String ?: ""
+            uRole in listOf("creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")
+        }.map { u ->
+            val uName = (u["name"] as? String ?: "Anónimo").trim()
+            val userId = u["uid"] as? String ?: ""
+            val uRole = u["role"] as? String ?: "creador"
+            val avatarId = u["avatarId"] as? String ?: "default_poro"
+            val rankBorder = u["rankBorder"] as? String ?: "NONE"
+            val isAdmin = uRole == "admin"
+            
+            // Calcular suscriptores para este creador
+            val subsCount = registeredUsers.count { ru ->
+                val subList = (ru["subscribedCreators"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                subList.any { sub -> sub == userId || sub.trim().lowercase() == uName.lowercase() }
+            }
+            
+            val buildsCount = customBuilds.count { it.creatorName.equals(uName, ignoreCase = true) }
+            
+            CreatorPodiumEntry(
+                userId = userId,
+                name = uName,
+                avatarId = avatarId,
+                rankBorder = rankBorder,
+                isAdmin = isAdmin,
+                role = uRole,
+                buildsCount = buildsCount,
+                totalVotes = 0,
+                averageRating = 5.0,
+                score = 0.0,
+                subscribersCount = subsCount
+            )
+        }.sortedByDescending { it.subscribersCount }
     }
 
     val filteredBuilds = remember(customBuilds, favorites, selectedFilter, selectedCreatorFilter) {
@@ -380,6 +421,79 @@ fun AdminCreatorBuildsDialog(
                         selectedCreatorForProfile = entry
                     }
                 )
+            }
+
+            if (officialCreatorsList.isNotEmpty()) {
+                Text(
+                    text = "👥 " + com.example.util.tr("Lista de Creadores Oficiales (Niveles 1 al 5 y Streamers)"),
+                    color = HextechGold,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 1.dp)
+                )
+                
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(officialCreatorsList) { creator ->
+                        Surface(
+                            onClick = {
+                                selectedCreatorForProfile = creator
+                            },
+                            color = HextechSurface.copy(alpha = 0.5f),
+                            border = BorderStroke(1.dp, HextechCardBorder),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.width(105.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(6.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(3.dp)
+                            ) {
+                                UserAvatarView(
+                                    avatarId = creator.avatarId,
+                                    size = 32.dp,
+                                    fallbackInitial = creator.name.take(1).uppercase(Locale.ROOT),
+                                    rankBorder = creator.rankBorder,
+                                    isAdmin = creator.isAdmin
+                                )
+                                Text(
+                                    text = creator.name,
+                                    color = TextPrimary,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                
+                                val displayLabel = when (creator.role) {
+                                    "creador" -> "Creador Lvl 1"
+                                    "creador_vip" -> "Creador Lvl 2"
+                                    "creador_lvl3" -> "Creador Lvl 3"
+                                    "creador_lvl4" -> "Creador Lvl 4"
+                                    "creador_lvl5" -> "Creador Lvl 5"
+                                    "streamer" -> "Streamer"
+                                    else -> creator.role.replaceFirstChar { it.uppercase() }
+                                }
+                                
+                                Text(
+                                    text = displayLabel,
+                                    color = HextechGoldLight,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                
+                                Text(
+                                    text = "👥 ${creator.subscribersCount} subs",
+                                    color = TextSecondary,
+                                    fontSize = 8.5.sp
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(2.dp))
             }
 
             // Action Button: Crear Build con límites según el nivel de creador
@@ -863,6 +977,9 @@ fun CreatorProfileDialog(
         userRole == "admin"
     }
 
+    var showUnsubscribeConfirm1 by remember { mutableStateOf(false) }
+    var showUnsubscribeConfirm2 by remember { mutableStateOf(false) }
+
     val creatorBuilds = remember(customBuilds, entry.name) {
         customBuilds.filter { it.creatorName.equals(entry.name, ignoreCase = true) }
     }
@@ -980,25 +1097,168 @@ fun CreatorProfileDialog(
                         )
                     }
                 } else {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFF00FF66).copy(alpha = 0.12f),
-                        border = BorderStroke(1.dp, Color(0xFF00FF66).copy(alpha = 0.4f)),
-                        modifier = Modifier.fillMaxWidth()
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFF00FF66).copy(alpha = 0.12f),
+                            border = BorderStroke(1.dp, Color(0xFF00FF66).copy(alpha = 0.4f)),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = Color(0xFF00FF66))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Suscripción Activa (Acceso Total)",
-                                color = Color(0xFF00FF66),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.5.sp
-                            )
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = Color(0xFF00FF66))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Suscripción Activa (Acceso Total)",
+                                    color = Color(0xFF00FF66),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.5.sp
+                                )
+                            }
+                        }
+
+                        // Botón de Cancelar Suscripción con Doble Confirmación (Para cuentas que no son del sistema ni admins)
+                        val isSystemOrAdmin = entry.name.lowercase().contains("system") || userRole == "admin"
+                        if (!isSystemOrAdmin) {
+                            Button(
+                                onClick = {
+                                    showUnsubscribeConfirm1 = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.15f), contentColor = DangerRed),
+                                border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.4f)),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                contentPadding = PaddingValues(vertical = 8.dp)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = null, tint = DangerRed, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Quitar Suscripción",
+                                    color = DangerRed,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // DIALOGO DE CONFIRMACIÓN 1
+                if (showUnsubscribeConfirm1) {
+                    androidx.compose.ui.window.Dialog(onDismissRequest = { showUnsubscribeConfirm1 = false }) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = HextechSurface,
+                            border = BorderStroke(1.5.dp, HextechGold),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Text(
+                                    text = "Confirmación de Suscripción",
+                                    color = HextechGold,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                                Text(
+                                    text = "¿Estás seguro de que deseas cancelar tu suscripción al perfil de ${entry.name}?",
+                                    color = Color.White,
+                                    fontSize = 12.5.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = { showUnsubscribeConfirm1 = false },
+                                        colors = ButtonDefaults.buttonColors(containerColor = HextechDarkBg),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("No, Cancelar", fontSize = 11.5.sp)
+                                    }
+                                    Button(
+                                        onClick = {
+                                            showUnsubscribeConfirm1 = false
+                                            showUnsubscribeConfirm2 = true
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = DangerRed),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Sí, Continuar", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // DIALOGO DE CONFIRMACIÓN 2 (ADVERTENCIA CRÍTICA)
+                if (showUnsubscribeConfirm2) {
+                    androidx.compose.ui.window.Dialog(onDismissRequest = { showUnsubscribeConfirm2 = false }) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = HextechSurface,
+                            border = BorderStroke(2.dp, DangerRed),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Text(
+                                    text = "⚠️ ¡ADVERTENCIA CRÍTICA!",
+                                    color = DangerRed,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 15.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                                Text(
+                                    text = "Recuerda que al momento de quitar tu suscripción pierdes acceso total a las builds oficiales de este perfil. ¿Aún así deseas continuar con la baja?",
+                                    color = Color.White,
+                                    fontSize = 12.5.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = { showUnsubscribeConfirm2 = false },
+                                        colors = ButtonDefaults.buttonColors(containerColor = HextechDarkBg),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("No, Conservar", fontSize = 11.5.sp)
+                                    }
+                                    Button(
+                                        onClick = {
+                                            showUnsubscribeConfirm2 = false
+                                            CreatorSubscriptionManager.unsubscribe(creatorKey, context)
+                                            Toast.makeText(context, "Suscripción cancelada correctamente", Toast.LENGTH_SHORT).show()
+                                            onDismiss()
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = DangerRed),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Confirmar Baja", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1033,6 +1293,9 @@ fun CreatorProfileDialog(
                     ) {
                         items(creatorBuilds) { b ->
                             val isLocked = !isSubscribed && !entry.name.lowercase().contains("system")
+                            val champObj = remember(b.championId) {
+                                WildRiftRepository.champions.find { it.id.equals(b.championId, ignoreCase = true) }
+                            }
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = HextechDarkBg,
@@ -1046,8 +1309,11 @@ fun CreatorProfileDialog(
                                 Row(
                                     modifier = Modifier.padding(10.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
+                                    if (champObj != null) {
+                                        ChampionAvatar(champion = champObj, size = 32.dp, showTierBadge = false)
+                                    }
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = b.buildTitle,

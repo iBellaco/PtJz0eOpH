@@ -4204,10 +4204,12 @@ fun DraftAnalysisTab(
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     if (isPremium) {
+                        val alliesSelected = allySlots.count { it.champion.id != "empty" }
+                        val enemiesSelected = enemySlots.count { it.champion.id != "empty" }
                         if (activeRole == null) {
                             android.widget.Toast.makeText(tabContext, "Selecciona tu línea primero", android.widget.Toast.LENGTH_SHORT).show()
-                        } else if (allySlots.size < 5 || enemySlots.size < 5) {
-                            android.widget.Toast.makeText(tabContext, "Debes seleccionar los 10 campeones", android.widget.Toast.LENGTH_SHORT).show()
+                        } else if (alliesSelected < 5 || enemiesSelected < 5) {
+                            android.widget.Toast.makeText(tabContext, "Debes seleccionar los 5 campeones aliados y 5 enemigos", android.widget.Toast.LENGTH_SHORT).show()
                         } else {
                             showSaveDraftDialog = true
                         }
@@ -4634,277 +4636,274 @@ fun DraftAnalysisTab(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Live Recommendations Header
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = (activeRole ?: LaneRole.MID).iconResId),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = if (activeRole != null) {
-                    if (isFirstPick) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival")
-                } else {
-                    tr("Mejores Opciones Globales según tu Equipo y el Rival")
-                },
-                color = HextechGold,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // #1 Best Pick Hero Card
-        val topPick = analysis.bestOverallPick ?: analysis.recommendations.firstOrNull()
-        if (topPick != null) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .clickable { onSelectChampion(topPick.champion) }
-                    .border(1.5.dp, HextechGold, RoundedCornerShape(14.dp)),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = HextechSurface)
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = if (isFirstPick) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA"),
-                            color = HextechGold,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Black
-                        )
-                        Text(
-                            text = tr("Winrate Est.:") + " ${topPick.estimatedWinrate}%",
-                            color = HextechCyan,
-                            fontSize = 12.5.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        ChampionAvatar(champion = topPick.champion, size = 56.dp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = topPick.champion.name,
-                                    color = TextPrimary,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "Tier ${topPick.champion.tier}",
-                                    color = TierSPlusColor,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Text(
-                                text = topPick.advantageBadge,
-                                color = HextechCyan,
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = topPick.tacticalReason,
-                        color = TextPrimary.copy(alpha = 0.95f),
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp
-                    )
-
-                    if (topPick.synergyDetails.isNotBlank() || topPick.counterDetails.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(HextechDarkBg.copy(alpha = 0.6f))
-                                .border(0.8.dp, HextechCardBorder.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 8.dp, vertical = 6.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            if (topPick.synergyDetails.isNotBlank()) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "🤝 " + tr("Sinergia / Combo:"),
-                                        color = HextechCyan,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = topPick.synergyDetails,
-                                        color = TextPrimary,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                            if (topPick.counterDetails.isNotBlank()) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "🛡️ " + tr("Ventaja / Counter:"),
-                                        color = HextechGold,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = topPick.counterDetails,
-                                        color = TextPrimary,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = tr("Toca para ver build completa"),
-                            color = TextMuted,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Button(
-                            onClick = { onPickRecommendation(topPick.champion) },
-                            colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text(tr("Elegir como mi Pick"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-        }
-
-        // Secondary Recommendations
-        val otherRecs = analysis.recommendations.filter { it.champion.id != topPick?.champion?.id }
-        if (otherRecs.isNotEmpty()) {
+        if (activeRole != null) {
+            // Live Recommendations Header
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
-                    painter = painterResource(id = (activeRole ?: LaneRole.MID).iconResId),
+                    painter = painterResource(id = activeRole.iconResId),
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = if (activeRole != null) tr("Otras Opciones Viables para") + " ${com.example.util.tr(activeRole.displayName)}:" else tr("Otras Opciones Viables (Todas las Líneas):"),
-                    color = HextechCyan,
-                    fontSize = 13.sp,
+                    text = if (isFirstPick) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival"),
+                    color = HextechGold,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            otherRecs.forEach { rec ->
+            // #1 Best Pick Hero Card
+            val topPick = analysis.bestOverallPick ?: analysis.recommendations.firstOrNull()
+            if (topPick != null) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable { onSelectChampion(rec.champion) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
+                        .clip(RoundedCornerShape(14.dp))
+                        .clickable { onSelectChampion(topPick.champion) }
+                        .border(1.5.dp, HextechGold, RoundedCornerShape(14.dp)),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = HextechSurface)
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            ChampionAvatar(champion = rec.champion, size = 46.dp)
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = if (isFirstPick) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA"),
+                                color = HextechGold,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                            Text(
+                                text = tr("Winrate Est.:") + " ${topPick.estimatedWinrate}%",
+                                color = HextechCyan,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            ChampionAvatar(champion = topPick.champion, size = 56.dp)
+                            Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(rec.champion.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                    Text("WR: ${rec.estimatedWinrate}%", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = topPick.champion.name,
+                                        color = TextPrimary,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "Tier ${topPick.champion.tier}",
+                                        color = TierSPlusColor,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
-                                Text(rec.advantageBadge, color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(rec.tacticalReason, color = TextMuted, fontSize = 11.sp, lineHeight = 14.sp)
-                            }
-                            Spacer(modifier = Modifier.width(6.dp))
-                            IconButton(
-                                onClick = { onPickRecommendation(rec.champion) },
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Check,
-                                    contentDescription = tr("Elegir como mi Pick"),
-                                    tint = HextechCyan,
-                                    modifier = Modifier.size(18.dp)
+                                Text(
+                                    text = topPick.advantageBadge,
+                                    color = HextechCyan,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
 
-                        if (rec.synergyDetails.isNotBlank() || rec.counterDetails.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = topPick.tacticalReason,
+                            color = TextPrimary.copy(alpha = 0.95f),
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
+                        )
+
+                        if (topPick.synergyDetails.isNotBlank() || topPick.counterDetails.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(HextechDarkBg.copy(alpha = 0.6f))
+                                    .border(0.8.dp, HextechCardBorder.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                if (rec.synergyDetails.isNotBlank()) {
-                                    Text(
-                                        text = "🤝 " + rec.synergyDetails,
-                                        color = HextechCyan,
-                                        fontSize = 10.sp,
-                                        maxLines = 1,
-                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                        modifier = Modifier.weight(1f)
+                                if (topPick.synergyDetails.isNotBlank()) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "🤝 " + tr("Sinergia / Combo:"),
+                                            color = HextechCyan,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = topPick.synergyDetails,
+                                            color = TextPrimary,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                                if (topPick.counterDetails.isNotBlank()) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "🛡️ " + tr("Ventaja / Counter:"),
+                                            color = HextechGold,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = topPick.counterDetails,
+                                            color = TextPrimary,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = tr("Toca para ver build completa"),
+                                color = TextMuted,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Button(
+                                onClick = { onPickRecommendation(topPick.champion) },
+                                colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(tr("Elegir como mi Pick"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            // Secondary Recommendations
+            val otherRecs = analysis.recommendations.filter { it.champion.id != topPick?.champion?.id }
+            if (otherRecs.isNotEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = activeRole.iconResId),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = tr("Otras Opciones Viables para") + " ${com.example.util.tr(activeRole.displayName)}:",
+                        color = HextechCyan,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+
+                otherRecs.forEach { rec ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onSelectChampion(rec.champion) },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                ChampionAvatar(champion = rec.champion, size = 46.dp)
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(rec.champion.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text("WR: ${rec.estimatedWinrate}%", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                    Text(rec.advantageBadge, color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(rec.tacticalReason, color = TextMuted, fontSize = 11.sp, lineHeight = 14.sp)
+                                }
+                                Spacer(modifier = Modifier.width(6.dp))
+                                IconButton(
+                                    onClick = { onPickRecommendation(rec.champion) },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = tr("Elegir como mi Pick"),
+                                        tint = HextechCyan,
+                                        modifier = Modifier.size(18.dp)
                                     )
                                 }
-                                if (rec.counterDetails.isNotBlank()) {
-                                    Text(
-                                        text = "🛡️ " + rec.counterDetails,
-                                        color = HextechGoldLight,
-                                        fontSize = 10.sp,
-                                        maxLines = 1,
-                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                        modifier = Modifier.weight(1f)
-                                    )
+                            }
+
+                            if (rec.synergyDetails.isNotBlank() || rec.counterDetails.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    if (rec.synergyDetails.isNotBlank()) {
+                                        Text(
+                                            text = "🤝 " + rec.synergyDetails,
+                                            color = HextechCyan,
+                                            fontSize = 10.sp,
+                                            maxLines = 1,
+                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                    if (rec.counterDetails.isNotBlank()) {
+                                        Text(
+                                            text = "🛡️ " + rec.counterDetails,
+                                            color = HextechGoldLight,
+                                            fontSize = 10.sp,
+                                            maxLines = 1,
+                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(30.dp))
         }
-
-        Spacer(modifier = Modifier.height(30.dp))
     }
 }
 
