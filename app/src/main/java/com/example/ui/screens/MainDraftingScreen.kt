@@ -434,11 +434,9 @@ fun MainDraftingScreen(
 
                 val groupedNotices = remember(activeNotices) {
                     val orderPriority = listOf("Anuncios importantes", "PUBLICIDAD", "Ofertas", "Mantenimiento", "Noticias", "Streamers")
-                    val map = activeNotices.groupBy { normalizeNoticeTag(it.tag) }.toMutableMap()
-                    if (!map.containsKey("PUBLICIDAD")) {
-                        map["PUBLICIDAD"] = emptyList()
-                    }
+                    val map = activeNotices.groupBy { normalizeNoticeTag(it.tag) }
                     map.toList()
+                        .filter { (_, list) -> list.isNotEmpty() }
                         .sortedBy { (cat, _) ->
                             val idx = orderPriority.indexOf(cat)
                             if (idx >= 0) idx else 99
@@ -876,7 +874,7 @@ fun NoticeCategoryCard(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    if (noticeList.isEmpty() && (!isPublicidadCategory || areNotificationsEnabled)) return
+    if (noticeList.isEmpty()) return
 
     var currentIndex by remember(noticeList.size) { mutableStateOf(0) }
     var isPinned by remember { mutableStateOf(false) }

@@ -36,7 +36,7 @@ object LiteRTVisionClassifier {
 
     private const val TAG = "LiteRTVisionClassifier"
     private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
-    private const val EMBEDDING_DIM = 136    // Vector descriptor de 136 dimensiones de alta fidelidad
+    private const val EMBEDDING_DIM = 140    // Vector descriptor de 140 dimensiones de alta fidelidad
 
     // Umbral de confianza por defecto (80% de similitud real centrada en cero)
     const val DEFAULT_CONFIDENCE_THRESHOLD = 0.80f
@@ -236,6 +236,9 @@ object LiteRTVisionClassifier {
         var demaciaGoldCount = 0f       // Garen, Lux, Leona
         var shadowIslesCount = 0f       // Hecarim, Karthus, Yorick
         var ioniaSpiritCount = 0f       // Ahri, Yasuo, Yone, Karma
+        var whiteFurSilverCount = 0f    // Volibear, Sejuani, Poros (Pelaje blanco/plata ártico brillante)
+        var glowingRedEyeCount = 0f     // Ojo rojo llameante de Volibear / Warwick
+        var darkBeastShadowCount = 0f   // Rengar, Naafiri, Nocturne (Sombra/pelaje negro profundo)
         var highlightCount = 0f
         var shadowCount = 0f
         var midtoneSatCount = 0f
@@ -388,6 +391,21 @@ object LiteRTVisionClassifier {
                 if (r > 0.35f && b > 0.30f && sat > 0.25f && g < r) {
                     ioniaSpiritCount += 1f
                 }
+
+                // 12) Pelaje Blanco / Plata Ártico de Volibear (Luminancia alta, saturación baja, canales balanceados)
+                if (lum > 0.52f && sat < 0.22f && r > 0.48f && g > 0.48f && b > 0.48f) {
+                    whiteFurSilverCount += 1f
+                }
+
+                // 13) Ojo Rojo / Glifo de Poder de Volibear (Rojo puro focal en zona central)
+                if (dist < TENSOR_INPUT_SIZE * 0.28f && r > 0.45f && g < 0.30f && b < 0.30f && (r - g) > 0.18f) {
+                    glowingRedEyeCount += 1f
+                }
+
+                // 14) Sombra / Pelaje Negro de Bestia (Rengar, Nocturne)
+                if (lum < 0.22f && sat < 0.35f) {
+                    darkBeastShadowCount += 1f
+                }
             }
         }
 
@@ -429,7 +447,7 @@ object LiteRTVisionClassifier {
             embedding[embIdx++] = quadCyanLime[i] / c
         } // 99 + 8 = 107 dims
 
-        // 5. Firmas espectrales ortogonales y momentos estadísticos (21 dims)
+        // 5. Firmas espectrales ortogonales y momentos estadísticos (25 dims)
         val meanR = totalR / normCount
         val meanG = totalG / normCount
         val meanB = totalB / normCount
@@ -455,11 +473,15 @@ object LiteRTVisionClassifier {
         embedding[embIdx++] = demaciaGoldCount / normCount
         embedding[embIdx++] = shadowIslesCount / normCount
         embedding[embIdx++] = ioniaSpiritCount / normCount
+        embedding[embIdx++] = whiteFurSilverCount / normCount     // Pelaje blanco/plata (Volibear)
+        embedding[embIdx++] = glowingRedEyeCount / normCount      // Ojo rojo focal (Volibear)
+        embedding[embIdx++] = darkBeastShadowCount / normCount    // Pelaje negro/sombra oscura (Rengar)
+        embedding[embIdx++] = (whiteFurSilverCount - darkBeastShadowCount) / (whiteFurSilverCount + darkBeastShadowCount + 1e-4f) // Discriminador ortogonal Volibear vs Rengar
         embedding[embIdx++] = topAvgLum - botAvgLum               // Gradiente vertical de luz (Urgot claro arriba, Pyke oscuro arriba)
         embedding[embIdx++] = highlightCount / normCount
         embedding[embIdx++] = shadowCount / normCount
         embedding[embIdx++] = midtoneSatCount / normCount
-        // 107 + 21 = 128 dims
+        // 107 + 25 = 132 dims
 
         // 6. Histograma de bordes direccionales Sobel (8 bins)
         val edgeHist = FloatArray(8)

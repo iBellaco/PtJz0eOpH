@@ -812,52 +812,39 @@ object DraftVisionScanner {
             val allStandardRoles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
             
             // REGLA CRÍTICA DE UNICIDAD Y NO DUPLICACIÓN:
-            // "si aún se ve su nombre de la línea que pertenece esa es la que manda"
             val claimedRoles = mutableSetOf<LaneRole>()
             val resolvedSlotRoles = mutableMapOf<Int, LaneRole>()
 
-            // 1. PRIORIDAD ABSOLUTA (MÁXIMA JERARQUÍA):
-            // Slots que muestran actualmente su texto de línea en pantalla (OCR en vivo en este frame)
+            // 1. PRIORIDAD MÁXIMA: Hechizo Castigo (Smite) -> Jungla (Infalible en Wild Rift)
             for (i in 0..4) {
-                val liveRole = currentScanFrameOcrLanes[i]
-                if (liveRole != null && !claimedRoles.contains(liveRole)) {
-                    resolvedSlotRoles[i] = liveRole
-                    claimedRoles.add(liveRole)
-                    allySlots[i].explicitRole = liveRole
-                    allySlotRolesCache[i] = liveRole
-                    allySlotOcrLaneCache[i] = liveRole
-                    AppLogger.d(TAG, "Línea ${liveRole.shortName} asignada con PRIORIDAD ABSOLUTA a Slot Aliado $i por texto visible en pantalla")
+                val hasSmite = allySlots[i].summonerSpells.any { it.equals("Castigo", ignoreCase = true) || it.equals("Smite", ignoreCase = true) }
+                if (hasSmite && !claimedRoles.contains(LaneRole.JUNGLE)) {
+                    resolvedSlotRoles[i] = LaneRole.JUNGLE
+                    claimedRoles.add(LaneRole.JUNGLE)
+                    allySlots[i].explicitRole = LaneRole.JUNGLE
+                    allySlotRolesCache[i] = LaneRole.JUNGLE
+                    AppLogger.d(TAG, "Slot Aliado $i asignado a JUNGLA por Hechizo Castigo (Smite)")
                 }
             }
 
-            // 2. Prioridad Hechizo Castigo (Smite) -> Jungla (si no ha sido reclamada por texto visible)
+            // 2. PRIORIDAD VISUAL EN VIVO: Slots que muestran actualmente su texto de línea en pantalla (OCR en vivo en este frame)
             for (i in 0..4) {
                 if (!resolvedSlotRoles.containsKey(i)) {
-                    val hasSmite = allySlots[i].summonerSpells.any { it.equals("Castigo", ignoreCase = true) || it.equals("Smite", ignoreCase = true) }
-                    if (hasSmite && !claimedRoles.contains(LaneRole.JUNGLE)) {
-                        resolvedSlotRoles[i] = LaneRole.JUNGLE
-                        claimedRoles.add(LaneRole.JUNGLE)
-                        allySlots[i].explicitRole = LaneRole.JUNGLE
-                        allySlotRolesCache[i] = LaneRole.JUNGLE
-                        AppLogger.d(TAG, "Slot Aliado $i asignado a JUNGLA por Smite")
+                    val liveRole = currentScanFrameOcrLanes[i]
+                    if (liveRole != null && !claimedRoles.contains(liveRole)) {
+                        resolvedSlotRoles[i] = liveRole
+                        claimedRoles.add(liveRole)
+                        allySlots[i].explicitRole = liveRole
+                        allySlotRolesCache[i] = liveRole
+                        allySlotOcrLaneCache[i] = liveRole
+                        AppLogger.d(TAG, "Línea ${liveRole.shortName} asignada con PRIORIDAD a Slot Aliado $i por texto visible en pantalla")
                     }
                 }
             }
 
-            // 3. Prioridad Slots con línea OCR en caché previa (sin conflicto con textos activos ni smite)
-            for (i in 0..4) {
-                if (!resolvedSlotRoles.containsKey(i)) {
-                    val ocrRole = allySlotOcrLaneCache[i]
-                    if (ocrRole != null && !claimedRoles.contains(ocrRole)) {
-                        resolvedSlotRoles[i] = ocrRole
-                        claimedRoles.add(ocrRole)
-                        allySlots[i].explicitRole = ocrRole
-                        allySlotRolesCache[i] = ocrRole
-                        AppLogger.d(TAG, "Línea ${ocrRole.shortName} asignada a Slot Aliado $i de caché OCR previa")
-                    }
-                }
-            }
-
+            // 3. PRIORIDAD CAMPEONES CONFIRMADOS (Asignación Óptima por afinidad de rol primario/secundario)
+            // Si el slot ya tiene un campeón seleccionado (ej: Vi, Smolder, Sett, Viktor, Senna), se infiere directamente
+            // usando correspondencia bipartita antes de recurrir a cachés OCR antiguas que pudieran estar obsoletas.
             val availableRoles = allStandardRoles.filterNot { claimedRoles.contains(it) }.toMutableList()
 
             // 4. Para slots aliados sin carril confirmado que ya tienen campeón seleccionado:

@@ -29,10 +29,10 @@ object SummonerSpellDetector {
         var totalValid = 0
         var totalLum = 0L
 
-        var purpleCount = 0     // Smite (Castigo) - Rayo / Daga mágica púrpura/magenta
+        var smiteCount = 0      // Smite (Castigo) - Garra/Fuego de bestia naranja/ámbar cálido o púrpura
         var yellowCount = 0     // Flash (Destello) - Amarillo puro eléctrico
         var amberGoldCount = 0  // Barrier (Barrera) - Escudo ámbar / dorado
-        var redFireCount = 0    // Ignite (Prender) - Fuego rojo carmesí
+        var redFireCount = 0    // Ignite (Prender) - Fuego rojo carmesí profundo
         var greenCount = 0      // Heal (Curar) - Verde esmeralda vivo
         var cyanCount = 0       // Ghost (Fantasmal) - Cyan / Azul brillante
         var darkBrownCount = 0  // Exhaust (Extenuación) - Bronce / Marrón apagado
@@ -53,12 +53,10 @@ object SummonerSpellDetector {
                 totalLum += lum
                 totalValid++
 
-                // 1. Castigo (Smite): En Wild Rift el Castigo presenta destello y filo púrpura/violeta/magenta
-                // característico de la daga mágica (r y b altos, g notablemente menor). Ningún otro hechizo tiene este matiz.
-                if ((r > 100 && b > 100 && g < 120 && (r + b) > (2 * g + 20)) ||
-                    (b > 110 && r > 85 && g < 100 && b > g + 20) ||
-                    (b > 130 && r > 110 && g < 135)) {
-                    purpleCount++
+                // 1. Castigo (Smite): En Wild Rift es una garra de bestia ígnea naranja/roja brillante con destellos cálidos (R alto, G medio-alto, B bajo) o halo púrpura
+                if ((r in 140..255 && g in 45..145 && b < 80 && (r - g) in 30..120 && (g - b) >= 15) ||
+                    (r > 100 && b > 100 && g < 120 && (r + b) > (2 * g + 20))) {
+                    smiteCount++
                 }
                 // 2. Curar (Heal): Verde esmeralda vivo predominante
                 else if (g > 120 && g > r + 25 && g > b + 25) {
@@ -68,16 +66,16 @@ object SummonerSpellDetector {
                 else if (b > 130 && g > 110 && r < 120 && (b - r) > 25) {
                     cyanCount++
                 }
-                // 4. Prender (Ignite): Rojo intenso llameante
-                else if (r > 155 && g < 95 && b < 70 && (r - g) > 55) {
+                // 4. Prender (Ignite): Rojo intenso llameante carmesí (G muy bajo)
+                else if (r > 155 && g < 55 && b < 65 && (r - g) > 90) {
                     redFireCount++
                 }
                 // 5. Destello (Flash): Amarillo eléctrico puro y chispas doradas de Flash
                 else if (r > 165 && g > 140 && b < 125 && kotlin.math.abs(r - g) < 50) {
                     yellowCount++
                 }
-                // 6. Barrera (Barrier): Ámbar / Dorado esférico puro (r claramente superior a g y sin amarillo eléctrico)
-                else if (r > 170 && g in 110..175 && b < 90 && (r - g) in 35..85) {
+                // 6. Barrera (Barrier): Ámbar / Dorado esférico puro
+                else if (r > 170 && g in 110..175 && b in 40..105 && (r - g) in 30..75) {
                     amberGoldCount++
                 }
                 // 7. Extenuación (Exhaust): Marrón / Bronce oscuro
@@ -92,7 +90,7 @@ object SummonerSpellDetector {
         // Si el área es muy oscura (< 25 lum), se descarta (slot vacío o sin pick)
         if (avgLum < 25f) return null
 
-        val purpleRatio = purpleCount.toFloat() / totalValid.toFloat()
+        val smiteRatio = smiteCount.toFloat() / totalValid.toFloat()
         val greenRatio = greenCount.toFloat() / totalValid.toFloat()
         val cyanRatio = cyanCount.toFloat() / totalValid.toFloat()
         val redRatio = redFireCount.toFloat() / totalValid.toFloat()
@@ -101,13 +99,13 @@ object SummonerSpellDetector {
         val brownRatio = darkBrownCount.toFloat() / totalValid.toFloat()
 
         val (spellId, name) = when {
-            // 1. Castigo (Smite): Único hechizo con energía púrpura/violeta en la daga
-            purpleRatio > 0.015f -> "smite" to "Castigo"
+            // 1. Castigo (Smite): Garra de bestia ígnea / daga
+            smiteRatio > 0.04f -> "smite" to "Castigo"
             // 2. Curar: Verde vivo
             greenRatio > 0.06f -> "heal" to "Curar"
             // 3. Fantasmal: Cyan vivo
             cyanRatio > 0.06f -> "ghost" to "Fantasmal"
-            // 4. Prender: Fuego rojo vivo
+            // 4. Prender: Fuego rojo vivo carmesí
             redRatio > 0.06f -> "ignite" to "Prender"
             // 5. Destello: Amarillo eléctrico característico de Flash (predominante)
             yellowRatio > 0.035f -> "flash" to "Destello"

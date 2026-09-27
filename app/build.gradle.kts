@@ -9,6 +9,10 @@ plugins {
 }
 
 android {
+  androidResources {
+    localeFilters += listOf("es", "pt", "en")
+  }
+
   namespace = "com.example"
   compileSdk = 36
 
@@ -16,9 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 728
-    versionName = "1.1.10.12"
-    resourceConfigurations += listOf("es", "pt", "en")
+    versionCode = 730
+    versionName = "1.1.10.14"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }

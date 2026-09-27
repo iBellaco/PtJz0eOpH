@@ -598,7 +598,7 @@ fun AvatarSelectionBottomSheet(
             } // End of forEach
             } // End of LazyVerticalGrid
         } else {
-                    // MARCOS (BORDERS) SECTION: Solamente marcos asignados al rol principal y secundario del usuario
+                    // MARCOS (BORDERS) SECTION: Marco por defecto, sin marco, rangos competitivos y roles especiales
                     val mainRoleFrame = when (userRole.lowercase().trim()) {
                         "admin" -> "ADMIN"
                         "moderador" -> "MODERADOR"
@@ -616,16 +616,31 @@ fun AvatarSelectionBottomSheet(
                         else -> null
                     }
 
-                    val borders = remember(userRole, secondaryRole) {
+                    val borders = remember(userRole, secondaryRole, isPremium) {
                         val list = mutableListOf<String>()
-                        list.add("NONE") // Siempre disponible la opción Sin Marco
-                        if (mainRoleFrame != null && !list.contains(mainRoleFrame)) {
-                            list.add(mainRoleFrame)
+                        list.add("DEFAULT") // Marco por Defecto (según avatar y rol)
+                        list.add("NONE")    // Sin Marco especial
+                        
+                        // Marcos de Rangos Wild Rift (orden jerárquico competitivo)
+                        list.add("ESMERALDA")
+                        list.add("DIAMANTE")
+                        list.add("MAESTRO_FRAME")
+                        list.add("GRAN_MAESTRO_FRAME")
+                        list.add("ASPIRANTE")
+                        list.add("SOBERANO")
+                        
+                        // Marcos de Roles Especiales (disponibles para admins o usuarios con dicho rol)
+                        if (userRole.equals("admin", ignoreCase = true)) {
+                            list.add("ADMIN")
+                            list.add("MODERADOR")
+                            list.add("CREADOR")
+                            list.add("STREAMER")
+                        } else {
+                            if (mainRoleFrame != null && !list.contains(mainRoleFrame)) {
+                                list.add(mainRoleFrame)
+                            }
                         }
-                        if (secRoleFrame != null && !list.contains(secRoleFrame)) {
-                            list.add(secRoleFrame)
-                        }
-                        list
+                        list.distinct()
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -639,11 +654,7 @@ fun AvatarSelectionBottomSheet(
                     ) {
                         items(borders.size) { index ->
                             val border = borders[index]
-                            val activeBorder = if (currentRankBorder == "DEFAULT" || currentRankBorder.isBlank()) {
-                                mainRoleFrame ?: secRoleFrame ?: "NONE"
-                            } else {
-                                currentRankBorder
-                            }
+                            val activeBorder = if (currentRankBorder.isBlank()) "DEFAULT" else currentRankBorder
                             val isSelected = activeBorder.equals(border, ignoreCase = true)
 
                             Card(
@@ -684,24 +695,25 @@ fun AvatarSelectionBottomSheet(
                                             avatarId = currentAvatarId,
                                             size = 64.dp,
                                             rankBorder = border,
-                                            showBorder = false,
-                                            role = "",
-                                            secondaryRole = ""
+                                            showBorder = true,
+                                            role = if (border == "DEFAULT") userRole else "",
+                                            secondaryRole = if (border == "DEFAULT") secondaryRole else ""
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))
                                     val borderLabel = when (border) {
-                                        "NONE" -> "Sin Marco"
-                                        "ADMIN" -> "Administrador"
-                                        "MODERADOR" -> "Moderador"
-                                        "CREADOR" -> "Creador"
-                                        "STREAMER" -> "Streamer"
-                                        "ESMERALDA" -> "Esmeralda"
-                                        "DIAMANTE" -> "Diamante"
-                                        "MAESTRO_FRAME" -> "Maestro"
-                                        "GRAN_MAESTRO_FRAME" -> "Gran Maestro"
-                                        "ASPIRANTE" -> "Aspirante"
-                                        "SOBERANO" -> "Soberano"
+                                        "DEFAULT" -> tr("Por Defecto")
+                                        "NONE" -> tr("Sin Marco")
+                                        "ADMIN" -> tr("Administrador")
+                                        "MODERADOR" -> tr("Moderador")
+                                        "CREADOR" -> tr("Creador")
+                                        "STREAMER" -> tr("Streamer")
+                                        "ESMERALDA" -> tr("Esmeralda")
+                                        "DIAMANTE" -> tr("Diamante")
+                                        "MAESTRO_FRAME" -> tr("Maestro")
+                                        "GRAN_MAESTRO_FRAME" -> tr("Gran Maestro")
+                                        "ASPIRANTE" -> tr("Aspirante")
+                                        "SOBERANO" -> tr("Soberano")
                                         else -> border
                                     }
                                     Text(
