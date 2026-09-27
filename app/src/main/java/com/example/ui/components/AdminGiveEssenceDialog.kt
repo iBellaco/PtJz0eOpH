@@ -1,28 +1,38 @@
 package com.example.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import com.example.R
-import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
+import com.example.R
 import com.example.util.SubscriptionHistoryManager
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FieldValue
+import java.util.UUID
 
 @Composable
 fun AdminGiveEssenceDialog(
@@ -35,13 +45,46 @@ fun AdminGiveEssenceDialog(
     var isAddition by remember { mutableStateOf(true) } // true: Añadir (+), false: Descontar (-)
     var isProcessing by remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismiss) {
+    // Message notification settings
+    var notifyUser by remember { mutableStateOf(true) }
+    var isCustomMessage by remember { mutableStateOf(false) }
+    var customTitle by remember { mutableStateOf("") }
+    var customBody by remember { mutableStateOf("") }
+
+    val defaultTitle = remember(isAddition) {
+        if (isAddition) "¡Recompensa de Esencias!" else "Ajuste de Saldo de Esencias"
+    }
+
+    val defaultBody = remember(isAddition, selectedCurrency, amount) {
+        val currTag = if (selectedCurrency == "BLUE") "Esencias Azules (EA)" else "Esencias Naranjas (EN)"
+        val amtDisplay = amount.ifBlank { "0" }
+        if (isAddition) {
+            "¡Felicidades! Se han acreditado +$amtDisplay $currTag a tu cuenta de Coach. ¡Disfrútalas en el catálogo y tienda!"
+        } else {
+            "Se ha realizado un ajuste de -$amtDisplay $currTag en tu saldo por parte del equipo de administración."
+        }
+    }
+
+    val effectiveTitle = if (isCustomMessage && customTitle.isNotBlank()) customTitle.trim() else defaultTitle
+    val effectiveBody = if (isCustomMessage && customBody.isNotBlank()) customBody.trim() else defaultBody
+
+    val activeColor = if (selectedCurrency == "BLUE") Color(0xFF0EA5E9) else Color(0xFFFF9E1B)
+
+    Dialog(onDismissRequest = { if (!isProcessing) onDismiss() }) {
         Surface(
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(16.dp),
             color = Color(0xFF0F172A),
-            border = BorderStroke(1.dp, if (selectedCurrency == "BLUE") Color(0xFF0EA5E9) else Color(0xFFFF8C00))
+            border = BorderStroke(1.dp, activeColor),
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .wrapContentHeight()
         ) {
-            Column(modifier = Modifier.padding(18.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(18.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // Header
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(id = if (selectedCurrency == "BLUE") R.drawable.ic_blue_essence else R.drawable.ic_orange_essence),
@@ -51,9 +94,9 @@ fun AdminGiveEssenceDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Ajustar Esencias de Usuario",
-                        color = if (selectedCurrency == "BLUE") Color(0xFF0EA5E9) else Color(0xFFFF9E1B),
+                        color = activeColor,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
+                        fontSize = 16.sp
                     )
                 }
 
@@ -131,24 +174,199 @@ fun AdminGiveEssenceDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
+                // Amount input field
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
-                    label = { Text("Cantidad", color = Color.Gray) },
+                    label = { Text("Cantidad de esencias", color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
-                        focusedBorderColor = if (selectedCurrency == "BLUE") Color(0xFF0EA5E9) else Color(0xFFFF8C00)
+                        focusedBorderColor = activeColor
                     )
                 )
 
+                // Quick preset buttons
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf("100", "500", "1000", "5000").forEach { preset ->
+                        OutlinedButton(
+                            onClick = { amount = preset },
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 4.dp),
+                            shape = RoundedCornerShape(6.dp),
+                            border = BorderStroke(0.5.dp, activeColor.copy(alpha = 0.5f))
+                        ) {
+                            Text("+$preset", fontSize = 10.5.sp, color = activeColor)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // User Notification Section
+                Surface(
+                    color = Color(0xFF1E293B).copy(alpha = 0.6f),
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(0.5.dp, Color(0xFF334155)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.NotificationsActive,
+                                    contentDescription = null,
+                                    tint = if (notifyUser) Color(0xFF38BDF8) else Color.Gray,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Notificar al usuario en buzón",
+                                    color = if (notifyUser) Color.White else Color.Gray,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            Switch(
+                                checked = notifyUser,
+                                onCheckedChange = { notifyUser = it },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = activeColor,
+                                    uncheckedThumbColor = Color.Gray,
+                                    uncheckedTrackColor = Color(0xFF334155)
+                                )
+                            )
+                        }
+
+                        AnimatedVisibility(visible = notifyUser) {
+                            Column(modifier = Modifier.padding(top = 8.dp)) {
+                                // Toggle between Default & Custom message
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = if (isCustomMessage) "Mensaje personalizado:" else "Mensaje predeterminado:",
+                                        color = if (isCustomMessage) Color(0xFFF59E0B) else Color(0xFF94A3B8),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+
+                                    TextButton(
+                                        onClick = {
+                                            if (!isCustomMessage) {
+                                                customTitle = defaultTitle
+                                                customBody = defaultBody
+                                            }
+                                            isCustomMessage = !isCustomMessage
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isCustomMessage) Icons.Default.Refresh else Icons.Default.Edit,
+                                            contentDescription = null,
+                                            tint = if (isCustomMessage) Color(0xFF38BDF8) else Color(0xFFF59E0B),
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = if (isCustomMessage) "Usar predeterminado" else "Personalizar mensaje",
+                                            color = if (isCustomMessage) Color(0xFF38BDF8) else Color(0xFFF59E0B),
+                                            fontSize = 10.5.sp
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                if (isCustomMessage) {
+                                    OutlinedTextField(
+                                        value = customTitle,
+                                        onValueChange = { customTitle = it },
+                                        label = { Text("Título del mensaje", color = Color.Gray, fontSize = 11.sp) },
+                                        singleLine = true,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White,
+                                            focusedBorderColor = Color(0xFFF59E0B)
+                                        )
+                                    )
+
+                                    Spacer(modifier = Modifier.height(6.dp))
+
+                                    OutlinedTextField(
+                                        value = customBody,
+                                        onValueChange = { customBody = it },
+                                        label = { Text("Contenido del mensaje...", color = Color.Gray, fontSize = 11.sp) },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(80.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White,
+                                            focusedBorderColor = Color(0xFFF59E0B)
+                                        )
+                                    )
+                                } else {
+                                    Surface(
+                                        color = Color(0xFF0F172A),
+                                        shape = RoundedCornerShape(6.dp),
+                                        border = BorderStroke(0.5.dp, Color(0xFF334155)),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    Icons.Default.ChatBubbleOutline,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF38BDF8),
+                                                    modifier = Modifier.size(13.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = defaultTitle,
+                                                    color = Color(0xFF38BDF8),
+                                                    fontSize = 11.5.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = defaultBody,
+                                                color = Color(0xFFCBD5E1),
+                                                fontSize = 11.sp,
+                                                lineHeight = 14.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Actions buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -168,8 +386,10 @@ fun AdminGiveEssenceDialog(
                                 val status = if (isAddition) "Añadido por Administrador" else "Descontado por Administrador"
                                 val amountStr = "${if (isAddition) "+" else "-"}$parsed $currTag"
 
-                                FirebaseFirestore.getInstance().collection("users").document(userUid)
-                                    .update(fieldName, FieldValue.increment(effectiveDelta))
+                                val db = FirebaseFirestore.getInstance()
+                                val userDocRef = db.collection("users").document(userUid)
+
+                                userDocRef.update(fieldName, FieldValue.increment(effectiveDelta))
                                     .addOnSuccessListener {
                                         CoroutineScope(Dispatchers.IO).launch {
                                             SubscriptionHistoryManager.addRecordForUser(
@@ -180,9 +400,37 @@ fun AdminGiveEssenceDialog(
                                                 amount = amountStr
                                             )
                                         }
-                                        isProcessing = false
-                                        onSuccess()
-                                        onDismiss()
+
+                                        // Optional Inbox Notification Message
+                                        if (notifyUser && effectiveBody.isNotBlank()) {
+                                            val messageId = UUID.randomUUID().toString()
+                                            val messageData = hashMapOf<String, Any>(
+                                                "id" to messageId,
+                                                "title" to effectiveTitle,
+                                                "content" to effectiveBody,
+                                                "tag" to if (isAddition) "oferta" else "aviso",
+                                                "timestamp" to System.currentTimeMillis(),
+                                                "isRead" to false
+                                            )
+
+                                            userDocRef.collection("messages").document(messageId)
+                                                .set(messageData)
+                                                .addOnCompleteListener {
+                                                    userDocRef.update(
+                                                        "hasUnreadMessages", true,
+                                                        "unreadMessagesCount", FieldValue.increment(1),
+                                                        "privateMessages", FieldValue.arrayUnion(messageData)
+                                                    ).addOnCompleteListener {
+                                                        isProcessing = false
+                                                        onSuccess()
+                                                        onDismiss()
+                                                    }
+                                                }
+                                        } else {
+                                            isProcessing = false
+                                            onSuccess()
+                                            onDismiss()
+                                        }
                                     }
                                     .addOnFailureListener {
                                         isProcessing = false
@@ -191,7 +439,7 @@ fun AdminGiveEssenceDialog(
                         },
                         enabled = !isProcessing && amount.isNotEmpty(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedCurrency == "BLUE") Color(0xFF0EA5E9) else Color(0xFFFF8C00)
+                            containerColor = activeColor
                         ),
                         shape = RoundedCornerShape(8.dp)
                     ) {

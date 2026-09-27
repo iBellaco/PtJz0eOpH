@@ -4079,28 +4079,59 @@ fun UserDetailManagementDialog(
                                         Text("Comunicación y Recompensas", fontWeight = FontWeight.Bold, color = Color(0xFF0EA5E9), fontSize = 13.sp)
                                     }
 
-                                    val currentEssence = (user["blueEssence"] as? Number)?.toLong() ?: 0L
-                                    Surface(
-                                        color = HextechDarkBg,
-                                        shape = RoundedCornerShape(6.dp),
-                                        border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFF0EA5E9).copy(alpha = 0.6f))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                            verticalAlignment = Alignment.CenterVertically
+                                        val currentBlueEssence = (user["blueEssence"] as? Number)?.toLong() ?: 0L
+                                        val currentOrangeEssence = (user["orangeEssence"] as? Number)?.toLong() ?: 0L
+
+                                        Surface(
+                                            color = HextechDarkBg,
+                                            shape = RoundedCornerShape(6.dp),
+                                            border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFF0EA5E9).copy(alpha = 0.6f))
                                         ) {
-                                            Image(
-                                                painter = painterResource(id = com.example.R.drawable.ic_blue_essence),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(12.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(3.dp))
-                                            Text(
-                                                text = "$currentEssence EA",
-                                                fontSize = 10.5.sp,
-                                                color = Color(0xFF38BDF8),
-                                                fontWeight = FontWeight.Bold
-                                            )
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(id = com.example.R.drawable.ic_blue_essence),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(3.dp))
+                                                Text(
+                                                    text = "$currentBlueEssence EA",
+                                                    fontSize = 10.5.sp,
+                                                    color = Color(0xFF38BDF8),
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+
+                                        Surface(
+                                            color = HextechDarkBg,
+                                            shape = RoundedCornerShape(6.dp),
+                                            border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFFF9E1B).copy(alpha = 0.6f))
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(id = com.example.R.drawable.ic_orange_essence),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(3.dp))
+                                                Text(
+                                                    text = "$currentOrangeEssence EN",
+                                                    fontSize = 10.5.sp,
+                                                    color = Color(0xFFFFB74D),
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -4131,7 +4162,7 @@ fun UserDetailManagementDialog(
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Dar Esencia Azul", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text("Dar Esencia", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -4147,7 +4178,7 @@ fun UserDetailManagementDialog(
             userUid = uid,
             onDismiss = { showGiveEssenceDialog = false },
             onSuccess = { 
-                Toast.makeText(context, "Esencia Azul enviada.", Toast.LENGTH_SHORT).show() 
+                Toast.makeText(context, "Esencias actualizadas con éxito.", Toast.LENGTH_SHORT).show() 
             }
         )
     }
