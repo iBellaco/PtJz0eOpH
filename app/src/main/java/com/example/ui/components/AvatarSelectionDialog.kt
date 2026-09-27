@@ -616,35 +616,28 @@ fun AvatarSelectionBottomSheet(
                         else -> null
                     }
 
-                    val borders = remember(userRole, secondaryRole, isPremium) {
+                    val borders = remember(userRole, secondaryRole) {
                         val list = mutableListOf<String>()
-                        list.add("NONE")    // Sin Marco especial (avatar limpio)
-                        list.add("DEFAULT") // Marco por Defecto (animación de rareza del avatar y marcos de rol asignados)
+                        list.add("NONE")    // Sin Marco especial (avatar limpio sin efectos)
+                        list.add("DEFAULT") // Por Defecto (animación de rareza y resplandor del avatar sin marco de imagen)
                         
-                        // Marcos de Roles Especiales (disponibles para admins o usuarios con dicho rol)
-                        if (userRole.equals("admin", ignoreCase = true)) {
-                            list.add("ADMIN")
-                            list.add("MODERADOR")
-                            list.add("CREADOR")
-                            list.add("STREAMER")
-                        } else {
-                            if (mainRoleFrame != null && !list.contains(mainRoleFrame)) {
-                                list.add(mainRoleFrame)
-                            }
+                        // Marco del rol principal del usuario (si corresponde)
+                        if (mainRoleFrame != null) {
+                            list.add(mainRoleFrame)
                         }
 
-                        // Marco del rol secundario del usuario (si lo tiene asignado)
-                        if (secRoleFrame != null && !list.contains(secRoleFrame)) {
+                        // Marco del rol secundario del usuario (si corresponde y es distinto al principal)
+                        if (secRoleFrame != null && secRoleFrame != mainRoleFrame) {
                             list.add(secRoleFrame)
                         }
 
-                        // Marcos de Rangos Wild Rift (orden jerárquico competitivo)
-                        list.add("ESMERALDA")
-                        list.add("DIAMANTE")
-                        list.add("MAESTRO_FRAME")
-                        list.add("GRAN_MAESTRO_FRAME")
-                        list.add("ASPIRANTE")
-                        list.add("SOBERANO")
+                        // Si el usuario es Administrador supremo, permitirle previsualizar los roles de staff
+                        if (userRole.equals("admin", ignoreCase = true)) {
+                            if (!list.contains("ADMIN")) list.add("ADMIN")
+                            if (!list.contains("MODERADOR")) list.add("MODERADOR")
+                            if (!list.contains("CREADOR")) list.add("CREADOR")
+                            if (!list.contains("STREAMER")) list.add("STREAMER")
+                        }
                         
                         list.distinct()
                     }
@@ -704,8 +697,8 @@ fun AvatarSelectionBottomSheet(
                                             size = 64.dp,
                                             rankBorder = border,
                                             showBorder = !isNone,
-                                            role = if (isDefault || border == mainRoleFrame) userRole else "",
-                                            secondaryRole = if (isDefault || border == secRoleFrame) secondaryRole else ""
+                                            role = if (border == mainRoleFrame) userRole else "",
+                                            secondaryRole = if (border == secRoleFrame) secondaryRole else ""
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(16.dp))

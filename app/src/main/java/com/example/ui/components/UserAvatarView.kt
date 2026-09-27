@@ -81,6 +81,7 @@ fun UserAvatarView(
 
     val activeFrameAsset: String? = when {
         rankBorder.equals("NONE", ignoreCase = true) -> null
+        rankBorder.equals("DEFAULT", ignoreCase = true) -> null
         rankBorder.equals("ADMIN", ignoreCase = true) || rankBorder.equals("ADMINISTRADOR", ignoreCase = true) -> "file:///android_asset/offline_images/frame_administrador.png"
         rankBorder.equals("MODERADOR", ignoreCase = true) || rankBorder.equals("MODERATOR", ignoreCase = true) -> "file:///android_asset/offline_images/frame_moderador.png"
         rankBorder.equals("CREADOR", ignoreCase = true) || rankBorder.equals("CREATOR", ignoreCase = true) -> "file:///android_asset/offline_images/frame_creador.png"
@@ -91,19 +92,7 @@ fun UserAvatarView(
         rankBorder.equals("GRAN_MAESTRO_FRAME", ignoreCase = true) || rankBorder.equals("GRANDMASTER", ignoreCase = true) -> "file:///android_asset/offline_images/frame_gran_maestro.png"
         rankBorder.equals("ASPIRANTE", ignoreCase = true) || rankBorder.equals("CHALLENGER", ignoreCase = true) -> "file:///android_asset/offline_images/frame_aspirante.png"
         rankBorder.equals("SOBERANO", ignoreCase = true) -> "file:///android_asset/offline_images/frame_soberano.png"
-        else -> when {
-            resolvedRole.lowercase().trim() == "admin" -> "file:///android_asset/offline_images/frame_administrador.png"
-            resolvedRole.lowercase().trim() == "moderador" -> "file:///android_asset/offline_images/frame_moderador.png"
-            resolvedRole.lowercase().trim() in listOf("creador", "creador_vip") -> "file:///android_asset/offline_images/frame_creador.png"
-            resolvedRole.lowercase().trim() == "streamer" -> "file:///android_asset/offline_images/frame_streamer.png"
-            resolvedSecondaryRole.lowercase().trim() == "esmeralda" -> "file:///android_asset/offline_images/frame_esmeralda.png"
-            resolvedSecondaryRole.lowercase().trim() == "diamante" -> "file:///android_asset/offline_images/frame_diamante.png"
-            resolvedSecondaryRole.lowercase().trim() == "maestro" -> "file:///android_asset/offline_images/frame_maestro.png"
-            resolvedSecondaryRole.lowercase().trim() in listOf("gran_maestro", "gran maestro") -> "file:///android_asset/offline_images/frame_gran_maestro.png"
-            resolvedSecondaryRole.lowercase().trim() == "aspirante" -> "file:///android_asset/offline_images/frame_aspirante.png"
-            resolvedSecondaryRole.lowercase().trim() == "soberano" -> "file:///android_asset/offline_images/frame_soberano.png"
-            else -> null
-        }
+        else -> null
     }
 
     val avatar: AvatarItem = AvatarCatalog.getAvatarById(avatarId ?: "default_poro")

@@ -255,6 +255,22 @@ fun ModeratorDashboardDialog(
     }
 }
 
+private fun isUserVerified(user: Map<String, Any>): Boolean {
+    val role = (user["role"] as? String ?: user["userRole"] as? String ?: "").lowercase().trim()
+    val email = (user["email"] as? String ?: user["userEmail"] as? String ?: "").lowercase().trim()
+    val isVerifiedBool = (user["isVerified"] as? Boolean) == true || 
+                         (user["verified"] as? Boolean) == true || 
+                         (user["officialVerified"] as? Boolean) == true ||
+                         (user["is_verified"] as? Boolean) == true ||
+                         (user["verifiedBadge"] as? Boolean) == true
+    val isVerifiedStr = (user["isVerified"] as? String)?.equals("true", ignoreCase = true) == true ||
+                        (user["verified"] as? String)?.equals("true", ignoreCase = true) == true ||
+                        (user["officialVerified"] as? String)?.equals("true", ignoreCase = true) == true
+    val isStaffOrSpecial = role in listOf("admin", "moderador", "creador", "creador_vip", "streamer")
+    val isAdminMail = email in listOf("barbadiego695@gmail.com", "barbachavezdiego@gmail.com")
+    return isVerifiedBool || isVerifiedStr || isStaffOrSpecial || isAdminMail
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModeratorUserListPanel() {
@@ -345,7 +361,7 @@ fun ModeratorUserListPanel() {
                 items(filteredUsers) { user ->
                     val name = user["name"] as? String ?: "Sin Nombre"
                     val avatarId = user["avatarId"] as? String ?: "default_poro"
-                    val isVerified = (user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true
+                    val isVerified = isUserVerified(user)
                     val secondaryRole = (user["secondaryRole"] as? String ?: user["secRole"] as? String ?: "").trim()
 
                     Surface(
@@ -433,9 +449,7 @@ fun ModeratorUserProposalDialog(
     val uid = user["uid"] as? String ?: ""
     val name = user["name"] as? String ?: "Usuario"
     val email = user["email"] as? String ?: ""
-    val currentVerified = (user["isVerified"] as? Boolean) == true || 
-                          (user["verified"] as? Boolean) == true ||
-                          (user["officialVerified"] as? Boolean) == true
+    val currentVerified = isUserVerified(user)
     val currentSecondaryRole = (user["secondaryRole"] as? String ?: user["secRole"] as? String ?: "").trim()
 
     var targetVerified by remember { mutableStateOf(currentVerified) }
