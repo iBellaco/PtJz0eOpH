@@ -179,6 +179,9 @@ fun MainDraftingScreen(
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var isDownloadingMlKit by remember { mutableStateOf(false) }
+    var mlKitDownloadMessage by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
     val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
@@ -841,7 +844,7 @@ fun MainDraftingScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("Español", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("Español Oficial • 100% Activo", color = HextechGoldLight, fontSize = 11.5.sp)
+                                Text("Español Oficial • Disponible", color = HextechGoldLight, fontSize = 11.5.sp)
                             }
                             if (currentLanguage == "es") {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
@@ -855,8 +858,21 @@ fun MainDraftingScreen(
                                 .background(if (currentLanguage == "pt") HextechCyan.copy(alpha = 0.15f) else HextechSurface)
                                 .border(1.5.dp, if (currentLanguage == "pt") HextechCyan else HextechCardBorder.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                                 .clickable {
-                                    onLanguageChange("pt")
-                                    showLanguageDialog = false
+                                    if (com.example.util.MlKitTranslationManager.isPortugueseDownloaded()) {
+                                        onLanguageChange("pt")
+                                        showLanguageDialog = false
+                                    } else {
+                                        showLanguageDialog = false
+                                        isDownloadingMlKit = true
+                                        mlKitDownloadMessage = "Baixando pacote de idioma do Google ML Kit Translate..."
+                                        scope.launch {
+                                            val success = com.example.util.MlKitTranslationManager.downloadPortugueseModel { progress ->
+                                                mlKitDownloadMessage = progress
+                                            }
+                                            isDownloadingMlKit = false
+                                            onLanguageChange("pt")
+                                        }
+                                    }
                                 }
                                 .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -864,8 +880,25 @@ fun MainDraftingScreen(
                             Text("🇧🇷", fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Português", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("Português Oficial • 100% Ativo", color = HextechGoldLight, fontSize = 11.5.sp)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("Português", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(HextechCyan.copy(alpha = 0.2f))
+                                            .border(0.8.dp, HextechCyan.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                    ) {
+                                        Text(
+                                            text = "ML Kit",
+                                            color = HextechCyan,
+                                            fontSize = 9.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Text("Português Oficial • Motor Google ML Kit", color = HextechGoldLight, fontSize = 11.5.sp)
                             }
                             if (currentLanguage == "pt") {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
@@ -881,6 +914,58 @@ fun MainDraftingScreen(
                 containerColor = HextechSurface,
                 shape = RoundedCornerShape(16.dp)
             )
+        }
+
+        if (isDownloadingMlKit) {
+            androidx.compose.ui.window.Dialog(onDismissRequest = {}) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(HextechDarkBg)
+                        .border(1.5.dp, HextechGold, RoundedCornerShape(16.dp))
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.CloudDownload,
+                            contentDescription = null,
+                            tint = HextechCyan,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Google ML Kit Translate",
+                            color = HextechGold,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = mlKitDownloadMessage.ifBlank { "Baixando pacote de idioma Português..." },
+                            color = TextPrimary,
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        androidx.compose.material3.LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = HextechCyan,
+                            trackColor = HextechSurface
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Download de modelo neural no dispositivo (Offline)",
+                            color = TextMuted,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -1569,7 +1569,99 @@ val translations = mapOf(
         "Cielo desgarrado" to "Céu Dividido",
         "Sable-pistola hextech" to "Pistola Laminar Hextec",
         "Robaalmas de Mejai" to "Ladrão de Almas de Mejai",
-        "Proyector psíquico" to "Projetor Psíquico"
+        "Proyector psíquico" to "Projetor Psíquico",
+        "Sangría del soberano" to "Soberania de Sangue",
+        "Chupasangre" to "Hemodrenário",
+        "Cimitara mercurial" to "Cimitarra Mercurial",
+        "Anjo Guardião" to "Anjo Guardião",
+        "A Sedenta por Sangue" to "A Sedenta por Sangue",
+        "Calibrador de Sterak" to "Sinal de Sterak",
+        "Dança da Morte" to "Dança da Morte",
+        "Espada Quimiopunk" to "Espada Quimiopunk",
+        "Firmamento desgarrado" to "Céu Dividido",
+        "Céu Dividido" to "Céu Dividido",
+
+        // --- REGIONS & THEMES IN PORTUGUESE ---
+        "Ciudad del Progreso" to "Cidade do Progresso",
+        "CIUDAD DEL PROGRESO" to "CIDADE DO PROGRESSO",
+        "Puerto de Forajidos" to "Porto dos Foras da Lei",
+        "PUERTO DE FORAJIDOS" to "PORTO DOS FORAS DA LEI",
+        "Hogar de los Yordles" to "Lar dos Yordles",
+        "HOGAR DE LOS YORDLES" to "LAR DOS YORDLES",
+        "Reino de la Justicia" to "Reino da Justiça",
+        "REINO DE LA JUSTICIA" to "REINO DA JUSTIÇA",
+        "La Nada Hambrienta" to "O Vazio Insaciável",
+        "LA NADA HAMBRIENTA" to "O VAZIO INSACIÁVEL",
+        "Tierras del Norte" to "Terras do Norte",
+        "TIERRAS DEL NORTE" to "TERRAS DO NORTE",
+        "Niebla Negra" to "Névoa Negra",
+        "NIEBLA NEGRA" to "NÉVOA NEGRA",
+        "Magia Elemental" to "Magia Elemental",
+        "MAGIA ELEMENTAL" to "MAGIA ELEMENTAL",
+        "Tierras Primigenias" to "Terras Primordiais",
+        "TIERRAS PRIMIGENIAS" to "TERRAS PRIMORDIAIS",
+        "Imperio de la Fuerza" to "Império da Força",
+        "IMPERIO DE LA FUERZA" to "IMPÉRIO DA FORÇA",
+        "Imperio del Disco Solar" to "Império do Disco Solar",
+        "IMPERIO DEL DISCO SOLAR" to "IMPÉRIO DO DISCO SOLAR",
+        "Cumbre Celestial" to "Cume Celestial",
+        "CUMBRE CELESTIAL" to "CUME CELESTIAL",
+        "Subciudad Quimtech" to "Subcidade Quimtec",
+        "SUBCIUDAD QUIMTECH" to "SUBCIDADE QUIMTEC",
+        "Aguas Estancadas" to "Águas de Sentina",
+        "Ciudad de Bandle" to "Cidade de Bandle",
+        "Islas de la Sombra" to "Ilhas das Sombras",
+        "El Vacío" to "O Vazio",
+        "Monte Targón" to "Monte Targon",
+        "Piltover" to "Piltover",
+        "Zaun" to "Zaun",
+        "Noxus" to "Noxus",
+        "Demacia" to "Demacia",
+        "Ionia" to "Ionia",
+        "Shurima" to "Shurima",
+        "Freljord" to "Freljord",
+        "Targon" to "Targon",
+        "Ixtal" to "Ixtal",
+
+        // --- FOOTER & CREDITS ---
+        "Desarrollador Principal • Todos los derechos reservados" to "Desenvolvedor Principal • Todos os direitos reservados",
+        "Desarrollador Principal" to "Desenvolvedor Principal",
+        "Todos los derechos reservados" to "Todos os direitos reservados",
+
+        // --- TIER LIST & SORTING HEADERS ---
+        "Criterio de Orden" to "Critério de Ordenação",
+        "Desliza opciones" to "Deslize as opções",
+        "Gráfica de Tendencia:" to "Gráfico de Tendência:",
+        "Gráfica de Tendencia: hace 24h, 12h y actual" to "Gráfico de Tendência: há 24h, 12h e atual",
+        "hace 24h, 12h y actual" to "há 24h, 12h e atual",
+        "hace 24 horas" to "há 24 horas",
+        "hace 12 horas" to "há 12 horas",
+        "actual" to "atual",
+        "En vivo" to "Ao vivo",
+        "Actualización automática activa • En vivo" to "Atualização automática ativa • Ao vivo",
+        "Actualización automática activa" to "Atualização automática ativa",
+        "TIER S+ (Dominantes / Prioridad Pick & Ban)" to "TIER S+ (Dominantes / Prioridade Pick & Ban)",
+        "TIER S (Meta Muy Fuerte / Alta Prioridad)" to "TIER S (Meta Muito Forte / Alta Prioridade)",
+        "TIER A (Meta Fuerte / Elecciones Sólidas)" to "TIER A (Meta Forte / Escolhas Sólidas)",
+        "TIER B (Situacionales / Especialistas)" to "TIER B (Situacionais / Especialistas)",
+        "TIER C (Fuera del Meta / Rendimiento Bajo)" to "TIER C (Fora do Meta / Baixo Desempenho)",
+        "Dominantes / Prioridad Pick & Ban" to "Dominantes / Prioridade Pick & Ban",
+        "Dominantes en" to "Dominantes em",
+        "Meta Muy Fuerte / Alta Prioridad" to "Meta Muito Forte / Alta Prioridade",
+        "Meta Fuerte / Elecciones Sólidas" to "Meta Forte / Escolhas Sólidas",
+        "Situacionales / Especialistas" to "Situacionais / Especialistas",
+        "Fuera del Meta / Rendimiento Bajo" to "Fora do Meta / Baixo Desempenho",
+        "Filtrar por Línea" to "Filtrar por Rota",
+
+        // --- CHAMPION TACTICAL REASONS & TIPS ---
+        "Acumula 5 marcas de Hemorragia para desatar Furia Noxiana y encadenar ejecuciones con tu Guillotina (H4). Cubres la falta de tanques e iniciación." to "Acumule 5 acúmulos de Hemorragia para ativar Fúria Noxiana e encadear execuções com sua Guilhotina (H4). Você supre a falta de tanques e iniciação.",
+        "Acumula 5 marcas de Hemorragia para desatar Furia Noxiana y encadenar ejecuciones con tu Guillotina (H4)." to "Acumule 5 acúmulos de Hemorragia para ativar Fúria Noxiana e encadear execuções com sua Guilhotina (H4).",
+        "Cubres la falta de tanques e iniciación." to "Você supre a falta de tanques e iniciação.",
+        "Carga tu Salto con Escudo (H2) con 5 cargas de Passiva para aturdir y aplicar tres golpes instantáneos. Rota con Gran Descarga Celestial (H4). Mantenha a pressão dividida ou seja a iniciação da equipe." to "Carregue seu Escudo Cometa (H2) com 5 acúmulos de Passiva para atordoar e aplicar três golpes instantâneos. Rotacione com Grande Queda Celestial (H4). Mantenha a pressão dividida ou seja a iniciação da equipe.",
+        "Carga tu Salto con Escudo (H2) con 5 cargas de Passiva para aturdir y aplicar tres golpes instantáneos. Rota con Gran Descarga Celestial (H4)." to "Carregue seu Escudo Cometa (H2) com 5 acúmulos de Passiva para atordoar e aplicar três golpes instantâneos. Rotacione com Grande Queda Celestial (H4).",
+        "Cancela las animaciones de Alas Rotas (H1) con ataques básicos (Fast H1 combo) para duplicar tu velocidad de daño. Mantenha a pressão dividida ou seja a iniciação da equipe." to "Cancele as animações de Asas Quebradas (H1) com ataques básicos (combo rápido de H1) para duplicar sua velocidade de dano. Mantenha a pressão dividida ou seja a iniciação da equipe.",
+        "Cancela las animaciones de Alas Rotas (H1) con ataques básicos (Fast H1 combo) para duplicar tu velocidad de daño." to "Cancele as animações de Asas Quebradas (H1) com ataques básicos (combo rápido de H1) para duplicar sua velocidade de dano.",
+        "Mantenha a pressão dividida ou seja a iniciação da equipe." to "Mantenha a pressão dividida ou seja a iniciação da equipe."
     )
 )
 
@@ -1644,9 +1736,35 @@ fun trStr(lang: String, key: String): String {
         replaced = replaced.replace("Habilidad", "Habilidade", ignoreCase = true)
         replaced = replaced.replace("Definitiva", "Ultimate", ignoreCase = true)
         replaced = replaced.replace("Inflige", "Causa", ignoreCase = true)
+        replaced = replaced.replace("inflige", "causa", ignoreCase = true)
         replaced = replaced.replace("Aumenta", "Aumenta", ignoreCase = true)
         replaced = replaced.replace("Reduce", "Reduz", ignoreCase = true)
         replaced = replaced.replace("Otorga", "Concede", ignoreCase = true)
+        replaced = replaced.replace("otorga", "concede", ignoreCase = true)
+        replaced = replaced.replace("Este elemento", "Este item", ignoreCase = true)
+        replaced = replaced.replace("Este objeto", "Este item", ignoreCase = true)
+        replaced = replaced.replace("este elemento", "este item", ignoreCase = true)
+        replaced = replaced.replace("este objeto", "este item", ignoreCase = true)
+        replaced = replaced.replace("tu siguiente ataque", "seu próximo ataque", ignoreCase = true)
+        replaced = replaced.replace("también se aplica a las torretas", "também se aplica a torres", ignoreCase = true)
+        replaced = replaced.replace("creando una onda de choque", "criando uma onda de choque", ignoreCase = true)
+        replaced = replaced.replace("a los enemigos detrás del objetivo", "aos inimigos atrás do alvo", ignoreCase = true)
+        replaced = replaced.replace("Los campeones a distancia infligen un 75% del daño", "Campeões de ataque à distância causam 75% do dano", ignoreCase = true)
+        replaced = replaced.replace("Los campeones a distancia Causan un 75% del daño", "Campeões de ataque à distância causam 75% do dano", ignoreCase = true)
+        replaced = replaced.replace("convierte tus ataques básicos en", "transforma seus ataques básicos em", ignoreCase = true)
+        replaced = replaced.replace("periódicamente tu próximo golpe se convierte en", "periodicamente seu próximo golpe se torna", ignoreCase = true)
+        replaced = replaced.replace("Acelera la eliminación de olas", "Acelera a limpeza de tropas", ignoreCase = true)
+        replaced = replaced.replace("agrega daño adicional en las peleas en equipo", "adiciona dano extra em lutas de equipe", ignoreCase = true)
+        replaced = replaced.replace("y ayuda a presionar las estructuras cuando se construye adecuadamente.", "e ajuda a pressionar estruturas quando construído adequadamente.", ignoreCase = true)
+        replaced = replaced.replace("Es más adecuado para matones cuerpo a cuerpo y tanques que combinan una gran reserva de salud con autos frecuentes", "É mais adequado para lutadores corpo a corpo e tanques que combinam muita vida com ataques básicos frequentes", ignoreCase = true)
+        replaced = replaced.replace("ideal para jugadores que desean impactar tanto en intercambios 1 contra 1 como en enfrentamientos prolongados.", "ideal para jogadores que desejam impacto tanto em trocas 1v1 quanto em confrontos prolongados.", ignoreCase = true)
+        replaced = replaced.replace("Hender:", "Fender:", ignoreCase = true)
+        replaced = replaced.replace("enemigos", "inimigos", ignoreCase = true)
+        replaced = replaced.replace("enemigo", "inimigo", ignoreCase = true)
+        replaced = replaced.replace("campeones", "campeões", ignoreCase = true)
+        replaced = replaced.replace("campeón", "campeão", ignoreCase = true)
+        replaced = replaced.replace("torretas", "torres", ignoreCase = true)
+        replaced = replaced.replace("torreta", "torre", ignoreCase = true)
     }
     return replaced
 }

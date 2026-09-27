@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 753
-    versionName = "1.1.10.37"
+    versionCode = 755
+    versionName = "1.1.10.39"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -141,6 +141,7 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   implementation(libs.coil.compose)
   implementation(libs.mlkit.text.recognition)
+  implementation(libs.mlkit.translate)
   implementation(libs.androidx.work.runtime.ktx)
   // implementation(libs.jsoup) // No utilizado
   // implementation("androidx.documentfile:documentfile:1.0.1") // No utilizado

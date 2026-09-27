@@ -152,7 +152,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = WildRiftRepository.CURRENT_PATCH_VERSION,
+                            text = tr(WildRiftRepository.CURRENT_PATCH_VERSION),
                             color = HextechGold,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold

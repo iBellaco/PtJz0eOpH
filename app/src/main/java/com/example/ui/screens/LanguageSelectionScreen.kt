@@ -13,26 +13,35 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechDarkBg
@@ -42,11 +51,17 @@ import com.example.ui.theme.HextechSurface
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.util.AppLogger
-import com.example.util.tr
+import com.example.util.MlKitDownloadStatus
+import com.example.util.MlKitTranslationManager
+import kotlinx.coroutines.launch
 
 @Composable
 fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
     var selectedLang by remember { mutableStateOf("es") }
+    var isDownloadingModel by remember { mutableStateOf(false) }
+    var downloadMessage by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    val downloadStatus by MlKitTranslationManager.downloadStatus.collectAsState()
 
     val screenTitle = if (selectedLang == "pt") "Escolha seu idioma" else "Elige tu idioma"
     val screenSubtitle = if (selectedLang == "pt") "Selecione o idioma do assistente tático" else "Selecciona el idioma del asistente táctico"
@@ -84,20 +99,24 @@ fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
 
         LanguageOption(
             title = "Español",
-            subtitle = "Español Oficial (Latinoamérica / España) • 100% Activo",
+            subtitle = "Español Oficial (Latinoamérica / España) • Motor Nativo",
             flagEmoji = "🇲🇽",
             isSelected = selectedLang == "es",
             isEnabled = true,
             onClick = { selectedLang = "es" }
         )
 
+        val isPtDownloaded = downloadStatus is MlKitDownloadStatus.Downloaded
         LanguageOption(
             title = "Português",
-            subtitle = "Português Oficial (Brasil / Portugal) • 100% Ativo",
+            subtitle = if (isPtDownloaded) "Português Oficial • Google ML Kit Instalado" else "Português Oficial • Download Google ML Kit",
             flagEmoji = "🇧🇷",
             isSelected = selectedLang == "pt",
             isEnabled = true,
-            onClick = { selectedLang = "pt" }
+            trailingBadge = if (isPtDownloaded) "ML Kit Pronto" else "ML Kit Neural",
+            onClick = {
+                selectedLang = "pt"
+            }
         )
 
         Spacer(modifier = Modifier.height(36.dp))
@@ -105,7 +124,23 @@ fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
         Button(
             onClick = {
                 AppLogger.d("LANG", "Selected Language: $selectedLang")
-                onLanguageSelected(selectedLang)
+                if (selectedLang == "pt") {
+                    if (MlKitTranslationManager.isPortugueseDownloaded()) {
+                        onLanguageSelected("pt")
+                    } else {
+                        isDownloadingModel = true
+                        downloadMessage = "Baixando pacote neural do Google ML Kit Translate..."
+                        scope.launch {
+                            val success = MlKitTranslationManager.downloadPortugueseModel { progress ->
+                                downloadMessage = progress
+                            }
+                            isDownloadingModel = false
+                            onLanguageSelected("pt")
+                        }
+                    }
+                } else {
+                    onLanguageSelected("es")
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -121,6 +156,58 @@ fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
             )
         }
     }
+
+    if (isDownloadingModel) {
+        Dialog(onDismissRequest = {}) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(HextechDarkBg)
+                    .border(1.5.dp, HextechGold, RoundedCornerShape(16.dp))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.CloudDownload,
+                        contentDescription = null,
+                        tint = HextechCyan,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Google ML Kit Translate",
+                        color = HextechGold,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = downloadMessage.ifBlank { "Baixando pacote de idioma Português..." },
+                        color = TextPrimary,
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = HextechCyan,
+                        trackColor = HextechSurface
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Tradução local no dispositivo para máxima velocidade",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -130,6 +217,7 @@ fun LanguageOption(
     flagEmoji: String,
     isSelected: Boolean,
     isEnabled: Boolean = true,
+    trailingBadge: String? = null,
     onClick: () -> Unit
 ) {
     val borderColor = when {
@@ -161,12 +249,32 @@ fun LanguageOption(
         )
         Spacer(modifier = Modifier.size(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                color = if (isEnabled) TextPrimary else TextMuted,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = title,
+                    color = if (isEnabled) TextPrimary else TextMuted,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                if (trailingBadge != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(HextechCyan.copy(alpha = 0.2f))
+                            .border(0.8.dp, HextechCyan.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = trailingBadge,
+                            color = HextechCyan,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,
                 color = if (isEnabled) HextechGoldLight else TextMuted.copy(alpha = 0.6f),
