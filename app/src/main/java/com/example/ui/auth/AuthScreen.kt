@@ -198,7 +198,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
-    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_vip", "streamer") || secondaryRole.isNotBlank()
+    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") || secondaryRole.isNotBlank()
     var showAvatarDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
@@ -876,7 +876,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            val isUserPremium = isPremium || userRole == "admin" || userRole == "moderador" || userRole == "streamer" || userRole == "creador" || userRole == "creador_vip" || userRole == "creador_lvl3" || userRole == "creador_lvl4" || userRole == "creador_lvl5" || AuthManager.isCurrentUserAdmin()
+            val isUserPremium = isPremium || userRole == "admin" || userRole == "moderador" || userRole == "streamer" || userRole == "creador" || userRole == "creador_lvl2" || userRole == "creador_lvl3" || userRole == "creador_lvl4" || userRole == "creador_lvl5" || AuthManager.isCurrentUserAdmin()
             if (isUserPremium) {
                 // Quick Theme Selector Strip: Instant 1-tap live theme transformation with horizontal scroll!
                 Column(
@@ -1131,7 +1131,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             // Botón Creador (Panel de Usuario)
             com.example.ui.components.HextechAnimatedButton(
                 onClick = {
-                    val hasCreatorRole = userRole in listOf("admin", "moderador", "streamer", "creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5") || AuthManager.isCurrentUserAdmin()
+                    val hasCreatorRole = userRole in listOf("admin", "moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") || AuthManager.isCurrentUserAdmin()
                     if (hasCreatorRole) {
                         showAdminCreatorDialog = true
                     } else {

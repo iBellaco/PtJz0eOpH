@@ -28,6 +28,7 @@ import com.example.data.WildRiftRepository
 import com.example.data.local.CustomChampionBuildRecord
 import com.example.data.local.CustomChampionBuildsManager
 import com.example.ui.theme.*
+import androidx.compose.ui.window.Dialog
 
 import android.content.Intent
 import android.net.Uri
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.WorkspacePremium
 import com.example.data.local.AppDatabase
 import com.example.data.local.entity.FavoriteBuildEntity
 import com.example.util.AuthManager
@@ -94,6 +96,8 @@ fun CustomBuildDetailDialog(
     }
 
     val canViewBuild = isSystemBuild || isOwnBuild || isAdmin || isSubscribedToCreator
+
+    var showSubscribeConfirm by remember { mutableStateOf(false) }
 
     androidx.activity.compose.BackHandler { onDismiss() }
 
@@ -275,14 +279,7 @@ fun CustomBuildDetailDialog(
 
                         Button(
                             onClick = {
-                                CreatorSubscriptionManager.subscribeWithBlueEssence(
-                                    creatorKey = if (record.creatorUserId.isNotBlank()) record.creatorUserId else record.creatorName,
-                                    creatorName = record.creatorName,
-                                    creatorUid = record.creatorUserId,
-                                    context = context
-                                ) { _, msg ->
-                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                }
+                                showSubscribeConfirm = true
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -367,7 +364,7 @@ fun CustomBuildDetailDialog(
                 // Botas Core (Nivel 2 + Mejora Nivel 3)
                 if (record.bootsT2Item != null || record.bootsT3Item != null) {
                     item {
-                        Text("Botas y Mejoras (Opcional)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Botas y Mejoras (Obligatorias)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.bootsT2Item?.let { boot ->
@@ -437,6 +434,88 @@ fun CustomBuildDetailDialog(
                                         }
                                         Column {
                                             Text("[Mejora N3] ${enchant.itemName}", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (enchant.description.isNotBlank()) Text(enchant.description, color = TextSecondary, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Botas Situacionales (Opcional)
+                if (record.situationalBootsT2Item != null || record.situationalBootsT3Item != null) {
+                    item {
+                        Text("Botas y Mejoras Situacionales (Opcional)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            record.situationalBootsT2Item?.let { boot ->
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        val iconUrl = com.example.data.WildRiftItemsData.getItemIconByName(boot.itemName)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(HextechSurfaceVariant)
+                                                .border(1.dp, HextechCyan, RoundedCornerShape(6.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AppAssetImage(
+                                                url = iconUrl,
+                                                contentDescription = boot.itemName,
+                                                fallbackText = boot.itemName,
+                                                modifier = Modifier.size(28.dp),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text("[Bota N2 Situacional] ${boot.itemName}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (boot.description.isNotBlank()) Text(boot.description, color = TextSecondary, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                            }
+                            record.situationalBootsT3Item?.let { enchant ->
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        val iconUrl = com.example.data.WildRiftItemsData.getItemIconByName(enchant.itemName)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(HextechSurfaceVariant)
+                                                .border(1.dp, HextechCyan, RoundedCornerShape(6.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AppAssetImage(
+                                                url = iconUrl,
+                                                contentDescription = enchant.itemName,
+                                                fallbackText = enchant.itemName,
+                                                modifier = Modifier.size(28.dp),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text("[Mejora N3 Situacional] ${enchant.itemName}", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                             if (enchant.description.isNotBlank()) Text(enchant.description, color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
@@ -588,6 +667,51 @@ fun CustomBuildDetailDialog(
                     }
                 }
 
+                // Situational Spells
+                if (record.situationalSpells.isNotEmpty()) {
+                    item {
+                        Text("Hechizos Situacionales (Opcional)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            record.situationalSpells.forEach { spell ->
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                                    border = BorderStroke(1.dp, HextechCardBorder),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(HextechSurfaceVariant)
+                                                .border(1.dp, HextechCyan, CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AppAssetImage(
+                                                url = spell.iconUrl,
+                                                contentDescription = spell.spellName,
+                                                fallbackText = spell.spellName,
+                                                modifier = Modifier.size(26.dp),
+                                                shape = CircleShape
+                                            )
+                                        }
+                                        Column {
+                                            Text(spell.spellName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Text(spell.description, color = TextSecondary, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Video de Introducción / Gameplay
                 if (!record.gameplayVideoUri.isNullOrBlank()) {
                     item {
@@ -684,6 +808,74 @@ fun CustomBuildDetailDialog(
                     }
                 }
             }
+            }
+        }
+    }
+
+    if (showSubscribeConfirm) {
+        Dialog(onDismissRequest = { showSubscribeConfirm = false }) {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                border = BorderStroke(1.dp, HextechGold),
+                modifier = Modifier.fillMaxWidth(0.95f)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        Icons.Default.WorkspacePremium,
+                        contentDescription = null,
+                        tint = HextechGold,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Text(
+                        text = "Advertencia de Suscripción",
+                        color = HextechGold,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Text(
+                        text = "Al suscribirte al perfil oficial de ${record.creatorName}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EA_COST} Esencias Azules (EA) de tu cuenta de forma definitiva. Un porcentaje de estas esencias será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { showSubscribeConfirm = false },
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechDarkBg),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Cancelar", fontSize = 11.5.sp)
+                        }
+                        Button(
+                            onClick = {
+                                showSubscribeConfirm = false
+                                CreatorSubscriptionManager.subscribeWithBlueEssence(
+                                    creatorKey = if (record.creatorUserId.isNotBlank()) record.creatorUserId else record.creatorName,
+                                    creatorName = record.creatorName,
+                                    creatorUid = record.creatorUserId,
+                                    context = context
+                                ) { success, msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Confirmar", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = HextechDarkBg)
+                        }
+                    }
+                }
             }
         }
     }

@@ -26,8 +26,8 @@ enum class AppUserRole(
         secondaryColor = Color(0xFF059669),
         description = "Moderación de OCR, reportes y soporte comunitario"
     ),
-    CREATOR_VIP(
-        id = "creador_vip",
+    CREATOR_LVL2(
+        id = "creador_lvl2",
         displayName = "Creador Lvl 2",
         emoji = "",
         primaryColor = Color(0xFFA855F7),
@@ -161,7 +161,7 @@ enum class AppUserRole(
             return values().firstOrNull { it.id == normalized } ?: when (normalized) {
                 "admin", "administrator" -> ADMIN
                 "mod", "moderador", "moderator" -> MODERATOR
-                "vip", "creador_vip", "creator_vip" -> CREATOR_VIP
+                "vip", "creador_vip", "creator_vip", "creador_lvl2", "creator_lvl2" -> CREATOR_LVL2
                 "creador_lvl3" -> CREATOR_LVL3
                 "creador_lvl4" -> CREATOR_LVL4
                 "creador_lvl5" -> CREATOR_LVL5
@@ -193,7 +193,7 @@ enum class AppUserRole(
             ASPIRANTE,
             SOBERANO,
             MODERATOR,
-            CREATOR_VIP,
+            CREATOR_LVL2,
             CREATOR_LVL3,
             CREATOR_LVL4,
             CREATOR_LVL5,

@@ -2082,7 +2082,7 @@ fun EnhancedUserManagementPanel(
     val modUsers = users.count { (it["role"] as? String) == "moderador" }
     val sponsorUsers = users.count { (it["role"] as? String) == "patrocinador" }
     val streamerUsers = users.count { (it["role"] as? String) == "streamer" }
-    val creatorUsers = users.count { (it["role"] as? String) in listOf("creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5") }
+    val creatorUsers = users.count { (it["role"] as? String) in listOf("creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") }
     val freeUsers = users.count { u ->
         val role = u["role"] as? String ?: "free"
         val until = (u["premiumUntil"] as? Number)?.toLong()
@@ -2111,13 +2111,13 @@ fun EnhancedUserManagementPanel(
             val matchesTab = when (selectedFilter) {
                 UserFilterTab.ALL -> true
                 UserFilterTab.PREMIUM -> isPrem
-                UserFilterTab.FREE -> role == "free" || (!isPrem && role != "admin" && role != "moderador" && role != "patrocinador" && role != "streamer" && role !in listOf("creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5"))
+                UserFilterTab.FREE -> role == "free" || (!isPrem && role != "admin" && role != "moderador" && role != "patrocinador" && role != "streamer" && role !in listOf("creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5"))
                 UserFilterTab.ONLINE -> isOnline
                 UserFilterTab.ADMINS -> role == "admin"
                 UserFilterTab.MODS -> role == "moderador"
                 UserFilterTab.SPONSORS -> role == "patrocinador"
                 UserFilterTab.STREAMERS -> role == "streamer"
-                UserFilterTab.CREATORS -> role in listOf("creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5")
+                UserFilterTab.CREATORS -> role in listOf("creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5")
                 UserFilterTab.BANNED -> isBanned
             }
 
@@ -2581,7 +2581,7 @@ fun EnhancedUserAdminCard(
 
     val isPremiumActive = when {
         role == "admin" || role == "moderador" -> true
-        role in listOf("premium", "creador_vip", "streamer") -> premiumUntil == null || premiumUntil == 0L || premiumUntil > now
+        role in listOf("premium", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") -> premiumUntil == null || premiumUntil == 0L || premiumUntil > now
         else -> false
     }
 
@@ -2589,7 +2589,7 @@ fun EnhancedUserAdminCard(
         role == "admin" -> HextechGold.copy(alpha = 0.6f)
         isBanned -> DangerRed.copy(alpha = 0.5f)
         role == "moderador" -> Color(0xFF10B981).copy(alpha = 0.5f)
-        role == "creador_vip" -> Color(0xFFA855F7).copy(alpha = 0.5f)
+        role in listOf("creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") -> Color(0xFFA855F7).copy(alpha = 0.5f)
         role == "streamer" -> Color(0xFFEC4899).copy(alpha = 0.5f)
         isPremiumActive -> HextechCyan.copy(alpha = 0.4f)
         else -> HextechCardBorder
@@ -3022,7 +3022,7 @@ fun UserDetailManagementDialog(
 
     val isPremiumActive = when {
         currentRole == "admin" || currentRole == "moderador" -> true
-        currentRole in listOf("premium", "creador_vip", "streamer") -> currentPremiumUntil == null || currentPremiumUntil == 0L || currentPremiumUntil!! > System.currentTimeMillis()
+        currentRole in listOf("premium", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") -> currentPremiumUntil == null || currentPremiumUntil == 0L || currentPremiumUntil!! > System.currentTimeMillis()
         else -> false
     }
 
@@ -3459,7 +3459,7 @@ fun UserDetailManagementDialog(
                                         AppUserRole.PREMIUM,
                                         AppUserRole.MODERATOR,
                                         AppUserRole.CREATOR,
-                                        AppUserRole.CREATOR_VIP,
+                                        AppUserRole.CREATOR_LVL2,
                                         AppUserRole.CREATOR_LVL3,
                                         AppUserRole.CREATOR_LVL4,
                                         AppUserRole.CREATOR_LVL5,
@@ -4273,7 +4273,7 @@ fun UserDetailManagementDialog(
                             Spacer(modifier = Modifier.height(6.dp))
                             RoleBadge(
                                 role = target.id,
-                                isPremiumActive = target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.CREATOR_VIP, AppUserRole.STREAMER, AppUserRole.CREATOR),
+                                isPremiumActive = target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.CREATOR_LVL2, AppUserRole.CREATOR_LVL3, AppUserRole.CREATOR_LVL4, AppUserRole.CREATOR_LVL5, AppUserRole.STREAMER, AppUserRole.CREATOR),
                                 isBanned = (target == AppUserRole.BANNED),
                                 size = RoleBadgeSize.LARGE
                             )
@@ -4295,7 +4295,7 @@ fun UserDetailManagementDialog(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
-                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.PATROCINADOR, AppUserRole.CREATOR_VIP, AppUserRole.STREAMER)) {
+                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.PATROCINADOR, AppUserRole.CREATOR, AppUserRole.CREATOR_LVL2, AppUserRole.CREATOR_LVL3, AppUserRole.CREATOR_LVL4, AppUserRole.CREATOR_LVL5, AppUserRole.STREAMER)) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = "✨ Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech.",
@@ -4314,13 +4314,13 @@ fun UserDetailManagementDialog(
                             roleToConfirm = null
                             currentRole = newRole
                             currentBanned = isBanned
-                            if (newRole in listOf("premium", "moderador", "patrocinador", "creador", "creador_vip", "streamer")) {
+                            if (newRole in listOf("premium", "moderador", "patrocinador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")) {
                                 currentPremiumUntil = 0L
                             }
                             onUserUpdated(user.toMutableMap().apply {
                                 put("role", newRole)
                                 put("banned", isBanned)
-                                if (newRole in listOf("premium", "moderador", "patrocinador", "creador", "creador_vip", "streamer")) {
+                                if (newRole in listOf("premium", "moderador", "patrocinador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")) {
                                     put("premiumUntil", 0L)
                                 }
                             })
@@ -5288,13 +5288,13 @@ private fun updateUserRoleInCloud(
     }
 
     // Si el rol es de acceso premium / vitalicio por defecto
-    if (targetRoleId in listOf("premium", "moderador", "patrocinador", "creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")) {
+    if (targetRoleId in listOf("premium", "moderador", "patrocinador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")) {
         updatePayload["premiumUntil"] = 0L
         updatePayload["subscriptionPlan"] = when (targetRoleId) {
             "moderador" -> "Moderador (Vitalicio)"
             "patrocinador" -> "Patrocinador (Vitalicio)"
             "creador" -> "Creador Lvl 1 (Vitalicio)"
-            "creador_vip" -> "Creador Lvl 2 (Vitalicio)"
+            "creador_lvl2" -> "Creador Lvl 2 (Vitalicio)"
             "creador_lvl3" -> "Creador Lvl 3 (Vitalicio)"
             "creador_lvl4" -> "Creador Lvl 4 (Vitalicio)"
             "creador_lvl5" -> "Creador Lvl 5 (Vitalicio)"

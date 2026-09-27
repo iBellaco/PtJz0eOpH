@@ -602,7 +602,7 @@ fun AvatarSelectionBottomSheet(
                     val mainRoleFrame = when (userRole.lowercase().trim()) {
                         "admin" -> "ADMIN"
                         "moderador" -> "MODERADOR"
-                        "creador", "creador_vip" -> "CREADOR"
+                        "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5" -> "CREADOR"
                         "streamer" -> "STREAMER"
                         else -> null
                     }

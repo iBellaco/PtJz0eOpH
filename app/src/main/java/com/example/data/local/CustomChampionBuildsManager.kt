@@ -57,6 +57,8 @@ data class CustomChampionBuildRecord(
     val situationalSpells: List<SpellBuildEntry> = emptyList(),
     val bootsT2Item: ItemBuildEntry? = null,
     val bootsT3Item: ItemBuildEntry? = null,
+    val situationalBootsT2Item: ItemBuildEntry? = null,
+    val situationalBootsT3Item: ItemBuildEntry? = null,
     val comboVideoUri: String? = null,
     val gameplayVideoUri: String? = null,
     val creatorName: String = "Creador Oficial",

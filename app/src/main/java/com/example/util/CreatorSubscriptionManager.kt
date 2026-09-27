@@ -31,7 +31,7 @@ object CreatorSubscriptionManager {
         val norm = role?.trim()?.lowercase() ?: ""
         return when (norm) {
             "creador" -> CreatorLimits(1, 50, "Creador Lvl 1")
-            "creador_vip", "creador_lvl2" -> CreatorLimits(3, 150, "Creador Lvl 2")
+            "creador_lvl2" -> CreatorLimits(3, 150, "Creador Lvl 2")
             "creador_lvl3" -> CreatorLimits(5, 250, "Creador Lvl 3")
             "creador_lvl4" -> CreatorLimits(7, 350, "Creador Lvl 4")
             "creador_lvl5" -> CreatorLimits(10, 500, "Creador Lvl 5")
@@ -73,13 +73,23 @@ object CreatorSubscriptionManager {
     val subscribedCreatorKeys: StateFlow<Set<String>> = _subscribedCreatorKeys.asStateFlow()
 
     private var firestoreListener: ListenerRegistration? = null
+    private var authStateListener: com.google.firebase.auth.FirebaseAuth.AuthStateListener? = null
     private var initialized = false
 
     fun init(context: Context) {
         if (initialized) return
         initialized = true
         loadFromLocalStorage(context)
-        attachCloudListener(context)
+        try {
+            val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+            authStateListener = com.google.firebase.auth.FirebaseAuth.AuthStateListener { firebaseAuth ->
+                attachCloudListener(context)
+            }
+            auth.addAuthStateListener(authStateListener!!)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding auth state listener: ${e.message}")
+            attachCloudListener(context)
+        }
     }
 
     private fun loadFromLocalStorage(context: Context) {
@@ -94,8 +104,13 @@ object CreatorSubscriptionManager {
     }
 
     private fun attachCloudListener(context: Context) {
-        val user = FirebaseAuth.getInstance().currentUser ?: return
-        if (user.isAnonymous) return
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null || user.isAnonymous) {
+            firestoreListener?.remove()
+            firestoreListener = null
+            _subscribedCreatorKeys.value = emptySet()
+            return
+        }
 
         try {
             firestoreListener?.remove()
@@ -152,6 +167,27 @@ object CreatorSubscriptionManager {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                var creatorRole = "creador"
+                if (creatorUid.isNotBlank()) {
+                    val db = FirebaseFirestore.getInstance()
+                    val doc = db.collection("users").document(creatorUid).get().await()
+                    if (doc.exists()) {
+                        creatorRole = doc.getString("role") ?: "creador"
+                    }
+                }
+
+                val percentage = when (creatorRole.trim().lowercase()) {
+                    "creador" -> 0.50
+                    "creador_lvl2" -> 0.60
+                    "creador_lvl3" -> 0.70
+                    "creador_lvl4" -> 0.80
+                    "creador_lvl5" -> 0.80
+                    "moderador" -> 0.80
+                    "streamer" -> 0.80
+                    else -> 0.50
+                }
+                val eaRewarded = (SUBSCRIPTION_EA_COST * percentage).toLong()
+
                 SubscriptionManager.addBlueEssence(-SUBSCRIPTION_EA_COST)
                 val user = FirebaseAuth.getInstance().currentUser
                 if (user != null && !user.isAnonymous) {
@@ -162,6 +198,34 @@ object CreatorSubscriptionManager {
                             SetOptions.merge()
                         ).await()
                 }
+
+                // Reward creator and notify
+                if (creatorUid.isNotBlank()) {
+                    val db = FirebaseFirestore.getInstance()
+                    db.collection("users").document(creatorUid)
+                        .update("blueEssence", FieldValue.increment(eaRewarded))
+                        .await()
+
+                    // Send notification to creator
+                    val subscriberName = SubscriptionManager.userName.value.ifBlank { "Un invocador" }
+                    val messageId = java.util.UUID.randomUUID().toString()
+                    val messageData = hashMapOf<String, Any>(
+                        "id" to messageId,
+                        "title" to "¡Nueva Suscripción Recibida!",
+                        "content" to "¡Felicidades! El invocador $subscriberName se ha suscrito a tu perfil. De acuerdo con tu nivel de creador ($creatorRole), has recibido un pago de $eaRewarded Esencias Azules (el ${ (percentage * 100).toInt() }% de la suscripción). ¡Sigue publicando builds grandiosas!",
+                        "tag" to "GENERAL",
+                        "timestamp" to System.currentTimeMillis(),
+                        "isRead" to false
+                    )
+                    val creatorDocRef = db.collection("users").document(creatorUid)
+                    creatorDocRef.collection("messages").document(messageId).set(messageData).await()
+                    creatorDocRef.update(
+                        "hasUnreadMessages", true,
+                        "unreadMessagesCount", FieldValue.increment(1),
+                        "privateMessages", FieldValue.arrayUnion(messageData)
+                    ).await()
+                }
+
                 CoroutineScope(Dispatchers.Main).launch {
                     onResult(true, "¡Te has suscrito con éxito a $creatorName!")
                 }

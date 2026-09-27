@@ -346,6 +346,7 @@ class MainActivity : ComponentActivity() {    private val requestPermissionLaunc
         }
         askNotificationPermission()
         com.example.data.GlobalAnnouncementManager.init(this)
+        com.example.util.CreatorSubscriptionManager.init(this)
         if (intent.getBooleanExtra("extra_open_global_announcement", false)) {
             com.example.data.GlobalAnnouncementManager.showAnnouncementModal()
             intent.removeExtra("extra_open_global_announcement")
@@ -375,6 +376,7 @@ class MainActivity : ComponentActivity() {    private val requestPermissionLaunc
         super.onResume()
         com.example.util.SubscriptionManager.init(this)
         com.example.data.GlobalAnnouncementManager.init(this)
+        com.example.util.CreatorSubscriptionManager.init(this)
         if (intent.getBooleanExtra("extra_open_global_announcement", false)) {
             com.example.data.GlobalAnnouncementManager.showAnnouncementModal()
             intent.removeExtra("extra_open_global_announcement")

@@ -25,7 +25,10 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -176,7 +179,7 @@ fun AdminCreatorBuildsDialog(
         for (u in registeredUsers) {
             val uRole = u["role"] as? String ?: "free"
             val uName = (u["name"] as? String ?: "").trim()
-            if (uName.isNotBlank() && (uRole == "creador_vip" || uRole == "creador_lvl3" || uRole == "creador_lvl4" || uRole == "creador_lvl5" || uRole == "creador" || uRole == "streamer" || uRole == "admin")) {
+            if (uName.isNotBlank() && (uRole == "creador_lvl2" || uRole == "creador_lvl3" || uRole == "creador_lvl4" || uRole == "creador_lvl5" || uRole == "creador" || uRole == "streamer" || uRole == "admin")) {
                 val alreadyAdded = rankingList.any { it.name.equals(uName, ignoreCase = true) }
                 if (!alreadyAdded) {
                     val userId = u["uid"] as? String ?: ""
@@ -198,7 +201,7 @@ fun AdminCreatorBuildsDialog(
                             buildsCount = 0,
                             totalVotes = 0,
                             averageRating = 5.0,
-                            score = (if (uRole == "creador_vip") 50.0 else if (uRole == "admin") 40.0 else 30.0) + (realSubs * 12.0),
+                            score = (if (uRole == "creador_lvl2") 50.0 else if (uRole == "admin") 40.0 else 30.0) + (realSubs * 12.0),
                             subscribersCount = realSubs
                         )
                     )
@@ -225,7 +228,7 @@ fun AdminCreatorBuildsDialog(
                 avatarId = "avatar_kaisa",
                 rankBorder = "GRANDMASTER",
                 isAdmin = false,
-                role = "creador_vip",
+                role = "creador_lvl2",
                 buildsCount = 4,
                 totalVotes = 52,
                 averageRating = 4.9,
@@ -266,7 +269,7 @@ fun AdminCreatorBuildsDialog(
     val officialCreatorsList = remember(registeredUsers, customBuilds) {
         registeredUsers.filter { u ->
             val uRole = u["role"] as? String ?: ""
-            uRole in listOf("creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")
+            uRole in listOf("creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")
         }.map { u ->
             val uName = (u["name"] as? String ?: "Anónimo").trim()
             val userId = u["uid"] as? String ?: ""
@@ -412,6 +415,15 @@ fun AdminCreatorBuildsDialog(
 
             // Podio de Creadores (1er, 2do y 3er Lugar con Avatar, Nombre y Marco)
             if (podiumCreators.size >= 3) {
+                // Título dinámico para podio (por popularidad)
+                Text(
+                    text = "🏆 PODIO POR POPULARIDAD",
+                    color = HextechGold,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 11.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
                 CreatorPodiumCard(
                     first = podiumCreators[0],
                     second = podiumCreators[1],
@@ -423,30 +435,46 @@ fun AdminCreatorBuildsDialog(
                 )
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
             if (officialCreatorsList.isNotEmpty()) {
-                Text(
-                    text = "👥 " + com.example.util.tr("Lista de Creadores Oficiales (Niveles 1 al 5 y Streamers)"),
-                    color = HextechGold,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 1.dp)
-                )
+                var isExpanded by remember { mutableStateOf(true) }
                 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded },
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    items(officialCreatorsList) { creator ->
-                        Surface(
-                            onClick = {
-                                selectedCreatorForProfile = creator
-                            },
-                            color = HextechSurface.copy(alpha = 0.5f),
-                            border = BorderStroke(1.dp, HextechCardBorder),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.width(105.dp)
-                        ) {
-                            Column(
+                    Text(
+                        text = "👥 " + com.example.util.tr("Lista de Creadores Oficiales"),
+                        color = HextechGold,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        modifier = Modifier.padding(vertical = 4.dp).weight(1f)
+                    )
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = HextechGold,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                
+                if (isExpanded) {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(officialCreatorsList) { creator ->
+                            Surface(
+                                onClick = {
+                                    selectedCreatorForProfile = creator
+                                },
+                                color = HextechSurface.copy(alpha = 0.5f),
+                                border = BorderStroke(1.dp, HextechCardBorder),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.width(105.dp)
+                            ) {
+                                Column(
                                 modifier = Modifier.padding(6.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(3.dp)
@@ -469,7 +497,7 @@ fun AdminCreatorBuildsDialog(
                                 
                                 val displayLabel = when (creator.role) {
                                     "creador" -> "Creador Lvl 1"
-                                    "creador_vip" -> "Creador Lvl 2"
+                                    "creador_lvl2" -> "Creador Lvl 2"
                                     "creador_lvl3" -> "Creador Lvl 3"
                                     "creador_lvl4" -> "Creador Lvl 4"
                                     "creador_lvl5" -> "Creador Lvl 5"
@@ -844,12 +872,142 @@ fun CreatorPodiumCard(
     }
 }
 
-/**
- * Columna individual de cada posición en el podio.
- * Muestra insignia, Avatar + Marco con UserAvatarView, Nombre de Usuario, Stats y Pedestal metálico.
- */
 @Composable
-private fun PodiumColumn(
+fun CreatorPodiumCard(
+    first: CreatorPodiumEntry,
+    second: CreatorPodiumEntry,
+    third: CreatorPodiumEntry,
+    selectedCreator: String?,
+    onSelectCreator: (CreatorPodiumEntry) -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = HextechDarkBg,
+        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Encabezado del podio
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = "Podio de Creadores",
+                        tint = HextechGold,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "PODIO DE CREADORES",
+                        color = HextechGold,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 12.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = HextechGold.copy(alpha = 0.15f),
+                    border = BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.4f))
+                ) {
+                    Text(
+                        text = "TOP 3 OFICIAL",
+                        color = HextechGold,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Estructura del Podio (2do Lugar, 1er Lugar, 3er Lugar)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                // 🥈 2DO LUGAR (Izquierda)
+                PodiumColumn(
+                    entry = second,
+                    rank = 2,
+                    rankBadgeText = "🥈 2° Lugar",
+                    badgeColor = Color(0xFF94A3B8),
+                    badgeBgColor = Color(0xFF64748B).copy(alpha = 0.25f),
+                    avatarSize = 52.dp,
+                    pedestalHeight = 60.dp,
+                    pedestalBrush = Brush.verticalGradient(
+                        listOf(Color(0xFF475569), Color(0xFF1E293B))
+                    ),
+                    pedestalBorderColor = Color(0xFF94A3B8),
+                    numeralColor = Color(0xFFCBD5E1),
+                    isSelected = selectedCreator.equals(second.name, ignoreCase = true),
+                    onClick = { onSelectCreator(second) },
+                    modifier = Modifier.weight(1f)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // 👑 1ER LUGAR (Centro - Elevado y Destacado)
+                PodiumColumn(
+                    entry = first,
+                    rank = 1,
+                    rankBadgeText = "👑 1° Lugar",
+                    badgeColor = HextechGold,
+                    badgeBgColor = HextechGold.copy(alpha = 0.25f),
+                    avatarSize = 64.dp,
+                    pedestalHeight = 82.dp,
+                    pedestalBrush = Brush.verticalGradient(
+                        listOf(HextechGold.copy(alpha = 0.5f), Color(0xFF854D0E), HextechDarkBg)
+                    ),
+                    pedestalBorderColor = HextechGold,
+                    numeralColor = HextechGold,
+                    isSelected = selectedCreator.equals(first.name, ignoreCase = true),
+                    onClick = { onSelectCreator(first) },
+                    modifier = Modifier.weight(1.15f)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // 🥉 3ER LUGAR (Derecha)
+                PodiumColumn(
+                    entry = third,
+                    rank = 3,
+                    rankBadgeText = "🥉 3° Lugar",
+                    badgeColor = Color(0xFFFDBA74),
+                    badgeBgColor = Color(0xFF9A3412).copy(alpha = 0.25f),
+                    avatarSize = 48.dp,
+                    pedestalHeight = 46.dp,
+                    pedestalBrush = Brush.verticalGradient(
+                        listOf(Color(0xFF78350F), Color(0xFF451A03))
+                    ),
+                    pedestalBorderColor = Color(0xFFB45309),
+                    numeralColor = Color(0xFFFDBA74),
+                    isSelected = selectedCreator.equals(third.name, ignoreCase = true),
+                    onClick = { onSelectCreator(third) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PodiumColumn(
     entry: CreatorPodiumEntry,
     rank: Int,
     rankBadgeText: String,
@@ -979,6 +1137,7 @@ fun CreatorProfileDialog(
 
     var showUnsubscribeConfirm1 by remember { mutableStateOf(false) }
     var showUnsubscribeConfirm2 by remember { mutableStateOf(false) }
+    var showSubscribeConfirm by remember { mutableStateOf(false) }
 
     val creatorBuilds = remember(customBuilds, entry.name) {
         customBuilds.filter { it.creatorName.equals(entry.name, ignoreCase = true) }
@@ -1011,8 +1170,23 @@ fun CreatorProfileDialog(
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp
                     )
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = {
+                            val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(android.content.Intent.EXTRA_SUBJECT, "Perfil de Creador WR: ${entry.name}")
+                                putExtra(
+                                    android.content.Intent.EXTRA_TEXT,
+                                    "¡Mira el perfil oficial de ${entry.name} en el Coach de Wild Rift! Rango: ${entry.rankBorder}, builds publicadas: ${creatorBuilds.size}."
+                                )
+                            }
+                            context.startActivity(android.content.Intent.createChooser(shareIntent, "Compartir Perfil de Creador"))
+                        }) {
+                            Icon(Icons.Default.Share, contentDescription = "Compartir Perfil", tint = HextechGold)
+                        }
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                        }
                     }
                 }
 
@@ -1073,14 +1247,7 @@ fun CreatorProfileDialog(
                                     Toast.LENGTH_LONG
                                 ).show()
                             } else {
-                                CreatorSubscriptionManager.subscribeWithBlueEssence(
-                                    creatorKey = creatorKey,
-                                    creatorName = entry.name,
-                                    creatorUid = entry.userId,
-                                    context = context
-                                ) { success, msg ->
-                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                }
+                                showSubscribeConfirm = true
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
@@ -1256,6 +1423,74 @@ fun CreatorProfileDialog(
                                         modifier = Modifier.weight(1f)
                                     ) {
                                         Text("Confirmar Baja", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (showSubscribeConfirm) {
+                    Dialog(onDismissRequest = { showSubscribeConfirm = false }) {
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                            border = BorderStroke(1.dp, HextechGold),
+                            modifier = Modifier.fillMaxWidth(0.95f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    Icons.Default.WorkspacePremium,
+                                    contentDescription = null,
+                                    tint = HextechGold,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Text(
+                                    text = "Advertencia de Suscripción",
+                                    color = HextechGold,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                                Text(
+                                    text = "Al suscribirte al perfil oficial de ${entry.name}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EA_COST} Esencias Azules (EA) de tu cuenta de forma definitiva. Un porcentaje de estas esencias será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?",
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = { showSubscribeConfirm = false },
+                                        colors = ButtonDefaults.buttonColors(containerColor = HextechDarkBg),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Cancelar", fontSize = 11.5.sp)
+                                    }
+                                    Button(
+                                        onClick = {
+                                            showSubscribeConfirm = false
+                                            CreatorSubscriptionManager.subscribeWithBlueEssence(
+                                                creatorKey = creatorKey,
+                                                creatorName = entry.name,
+                                                creatorUid = entry.userId,
+                                                context = context
+                                            ) { success, msg ->
+                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Confirmar", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = HextechDarkBg)
                                     }
                                 }
                             }

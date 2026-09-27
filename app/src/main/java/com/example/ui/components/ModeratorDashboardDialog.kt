@@ -266,7 +266,7 @@ private fun isUserVerified(user: Map<String, Any>): Boolean {
     val isVerifiedStr = (user["isVerified"] as? String)?.equals("true", ignoreCase = true) == true ||
                         (user["verified"] as? String)?.equals("true", ignoreCase = true) == true ||
                         (user["officialVerified"] as? String)?.equals("true", ignoreCase = true) == true
-    val isStaffOrSpecial = role in listOf("admin", "moderador", "creador", "creador_vip", "streamer")
+    val isStaffOrSpecial = role in listOf("admin", "moderador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")
     val isAdminMail = email in listOf("barbadiego695@gmail.com", "barbachavezdiego@gmail.com")
     return isVerifiedBool || isVerifiedStr || isStaffOrSpecial || isAdminMail
 }

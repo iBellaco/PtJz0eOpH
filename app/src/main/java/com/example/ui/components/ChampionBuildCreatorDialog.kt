@@ -133,6 +133,26 @@ fun ChampionBuildCreatorDialog(
             }
         }
     }
+    var bootsT2 by remember {
+        mutableStateOf<EditableItemEntry?>(
+            existingRecord?.bootsT2Item?.let { EditableItemEntry(it.itemName, com.example.data.WildRiftItemsData.getItemIconByName(it.itemName), it.description) }
+        )
+    }
+    var bootsT3 by remember {
+        mutableStateOf<EditableItemEntry?>(
+            existingRecord?.bootsT3Item?.let { EditableItemEntry(it.itemName, com.example.data.WildRiftItemsData.getItemIconByName(it.itemName), it.description) }
+        )
+    }
+    var situationalBootsT2 by remember {
+        mutableStateOf<EditableItemEntry?>(
+            existingRecord?.situationalBootsT2Item?.let { EditableItemEntry(it.itemName, com.example.data.WildRiftItemsData.getItemIconByName(it.itemName), it.description) }
+        )
+    }
+    var situationalBootsT3 by remember {
+        mutableStateOf<EditableItemEntry?>(
+            existingRecord?.situationalBootsT3Item?.let { EditableItemEntry(it.itemName, com.example.data.WildRiftItemsData.getItemIconByName(it.itemName), it.description) }
+        )
+    }
     var coreKeystone by remember { 
         mutableStateOf<EditableRuneEntry?>(
             existingRecord?.coreRunes?.firstOrNull()?.let { EditableRuneEntry(it.runeName, it.iconUrl, it.description) }
@@ -216,6 +236,10 @@ fun ChampionBuildCreatorDialog(
     var showChampionPicker by remember { mutableStateOf(false) }
     var showItemPickerForCore by remember { mutableStateOf(false) }
     var showItemPickerForSituational by remember { mutableStateOf(false) }
+    var showItemPickerForBootsT2 by remember { mutableStateOf(false) }
+    var showItemPickerForBootsT3 by remember { mutableStateOf(false) }
+    var showItemPickerForSituationalBootsT2 by remember { mutableStateOf(false) }
+    var showItemPickerForSituationalBootsT3 by remember { mutableStateOf(false) }
     var showRunePickerForKeystone by remember { mutableStateOf(false) }
     var showRunePickerForSecondary by remember { mutableStateOf(false) }
     var showRunePickerForSituational by remember { mutableStateOf(false) }
@@ -508,6 +532,242 @@ fun ChampionBuildCreatorDialog(
                             Text("Ningún objeto situacional añadido.", color = TextSecondary, fontSize = 11.sp)
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 5. Botas y Mejoras (Obligatorias)
+                    Text(
+                        text = "5. Botas y Mejoras (Obligatorias) *Desc. Obligatoria",
+                        color = HextechCyan,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Botas Nivel 2 Obligatoria
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                            border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        if (bootsT2 != null) {
+                                            AppAssetImage(
+                                                url = bootsT2!!.iconUrl,
+                                                contentDescription = bootsT2!!.name,
+                                                fallbackText = bootsT2!!.name.take(2),
+                                                modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
+                                            )
+                                            Text("Botas Nivel 2: ${bootsT2!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        } else {
+                                            Text("Botas Nivel 2 *Requerido", color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                                        }
+                                    }
+                                    if (bootsT2 != null) {
+                                        IconButton(onClick = { bootsT2 = null }, modifier = Modifier.size(24.dp)) {
+                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                        }
+                                    } else {
+                                        TextButton(onClick = { showItemPickerForBootsT2 = true }) {
+                                            Text("+ Seleccionar", color = HextechGold, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                                if (bootsT2 != null) {
+                                    OutlinedTextField(
+                                        value = bootsT2!!.description,
+                                        onValueChange = { bootsT2!!.description = it },
+                                        placeholder = { Text("Descripción obligatoria de las botas nivel 2...", color = TextSecondary) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = HextechGold,
+                                            unfocusedBorderColor = HextechSurfaceVariant,
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        // Botas Nivel 3 Obligatoria
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                            border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        if (bootsT3 != null) {
+                                            AppAssetImage(
+                                                url = bootsT3!!.iconUrl,
+                                                contentDescription = bootsT3!!.name,
+                                                fallbackText = bootsT3!!.name.take(2),
+                                                modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
+                                            )
+                                            Text("Mejora Nivel 3: ${bootsT3!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        } else {
+                                            Text("Mejora Nivel 3 *Requerido", color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                                        }
+                                    }
+                                    if (bootsT3 != null) {
+                                        IconButton(onClick = { bootsT3 = null }, modifier = Modifier.size(24.dp)) {
+                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                        }
+                                    } else {
+                                        TextButton(onClick = { showItemPickerForBootsT3 = true }) {
+                                            Text("+ Seleccionar", color = HextechGold, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                                if (bootsT3 != null) {
+                                    OutlinedTextField(
+                                        value = bootsT3!!.description,
+                                        onValueChange = { bootsT3!!.description = it },
+                                        placeholder = { Text("Descripción obligatoria de la mejora nivel 3...", color = TextSecondary) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = HextechGold,
+                                            unfocusedBorderColor = HextechSurfaceVariant,
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 5b. Botas y Mejoras Situacionales (Opcional)
+                    Text(
+                        text = "5b. Botas y Mejoras Situacionales (Opcional)",
+                        color = HextechCyan,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Botas Nivel 2 Situacional
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                            border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        if (situationalBootsT2 != null) {
+                                            AppAssetImage(
+                                                url = situationalBootsT2!!.iconUrl,
+                                                contentDescription = situationalBootsT2!!.name,
+                                                fallbackText = situationalBootsT2!!.name.take(2),
+                                                modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
+                                            )
+                                            Text("Bota Nivel 2 Situacional: ${situationalBootsT2!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        } else {
+                                            Text("Añadir Bota Nivel 2 Situacional", color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                                        }
+                                    }
+                                    if (situationalBootsT2 != null) {
+                                        IconButton(onClick = { situationalBootsT2 = null }, modifier = Modifier.size(24.dp)) {
+                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                        }
+                                    } else {
+                                        TextButton(onClick = { showItemPickerForSituationalBootsT2 = true }) {
+                                            Text("+ Seleccionar", color = HextechGold, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                                if (situationalBootsT2 != null) {
+                                    OutlinedTextField(
+                                        value = situationalBootsT2!!.description,
+                                        onValueChange = { situationalBootsT2!!.description = it },
+                                        placeholder = { Text("Descripción de la bota nivel 2 situacional...", color = TextSecondary) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = HextechGold,
+                                            unfocusedBorderColor = HextechSurfaceVariant,
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        // Botas Nivel 3 Situacional
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
+                            border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        if (situationalBootsT3 != null) {
+                                            AppAssetImage(
+                                                url = situationalBootsT3!!.iconUrl,
+                                                contentDescription = situationalBootsT3!!.name,
+                                                fallbackText = situationalBootsT3!!.name.take(2),
+                                                modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
+                                            )
+                                            Text("Mejora Nivel 3 Situacional: ${situationalBootsT3!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        } else {
+                                            Text("Añadir Mejora Nivel 3 Situacional", color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                                        }
+                                    }
+                                    if (situationalBootsT3 != null) {
+                                        IconButton(onClick = { situationalBootsT3 = null }, modifier = Modifier.size(24.dp)) {
+                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                        }
+                                    } else {
+                                        TextButton(onClick = { showItemPickerForSituationalBootsT3 = true }) {
+                                            Text("+ Seleccionar", color = HextechGold, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                                if (situationalBootsT3 != null) {
+                                    OutlinedTextField(
+                                        value = situationalBootsT3!!.description,
+                                        onValueChange = { situationalBootsT3!!.description = it },
+                                        placeholder = { Text("Descripción de la mejora nivel 3 situacional...", color = TextSecondary) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = HextechGold,
+                                            unfocusedBorderColor = HextechSurfaceVariant,
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     // 6. Runa Clave (1 Runa obligatoria con descripción)
                     Text(
@@ -980,6 +1240,30 @@ fun ChampionBuildCreatorDialog(
                                 Toast.makeText(context, "Todos los objetos situacionales deben tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
+                            if (bootsT2 == null) {
+                                Toast.makeText(context, "Debes seleccionar las Botas de Nivel 2", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (bootsT2?.description?.trim()?.isBlank() == true) {
+                                Toast.makeText(context, "La descripción de las Botas de Nivel 2 es obligatoria", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (bootsT3 == null) {
+                                Toast.makeText(context, "Debes seleccionar la Mejora de Botas de Nivel 3", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (bootsT3?.description?.trim()?.isBlank() == true) {
+                                Toast.makeText(context, "La descripción de la Mejora de Botas de Nivel 3 es obligatoria", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (situationalBootsT2 != null && situationalBootsT2?.description?.trim()?.isBlank() == true) {
+                                Toast.makeText(context, "La descripción de la Bota Nivel 2 Situacional es obligatoria", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (situationalBootsT3 != null && situationalBootsT3?.description?.trim()?.isBlank() == true) {
+                                Toast.makeText(context, "La descripción de la Mejora Nivel 3 Situacional es obligatoria", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
                             if (coreKeystone == null) {
                                 Toast.makeText(context, "Debes seleccionar 1 Runa Clave", Toast.LENGTH_SHORT).show()
                                 return@Button
@@ -1030,6 +1314,10 @@ fun ChampionBuildCreatorDialog(
                                 situationalRunes = situationalRunes.map { RuneBuildEntry(it.name, it.iconUrl, it.description.trim()) },
                                 coreSpells = coreSpells.map { SpellBuildEntry(it.name, it.iconUrl, it.description.trim()) },
                                 situationalSpells = situationalSpells.map { SpellBuildEntry(it.name, it.iconUrl, it.description.trim()) },
+                                bootsT2Item = bootsT2?.let { ItemBuildEntry(it.name, it.description.trim()) },
+                                bootsT3Item = bootsT3?.let { ItemBuildEntry(it.name, it.description.trim()) },
+                                situationalBootsT2Item = situationalBootsT2?.let { ItemBuildEntry(it.name, it.description.trim()) },
+                                situationalBootsT3Item = situationalBootsT3?.let { ItemBuildEntry(it.name, it.description.trim()) },
                                 gameplayVideoUri = gameplayVideoUri,
                                 comboVideoUri = comboVideoUri,
                                 creatorName = existingRecord?.creatorName ?: if (creatorName.isBlank()) "Creador Oficial" else creatorName,
@@ -1104,12 +1392,16 @@ fun ChampionBuildCreatorDialog(
         }
     }
 
-    // Modal Selector de Objetos (Core o Situacional)
-    val showItemPicker = showItemPickerForCore || showItemPickerForSituational
+    // Modal Selector de Objetos (Core, Situacional, o Botas)
+    val showItemPicker = showItemPickerForCore || showItemPickerForSituational || showItemPickerForBootsT2 || showItemPickerForBootsT3 || showItemPickerForSituationalBootsT2 || showItemPickerForSituationalBootsT3
     if (showItemPicker) {
         Dialog(onDismissRequest = {
             showItemPickerForCore = false
             showItemPickerForSituational = false
+            showItemPickerForBootsT2 = false
+            showItemPickerForBootsT3 = false
+            showItemPickerForSituationalBootsT2 = false
+            showItemPickerForSituationalBootsT3 = false
             searchFilterQuery = ""
         }) {
             Card(
@@ -1118,8 +1410,17 @@ fun ChampionBuildCreatorDialog(
                 colors = CardDefaults.cardColors(containerColor = HextechSurface)
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val pickerTitle = when {
+                        showItemPickerForCore -> "Seleccionar Objeto Core"
+                        showItemPickerForSituational -> "Seleccionar Objeto Situacional"
+                        showItemPickerForBootsT2 -> "Seleccionar Botas Nivel 2 (Obligatorias)"
+                        showItemPickerForBootsT3 -> "Seleccionar Mejora Nivel 3 (Obligatorias)"
+                        showItemPickerForSituationalBootsT2 -> "Seleccionar Bota Nivel 2 Situacional"
+                        showItemPickerForSituationalBootsT3 -> "Seleccionar Mejora Nivel 3 Situacional"
+                        else -> "Seleccionar Objeto"
+                    }
                     Text(
-                        text = if (showItemPickerForCore) "Seleccionar Objeto Core" else "Seleccionar Objeto Situacional",
+                        text = pickerTitle,
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -1132,14 +1433,33 @@ fun ChampionBuildCreatorDialog(
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true
                     )
-                     val filteredItems = remember(searchFilterQuery, items, showItemPickerForCore, coreItems, situationalItems) {
+                     val filteredItems = remember(
+                         searchFilterQuery, items, 
+                         showItemPickerForCore, showItemPickerForSituational,
+                         showItemPickerForBootsT2, showItemPickerForBootsT3,
+                         showItemPickerForSituationalBootsT2, showItemPickerForSituationalBootsT3,
+                         coreItems, situationalItems
+                     ) {
                          val base = if (searchFilterQuery.isBlank()) items else items.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
-                         val pool = if (showItemPickerForCore) {
-                             base.filter { item -> coreItems.none { it.name.equals(item.name, ignoreCase = true) } }
-                         } else {
-                             base.filter { item -> 
-                                 coreItems.none { it.name.equals(item.name, ignoreCase = true) } &&
-                                 situationalItems.none { it.name.equals(item.name, ignoreCase = true) }
+                         val pool = when {
+                             showItemPickerForBootsT2 || showItemPickerForSituationalBootsT2 -> {
+                                 base.filter { it.category == "Botas Nivel 2" }
+                             }
+                             showItemPickerForBootsT3 || showItemPickerForSituationalBootsT3 -> {
+                                 base.filter { it.category == "Botas Nivel 3" }
+                             }
+                             showItemPickerForCore -> {
+                                 base.filter { item -> 
+                                     !item.category.contains("Botas", ignoreCase = true) &&
+                                     coreItems.none { it.name.equals(item.name, ignoreCase = true) } 
+                                 }
+                             }
+                             else -> { // showItemPickerForSituational
+                                 base.filter { item -> 
+                                     !item.category.contains("Botas", ignoreCase = true) &&
+                                     coreItems.none { it.name.equals(item.name, ignoreCase = true) } &&
+                                     situationalItems.none { it.name.equals(item.name, ignoreCase = true) }
+                                 }
                              }
                          }
                          pool.sortedWith(compareBy<com.example.model.WildRiftItem> { it.category }.thenBy { it.name })
@@ -1169,12 +1489,32 @@ fun ChampionBuildCreatorDialog(
                                      modifier = Modifier
                                          .fillMaxWidth()
                                          .clickable {
-                                             if (showItemPickerForCore) {
-                                                 coreItems.add(EditableItemEntry(item.name, item.iconUrl))
-                                                 showItemPickerForCore = false
-                                             } else {
-                                                 situationalItems.add(EditableItemEntry(item.name, item.iconUrl))
-                                                 showItemPickerForSituational = false
+                                             val entry = EditableItemEntry(item.name, item.iconUrl)
+                                             when {
+                                                 showItemPickerForCore -> {
+                                                     coreItems.add(entry)
+                                                     showItemPickerForCore = false
+                                                 }
+                                                 showItemPickerForSituational -> {
+                                                     situationalItems.add(entry)
+                                                     showItemPickerForSituational = false
+                                                 }
+                                                 showItemPickerForBootsT2 -> {
+                                                     bootsT2 = entry
+                                                     showItemPickerForBootsT2 = false
+                                                 }
+                                                 showItemPickerForBootsT3 -> {
+                                                     bootsT3 = entry
+                                                     showItemPickerForBootsT3 = false
+                                                 }
+                                                 showItemPickerForSituationalBootsT2 -> {
+                                                     situationalBootsT2 = entry
+                                                     showItemPickerForSituationalBootsT2 = false
+                                                 }
+                                                 showItemPickerForSituationalBootsT3 -> {
+                                                     situationalBootsT3 = entry
+                                                     showItemPickerForSituationalBootsT3 = false
+                                                 }
                                              }
                                              searchFilterQuery = ""
                                          }

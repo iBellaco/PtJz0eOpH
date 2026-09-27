@@ -63,7 +63,7 @@ fun RoleBadge(
         isBanned -> AppUserRole.BANNED
         role.equals("admin", ignoreCase = true) -> AppUserRole.ADMIN
         role.equals("moderador", ignoreCase = true) -> AppUserRole.MODERATOR
-        role.equals("creador_vip", ignoreCase = true) -> AppUserRole.CREATOR_VIP
+        role.equals("creador_lvl2", ignoreCase = true) -> AppUserRole.CREATOR_LVL2
         role.equals("streamer", ignoreCase = true) -> AppUserRole.STREAMER
         role.equals("creador", ignoreCase = true) -> AppUserRole.CREATOR
         role.equals("premium", ignoreCase = true) -> AppUserRole.PREMIUM
