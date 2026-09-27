@@ -19,7 +19,55 @@ object CreatorSubscriptionManager {
     private const val TAG = "CreatorSubManager"
     private const val PREFS_NAME = "wr_creator_subscriptions_prefs"
     private const val KEY_SUBS_SET = "subscribed_creators_set"
-    const val SUBSCRIPTION_EA_COST = 500L
+    const val SUBSCRIPTION_EA_COST = 50L
+
+    data class CreatorLimits(
+        val maxChampions: Int,
+        val maxSubscribers: Int,
+        val displayName: String
+    )
+
+    fun getCreatorLimits(role: String?): CreatorLimits {
+        val norm = role?.trim()?.lowercase() ?: ""
+        return when (norm) {
+            "creador" -> CreatorLimits(1, 50, "Creador Lvl 1")
+            "creador_vip", "creador_lvl2" -> CreatorLimits(3, 150, "Creador Lvl 2")
+            "creador_lvl3" -> CreatorLimits(5, 250, "Creador Lvl 3")
+            "creador_lvl4" -> CreatorLimits(7, 350, "Creador Lvl 4")
+            "creador_lvl5" -> CreatorLimits(10, 500, "Creador Lvl 5")
+            "admin", "moderador" -> CreatorLimits(999, 99999, "Staff")
+            "streamer" -> CreatorLimits(999, 99999, "Streamer")
+            else -> CreatorLimits(1, 50, "Creador Lvl 1")
+        }
+    }
+
+    fun sendLimitExceededNotification(creatorUid: String, creatorName: String) {
+        if (creatorUid.isBlank()) return
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val db = FirebaseFirestore.getInstance()
+                val messageId = java.util.UUID.randomUUID().toString()
+                val messageData = hashMapOf<String, Any>(
+                    "id" to messageId,
+                    "title" to "¡Límite de Suscriptores Alcanzado!",
+                    "content" to "Hola $creatorName, un usuario intentó suscribirse a tu perfil pero has alcanzado el límite máximo de suscriptores permitido para tu nivel actual. Te sugerimos mejorar tu plan para ampliar tu límite y seguir recibiendo suscriptores.",
+                    "tag" to "GENERAL",
+                    "timestamp" to System.currentTimeMillis(),
+                    "isRead" to false
+                )
+                val userDocRef = db.collection("users").document(creatorUid)
+                userDocRef.collection("messages").document(messageId).set(messageData).await()
+                userDocRef.update(
+                    "hasUnreadMessages", true,
+                    "unreadMessagesCount", FieldValue.increment(1),
+                    "privateMessages", FieldValue.arrayUnion(messageData)
+                ).await()
+                Log.d(TAG, "Sent automatic limit exceeded inbox notification to creator $creatorUid")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to send automatic notification: ${e.message}")
+            }
+        }
+    }
 
     private val _subscribedCreatorKeys = MutableStateFlow<Set<String>>(emptySet())
     val subscribedCreatorKeys: StateFlow<Set<String>> = _subscribedCreatorKeys.asStateFlow()

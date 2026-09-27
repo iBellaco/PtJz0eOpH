@@ -2082,7 +2082,7 @@ fun EnhancedUserManagementPanel(
     val modUsers = users.count { (it["role"] as? String) == "moderador" }
     val sponsorUsers = users.count { (it["role"] as? String) == "patrocinador" }
     val streamerUsers = users.count { (it["role"] as? String) == "streamer" }
-    val creatorUsers = users.count { (it["role"] as? String) == "creador_vip" || (it["role"] as? String) == "creador" }
+    val creatorUsers = users.count { (it["role"] as? String) in listOf("creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5") }
     val freeUsers = users.count { u ->
         val role = u["role"] as? String ?: "free"
         val until = (u["premiumUntil"] as? Number)?.toLong()
@@ -2111,13 +2111,13 @@ fun EnhancedUserManagementPanel(
             val matchesTab = when (selectedFilter) {
                 UserFilterTab.ALL -> true
                 UserFilterTab.PREMIUM -> isPrem
-                UserFilterTab.FREE -> role == "free" || (!isPrem && role != "admin" && role != "moderador" && role != "patrocinador" && role != "streamer" && role != "creador_vip" && role != "creador")
+                UserFilterTab.FREE -> role == "free" || (!isPrem && role != "admin" && role != "moderador" && role != "patrocinador" && role != "streamer" && role !in listOf("creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5"))
                 UserFilterTab.ONLINE -> isOnline
                 UserFilterTab.ADMINS -> role == "admin"
                 UserFilterTab.MODS -> role == "moderador"
                 UserFilterTab.SPONSORS -> role == "patrocinador"
                 UserFilterTab.STREAMERS -> role == "streamer"
-                UserFilterTab.CREATORS -> role == "creador_vip" || role == "creador"
+                UserFilterTab.CREATORS -> role in listOf("creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5")
                 UserFilterTab.BANNED -> isBanned
             }
 
@@ -3458,9 +3458,12 @@ fun UserDetailManagementDialog(
                                         AppUserRole.PATROCINADOR,
                                         AppUserRole.PREMIUM,
                                         AppUserRole.MODERATOR,
-                                        AppUserRole.CREATOR_VIP,
-                                        AppUserRole.STREAMER,
                                         AppUserRole.CREATOR,
+                                        AppUserRole.CREATOR_VIP,
+                                        AppUserRole.CREATOR_LVL3,
+                                        AppUserRole.CREATOR_LVL4,
+                                        AppUserRole.CREATOR_LVL5,
+                                        AppUserRole.STREAMER,
                                         AppUserRole.BANNED
                                     )
 
@@ -5285,13 +5288,16 @@ private fun updateUserRoleInCloud(
     }
 
     // Si el rol es de acceso premium / vitalicio por defecto
-    if (targetRoleId in listOf("premium", "moderador", "patrocinador", "creador", "creador_vip", "streamer")) {
+    if (targetRoleId in listOf("premium", "moderador", "patrocinador", "creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")) {
         updatePayload["premiumUntil"] = 0L
         updatePayload["subscriptionPlan"] = when (targetRoleId) {
             "moderador" -> "Moderador (Vitalicio)"
             "patrocinador" -> "Patrocinador (Vitalicio)"
-            "creador_vip" -> "Creador VIP (Vitalicio)"
-            "creador" -> "Creador (Vitalicio)"
+            "creador" -> "Creador Lvl 1 (Vitalicio)"
+            "creador_vip" -> "Creador Lvl 2 (Vitalicio)"
+            "creador_lvl3" -> "Creador Lvl 3 (Vitalicio)"
+            "creador_lvl4" -> "Creador Lvl 4 (Vitalicio)"
+            "creador_lvl5" -> "Creador Lvl 5 (Vitalicio)"
             "streamer" -> "Streamer (Vitalicio)"
             else -> "Premium Vitalicio"
         }

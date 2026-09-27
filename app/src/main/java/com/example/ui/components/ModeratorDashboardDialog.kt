@@ -450,10 +450,11 @@ fun ModeratorUserProposalDialog(
     val name = user["name"] as? String ?: "Usuario"
     val email = user["email"] as? String ?: ""
     val currentVerified = isUserVerified(user)
-    val currentSecondaryRole = (user["secondaryRole"] as? String ?: user["secRole"] as? String ?: "").trim()
+    val currentSecondaryRoleRaw = (user["secondaryRole"] as? String ?: user["secRole"] as? String ?: "").trim()
+    val currentSecondaryRole = currentSecondaryRoleRaw.lowercase().replace(" ", "_")
 
     var targetVerified by remember { mutableStateOf(currentVerified) }
-    var targetSecondaryRole by remember { mutableStateOf(currentSecondaryRole.lowercase()) }
+    var targetSecondaryRole by remember { mutableStateOf(currentSecondaryRole) }
     var isSending by remember { mutableStateOf(false) }
 
     Dialog(
@@ -538,10 +539,10 @@ fun ModeratorUserProposalDialog(
                             } else {
                                 Text("No Verificado", color = Color(0xFFEF4444), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                             }
-                            if (currentSecondaryRole.isNotBlank()) {
+                            if (currentSecondaryRoleRaw.isNotBlank()) {
                                 Text(" • ", color = Color(0xFF64748B), fontSize = 11.sp)
                                 Text(
-                                    text = currentSecondaryRole.replaceFirstChar { it.uppercase() },
+                                    text = currentSecondaryRoleRaw.replace("_", " ").replaceFirstChar { it.uppercase() },
                                     color = HextechGold,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -620,7 +621,7 @@ fun ModeratorUserProposalDialog(
                     "esmeralda" to "Esmeralda",
                     "diamante" to "Diamante",
                     "maestro" to "Maestro",
-                    "gran maestro" to "Gran Maestro",
+                    "gran_maestro" to "Gran Maestro",
                     "aspirante" to "Aspirante",
                     "soberano" to "Soberano"
                 )

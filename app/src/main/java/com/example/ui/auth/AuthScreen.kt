@@ -876,7 +876,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            val isUserPremium = isPremium || userRole == "admin" || userRole == "moderador" || userRole == "creador_vip" || userRole == "streamer" || AuthManager.isCurrentUserAdmin()
+            val isUserPremium = isPremium || userRole == "admin" || userRole == "moderador" || userRole == "streamer" || userRole == "creador" || userRole == "creador_vip" || userRole == "creador_lvl3" || userRole == "creador_lvl4" || userRole == "creador_lvl5" || AuthManager.isCurrentUserAdmin()
             if (isUserPremium) {
                 // Quick Theme Selector Strip: Instant 1-tap live theme transformation with horizontal scroll!
                 Column(
@@ -1131,11 +1131,11 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             // Botón Creador (Panel de Usuario)
             com.example.ui.components.HextechAnimatedButton(
                 onClick = {
-                    val isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin()
-                    if (isAdmin) {
+                    val hasCreatorRole = userRole in listOf("admin", "moderador", "streamer", "creador", "creador_vip", "creador_lvl3", "creador_lvl4", "creador_lvl5") || AuthManager.isCurrentUserAdmin()
+                    if (hasCreatorRole) {
                         showAdminCreatorDialog = true
                     } else {
-                        Toast.makeText(context, "Acceso restringido únicamente para administradores", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Panel exclusivo para Creadores de Build oficiales (Admin, Moderador, Streamer o Creador)", Toast.LENGTH_LONG).show()
                     }
                 },
                 backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(

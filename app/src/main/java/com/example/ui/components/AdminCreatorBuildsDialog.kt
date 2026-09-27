@@ -48,6 +48,10 @@ import com.example.data.local.CustomChampionBuildsManager
 import com.example.ui.theme.*
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Locale
+import com.example.util.CreatorSubscriptionManager
+import com.example.util.SubscriptionManager
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material.icons.filled.Lock
 
 enum class BuildsFilterTab {
     ALL,
@@ -64,7 +68,8 @@ data class CreatorPodiumEntry(
     val buildsCount: Int = 0,
     val totalVotes: Int = 0,
     val averageRating: Double = 0.0,
-    val score: Double = 0.0
+    val score: Double = 0.0,
+    val subscribersCount: Int = 0
 )
 
 @Composable
@@ -73,10 +78,16 @@ fun AdminCreatorBuildsDialog(
 ) {
     val context = LocalContext.current
     val customBuilds by CustomChampionBuildsManager.customBuilds.collectAsStateWithLifecycle()
+    val currentUserName by SubscriptionManager.userName.collectAsStateWithLifecycle()
+    val currentUserRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val myBuildsCount = remember(customBuilds, currentUserName) {
+        customBuilds.count { it.creatorName.equals(currentUserName, ignoreCase = true) }
+    }
     var showBuildCreator by remember { mutableStateOf(false) }
     var buildToEdit by remember { mutableStateOf<CustomChampionBuildRecord?>(null) }
     var selectedBuildForDetail by remember { mutableStateOf<CustomChampionBuildRecord?>(null) }
     var selectedCreatorFilter by remember { mutableStateOf<String?>(null) }
+    var selectedCreatorForProfile by remember { mutableStateOf<CreatorPodiumEntry?>(null) }
 
     val favoriteDao = remember { AppDatabase.getDatabase(context).favoriteBuildsDao() }
     val favorites by favoriteDao.getAllFavorites().collectAsStateWithLifecycle(initialValue = emptyList())
@@ -135,9 +146,17 @@ fun AdminCreatorBuildsDialog(
             val role = (matchedUser?.get("role") as? String) ?: "creador"
             val isAdmin = role == "admin" || (matchedUser?.get("isAdmin") as? Boolean) == true || (firstRecord?.creatorIsAdmin == true)
 
+            val userId = (matchedUser?.get("uid") as? String) ?: firstRecord?.creatorUserId ?: ""
+            val realSubs = if (userId.isNotBlank()) {
+                registeredUsers.count { u ->
+                    val subList = (u["subscribedCreators"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                    subList.any { sub -> sub == userId || sub.trim().lowercase() == creatorName.trim().lowercase() }
+                }
+            } else 0
+
             rankingList.add(
                 CreatorPodiumEntry(
-                    userId = (matchedUser?.get("uid") as? String) ?: firstRecord?.creatorUserId ?: "",
+                    userId = userId,
                     name = creatorName,
                     avatarId = avatarId,
                     rankBorder = rankBorder,
@@ -146,7 +165,8 @@ fun AdminCreatorBuildsDialog(
                     buildsCount = buildsCount,
                     totalVotes = totalVotes,
                     averageRating = avgRating,
-                    score = score
+                    score = score + (realSubs * 12.0),
+                    subscribersCount = realSubs
                 )
             )
         }
@@ -155,12 +175,20 @@ fun AdminCreatorBuildsDialog(
         for (u in registeredUsers) {
             val uRole = u["role"] as? String ?: "free"
             val uName = (u["name"] as? String ?: "").trim()
-            if (uName.isNotBlank() && (uRole == "creador_vip" || uRole == "creador" || uRole == "streamer" || uRole == "admin")) {
+            if (uName.isNotBlank() && (uRole == "creador_vip" || uRole == "creador_lvl3" || uRole == "creador_lvl4" || uRole == "creador_lvl5" || uRole == "creador" || uRole == "streamer" || uRole == "admin")) {
                 val alreadyAdded = rankingList.any { it.name.equals(uName, ignoreCase = true) }
                 if (!alreadyAdded) {
+                    val userId = u["uid"] as? String ?: ""
+                    val realSubs = if (userId.isNotBlank()) {
+                        registeredUsers.count { ru ->
+                            val subList = (ru["subscribedCreators"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                            subList.any { sub -> sub == userId || sub.trim().lowercase() == uName.trim().lowercase() }
+                        }
+                    } else 0
+
                     rankingList.add(
                         CreatorPodiumEntry(
-                            userId = u["uid"] as? String ?: "",
+                            userId = userId,
                             name = uName,
                             avatarId = u["avatarId"] as? String ?: "default_poro",
                             rankBorder = u["rankBorder"] as? String ?: "NONE",
@@ -169,7 +197,8 @@ fun AdminCreatorBuildsDialog(
                             buildsCount = 0,
                             totalVotes = 0,
                             averageRating = 5.0,
-                            score = if (uRole == "creador_vip") 50.0 else if (uRole == "admin") 40.0 else 30.0
+                            score = (if (uRole == "creador_vip") 50.0 else if (uRole == "admin") 40.0 else 30.0) + (realSubs * 12.0),
+                            subscribersCount = realSubs
                         )
                     )
                 }
@@ -187,7 +216,8 @@ fun AdminCreatorBuildsDialog(
                 buildsCount = 6,
                 totalVotes = 84,
                 averageRating = 5.0,
-                score = 300.0
+                score = 300.0,
+                subscribersCount = 254
             ),
             CreatorPodiumEntry(
                 name = "Wild Rift Pro",
@@ -198,7 +228,8 @@ fun AdminCreatorBuildsDialog(
                 buildsCount = 4,
                 totalVotes = 52,
                 averageRating = 4.9,
-                score = 220.0
+                score = 220.0,
+                subscribersCount = 142
             ),
             CreatorPodiumEntry(
                 name = "Hextech Master",
@@ -209,7 +240,8 @@ fun AdminCreatorBuildsDialog(
                 buildsCount = 3,
                 totalVotes = 31,
                 averageRating = 4.8,
-                score = 160.0
+                score = 160.0,
+                subscribersCount = 89
             )
         )
 
@@ -258,9 +290,21 @@ fun AdminCreatorBuildsDialog(
         )
     }
 
+    if (selectedCreatorForProfile != null) {
+        CreatorProfileDialog(
+            entry = selectedCreatorForProfile!!,
+            registeredUsers = registeredUsers,
+            customBuilds = customBuilds,
+            onDismiss = { selectedCreatorForProfile = null },
+            onOpenBuild = { selectedBuildForDetail = it }
+        )
+    }
+
     androidx.activity.compose.BackHandler {
         if (selectedBuildForDetail != null) {
             selectedBuildForDetail = null
+        } else if (selectedCreatorForProfile != null) {
+            selectedCreatorForProfile = null
         } else if (showBuildCreator || buildToEdit != null) {
             showBuildCreator = false
             buildToEdit = null
@@ -332,15 +376,26 @@ fun AdminCreatorBuildsDialog(
                     second = podiumCreators[1],
                     third = podiumCreators[2],
                     selectedCreator = selectedCreatorFilter,
-                    onSelectCreator = { creatorName ->
-                        selectedCreatorFilter = if (selectedCreatorFilter == creatorName) null else creatorName
+                    onSelectCreator = { entry ->
+                        selectedCreatorForProfile = entry
                     }
                 )
             }
 
-            // Action Button: Crear Build
+            // Action Button: Crear Build con límites según el nivel de creador
             Button(
-                onClick = { showBuildCreator = true },
+                onClick = {
+                    val limits = CreatorSubscriptionManager.getCreatorLimits(currentUserRole)
+                    if (myBuildsCount >= limits.maxChampions) {
+                        Toast.makeText(
+                            context,
+                            "Límite de builds alcanzado para tu plan (${limits.maxChampions} build/s). Por favor mejora tu nivel.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        showBuildCreator = true
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
                 shape = RoundedCornerShape(8.dp)
@@ -547,7 +602,7 @@ fun CreatorPodiumCard(
     second: CreatorPodiumEntry,
     third: CreatorPodiumEntry,
     selectedCreator: String?,
-    onSelectCreator: (String) -> Unit
+    onSelectCreator: (CreatorPodiumEntry) -> Unit
 ) {
     Surface(
         shape = RoundedCornerShape(14.dp),
@@ -625,7 +680,7 @@ fun CreatorPodiumCard(
                     pedestalBorderColor = Color(0xFF94A3B8),
                     numeralColor = Color(0xFFCBD5E1),
                     isSelected = selectedCreator.equals(second.name, ignoreCase = true),
-                    onClick = { onSelectCreator(second.name) },
+                    onClick = { onSelectCreator(second) },
                     modifier = Modifier.weight(1f)
                 )
 
@@ -646,7 +701,7 @@ fun CreatorPodiumCard(
                     pedestalBorderColor = HextechGold,
                     numeralColor = HextechGold,
                     isSelected = selectedCreator.equals(first.name, ignoreCase = true),
-                    onClick = { onSelectCreator(first.name) },
+                    onClick = { onSelectCreator(first) },
                     modifier = Modifier.weight(1.15f)
                 )
 
@@ -667,7 +722,7 @@ fun CreatorPodiumCard(
                     pedestalBorderColor = Color(0xFFB45309),
                     numeralColor = Color(0xFFFDBA74),
                     isSelected = selectedCreator.equals(third.name, ignoreCase = true),
-                    onClick = { onSelectCreator(third.name) },
+                    onClick = { onSelectCreator(third) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -751,9 +806,9 @@ private fun PodiumColumn(
             textAlign = TextAlign.Center
         )
 
-        // Resumen de estadísticas del creador
+        // Resumen de estadísticas del creador mostrando cantidad de suscriptores en vez de votos
         Text(
-            text = "${entry.buildsCount} builds • ⭐ ${String.format(Locale.US, "%.1f", entry.averageRating)}",
+            text = "${entry.buildsCount} builds • 👥 ${entry.subscribersCount} Subs",
             color = if (rank == 1) HextechGoldLight else TextSecondary,
             fontSize = if (rank == 1) 9.5.sp else 8.5.sp,
             fontWeight = if (rank == 1) FontWeight.SemiBold else FontWeight.Normal,
@@ -783,6 +838,243 @@ private fun PodiumColumn(
                 fontWeight = FontWeight.Black,
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Serif
             )
+        }
+    }
+}
+
+@Composable
+fun CreatorProfileDialog(
+    entry: CreatorPodiumEntry,
+    registeredUsers: List<Map<String, Any>>,
+    customBuilds: List<CustomChampionBuildRecord>,
+    onDismiss: () -> Unit,
+    onOpenBuild: (CustomChampionBuildRecord) -> Unit
+) {
+    val context = LocalContext.current
+    val subscribedSet by CreatorSubscriptionManager.subscribedCreatorKeys.collectAsStateWithLifecycle()
+    val userRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val currentBlueEssence by SubscriptionManager.blueEssence.collectAsStateWithLifecycle()
+
+    val creatorKey = if (entry.userId.isNotBlank()) entry.userId else entry.name
+    val isSubscribed = remember(subscribedSet, creatorKey, entry.name) {
+        CreatorSubscriptionManager.isSubscribed(creatorKey) || 
+        CreatorSubscriptionManager.isSubscribed(entry.name) ||
+        entry.name.lowercase().contains("system") ||
+        userRole == "admin"
+    }
+
+    val creatorBuilds = remember(customBuilds, entry.name) {
+        customBuilds.filter { it.creatorName.equals(entry.name, ignoreCase = true) }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.85f),
+            color = HextechSurface,
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(1.5.dp, HextechGold)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Perfil de Creador",
+                        color = HextechGold,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                    }
+                }
+
+                HorizontalDivider(color = HextechCardBorder)
+
+                // Info Creador
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(HextechDarkBg, RoundedCornerShape(12.dp))
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    UserAvatarView(
+                        avatarId = entry.avatarId,
+                        size = 64.dp,
+                        fallbackInitial = entry.name.take(1).uppercase(Locale.ROOT),
+                        rankBorder = entry.rankBorder,
+                        isAdmin = entry.isAdmin
+                    )
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = entry.name,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "Rol: ${entry.role.replaceFirstChar { it.uppercase() }}",
+                            color = HextechGold,
+                            fontSize = 12.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "👥 ${entry.subscribersCount} Suscriptores • 📦 ${creatorBuilds.size} Builds",
+                            color = TextSecondary,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                // Botón de suscripción con verificación de límites
+                if (!isSubscribed) {
+                    Button(
+                        onClick = {
+                            val limits = CreatorSubscriptionManager.getCreatorLimits(entry.role)
+                            if (entry.subscribersCount >= limits.maxSubscribers) {
+                                CreatorSubscriptionManager.sendLimitExceededNotification(
+                                    creatorUid = entry.userId,
+                                    creatorName = entry.name
+                                )
+                                Toast.makeText(
+                                    context,
+                                    "El creador alcanzó el límite de su plan (${limits.maxSubscribers} subs). Se le envió una notificación para mejorar su plan.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                CreatorSubscriptionManager.subscribeWithBlueEssence(
+                                    creatorKey = creatorKey,
+                                    creatorName = entry.name,
+                                    creatorUid = entry.userId,
+                                    context = context
+                                ) { success, msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = HextechDarkBg)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Suscribirse por ${CreatorSubscriptionManager.SUBSCRIPTION_EA_COST} EA",
+                            color = HextechDarkBg,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                    }
+                } else {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF00FF66).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFF00FF66).copy(alpha = 0.4f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = Color(0xFF00FF66))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Suscripción Activa (Acceso Total)",
+                                color = Color(0xFF00FF66),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.5.sp
+                            )
+                        }
+                    }
+                }
+
+                Text(
+                    text = "Builds Creadas:",
+                    color = HextechGoldLight,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+
+                if (creatorBuilds.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Este creador aún no ha publicado builds.",
+                            color = TextSecondary,
+                            fontSize = 12.sp
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(creatorBuilds) { b ->
+                            val isLocked = !isSubscribed && !entry.name.lowercase().contains("system")
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = HextechDarkBg,
+                                border = BorderStroke(1.dp, HextechCardBorder),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onOpenBuild(b)
+                                    }
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = b.buildTitle,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
+                                        Text(
+                                            text = "${b.championName} • ${b.role}",
+                                            color = HextechGold,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                    if (isLocked) {
+                                        Icon(
+                                            imageVector = Icons.Default.Lock,
+                                            contentDescription = "Bloqueado",
+                                            tint = HextechGold,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

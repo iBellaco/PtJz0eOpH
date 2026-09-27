@@ -203,13 +203,13 @@ fun UserAvatarView(
                 .then(
                     if (rankBorder.equals("NONE", ignoreCase = true)) {
                         Modifier
-                    } else if (rankBorder != "DEFAULT" && rankBorder.isNotBlank() && !isAdmin && activeFrameAsset == null) {
+                    } else if (rankBorder != "DEFAULT" && rankBorder.isNotBlank() && activeFrameAsset == null) {
                         Modifier.rankedBorderPainter(
                             rank = rankBorder,
                             glowPulse = glowPulse,
                             rotation = rotation
                         )
-                    } else if (actualShowBorder && !isAdmin && activeFrameAsset == null) {
+                    } else if (actualShowBorder && activeFrameAsset == null) {
                         val isCom = rarityLower == "común" || rarityLower == "comun" || rarityLower == "clásico"
                         if (!isCom) {
                             Modifier.premiumBorderPainter(

@@ -28,27 +28,51 @@ enum class AppUserRole(
     ),
     CREATOR_VIP(
         id = "creador_vip",
-        displayName = "Creador VIP",
+        displayName = "Creador Lvl 2",
         emoji = "",
         primaryColor = Color(0xFFA855F7),
         secondaryColor = Color(0xFF7C3AED),
-        description = "Creador destacado con acceso preferencial y distintivo"
+        description = "Creador Lvl 2: Creador avanzado (Hasta 150 subs, 3 campeones)"
+    ),
+    CREATOR_LVL3(
+        id = "creador_lvl3",
+        displayName = "Creador Lvl 3",
+        emoji = "",
+        primaryColor = Color(0xFFEC4899),
+        secondaryColor = Color(0xFFDB2777),
+        description = "Creador Lvl 3: Creador premium (Hasta 250 subs, 5 campeones)"
+    ),
+    CREATOR_LVL4(
+        id = "creador_lvl4",
+        displayName = "Creador Lvl 4",
+        emoji = "",
+        primaryColor = Color(0xFFF43F5E),
+        secondaryColor = Color(0xFFBE123C),
+        description = "Creador Lvl 4: Creador master (Hasta 350 subs, 7 campeones)"
+    ),
+    CREATOR_LVL5(
+        id = "creador_lvl5",
+        displayName = "Creador Lvl 5",
+        emoji = "",
+        primaryColor = Color(0xFF10B981),
+        secondaryColor = Color(0xFF047857),
+        description = "Creador Lvl 5: Creador de élite (Hasta 500 subs, 10 campeones)"
     ),
     STREAMER(
         id = "streamer",
         displayName = "Streamer",
         emoji = "",
-        primaryColor = Color(0xFFEC4899),
-        secondaryColor = Color(0xFFDB2777),
+        primaryColor = Color(0xFFFF4500),
+        secondaryColor = Color(0xFFCC3300),
         description = "Creador de directos, transmisiones y difusión de Coach"
     ),
     CREATOR(
         id = "creador",
-        displayName = "Creador",
+        displayName = "Creador Lvl 1",
         emoji = "",
         primaryColor = Color(0xFFF59E0B),
         secondaryColor = Color(0xFFD97706),
-        description = "Colaborador de contenido, diseño y tácticas"
+        description = "Creador Lvl 1: Creador oficial (Hasta 50 subs, 1 campeón)"
     ),
     PATROCINADOR(
         id = "patrocinador",
@@ -138,6 +162,9 @@ enum class AppUserRole(
                 "admin", "administrator" -> ADMIN
                 "mod", "moderador", "moderator" -> MODERATOR
                 "vip", "creador_vip", "creator_vip" -> CREATOR_VIP
+                "creador_lvl3" -> CREATOR_LVL3
+                "creador_lvl4" -> CREATOR_LVL4
+                "creador_lvl5" -> CREATOR_LVL5
                 "streamer", "live" -> STREAMER
                 "creador", "creator" -> CREATOR
                 "patrocinador", "sponsor" -> PATROCINADOR
@@ -167,6 +194,9 @@ enum class AppUserRole(
             SOBERANO,
             MODERATOR,
             CREATOR_VIP,
+            CREATOR_LVL3,
+            CREATOR_LVL4,
+            CREATOR_LVL5,
             STREAMER,
             CREATOR,
             BANNED

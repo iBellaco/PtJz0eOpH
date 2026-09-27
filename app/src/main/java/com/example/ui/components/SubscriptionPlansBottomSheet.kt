@@ -117,7 +117,7 @@ fun SubscriptionPlansBottomSheet(
             // Premium Card (Mensual)
             PremiumPlanCard(
                 title = "Coach Premium (Mensual)",
-                price = "$5.00",
+                price = "$10.00",
                 period = "/ mes",
                 isPopular = false,
                 features = premiumFeatures,
@@ -131,7 +131,7 @@ fun SubscriptionPlansBottomSheet(
             // Premium Anual Card
             PremiumPlanCard(
                 title = "Coach Premium (Anual)",
-                price = "$55.00",
+                price = "$110.00",
                 period = "/ año",
                 isPopular = true,
                 features = premiumFeatures,
