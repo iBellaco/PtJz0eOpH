@@ -161,6 +161,12 @@ data class Champion(
         "pt" -> titlePt.ifBlank { com.example.util.trStr("pt", title) }
         else -> title
     }
+
+    fun getLocalizedSummary(lang: String): String = when (lang) {
+        "en" -> com.example.util.trStr("en", summary)
+        "pt" -> com.example.util.trStr("pt", summary)
+        else -> summary
+    }
 }
 
 @Serializable

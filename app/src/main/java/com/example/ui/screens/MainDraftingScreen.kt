@@ -641,14 +641,14 @@ fun MainDraftingScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Recomendado: Activar Notificaciones",
+                                    text = tr("Recomendado: Activar Notificaciones"),
                                     color = HextechGold,
                                     fontSize = 12.5.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "Activa las notificaciones para recibir avisos y alertas en tiempo real.",
+                                    text = tr("Activa las notificaciones para recibir avisos y alertas en tiempo real."),
                                     color = TextSecondary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.sp
@@ -673,7 +673,7 @@ fun MainDraftingScreen(
                                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                                 modifier = Modifier.height(32.dp)
                             ) {
-                                Text("Activar", color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Activar"), color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

@@ -1419,7 +1419,7 @@ fun ChampionsCatalogTab(
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = champion.summary,
+                                text = tr(champion.summary),
                                 color = TextMuted,
                                 fontSize = if (isOverlay) 9.5.sp else 11.sp,
                                 maxLines = if (isOverlay) 1 else 2,
@@ -1444,7 +1444,7 @@ fun ChampionsCatalogTab(
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Toca para ver build y runas",
+                                    text = tr("Toca para ver build y runas"),
                                     color = TextPrimary,
                                     fontSize = 10.5.sp
                                 )
