@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
+import com.example.util.tr
 
 @Composable
 fun RegisterScreen(
@@ -89,10 +90,10 @@ fun RegisterScreen(
         
         // Password Requirements
         Column(modifier = Modifier.fillMaxWidth()) {
-            Text("Requisitos de contraseña:", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-            Text("- Mínimo 8 caracteres", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-            Text("- Una letra mayúscula y minúscula", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-            Text("- Un número y carácter especial", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+            Text(tr("Requisitos de contraseña:"), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+            Text(tr("- Mínimo 8 caracteres"), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+            Text(tr("- Una letra mayúscula y minúscula"), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+            Text(tr("- Un número y carácter especial"), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -114,7 +115,7 @@ fun RegisterScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Para poder iniciar sesión, deberás verificar tu correo electrónico con el enlace de confirmación que te enviaremos.",
+                    text = tr("Para poder iniciar sesión, deberás verificar tu correo electrónico con el enlace de confirmación que te enviaremos."),
                     color = TextPrimary,
                     fontSize = 11.sp
                 )
@@ -125,7 +126,7 @@ fun RegisterScreen(
 
         if (uiState.error != null) {
             Text(
-                text = uiState.error!!,
+                text = tr(uiState.error!!),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
@@ -148,9 +149,9 @@ fun RegisterScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "¿Ya tienes una cuenta? ", color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+            Text(text = tr("¿Ya tienes una cuenta? "), color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
             com.example.ui.components.HextechAnimatedTextLink(
-                text = "Inicia sesión",
+                text = tr("Inicia sesión"),
                 onClick = onNavigateToLogin,
                 color = HextechCyan
             )

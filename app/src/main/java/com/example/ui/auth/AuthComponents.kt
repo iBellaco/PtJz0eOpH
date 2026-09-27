@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.ui.theme.*
+import com.example.util.tr
 
 @Composable
 fun AuthHeader(title: String, subtitle: String) {
@@ -60,14 +61,14 @@ fun AuthHeader(title: String, subtitle: String) {
         ) {
             Icon(
                 imageVector = Icons.Filled.Lock,
-                contentDescription = "Logo",
+                contentDescription = tr("Logo"),
                 tint = HextechCyan,
                 modifier = Modifier.size(48.dp)
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = title,
+            text = tr(title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary
@@ -75,7 +76,7 @@ fun AuthHeader(title: String, subtitle: String) {
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = subtitle,
+            text = tr(subtitle),
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = TextSecondary
             )
@@ -99,7 +100,7 @@ fun AuthTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            label = { Text(label) },
+            label = { Text(tr(label)) },
             leadingIcon = leadingIcon,
             modifier = Modifier.fillMaxWidth(),
             isError = isError,
@@ -121,7 +122,7 @@ fun AuthTextField(
         )
         AnimatedVisibility(visible = isError && errorMessage != null) {
             Text(
-                text = errorMessage ?: "",
+                text = tr(errorMessage ?: ""),
                 color = DangerRed,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp)
@@ -147,7 +148,7 @@ fun PasswordTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            label = { Text(label) },
+            label = { Text(tr(label)) },
             modifier = Modifier.fillMaxWidth(),
             isError = isError,
             keyboardOptions = KeyboardOptions(
@@ -161,7 +162,7 @@ fun PasswordTextField(
             trailingIcon = {
                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, contentDescription = "Toggle password visibility", tint = TextMuted)
+                    Icon(imageVector = image, contentDescription = tr("Mostrar contraseña"), tint = TextMuted)
                 }
             },
             colors = OutlinedTextFieldDefaults.colors(
@@ -178,7 +179,7 @@ fun PasswordTextField(
         )
         AnimatedVisibility(visible = isError && errorMessage != null) {
             Text(
-                text = errorMessage ?: "",
+                text = tr(errorMessage ?: ""),
                 color = DangerRed,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp)
@@ -212,9 +213,9 @@ fun PasswordStrengthIndicator(strength: PasswordStrength) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Seguridad de contraseña:", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+            Text(tr("Seguridad de contraseña:"), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
             Text(
-                text = strength.label,
+                text = tr(strength.label),
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                 color = color
             )
@@ -268,7 +269,7 @@ fun AuthPrimaryButton(
             )
         } else {
             Text(
-                text = text,
+                text = tr(text),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 0.5.sp,
@@ -304,7 +305,7 @@ fun AuthSecondaryButton(
             )
         } else {
             Text(
-                text = text,
+                text = tr(text),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.3.sp,
@@ -325,7 +326,7 @@ fun AuthDivider(text: String = "o") {
     ) {
         Box(modifier = Modifier.weight(1f).height(1.dp).background(HextechCardBorder))
         Text(
-            text = text,
+            text = tr(text),
             modifier = Modifier.padding(horizontal = 16.dp),
             color = TextSecondary,
             style = MaterialTheme.typography.bodyMedium
@@ -367,6 +368,6 @@ fun SocialLoginButton(
             contentColor = TextPrimary
         )
     ) {
-        Text(text = text, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium))
+        Text(text = tr(text), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium))
     }
 }

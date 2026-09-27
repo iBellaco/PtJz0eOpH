@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.TextPrimary
+import com.example.util.tr
 
 @Composable
 fun ForgotPasswordScreen(
@@ -35,7 +36,7 @@ fun ForgotPasswordScreen(
 
         if (uiState.isSuccess) {
             Text(
-                text = "Se ha enviado un enlace de recuperación a tu correo electrónico.",
+                text = tr("Se ha enviado un enlace de recuperación a tu correo electrónico."),
                 color = HextechCyan,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
@@ -57,7 +58,7 @@ fun ForgotPasswordScreen(
 
             if (uiState.error != null) {
                 Text(
-                    text = uiState.error!!,
+                    text = tr(uiState.error!!),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
@@ -76,7 +77,7 @@ fun ForgotPasswordScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             com.example.ui.components.HextechAnimatedTextLink(
-                text = "Volver a iniciar sesión",
+                text = tr("Volver a iniciar sesión"),
                 onClick = onNavigateToLogin,
                 color = HextechCyan
             )

@@ -21,6 +21,7 @@ import android.widget.Toast
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
+import com.example.util.tr
 
 @Composable
 fun LoginScreen(
@@ -109,7 +110,7 @@ fun LoginScreen(
             horizontalArrangement = Arrangement.End
         ) {
             com.example.ui.components.HextechAnimatedTextLink(
-                text = "¿Olvidaste tu contraseña?",
+                text = tr("¿Olvidaste tu contraseña?"),
                 onClick = onNavigateToForgot,
                 color = HextechCyan
             )
@@ -117,7 +118,7 @@ fun LoginScreen(
 
         if (uiState.error != null) {
             Text(
-                text = uiState.error!!,
+                text = tr(uiState.error!!),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
@@ -142,9 +143,9 @@ fun LoginScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "¿No tienes una cuenta? ", color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+            Text(text = tr("¿No tienes una cuenta? "), color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
             com.example.ui.components.HextechAnimatedTextLink(
-                text = "Regístrate",
+                text = tr("Regístrate"),
                 onClick = onNavigateToRegister,
                 color = HextechCyan
             )
