@@ -67,7 +67,12 @@ fun UserInboxDialog(
     var arrayMessages by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var supportReportMessages by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var deletedIds by remember(userUid) {
-        mutableStateOf(inboxPrefs.getStringSet("deleted_ids", emptySet())?.toSet() ?: emptySet())
+        val raw = inboxPrefs.getStringSet("deleted_ids", emptySet())?.toSet() ?: emptySet()
+        val sanitized = raw.filter { id -> !id.contains(" ") && id.length <= 48 }.toSet()
+        if (sanitized.size != raw.size) {
+            inboxPrefs.edit().putStringSet("deleted_ids", sanitized).apply()
+        }
+        mutableStateOf(sanitized)
     }
     var localReadIds by remember(userUid) {
         mutableStateOf(inboxPrefs.getStringSet("read_ids", emptySet())?.toSet() ?: emptySet())
@@ -366,11 +371,7 @@ fun UserInboxDialog(
         for (m in supportReportMessages) {
             val id = m["id"] as? String ?: continue
             val reportId = m["reportId"] as? String ?: id
-            val title = (m["title"] as? String ?: "").trim()
-            val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
-            if (deletedIds.contains(id) || deletedIds.contains(reportId) ||
-                (title.isNotBlank() && deletedIds.contains(title)) ||
-                (cleanTitle.isNotBlank() && deletedIds.contains(cleanTitle))) continue
+            if (deletedIds.contains(id) || (reportId.isNotBlank() && deletedIds.contains(reportId))) continue
 
             val isDeleted = (m["isDeleted"] as? Boolean) == true || 
                             (m["deleted"] as? Boolean) == true || 
@@ -379,8 +380,7 @@ fun UserInboxDialog(
 
             if (currActive != null) {
                 if (currActive.isEmpty()) continue
-                val matches = currActive.contains(id) || currActive.contains(reportId) ||
-                              currActive.contains(title) || currActive.contains(cleanTitle)
+                val matches = currActive.contains(id) || currActive.contains(reportId)
                 if (!matches) continue
             }
 
@@ -391,11 +391,7 @@ fun UserInboxDialog(
         fun processMessage(m: Map<String, Any>) {
             val id = m["id"] as? String ?: return
             val reportId = m["reportId"] as? String ?: id
-            val title = (m["title"] as? String ?: "").trim()
-            val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
-            if (deletedIds.contains(id) || deletedIds.contains(reportId) ||
-                (title.isNotBlank() && deletedIds.contains(title)) ||
-                (cleanTitle.isNotBlank() && deletedIds.contains(cleanTitle))) return
+            if (deletedIds.contains(id) || (reportId.isNotBlank() && deletedIds.contains(reportId))) return
 
             val isDeleted = (m["isDeleted"] as? Boolean) == true || 
                             (m["deleted"] as? Boolean) == true || 
@@ -409,8 +405,7 @@ fun UserInboxDialog(
                     if (currActive.isEmpty()) return
                     val matchesActive = currActive.contains(id) || 
                                        currActive.contains(reportId) || 
-                                       (rId != null && currActive.contains(rId)) ||
-                                       (title.isNotBlank() && (currActive.contains(title) || currActive.contains(cleanTitle)))
+                                       (rId != null && currActive.contains(rId))
                     if (!matchesActive) return
                 } else {
                     val matchesValid = validSupportIds.contains(id) || validSupportIds.contains(reportId) || (rId != null && validSupportIds.contains(rId))
@@ -430,11 +425,7 @@ fun UserInboxDialog(
         all.values.filter { m ->
             val id = m["id"] as? String ?: ""
             val reportId = m["reportId"] as? String ?: ""
-            val title = (m["title"] as? String ?: "").trim()
-            val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
-            !deletedIds.contains(id) && !deletedIds.contains(reportId) &&
-            !(title.isNotBlank() && deletedIds.contains(title)) &&
-            !(cleanTitle.isNotBlank() && deletedIds.contains(cleanTitle))
+            !deletedIds.contains(id) && !(reportId.isNotBlank() && deletedIds.contains(reportId))
         }.sortedByDescending { (it["timestamp"] as? Long) ?: 0L }
     }
 
@@ -700,9 +691,7 @@ fun UserInboxDialog(
         }
 
         val newDeleted = deletedIds + id +
-            (if (reportId.isNotBlank()) listOf(reportId) else emptyList()) +
-            (if (title.isNotBlank()) listOf(title) else emptyList()) +
-            (if (cleanTitle.isNotBlank()) listOf(cleanTitle) else emptyList())
+            (if (reportId.isNotBlank()) listOf(reportId) else emptyList())
 
         deletedIds = newDeleted
         inboxPrefs.edit().putStringSet("deleted_ids", newDeleted).apply()
@@ -712,20 +701,17 @@ fun UserInboxDialog(
         subcollectionMessages = subcollectionMessages.filterNot { m ->
             val mId = m["id"] as? String ?: ""
             val rId = m["reportId"] as? String ?: ""
-            val mTitle = (m["title"] as? String ?: "").trim()
-            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId)) || (title.isNotBlank() && mTitle == title)
+            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId))
         }
         arrayMessages = arrayMessages.filterNot { m ->
             val mId = m["id"] as? String ?: ""
             val rId = m["reportId"] as? String ?: ""
-            val mTitle = (m["title"] as? String ?: "").trim()
-            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId)) || (title.isNotBlank() && mTitle == title)
+            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId))
         }
         supportReportMessages = supportReportMessages.filterNot { m ->
             val mId = m["id"] as? String ?: ""
             val rId = m["reportId"] as? String ?: ""
-            val mTitle = (m["title"] as? String ?: "").trim()
-            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId)) || (title.isNotBlank() && mTitle == title)
+            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId))
         }
 
         val db = FirebaseFirestore.getInstance()
@@ -756,8 +742,7 @@ fun UserInboxDialog(
                 val updated = pMsgs.filterNot { m ->
                     val mId = m["id"] as? String ?: ""
                     val rId = m["reportId"] as? String ?: ""
-                    val mTitle = (m["title"] as? String ?: "").trim()
-                    mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId)) || (title.isNotBlank() && mTitle == title)
+                    mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId))
                 }
                 val remainingUnread = updated.count { (it["isRead"] as? Boolean) == false && !localReadIds.contains(it["id"] as? String ?: "") }
                 uRef.update(

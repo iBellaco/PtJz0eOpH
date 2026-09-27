@@ -199,12 +199,15 @@ fun AdminCreatorBuildsDialog(
             val isAdmin = role == "admin" || (matchedUser?.get("isAdmin") as? Boolean) == true || (firstRecord?.creatorIsAdmin == true)
 
             val userId = (matchedUser?.get("uid") as? String) ?: firstRecord?.creatorUserId ?: ""
-            val realSubs = if (userId.isNotBlank()) {
-                registeredUsers.count { u ->
-                    val subList = (u["subscribedCreators"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
-                    subList.any { sub -> sub == userId || sub.trim().lowercase() == creatorName.trim().lowercase() }
-                }
-            } else 0
+            val docSubs = (matchedUser?.get("subscribersCount") as? Number)?.toInt()
+                ?: (matchedUser?.get("subscriberCount") as? Number)?.toInt()
+                ?: (matchedUser?.get("subsCount") as? Number)?.toInt()
+                ?: 0
+            val realSubsFromList = registeredUsers.count { u ->
+                val subList = (u["subscribedCreators"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                subList.any { sub -> (userId.isNotBlank() && sub == userId) || sub.trim().lowercase() == creatorName.trim().lowercase() }
+            }
+            val realSubs = maxOf(docSubs, realSubsFromList)
 
             rankingList.add(
                 CreatorPodiumEntry(
@@ -231,12 +234,15 @@ fun AdminCreatorBuildsDialog(
                 val alreadyAdded = rankingList.any { it.name.equals(uName, ignoreCase = true) }
                 if (!alreadyAdded) {
                     val userId = u["uid"] as? String ?: ""
-                    val realSubs = if (userId.isNotBlank()) {
-                        registeredUsers.count { ru ->
-                            val subList = (ru["subscribedCreators"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
-                            subList.any { sub -> sub == userId || sub.trim().lowercase() == uName.trim().lowercase() }
-                        }
-                    } else 0
+                    val docSubs = (u["subscribersCount"] as? Number)?.toInt()
+                        ?: (u["subscriberCount"] as? Number)?.toInt()
+                        ?: (u["subsCount"] as? Number)?.toInt()
+                        ?: 0
+                    val realSubsFromList = registeredUsers.count { ru ->
+                        val subList = (ru["subscribedCreators"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                        subList.any { sub -> (userId.isNotBlank() && sub == userId) || sub.trim().lowercase() == uName.trim().lowercase() }
+                    }
+                    val realSubs = maxOf(docSubs, realSubsFromList)
 
                     rankingList.add(
                         CreatorPodiumEntry(
@@ -259,13 +265,14 @@ fun AdminCreatorBuildsDialog(
         rankingList
     }
 
-    // Podio por Popularidad (Subs, Votos, Valoración)
+    // Podio por Popularidad (Clasificado por Puntuación de Votos y Valoración)
     val popularityPodiumCreators = remember(baseRankingList, defaultLegends) {
         val popList = baseRankingList.sortedWith(
-            compareByDescending<CreatorPodiumEntry> { it.subscribersCount }
-                .thenByDescending { it.totalVotes }
+            compareByDescending<CreatorPodiumEntry> { it.totalVotes }
                 .thenByDescending { it.score }
                 .thenByDescending { it.averageRating }
+                .thenByDescending { it.subscribersCount }
+                .thenByDescending { it.buildsCount }
         ).toMutableList()
         var fallbackIdx = 0
         while (popList.size < 3 && fallbackIdx < defaultLegends.size) {
@@ -278,26 +285,17 @@ fun AdminCreatorBuildsDialog(
         popList.take(3)
     }
 
-    // Podio Oficial (Jerarquía de creadores oficiales, verificados y con builds oficiales)
+    // Podio Oficial (Clasificado principalmente por la mayor cantidad de Suscriptores)
     val officialPodiumCreators = remember(baseRankingList, defaultLegends) {
         val offList = baseRankingList.filter { entry ->
             val r = entry.role.lowercase()
             entry.isAdmin || r in listOf("admin", "streamer", "creador_lvl5", "creador_lvl4", "creador_lvl3", "creador_lvl2", "creador")
         }.sortedWith(
-            compareByDescending<CreatorPodiumEntry> { entry ->
-                when (entry.role.lowercase()) {
-                    "admin" -> 100
-                    "streamer" -> 90
-                    "creador_lvl5" -> 80
-                    "creador_lvl4" -> 70
-                    "creador_lvl3" -> 60
-                    "creador_lvl2" -> 50
-                    "creador" -> 40
-                    else -> if (entry.isAdmin) 100 else 10
-                }
-            }.thenByDescending { it.buildsCount }
-            .thenByDescending { it.subscribersCount }
-            .thenByDescending { it.totalVotes }
+            compareByDescending<CreatorPodiumEntry> { it.subscribersCount }
+                .thenByDescending { it.buildsCount }
+                .thenByDescending { it.totalVotes }
+                .thenByDescending { it.score }
+                .thenByDescending { it.averageRating }
         ).toMutableList()
         var fallbackIdx = 0
         while (offList.size < 3 && fallbackIdx < defaultLegends.size) {

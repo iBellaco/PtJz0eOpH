@@ -416,10 +416,13 @@ fun AdminGiveEssenceDialog(
                                             userDocRef.collection("messages").document(messageId)
                                                 .set(messageData)
                                                 .addOnCompleteListener {
-                                                    userDocRef.update(
-                                                        "hasUnreadMessages", true,
-                                                        "unreadMessagesCount", FieldValue.increment(1),
-                                                        "privateMessages", FieldValue.arrayUnion(messageData)
+                                                    userDocRef.set(
+                                                        hashMapOf(
+                                                            "hasUnreadMessages" to true,
+                                                            "unreadMessagesCount" to FieldValue.increment(1),
+                                                            "privateMessages" to FieldValue.arrayUnion(messageData)
+                                                        ),
+                                                        com.google.firebase.firestore.SetOptions.merge()
                                                     ).addOnCompleteListener {
                                                         isProcessing = false
                                                         onSuccess()
