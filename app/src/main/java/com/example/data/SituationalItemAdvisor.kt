@@ -314,7 +314,7 @@ object SituationalItemAdvisor {
         )
     )
 
-    fun getAdvice(itemName: String): SituationalItemInfo {
+    fun getAdvice(itemName: String, lang: String = "es"): SituationalItemInfo {
         // Direct search or partial match
         val matched = adviceMap.entries.firstOrNull { 
             it.key.equals(itemName, ignoreCase = true) || 
@@ -345,6 +345,14 @@ object SituationalItemAdvisor {
             baseAdvice.iconUrl
         }
 
-        return baseAdvice.copy(iconUrl = finalIcon)
+        return baseAdvice.copy(
+            name = com.example.util.trStr(lang, baseAdvice.name),
+            categoryName = com.example.util.trStr(lang, baseAdvice.categoryName),
+            purpose = com.example.util.trStr(lang, baseAdvice.purpose),
+            keyEffect = com.example.util.trStr(lang, baseAdvice.keyEffect),
+            recommendationTip = com.example.util.trStr(lang, baseAdvice.recommendationTip),
+            bestAgainst = baseAdvice.bestAgainst.map { com.example.util.trStr(lang, it) },
+            iconUrl = finalIcon
+        )
     }
 }

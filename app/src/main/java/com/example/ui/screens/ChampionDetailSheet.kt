@@ -1782,7 +1782,8 @@ fun AdaptiveDetailAlertDialog(
     // ==========================================
     if (selectedSituationalItem != null) {
         val itemName = selectedSituationalItem!!
-        val advice = SituationalItemAdvisor.getAdvice(itemName)
+        val currentLang = com.example.util.LocalLanguage.current
+        val advice = SituationalItemAdvisor.getAdvice(itemName, currentLang)
 
         AdaptiveDetailAlertDialog(
             isOverlay = isOverlay,
