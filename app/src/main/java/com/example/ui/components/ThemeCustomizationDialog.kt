@@ -289,13 +289,13 @@ fun ThemeCustomizationBottomSheet(
                     Text("💡", fontSize = 18.sp)
                     Column {
                         Text(
-                            text = "Consejo del Coach Soberano",
+                            text = tr("Consejo del Coach Soberano"),
                             color = HextechGold,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "¡Cada región altera la energía y colores de la interfaz! Selecciona tu región favorita para sincronizar tu estilo.",
+                            text = tr("¡Cada región altera la energía y colores de la interfaz! Selecciona tu región favorita para sincronizar tu estilo."),
                             color = TextSecondary,
                             fontSize = 10.5.sp,
                             lineHeight = 14.sp
@@ -877,7 +877,7 @@ private fun ColorSwatchGridItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = title,
+            text = tr(title),
             color = textColor,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
@@ -886,7 +886,7 @@ private fun ColorSwatchGridItem(
         )
 
         Text(
-            text = subtitle,
+            text = tr(subtitle),
             color = TextMuted,
             fontSize = 8.sp,
             maxLines = 1,

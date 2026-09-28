@@ -256,16 +256,16 @@ fun MatchupPreviewDialog(
                                         .border(0.8.dp, HextechCyan, RoundedCornerShape(4.dp))
                                         .padding(horizontal = 5.dp, vertical = 2.dp)
                                 ) {
-                                    Text("Nv. 1-3", color = HextechCyan, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(tr("Nv. 1-3"), color = HextechCyan, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = if (isMyCounter) 
-                                        "Ventaja en intercambios tempranos. En Wild Rift la primera oleada otorga nivel 2 inmediato; presiona para denegar el Fruto de Miel (1:15)." 
+                                        tr("Ventaja en intercambios tempranos. En Wild Rift la primera oleada otorga nivel 2 inmediato; presiona para denegar el Fruto de Miel (1:15).") 
                                     else if (isEnemyCounter) 
-                                        "Precaución en fase temprana. Cede la prioridad de la primera oleada, farmea bajo torre y espera tu pico al nivel 3 (kit completo)."
+                                        tr("Precaución en fase temprana. Cede la prioridad de la primera oleada, farmea bajo torre y espera tu pico al nivel 3 (kit completo).")
                                     else 
-                                        "Línea neutra de Wild Rift. Controla los arbustos de línea, guarda la Flor del Adivino y castiga tras esquivar su habilidad principal.",
+                                        tr("Línea neutra de Wild Rift. Controla los arbustos de línea, guarda la Flor del Adivino y castiga tras esquivar su habilidad principal."),
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp
@@ -281,11 +281,11 @@ fun MatchupPreviewDialog(
                                         .border(0.8.dp, HextechGold, RoundedCornerShape(4.dp))
                                         .padding(horizontal = 5.dp, vertical = 2.dp)
                                 ) {
-                                    Text("Nv. 5 (Definitiva)", color = HextechGold, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(tr("Nv. 5 (Definitiva)"), color = HextechGold, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Pico de Definitiva (Nivel 5): En Wild Rift los enfriamientos de R son cortos (35-50s). Si ${enemyOpponent.name} falla su definitiva, castiga agresivamente antes del objetivo del minuto 5:00.",
+                                    text = tr("Pico de Definitiva (Nivel 5): En Wild Rift los enfriamientos de R son cortos (35-50s). Si %s falla su definitiva, castiga agresivamente antes del objetivo del minuto 5:00.").format(enemyOpponent.name),
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp
@@ -301,11 +301,11 @@ fun MatchupPreviewDialog(
                                         .border(0.8.dp, TierSPlusColor, RoundedCornerShape(4.dp))
                                         .padding(horizontal = 5.dp, vertical = 2.dp)
                                 ) {
-                                    Text("Mid/Late", color = TierSPlusColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(tr("Mid/Late"), color = TierSPlusColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Macro y Objetivos Móviles: Al minuto 5:00 asegura la primera rotación (Dragón o Heraldo). En minuto 7:30 caen las placas de torre y a los 12:00 el Barón/Ancestral.",
+                                    text = tr("Macro y Objetivos Móviles: Al minuto 5:00 asegura la primera rotación (Dragón o Heraldo). En minuto 7:30 caen las placas de torre y a los 12:00 el Barón/Ancestral."),
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp
@@ -336,7 +336,7 @@ fun MatchupPreviewDialog(
                                 Icon(Icons.Default.Shield, contentDescription = null, tint = DangerRed, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Fuerte contra (Matchups favorables): ${if (enemyOpponent.advantageAgainst.isNotEmpty()) enemyOpponent.advantageAgainst.take(3).joinToString(", ") else "Intercambio en línea de Wild Rift"}",
+                                    text = tr("Fuerte contra (Matchups favorables): %s").format(if (enemyOpponent.advantageAgainst.isNotEmpty()) enemyOpponent.advantageAgainst.take(3).joinToString(", ") else tr("Intercambio en línea de Wild Rift")),
                                     color = DangerRed,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp
@@ -344,7 +344,7 @@ fun MatchupPreviewDialog(
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Consejo del rival: ${enemyOpponent.tacticalAdvice.ifBlank { "Castiga cuando falle sus habilidades principales o use recursos en la oleada." }}",
+                                text = tr("Consejo del rival: %s").format(enemyOpponent.tacticalAdvice.ifBlank { tr("Castiga cuando falle sus habilidades principales o use recursos en la oleada.") }),
                                 color = TextPrimary,
                                 fontSize = 11.sp,
                                 lineHeight = 14.sp
@@ -369,7 +369,7 @@ fun MatchupPreviewDialog(
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(
-                                text = "Condición de Victoria Móvil:",
+                                text = tr("Condición de Victoria Móvil:"),
                                 color = HextechCyan,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.5.sp

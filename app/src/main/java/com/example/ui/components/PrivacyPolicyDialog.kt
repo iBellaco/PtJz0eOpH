@@ -183,20 +183,21 @@ fun PrivacyPolicyDialog(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (onChangeLanguage != null) {
                             OutlinedButton(
                                 onClick = onChangeLanguage,
                                 modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 2.dp, vertical = 6.dp),
                                 border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.6f)),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = HextechCyan)
                             ) {
                                 Text(
                                     text = tr("Cambiar Idioma"),
-                                    fontSize = 11.5.sp,
+                                    fontSize = 10.5.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     maxLines = 1
                                 )
@@ -206,13 +207,14 @@ fun PrivacyPolicyDialog(
                         OutlinedButton(
                             onClick = onDismiss,
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 6.dp),
                             border = BorderStroke(1.dp, Color(0xFFFF4D4D).copy(alpha = 0.6f)),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF6666))
                         ) {
                             Text(
                                 text = tr("Rechazar y Salir"),
-                                fontSize = 11.5.sp,
+                                fontSize = 10.5.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 maxLines = 1
                             )
@@ -220,15 +222,16 @@ fun PrivacyPolicyDialog(
 
                         Button(
                             onClick = onAccept,
-                            modifier = Modifier.weight(1.2f),
-                            colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier.weight(1.1f),
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 6.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
                         ) {
                             Text(
                                 text = tr("Aceptar y Entrar"),
                                 color = HextechDarkBg,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 12.5.sp,
+                                fontSize = 11.sp,
                                 maxLines = 1
                             )
                         }
