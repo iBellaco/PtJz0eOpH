@@ -795,7 +795,7 @@ fun DraftHistoryScreen(
                                 selected = isAllSelected,
                                 onClick = { selectedProfileIdFilter = "ALL" },
                                 label = {
-                                    Text(tr("🌐 Todas (${draftsList.size})"), fontSize = 10.5.sp)
+                                    Text(tr("🌐 Todas (%d)").format(draftsList.size), fontSize = 10.5.sp)
                                 },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = HextechCyan,
@@ -1526,7 +1526,7 @@ fun DraftHistoryScreen(
             isOverlay = effectiveOverlay,
             onDismissRequest = { profileToClearHistory = null },
             title = { Text(tr("Vaciar Historial del Perfil"), color = DangerRed, fontWeight = FontWeight.Bold) },
-            text = { Text(tr("¿Estás seguro de que deseas vaciar todo el historial del perfil '${targetProf.name}'? Esta acción no se puede deshacer."), color = TextSecondary, fontSize = 13.sp) },
+            text = { Text(tr("¿Estás seguro de que deseas vaciar todo el historial del perfil '%s'? Esta acción no se puede deshacer.").format(targetProf.name), color = TextSecondary, fontSize = 13.sp) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -1556,7 +1556,7 @@ fun DraftHistoryScreen(
             isOverlay = effectiveOverlay,
             onDismissRequest = { profileToDeleteProfile = null },
             title = { Text(tr("Eliminar Perfil e Historial"), color = DangerRed, fontWeight = FontWeight.Bold) },
-            text = { Text(tr("¿Estás seguro de que deseas eliminar el perfil '${targetProf.name}' y todo su historial asociado? Esta acción es irreversible y permanente."), color = TextSecondary, fontSize = 13.sp) },
+            text = { Text(tr("¿Estás seguro de que deseas eliminar el perfil '%s' y todo su historial asociado? Esta acción es irreversible y permanente.").format(targetProf.name), color = TextSecondary, fontSize = 13.sp) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -1601,7 +1601,7 @@ fun DraftHistoryScreen(
             text = { 
                 Text(
                     if (isAllSelected) tr("¿Estás seguro de vaciar todas las partidas y composiciones guardadas de todas tus cuentas?")
-                    else tr("¿Estás seguro de vaciar todas las partidas guardadas de la cuenta '$profName'?"), 
+                    else tr("¿Estás seguro de vaciar todas las partidas guardadas de la cuenta '%s'?").format(profName), 
                     color = TextSecondary, 
                     fontSize = 13.sp
                 ) 

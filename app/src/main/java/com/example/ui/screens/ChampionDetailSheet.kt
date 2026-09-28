@@ -1833,7 +1833,7 @@ fun AdaptiveDetailAlertDialog(
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         FormattedWildRiftText(
-                            text = advice.purpose,
+                            text = tr(advice.purpose),
                             color = TextPrimary,
                             fontSize = 12.5.sp,
                             lineHeight = 17.sp
@@ -1882,7 +1882,7 @@ fun AdaptiveDetailAlertDialog(
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         FormattedWildRiftText(
-                            text = advice.keyEffect,
+                            text = tr(advice.keyEffect),
                             color = TextPrimary.copy(alpha = 0.9f),
                             fontSize = 12.sp,
                             lineHeight = 16.sp
@@ -1899,7 +1899,7 @@ fun AdaptiveDetailAlertDialog(
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = " ${advice.recommendationTip}",
+                            text = " ${tr(advice.recommendationTip)}",
                             color = TextPrimary,
                             fontSize = 11.5.sp,
                             lineHeight = 15.sp

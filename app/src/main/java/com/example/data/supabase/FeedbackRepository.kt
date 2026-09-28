@@ -98,8 +98,9 @@ object FeedbackRepository {
                 description.trim()
             }
 
+            val reportId = if (!id.isNullOrBlank()) id else java.util.UUID.randomUUID().toString()
             val report = InsertFeedbackReport(
-                id = id,
+                id = reportId,
                 type = type,
                 title = title.trim(),
                 description = finalDescription,

@@ -630,7 +630,7 @@ fun BugReportFeedbackDialog(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                val coreStatusText = if (selectedCoreItems.size == 5) "✓ " + tr("Completo (5/5)") else "* " + tr("Obligatorio (${selectedCoreItems.size}/5)")
+                                val coreStatusText = if (selectedCoreItems.size == 5) "✓ " + tr("Completo (5/5)") else "* " + tr("Obligatorio (%d/5)").format(selectedCoreItems.size)
                                 val coreStatusColor = if (selectedCoreItems.size == 5) HextechGold else DangerRed
                                 Box(
                                     modifier = Modifier

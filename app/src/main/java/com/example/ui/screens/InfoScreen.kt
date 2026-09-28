@@ -324,7 +324,7 @@ fun InfoScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • Parche 7.3",
+                    text = "v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • ${tr(WildRiftRepository.CURRENT_PATCH_VERSION)}",
                     color = HextechCyan.copy(alpha = 0.9f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold

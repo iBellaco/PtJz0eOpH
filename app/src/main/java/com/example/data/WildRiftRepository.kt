@@ -923,35 +923,35 @@ object WildRiftRepository {
             val comboSynergies = mutableListOf<String>()
             if (champ.id == "yasuo" && (allyIds.any { it in listOf("malphite", "diana", "nautilus", "alistar", "wukong", "aatrox", "rakan", "vi") })) {
                 val knockupEnabler = allies.firstOrNull { it.id in listOf("malphite", "diana", "nautilus", "alistar", "wukong", "aatrox", "rakan", "vi") }?.name ?: "Iniciador"
-                comboSynergies.add("💥 Combo Aéreo: Levantamiento con $knockupEnabler + Definitiva de Yasuo")
+                comboSynergies.add(t(lang, "💥 Combo Aéreo: Levantamiento con $knockupEnabler + Definitiva de Yasuo", "💥 Combo Aéreo: Arremesso com $knockupEnabler + Ultimate do Yasuo", "💥 Combo Aéreo: Levantamiento con $knockupEnabler + Definitiva de Yasuo"))
             }
             if (champ.id in listOf("malphite", "wukong", "jarvan_iv", "diana") && allyIds.contains("orianna")) {
-                comboSynergies.add("💥 Wombocombo Definitiva: Llevas la bola de Orianna para Onda de Choque masiva")
+                comboSynergies.add(t(lang, "💥 Wombocombo Definitiva: Llevas la bola de Orianna para Onda de Choque masiva", "💥 Wombocombo Ultimate: Você carrega a esfera de Orianna para Onda de Choque massiva", "💥 Wombocombo Definitiva: Llevas la bola de Orianna para Onda de Choque masiva"))
             }
             if (champ.id == "orianna" && allyIds.any { it in listOf("malphite", "jarvan_iv", "wukong", "vi", "hecarim") }) {
                 val carrier = allies.firstOrNull { it.id in listOf("malphite", "jarvan_iv", "wukong", "vi", "hecarim") }?.name ?: "Iniciador"
-                comboSynergies.add("💥 Balón Transportado: Protege a $carrier con Habilidad 3 para iniciar con Definitiva")
+                comboSynergies.add(t(lang, "💥 Balón Transportado: Protege a $carrier con Habilidad 3 para iniciar con Definitiva", "💥 Esfera Transportada: Proteja $carrier com Habilidade 3 para iniciar com Ultimate", "💥 Balón Transportado: Protege a $carrier con Habilidad 3 para iniciar con Definitiva"))
             }
             if (champ.id in listOf("miss_fortune", "samira", "katarina") && allyIds.any { it in listOf("amumu", "leona", "nautilus", "malphite", "seraphine") }) {
                 val ccChamp = allies.firstOrNull { it.id in listOf("amumu", "leona", "nautilus", "malphite", "seraphine") }?.name ?: "CC"
-                comboSynergies.add("💥 CC en Cadena: Definitiva en área sobre el control de masas de $ccChamp")
+                comboSynergies.add(t(lang, "💥 CC en Cadena: Definitiva en área sobre el control de masas de $ccChamp", "💥 CC em Cadeia: Ultimate em área sobre o controle de grupo de $ccChamp", "💥 CC en Cadena: Definitiva en área sobre el control de masas de $ccChamp"))
             }
             if (champ.id in listOf("jinx", "vayne", "twitch", "zeri", "kogmaw") && allyIds.any { it in listOf("lulu", "yuumi", "milio", "janna", "nami") }) {
                 val enchanter = allies.firstOrNull { it.id in listOf("lulu", "yuumi", "milio", "janna", "nami") }?.name ?: "Support"
-                comboSynergies.add("🛡️ Hipercarry Peel: Máxima supervivencia y esteroides de daño con $enchanter")
+                comboSynergies.add(t(lang, "🛡️ Hipercarry Peel: Máxima supervivencia y esteroides de daño con $enchanter", "🛡️ Hipercarregador Peel: Máxima sobrevivência e fortalecimento de dano com $enchanter", "🛡️ Hipercarry Peel: Máxima supervivencia y esteroides de daño con $enchanter"))
             }
             if (champ.id == "braum" && allyIds.contains("lucian")) {
-                comboSynergies.add("💥 Pasiva Rápida: Lucian activa tus 4 marcas de aturdimiento en 0.5s")
+                comboSynergies.add(t(lang, "💥 Pasiva Rápida: Lucian activa tus 4 marcas de aturdimiento en 0.5s", "💥 Passiva Rápida: Lucian ativa suas 4 marcas de atordoamento em 0,5s", "💥 Pasiva Rápida: Lucian activa tus 4 marcas de aturdimiento en 0.5s"))
             }
             if (champ.id == "lucian" && allyIds.any { it in listOf("braum", "nami") }) {
-                comboSynergies.add("💥 Sinergia Bot: Activación instantánea de Bendición/Golpe Conmocionante")
+                comboSynergies.add(t(lang, "💥 Sinergia Bot: Activación instantánea de Bendición/Golpe Conmocionante", "💥 Sinergia Bot: Ativação instantânea de Bênção/Golpe Concussivo", "💥 Sinergia Bot: Activación instantánea de Bendición/Golpe Conmocionante"))
             }
             if (champ.id == "xayah" && allyIds.contains("rakan") || (champ.id == "rakan" && allyIds.contains("xayah"))) {
-                comboSynergies.add("❤️ Dúo Sagrado: Mayor alcance en Danza de Batalla y retirada conjunta")
+                comboSynergies.add(t(lang, "❤️ Dúo Sagrado: Mayor alcance en Danza de Batalla y retirada conjunta", "❤️ Dupla Sagrada: Maior alcance na Dança da Batalha e retorno conjunto", "❤️ Dúo Sagrado: Mayor alcance en Danza de Batalla y retirada conjunta"))
             }
             if (champ.id == "hwei" && allyIds.any { it in listOf("amumu", "malphite", "jarvan_iv", "leona", "nautilus") }) {
                 val ccChamp = allies.firstOrNull { it.id in listOf("amumu", "malphite", "jarvan_iv", "leona", "nautilus") }?.name ?: "Iniciador"
-                comboSynergies.add("💥 Tormento Artístico: Definitiva (H4) sobre el control de masas de $ccChamp para detonación de Pasiva en área")
+                comboSynergies.add(t(lang, "💥 Tormento Artístico: Definitiva (H4) sobre el control de masas de $ccChamp para detonación de Pasiva en área", "💥 Tormento Artístico: Ultimate (H4) sobre o controle de grupo de $ccChamp para detonação da Passiva em área", "💥 Tormento Artístico: Definitiva (H4) sobre el control de masas de $ccChamp para detonación de Pasiva en área"))
             }
 
             if (isFirstPickEffective) {

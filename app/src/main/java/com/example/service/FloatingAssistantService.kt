@@ -3905,8 +3905,8 @@ private fun CoachContent(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text("WR: ${pick.estimatedWinrate}%", color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                             }
-                            Text(pick.advantageBadge, color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
-                            Text(pick.tacticalReason, color = TextMuted, fontSize = 8.sp, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
+                            Text(tr(pick.advantageBadge), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
+                            Text(tr(pick.tacticalReason), color = TextMuted, fontSize = 8.sp, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
                         }
                     }
                     

@@ -325,7 +325,7 @@ fun DraftWomboSynergyCard(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = wombo.title,
+                        text = tr(wombo.title),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
@@ -412,7 +412,7 @@ fun DraftWomboSynergyCard(
 
             // Descripción y Guía de Ejecución
             Text(
-                text = wombo.description,
+                text = tr(wombo.description),
                 color = TextPrimary.copy(alpha = 0.9f),
                 fontSize = 11.5.sp,
                 lineHeight = 15.sp
@@ -437,7 +437,7 @@ fun DraftWomboSynergyCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Tip Coach: ${wombo.executionTip}",
+                    text = "${tr("Tip Coach")}: ${tr(wombo.executionTip)}",
                     color = HextechCyanLight,
                     fontSize = 10.5.sp,
                     fontWeight = FontWeight.Medium,
