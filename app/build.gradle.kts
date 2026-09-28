@@ -20,14 +20,16 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 796
-    versionName = "1.1.10.80"
+    versionCode = 797
+    versionName = "1.1.10.81"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    val supabaseUrl = (project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "https://yreknglctxujpetgqhnw.supabase.co").trim('\"', '\'')
-    val supabaseKey = (project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr").trim('\"', '\'')
+    val rawSupabaseUrl = (project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "").trim('\"', '\'')
+    val supabaseUrl = if (rawSupabaseUrl.isNotBlank()) rawSupabaseUrl else "https://yreknglctxujpetgqhnw.supabase.co"
+    val rawSupabaseKey = (project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "").trim('\"', '\'')
+    val supabaseKey = if (rawSupabaseKey.isNotBlank()) rawSupabaseKey else "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr"
     buildConfigField("String", "SUPABASE_URL", "\"${supabaseUrl}\"")
     buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseKey}\"")
   }

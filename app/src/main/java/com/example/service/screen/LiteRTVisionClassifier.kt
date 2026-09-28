@@ -36,7 +36,7 @@ object LiteRTVisionClassifier {
 
     private const val TAG = "LiteRTVisionClassifier"
     private const val TENSOR_INPUT_SIZE = 48 // 48x48 tensor de entrada optimizado
-    private const val EMBEDDING_DIM = 140    // Vector descriptor de 140 dimensiones de alta fidelidad
+    private const val EMBEDDING_DIM = 145    // Vector descriptor de 145 dimensiones de alta fidelidad con discriminación cromática y de género
 
     // Umbral de confianza por defecto (80% de similitud real centrada en cero)
     const val DEFAULT_CONFIDENCE_THRESHOLD = 0.80f
@@ -192,7 +192,7 @@ object LiteRTVisionClassifier {
         }
 
         val center = TENSOR_INPUT_SIZE / 2f
-        val maxInnerRadius = TENSOR_INPUT_SIZE * 0.38f
+        val maxInnerRadius = TENSOR_INPUT_SIZE * 0.44f // Enmascaramiento circular amplio para incluir silueta completa, cabello y hombros
         val maxRadiusSq = maxInnerRadius * maxInnerRadius
 
         // 1. Histograma 2D HSV (16 Tonalidades x 4 Niveles de Saturación = 64 bins)
@@ -239,6 +239,10 @@ object LiteRTVisionClassifier {
         var whiteFurSilverCount = 0f    // Volibear, Sejuani, Poros (Pelaje blanco/plata ártico brillante)
         var glowingRedEyeCount = 0f     // Ojo rojo llameante de Volibear / Warwick
         var darkBeastShadowCount = 0f   // Rengar, Naafiri, Nocturne (Sombra/pelaje negro profundo)
+        var viPunkPinkHairCount = 0f    // Cabello rosa/magenta punk brillante y distintivo de Vi
+        var viUpperPinkCount = 0f       // Pelo rosa neón en la mitad superior de Vi
+        var akshanGoldenScarfCount = 0f // Pañuelo dorado, calidez shurimana y armas doradas de Akshan
+        var akshanWhiteStreakCount = 0f // Mechón blanco icónico en el flequillo de Akshan
         var highlightCount = 0f
         var shadowCount = 0f
         var midtoneSatCount = 0f
@@ -260,12 +264,12 @@ object LiteRTVisionClassifier {
                 val lum = 0.299f * r + 0.587f * g + 0.114f * b
                 lumGrid[y][x] = lum
 
-                if (distSq > maxRadiusSq) continue // Enmascaramiento circular interno
+                if (distSq > maxRadiusSq) continue // Enmascaramiento circular interno amplio
 
                 val dist = sqrt(distSq)
-                // Descartar únicamente píxeles extremadamente periféricos de aros saturados
-                if (dist > TENSOR_INPUT_SIZE * 0.35f) {
-                    if ((r > 0.70f && r > g * 2.0f && r > b * 2.0f) || (b > 0.70f && b > r * 2.0f && b > g * 1.5f)) {
+                // Descartar únicamente aros periféricos monocromáticos puros de la UI en el borde extremo
+                if (dist > TENSOR_INPUT_SIZE * 0.44f) {
+                    if ((r > 0.88f && g < 0.10f && b < 0.10f) || (b > 0.88f && r < 0.10f && g < 0.18f)) {
                         continue
                     }
                 }
@@ -406,6 +410,29 @@ object LiteRTVisionClassifier {
                 if (lum < 0.22f && sat < 0.35f) {
                     darkBeastShadowCount += 1f
                 }
+
+                // 15) Cabello Rosa / Magenta / Carmesí Neón de Vi:
+                // Vi posee un cabello rosa intenso inconfundible (Hue 315°-360° o 0°-22°, saturación alta, r > g * 1.30f)
+                val isViPink = (r > 0.40f && r > g + 0.08f && sat > 0.25f && ((hue in 315f..360f) || (hue in 0f..22f)))
+                if (isViPink) {
+                    viPunkPinkHairCount += 1f
+                    if (y < center) {
+                        viUpperPinkCount += 1f
+                    }
+                }
+
+                // 16) Dorado Shurimano y Pañuelo de Akshan:
+                // Akshan posee un dorado cálido shurimano (Hue 35°-60°, saturación media-alta, r alto, g medio-alto, b bajo)
+                val isAkshanGold = (r > 0.48f && g > 0.32f && b < 0.28f && hue in 35f..60f && sat in 0.28f..0.85f)
+                if (isAkshanGold) {
+                    akshanGoldenScarfCount += 1f
+                }
+
+                // 17) Mechón Blanco en Cabello Oscuro de Akshan:
+                // Mechón plateado/blanco brillante en el flequillo (zona superior) contrastando con cabello castaño oscuro
+                if (y < center * 0.70f && lum > 0.65f && sat < 0.18f && r > 0.55f && g > 0.55f && b > 0.55f) {
+                    akshanWhiteStreakCount += 1f
+                }
             }
         }
 
@@ -447,7 +474,7 @@ object LiteRTVisionClassifier {
             embedding[embIdx++] = quadCyanLime[i] / c
         } // 99 + 8 = 107 dims
 
-        // 5. Firmas espectrales ortogonales y momentos estadísticos (25 dims)
+        // 5. Firmas espectrales ortogonales y momentos estadísticos (30 dims)
         val meanR = totalR / normCount
         val meanG = totalG / normCount
         val meanB = totalB / normCount
@@ -477,11 +504,16 @@ object LiteRTVisionClassifier {
         embedding[embIdx++] = glowingRedEyeCount / normCount      // Ojo rojo focal (Volibear)
         embedding[embIdx++] = darkBeastShadowCount / normCount    // Pelaje negro/sombra oscura (Rengar)
         embedding[embIdx++] = (whiteFurSilverCount - darkBeastShadowCount) / (whiteFurSilverCount + darkBeastShadowCount + 1e-4f) // Discriminador ortogonal Volibear vs Rengar
+        embedding[embIdx++] = viPunkPinkHairCount / normCount       // Cabello rosa punk de Vi
+        embedding[embIdx++] = viUpperPinkCount / normCount          // Pelo rosa superior de Vi
+        embedding[embIdx++] = akshanGoldenScarfCount / normCount    // Dorado shurimano de Akshan
+        embedding[embIdx++] = akshanWhiteStreakCount / normCount    // Mechón blanco de Akshan
+        embedding[embIdx++] = (viPunkPinkHairCount - akshanGoldenScarfCount) / (viPunkPinkHairCount + akshanGoldenScarfCount + 1e-4f) // Discriminador directo Vi vs Akshan
         embedding[embIdx++] = topAvgLum - botAvgLum               // Gradiente vertical de luz (Urgot claro arriba, Pyke oscuro arriba)
         embedding[embIdx++] = highlightCount / normCount
         embedding[embIdx++] = shadowCount / normCount
         embedding[embIdx++] = midtoneSatCount / normCount
-        // 107 + 25 = 132 dims
+        // 107 + 30 = 137 dims
 
         // 6. Histograma de bordes direccionales Sobel (8 bins)
         val edgeHist = FloatArray(8)

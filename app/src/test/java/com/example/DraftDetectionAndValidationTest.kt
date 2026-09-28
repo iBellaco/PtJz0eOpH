@@ -68,10 +68,16 @@ class DraftDetectionAndValidationTest {
     @Test
     fun testRoleNameParsingMultilingual() {
         // Spanish
+        assertEquals(LaneRole.TOP, DraftValidationLayer.parseRoleFromText("CALLE DEL BARÓN"))
+        assertEquals(LaneRole.TOP, DraftValidationLayer.parseRoleFromText("CALLÉ DEL BARÓN"))
+        assertEquals(LaneRole.TOP, DraftValidationLayer.parseRoleFromText("CALLE DEL BARON"))
         assertEquals(LaneRole.TOP, DraftValidationLayer.parseRoleFromText("CARRIL DE BARÓN"))
         assertEquals(LaneRole.TOP, DraftValidationLayer.parseRoleFromText("CARRIL DE BARON"))
         assertEquals(LaneRole.JUNGLE, DraftValidationLayer.parseRoleFromText("JUNGLA"))
+        assertEquals(LaneRole.MID, DraftValidationLayer.parseRoleFromText("CALLE CENTRAL"))
         assertEquals(LaneRole.MID, DraftValidationLayer.parseRoleFromText("CARRIL CENTRAL"))
+        assertEquals(LaneRole.ADC, DraftValidationLayer.parseRoleFromText("CALLE DEL DRAGÓN"))
+        assertEquals(LaneRole.ADC, DraftValidationLayer.parseRoleFromText("CALLE DEL DRAGON"))
         assertEquals(LaneRole.ADC, DraftValidationLayer.parseRoleFromText("CARRIL DEL DRAGÓN"))
         assertEquals(LaneRole.ADC, DraftValidationLayer.parseRoleFromText("CARRIL DEL DRAGON"))
         assertEquals(LaneRole.SUPPORT, DraftValidationLayer.parseRoleFromText("SOPORTE"))
