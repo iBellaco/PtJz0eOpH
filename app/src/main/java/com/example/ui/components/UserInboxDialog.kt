@@ -1087,7 +1087,7 @@ fun UserInboxDialog(
                                                     modifier = Modifier.padding(end = 6.dp)
                                                 ) {
                                                     Text(
-                                                        "NUEVO",
+                                                        tr("NUEVO"),
                                                         color = Color(0xFF38BDF8),
                                                         fontSize = 9.sp,
                                                         fontWeight = FontWeight.Bold,
@@ -1174,7 +1174,7 @@ fun UserInboxDialog(
                                             }
                                     ) {
                                             if (sender.isNotBlank()) {
-                                                Text("Remitente: $sender", color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                                Text(tr("Remitente:") + " $sender", color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                                 Spacer(modifier = Modifier.height(2.dp))
                                             }
                                             Text(
@@ -1250,7 +1250,7 @@ fun UserInboxDialog(
                                         }
                                     } else {
                                         if (sender.isNotBlank()) {
-                                            Text("Enviado por: $sender", color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                            Text(tr("Enviado por:") + " $sender", color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                             Spacer(modifier = Modifier.height(4.dp))
                                         }
                                         Text(content, color = Color.LightGray, fontSize = 13.sp)
@@ -1320,7 +1320,7 @@ fun ImageViewerDialog(
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0EA5E9))
                 ) {
-                    Text("Cerrar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(tr("Cerrar"), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1503,7 +1503,7 @@ fun UserSupportThreadCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Soporte Técnico / Reporte", color = Color(0xFF38BDF8), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Text(tr("Soporte Técnico / Reporte"), color = Color(0xFF38BDF8), fontSize = 11.sp, fontWeight = FontWeight.Bold)
             Surface(
                 shape = RoundedCornerShape(4.dp),
                 color = when (liveStatus.uppercase()) {
@@ -1538,7 +1538,7 @@ fun UserSupportThreadCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
-                    Text("Descripción:", color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Descripción:"), color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(originalContent, color = Color.LightGray, fontSize = 12.sp)
                 }
@@ -1549,7 +1549,7 @@ fun UserSupportThreadCard(
         // Imagen adjunta (si existe) con botón para abrir en ventana
         if (livePhotos.isNotEmpty()) {
             Spacer(modifier = Modifier.height(2.dp))
-            Text("Imagen adjunta:", color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(tr("Imagen adjunta:"), color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier
@@ -1686,7 +1686,7 @@ fun UserSupportThreadCard(
                         Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            "Este reporte ha sido marcado como cerrado. Ya no es posible enviar más respuestas.",
+                            tr("Este reporte ha sido marcado como cerrado. Ya no es posible enviar más respuestas."),
                             color = Color(0xFFFCA5A5),
                             fontSize = 10.5.sp
                         )
@@ -1704,7 +1704,7 @@ fun UserSupportThreadCard(
                         Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            "Esperando respuesta del equipo de soporte. La opción de responder se habilitará cuando soporte responda formalmente a tu ticket.",
+                            tr("Esperando respuesta del equipo de soporte. La opción de responder se habilitará cuando soporte responda formalmente a tu ticket."),
                             color = Color(0xFFFDE68A),
                             fontSize = 10.5.sp
                         )
@@ -1721,7 +1721,7 @@ fun UserSupportThreadCard(
                 ) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text(
-                        "Responder a Soporte",
+                        tr("Responder a Soporte"),
                         color = Color(0xFF38BDF8),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -1730,7 +1730,7 @@ fun UserSupportThreadCard(
                     OutlinedTextField(
                         value = userReplyText,
                         onValueChange = { userReplyText = SupportReplyManager.sanitizePlainText(it, 500) },
-                        placeholder = { Text("Escribe tu respuesta aquí...", color = Color.Gray, fontSize = 11.5.sp) },
+                        placeholder = { Text(tr("Escribe tu respuesta aquí..."), color = Color.Gray, fontSize = 11.5.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         maxLines = 3,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -1788,7 +1788,7 @@ fun UserSupportThreadCard(
                                 Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.White)
                                 Spacer(modifier = Modifier.width(6.dp))
                             }
-                            Text("Enviar", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(tr("Enviar"), fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
                 }

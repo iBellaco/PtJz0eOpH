@@ -159,19 +159,19 @@ fun PurchaseHistoryDialog(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_blue_essence),
-                            contentDescription = "Esencia Azul",
+                            contentDescription = tr("Esencia Azul"),
                             modifier = Modifier.size(28.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Historial de Esencia Azul",
+                                text = tr("Historial de Esencia Azul"),
                                 fontWeight = FontWeight.Black,
                                 color = HextechCyan,
                                 fontSize = 17.sp
                             )
                             Text(
-                                text = "Movimientos, recargas y canjes exclusivos",
+                                text = tr("Movimientos, recargas y canjes exclusivos"),
                                 color = Color.LightGray,
                                 fontSize = 11.sp
                             )
@@ -184,7 +184,7 @@ fun PurchaseHistoryDialog(
                         borderColor = Color.Transparent,
                         glowColor = HextechCyan
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.Gray, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = Color.Gray, modifier = Modifier.size(18.dp))
                     }
                 }
 
@@ -206,7 +206,7 @@ fun PurchaseHistoryDialog(
                     ) {
                         Column {
                             Text(
-                                text = "SALDO DISPONIBLE",
+                                text = tr("SALDO DISPONIBLE"),
                                 color = Color.Gray,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,

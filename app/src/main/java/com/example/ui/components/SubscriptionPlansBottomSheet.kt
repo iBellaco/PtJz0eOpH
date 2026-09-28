@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.util.tr
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -71,7 +72,7 @@ fun SubscriptionPlansBottomSheet(
             )
             
             Text(
-                text = "Desbloquea tu Máximo Potencial",
+                text = tr("Desbloquea tu Máximo Potencial"),
                 color = TextPrimary,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -80,7 +81,7 @@ fun SubscriptionPlansBottomSheet(
             )
             
             Text(
-                text = "Elige el plan que mejor se adapte a tu estilo de juego: pases temporales por horas/días o suscripción continua.",
+                text = tr("Elige el plan que mejor se adapte a tu estilo de juego: pases temporales por horas/días o suscripción continua."),
                 color = TextSecondary,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -267,7 +268,7 @@ private fun PremiumPlanCard(
                         enablePulse = true
                     ) {
                         Text(
-                            text = "Suscribirse Ahora",
+                            text = tr("Suscribirse Ahora"),
                             color = HextechDarkBg,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.ExtraBold
@@ -286,7 +287,7 @@ private fun PremiumPlanCard(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = "MÁS POPULAR",
+                    text = tr("MÁS POPULAR"),
                     color = HextechDarkBg,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Black,

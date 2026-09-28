@@ -661,7 +661,7 @@ fun NoticeMediaViewer(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Icon(Icons.Default.Fullscreen, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(12.dp))
-                            Text("Ampliar", color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Ampliar"), color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1063,7 +1063,7 @@ fun LocalGalleryVideoPlayer(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Cargando video...",
+                    text = tr("Cargando video..."),
                     color = HextechCyan,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
@@ -1114,7 +1114,7 @@ fun LocalGalleryVideoPlayer(
                     shape = RoundedCornerShape(6.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp)
                 ) {
-                    Text("Reintentar", color = HextechCyan, fontSize = 10.5.sp)
+                    Text(tr("Reintentar"), color = HextechCyan, fontSize = 10.5.sp)
                 }
             }
         }
@@ -1287,7 +1287,7 @@ fun NoticeMediaFullscreenDialog(
             ) {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = "Cerrar",
+                    contentDescription = tr("Cerrar"),
                     tint = Color.White,
                     modifier = Modifier.size(22.dp)
                 )
@@ -1320,13 +1320,13 @@ fun NoticeMediaFullscreenDialog(
                     ) {
                         Icon(
                             if (isLandscape) Icons.Default.ScreenLockPortrait else Icons.Default.ScreenRotation,
-                            contentDescription = "Rotar Pantalla",
+                            contentDescription = tr("Rotar Pantalla"),
                             tint = HextechCyan,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (isLandscape) "Modo Vertical" else "Pantalla Completa",
+                            text = if (isLandscape) tr("Modo Vertical") else tr("Pantalla Completa"),
                             color = HextechCyan,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
@@ -1354,7 +1354,7 @@ fun NoticeMediaFullscreenDialog(
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                         modifier = Modifier.height(36.dp)
                     ) {
-                        Text("Cerrar", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = TextPrimary)
+                        Text(tr("Cerrar"), fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = TextPrimary)
                     }
                 }
             }
@@ -1405,7 +1405,7 @@ fun NoticeMediaFullscreenDialog(
                         contentPadding = PaddingValues(horizontal = 22.dp, vertical = 10.dp)
                     ) {
                         Text(
-                            text = "Abrir enlace",
+                            text = tr("Abrir enlace"),
                             color = HextechDarkBg,
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold

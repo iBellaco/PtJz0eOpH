@@ -305,7 +305,7 @@ fun SponsorCpmPanelDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(tr("Panel CPM de Patrocinador"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                            Text("Gestiona tus anuncios publicitarios y presupuestos", color = TextSecondary, fontSize = 12.sp)
+                            Text(tr("Gestiona tus anuncios publicitarios y presupuestos"), color = TextSecondary, fontSize = 12.sp)
                         }
                     }
                     IconButton(onClick = onDismiss) {
@@ -343,7 +343,7 @@ fun SponsorCpmPanelDialog(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Nuevo Anuncio", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(tr("Nuevo Anuncio"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
 
@@ -360,7 +360,7 @@ fun SponsorCpmPanelDialog(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.AdsClick, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("No tienes anuncios publicados.", color = TextSecondary, fontSize = 14.sp)
+                            Text(tr("No tienes anuncios publicados."), color = TextSecondary, fontSize = 14.sp)
                             Text(tr("Crea uno y espera la aprobación del administrador."), color = TextSecondary.copy(alpha = 0.7f), fontSize = 11.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
@@ -394,7 +394,7 @@ fun SponsorCpmPanelDialog(
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
             containerColor = HextechSurface,
-            title = { Text("Publicar Anuncio CPM", color = HextechGold, fontWeight = FontWeight.Bold) },
+            title = { Text(tr("Publicar Anuncio CPM"), color = HextechGold, fontWeight = FontWeight.Bold) },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
@@ -577,7 +577,7 @@ fun SponsorCpmPanelDialog(
                     OutlinedTextField(
                         value = externalUrlInput,
                         onValueChange = { externalUrlInput = it },
-                        label = { Text("Enlace Web Externo (Opcional)") },
+                        label = { Text(tr("Enlace Web Externo (Opcional)")) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = HextechGold, 
@@ -602,8 +602,8 @@ fun SponsorCpmPanelDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("Presupuesto Total (Automático)", color = TextSecondary, fontSize = 11.sp)
-                                Text("Calculado automáticamente (No modificable)", color = HextechCyan, fontSize = 9.5.sp)
+                                Text(tr("Presupuesto Total (Automático)"), color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("Calculado automáticamente (No modificable)"), color = HextechCyan, fontSize = 9.5.sp)
                             }
                             Text(
                                 text = "$$autoBudget USD",
@@ -643,7 +643,7 @@ fun SponsorCpmPanelDialog(
                         val estimatedClicks = (estimatedVisits * 0.04f).toInt().coerceAtLeast(1)
                         
                         androidx.compose.material3.Divider(modifier = Modifier.padding(vertical = 6.dp), color = Color(0xFF334155))
-                        Text("Rendimiento Estimado Realista:", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Rendimiento Estimado Realista:"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(2.dp))
                         Text("• Visitas esperadas: ~%,d".format(Locale.getDefault(), estimatedVisits), color = TextSecondary, fontSize = 10.sp)
                         Text("• Clics únicos esperados: ~%,d".format(Locale.getDefault(), estimatedClicks), color = TextSecondary, fontSize = 10.sp)
@@ -739,7 +739,7 @@ fun SponsorCpmPanelDialog(
                                 Text("$requiredEssences EA", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text("Tu Saldo Actual:", color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("Tu Saldo Actual:"), color = TextSecondary, fontSize = 11.sp)
                                 Text("$currentBlueEssence EA", color = if (hasEnoughEssence) Color(0xFF10B981) else Color(0xFFEF4444), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                             if (!hasEnoughEssence) {
@@ -752,7 +752,7 @@ fun SponsorCpmPanelDialog(
                                 ) {
                                     Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Recargar Esencias (Insuficientes)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                    Text(tr("Recargar Esencias (Insuficientes)"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                                 }
                             }
                         }
@@ -809,7 +809,7 @@ fun SponsorCpmPanelDialog(
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = HextechDarkBg, strokeWidth = 2.dp)
                         Spacer(modifier = Modifier.width(6.dp))
                     }
-                    Text("Enviar a Revisión", color = HextechDarkBg, fontWeight = FontWeight.Bold)
+                    Text(tr("Enviar a Revisión"), color = HextechDarkBg, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -901,7 +901,7 @@ fun SponsorCpmPanelDialog(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
                 ) {
-                    Text("Aceptar y Enviar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(tr("Aceptar y Enviar"), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -920,7 +920,7 @@ fun SponsorCpmPanelDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Delete, contentDescription = null, tint = DangerRed, modifier = Modifier.size(22.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Eliminar Anuncio", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(tr("Eliminar Anuncio"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             },
             text = {

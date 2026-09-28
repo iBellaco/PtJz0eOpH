@@ -296,7 +296,7 @@ fun ChampionBuildCreatorDialog(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     // 1. Selector de Campeón
-                    Text("1. Seleccionar Campeón", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(tr("1. Seleccionar Campeón"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -334,7 +334,7 @@ fun ChampionBuildCreatorDialog(
                                     )
                                 }
                             }
-                            Text("Cambiar >", color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Cambiar >"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -385,7 +385,7 @@ fun ChampionBuildCreatorDialog(
                     OutlinedTextField(
                         value = buildTitle,
                         onValueChange = { buildTitle = it },
-                        placeholder = { Text("Ej: Build DPS Absoluto, Tanque Imparable...", color = TextSecondary) },
+                        placeholder = { Text(tr("Ej: Build DPS Absoluto, Tanque Imparable..."), color = TextSecondary) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -416,7 +416,7 @@ fun ChampionBuildCreatorDialog(
                                  showItemPickerForCore = true
                              }
                          }) {
-                             Text("+ Añadir", color = HextechGold, fontSize = 11.sp)
+                             Text(tr("+ Añadir"), color = HextechGold, fontSize = 11.sp)
                          }
                      }
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -464,7 +464,7 @@ fun ChampionBuildCreatorDialog(
                             }
                         }
                         if (coreItems.isEmpty()) {
-                            Text("Ningún objeto core añadido.", color = TextSecondary, fontSize = 11.sp)
+                            Text(tr("Ningún objeto core añadido."), color = TextSecondary, fontSize = 11.sp)
                         }
                     }
 
@@ -482,7 +482,7 @@ fun ChampionBuildCreatorDialog(
                             modifier = Modifier.weight(1f)
                         )
                         TextButton(onClick = { showItemPickerForSituational = true }) {
-                            Text("+ Añadir", color = HextechGold, fontSize = 11.sp)
+                            Text(tr("+ Añadir"), color = HextechGold, fontSize = 11.sp)
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -530,7 +530,7 @@ fun ChampionBuildCreatorDialog(
                             }
                         }
                         if (situationalItems.isEmpty()) {
-                            Text("Ningún objeto situacional añadido.", color = TextSecondary, fontSize = 11.sp)
+                            Text(tr("Ningún objeto situacional añadido."), color = TextSecondary, fontSize = 11.sp)
                         }
                     }
 
@@ -567,7 +567,7 @@ fun ChampionBuildCreatorDialog(
                                             )
                                             Text("Botas Nivel 2: ${bootsT2!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         } else {
-                                            Text("Botas Nivel 2 *Requerido", color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                                            Text(tr("Botas Nivel 2 *Requerido"), color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
                                         }
                                     }
                                     if (bootsT2 != null) {
@@ -576,7 +576,7 @@ fun ChampionBuildCreatorDialog(
                                         }
                                     } else {
                                         TextButton(onClick = { showItemPickerForBootsT2 = true }) {
-                                            Text("+ Seleccionar", color = HextechGold, fontSize = 11.sp)
+                                            Text(tr("+ Seleccionar"), color = HextechGold, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -620,7 +620,7 @@ fun ChampionBuildCreatorDialog(
                                             )
                                             Text("Mejora Nivel 3: ${bootsT3!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         } else {
-                                            Text("Mejora Nivel 3 *Requerido", color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                                            Text(tr("Mejora Nivel 3 *Requerido"), color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
                                         }
                                     }
                                     if (bootsT3 != null) {
@@ -629,7 +629,7 @@ fun ChampionBuildCreatorDialog(
                                         }
                                     } else {
                                         TextButton(onClick = { showItemPickerForBootsT3 = true }) {
-                                            Text("+ Seleccionar", color = HextechGold, fontSize = 11.sp)
+                                            Text(tr("+ Seleccionar"), color = HextechGold, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -684,7 +684,7 @@ fun ChampionBuildCreatorDialog(
                                             )
                                             Text("Bota Nivel 2 Situacional: ${situationalBootsT2!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         } else {
-                                            Text("Añadir Bota Nivel 2 Situacional", color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                                            Text(tr("Añadir Bota Nivel 2 Situacional"), color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
                                         }
                                     }
                                     if (situationalBootsT2 != null) {
@@ -693,7 +693,7 @@ fun ChampionBuildCreatorDialog(
                                         }
                                     } else {
                                         TextButton(onClick = { showItemPickerForSituationalBootsT2 = true }) {
-                                            Text("+ Seleccionar", color = HextechGold, fontSize = 11.sp)
+                                            Text(tr("+ Seleccionar"), color = HextechGold, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -737,7 +737,7 @@ fun ChampionBuildCreatorDialog(
                                             )
                                             Text("Mejora Nivel 3 Situacional: ${situationalBootsT3!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         } else {
-                                            Text("Añadir Mejora Nivel 3 Situacional", color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                                            Text(tr("Añadir Mejora Nivel 3 Situacional"), color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
                                         }
                                     }
                                     if (situationalBootsT3 != null) {
@@ -746,7 +746,7 @@ fun ChampionBuildCreatorDialog(
                                         }
                                     } else {
                                         TextButton(onClick = { showItemPickerForSituationalBootsT3 = true }) {
-                                            Text("+ Seleccionar", color = HextechGold, fontSize = 11.sp)
+                                            Text(tr("+ Seleccionar"), color = HextechGold, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -784,7 +784,7 @@ fun ChampionBuildCreatorDialog(
                             colors = ButtonDefaults.buttonColors(containerColor = HextechDarkBg),
                             border = BorderStroke(1.dp, HextechGold)
                         ) {
-                            Text("+ Seleccionar Runa Clave", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text(tr("+ Seleccionar Runa Clave"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     } else {
                         val entry = coreKeystone!!
@@ -846,7 +846,7 @@ fun ChampionBuildCreatorDialog(
                         )
                         if (coreSecondaryRunes.size < 4) {
                             TextButton(onClick = { showRunePickerForSecondary = true }) {
-                                Text("+ Añadir", color = HextechGold, fontSize = 11.sp)
+                                Text(tr("+ Añadir"), color = HextechGold, fontSize = 11.sp)
                             }
                         }
                     }
@@ -895,7 +895,7 @@ fun ChampionBuildCreatorDialog(
                             }
                         }
                         if (coreSecondaryRunes.isEmpty()) {
-                            Text("Ninguna runa secundaria añadida (requiere 4).", color = TextSecondary, fontSize = 11.sp)
+                            Text(tr("Ninguna runa secundaria añadida (requiere 4)."), color = TextSecondary, fontSize = 11.sp)
                         }
                     }
 
@@ -913,7 +913,7 @@ fun ChampionBuildCreatorDialog(
                             modifier = Modifier.weight(1f)
                         )
                         TextButton(onClick = { showRunePickerForSituational = true }) {
-                            Text("+ Añadir", color = HextechGold, fontSize = 11.sp)
+                            Text(tr("+ Añadir"), color = HextechGold, fontSize = 11.sp)
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -976,7 +976,7 @@ fun ChampionBuildCreatorDialog(
                             modifier = Modifier.weight(1f)
                         )
                         TextButton(onClick = { showSpellPickerForCore = true }) {
-                            Text("+ Añadir", color = HextechGold, fontSize = 11.sp)
+                            Text(tr("+ Añadir"), color = HextechGold, fontSize = 11.sp)
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1024,7 +1024,7 @@ fun ChampionBuildCreatorDialog(
                             }
                         }
                         if (coreSpells.isEmpty()) {
-                            Text("Ningún hechizo core añadido.", color = TextSecondary, fontSize = 11.sp)
+                            Text(tr("Ningún hechizo core añadido."), color = TextSecondary, fontSize = 11.sp)
                         }
                     }
 
@@ -1042,7 +1042,7 @@ fun ChampionBuildCreatorDialog(
                             modifier = Modifier.weight(1f)
                         )
                         TextButton(onClick = { showSpellPickerForSituational = true }) {
-                            Text("+ Añadir", color = HextechGold, fontSize = 11.sp)
+                            Text(tr("+ Añadir"), color = HextechGold, fontSize = 11.sp)
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1092,7 +1092,7 @@ fun ChampionBuildCreatorDialog(
                     }
 
                      // 7. Subir Gameplay MP4 (Máximo 20MB)
-                     Text("7. Gameplay Demostrativo (MP4, Máx 20MB)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                     Text(tr("7. Gameplay Demostrativo (MP4, Máx 20MB)"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                      Text(tr("Recomendado: Horizontal 16:9 (ej. 1920x1080 o 1280x720), duración < 1 min"), color = TextSecondary, fontSize = 11.sp)
                      Button(
                          onClick = { videoPickerLauncher.launch("video/mp4") },
@@ -1215,7 +1215,7 @@ fun ChampionBuildCreatorDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancelar", color = TextSecondary)
+                        Text(tr("Cancelar"), color = TextSecondary)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -1356,11 +1356,11 @@ fun ChampionBuildCreatorDialog(
                 colors = CardDefaults.cardColors(containerColor = HextechSurface)
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Seleccionar Campeón", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(tr("Seleccionar Campeón"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     OutlinedTextField(
                         value = searchFilterQuery,
                         onValueChange = { searchFilterQuery = it },
-                        placeholder = { Text("Buscar...", color = TextSecondary) },
+                        placeholder = { Text(tr("Buscar..."), color = TextSecondary) },
                         modifier = Modifier.fillMaxWidth(),
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true
@@ -1429,7 +1429,7 @@ fun ChampionBuildCreatorDialog(
                     OutlinedTextField(
                         value = searchFilterQuery,
                         onValueChange = { searchFilterQuery = it },
-                        placeholder = { Text("Buscar objeto...", color = TextSecondary) },
+                        placeholder = { Text(tr("Buscar objeto..."), color = TextSecondary) },
                         modifier = Modifier.fillMaxWidth(),
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true
@@ -1570,7 +1570,7 @@ fun ChampionBuildCreatorDialog(
                     OutlinedTextField(
                         value = searchFilterQuery,
                         onValueChange = { searchFilterQuery = it },
-                        placeholder = { Text("Buscar runa...", color = TextSecondary) },
+                        placeholder = { Text(tr("Buscar runa..."), color = TextSecondary) },
                         modifier = Modifier.fillMaxWidth(),
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true
@@ -1670,7 +1670,7 @@ fun ChampionBuildCreatorDialog(
                     OutlinedTextField(
                         value = searchFilterQuery,
                         onValueChange = { searchFilterQuery = it },
-                        placeholder = { Text("Buscar hechizo...", color = TextSecondary) },
+                        placeholder = { Text(tr("Buscar hechizo..."), color = TextSecondary) },
                         modifier = Modifier.fillMaxWidth(),
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary) },
                         singleLine = true

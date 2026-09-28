@@ -28,6 +28,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.model.SubscriptionRecord
 import com.example.ui.theme.*
 import com.example.util.SubscriptionHistoryManager
+import com.example.util.tr
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -415,7 +416,7 @@ fun SubscriptionHistoryDialog(
                             ) {
                                 Icon(Icons.Default.Refresh, tint = HextechCyan, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Reintentar búsqueda", color = HextechCyan, fontSize = 12.sp)
+                                Text(tr("Reintentar búsqueda"), color = HextechCyan, fontSize = 12.sp)
                             }
                         }
                     }

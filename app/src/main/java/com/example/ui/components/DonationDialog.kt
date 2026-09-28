@@ -99,7 +99,7 @@ fun DonationDialog(
                         }
                     }
                     IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted)
+                        Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
                     }
                 }
 
@@ -388,7 +388,7 @@ private fun DonationPixCard(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     androidx.compose.material3.Text(
-                        text = "INSTANTÁNEO",
+                        text = tr("INSTANTÁNEO"),
                         color = androidx.compose.ui.graphics.Color(0xFF32BCAD),
                         fontSize = 9.sp,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Black
@@ -476,7 +476,7 @@ private fun DonationPixCard(
                             )
                         }
                         androidx.compose.material3.IconButton(onClick = { showQRModal = false }, modifier = androidx.compose.ui.Modifier.size(28.dp)) {
-                            androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted)
+                            androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
                         }
                     }
                     
@@ -648,7 +648,7 @@ private fun DonationPixCombinedCard() {
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     androidx.compose.material3.Text(
-                        text = "INSTANTÁNEO",
+                        text = tr("INSTANTÁNEO"),
                         color = androidx.compose.ui.graphics.Color(0xFF32BCAD),
                         fontSize = 9.sp,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Black
@@ -673,7 +673,7 @@ private fun DonationPixCombinedCard() {
                     ),
                     border = androidx.compose.foundation.BorderStroke(1.dp, if (isOption1) androidx.compose.ui.graphics.Color(0xFF32BCAD) else TextSecondary.copy(alpha = 0.5f))
                 ) {
-                    androidx.compose.material3.Text("Opción 1", fontSize = 12.sp, maxLines = 1)
+                    androidx.compose.material3.Text(tr("Opción 1"), fontSize = 12.sp, maxLines = 1)
                 }
                 
                 val isOption2 = selectedOption == 2
@@ -686,7 +686,7 @@ private fun DonationPixCombinedCard() {
                     ),
                     border = androidx.compose.foundation.BorderStroke(1.dp, if (isOption2) androidx.compose.ui.graphics.Color(0xFF32BCAD) else TextSecondary.copy(alpha = 0.5f))
                 ) {
-                    androidx.compose.material3.Text("Opción 2", fontSize = 12.sp, maxLines = 1)
+                    androidx.compose.material3.Text(tr("Opción 2"), fontSize = 12.sp, maxLines = 1)
                 }
             }
 
@@ -746,7 +746,7 @@ private fun DonationPixCombinedCard() {
                         modifier = androidx.compose.ui.Modifier.size(16.dp)
                     )
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.width(8.dp))
-                    androidx.compose.material3.Text("Copiar Código Pix", fontSize = 13.sp)
+                    androidx.compose.material3.Text(tr("Copiar Código Pix"), fontSize = 13.sp)
                 }
             }
         }
@@ -758,7 +758,7 @@ private fun DonationPixCombinedCard() {
             containerColor = HextechSurface,
             title = {
                 androidx.compose.material3.Text(
-                    text = "Escanea el Código QR", 
+                    text = tr("Escanea el Código QR"), 
                     color = TextPrimary, 
                     fontSize = 16.sp, 
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
@@ -790,14 +790,14 @@ private fun DonationPixCombinedCard() {
                     }
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
                     androidx.compose.material3.Text(
-                        text = "Valor: $currentAmountText",
+                        text = "${tr("Valor:")} $currentAmountText",
                         color = HextechGold,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(8.dp))
                     androidx.compose.material3.Text(
-                        text = "Usa la opción 'Pix Copia e Cola' o escanea el QR en tu app de banco.",
+                        text = tr("Usa la opción 'Pix Copia e Cola' o escanea el QR en tu app de banco."),
                         color = TextSecondary,
                         fontSize = 13.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -806,7 +806,7 @@ private fun DonationPixCombinedCard() {
             },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = { showQRModal = false }) {
-                    androidx.compose.material3.Text("Cerrar", color = HextechGold)
+                    androidx.compose.material3.Text(tr("Cerrar"), color = HextechGold)
                 }
             }
         )

@@ -198,7 +198,7 @@ fun InfoScreen(
                     )
                     InfoStep(
                         title = tr("🔄 Sincronización de Parche en Tiempo Real:"),
-                        description = tr("Totalmente sincronizado con el meta oficial de Wild Rift ") + "${WildRiftRepository.CURRENT_PATCH_VERSION}." + " " + tr("Incluye los últimos bufos, nerfeos, ajustes de objetos y rotaciones de tier list.")
+                        description = tr("Totalmente sincronizado con el meta oficial de Wild Rift ") + "${tr(WildRiftRepository.CURRENT_PATCH_VERSION)}." + " " + tr("Incluye los últimos bufos, nerfeos, ajustes de objetos y rotaciones de tier list.")
                     )
                     InfoStep(
                         title = tr("⚡ Nomenclatura Oficial Móvil:"),

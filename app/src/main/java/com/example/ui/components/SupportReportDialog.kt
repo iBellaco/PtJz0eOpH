@@ -227,13 +227,13 @@ fun SupportReportDialog(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "Reporte de Soporte",
+                                    text = tr("Reporte de Soporte"),
                                     color = HextechGold,
                                     fontSize = 17.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Atención y ayuda al usuario",
+                                    text = tr("Atención y ayuda al usuario"),
                                     color = TextSecondary,
                                     fontSize = 11.sp
                                 )
@@ -250,7 +250,7 @@ fun SupportReportDialog(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Cerrar",
+                                contentDescription = tr("Cerrar"),
                                 tint = TextMuted,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -262,7 +262,7 @@ fun SupportReportDialog(
                     // Selector de Etiqueta (Visible exclusivamente para rol Patrocinador / Admin)
                     if (isSponsorUser) {
                         Text(
-                            text = "Etiqueta del reporte",
+                            text = tr("Etiqueta del reporte"),
                             color = HextechGold,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
@@ -283,7 +283,7 @@ fun SupportReportDialog(
                                             tint = if (selectedTag == "PATROCINADOR") HextechDarkBg else HextechGold,
                                             modifier = Modifier.size(14.dp)
                                         )
-                                        Text("Patrocinador", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Patrocinador"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 },
                                 colors = FilterChipDefaults.filterChipColors(
@@ -298,7 +298,7 @@ fun SupportReportDialog(
                                 selected = selectedTag == "SOPORTE",
                                 onClick = { selectedTag = "SOPORTE" },
                                 label = {
-                                    Text("Soporte General", fontSize = 11.sp, fontWeight = if (selectedTag == "SOPORTE") FontWeight.Bold else FontWeight.Normal)
+                                    Text(tr("Soporte General"), fontSize = 11.sp, fontWeight = if (selectedTag == "SOPORTE") FontWeight.Bold else FontWeight.Normal)
                                 },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = HextechCyan,
@@ -314,7 +314,7 @@ fun SupportReportDialog(
 
                     // Campo: Título (Obligatorio)
                     Text(
-                        text = "Título del reporte *",
+                        text = tr("Título del reporte *"),
                         color = if (titleError) DangerRed else HextechCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
@@ -343,7 +343,7 @@ fun SupportReportDialog(
                     )
                     if (titleError) {
                         Text(
-                            text = "El título es obligatorio.",
+                            text = tr("El título es obligatorio."),
                             color = DangerRed,
                             fontSize = 11.sp,
                             modifier = Modifier.padding(start = 4.dp, top = 2.dp)
@@ -354,7 +354,7 @@ fun SupportReportDialog(
 
                     // Campo: Descripción (Obligatoria)
                     Text(
-                        text = "Descripción detallada *",
+                        text = tr("Descripción detallada *"),
                         color = if (descriptionError) DangerRed else HextechCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
@@ -370,7 +370,7 @@ fun SupportReportDialog(
                         },
                         placeholder = {
                             Text(
-                                "Describe claramente qué sucedió, en qué momento y cualquier detalle relevante para que podamos ayudarte lo más pronto posible...",
+                                tr("Describe claramente qué sucedió, en qué momento y cualquier detalle relevante para que podamos ayudarte lo más pronto posible..."),
                                 fontSize = 12.sp,
                                 color = TextMuted
                             )
@@ -390,7 +390,7 @@ fun SupportReportDialog(
                     )
                     if (descriptionError) {
                         Text(
-                            text = "La descripción es obligatoria.",
+                            text = tr("La descripción es obligatoria."),
                             color = DangerRed,
                             fontSize = 11.sp,
                             modifier = Modifier.padding(start = 4.dp, top = 2.dp)
@@ -407,13 +407,13 @@ fun SupportReportDialog(
                     ) {
                         Column {
                             Text(
-                                text = "Fotos opcionales (Máx. 3)",
+                                text = tr("Fotos opcionales (Máx. 3)"),
                                 color = HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "Máximo 2 MB por cada imagen",
+                                text = tr("Máximo 2 MB por cada imagen"),
                                 color = TextMuted,
                                 fontSize = 10.5.sp
                             )
@@ -457,7 +457,7 @@ fun SupportReportDialog(
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = "+ Adjuntar",
+                                        text = tr("+ Adjuntar"),
                                         color = HextechCyan,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold
@@ -512,7 +512,7 @@ fun SupportReportDialog(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Close,
-                                            contentDescription = "Eliminar",
+                                            contentDescription = tr("Eliminar"),
                                             tint = androidx.compose.ui.graphics.Color.White,
                                             modifier = Modifier.size(13.dp)
                                         )
@@ -542,7 +542,7 @@ fun SupportReportDialog(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Posibles modelos de celular detectados en fotos:",
+                                    text = tr("Posibles modelos de celular detectados en fotos:"),
                                     color = HextechCyan,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -729,7 +729,7 @@ fun SupportReportDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Enviando reporte...",
+                                text = tr("Enviando reporte..."),
                                 color = HextechDarkBg,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
@@ -743,7 +743,7 @@ fun SupportReportDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Enviar Reporte de Soporte",
+                                text = tr("Enviar Reporte de Soporte"),
                                 color = HextechDarkBg,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp

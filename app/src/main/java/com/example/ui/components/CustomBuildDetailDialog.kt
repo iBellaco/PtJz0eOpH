@@ -911,7 +911,7 @@ fun CustomBuildDetailDialog(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Cancelar", fontSize = 11.5.sp)
+                            Text(tr("Cancelar"), fontSize = 11.5.sp)
                         }
                         Button(
                             onClick = {

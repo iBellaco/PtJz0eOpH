@@ -302,7 +302,7 @@ fun SupportReplyDialog(
                             enabled = !isSending,
                             modifier = Modifier.size(28.dp)
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted)
+                            Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
                         }
                     }
 
@@ -497,7 +497,7 @@ fun SupportReplyDialog(
                         ) {
                             Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(13.dp))
                             Spacer(modifier = Modifier.width(3.dp))
-                            Text("Eliminar texto", color = Color(0xFFEF4444), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Eliminar texto"), color = Color(0xFFEF4444), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                     Spacer(modifier = Modifier.height(6.dp))
@@ -642,7 +642,7 @@ fun SupportReplyDialog(
                             ) {
                                 Icon(Icons.Default.Email, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Vía Correo", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Text(tr("Vía Correo"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
 

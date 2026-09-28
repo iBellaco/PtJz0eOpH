@@ -1274,7 +1274,7 @@ fun DraftHistoryScreen(
                         value = newNick,
                         onValueChange = { newNick = it },
                         label = { Text(tr("Nick de la Cuenta"), fontSize = 12.sp) },
-                        placeholder = { Text("Ej: FakerWR, SmurfSoloQ", fontSize = 11.5.sp, color = TextMuted) },
+                        placeholder = { Text(tr("Ej: FakerWR, SmurfSoloQ"), fontSize = 11.5.sp, color = TextMuted) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -1290,7 +1290,7 @@ fun DraftHistoryScreen(
                         value = newTag,
                         onValueChange = { newTag = it },
                         label = { Text(tr("Tag / Rango Opcional"), fontSize = 12.sp) },
-                        placeholder = { Text("Ej: Soberano, LAN, Smurf", fontSize = 11.5.sp, color = TextMuted) },
+                        placeholder = { Text(tr("Ej: Soberano, LAN, Smurf"), fontSize = 11.5.sp, color = TextMuted) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -1400,13 +1400,13 @@ fun DraftHistoryScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Esencias: ${prof.blueEssence}",
+                                text = "${tr("Esencias")}: ${prof.blueEssence}",
                                 color = HextechCyan,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
                         }
-                        Text("Tienda", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(tr("Tienda"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
 
                     if (profiles.size > 1 && prof.id != "default") {
@@ -2474,7 +2474,7 @@ private fun DraftDetailInnerContent(
                                     Text(slot.champion.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     if (slot.assignedRole == roleObj) {
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("(Mío)", color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                        Text(tr("(Mío)"), color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Black)
                                     }
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {

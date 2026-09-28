@@ -208,6 +208,7 @@ import android.content.res.Configuration
 import com.example.util.LocalLanguage
 import com.example.util.SubscriptionManager
 import com.example.util.tr
+import com.example.util.trStr
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -906,7 +907,7 @@ private fun FloatingCloseTarget(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Cerrar y desactivar overlay",
+                    contentDescription = com.example.util.tr("Cerrar y desactivar overlay"),
                     tint = Color.White,
                     modifier = Modifier.size(if (isTargeted) 32.dp else 24.dp)
                 )
@@ -918,7 +919,7 @@ private fun FloatingCloseTarget(
                 border = BorderStroke(1.dp, if (isTargeted) Color.White else DangerRed.copy(alpha = 0.4f))
             ) {
                 Text(
-                    text = if (isTargeted) "✕ Soltar para desactivar" else "Arrastra aquí para cerrar",
+                    text = if (isTargeted) com.example.util.tr("✕ Soltar para desactivar") else com.example.util.tr("Arrastra aquí para cerrar"),
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -986,6 +987,7 @@ private fun FloatingOverlayContent(
     val isAdmin = userRole == "admin" || userRole == "moderador" || (currentAuthEmail != null && currentAuthEmail.contains("barbadiego", ignoreCase = true)) || com.example.util.AuthManager.isCurrentUserAdmin()
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val currentLang = LocalLanguage.current
     var activeRole by state::activeRole
     
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
@@ -2098,17 +2100,17 @@ private fun FloatingOverlayContent(
                                                 autoScanEnabled = false
                                                 showChampionPickerForSlot = Pair(isAlly, idx) 
                                             },
-                                            onSaveDraftClick = { 
+                                             onSaveDraftClick = { 
                                                 if (isPremium) {
                                                     if (!state.isRoleManuallySelected) {
-                                                        android.widget.Toast.makeText(context, "Selecciona tu línea primero", android.widget.Toast.LENGTH_SHORT).show()
+                                                        android.widget.Toast.makeText(context, trStr(currentLang, "Selecciona tu línea primero"), android.widget.Toast.LENGTH_SHORT).show()
                                                     } else if (allies.count { it != null } < 5 || enemies.count { it != null } < 5) {
-                                                        android.widget.Toast.makeText(context, "Debes seleccionar los 10 campeones", android.widget.Toast.LENGTH_SHORT).show()
+                                                        android.widget.Toast.makeText(context, trStr(currentLang, "Debes seleccionar los 10 campeones"), android.widget.Toast.LENGTH_SHORT).show()
                                                     } else {
                                                         showSaveDraftDialog = true 
                                                     }
                                                 } else {
-                                                    android.widget.Toast.makeText(context, "Requiere suscripción Premium", android.widget.Toast.LENGTH_SHORT).show()
+                                                    android.widget.Toast.makeText(context, trStr(currentLang, "Requiere suscripción Premium"), android.widget.Toast.LENGTH_SHORT).show()
                                                 }
                                             },
                                             isSavedRecently = isSavedRecently,
@@ -2405,7 +2407,7 @@ private fun FloatingOverlayContent(
                             fontSize = 11.5.sp
                         )
                         IconButton(onClick = { showChampionPickerForSlot = null }, modifier = Modifier.size(22.dp)) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted, modifier = Modifier.size(16.dp))
                         }
                     }
 
@@ -2630,7 +2632,7 @@ private fun FloatingSaveMatchDialog(
                         fontSize = 13.sp
                     )
                     IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted)
+                        Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
                     }
                 }
 
@@ -2924,7 +2926,7 @@ private fun FloatingSaveMatchDialog(
                         CircularProgressIndicator(modifier = Modifier.size(14.dp), color = HextechDarkBg, strokeWidth = 2.dp)
                     } else {
                         Text(
-                            text = "Guardar y Actualizar Historial",
+                            text = tr("Guardar y Actualizar Historial"),
                             color = HextechDarkBg,
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.sp
