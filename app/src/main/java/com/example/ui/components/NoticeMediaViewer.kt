@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -1383,7 +1385,7 @@ fun NoticeMediaFullscreenDialog(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.TouchApp, contentDescription = null, tint = HextechGold, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Toca para abrir enlace", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Toca para abrir enlace"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

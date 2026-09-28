@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -309,7 +311,7 @@ fun PurchaseHistoryDialog(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.History, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(40.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("No hay movimientos en esta categoría", color = Color.Gray, fontSize = 13.sp)
+                            Text(tr("No hay movimientos en esta categoría"), color = Color.Gray, fontSize = 13.sp)
                         }
                     }
                 } else {

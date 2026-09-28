@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.content.Context
 import androidx.compose.animation.core.*
 
@@ -900,8 +902,8 @@ fun UserInboxDialog(
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text("Bandeja de Entrada", fontWeight = FontWeight.Black, color = activeTheme.textPrimary, fontSize = 16.sp)
-                            Text("Notificaciones y anuncios oficiales", color = activeTheme.textSecondary, fontSize = 11.sp)
+                            Text(tr("Bandeja de Entrada"), fontWeight = FontWeight.Black, color = activeTheme.textPrimary, fontSize = 16.sp)
+                            Text(tr("Notificaciones y anuncios oficiales"), color = activeTheme.textSecondary, fontSize = 11.sp)
                         }
                     }
                     HextechAnimatedIconButton(
@@ -925,7 +927,7 @@ fun UserInboxDialog(
                 ) {
                     Icon(Icons.Default.HeadsetMic, contentDescription = null, tint = activeTheme.primary, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Centro de Soporte y Ayuda", color = activeTheme.primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Centro de Soporte y Ayuda"), color = activeTheme.primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -964,7 +966,7 @@ fun UserInboxDialog(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.Message, contentDescription = null, tint = activeTheme.textMuted, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("No tienes mensajes en tu bandeja.", color = activeTheme.textSecondary, fontSize = 14.sp)
+                            Text(tr("No tienes mensajes en tu bandeja."), color = activeTheme.textSecondary, fontSize = 14.sp)
                         }
                     }
                 } else {
@@ -1187,7 +1189,7 @@ fun UserInboxDialog(
                                                 horizontalArrangement = Arrangement.SpaceBetween,
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                Text("Toca para abrir pop-up de soporte", color = HextechCyan.copy(alpha = pulseAlpha), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                                Text(tr("Toca para abrir pop-up de soporte"), color = HextechCyan.copy(alpha = pulseAlpha), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                                                 Icon(Icons.Default.OpenInNew, contentDescription = null, tint = HextechCyan.copy(alpha = pulseAlpha), modifier = Modifier.size(14.dp))
                                             }
                                         }

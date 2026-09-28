@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -318,7 +320,7 @@ fun CustomBuildDetailDialog(
                 // Core Items
                 if (record.coreItemsWithDesc.isNotEmpty()) {
                     item {
-                        Text("Objetos Core", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Objetos Core"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.coreItemsWithDesc.forEach { item ->
@@ -364,7 +366,7 @@ fun CustomBuildDetailDialog(
                 // Botas Core (Nivel 2 + Mejora Nivel 3)
                 if (record.bootsT2Item != null || record.bootsT3Item != null) {
                     item {
-                        Text("Botas y Mejoras (Obligatorias)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Botas y Mejoras (Obligatorias)"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.bootsT2Item?.let { boot ->
@@ -446,7 +448,7 @@ fun CustomBuildDetailDialog(
                 // Botas Situacionales (Opcional)
                 if (record.situationalBootsT2Item != null || record.situationalBootsT3Item != null) {
                     item {
-                        Text("Botas y Mejoras Situacionales (Opcional)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Botas y Mejoras Situacionales (Opcional)"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.situationalBootsT2Item?.let { boot ->
@@ -528,7 +530,7 @@ fun CustomBuildDetailDialog(
                 // Situational Items
                 if (record.situationalItemsWithDesc.isNotEmpty()) {
                     item {
-                        Text("Objetos Situacionales", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Objetos Situacionales"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.situationalItemsWithDesc.forEach { item ->
@@ -574,7 +576,7 @@ fun CustomBuildDetailDialog(
                 // Runes
                 if (record.coreRunes.isNotEmpty()) {
                     item {
-                        Text("Runas (1 Clave + 4 Secundarias)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Runas (1 Clave + 4 Secundarias)"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.coreRunes.forEachIndexed { idx, rune ->
@@ -625,7 +627,7 @@ fun CustomBuildDetailDialog(
                 // Spells
                 if (record.coreSpells.isNotEmpty()) {
                     item {
-                        Text("Hechizos de Invocador", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Hechizos de Invocador"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.coreSpells.forEach { spell ->
@@ -670,7 +672,7 @@ fun CustomBuildDetailDialog(
                 // Situational Spells
                 if (record.situationalSpells.isNotEmpty()) {
                     item {
-                        Text("Hechizos Situacionales (Opcional)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Hechizos Situacionales (Opcional)"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             record.situationalSpells.forEach { spell ->
@@ -715,7 +717,7 @@ fun CustomBuildDetailDialog(
                 // Video de Introducción / Gameplay
                 if (!record.gameplayVideoUri.isNullOrBlank()) {
                     item {
-                        Text("Video de Introducción", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Video de Introducción"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Card(
                             modifier = Modifier.fillMaxWidth().height(180.dp),
@@ -739,7 +741,7 @@ fun CustomBuildDetailDialog(
                 // Video de Combos
                 if (!record.comboVideoUri.isNullOrBlank()) {
                     item {
-                        Text("Video de Combos / Demostración", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(tr("Video de Combos / Demostración"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Card(
                             modifier = Modifier.fillMaxWidth().height(180.dp),

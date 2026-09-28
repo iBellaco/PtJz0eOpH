@@ -112,6 +112,7 @@ fun BugReportFeedbackDialog(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val currentLang = com.example.util.LocalLanguage.current
 
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val isAdmin = userRole == "admin"
@@ -305,12 +306,18 @@ fun BugReportFeedbackDialog(
                 )
                 isSubmitting = false
                 if (result.isSuccess) {
-                    Toast.makeText(context, "✅ ¡Sugerencia de Build enviada con éxito!", Toast.LENGTH_LONG).show()
+                    val successToastMsg = when (selectedType) {
+                        FeedbackType.BUILD_SUGGESTION -> com.example.util.trStr(currentLang, "✅ ¡Sugerencia de Build enviada con éxito!")
+                        FeedbackType.SUGGESTION -> com.example.util.trStr(currentLang, "✅ ¡Sugerencia enviada con éxito!")
+                        FeedbackType.BUG -> com.example.util.trStr(currentLang, "✅ ¡Reporte de error enviado con éxito!")
+                    }
+                    Toast.makeText(context, successToastMsg, Toast.LENGTH_LONG).show()
                     onDismiss()
                 } else {
-                    val err = result.exceptionOrNull()?.message ?: "Error desconocido"
-                    statusMessage = "❌ Error al enviar: $err"
-                    Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
+                    val err = result.exceptionOrNull()?.message ?: com.example.util.trStr(currentLang, "Error desconocido")
+                    val errPrefix = com.example.util.trStr(currentLang, "❌ Error al enviar:")
+                    statusMessage = "$errPrefix $err"
+                    Toast.makeText(context, "$errPrefix $err", Toast.LENGTH_LONG).show()
                 }
             }
         } else {

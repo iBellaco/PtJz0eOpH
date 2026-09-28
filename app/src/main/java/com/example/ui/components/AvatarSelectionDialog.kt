@@ -274,7 +274,7 @@ fun AvatarSelectionBottomSheet(
                     contentPadding = PaddingValues(vertical = 8.dp),
                     elevation = null
                 ) {
-                    Text("Marcos de Perfil", fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
+                    Text(tr("Marcos de Perfil"), fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
                 }
             }
 

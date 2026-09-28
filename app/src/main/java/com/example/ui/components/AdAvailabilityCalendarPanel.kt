@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.util.tr
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -139,7 +140,7 @@ fun AdAvailabilityCalendarPanel(
                             modifier = Modifier.padding(8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Activos / En Cola", color = TextSecondary, fontSize = 9.sp)
+                            Text(tr("Activos / En Cola"), color = TextSecondary, fontSize = 9.sp)
                             Spacer(modifier = Modifier.height(1.dp))
                             Text(
                                 text = "${activePublicityAds.size}",

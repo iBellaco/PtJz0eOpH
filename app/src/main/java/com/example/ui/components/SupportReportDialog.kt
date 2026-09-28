@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.util.tr
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -327,7 +328,7 @@ fun SupportReportDialog(
                                 if (titleError && it.isNotBlank()) titleError = false
                             }
                         },
-                        placeholder = { Text("Ej: Error al sincronizar builds / Problema con mi cuenta", fontSize = 12.sp, color = TextMuted) },
+                        placeholder = { Text(tr("Ej: Error al sincronizar builds / Problema con mi cuenta"), fontSize = 12.sp, color = TextMuted) },
                         modifier = Modifier.fillMaxWidth(),
                         isError = titleError,
                         singleLine = true,

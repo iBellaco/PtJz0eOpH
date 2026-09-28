@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.util.tr
 import android.net.Uri
 import android.widget.Toast
 import android.widget.VideoView
@@ -276,8 +277,8 @@ fun ChampionBuildCreatorDialog(
                             Icon(Icons.Default.Add, contentDescription = null, tint = HextechGold, modifier = Modifier.padding(6.dp).size(20.dp))
                         }
                         Column {
-                            Text("Creador de Builds Oficiales", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Text("Configuración avanzada con imágenes y descripciones", color = TextSecondary, fontSize = 11.sp)
+                            Text(tr("Creador de Builds Oficiales"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(tr("Configuración avanzada con imágenes y descripciones"), color = TextSecondary, fontSize = 11.sp)
                         }
                     }
                     IconButton(onClick = onDismiss) {
@@ -338,7 +339,7 @@ fun ChampionBuildCreatorDialog(
                     }
 
                     // 2. Línea / Rol del Campeón
-                    Text("2. Seleccionar Línea / Rol de la Build", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(tr("2. Seleccionar Línea / Rol de la Build"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -380,7 +381,7 @@ fun ChampionBuildCreatorDialog(
                     }
 
                     // 3. Título de la Build
-                    Text("3. Título de la Build", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(tr("3. Título de la Build"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     OutlinedTextField(
                         value = buildTitle,
                         onValueChange = { buildTitle = it },
@@ -450,7 +451,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = entry.description,
                                         onValueChange = { entry.description = it },
-                                        placeholder = { Text("Descripción obligatoria del objeto core...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción obligatoria del objeto core..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -516,7 +517,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = entry.description,
                                         onValueChange = { entry.description = it },
-                                        placeholder = { Text("Descripción obligatoria del objeto situacional...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción obligatoria del objeto situacional..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -583,7 +584,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = bootsT2!!.description,
                                         onValueChange = { bootsT2!!.description = it },
-                                        placeholder = { Text("Descripción obligatoria de las botas nivel 2...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción obligatoria de las botas nivel 2..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -636,7 +637,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = bootsT3!!.description,
                                         onValueChange = { bootsT3!!.description = it },
-                                        placeholder = { Text("Descripción obligatoria de la mejora nivel 3...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción obligatoria de la mejora nivel 3..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -700,7 +701,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = situationalBootsT2!!.description,
                                         onValueChange = { situationalBootsT2!!.description = it },
-                                        placeholder = { Text("Descripción de la bota nivel 2 situacional...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción de la bota nivel 2 situacional..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -753,7 +754,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = situationalBootsT3!!.description,
                                         onValueChange = { situationalBootsT3!!.description = it },
-                                        placeholder = { Text("Descripción de la mejora nivel 3 situacional...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción de la mejora nivel 3 situacional..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -817,7 +818,7 @@ fun ChampionBuildCreatorDialog(
                                 OutlinedTextField(
                                     value = entry.description,
                                     onValueChange = { entry.description = it },
-                                    placeholder = { Text("Descripción obligatoria de la runa clave...", color = TextSecondary) },
+                                    placeholder = { Text(tr("Descripción obligatoria de la runa clave..."), color = TextSecondary) },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor = HextechGold,
@@ -881,7 +882,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = entry.description,
                                         onValueChange = { entry.description = it },
-                                        placeholder = { Text("Descripción obligatoria de la runa secundaria...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción obligatoria de la runa secundaria..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -947,7 +948,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = entry.description,
                                         onValueChange = { entry.description = it },
-                                        placeholder = { Text("Descripción obligatoria de runa situacional...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción obligatoria de runa situacional..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -1010,7 +1011,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = entry.description,
                                         onValueChange = { entry.description = it },
-                                        placeholder = { Text("Descripción obligatoria del hechizo...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción obligatoria del hechizo..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -1076,7 +1077,7 @@ fun ChampionBuildCreatorDialog(
                                     OutlinedTextField(
                                         value = entry.description,
                                         onValueChange = { entry.description = it },
-                                        placeholder = { Text("Descripción obligatoria de hechizo situacional...", color = TextSecondary) },
+                                        placeholder = { Text(tr("Descripción obligatoria de hechizo situacional..."), color = TextSecondary) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = HextechGold,
@@ -1092,7 +1093,7 @@ fun ChampionBuildCreatorDialog(
 
                      // 7. Subir Gameplay MP4 (Máximo 20MB)
                      Text("7. Gameplay Demostrativo (MP4, Máx 20MB)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                     Text("Recomendado: Horizontal 16:9 (ej. 1920x1080 o 1280x720), duración < 1 min", color = TextSecondary, fontSize = 11.sp)
+                     Text(tr("Recomendado: Horizontal 16:9 (ej. 1920x1080 o 1280x720), duración < 1 min"), color = TextSecondary, fontSize = 11.sp)
                      Button(
                          onClick = { videoPickerLauncher.launch("video/mp4") },
                          modifier = Modifier.fillMaxWidth(),
@@ -1150,8 +1151,8 @@ fun ChampionBuildCreatorDialog(
                      Spacer(modifier = Modifier.height(12.dp))
 
                      // 8. Subir Guía de Combos MP4 (Máximo 20MB)
-                     Text("8. Guía de Combos y Habilidades (MP4, Máx 20MB)", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                     Text("Recomendado: Vertical 9:16 o Cuadrado 1:1 (ej. 1080x1920), duración < 45s", color = TextSecondary, fontSize = 11.sp)
+                     Text(tr("8. Guía de Combos y Habilidades (MP4, Máx 20MB)"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                     Text(tr("Recomendado: Vertical 9:16 o Cuadrado 1:1 (ej. 1080x1920), duración < 45s"), color = TextSecondary, fontSize = 11.sp)
                      Button(
                          onClick = { comboVideoPickerLauncher.launch("video/mp4") },
                          modifier = Modifier.fillMaxWidth(),

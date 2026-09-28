@@ -728,7 +728,7 @@ fun DraftingApp() {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Cuenta Suspendida", color = Color.Red, fontSize = 24.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Tu acceso ha sido revocado permanentemente. Contacta con soporte si crees que esto es un error.", color = TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    Text(tr("Tu acceso ha sido revocado permanentemente. Contacta con soporte si crees que esto es un error."), color = TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 }
             }
             return@CompositionLocalProvider

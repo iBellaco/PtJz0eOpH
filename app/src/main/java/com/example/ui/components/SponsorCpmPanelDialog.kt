@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.util.tr
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -303,7 +304,7 @@ fun SponsorCpmPanelDialog(
                         Icon(Icons.Default.Campaign, contentDescription = null, tint = HextechGold, modifier = Modifier.size(28.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text("Panel CPM de Patrocinador", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text(tr("Panel CPM de Patrocinador"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             Text("Gestiona tus anuncios publicitarios y presupuestos", color = TextSecondary, fontSize = 12.sp)
                         }
                     }
@@ -360,7 +361,7 @@ fun SponsorCpmPanelDialog(
                             Icon(Icons.Default.AdsClick, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text("No tienes anuncios publicados.", color = TextSecondary, fontSize = 14.sp)
-                            Text("Crea uno y espera la aprobación del administrador.", color = TextSecondary.copy(alpha = 0.7f), fontSize = 11.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Text(tr("Crea uno y espera la aprobación del administrador."), color = TextSecondary.copy(alpha = 0.7f), fontSize = 11.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
                 } else {
@@ -400,7 +401,7 @@ fun SponsorCpmPanelDialog(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // Calendario de Programación y Disponibilidad (Visible antes de publicar)
-                    Text("Calendario de Disponibilidad Actual:", color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Calendario de Disponibilidad Actual:"), color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                     AdAvailabilityCalendarPanel(allNotices = allNotices)
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -409,7 +410,7 @@ fun SponsorCpmPanelDialog(
                     OutlinedTextField(
                         value = titleInput,
                         onValueChange = { titleInput = it },
-                        label = { Text("Título del Anuncio * (Obligatorio)") },
+                        label = { Text(tr("Título del Anuncio * (Obligatorio)")) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = HextechGold, 
@@ -420,7 +421,7 @@ fun SponsorCpmPanelDialog(
                     )
 
                     // Opción de Color del Título
-                    Text("Color del Título:", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Color del Título:"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -453,8 +454,8 @@ fun SponsorCpmPanelDialog(
                     }
 
                     // Multimedia Horizontal (Banner/Video horizontal para inicio)
-                    Text("1. Multimedia Horizontal (Banner de Inicio):", color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
-                    Text("• Medidas recomendadas: 1920 x 1080 px (Relación 16:9)\n• Formatos: PNG, JPG/JPEG (máx 5 MB) o Video MP4 (máx 15s y 10 MB)", color = TextSecondary, fontSize = 10.sp)
+                    Text(tr("1. Multimedia Horizontal (Banner de Inicio):"), color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("• Medidas recomendadas: 1920 x 1080 px (Relación 16:9)\n• Formatos: PNG, JPG/JPEG (máx 5 MB) o Video MP4 (máx 15s y 10 MB)"), color = TextSecondary, fontSize = 10.sp)
                     
                     Button(
                         onClick = { horizontalPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
@@ -512,8 +513,8 @@ fun SponsorCpmPanelDialog(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     // Multimedia Vertical (Imagen/Video vertical para modal pantalla completa)
-                    Text("2. Multimedia Vertical (Vista Ampliada):", color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
-                    Text("• Medidas recomendadas: 1080 x 1920 px (Relación 9:16)\n• Formatos: PNG, JPG/JPEG (máx 5 MB) o Video MP4 (máx 15s y 10 MB)", color = TextSecondary, fontSize = 10.sp)
+                    Text(tr("2. Multimedia Vertical (Vista Ampliada):"), color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("• Medidas recomendadas: 1080 x 1920 px (Relación 9:16)\n• Formatos: PNG, JPG/JPEG (máx 5 MB) o Video MP4 (máx 15s y 10 MB)"), color = TextSecondary, fontSize = 10.sp)
 
                     Button(
                         onClick = { verticalPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
@@ -621,21 +622,21 @@ fun SponsorCpmPanelDialog(
                             .background(HextechDarkBg)
                             .padding(12.dp)
                     ) {
-                        Text("Desglose del cálculo real y accesible:", color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Desglose del cálculo real y accesible:"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("• Tarifa base justa ($selectedDurationUnit): USD ${String.format(Locale.US, "%.2f", when (selectedDurationUnit) { "hour" -> 0.50; "day" -> 2.50; "week" -> 10.00; "month" -> 30.00; else -> 2.50 } * durationValueInt)}", color = TextSecondary, fontSize = 10.sp)
+                        Text(tr("• Tarifa base justa (%s): USD %s").format(selectedDurationUnit, String.format(Locale.US, "%.2f", when (selectedDurationUnit) { "hour" -> 0.50; "day" -> 2.50; "week" -> 10.00; "month" -> 30.00; else -> 2.50 } * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
                         
                         if (isHorizontalVideo || isVerticalVideo) {
-                            Text("• Costo de procesamiento multimedia: +$${String.format(Locale.US, "%.2f", 1.00 * durationValueInt)} USD", color = TextSecondary, fontSize = 10.sp)
+                            Text(tr("• Costo de procesamiento multimedia: +$%s USD").format(String.format(Locale.US, "%.2f", 1.00 * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
                         } else if (horizontalMediaInput.isNotBlank() || verticalMediaInput.isNotBlank()) {
-                            Text("• Costo de procesamiento de imagen: +$${String.format(Locale.US, "%.2f", 0.50 * durationValueInt)} USD", color = TextSecondary, fontSize = 10.sp)
+                            Text(tr("• Costo de procesamiento de imagen: +$%s USD").format(String.format(Locale.US, "%.2f", 0.50 * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
                         }
 
                         if (externalUrlInput.isNotBlank()) {
-                            Text("• Redirección externa: +$${String.format(Locale.US, "%.2f", 0.50 * durationValueInt)} USD", color = TextSecondary, fontSize = 10.sp)
+                            Text(tr("• Redirección externa: +$%s USD").format(String.format(Locale.US, "%.2f", 0.50 * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
                         }
 
-                        Text("• Eficiencia por anuncios activos (${activeAdsCount}): tasa optimizada y competitiva", color = TextSecondary, fontSize = 10.sp)
+                        Text(tr("• Eficiencia por anuncios activos (%d): tasa optimizada y competitiva").format(activeAdsCount), color = TextSecondary, fontSize = 10.sp)
 
                         val estimatedBudgetFloat = autoBudget.toFloatOrNull() ?: 2.5f
                         val estimatedVisits = (estimatedBudgetFloat * 45).toInt().coerceAtLeast(15)
@@ -648,7 +649,7 @@ fun SponsorCpmPanelDialog(
                         Text("• Clics únicos esperados: ~%,d".format(Locale.getDefault(), estimatedClicks), color = TextSecondary, fontSize = 10.sp)
                     }
 
-                    Text("Duración de la Publicación:", color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Duración de la Publicación:"), color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     
                     // Cantidad Dinámica según Unidad
                     Row(
@@ -734,7 +735,7 @@ fun SponsorCpmPanelDialog(
                     ) {
                         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text("Costo en Esencias Azules ($1 = 10 EA):", color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("Costo en Esencias Azules ($1 = 10 EA):"), color = TextSecondary, fontSize = 11.sp)
                                 Text("$requiredEssences EA", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -758,7 +759,7 @@ fun SponsorCpmPanelDialog(
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Nota: El anuncio requiere la aprobación de un administrador para ser visible en la plataforma. Si el anuncio publicado no es aceptado en 7 días, se hace la devolución de las esencias azules. Al vencer permanecerá 7 días en tu historial con contador antes de su eliminación.", color = TextSecondary, fontSize = 10.sp)
+                    Text(tr("Nota: El anuncio requiere la aprobación de un administrador para ser visible en la plataforma. Si el anuncio publicado no es aceptado en 7 días, se hace la devolución de las esencias azules. Al vencer permanecerá 7 días en tu historial con contador antes de su eliminación."), color = TextSecondary, fontSize = 10.sp)
                 }
             },
             confirmButton = {
@@ -826,7 +827,7 @@ fun SponsorCpmPanelDialog(
         AlertDialog(
             onDismissRequest = { showConfirmReviewDialog = false },
             containerColor = HextechSurface,
-            title = { Text("⚠️ Advertencia de Envío a Revisión", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold) },
+            title = { Text(tr("⚠️ Advertencia de Envío a Revisión"), color = Color(0xFFEF4444), fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -838,7 +839,7 @@ fun SponsorCpmPanelDialog(
                         color = Color.White,
                         fontSize = 12.sp
                     )
-                    Text("¿Estás completamente seguro de enviar el anuncio?", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(tr("¿Estás completamente seguro de enviar el anuncio?"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             },
             confirmButton = {

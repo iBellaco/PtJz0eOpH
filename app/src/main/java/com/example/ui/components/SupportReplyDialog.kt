@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.util.tr
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -718,7 +719,7 @@ fun SupportReplyDialog(
                         border = BorderStroke(1.dp, HextechCardBorder),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Cerrar Panel de Conversación", color = TextSecondary, fontSize = 11.5.sp)
+                        Text(tr("Cerrar Panel de Conversación"), color = TextSecondary, fontSize = 11.5.sp)
                     }
                 }
             }

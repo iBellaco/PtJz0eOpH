@@ -108,10 +108,66 @@ object FeedbackRepository {
                 deviceInfo = deviceInfo
             )
 
-            // 3. Insertar en la tabla feedbacks de Supabase
-            postgrest.from(TABLE_NAME).insert(report)
-            Log.d(TAG, "Feedback enviado exitosamente a Supabase")
-            Result.success(Unit)
+            var supabaseSuccess = false
+            var supabaseError: Throwable? = null
+
+            // 3. Insertar en la tabla feedbacks de Supabase (probar con ID y sin ID como fallback)
+            try {
+                postgrest.from(TABLE_NAME).insert(report)
+                supabaseSuccess = true
+                Log.d(TAG, "Feedback enviado exitosamente a Supabase con ID")
+            } catch (e1: Exception) {
+                Log.w(TAG, "Reintentando insercion en Supabase sin ID: ${e1.message}")
+                try {
+                    val mapWithoutId = mapOf(
+                        "type" to type,
+                        "title" to title.trim(),
+                        "description" to finalDescription,
+                        "app_version" to appVersion,
+                        "device_info" to deviceInfo
+                    )
+                    postgrest.from(TABLE_NAME).insert(mapWithoutId)
+                    supabaseSuccess = true
+                    Log.d(TAG, "Feedback enviado exitosamente a Supabase sin ID")
+                } catch (e2: Exception) {
+                    supabaseError = e2
+                    Log.e(TAG, "Error enviando a Supabase: ${e2.message}", e2)
+                }
+            }
+
+            // 4. Guardar respaldo en Firebase Firestore (support_reports) para garantizar entrega multidispositivo
+            var firestoreSuccess = false
+            try {
+                val db = FirebaseFirestore.getInstance()
+                val firestoreMap = hashMapOf<String, Any>(
+                    "id" to reportId,
+                    "reportId" to reportId,
+                    "type" to type,
+                    "tag" to type,
+                    "title" to title.trim(),
+                    "description" to finalDescription,
+                    "content" to finalDescription,
+                    "userName" to (userName ?: "Usuario"),
+                    "userEmail" to (email ?: ""),
+                    "appVersion" to appVersion,
+                    "deviceInfo" to deviceInfo,
+                    "photos" to imagesBase64,
+                    "status" to STATUS_PENDING,
+                    "timestamp" to System.currentTimeMillis(),
+                    "createdAt" to com.google.firebase.Timestamp.now()
+                )
+                db.collection("support_reports").document(reportId).set(firestoreMap).await()
+                firestoreSuccess = true
+                Log.d(TAG, "Feedback guardado exitosamente en Firestore support_reports")
+            } catch (fe: Exception) {
+                Log.w(TAG, "Error guardando en Firestore support_reports: ${fe.message}")
+            }
+
+            if (supabaseSuccess || firestoreSuccess) {
+                Result.success(Unit)
+            } else {
+                Result.failure(supabaseError ?: Exception("Error guardando reporte"))
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error enviando feedback a Supabase: ${e.message}", e)
             Result.failure(e)

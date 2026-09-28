@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -259,8 +261,8 @@ fun BlueEssenceStoreDialog(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             item {
-                                Text("Economía de Canje (Basado en Precios de Suscripción)", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("Usa tus Esencias Azules para adquirir suscripciones, avatares o temas exclusivos.", color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("Economía de Canje (Basado en Precios de Suscripción)"), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(tr("Usa tus Esencias Azules para adquirir suscripciones, avatares o temas exclusivos."), color = TextSecondary, fontSize = 11.sp)
                                 Spacer(modifier = Modifier.height(4.dp))
                             }
 
@@ -327,7 +329,7 @@ fun BlueEssenceStoreDialog(
                                             shape = RoundedCornerShape(8.dp),
                                             enableShimmer = true
                                         ) {
-                                            Text("Canjear con ${if (selectedCurrency == "BLUE") "Esencias Azules" else "Esencias Naranjas"}", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(tr("Canjear con %s").format(if (selectedCurrency == "BLUE") tr("Esencias Azules") else tr("Esencias Naranjas")), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
                                     }
                                 }
@@ -347,7 +349,7 @@ fun BlueEssenceStoreDialog(
                             if (historyItems.isEmpty()) {
                                 item {
                                     Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                                        Text("No hay registros de compras de esencia", color = TextMuted)
+                                        Text(tr("No hay registros de compras de esencia"), color = TextMuted)
                                     }
                                 }
                             } else {
