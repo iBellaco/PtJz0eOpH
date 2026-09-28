@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Handshake
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.*
@@ -38,12 +39,19 @@ enum class LegalTab(val titleRes: String) {
 fun PrivacyPolicyDialog(
     isMandatoryAcceptance: Boolean = false,
     onAccept: () -> Unit = {},
+    onChangeLanguage: (() -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(LegalTab.PRIVACY) }
 
     Dialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            if (onChangeLanguage != null) {
+                onChangeLanguage()
+            } else {
+                onDismiss()
+            }
+        },
         properties = DialogProperties(
             dismissOnClickOutside = !isMandatoryAcceptance,
             dismissOnBackPress = true
@@ -89,12 +97,23 @@ fun PrivacyPolicyDialog(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = if (isMandatoryAcceptance) tr("Cerrar y Salir") else tr("Cerrar"),
-                            tint = TextSecondary
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (onChangeLanguage != null) {
+                            IconButton(onClick = onChangeLanguage) {
+                                Icon(
+                                    imageVector = Icons.Default.Language,
+                                    contentDescription = tr("Cambiar Idioma"),
+                                    tint = HextechCyan
+                                )
+                            }
+                        }
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = if (isMandatoryAcceptance) tr("Cerrar y Salir") else tr("Cerrar"),
+                                tint = TextSecondary
+                            )
+                        }
                     }
                 }
 
@@ -164,9 +183,26 @@ fun PrivacyPolicyDialog(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (onChangeLanguage != null) {
+                            OutlinedButton(
+                                onClick = onChangeLanguage,
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.6f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = HextechCyan)
+                            ) {
+                                Text(
+                                    text = tr("Cambiar Idioma"),
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+
                         OutlinedButton(
                             onClick = onDismiss,
                             modifier = Modifier.weight(1f),
@@ -176,14 +212,15 @@ fun PrivacyPolicyDialog(
                         ) {
                             Text(
                                 text = tr("Rechazar y Salir"),
-                                fontSize = 12.5.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1
                             )
                         }
 
                         Button(
                             onClick = onAccept,
-                            modifier = Modifier.weight(1.3f),
+                            modifier = Modifier.weight(1.2f),
                             colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
                             shape = RoundedCornerShape(12.dp)
                         ) {
@@ -191,7 +228,8 @@ fun PrivacyPolicyDialog(
                                 text = tr("Aceptar y Entrar"),
                                 color = HextechDarkBg,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 13.5.sp
+                                fontSize = 12.5.sp,
+                                maxLines = 1
                             )
                         }
                     }
