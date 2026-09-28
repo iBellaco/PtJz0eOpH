@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import androidx.compose.foundation.BorderStroke
 import com.example.data.sync.BestBuildWrScraper
 
@@ -326,9 +328,9 @@ fun AdminDashboardDialog(
                         ) {
                             Icon(Icons.Default.SupportAgent, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(64.dp))
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text("Panel de Moderación", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                            Text(tr("Panel de Moderación"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Abre 'Soporte' en la parte superior para moderar los aportes de la comunidad.", color = TextSecondary, fontSize = 14.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Text(tr("Abre 'Soporte' en la parte superior para moderar los aportes de la comunidad."), color = TextSecondary, fontSize = 14.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
                 }
@@ -383,13 +385,13 @@ private fun AdminDashboardHeader(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "Panel de Administración",
+                            text = tr("Panel de Administración"),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = HextechGold
                         )
                         Text(
-                            text = "Control de Usuarios, Membresías y Slots",
+                            text = tr("Control de Usuarios, Membresías y Slots"),
                             style = MaterialTheme.typography.bodySmall,
                             color = TextMuted,
                             fontSize = 11.sp
@@ -429,7 +431,7 @@ private fun AdminDashboardHeader(
                 ) {
                     Icon(Icons.Default.SupportAgent, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Soporte", fontSize = 10.5.sp, color = HextechCyan, fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(tr("Soporte"), fontSize = 10.5.sp, color = HextechCyan, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
 
                 // Botón Moderación (Peticiones de Moderadores con badge de notificación)
@@ -445,7 +447,7 @@ private fun AdminDashboardHeader(
                     ) {
                         Icon(Icons.Default.PendingActions, contentDescription = null, tint = HextechGold, modifier = Modifier.size(13.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Moderación", fontSize = 10.5.sp, color = HextechGold, fontWeight = FontWeight.Bold, maxLines = 1)
+                        Text(tr("Moderación"), fontSize = 10.5.sp, color = HextechGold, fontWeight = FontWeight.Bold, maxLines = 1)
                     }
                     if (pendingModeratorRequestsCount > 0) {
                         Box(
@@ -476,7 +478,7 @@ private fun AdminDashboardHeader(
                 ) {
                     Icon(Icons.Default.Campaign, contentDescription = null, tint = Color(0xFFC4B5FD), modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Broadcast", fontSize = 10.5.sp, color = Color(0xFFC4B5FD), fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(tr("Broadcast"), fontSize = 10.5.sp, color = Color(0xFFC4B5FD), fontWeight = FontWeight.Bold, maxLines = 1)
                 }
 
                 // Botón Avisos
@@ -488,7 +490,7 @@ private fun AdminDashboardHeader(
                 ) {
                     Icon(Icons.Default.Announcement, contentDescription = null, tint = Color(0xFF2DD4BF), modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Avisos", fontSize = 10.5.sp, color = Color(0xFF2DD4BF), fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(tr("Avisos"), fontSize = 10.5.sp, color = Color(0xFF2DD4BF), fontWeight = FontWeight.Bold, maxLines = 1)
                 }
 
                 // Botón CPM
@@ -500,7 +502,7 @@ private fun AdminDashboardHeader(
                 ) {
                     Icon(Icons.Default.TrendingUp, contentDescription = null, tint = Color(0xFF00FF66), modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("CPM", fontSize = 10.5.sp, color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(tr("CPM"), fontSize = 10.5.sp, color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, maxLines = 1)
                 }
 
                 // Botón Base de Datos
@@ -512,7 +514,7 @@ private fun AdminDashboardHeader(
                 ) {
                     Icon(Icons.Default.Storage, contentDescription = null, tint = HextechGold, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Base Datos", fontSize = 10.5.sp, color = HextechGold, fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(tr("Base Datos"), fontSize = 10.5.sp, color = HextechGold, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
             }
         }
@@ -649,7 +651,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             Icon(Icons.Default.Announcement, contentDescription = null, tint = HextechGold, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text("Gestor de Anuncios y Noticias", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(tr("Gestor de Anuncios y Noticias"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                 Text(
                                     if (hasFilledFields) "Edición activa (salida bloqueada contra pérdidas)" else "Pantalla completa • Gestión de avisos oficiales",
                                     color = if (hasFilledFields) HextechGold else TextSecondary,
@@ -693,7 +695,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 Icon(Icons.Default.Shield, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "Protección activa: Hay campos con información. Guarda o vacía los campos para poder salir.",
+                                    tr("Protección activa: Hay campos con información. Guarda o vacía los campos para poder salir."),
                                     color = HextechGold,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -716,7 +718,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             ) {
                                 Icon(Icons.Default.DeleteSweep, contentDescription = null, tint = DangerRed, modifier = Modifier.size(14.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Limpiar campos", color = DangerRed, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Limpiar campos"), color = DangerRed, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -730,7 +732,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
-                    Text("Administra los avisos y anuncios oficiales que se muestran en la pantalla de inicio:", color = TextSecondary, fontSize = 12.sp)
+                    Text(tr("Administra los avisos y anuncios oficiales que se muestran en la pantalla de inicio:"), color = TextSecondary, fontSize = 12.sp)
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // Banner to open CPM & Monetization metrics
@@ -753,8 +755,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             Icon(Icons.Default.TrendingUp, contentDescription = null, tint = Color(0xFF00FF66), modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
-                                Text("Métricas de CPM & Monetización", color = Color(0xFF00FF66), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Text("Ver impresiones, clics, CTR e ingresos estimados", color = TextSecondary, fontSize = 10.sp)
+                                Text(tr("Métricas de CPM & Monetización"), color = Color(0xFF00FF66), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Ver impresiones, clics, CTR e ingresos estimados"), color = TextSecondary, fontSize = 10.sp)
                             }
                         }
                         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF00FF66), modifier = Modifier.size(18.dp))
@@ -773,10 +775,10 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.PhotoSizeSelectActual, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("📐 Medidas Recomendadas (Toca para Copiar)", color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("📐 Medidas Recomendadas (Toca para Copiar)"), color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                         }
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text("Utiliza estas resoluciones exactas para que tus imágenes y videos queden perfectamente encuadrados:", color = TextSecondary, fontSize = 10.sp)
+                        Text(tr("Utiliza estas resoluciones exactas para que tus imágenes y videos queden perfectamente encuadrados:"), color = TextSecondary, fontSize = 10.sp)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Horizontal dimensions chip
@@ -796,8 +798,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("🖼️ Horizontal (Panel de Inicio / Tarjeta):", color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
-                                    Text("1920 x 1080 px  (Relación 16:9)", color = TextPrimary, fontSize = 10.sp)
+                                    Text(tr("🖼️ Horizontal (Panel de Inicio / Tarjeta):"), color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(tr("1920 x 1080 px  (Relación 16:9)"), color = TextPrimary, fontSize = 10.sp)
                                 }
                                 Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = HextechCyan, modifier = Modifier.size(16.dp))
                             }
@@ -822,8 +824,8 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("📱 Vertical (Vista Ampliada / Fullscreen):", color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
-                                    Text("1080 x 1920 px  (9:16 Pantalla Completa)", color = TextPrimary, fontSize = 10.sp)
+                                    Text(tr("📱 Vertical (Vista Ampliada / Fullscreen):"), color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(tr("1080 x 1920 px  (9:16 Pantalla Completa)"), color = TextPrimary, fontSize = 10.sp)
                                 }
                                 Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = HextechGold, modifier = Modifier.size(16.dp))
                             }
@@ -840,9 +842,9 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
                 ) {
                     Column(modifier = Modifier.padding(10.dp)) {
-                        Text("⏱️ Intervalo de Rotación (Todos los Anuncios > 1)", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("⏱️ Intervalo de Rotación (Todos los Anuncios > 1)"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("Si hay más de 1 anuncio en una categoría, rotarán automáticamente con este intervalo (si solo hay 1, se queda fijo):", color = TextSecondary, fontSize = 10.sp)
+                        Text(tr("Si hay más de 1 anuncio en una categoría, rotarán automáticamente con este intervalo (si solo hay 1, se queda fijo):"), color = TextSecondary, fontSize = 10.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -852,7 +854,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             OutlinedTextField(
                                 value = intervalValueText,
                                 onValueChange = { intervalValueText = it.filter { c -> c.isDigit() } },
-                                label = { Text("Valor") },
+                                label = { Text(tr("Valor")) },
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(6.dp)
                             )
@@ -913,7 +915,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 border = BorderStroke(0.5.dp, Color(0xFF10B981))
                                             ) {
                                                 Text(
-                                                    "PATROCINIO APROBADO",
+                                                    tr("PATROCINIO APROBADO"),
                                                     color = Color(0xFF10B981),
                                                     fontSize = 7.5.sp,
                                                     fontWeight = FontWeight.Bold,
@@ -962,7 +964,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                         modifier = Modifier.size(10.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(3.dp))
-                                                    Text("Horizontal", color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                                                    Text(tr("Horizontal"), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
                                                 }
                                             }
                                         }
@@ -978,7 +980,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 ) {
                                                     Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = HextechGold, modifier = Modifier.size(10.dp))
                                                     Spacer(modifier = Modifier.width(3.dp))
-                                                    Text("Vertical", color = HextechGold, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                                                    Text(tr("Vertical"), color = HextechGold, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
                                                 }
                                             }
                                         }
@@ -994,7 +996,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 ) {
                                                     Icon(Icons.Default.OpenInBrowser, contentDescription = null, tint = Color(0xFF3399FF), modifier = Modifier.size(10.dp))
                                                     Spacer(modifier = Modifier.width(3.dp))
-                                                    Text("Enlace", color = Color(0xFF3399FF), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                                                    Text(tr("Enlace"), color = Color(0xFF3399FF), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
                                                 }
                                             }
                                         }
@@ -1128,14 +1130,14 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         ) {
                             Icon(Icons.Default.Close, contentDescription = null, tint = DangerRed, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Cancelar", color = DangerRed, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Cancelar"), color = DangerRed, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Tag selector
-                Text("Etiqueta / Categoría:", color = TextSecondary, fontSize = 11.sp)
+                Text(tr("Etiqueta / Categoría:"), color = TextSecondary, fontSize = 11.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier
@@ -1162,12 +1164,12 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Título del Aviso") },
+                    label = { Text(tr("Título del Aviso")) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Text("🎨 Color del Título:", color = TextSecondary, fontSize = 11.sp)
+                Text("🎨 " + tr("Color del Título:"), color = TextSecondary, fontSize = 11.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -1194,7 +1196,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             ),
                             border = BorderStroke(1.dp, parsedColor)
                         ) {
-                            Text(name, color = if (isSelected) HextechDarkBg else parsedColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                            Text(tr(name), color = if (isSelected) HextechDarkBg else parsedColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1203,13 +1205,13 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 OutlinedTextField(
                     value = content,
                     onValueChange = { content = it },
-                    label = { Text("Contenido / Descripción") },
+                    label = { Text(tr("Contenido / Descripción")) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 2,
                     shape = RoundedCornerShape(8.dp)
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Text("🎨 Color de la Descripción:", color = TextSecondary, fontSize = 11.sp)
+                Text(tr("🎨 Color de la Descripción:"), color = TextSecondary, fontSize = 11.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -1242,7 +1244,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
                 // 1. Horizontal Media (Home screen)
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("1. Multimedia Horizontal (Panel de Inicio):", color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                Text(tr("1. Multimedia Horizontal (Panel de Inicio):"), color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
 
                 val horizontalMediaPickerLauncher = rememberLauncherForActivityResult(
@@ -1333,7 +1335,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "Visible en la tarjeta de novedades en el inicio.",
+                                        text = tr("Visible en la tarjeta de novedades en el inicio."),
                                         color = TextMuted,
                                         fontSize = 9.5.sp
                                     )
@@ -1350,7 +1352,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     ) {
                                         Icon(Icons.Default.Edit, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(12.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Cambiar", color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Cambiar"), color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                     }
 
                                     Button(
@@ -1363,7 +1365,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     ) {
                                         Icon(Icons.Default.Close, contentDescription = null, tint = DangerRed, modifier = Modifier.size(12.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Quitar", color = DangerRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Quitar"), color = DangerRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -1373,14 +1375,14 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 OutlinedTextField(
                                     value = videoUrl,
                                     onValueChange = { videoUrl = it },
-                                    label = { Text("Editar enlace o URL") },
+                                    label = { Text(tr("Editar enlace o URL")) },
                                     singleLine = true,
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(6.dp)
                                 )
                             } else {
                                 Text(
-                                    text = "Editar URL o enlace web",
+                                    text = tr("Editar enlace o URL"),
                                     color = HextechCyan.copy(alpha = 0.8f),
                                     fontSize = 10.sp,
                                     textDecoration = TextDecoration.Underline,
@@ -1395,15 +1397,15 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     OutlinedTextField(
                         value = videoUrl,
                         onValueChange = { videoUrl = it },
-                        label = { Text("URL YouTube o Imagen/Video Horizontal") },
+                        label = { Text(tr("URL YouTube o Imagen/Video Horizontal")) },
                         singleLine = true,
                         maxLines = 1,
                         isError = !isUrlValid,
                         supportingText = {
                             if (!isUrlValid) {
-                                Text("Enlace inválido. Solo URLs de YouTube o archivos de galería.", color = DangerRed, fontSize = 10.sp)
+                                Text(tr("Enlace inválido. Solo URLs de YouTube o archivos de galería."), color = DangerRed, fontSize = 10.sp)
                             } else {
-                                Text("Se muestra en la tarjeta del panel de inicio (Horizontal)", color = TextMuted, fontSize = 10.sp)
+                                Text(tr("Se muestra en la tarjeta del panel de inicio (Horizontal)"), color = TextMuted, fontSize = 10.sp)
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -1419,13 +1421,13 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     ) {
                         Icon(Icons.Default.AttachFile, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Subir Multimedia Horizontal desde Galería", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Subir Multimedia Horizontal desde Galería"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
                 // 2. Vertical Expanded Media (Video or Image)
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("2. Multimedia Vertical (Video o Imagen para Vista Ampliada):", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                Text(tr("2. Multimedia Vertical (Video o Imagen para Vista Ampliada):"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
 
                 val verticalImagePickerLauncher = rememberLauncherForActivityResult(
@@ -1533,7 +1535,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                         ) {
                                             Icon(Icons.Default.Edit, contentDescription = null, tint = HextechGold, modifier = Modifier.size(12.dp))
                                             Spacer(modifier = Modifier.width(4.dp))
-                                            Text("Cambiar", color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            Text(tr("Cambiar"), color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                         }
 
                                         Button(
@@ -1546,7 +1548,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                         ) {
                                             Icon(Icons.Default.Close, contentDescription = null, tint = DangerRed, modifier = Modifier.size(12.dp))
                                             Spacer(modifier = Modifier.width(4.dp))
-                                            Text("Quitar", color = DangerRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            Text(tr("Quitar"), color = DangerRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                         }
                                     }
                                 }
@@ -1557,21 +1559,21 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 OutlinedTextField(
                                     value = expandedImageUrl,
                                     onValueChange = { expandedImageUrl = it },
-                                    label = { Text("Editar URL vertical manualmente") },
+                                    label = { Text(tr("Editar URL vertical manualmente")) },
                                     singleLine = true,
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(6.dp)
                                 )
                             } else {
                                 Text(
-                                    text = "Editar URL o enlace web",
+                                    text = tr("Editar enlace o URL"),
                                     color = HextechGold.copy(alpha = 0.8f),
                                     fontSize = 10.sp,
                                     textDecoration = TextDecoration.Underline,
                                     modifier = Modifier
                                         .padding(top = 4.dp)
                                         .clickable { showManualExpandedUrlInput = true }
-                                )
+                                 )
                             }
                         }
                     }
@@ -1579,15 +1581,15 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     OutlinedTextField(
                         value = expandedImageUrl,
                         onValueChange = { expandedImageUrl = it },
-                        label = { Text("URL o Video/Imagen Vertical Ampliada (Opcional)") },
+                        label = { Text(tr("URL o Video/Imagen Vertical Ampliada (Opcional)")) },
                         singleLine = true,
                         maxLines = 1,
                         isError = !isExpandedUrlValid,
                         supportingText = {
                             if (!isExpandedUrlValid) {
-                                Text("Enlace inválido. Solo URLs de YouTube/Imágenes o archivos de galería.", color = DangerRed, fontSize = 10.sp)
+                                Text(tr("Enlace inválido. Solo URLs de YouTube/Imágenes o archivos de galería."), color = DangerRed, fontSize = 10.sp)
                             } else {
-                                Text("Video o Imagen vertical que se observará al pulsar en 'Ampliar'", color = TextMuted, fontSize = 10.sp)
+                                Text(tr("Video o Imagen vertical que se observará al pulsar en 'Ampliar'"), color = TextMuted, fontSize = 10.sp)
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -1603,7 +1605,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     ) {
                         Icon(Icons.Default.AttachFile, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Subir Multimedia Vertical (Video o Imagen)", color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Subir Multimedia Vertical (Video o Imagen)"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -1619,7 +1621,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     ) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = HextechCyan, strokeWidth = 2.dp)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Optimizando multimedia para Multidispositivo...", color = HextechCyan, fontSize = 11.sp)
+                        Text(tr("Optimizando multimedia para Multidispositivo..."), color = HextechCyan, fontSize = 11.sp)
                     }
                 }
 
@@ -1635,7 +1637,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             Icon(Icons.Default.CloudSync, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "☁️ MULTIDISPOSITIVO ACTIVO (Sincronización en la nube)",
+                                text = tr("☁️ MULTIDISPOSITIVO ACTIVO (Sincronización en la nube)"),
                                 color = HextechGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -1652,21 +1654,21 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("3. 🔗 Enlace Web Externo (Opcional):", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                Text(tr("3. 🔗 Enlace Web Externo (Opcional):"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
                     value = externalUrl,
                     onValueChange = { externalUrl = it },
-                    label = { Text("URL de sitio web externo (Redirección al tocar imagen)") },
+                    label = { Text(tr("URL de sitio web externo (Redirección al tocar imagen)")) },
                     supportingText = {
-                        Text("Si se define, al ampliar la imagen se podrá abrir este enlace web externamente.", color = TextMuted, fontSize = 10.sp)
+                        Text(tr("Si se define, al ampliar la imagen se podrá abrir este enlace web externamente."), color = TextMuted, fontSize = 10.sp)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("4. 💰 Presupuesto de Campaña / Anuncio (USD - Opcional):", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                Text("4. 💰 " + tr("Presupuesto de Campaña / Anuncio (USD - Opcional):"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
                     value = budgetText,
@@ -1675,13 +1677,13 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             budgetText = input
                         }
                     },
-                    label = { Text("Presupuesto en USD (ej. 50.00)") },
+                    label = { Text(tr("Presupuesto en USD (ej. 50.00)")) },
                     placeholder = { Text("0.00") },
                     leadingIcon = {
                         Icon(Icons.Default.AttachMoney, contentDescription = null, tint = HextechGold)
                     },
                     supportingText = {
-                        Text("Monitorea el gasto y saldo restante de este anuncio en el panel de analíticas CPM.", color = TextMuted, fontSize = 10.sp)
+                        Text(tr("Monitorea el gasto y saldo restante de este anuncio en el panel de analíticas CPM."), color = TextMuted, fontSize = 10.sp)
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
@@ -1694,7 +1696,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Activar anuncio en inicio", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(tr("Activar anuncio en inicio"), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     Switch(checked = isEnabled, onCheckedChange = { isEnabled = it })
                 }
 
@@ -1725,7 +1727,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         ) {
                             Icon(Icons.Default.Close, contentDescription = null, tint = DangerRed, modifier = Modifier.size(15.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Cancelar Edición", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text(tr("Cancelar Edición"), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
                         Button(
@@ -1769,7 +1771,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("Guardar Cambios", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text(tr("Guardar Cambios"), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
                 } else {
@@ -1813,12 +1815,12 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("➕ Agregar a la Lista de Anuncios", fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                        Text(tr("➕ Agregar a la Lista de Anuncios"), fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
-                Text("👁️ Vista Previa del Anuncio:", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text(tr("👁️ Vista Previa del Anuncio:"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 Spacer(modifier = Modifier.height(6.dp))
 
                 // Live Preview Card
@@ -1876,7 +1878,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         }
                         if (expandedImageUrl.isNotBlank()) {
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text("📱 Vista previa (Media Ampliada):", color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                            Text(tr("📱 Vista previa (Media Ampliada):"), color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                             Spacer(modifier = Modifier.height(4.dp))
                             NoticeMediaViewer(
                                 mediaUrl = expandedImageUrl,
@@ -1951,11 +1953,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             if (isSavingCloud) {
                                 CircularProgressIndicator(modifier = Modifier.size(16.dp), color = HextechDarkBg, strokeWidth = 2.dp)
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Sincronizando...", fontWeight = FontWeight.Bold)
+                                Text(tr("Sincronizando..."), fontWeight = FontWeight.Bold)
                             } else {
                                 Icon(Icons.Default.CloudUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Publicar Todos", fontWeight = FontWeight.Bold)
+                                Text(tr("Publicar Todos"), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -2189,7 +2191,7 @@ fun EnhancedUserManagementPanel(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Buscar por nombre, email o UID...", color = TextMuted, fontSize = 13.sp) },
+                    placeholder = { Text(tr("Buscar por nombre, email o UID..."), color = TextMuted, fontSize = 13.sp) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = HextechGold) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
@@ -2239,7 +2241,7 @@ fun EnhancedUserManagementPanel(
                                 )
                             }
                             Text(
-                                text = "Revisar",
+                                text = tr("Revisar"),
                                 color = HextechCyan,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.ExtraBold
@@ -2309,7 +2311,7 @@ fun EnhancedUserManagementPanel(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator(color = HextechGold)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("Cargando usuarios y membresías...", color = TextMuted, fontSize = 13.sp)
+                    Text(tr("Cargando usuarios y membresías..."), color = TextMuted, fontSize = 13.sp)
                 }
             }
         } else if (errorMessage != null) {
@@ -2320,7 +2322,7 @@ fun EnhancedUserManagementPanel(
                     Text(text = errorMessage!!, color = DangerRed, textAlign = TextAlign.Center, fontSize = 13.sp)
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(onClick = { loadUsers() }, colors = ButtonDefaults.buttonColors(containerColor = HextechGold)) {
-                        Text("Reintentar", color = HextechDarkBg)
+                        Text(tr("Reintentar"), color = HextechDarkBg)
                     }
                 }
             }
@@ -2329,9 +2331,9 @@ fun EnhancedUserManagementPanel(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.PersonSearch, contentDescription = null, tint = TextMuted, modifier = Modifier.size(48.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("No se encontraron usuarios en esta categoría", color = TextSecondary, fontWeight = FontWeight.SemiBold)
+                    Text(tr("No se encontraron usuarios en esta categoría"), color = TextSecondary, fontWeight = FontWeight.SemiBold)
                     if (searchQuery.isNotEmpty()) {
-                        Text("Intenta con otro término de búsqueda.", color = TextMuted, fontSize = 12.sp)
+                        Text(tr("Intenta con otro término de búsqueda."), color = TextMuted, fontSize = 12.sp)
                     }
                 }
             }
@@ -2415,7 +2417,7 @@ private fun AdminKpiCards(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Métricas Generales de Usuarios",
+                    text = tr("Métricas Generales de Usuarios"),
                     color = HextechGold,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -2643,7 +2645,7 @@ fun EnhancedUserAdminCard(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            clipboard.setPrimaryClip(ClipData.newPlainText("Usuario", name))
+                            clipboard.setPrimaryClip(ClipData.newPlainText("Usuario" , name))
                             Toast.makeText(context, "Usuario copiado: $name", Toast.LENGTH_SHORT).show()
                         }
                     ) {
@@ -2681,7 +2683,7 @@ fun EnhancedUserAdminCard(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.clickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                clipboard.setPrimaryClip(ClipData.newPlainText("Correo", email))
+                                clipboard.setPrimaryClip(ClipData.newPlainText("Correo" , email))
                                 Toast.makeText(context, "Correo copiado: $email", Toast.LENGTH_SHORT).show()
                             }
                         )
@@ -2698,7 +2700,7 @@ fun EnhancedUserAdminCard(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.clickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                clipboard.setPrimaryClip(ClipData.newPlainText("UID", uid))
+                                clipboard.setPrimaryClip(ClipData.newPlainText("UID" , uid))
                                 Toast.makeText(context, "UID copiado", Toast.LENGTH_SHORT).show()
                             }
                         ) {
@@ -2873,7 +2875,7 @@ fun EnhancedUserAdminCard(
                 ) {
                     Icon(Icons.Default.CardGiftcard, contentDescription = null, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Regalar Avatar", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    Text(tr("Regalar Avatar"), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
 
                 // Botón Reiniciar Slots
@@ -2887,7 +2889,7 @@ fun EnhancedUserAdminCard(
                 ) {
                     Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Reset Slots", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    Text(tr("Reset Slots"), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
 
                 // Botón Gestionar Completo
@@ -2900,7 +2902,7 @@ fun EnhancedUserAdminCard(
                 ) {
                     Icon(Icons.Default.Tune, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Gestionar", color = HextechDarkBg, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Gestionar"), color = HextechDarkBg, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -3134,7 +3136,7 @@ fun UserDetailManagementDialog(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.Email, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Cambiar Correo Electrónico", fontWeight = FontWeight.Bold, color = HextechCyan, fontSize = 13.sp)
+                                    Text(tr("Cambiar Correo Electrónico"), fontWeight = FontWeight.Bold, color = HextechCyan, fontSize = 13.sp)
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 OutlinedTextField(
@@ -3142,7 +3144,7 @@ fun UserDetailManagementDialog(
                                     onValueChange = { currentEmailInput = it },
                                     modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
-                                    label = { Text("Nuevo Correo Electrónico", color = TextSecondary, fontSize = 11.sp) },
+                                    label = { Text(tr("Nuevo Correo Electrónico"), color = TextSecondary, fontSize = 11.sp) },
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor = HextechCyan,
                                         unfocusedBorderColor = HextechCardBorder,
@@ -3169,7 +3171,7 @@ fun UserDetailManagementDialog(
                                     shape = RoundedCornerShape(6.dp),
                                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                                 ) {
-                                    Text("Guardar Correo", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                    Text(tr("Guardar Correo"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                                 }
                             }
                         }
@@ -3186,7 +3188,7 @@ fun UserDetailManagementDialog(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Gestión de Suscripción Premium", fontWeight = FontWeight.Bold, color = HextechGold, fontSize = 13.sp)
+                                    Text(tr("Gestión de Suscripción Premium"), fontWeight = FontWeight.Bold, color = HextechGold, fontSize = 13.sp)
                                 }
 
                                 Spacer(modifier = Modifier.height(6.dp))
@@ -3220,7 +3222,7 @@ fun UserDetailManagementDialog(
                                 }
 
                                 Spacer(modifier = Modifier.height(10.dp))
-                                Text("Asignar o Extender Tiempo Premium:", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Text(tr("Asignar o Extender Tiempo Premium:"), color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                                 Spacer(modifier = Modifier.height(6.dp))
 
                                 // Grid de Duraciones Rápidas
@@ -3331,7 +3333,7 @@ fun UserDetailManagementDialog(
                                     ) {
                                         Icon(Icons.Default.EditCalendar, contentDescription = null, modifier = Modifier.size(13.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Días Personalizados...", fontSize = 11.sp)
+                                        Text(tr("Días Personalizados..."), fontSize = 11.sp)
                                     }
 
                                     // Quitar Premium
@@ -3354,7 +3356,7 @@ fun UserDetailManagementDialog(
                                     ) {
                                         Icon(Icons.Default.RemoveCircleOutline, contentDescription = null, modifier = Modifier.size(13.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Quitar Premium", fontSize = 11.sp)
+                                        Text(tr("Quitar Premium"), fontSize = 11.sp)
                                     }
                                 }
                             }
@@ -3383,7 +3385,7 @@ fun UserDetailManagementDialog(
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = "Gestión de Rol Principal",
+                                            text = tr("Gestión de Rol Principal"),
                                             fontWeight = FontWeight.Bold,
                                             color = HextechGold,
                                             fontSize = 13.sp
@@ -3401,7 +3403,7 @@ fun UserDetailManagementDialog(
 
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Asigna o modifica el rango principal de usuario. Por directiva institucional, la asignación del rol Administrador está excluida. Solo Administradores pueden cambiar este rol.",
+                                    text = tr("Asigna o modifica el rango principal de usuario. Por directiva institucional, la asignación del rol Administrador está excluida. Solo Administradores pueden cambiar este rol."),
                                     color = TextSecondary,
                                     fontSize = 11.5.sp,
                                     lineHeight = 15.sp
@@ -3428,7 +3430,7 @@ fun UserDetailManagementDialog(
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = "Esta cuenta posee el rango de Administrador Maestro protegido. Por directiva de seguridad, no se puede alterar ni degradar su rol desde este panel.",
+                                                text = tr("Esta cuenta posee el rango de Administrador Maestro protegido. Por directiva de seguridad, no se puede alterar ni degradar su rol desde este panel."),
                                                 color = HextechGold,
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Medium
@@ -3444,7 +3446,7 @@ fun UserDetailManagementDialog(
                                             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                                         ) {
                                             Text(
-                                                text = "Solo los Administradores principales tienen privilegios para cambiar el Rol Principal.",
+                                                text = tr("Solo los Administradores principales tienen privilegios para cambiar el Rol Principal."),
                                                 color = Color.Yellow,
                                                 fontSize = 11.sp,
                                                 modifier = Modifier.padding(8.dp)
@@ -3513,7 +3515,7 @@ fun UserDetailManagementDialog(
                                                                 if (isSelected) {
                                                                     Spacer(modifier = Modifier.width(6.dp))
                                                                     Text(
-                                                                        text = "• ACTIVO",
+                                                                        text = tr("• ACTIVO"),
                                                                         color = targetRole.primaryColor,
                                                                         fontSize = 10.sp,
                                                                         fontWeight = FontWeight.ExtraBold
@@ -3544,7 +3546,7 @@ fun UserDetailManagementDialog(
                                                             border = androidx.compose.foundation.BorderStroke(0.5.dp, targetRole.primaryColor.copy(alpha = 0.4f))
                                                         ) {
                                                             Text(
-                                                                text = "Asignar",
+                                                                text = tr("Asignar"),
                                                                 color = targetRole.primaryColor,
                                                                 fontSize = 10.5.sp,
                                                                 fontWeight = FontWeight.Bold,
@@ -3583,7 +3585,7 @@ fun UserDetailManagementDialog(
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = "Gestión de Rol Secundario",
+                                            text = tr("Gestión de Rol Secundario"),
                                             fontWeight = FontWeight.Bold,
                                             color = HextechCyan,
                                             fontSize = 13.sp
@@ -3605,7 +3607,7 @@ fun UserDetailManagementDialog(
                                             border = androidx.compose.foundation.BorderStroke(0.5.dp, HextechCardBorder)
                                         ) {
                                             Text(
-                                                text = "SIN ROL SECUNDARIO",
+                                                text = tr("SIN ROL SECUNDARIO"),
                                                 color = TextMuted,
                                                 fontSize = 9.5.sp,
                                                 fontWeight = FontWeight.Bold,
@@ -3617,7 +3619,7 @@ fun UserDetailManagementDialog(
 
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Asigna un rol secundario (Rango de Elo competitivo) que no posee ningun privilegio en el sistema. Este rol puede ser asignado tanto por Administradores como por Moderadores.",
+                                    text = tr("Asigna un rol secundario (Rango de Elo competitivo) que no posee ningun privilegio en el sistema. Este rol puede ser asignado tanto por Administradores como por Moderadores."),
                                     color = TextSecondary,
                                     fontSize = 11.5.sp,
                                     lineHeight = 15.sp
@@ -3658,11 +3660,11 @@ fun UserDetailManagementDialog(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text("Ninguno (Quitar)", color = if (isSecondaryEmpty) HextechCyan else TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                                                Text("Remueve el rol secundario actual de la cuenta", color = TextMuted, fontSize = 10.5.sp)
+                                                Text(tr("Ninguno (Quitar)"), color = if (isSecondaryEmpty) HextechCyan else TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                                Text(tr("Remueve el rol secundario actual de la cuenta"), color = TextMuted, fontSize = 10.5.sp)
                                             }
                                             if (isSecondaryEmpty) {
-                                                Text("• ACTIVO", color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                                                Text(tr("• ACTIVO"), color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
                                             } else if (canAssignSecondaryOrVerify) {
                                                 Surface(
                                                     color = DangerRed.copy(alpha = 0.12f),
@@ -3670,7 +3672,7 @@ fun UserDetailManagementDialog(
                                                     border = androidx.compose.foundation.BorderStroke(0.5.dp, DangerRed.copy(alpha = 0.4f))
                                                 ) {
                                                     Text(
-                                                        text = "Remover",
+                                                        text = tr("Remover"),
                                                         color = DangerRed,
                                                         fontSize = 10.5.sp,
                                                         fontWeight = FontWeight.Bold,
@@ -3722,7 +3724,7 @@ fun UserDetailManagementDialog(
                                                             if (isSelected) {
                                                                 Spacer(modifier = Modifier.width(6.dp))
                                                                 Text(
-                                                                    text = "• ACTIVO",
+                                                                    text = tr("• ACTIVO"),
                                                                     color = targetRole.primaryColor,
                                                                     fontSize = 10.sp,
                                                                     fontWeight = FontWeight.ExtraBold
@@ -3753,7 +3755,7 @@ fun UserDetailManagementDialog(
                                                         border = androidx.compose.foundation.BorderStroke(0.5.dp, targetRole.primaryColor.copy(alpha = 0.4f))
                                                     ) {
                                                         Text(
-                                                            text = "Asignar",
+                                                            text = tr("Asignar"),
                                                             color = targetRole.primaryColor,
                                                             fontSize = 10.5.sp,
                                                             fontWeight = FontWeight.Bold,
@@ -3791,7 +3793,7 @@ fun UserDetailManagementDialog(
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = "Verificación Oficial de Cuenta",
+                                            text = tr("Verificación Oficial de Cuenta"),
                                             fontWeight = FontWeight.Bold,
                                             color = if (currentVerified) HextechCyan else TextPrimary,
                                             fontSize = 13.sp
@@ -3815,7 +3817,7 @@ fun UserDetailManagementDialog(
 
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Otorga o revoca la insignia de cuenta verificada para este invocador. La insignia se muestra junto a su nombre en su perfil y en la gestión de comunidad.",
+                                    text = tr("Otorga o revoca la insignia de cuenta verificada para este invocador. La insignia se muestra junto a su nombre en su perfil y en la gestión de comunidad."),
                                     color = TextSecondary,
                                     fontSize = 11.5.sp,
                                     lineHeight = 15.sp
@@ -3883,7 +3885,7 @@ fun UserDetailManagementDialog(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.Devices, contentDescription = null, tint = Color(0xFF60A5FA), modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Slots de Hardware y Dispositivos", fontWeight = FontWeight.Bold, color = Color(0xFF60A5FA), fontSize = 13.sp)
+                                    Text(tr("Slots de Hardware y Dispositivos"), fontWeight = FontWeight.Bold, color = Color(0xFF60A5FA), fontSize = 13.sp)
                                 }
 
                                 Spacer(modifier = Modifier.height(6.dp))
@@ -3912,7 +3914,7 @@ fun UserDetailManagementDialog(
                                 ) {
                                     Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Liberar / Reiniciar Todos los Slots de Hardware", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(tr("Liberar / Reiniciar Todos los Slots de Hardware"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -3929,12 +3931,12 @@ fun UserDetailManagementDialog(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.Palette, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Regalos de Avatares y Cosméticos", fontWeight = FontWeight.Bold, color = HextechGold, fontSize = 13.sp)
+                                    Text(tr("Regalos de Avatares y Cosméticos"), fontWeight = FontWeight.Bold, color = HextechGold, fontSize = 13.sp)
                                 }
 
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Permite desbloquear avatares exclusivos individuales o regalar todo el catálogo de una vez.",
+                                    text = tr("Permite desbloquear avatares exclusivos individuales o regalar todo el catálogo de una vez."),
                                     color = TextMuted,
                                     fontSize = 11.sp
                                 )
@@ -3953,7 +3955,7 @@ fun UserDetailManagementDialog(
                                     ) {
                                         Icon(Icons.Default.CardGiftcard, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(14.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Ver Galería de Avatares", color = HextechDarkBg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Ver Galería de Avatares"), color = HextechDarkBg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
 
                                     Button(
@@ -3969,7 +3971,7 @@ fun UserDetailManagementDialog(
                                     ) {
                                         Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Desbloquear TODO", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Desbloquear TODO"), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
 
@@ -3988,7 +3990,7 @@ fun UserDetailManagementDialog(
                                 ) {
                                     Icon(Icons.Default.Delete, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Quitar Regalos de Avatares", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(tr("Quitar Regalos de Avatares"), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -4005,7 +4007,7 @@ fun UserDetailManagementDialog(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.Security, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Seguridad y Estado de la Cuenta", fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 13.sp)
+                                    Text(tr("Seguridad y Estado de la Cuenta"), fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 13.sp)
                                 }
 
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -4024,7 +4026,7 @@ fun UserDetailManagementDialog(
                                             Icon(Icons.Default.AdminPanelSettings, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = "Esta cuenta posee rango de Administrador Maestro protegido.",
+                                                text = tr("Esta cuenta posee rango de Administrador Maestro protegido."),
                                                 color = HextechGold,
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.SemiBold
@@ -4076,7 +4078,7 @@ fun UserDetailManagementDialog(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(Icons.Default.CardGiftcard, contentDescription = null, tint = Color(0xFF0EA5E9), modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Comunicación y Recompensas", fontWeight = FontWeight.Bold, color = Color(0xFF0EA5E9), fontSize = 13.sp)
+                                        Text(tr("Comunicación y Recompensas"), fontWeight = FontWeight.Bold, color = Color(0xFF0EA5E9), fontSize = 13.sp)
                                     }
 
                                     Row(
@@ -4147,7 +4149,7 @@ fun UserDetailManagementDialog(
                                     ) {
                                         Icon(Icons.Default.Message, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Mensajes Privados", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Mensajes Privados"), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
 
                                     Button(
@@ -4162,7 +4164,7 @@ fun UserDetailManagementDialog(
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Dar Esencia", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Dar Esencia"), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -4206,7 +4208,7 @@ fun UserDetailManagementDialog(
     if (showCustomDaysDialog) {
         AlertDialog(
             onDismissRequest = { showCustomDaysDialog = false },
-            title = { Text("Días Personalizados de Premium", fontWeight = FontWeight.Bold, color = HextechGold) },
+            title = { Text(tr("Días Personalizados de Premium"), fontWeight = FontWeight.Bold, color = HextechGold) },
             text = {
                 Column {
                     Text("Ingresa el número de días que deseas otorgarle a $currentName:", color = TextSecondary, fontSize = 13.sp)
@@ -4214,7 +4216,7 @@ fun UserDetailManagementDialog(
                     OutlinedTextField(
                         value = customDaysInput,
                         onValueChange = { customDaysInput = it.filter { ch -> ch.isDigit() } },
-                        placeholder = { Text("Ej. 15, 45, 180...") },
+                        placeholder = { Text(tr("Ej. 15, 45, 180...")) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -4241,12 +4243,12 @@ fun UserDetailManagementDialog(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
                 ) {
-                    Text("Aplicar Días", color = HextechDarkBg, fontWeight = FontWeight.Bold)
+                    Text(tr("Aplicar Días"), color = HextechDarkBg, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCustomDaysDialog = false }) {
-                    Text("Cancelar", color = TextMuted)
+                    Text(tr("Cancelar"), color = TextMuted)
                 }
             }
         )
@@ -4295,7 +4297,7 @@ fun UserDetailManagementDialog(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "NUEVO ROL ASIGNADO",
+                                text = tr("NUEVO ROL ASIGNADO"),
                                 color = TextMuted,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -4321,7 +4323,7 @@ fun UserDetailManagementDialog(
                     if (target == AppUserRole.BANNED) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "⚠️ Al asignar el rol Baneado, la cuenta del usuario será suspendida de inmediato y no podrá utilizar los servicios de la app.",
+                            text = tr("⚠️ Al asignar el rol Baneado, la cuenta del usuario será suspendida de inmediato y no podrá utilizar los servicios de la app."),
                             color = DangerRed,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
@@ -4329,7 +4331,7 @@ fun UserDetailManagementDialog(
                     } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.PATROCINADOR, AppUserRole.CREATOR, AppUserRole.CREATOR_LVL2, AppUserRole.CREATOR_LVL3, AppUserRole.CREATOR_LVL4, AppUserRole.CREATOR_LVL5, AppUserRole.STREAMER)) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "✨ Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech.",
+                            text = tr("✨ Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech."),
                             color = HextechCyan,
                             fontSize = 11.sp
                         )
@@ -4368,7 +4370,7 @@ fun UserDetailManagementDialog(
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = HextechDarkBg, strokeWidth = 2.dp)
                     } else {
                         Text(
-                            text = "Confirmar y Asignar",
+                            text = tr("Confirmar y Asignar"),
                             color = if (target == AppUserRole.BANNED) Color.White else HextechDarkBg,
                             fontWeight = FontWeight.Bold
                         )
@@ -4380,7 +4382,7 @@ fun UserDetailManagementDialog(
                     onClick = { if (!isChangingRole) roleToConfirm = null },
                     enabled = !isChangingRole
                 ) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(tr("Cancelar"), color = TextSecondary)
                 }
             },
             containerColor = HextechSurfaceBg,
@@ -4436,7 +4438,7 @@ fun UserDetailManagementDialog(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "NUEVO ROL SECUNDARIO",
+                                    text = tr("NUEVO ROL SECUNDARIO"),
                                     color = TextMuted,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
@@ -4498,7 +4500,7 @@ fun UserDetailManagementDialog(
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = HextechDarkBg, strokeWidth = 2.dp)
                     } else {
                         Text(
-                            text = "Confirmar",
+                            text = tr("Confirmar"),
                             color = HextechDarkBg,
                             fontWeight = FontWeight.Bold
                         )
@@ -4510,7 +4512,7 @@ fun UserDetailManagementDialog(
                     onClick = { if (!isChangingSecondaryRole) secondaryRoleToConfirm = null },
                     enabled = !isChangingSecondaryRole
                 ) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(tr("Cancelar"), color = TextSecondary)
                 }
             },
             containerColor = HextechSurfaceBg,
@@ -4648,7 +4650,7 @@ fun AdminAvatarGiftDialog(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Buscar avatar o campeón...", color = TextMuted, fontSize = 12.sp) },
+                    placeholder = { Text(tr("Buscar avatar o campeón..."), color = TextMuted, fontSize = 12.sp) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp)) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
@@ -4733,7 +4735,7 @@ fun AdminAvatarGiftDialog(
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Quitar Regalos", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.White)
+                        Text(tr("Quitar Regalos"), fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.White)
                     }
                 }
 
@@ -4831,7 +4833,7 @@ private fun AvatarGiftCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "✓ Desbloqueado",
+                        text = tr("✓ Desbloqueado"),
                         color = Color(0xFF00FF7F),
                         fontSize = 9.5.sp,
                         fontWeight = FontWeight.Bold,
@@ -4851,7 +4853,7 @@ private fun AvatarGiftCard(
                 ) {
                     Icon(Icons.Default.RemoveCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(11.dp))
                     Spacer(modifier = Modifier.width(3.dp))
-                    Text("Quitar", color = Color.White, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Quitar"), color = Color.White, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                 }
             } else {
                 Button(
@@ -4861,7 +4863,7 @@ private fun AvatarGiftCard(
                     contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Regalar", color = HextechDarkBg, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Regalar"), color = HextechDarkBg, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -4900,7 +4902,7 @@ fun AdminBroadcastAnnouncementDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Campaign, contentDescription = null, tint = HextechGold)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Publicar Anuncio Global", fontWeight = FontWeight.Bold, color = HextechGold, fontSize = 16.sp)
+                Text(tr("Publicar Anuncio Global"), fontWeight = FontWeight.Bold, color = HextechGold, fontSize = 16.sp)
             }
         },
         text = {
@@ -4911,7 +4913,7 @@ fun AdminBroadcastAnnouncementDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "Este anuncio se enviará en tiempo real a todos los dispositivos (con o sin sesión iniciada).",
+                    tr("Este anuncio se enviará en tiempo real a todos los dispositivos (con o sin sesión iniciada)."),
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
@@ -5001,8 +5003,8 @@ fun AdminBroadcastAnnouncementDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Título del Anuncio") },
-                    placeholder = { Text("Ej. Nuevo parche 6.0 o Mantenimiento") },
+                    label = { Text(tr("Título del Anuncio")) },
+                    placeholder = { Text(tr("Ej. Nuevo parche 6.0 o Mantenimiento")) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -5010,8 +5012,8 @@ fun AdminBroadcastAnnouncementDialog(
                 OutlinedTextField(
                     value = message,
                     onValueChange = { message = it },
-                    label = { Text("Mensaje Detallado") },
-                    placeholder = { Text("Escribe el comunicado para los usuarios...") },
+                    label = { Text(tr("Mensaje Detallado")) },
+                    placeholder = { Text(tr("Escribe el comunicado para los usuarios...")) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
                     maxLines = 5
@@ -5027,7 +5029,7 @@ fun AdminBroadcastAnnouncementDialog(
                         colors = CheckboxDefaults.colors(checkedColor = DangerRed)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Marcar como Urgente / Mantenimiento", color = if (isUrgent) DangerRed else TextSecondary, fontSize = 12.sp)
+                    Text(tr("Marcar como Urgente / Mantenimiento"), color = if (isUrgent) DangerRed else TextSecondary, fontSize = 12.sp)
                 }
                 
                 Row(
@@ -5040,7 +5042,7 @@ fun AdminBroadcastAnnouncementDialog(
                         colors = CheckboxDefaults.colors(checkedColor = HextechGold)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Enviar notificación a los dispositivos", color = if (sendNotification) HextechGold else TextSecondary, fontSize = 12.sp)
+                    Text(tr("Enviar notificación a los dispositivos"), color = if (sendNotification) HextechGold else TextSecondary, fontSize = 12.sp)
                 }
             }
         },
@@ -5076,7 +5078,7 @@ fun AdminBroadcastAnnouncementDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = TextMuted)
+                Text(tr("Cancelar"), color = TextMuted)
             }
         }
     )
@@ -5440,7 +5442,7 @@ private fun ServerScraperHealthCard() {
                     Icon(Icons.Default.CloudSync, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Monitoreo Multi-Servidor (CN, NA, Global)",
+                        text = tr("Monitoreo Multi-Servidor (CN, NA, Global)"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -5698,7 +5700,7 @@ fun AdminModeratorRequestsDialog(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Solicitudes de Moderadores",
+                            text = tr("Solicitudes de Moderadores"),
                             color = HextechGold,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -5845,7 +5847,7 @@ fun AdminModeratorRequestsDialog(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = "Cambio propuesto: ",
+                                                text = tr("Cambio propuesto: "),
                                                 color = TextMuted,
                                                 fontSize = 11.sp
                                             )
@@ -5866,7 +5868,7 @@ fun AdminModeratorRequestsDialog(
                                             } else {
                                                 if (newValue.isBlank()) {
                                                     Text(
-                                                        text = "QUITAR ROL SECUNDARIO",
+                                                        text = tr("QUITAR ROL SECUNDARIO"),
                                                         color = DangerRed,
                                                         fontSize = 11.sp,
                                                         fontWeight = FontWeight.Bold
@@ -5914,7 +5916,7 @@ fun AdminModeratorRequestsDialog(
                                                 shape = RoundedCornerShape(6.dp),
                                                 contentPadding = PaddingValues(vertical = 6.dp)
                                             ) {
-                                                Text("Rechazar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text(tr("Rechazar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
 
                                             // Approve
@@ -5942,7 +5944,7 @@ fun AdminModeratorRequestsDialog(
                                                 shape = RoundedCornerShape(6.dp),
                                                 contentPadding = PaddingValues(vertical = 6.dp)
                                             ) {
-                                                Text("Aprobar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text(tr("Aprobar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
                                         }
                                     } else {

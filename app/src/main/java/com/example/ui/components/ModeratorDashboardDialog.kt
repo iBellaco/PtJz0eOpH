@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -113,13 +115,13 @@ fun ModeratorDashboardDialog(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "Bandeja de Moderación",
+                                    text = tr("Bandeja de Moderación"),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = HextechGold
                                 )
                                 Text(
-                                    text = "Soporte Técnico y Propuestas de Usuarios",
+                                    text = tr("Soporte Técnico y Propuestas de Usuarios"),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color(0xFF94A3B8),
                                     fontSize = 11.sp
@@ -167,7 +169,7 @@ fun ModeratorDashboardDialog(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Soporte Técnico", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(tr("Soporte Técnico"), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -190,7 +192,7 @@ fun ModeratorDashboardDialog(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Gestor Usuarios", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(tr("Gestor Usuarios"), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
 
@@ -219,7 +221,7 @@ fun ModeratorDashboardDialog(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Bandeja de Reportes de Soporte",
+                                text = tr("Bandeja de Reportes de Soporte"),
                                 color = HextechCyan,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
@@ -227,7 +229,7 @@ fun ModeratorDashboardDialog(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Como moderador, puedes visualizar las dudas de los usuarios de la comunidad, responder a sus mensajes y cerrar reportes de soporte tecnico resueltos.",
+                                text = tr("Como moderador, puedes visualizar las dudas de los usuarios de la comunidad, responder a sus mensajes y cerrar reportes de soporte tecnico resueltos."),
                                 color = Color(0xFF94A3B8),
                                 fontSize = 13.sp,
                                 textAlign = TextAlign.Center,
@@ -242,7 +244,7 @@ fun ModeratorDashboardDialog(
                             ) {
                                 Icon(Icons.Default.Visibility, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Abrir Reportes de Soporte", fontWeight = FontWeight.ExtraBold)
+                                Text(tr("Abrir Reportes de Soporte"), fontWeight = FontWeight.ExtraBold)
                             }
                         }
                     } else {
@@ -324,7 +326,7 @@ fun ModeratorUserListPanel() {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Buscar usuario por nombre...", color = Color(0xFF64748B)) },
+            placeholder = { Text(tr("Buscar usuario por nombre..."), color = Color(0xFF64748B)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = HextechGold) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
@@ -476,7 +478,7 @@ fun ModeratorUserProposalDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Proponer Modificación",
+                        text = tr("Proponer Modificación"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -532,12 +534,12 @@ fun ModeratorUserProposalDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Estado actual en perfil:", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                        Text(tr("Estado actual en perfil:"), color = Color(0xFF94A3B8), fontSize = 11.sp)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (currentVerified) {
-                                Text("Verificado", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Verificado"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             } else {
-                                Text("No Verificado", color = Color(0xFFEF4444), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                Text(tr("No Verificado"), color = Color(0xFFEF4444), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                             }
                             if (currentSecondaryRoleRaw.isNotBlank()) {
                                 Text(" • ", color = Color(0xFF64748B), fontSize = 11.sp)
@@ -558,7 +560,7 @@ fun ModeratorUserProposalDialog(
 
                 // Section 1: Verification proposal
                 Text(
-                    text = "Estado de Verificación Oficial:",
+                    text = tr("Estado de Verificación Oficial:"),
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 12.5.sp
@@ -583,7 +585,7 @@ fun ModeratorUserProposalDialog(
                         ),
                         contentPadding = PaddingValues(vertical = 6.dp)
                     ) {
-                        Text("No Verificado", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("No Verificado"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
 
                     // Button Verificado
@@ -601,7 +603,7 @@ fun ModeratorUserProposalDialog(
                         ),
                         contentPadding = PaddingValues(vertical = 6.dp)
                     ) {
-                        Text("Verificado", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Verificado"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -609,7 +611,7 @@ fun ModeratorUserProposalDialog(
 
                 // Section 2: Secondary Role proposal
                 Text(
-                    text = "Rol Secundario Propuesto (Marco):",
+                    text = tr("Rol Secundario Propuesto (Marco):"),
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 12.5.sp
@@ -675,7 +677,7 @@ fun ModeratorUserProposalDialog(
                         Icon(Icons.Default.HourglassEmpty, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Estas modificaciones requieren la aprobacion del Administrador principal antes de verse reflejadas en el perfil.",
+                            text = tr("Estas modificaciones requieren la aprobacion del Administrador principal antes de verse reflejadas en el perfil."),
                             color = HextechGold,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Medium,
@@ -698,7 +700,7 @@ fun ModeratorUserProposalDialog(
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF64748B)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Cancelar", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Cancelar"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Button(
@@ -769,7 +771,7 @@ fun ModeratorUserProposalDialog(
                         if (isSending) {
                             CircularProgressIndicator(color = HextechDarkBg, modifier = Modifier.size(16.dp))
                         } else {
-                            Text("Enviar Propuesta", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                            Text(tr("Enviar Propuesta"), fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
                         }
                     }
                 }

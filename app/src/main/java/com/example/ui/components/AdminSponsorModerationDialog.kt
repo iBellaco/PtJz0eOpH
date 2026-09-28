@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -103,8 +105,8 @@ fun AdminSponsorModerationDialog(
                         Icon(Icons.Default.Verified, contentDescription = null, tint = HextechGold, modifier = Modifier.size(28.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text("Moderación de Patrocinadores", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Text("Acepta o rechaza publicaciones de anunciantes y patrocinadores", color = TextSecondary, fontSize = 11.sp)
+                            Text(tr("Moderación de Patrocinadores"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(tr("Acepta o rechaza publicaciones de anunciantes y patrocinadores"), color = TextSecondary, fontSize = 11.sp)
                         }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -137,7 +139,7 @@ fun AdminSponsorModerationDialog(
                         Icon(Icons.Default.Info, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Al aprobar un patrocinio, este se activará y se visualizará directamente en el Panel de Anuncios y en la rotación de avisos de la app.",
+                            tr("Al aprobar un patrocinio, este se activará y se visualizará directamente en el Panel de Anuncios y en la rotación de avisos de la app."),
                             color = TextPrimary,
                             fontSize = 11.sp
                         )
@@ -265,7 +267,7 @@ fun AdminSponsorNoticeItem(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Vista Previa Multimedia", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(tr("Vista Previa Multimedia"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Text(if (isVertical) "Orientación: Vertical" else "Orientación: Horizontal", color = HextechCyan, fontSize = 11.sp)
                         }
                         IconButton(onClick = { showMediaViewerDialog = false }) {
@@ -293,8 +295,8 @@ fun AdminSponsorNoticeItem(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Advertencia de Eliminación", color = HextechGold, fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro de que deseas eliminar este patrocinador? Esta acción no se puede deshacer.", color = TextPrimary) },
+            title = { Text(tr("Advertencia de Eliminación"), color = HextechGold, fontWeight = FontWeight.Bold) },
+            text = { Text(tr("¿Estás seguro de que deseas eliminar este patrocinador? Esta acción no se puede deshacer."), color = TextPrimary) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -303,12 +305,12 @@ fun AdminSponsorNoticeItem(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
                 ) {
-                    Text("Eliminar", color = Color.White)
+                    Text(tr("Eliminar"), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(tr("Cancelar"), color = TextSecondary)
                 }
             },
             containerColor = HextechSurface
@@ -406,7 +408,7 @@ fun AdminSponsorNoticeItem(
                                 fontSize = 11.sp
                             )
                             Text(
-                                text = "Toca para reproducir / ver en pantalla completa",
+                                text = tr("Toca para reproducir / ver en pantalla completa"),
                                 color = HextechCyan,
                                 fontSize = 9.5.sp
                             )
@@ -484,13 +486,13 @@ fun AdminSponsorNoticeItem(
                             TextButton(
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                    val clip = android.content.ClipData.newPlainText("URL Anuncio", notice.externalUrl)
+                                    val clip = android.content.ClipData.newPlainText("URL Anuncio" , notice.externalUrl)
                                     clipboard.setPrimaryClip(clip)
                                     Toast.makeText(context, "URL copiada al portapapeles", Toast.LENGTH_SHORT).show()
                                 },
                                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text("Copiar", color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Copiar"), color = HextechCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
 
                             TextButton(
@@ -504,7 +506,7 @@ fun AdminSponsorNoticeItem(
                                 },
                                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text("Abrir", color = Color(0xFF10B981), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Abrir"), color = Color(0xFF10B981), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -567,7 +569,7 @@ fun AdminSponsorNoticeItem(
                     ) {
                         Icon(Icons.Default.Chat, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                         Spacer(modifier = Modifier.width(3.dp))
-                        Text("DM", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("DM"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
 
                     if (!notice.isApproved) {
@@ -579,7 +581,7 @@ fun AdminSponsorNoticeItem(
                         ) {
                             Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(13.dp))
                             Spacer(modifier = Modifier.width(3.dp))
-                            Text("Aprobar", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Aprobar"), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                     Button(
@@ -590,7 +592,7 @@ fun AdminSponsorNoticeItem(
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, tint = Color.White, modifier = Modifier.size(13.dp))
                         Spacer(modifier = Modifier.width(3.dp))
-                        Text("Eliminar", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Eliminar"), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

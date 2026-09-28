@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -93,7 +95,7 @@ fun AdminGiveEssenceDialog(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Ajustar Esencias de Usuario",
+                        text = tr("Ajustar Esencias de Usuario"),
                         color = activeColor,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -121,7 +123,7 @@ fun AdminGiveEssenceDialog(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Azul (EA)", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Azul (EA)"), fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Button(
@@ -138,7 +140,7 @@ fun AdminGiveEssenceDialog(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Naranja (EN)", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Naranja (EN)"), fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -158,7 +160,7 @@ fun AdminGiveEssenceDialog(
                         border = BorderStroke(1.dp, if (isAddition) Color(0xFF00FF7F) else Color.Gray),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("+ Añadir", color = if (isAddition) Color(0xFF00FF7F) else Color.Gray, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("+ Añadir"), color = if (isAddition) Color(0xFF00FF7F) else Color.Gray, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                     }
 
                     OutlinedButton(
@@ -170,7 +172,7 @@ fun AdminGiveEssenceDialog(
                         border = BorderStroke(1.dp, if (!isAddition) Color(0xFFFF5252) else Color.Gray),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("- Descontar", color = if (!isAddition) Color(0xFFFF5252) else Color.Gray, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("- Descontar"), color = if (!isAddition) Color(0xFFFF5252) else Color.Gray, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -180,7 +182,7 @@ fun AdminGiveEssenceDialog(
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
-                    label = { Text("Cantidad de esencias", color = Color.Gray) },
+                    label = { Text(tr("Cantidad de esencias"), color = Color.Gray) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -237,7 +239,7 @@ fun AdminGiveEssenceDialog(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Notificar al usuario en buzón",
+                                    text = tr("Notificar al usuario en buzón"),
                                     color = if (notifyUser) Color.White else Color.Gray,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -301,7 +303,7 @@ fun AdminGiveEssenceDialog(
                                     OutlinedTextField(
                                         value = customTitle,
                                         onValueChange = { customTitle = it },
-                                        label = { Text("Título del mensaje", color = Color.Gray, fontSize = 11.sp) },
+                                        label = { Text(tr("Título del mensaje"), color = Color.Gray, fontSize = 11.sp) },
                                         singleLine = true,
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = OutlinedTextFieldDefaults.colors(
@@ -316,7 +318,7 @@ fun AdminGiveEssenceDialog(
                                     OutlinedTextField(
                                         value = customBody,
                                         onValueChange = { customBody = it },
-                                        label = { Text("Contenido del mensaje...", color = Color.Gray, fontSize = 11.sp) },
+                                        label = { Text(tr("Contenido del mensaje..."), color = Color.Gray, fontSize = 11.sp) },
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(80.dp),
@@ -372,7 +374,7 @@ fun AdminGiveEssenceDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss, enabled = !isProcessing) {
-                        Text("Cancelar", color = Color.Gray)
+                        Text(tr("Cancelar"), color = Color.Gray)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(

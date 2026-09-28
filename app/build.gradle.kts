@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 797
-    versionName = "1.1.10.81"
+    versionCode = 798
+    versionName = "1.1.10.82"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -115,6 +115,8 @@ secrets {
   propertiesFileName = ".env"
   defaultPropertiesFileName = ".env.example"
   ignoreList.add("FIREBASE_APPCHECK_DEBUG_TOKEN")
+  ignoreList.add("SUPABASE_URL")
+  ignoreList.add("SUPABASE_ANON_KEY")
 }
 
 // Some unused dependencies are commented out below instead of being removed.

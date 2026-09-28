@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -65,8 +67,8 @@ fun AdminDatabaseConsumptionDialog(
                         Icon(Icons.Default.Storage, contentDescription = null, tint = HextechGold, modifier = Modifier.size(28.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text("Consumo de Base de Datos", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                            Text("Firebase y Supabase (Almacenamiento Cloud)", color = TextSecondary, fontSize = 11.sp)
+                            Text(tr("Consumo de Base de Datos"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text(tr("Firebase y Supabase (Almacenamiento Cloud)"), color = TextSecondary, fontSize = 11.sp)
                         }
                     }
                     IconButton(onClick = onDismiss) {
@@ -106,7 +108,7 @@ fun AdminDatabaseConsumptionDialog(
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Cerrar Panel", color = HextechDarkBg, fontWeight = FontWeight.Bold)
+                    Text(tr("Cerrar Panel"), color = HextechDarkBg, fontWeight = FontWeight.Bold)
                 }
             }
         }

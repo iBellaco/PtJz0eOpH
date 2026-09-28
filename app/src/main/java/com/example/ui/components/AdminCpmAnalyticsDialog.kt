@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -107,7 +109,7 @@ fun AdminCpmAnalyticsDialog(
 
     fun copyReport() {
         val report = AppNoticeAnalyticsManager.generateSummaryReport(notices)
-        val clip = ClipData.newPlainText("Reporte CPM Coach", report)
+        val clip = ClipData.newPlainText("Reporte CPM Coach" , report)
         clipboardManager?.setPrimaryClip(clip)
         Toast.makeText(context, "Reporte CPM copiado al portapapeles", Toast.LENGTH_SHORT).show()
     }
@@ -121,13 +123,13 @@ fun AdminCpmAnalyticsDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = DangerRed, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("¿Eliminar Anuncio?", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(tr("¿Eliminar Anuncio?"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
             },
             text = {
                 Column {
                     Text(
-                        text = "¿Estás seguro de que deseas eliminar permanentemente este anuncio?",
+                        text = tr("¿Estás seguro de que deseas eliminar permanentemente este anuncio?"),
                         color = TextPrimary,
                         fontSize = 13.sp
                     )
@@ -147,7 +149,7 @@ fun AdminCpmAnalyticsDialog(
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Esta acción borrará el registro de la nube y de todos los dispositivos, retirándolo de la rotación publicitaria de inmediato.",
+                        text = tr("Esta acción borrará el registro de la nube y de todos los dispositivos, retirándolo de la rotación publicitaria de inmediato."),
                         color = TextMuted,
                         fontSize = 11.sp
                     )
@@ -162,12 +164,12 @@ fun AdminCpmAnalyticsDialog(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed, contentColor = Color.White)
                 ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                    Text(tr("Eliminar"), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { noticeToDelete = null }) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(tr("Cancelar"), color = TextSecondary)
                 }
             },
             containerColor = HextechDarkBg
@@ -181,13 +183,13 @@ fun AdminCpmAnalyticsDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Algoritmo de CPM Recomendado", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(tr("Algoritmo de CPM Recomendado"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
             },
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "El precio sugerido se calcula y actualiza dinámicamente según tus métricas reales y benchmarks globales de apps de eSports/gaming:",
+                        text = tr("El precio sugerido se calcula y actualiza dinámicamente según tus métricas reales y benchmarks globales de apps de eSports/gaming:"),
                         color = TextSecondary,
                         fontSize = 12.sp
                     )
@@ -211,7 +213,7 @@ fun AdminCpmAnalyticsDialog(
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text("💡 Criterio del Sistema:", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(tr("💡 Criterio del Sistema:"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(dynamicRec.reasoning, color = TextPrimary, fontSize = 11.5.sp, lineHeight = 15.sp)
                     
@@ -221,7 +223,7 @@ fun AdminCpmAnalyticsDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("📅 Proyección de Precios Fijos (Sponsor):", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(tr("📅 Proyección de Precios Fijos (Sponsor):"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         IconButton(
                             onClick = {
                                 val presentationText = """
@@ -238,7 +240,7 @@ Proyección de Paquetes (Precios Fijos):
 Estos precios están calculados en base a nuestras analíticas activas y engagement de la audiencia.
                                 """.trimIndent()
                                 val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                val clip = android.content.ClipData.newPlainText("Precios CPM", presentationText)
+                                val clip = android.content.ClipData.newPlainText("Precios CPM" , presentationText)
                                 clipboardManager.setPrimaryClip(clip)
                                 Toast.makeText(context, "Presentación copiada al portapapeles", Toast.LENGTH_SHORT).show()
                             },
@@ -255,23 +257,23 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                     ) {
                         Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("1 Día", color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("1 Día"), color = TextSecondary, fontSize = 11.sp)
                                 Text("$${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD", color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("3 Días", color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("3 Días"), color = TextSecondary, fontSize = 11.sp)
                                 Text("$${String.format(Locale.US, "%.0f", dynamicRec.price3Days)} USD", color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("1 Semana", color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("1 Semana"), color = TextSecondary, fontSize = 11.sp)
                                 Text("$${String.format(Locale.US, "%.0f", dynamicRec.price1Week)} USD", color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("1 Mes", color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("1 Mes"), color = TextSecondary, fontSize = 11.sp)
                                 Text("$${String.format(Locale.US, "%.0f", dynamicRec.price1Month)} USD", color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("1 Año", color = TextSecondary, fontSize = 11.sp)
+                                Text(tr("1 Año"), color = TextSecondary, fontSize = 11.sp)
                                 Text("$${String.format(Locale.US, "%.0f", dynamicRec.price1Year)} USD", color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
@@ -292,7 +294,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
             },
             dismissButton = {
                 TextButton(onClick = { showRecommendationInfoDialog = false }) {
-                    Text("Cerrar", color = TextSecondary)
+                    Text(tr("Cerrar"), color = TextSecondary)
                 }
             },
             containerColor = HextechDarkBg
@@ -303,11 +305,11 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
         AlertDialog(
             onDismissRequest = { showResetConfirmDialog = false },
             title = {
-                Text("¿Reiniciar Métricas de Anuncios?", color = HextechGold, fontWeight = FontWeight.Bold)
+                Text(tr("¿Reiniciar Métricas de Anuncios?"), color = HextechGold, fontWeight = FontWeight.Bold)
             },
             text = {
                 Text(
-                    "Esta acción restablecerá a 0 las impresiones y clics únicos diarios de todos los avisos para iniciar un nuevo período de campaña o facturación.",
+                    tr("Esta acción restablecerá a 0 las impresiones y clics únicos diarios de todos los avisos para iniciar un nuevo período de campaña o facturación."),
                     color = TextSecondary,
                     fontSize = 13.sp
                 )
@@ -321,12 +323,12 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
                 ) {
-                    Text("Reiniciar", color = Color.White)
+                    Text(tr("Reiniciar"), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirmDialog = false }) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(tr("Cancelar"), color = TextSecondary)
                 }
             },
             containerColor = HextechDarkBg
@@ -345,7 +347,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AttachMoney, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Tarifa CPM Individual (USD)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text(tr("Tarifa CPM Individual (USD)"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                 },
                 text = {
@@ -360,7 +362,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                         OutlinedTextField(
                             value = cpmInputText,
                             onValueChange = { cpmInputText = it },
-                            label = { Text("CPM en USD ($ por 1k vistas)") },
+                            label = { Text(tr("CPM en USD ($ por 1k vistas)")) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null, tint = HextechGold) },
                             colors = OutlinedTextFieldDefaults.colors(
@@ -411,7 +413,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
                     ) {
-                        Text("Guardar", color = HextechDarkBg, fontWeight = FontWeight.Bold)
+                        Text(tr("Guardar"), color = HextechDarkBg, fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
@@ -419,7 +421,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                         showEditCpmDialog = false 
                         editingNoticeId = null
                     }) {
-                        Text("Cancelar", color = TextSecondary)
+                        Text(tr("Cancelar"), color = TextSecondary)
                     }
                 },
                 containerColor = HextechDarkBg
@@ -442,7 +444,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = Color(0xFF00FF66), modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Tarifas & Desglose CPM", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(tr("Tarifas & Desglose CPM"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                         }
 
                         Surface(
@@ -451,7 +453,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                             border = BorderStroke(0.8.dp, Color(0xFF00FF66).copy(alpha = 0.5f))
                         ) {
                             Text(
-                                text = "Auto-Actualizable",
+                                text = tr("Auto-Actualizable"),
                                 color = Color(0xFF00FF66),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
@@ -487,7 +489,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                                                 Spacer(modifier = Modifier.width(6.dp))
-                                                Text("CPM Dinámico Recomendado", color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text(tr("CPM Dinámico Recomendado"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
                                             Text(
                                                 text = "$${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD",
@@ -514,7 +516,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             modifier = Modifier.fillMaxWidth(),
                                             contentPadding = PaddingValues(vertical = 4.dp)
                                         ) {
-                                            Text("Sincronizar y Aplicar Automático", fontWeight = FontWeight.Bold, fontSize = 10.5.sp)
+                                            Text(tr("Sincronizar y Aplicar Automático"), fontWeight = FontWeight.Bold, fontSize = 10.5.sp)
                                         }
                                     }
                                 }
@@ -529,7 +531,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("Precios por Formato Multimedia (CPM):", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                        Text(tr("Precios por Formato Multimedia (CPM):"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 11.sp)
 
                                         // Imágenes
                                         Row(
@@ -538,7 +540,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text("Imágenes y Banners (1.0x)", color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
+                                                Text(tr("Imágenes y Banners (1.0x)"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
                                                 Text("Costo: $${String.format(Locale.US, "%.4f", imageCpm / 1000.0)} USD por vista", color = TextMuted, fontSize = 9.sp)
                                             }
                                             Text("$${String.format(Locale.US, "%.2f", imageCpm)} / 1k", color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -553,7 +555,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text("Videos MP4 & Clips (2.5x)", color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
+                                                Text(tr("Videos MP4 & Clips (2.5x)"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
                                                 Text("Costo: $${String.format(Locale.US, "%.4f", videoCpm / 1000.0)} USD por vista", color = TextMuted, fontSize = 9.sp)
                                             }
                                             Text("$${String.format(Locale.US, "%.2f", videoCpm)} / 1k", color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -568,7 +570,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text("Pantalla Completa / Full (1.5x)", color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
+                                                Text(tr("Pantalla Completa / Full (1.5x)"), color = TextPrimary, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold)
                                                 Text("Costo: $${String.format(Locale.US, "%.4f", fullscreenCpm / 1000.0)} USD por vista", color = TextMuted, fontSize = 9.sp)
                                             }
                                             Text("$${String.format(Locale.US, "%.2f", fullscreenCpm)} / 1k", color = Color(0xFF00FF66), fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -586,28 +588,28 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text("Paquetes de Publicidad por Tiempo:", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                                        Text("Precios calculados según el volumen de usuarios y engagement:", color = TextMuted, fontSize = 8.5.sp)
+                                        Text(tr("Paquetes de Publicidad por Tiempo:"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                        Text(tr("Precios calculados según el volumen de usuarios y engagement:"), color = TextMuted, fontSize = 8.5.sp)
                                         Spacer(modifier = Modifier.height(2.dp))
 
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("1 Día:", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("1 Día:"), color = TextSecondary, fontSize = 10.sp)
                                             Text("$${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD", color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("3 Días:", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("3 Días:"), color = TextSecondary, fontSize = 10.sp)
                                             Text("$${String.format(Locale.US, "%.0f", dynamicRec.price3Days)} USD", color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("1 Semana:", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("1 Semana:"), color = TextSecondary, fontSize = 10.sp)
                                             Text("$${String.format(Locale.US, "%.0f", dynamicRec.price1Week)} USD", color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("1 Mes:", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("1 Mes:"), color = TextSecondary, fontSize = 10.sp)
                                             Text("$${String.format(Locale.US, "%.0f", dynamicRec.price1Month)} USD", color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("1 Año:", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("1 Año:"), color = TextSecondary, fontSize = 10.sp)
                                             Text("$${String.format(Locale.US, "%.0f", dynamicRec.price1Year)} USD", color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                     }
@@ -623,22 +625,22 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text("Tráfico y Rendimiento de Clics:", color = Color(0xFFCC66FF), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                        Text(tr("Tráfico y Rendimiento de Clics:"), color = Color(0xFFCC66FF), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                                         
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("Tráfico Total Registrado:", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("Tráfico Total Registrado:"), color = TextSecondary, fontSize = 10.sp)
                                             Text("${String.format(Locale.US, "%,d", totalImpressions)} imp. únicas", color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("Clics Únicos Totales:", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("Clics Únicos Totales:"), color = TextSecondary, fontSize = 10.sp)
                                             Text("$totalClicks clics (${String.format(Locale.US, "%.2f", overallCtr)}% CTR)", color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("Costo Estimado por Clic (eCPC):", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("Costo Estimado por Clic (eCPC):"), color = TextSecondary, fontSize = 10.sp)
                                             Text("$${String.format(Locale.US, "%.3f", estimatedCpc)} USD", color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Text("Valor Total del Tráfico:", color = TextSecondary, fontSize = 10.sp)
+                                            Text(tr("Valor Total del Tráfico:"), color = TextSecondary, fontSize = 10.sp)
                                             Text("$${String.format(Locale.US, "%.2f", totalRevenue)} USD", color = Color(0xFF00FF66), fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                         }
                                     }
@@ -648,12 +650,12 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                             // 5. Ajuste Manual de Tarifa Base
                             item {
                                 Column {
-                                    Text("Ajuste Manual de Tarifa Base:", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                    Text(tr("Ajuste Manual de Tarifa Base:"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     OutlinedTextField(
                                         value = cpmInputText,
                                         onValueChange = { cpmInputText = it },
-                                        label = { Text("CPM Base en USD ($ por 1k vistas)") },
+                                        label = { Text(tr("CPM Base en USD ($ por 1k vistas)")) },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                         leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null, tint = HextechGold) },
                                         colors = OutlinedTextFieldDefaults.colors(
@@ -722,7 +724,7 @@ Métricas de Tráfico y Rendimiento:
 - Costo Estimado por Clic (eCPC): ${'$'}${String.format(Locale.US, "%.3f", estimatedCpc)} USD
 - Valor Monetario del Tráfico: ${'$'}${String.format(Locale.US, "%.2f", totalRevenue)} USD
                                 """.trimIndent()
-                                val clip = ClipData.newPlainText("Tarifario Completo Coach", presentationText)
+                                val clip = ClipData.newPlainText("Tarifario Completo Coach" , presentationText)
                                 clipboardManager?.setPrimaryClip(clip)
                                 Toast.makeText(context, "Tarifario copiado al portapapeles", Toast.LENGTH_SHORT).show()
                             },
@@ -731,7 +733,7 @@ Métricas de Tráfico y Rendimiento:
                         ) {
                             Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Copiar Tarifario", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Copiar Tarifario"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -743,13 +745,13 @@ Métricas de Tráfico y Rendimiento:
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg)
                         ) {
-                            Text("Guardar", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text(tr("Guardar"), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showEditCpmDialog = false }) {
-                        Text("Cerrar", color = TextSecondary)
+                        Text(tr("Cerrar"), color = TextSecondary)
                     }
                 },
                 containerColor = HextechDarkBg
@@ -767,7 +769,7 @@ Métricas de Tráfico y Rendimiento:
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, tint = Color(0xFF00FF66), modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Presupuesto de Campaña", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(tr("Presupuesto de Campaña"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
             },
             text = {
@@ -788,7 +790,7 @@ Métricas de Tráfico y Rendimiento:
                                 budgetInputText = input
                             }
                         },
-                        label = { Text("Presupuesto en USD ($)") },
+                        label = { Text(tr("Presupuesto en USD ($)")) },
                         placeholder = { Text("0.00") },
                         leadingIcon = {
                             Icon(Icons.Default.AttachMoney, contentDescription = null, tint = Color(0xFF00FF66))
@@ -799,7 +801,7 @@ Métricas de Tráfico y Rendimiento:
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Permite calcular el saldo restante, porcentaje de consumo y monitorear el gasto de este anuncio publicitario en tiempo real.",
+                        text = tr("Permite calcular el saldo restante, porcentaje de consumo y monitorear el gasto de este anuncio publicitario en tiempo real."),
                         color = TextMuted,
                         fontSize = 10.sp
                     )
@@ -816,7 +818,7 @@ Métricas de Tráfico y Rendimiento:
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00FF66), contentColor = HextechDarkBg)
                 ) {
-                    Text("Guardar", fontWeight = FontWeight.Bold)
+                    Text(tr("Guardar"), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -824,7 +826,7 @@ Métricas de Tráfico y Rendimiento:
                     showEditBudgetDialog = false
                     editingBudgetNoticeId = null
                 }) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(tr("Cancelar"), color = TextSecondary)
                 }
             },
             containerColor = HextechDarkBg
@@ -885,7 +887,7 @@ Métricas de Tráfico y Rendimiento:
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "Métricas de Monetización & CPM",
+                                    text = tr("Métricas de Monetización & CPM"),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF00FF66),
@@ -1002,7 +1004,7 @@ Métricas de Tráfico y Rendimiento:
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
                                         Text(
-                                            text = "Auto-Actualizado",
+                                            text = tr("Auto-Actualizado"),
                                             color = Color(0xFF00FF66),
                                             fontSize = 8.5.sp,
                                             fontWeight = FontWeight.Bold,
@@ -1047,7 +1049,7 @@ Métricas de Tráfico y Rendimiento:
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.MonetizationOn, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Rendimiento Publicitario Global", color = HextechGold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Rendimiento Publicitario Global"), color = HextechGold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Surface(
@@ -1141,7 +1143,7 @@ Métricas de Tráfico y Rendimiento:
                     ) {
                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Copiar Reporte", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Copiar Reporte"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Button(
@@ -1153,7 +1155,7 @@ Métricas de Tráfico y Rendimiento:
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color(0xFFFF6666), modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Reiniciar", color = Color(0xFFFF6666), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Reiniciar"), color = Color(0xFFFF6666), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -1230,7 +1232,7 @@ Métricas de Tráfico y Rendimiento:
                             .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("No hay anuncios para la etiqueta seleccionada", color = TextSecondary, fontSize = 12.sp)
+                        Text(tr("No hay anuncios para la etiqueta seleccionada"), color = TextSecondary, fontSize = 12.sp)
                     }
                 } else {
                     val groupedNotices = remember(filteredNotices) {
@@ -1384,7 +1386,7 @@ Métricas de Tráfico y Rendimiento:
                         ) {
                             Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Copiar Reporte", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Copiar Reporte"), fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -1393,7 +1395,7 @@ Métricas de Tráfico y Rendimiento:
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00FF66), contentColor = HextechDarkBg),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("Cerrar Panel", fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                            Text(tr("Cerrar Panel"), fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                         }
                     }
                 }
@@ -1598,7 +1600,7 @@ private fun NoticeAnalyticsItemCard(
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = "Presupuesto:",
+                                text = tr("Presupuesto:"),
                                 color = TextSecondary,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Medium
@@ -1625,7 +1627,7 @@ private fun NoticeAnalyticsItemCard(
                             ) {
                                 Icon(Icons.Default.Edit, contentDescription = "Editar presupuesto", tint = HextechGold, modifier = Modifier.size(10.dp))
                                 Spacer(modifier = Modifier.width(3.dp))
-                                Text("Presupuesto", color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Presupuesto"), color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -1686,7 +1688,7 @@ private fun NoticeAnalyticsItemCard(
                                 fontWeight = FontWeight.Medium
                             )
                             if (spentPercent >= 100.0) {
-                                Text("Presupuesto agotado", color = DangerRed, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Presupuesto agotado"), color = DangerRed, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -1703,7 +1705,7 @@ private fun NoticeAnalyticsItemCard(
             ) {
                 // Impresiones
                 Column(horizontalAlignment = Alignment.Start) {
-                    Text("Imp. Únicas", color = TextMuted, fontSize = 9.sp)
+                    Text(tr("Imp. Únicas"), color = TextMuted, fontSize = 9.sp)
                     Text(
                         String.format(Locale.US, "%,d", metrics.impressions),
                         color = HextechCyan,
@@ -1714,7 +1716,7 @@ private fun NoticeAnalyticsItemCard(
 
                 // Clics / CTR
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Únicos / Totales", color = TextMuted, fontSize = 9.sp)
+                    Text(tr("Únicos / Totales"), color = TextMuted, fontSize = 9.sp)
                     Text(
                         "${metrics.clicks} / ${metrics.totalRawClicks}",
                         color = HextechGold,
@@ -1725,7 +1727,7 @@ private fun NoticeAnalyticsItemCard(
 
                 // Pantalla Completa
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Fullscreen", color = TextMuted, fontSize = 9.sp)
+                    Text(tr("Fullscreen"), color = TextMuted, fontSize = 9.sp)
                     Text(
                         "${metrics.fullscreenViews}",
                         color = Color(0xFFCC66FF),

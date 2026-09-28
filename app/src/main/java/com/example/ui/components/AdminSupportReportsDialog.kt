@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -622,7 +624,7 @@ fun AdminSupportReportsDialog(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "Buzón de Soporte y Reportes",
+                                    text = tr("Buzón de Soporte y Reportes"),
                                     color = HextechGold,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
@@ -663,7 +665,7 @@ fun AdminSupportReportsDialog(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Buscar por título, usuario, correo o detalle...", fontSize = 11.5.sp, color = TextMuted) },
+                        placeholder = { Text(tr("Buscar por título, usuario, correo o detalle..."), fontSize = 11.5.sp, color = TextMuted) },
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(18.dp)) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
@@ -750,7 +752,7 @@ fun AdminSupportReportsDialog(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Retención activa: 30 días para mensajes leídos y 60 días para mensajes pendientes.",
+                                text = tr("Retención activa: 30 días para mensajes leídos y 60 días para mensajes pendientes."),
                                 color = HextechGold,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Medium
@@ -821,7 +823,7 @@ fun AdminSupportReportsDialog(
                                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = HextechGold, modifier = Modifier.size(14.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = "Registro y Estadísticas (Admin)",
+                                            text = tr("Registro y Estadísticas (Admin)"),
                                             color = HextechGold,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold
@@ -830,7 +832,7 @@ fun AdminSupportReportsDialog(
                                     OutlinedButton(
                                         onClick = {
                                             val clip = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                            clip.setPrimaryClip(ClipData.newPlainText("Registro Soporte Coach", logText))
+                                            clip.setPrimaryClip(ClipData.newPlainText("Registro Soporte Coach" , logText))
                                             Toast.makeText(context, "Registro copiado al portapapeles", Toast.LENGTH_SHORT).show()
                                         },
                                         modifier = Modifier.height(28.dp),
@@ -840,7 +842,7 @@ fun AdminSupportReportsDialog(
                                     ) {
                                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = HextechGold, modifier = Modifier.size(11.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Copiar Log", color = HextechGold, fontSize = 10.sp)
+                                        Text(tr("Copiar Log"), color = HextechGold, fontSize = 10.sp)
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(6.dp))
@@ -862,7 +864,7 @@ fun AdminSupportReportsDialog(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 CircularProgressIndicator(color = HextechCyan, modifier = Modifier.size(36.dp))
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("Cargando reportes y tickets...", color = TextMuted, fontSize = 12.sp)
+                                Text(tr("Cargando reportes y tickets..."), color = TextMuted, fontSize = 12.sp)
                             }
                         }
                     } else if (filteredReports.isEmpty()) {
@@ -872,7 +874,7 @@ fun AdminSupportReportsDialog(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "📭 No hay reportes de soporte en esta categoría",
+                                    text = tr("📭 No hay reportes de soporte en esta categoría"),
                                     color = TextMuted,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium
@@ -880,7 +882,7 @@ fun AdminSupportReportsDialog(
                                 if (searchQuery.isNotEmpty()) {
                                     Spacer(modifier = Modifier.height(6.dp))
                                     TextButton(onClick = { searchQuery = "" }) {
-                                        Text("Limpiar búsqueda", color = HextechCyan, fontSize = 12.sp)
+                                        Text(tr("Limpiar búsqueda"), color = HextechCyan, fontSize = 12.sp)
                                     }
                                 }
                             }
@@ -945,7 +947,7 @@ fun AdminSupportReportsDialog(
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.height(32.dp)
                             ) {
-                                Text("Cerrar Panel", color = HextechDarkBg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(tr("Cerrar Panel"), color = HextechDarkBg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -1004,13 +1006,13 @@ fun AdminSupportReportsDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Delete, contentDescription = null, tint = DangerRed, modifier = Modifier.size(22.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Eliminar reporte", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(tr("Eliminar reporte"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             },
             text = {
                 Column {
                     Text(
-                        text = "¿Estás seguro de que deseas eliminar permanentemente este reporte?",
+                        text = tr("¿Estás seguro de que deseas eliminar permanentemente este reporte?"),
                         color = TextPrimary,
                         fontSize = 13.5.sp
                     )
@@ -1062,12 +1064,12 @@ fun AdminSupportReportsDialog(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
                 ) {
-                    Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(tr("Eliminar"), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { reportToDelete = null }) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(tr("Cancelar"), color = TextSecondary)
                 }
             },
             containerColor = HextechSurfaceVariant
@@ -1118,7 +1120,7 @@ fun AdminSupportReportsDialog(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = "Posibles modelos de celular identificados:",
+                                        text = tr("Posibles modelos de celular identificados:"),
                                         color = HextechGold,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold
@@ -1141,7 +1143,7 @@ fun AdminSupportReportsDialog(
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Toca la pantalla para cerrar",
+                        text = tr("Toca la pantalla para cerrar"),
                         color = HextechCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
@@ -1465,7 +1467,7 @@ private fun UnifiedReportAdminCard(
 
             // 🎯 BOTONES DE ACCIÓN (Sincronización multidispositivo en tiempo real)
             Text(
-                text = "Cambiar estado del reporte:",
+                text = tr("Cambiar estado del reporte:"),
                 color = TextMuted,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Medium
@@ -1500,7 +1502,7 @@ private fun UnifiedReportAdminCard(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = "Pendiente",
+                            text = tr("Pendiente"),
                             color = if (isPending) HextechGold else TextSecondary,
                             fontSize = 10.sp,
                             fontWeight = if (isPending) FontWeight.Bold else FontWeight.Normal
@@ -1531,7 +1533,7 @@ private fun UnifiedReportAdminCard(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = "Aceptada",
+                            text = tr("Aceptada"),
                             color = if (isAccepted) HextechGold else TextSecondary,
                             fontSize = 10.sp,
                             fontWeight = if (isAccepted) FontWeight.Bold else FontWeight.Normal
@@ -1562,7 +1564,7 @@ private fun UnifiedReportAdminCard(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = "Rechazada",
+                            text = tr("Rechazada"),
                             color = if (isRejected) DangerRed else TextSecondary,
                             fontSize = 10.sp,
                             fontWeight = if (isRejected) FontWeight.Bold else FontWeight.Normal
@@ -1598,7 +1600,7 @@ private fun UnifiedReportAdminCard(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = "Pendiente",
+                            text = tr("Pendiente"),
                             color = if (isPending) HextechGold else TextSecondary,
                             fontSize = 10.sp,
                             fontWeight = if (isPending) FontWeight.Bold else FontWeight.Normal
@@ -1629,7 +1631,7 @@ private fun UnifiedReportAdminCard(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = "Leído",
+                            text = tr("Leído"),
                             color = if (isRead) HextechCyan else TextSecondary,
                             fontSize = 10.sp,
                             fontWeight = if (isRead) FontWeight.Bold else FontWeight.Normal
@@ -1660,7 +1662,7 @@ private fun UnifiedReportAdminCard(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = "Solucionado",
+                            text = tr("Solucionado"),
                             color = if (isSolved) HextechGreen else TextSecondary,
                             fontSize = 10.sp,
                             fontWeight = if (isSolved) FontWeight.Bold else FontWeight.Normal
@@ -1696,7 +1698,7 @@ private fun UnifiedReportAdminCard(
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text(
-                                    text = "Respuesta de Soporte Coach:",
+                                    text = tr("Respuesta de Soporte Coach:"),
                                     color = HextechCyan,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -1761,12 +1763,12 @@ private fun UnifiedReportAdminCard(
                             ) {
                                 Icon(Icons.Default.Reply, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(12.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Responder de nuevo", color = HextechCyan, fontSize = 10.sp)
+                                Text(tr("Responder de nuevo"), color = HextechCyan, fontSize = 10.sp)
                             }
                             OutlinedButton(
                                 onClick = {
                                     val clip = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    clip.setPrimaryClip(ClipData.newPlainText("Respuesta Soporte", report.adminReply))
+                                    clip.setPrimaryClip(ClipData.newPlainText("Respuesta Soporte" , report.adminReply))
                                     Toast.makeText(context, "Respuesta copiada", Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier.height(28.dp),
@@ -1776,7 +1778,7 @@ private fun UnifiedReportAdminCard(
                             ) {
                                 Icon(Icons.Default.ContentCopy, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(12.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Copiar", color = TextSecondary, fontSize = 10.sp)
+                                Text(tr("Copiar"), color = TextSecondary, fontSize = 10.sp)
                             }
                             if (report.userEmail.isNotBlank()) {
                                 OutlinedButton(
@@ -1799,7 +1801,7 @@ private fun UnifiedReportAdminCard(
                                 ) {
                                     Icon(Icons.Default.Email, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(12.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Reenviar Correo", color = HextechCyan, fontSize = 10.sp)
+                                    Text(tr("Reenviar Correo"), color = HextechCyan, fontSize = 10.sp)
                                 }
                             }
                         }
@@ -1813,7 +1815,7 @@ private fun UnifiedReportAdminCard(
                         ) {
                             Icon(Icons.Default.Reply, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Seguir Respondiendo / Nueva Réplica", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Seguir Respondiendo / Nueva Réplica"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1831,7 +1833,7 @@ private fun UnifiedReportAdminCard(
                     Icon(Icons.Default.Reply, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(15.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Responder Mensaje de Soporte",
+                        text = tr("Responder Mensaje de Soporte"),
                         color = HextechCyan,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold

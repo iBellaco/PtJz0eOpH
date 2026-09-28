@@ -121,12 +121,12 @@ fun BlueEssenceStoreDialog(
                         onClick = { selectedCurrency = "BLUE" },
                         colors = ButtonDefaults.buttonColors(containerColor = if (selectedCurrency == "BLUE") HextechCyan else HextechSurface),
                         modifier = Modifier.weight(1f)
-                    ) { Text("Esencia Azul") }
+                    ) { Text(tr("Esencia Azul")) }
                     Button(
                         onClick = { selectedCurrency = "ORANGE" },
                         colors = ButtonDefaults.buttonColors(containerColor = if (selectedCurrency == "ORANGE") HextechGold else HextechSurface),
                         modifier = Modifier.weight(1f)
-                    ) { Text("Esencia Naranja") }
+                    ) { Text(tr("Esencia Naranja")) }
                 }
 
                 HorizontalDivider(color = HextechGold.copy(alpha = 0.5f))

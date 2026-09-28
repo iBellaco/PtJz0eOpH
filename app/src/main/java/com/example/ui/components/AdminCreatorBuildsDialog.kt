@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import android.widget.Toast
 import com.example.data.WildRiftRepository
 import androidx.compose.animation.core.RepeatMode
@@ -437,8 +439,8 @@ fun AdminCreatorBuildsDialog(
                         )
                     }
                     Column {
-                        Text("Panel de Creador (Admin)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text("Gestión de builds, ranking y creadores oficiales", color = TextSecondary, fontSize = 11.sp)
+                        Text(tr("Panel de Creador (Admin)"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(tr("Gestión de builds, ranking y creadores oficiales"), color = TextSecondary, fontSize = 11.sp)
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -601,7 +603,7 @@ fun AdminCreatorBuildsDialog(
             ) {
                 Icon(Icons.Default.Add, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Crear Nueva Build Oficial", color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(tr("Crear Nueva Build Oficial"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
 
             // Filtros de categoría y creador activo
@@ -618,7 +620,7 @@ fun AdminCreatorBuildsDialog(
                         selectedFilter = BuildsFilterTab.ALL
                         selectedCreatorFilter = null
                     },
-                    label = { Text("Todas (${customBuilds.size})") },
+                    label = { Text("${tr("Todas")} (${customBuilds.size})") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = HextechGold.copy(alpha = 0.2f),
                         selectedLabelColor = HextechGold
@@ -628,7 +630,7 @@ fun AdminCreatorBuildsDialog(
                 FilterChip(
                     selected = selectedFilter == BuildsFilterTab.FAVORITES,
                     onClick = { selectedFilter = BuildsFilterTab.FAVORITES },
-                    label = { Text("Mis Favoritos (${favorites.size})") },
+                    label = { Text("${tr("Mis Favoritos")} (${favorites.size})") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = DangerRed.copy(alpha = 0.2f),
                         selectedLabelColor = DangerRed
@@ -642,7 +644,7 @@ fun AdminCreatorBuildsDialog(
                     FilterChip(
                         selected = true,
                         onClick = { selectedCreatorFilter = null },
-                        label = { Text("Creador: $selectedCreatorFilter ✕") },
+                        label = { Text("${tr("Creador:")} $selectedCreatorFilter ✕") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = HextechCyan.copy(alpha = 0.25f),
                             selectedLabelColor = HextechCyan
@@ -775,7 +777,7 @@ fun AdminCreatorBuildsDialog(
                                     label = "alpha"
                                 )
                                 Text(
-                                    text = "Presiona para ver completo",
+                                    text = tr("Presiona para ver completo"),
                                     color = HextechGold.copy(alpha = alpha),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Medium,
@@ -837,7 +839,7 @@ fun CreatorPodiumCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "PODIO DE CREADORES",
+                        text = tr("PODIO DE CREADORES"),
                         color = HextechGold,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 12.sp,
@@ -862,7 +864,7 @@ fun CreatorPodiumCard(
                                 color = if (podiumTab == CreatorPodiumTab.OFFICIAL) HextechGold else Color.Transparent
                             ) {
                                 Text(
-                                    text = "Oficial",
+                                    text = tr("Oficial"),
                                     color = if (podiumTab == CreatorPodiumTab.OFFICIAL) HextechDarkBg else HextechGold,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
@@ -875,7 +877,7 @@ fun CreatorPodiumCard(
                                 color = if (podiumTab == CreatorPodiumTab.POPULARITY) HextechGold else Color.Transparent
                             ) {
                                 Text(
-                                    text = "Popularidad",
+                                    text = tr("Popularidad"),
                                     color = if (podiumTab == CreatorPodiumTab.POPULARITY) HextechDarkBg else HextechGold,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
@@ -1192,7 +1194,7 @@ fun CreatorProfileDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Perfil de Creador",
+                        text = tr("Perfil de Creador"),
                         color = HextechGold,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp
@@ -1313,7 +1315,7 @@ fun CreatorProfileDialog(
                                 Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = Color(0xFF00FF66))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Suscripción Activa (Acceso Total)",
+                                    text = tr("Suscripción Activa (Acceso Total)"),
                                     color = Color(0xFF00FF66),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.5.sp
@@ -1337,7 +1339,7 @@ fun CreatorProfileDialog(
                                 Icon(Icons.Default.Delete, contentDescription = null, tint = DangerRed, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Quitar Suscripción",
+                                    text = tr("Quitar Suscripción"),
                                     color = DangerRed,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp
@@ -1362,7 +1364,7 @@ fun CreatorProfileDialog(
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Text(
-                                    text = "Confirmación de Suscripción",
+                                    text = tr("Confirmación de Suscripción"),
                                     color = HextechGold,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
@@ -1384,7 +1386,7 @@ fun CreatorProfileDialog(
                                         shape = RoundedCornerShape(8.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("No, Cancelar", fontSize = 11.5.sp)
+                                        Text(tr("No, Cancelar"), fontSize = 11.5.sp)
                                     }
                                     Button(
                                         onClick = {
@@ -1395,7 +1397,7 @@ fun CreatorProfileDialog(
                                         shape = RoundedCornerShape(8.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("Sí, Continuar", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Sí, Continuar"), fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -1418,14 +1420,14 @@ fun CreatorProfileDialog(
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Text(
-                                    text = "⚠️ ¡ADVERTENCIA CRÍTICA!",
+                                    text = tr("⚠️ ¡ADVERTENCIA CRÍTICA!"),
                                     color = DangerRed,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 15.sp,
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
                                 Text(
-                                    text = "Recuerda que al momento de quitar tu suscripción pierdes acceso total a las builds oficiales de este perfil. ¿Aún así deseas continuar con la baja?",
+                                    text = tr("Recuerda que al momento de quitar tu suscripción pierdes acceso total a las builds oficiales de este perfil. ¿Aún así deseas continuar con la baja?"),
                                     color = Color.White,
                                     fontSize = 12.5.sp,
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -1440,7 +1442,7 @@ fun CreatorProfileDialog(
                                         shape = RoundedCornerShape(8.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("No, Conservar", fontSize = 11.5.sp)
+                                        Text(tr("No, Conservar"), fontSize = 11.5.sp)
                                     }
                                     Button(
                                         onClick = {
@@ -1453,7 +1455,7 @@ fun CreatorProfileDialog(
                                         shape = RoundedCornerShape(8.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("Confirmar Baja", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                        Text(tr("Confirmar Baja"), fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -1483,7 +1485,7 @@ fun CreatorProfileDialog(
                                     modifier = Modifier.size(32.dp)
                                 )
                                 Text(
-                                    text = "Suscripción al Creador",
+                                    text = tr("Suscripción al Creador"),
                                     color = Color(0xFFFF9E1B),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
@@ -1513,7 +1515,7 @@ fun CreatorProfileDialog(
                                             Spacer(modifier = Modifier.width(10.dp))
                                             Column {
                                                 Text(
-                                                    text = "Costo de Suscripción",
+                                                    text = tr("Costo de Suscripción"),
                                                     color = Color.LightGray,
                                                     fontSize = 11.sp
                                                 )
@@ -1527,7 +1529,7 @@ fun CreatorProfileDialog(
                                         }
                                         Column(horizontalAlignment = Alignment.End) {
                                             Text(
-                                                text = "Tu saldo",
+                                                text = tr("Tu saldo"),
                                                 color = Color.LightGray,
                                                 fontSize = 10.sp
                                             )
@@ -1558,7 +1560,7 @@ fun CreatorProfileDialog(
                                         shape = RoundedCornerShape(8.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("Cancelar", fontSize = 11.5.sp)
+                                        Text(tr("Cancelar"), fontSize = 11.5.sp)
                                     }
                                     Button(
                                         onClick = {
@@ -1587,7 +1589,7 @@ fun CreatorProfileDialog(
                 }
 
                 Text(
-                    text = "Builds Creadas:",
+                    text = tr("Builds Creadas:"),
                     color = HextechGoldLight,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
@@ -1602,7 +1604,7 @@ fun CreatorProfileDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Este creador aún no ha publicado builds.",
+                            text = tr("Este creador aún no ha publicado builds."),
                             color = TextSecondary,
                             fontSize = 12.sp
                         )

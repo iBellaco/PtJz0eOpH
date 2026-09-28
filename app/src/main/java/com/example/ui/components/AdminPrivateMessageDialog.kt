@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.util.tr
+
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import android.widget.Toast
@@ -78,12 +80,12 @@ fun AdminPrivateMessageDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Message, contentDescription = null, tint = Color(0xFFF59E0B))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Enviar Mensaje / Comunicado", color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(tr("Enviar Mensaje / Comunicado"), color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // Selector de Etiquetas (Mantenimiento, Importante, Prueba, Oferta, Aviso)
-                Text("Etiqueta del Mensaje:", color = Color.LightGray, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold)
+                Text(tr("Etiqueta del Mensaje:"), color = Color.LightGray, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
@@ -116,7 +118,7 @@ fun AdminPrivateMessageDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text("Destinatarios:", color = Color.LightGray, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold)
+                Text(tr("Destinatarios:"), color = Color.LightGray, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
@@ -162,7 +164,7 @@ fun AdminPrivateMessageDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Título (ej: Nueva Actualización)", color = Color.Gray) },
+                    label = { Text(tr("Título (ej: Nueva Actualización)"), color = Color.Gray) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -177,7 +179,7 @@ fun AdminPrivateMessageDialog(
                 OutlinedTextField(
                     value = content,
                     onValueChange = { content = it },
-                    label = { Text("Mensaje del comunicado...", color = Color.Gray) },
+                    label = { Text(tr("Mensaje del comunicado..."), color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth().height(100.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
@@ -198,7 +200,7 @@ fun AdminPrivateMessageDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss, enabled = !isProcessing) {
-                        Text("Cancelar", color = Color.Gray)
+                        Text(tr("Cancelar"), color = Color.Gray)
                     }
                     Button(
                         onClick = {
@@ -311,7 +313,7 @@ fun AdminPrivateMessageDialog(
                         if (isProcessing) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
                         } else {
-                            Text("Enviar")
+                            Text(tr("Enviar"))
                         }
                     }
                 }
@@ -441,7 +443,7 @@ fun AdminUserMessagesViewerDialog(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                "Mensajes Enviados",
+                                tr("Mensajes Enviados"),
                                 color = Color(0xFFF59E0B),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp
@@ -484,7 +486,7 @@ fun AdminUserMessagesViewerDialog(
                             shape = RoundedCornerShape(6.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text("Recargar", fontSize = 10.5.sp, color = Color.White)
+                            Text(tr("Recargar"), fontSize = 10.5.sp, color = Color.White)
                         }
 
                         Button(
@@ -498,7 +500,7 @@ fun AdminUserMessagesViewerDialog(
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, tint = Color.Black, modifier = Modifier.size(12.dp))
                             Spacer(modifier = Modifier.width(3.dp))
-                            Text("Nuevo Mensaje", fontSize = 10.5.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                            Text(tr("Nuevo Mensaje"), fontSize = 10.5.sp, color = Color.Black, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -518,7 +520,7 @@ fun AdminUserMessagesViewerDialog(
                 } else if (messages.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("No hay mensajes enviados a este usuario", color = Color.Gray, fontSize = 12.sp)
+                            Text(tr("No hay mensajes enviados a este usuario"), color = Color.Gray, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(8.dp))
                             Button(
                                 onClick = {
@@ -528,7 +530,7 @@ fun AdminUserMessagesViewerDialog(
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B)),
                                 shape = RoundedCornerShape(6.dp)
                             ) {
-                                Text("Enviar primer mensaje", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                                Text(tr("Enviar primer mensaje"), color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                             }
                         }
                     }

@@ -1,0 +1,545 @@
+ #${prof.tag}
+ $defeatsCount 
+ $victoriesCount 
+ ${draft.notes}
+ ${item.goldCost} ${tr(
+ ${item.goldCost} G
+ ${itm.goldCost} ${tr(
+ ${tr(advice.recommendationTip)}
+ ($countForProf)
+ Mío
+ vs 
+ • 
+ • "$searchQuery"
+ • $dateStr
+"${rep.title}"
+"${target.title}"
+"${targetNotice.title}"
+#${candidate.rank}
+#${prof.tag}
+#${profile.tag}
+#${selectedProfile.tag}
+$$autoBudget USD
+$$price
+$$price USD
+$$rate
+$${String.format(Locale.US, 
+$blueEssence EA
+$blueEssenceBalance
+$cost ${if (selectedCurrency == 
+$count / 5
+$currentBlueEssence 
+$currentBlueEssence EA
+$currentOrangeBalance EN
+$currentOrangeEssence 
+$currentOrangeEssence EN
+$deviceSlotsUsed/2 slots
+$pendingCount pendiente(s) • $readCount leído(s) • $solvedCount solucionado(s)
+$rank
+$regionPrefix ${status.name}
+$regionTag WR: $formattedWr%
+$registeredDevicesCount 
+$requiredEssences EA
+$totalClicks clics (${String.format(Locale.US, 
+$totalCount
+$unlockedCount avatares
+$unlockedExclusiveCount de ${allAvatars.size} exclusivos desbloqueados
+$winRate%
+$wrVsOpp% WR
+${(candidate.similarityScore * 100).toInt()}% Tensor
+${(report.minConfidenceThreshold * 100).toInt()}%
+${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas
+${String.format(Locale.US, 
+${String.format(java.util.Locale.US, 
+${activePublicityAds.size}
+${actualDamageDealt.roundToInt()} (+${damageIncreasePercent.roundToInt()}%)
+${analysis.allyMagicDamagePercent}% 
+${analysis.allyPhysicalDamagePercent}% 
+${analysis.allyTrueDamagePercent}% 
+${analysis.landscapeWidth} x ${analysis.landscapeHeight} (${analysis.aspectRatioLabel})
+${analysis.magicDamagePercent}% 
+${analysis.physicalDamagePercent}% 
+${analysis.trueDamagePercent}% 
+${b.championName} • ${b.role}
+${base64Photos.size}/3
+${baseReductionPercent.roundToInt()}%
+${best.wins}W - ${best.losses}L (${best.winRate.toInt()}% WR)
+${cacheStats.totalFiles} recortes guardados • ${cacheStats.formattedTotalSize}
+${champions.size} 
+${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}
+${com.example.util.tr(champion.primaryRole.displayName)} • ${com.example.util.tr(champion.damageType.displayName)}
+${currentAvatar.title} • ${currentAvatar.region}
+${currentChamp.primaryRole.shortName} • Tier ${currentChamp.tier}
+${draft.allyDamageMagic}% 
+${draft.allyDamagePhysical}% 
+${draft.allyDamageTrue}% 
+${draft.estimatedWinrate}% 
+${draftsList.size} 
+${dynamicRec.tierName} • Rango de mercado: $${String.format(Locale.US, 
+${dynamicRec.tierName} • Rango: $${String.format(Locale.US, 
+${effectiveReductionPercent.roundToInt()}%
+${effectiveResistance.roundToInt()} / ${rawResistance.roundToInt()}
+${effectiveT2.category} • ${effectiveT2.goldCost} 💰 (Toca para cambiar)
+${effectiveT3.category} • ${effectiveT3.goldCost} 💰 (Toca para cambiar)
+${enemies.size}/5
+${estimatedWinrate.toInt()}% WR
+${filteredItems.size} ${tr(
+${filteredRunes.size} 
+${filteredSpells.size} 
+${idx + 1}
+${index + 1}
+${index + 1}. ${entry.name}
+${item.goldCost} ${tr(
+${item.goldCost} G
+${lockedAvatar.title} • ${lockedAvatar.region}
+${lockedChampion.name} (${tr(
+${m.wins}W - ${m.losses}L (${m.winRate.toInt()}%)
+${messageTag.emoji} ${messageTag.label.uppercase()}
+${metrics.clicks}
+${metrics.clicks} / ${metrics.totalRawClicks}
+${metrics.fullscreenViews}
+${metrics.impressions}
+${msgTag.emoji} ${msgTag.label.uppercase()}
+${myChampion?.name ?: 
+${nem.wins}W - ${nem.losses}L (${nem.winRate.toInt()}% WR)
+${notice.tag} • ${notice.title.ifBlank { 
+${overview.totalGames} 
+${overview.totalWins}W - ${overview.totalLosses}L
+${profiles.size} 
+${r.winRate.toInt()}% (${r.wins}W - ${r.losses}L)
+${record.championName} - ${record.buildTitle}
+${record.championName} • Rol: ${record.role} • Creador: ${record.creatorName}
+${remainingSeconds}s
+${replyText.length}/500
+${slot.confidence}%
+${stats.totalGames} 
+${stats.winRate.toInt()}% (${stats.wins}V-${stats.losses}D)
+${stats.winRate.toInt()}% Win Rate
+${stats.wins} 
+${status.responseTimeMs} ms
+${tab.label} ($count)
+${tabItem.count}
+${tag.emoji} ${tag.label}
+${tr(
+${tr(activeTheme.regionTag).uppercase()} • ${tr(activeTheme.titleKey)}
+${tr(champ.primaryRole.shortName)}
+${tr(champ.primaryRole.shortName)} • ${tr(
+${tr(equippedAvatar.title)} • ${tr(equippedAvatar.region)}
+${tr(laneLabel)} • ${tr(selectedSort.displayName)}
+${tr(lockedChampion.primaryRole.displayName)} • ${tr(
+${tr(selectedRole.displayName)}${if (selectedRole != champion.primaryRole) 
+${tr(tab.titleKey)} ($count)
+${userReplyText.length}/500
+${winsVsOpp}W - ${lossesVsOpp}L (${totalDecidedOpp} ${tr(
+${wombo.title}: ${wombo.description}
+($count)
+($favCount)
+($totalCount)
+(${itemsInCat.size})
+(${noticesInTag.size})
+(${record.voteCount} votos)
+(${runesInCat.size})
++$amount ${if (selectedCurrency == 
++$preset
+- Descontar
+1 Año
+1 Año:
+1 Día
+1 Día:
+1 Mes
+1 Mes:
+1 Semana
+1 Semana:
+1. Selecciona el círculo a ajustar:
+1. Selecciona qué elemento calibrar:
+10º Rival Top: ${(config.topEnemy5XRatio * 100).format(1)}% | Top Y: ${(config.topAvatarYRatio * 100).format(1)}%
+17m 42s
+3 Días
+3 Días:
+3. Objetos Core (${coreItems.size}/3) *Desc. Obligatoria
+4. Objetos Situacionales *Desc. Obligatoria
+4. 💰 
+5. Botas y Mejoras (Obligatorias) *Desc. Obligatoria
+5b. Botas y Mejoras Situacionales (Opcional)
+6. Hechizos Core (Imágenes) *Desc. Obligatoria
+6. Runa Clave (1 Runa) *Desc. Obligatoria
+7. Runas Secundarias (${coreSecondaryRunes.size}/4) *Desc. Obligatoria
+APROBADO
+Abrir
+Acepta o rechaza publicaciones de anunciantes y patrocinadores
+Activado: $dateString
+Ajusta las coordenadas de los círculos de escaneo en la pantalla (arriba/abajo/izquierda/derecha), modifica el tamaño del radio y copia las coordenadas finales.
+Ajuste de Tamaño (Radio/⌀):
+Al aprobar un patrocinio, este se activará y se visualizará directamente en el Panel de Anuncios y en la rotación de avisos de la app.
+Al suscribirte al perfil oficial de ${entry.name}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas (EN) de tu cuenta de forma definitiva. Un porcentaje será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?
+Al suscribirte al perfil oficial de ${record.creatorName}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas (EN) de tu cuenta de forma definitiva. Un porcentaje será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?
+Alfa v${com.example.BuildConfig.VERSION_NAME} (${com.example.BuildConfig.VERSION_CODE})
+Algoritmo de CPM Recomendado
+Anuncio: "$editingBudgetNoticeTitle"
+Anuncios Actuales (${activeNotices.size}):
+Anuncios Expirados (${expiredNotices.size}):
+Aplicar Recomendado ($${String.format(Locale.US, 
+Aprobados ($approvedCount)
+Asigna o modifica el rango principal de usuario. Por directiva institucional, la asignación del rol Administrador está excluida. Solo Administradores pueden cambiar este rol.
+Asigna un rol secundario (Rango de Elo competitivo) que no posee ningun privilegio en el sistema. Este rol puede ser asignado tanto por Administradores como por Moderadores.
+Asignar
+Aumenta el umbral (80%-90%) para evitar falsos positivos con campeones no parecidos, o disminúyelo (70%-75%) si las condiciones de luz son bajas.
+Auto-Actualizable
+Auto-Actualizado
+Azul (EA)
+Aún no se han guardado recortes en el directorio de caché.\nCuando el escáner apunte al 10º pick, se guardarán aquí automáticamente.
+B:${allyChamp.banRate.toInt()}%
+B:${enemyChamp.banRate.toInt()}%
+BAJO UMBRAL
+BARRA SUPERIOR
+Ban: ${String.format(java.util.Locale.US, 
+Beneficiario: BRLA DIGITAL LTDA
+Bota Nivel 2 Situacional: ${situationalBootsT2!!.name}
+Botas Nivel 2: ${bootsT2!!.name}
+Build Cruda
+Build Protegida para Suscriptores
+Builds Creadas:
+Buscar por título, usuario, correo o detalle...
+Buzón de Soporte y Reportes
+CALIBRACIÓN DE CÍRCULOS DE DETECCIÓN
+CALIBRACIÓN DE UMBRAL DE SIMILITUD
+CD ${spell.cooldown}
+CD: ${spell.cooldown}
+COACH
+COMPARACIÓN DE TENSORES (TOP 5 CANDIDATOS)
+CPM Actual: $${String.format(Locale.US, 
+CPM Recomendado: $${String.format(Locale.US, 
+Calendario de Disponibilidad
+Calibrando: ${selectedTarget.title}
+Cambiar estado del reporte:
+Cambio propuesto: 
+Cantidad de esencias
+Capturas adjuntas (${report.photosBase64.size}):
+Cargando reportes y tickets...
+Categoría: ${rune.category}
+Champs
+Clics Únicos Totales:
+Coach Live UI
+Comprar $currentCurrencyName
+Confianza: ${report.confidencePercent}%
+Configura el costo específico para este anuncio. Si lo dejas vacío o en 0, usará la tarifa global ($${String.format(Locale.US, 
+Confirmación de Suscripción
+Confirmar
+Confirmar (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)
+Confirmar Baja
+Confirmar y Asignar
+Consulte las fechas, horas, días y semanas ocupadas antes de programar su anuncio.
+Consumo de Base de Datos
+Contacto privado • ID: ${uid.take(8).uppercase()}...
+Contenido del mensaje...
+Control de Usuarios, Membresías y Slots
+Copiar Log
+Copiar Reporte
+Copiar Tarifario
+Correo: ${report.parsedEmail}
+Costo Estimado por Clic (eCPC):
+Costo de Suscripción
+Costo: $${String.format(Locale.US, 
+Creador: ${record.creatorName} • ${record.role}
+Crear Nueva Build Oficial
+DECISIÓN DEL MOTOR MEDIAPIPE / LITERT
+DETECCIÓN 10º PICK & SLOTS
+DM
+Daño Aliado: AD ${analysis.allyPhysicalDamagePercent}% | AP ${analysis.allyMagicDamagePercent}%
+Daño Enemigo: AD ${analysis.physicalDamagePercent}% | AP ${analysis.magicDamagePercent}%
+De: ${target.userEmail}
+Descripción
+Desde: $startStr | Hasta: $endStr
+Destinatarios:
+Directorio en Caché:
+Dispositivo
+Draft Analysis (Coming Soon...)
+Duración: ${notice.durationValue} $unitLabel
+ESTADO: $status
+El precio sugerido se calcula y actualiza dinámicamente según tus métricas reales y benchmarks globales de apps de eSports/gaming:
+El usuario tiene $currentDeviceCount de 2 slots de hardware vinculados. Si el usuario cambió de teléfono o tiene problemas de sesión, puedes liberar todos sus slots.
+Emitido: ${announcement.getFormattedDate()}
+En mantenimiento: Las compras de $currentCurrencyName están temporalmente deshabilitadas por mantenimiento técnico.
+Enlace inválido. Solo URLs de YouTube o archivos de galería.
+Enviar Mensaje / Comunicado
+Escribe aquí la respuesta para $displayUserName...
+Esencias ($essenceCount)
+Espacio: RGB [-1.0, 1.0]
+Espacios totalmente disponibles para programar.
+Esta acción borrará el registro de la nube y de todos los dispositivos, retirándolo de la rotación publicitaria de inmediato.
+Esta acción restablecerá a 0 las impresiones y clics únicos diarios de todos los avisos para iniciar un nuevo período de campaña o facturación.
+Esta build fue creada por ${record.creatorName}. Debes estar suscrito a este creador para desbloquear y ver sus objetos, runas y estrategias completas.
+Esta cuenta posee el rango de Administrador Maestro protegido. Por directiva de seguridad, no se puede alterar ni degradar su rol desde este panel.
+Esta cuenta posee rango de Administrador Maestro protegido.
+Estabilidad: ${report.stableFramesCount}/${report.requiredStableFrames} frames
+Estado Red
+Estado de Red: $globalStatus
+Estado: ${if (isPremiumActive) 
+Este anuncio se enviará en tiempo real a todos los dispositivos (con o sin sesión iniciada).
+Este creador aún no ha publicado builds.
+Etiqueta del Mensaje:
+Expira en $timeRemainingStr ($expDateStr)
+FLEX ($otherRoles)
+Fecha de registro: $dateString
+Fecha: $dateString
+Feedback Report
+Firebase y Supabase (Almacenamiento Cloud)
+Flex
+Franjas y Fechas Ocupadas:
+Fullscreen
+Gasto: $${String.format(Locale.US, 
+Gestión de Rol Principal
+Gestión de Rol Secundario
+Guarda automáticamente los recortes del 10º pick en el directorio de caché de la app para que puedas inspeccionar manualmente la calidad de imagen, píxeles, brillo y contraste que reciben los motores de reconocimiento.
+Hechizo ${index + 1}. ${entry.name}
+Hist
+Historial de Conversación (${conversationMessages.size}):
+Historial de Respuestas (${conversation.size})
+ID: ${tx.id}
+Imp. Únicas
+Imágenes y Banners (1.0x)
+Ingresa el número de días que deseas otorgarle a $currentName:
+Inspección de Calidad Óptica
+LIVE
+Los candidatos comparados aparecerán aquí cuando se procese el frame del 10º pick.
+MODO DIAGNÓSTICO (RECORTES)
+MOTIVO DE LA DECISIÓN
+Main
+Mejora Nivel 3 Situacional: ${situationalBootsT3!!.name}
+Mejora Nivel 3: ${bootsT3!!.name}
+Mensajes Enviados
+Meta #$rankNumber: ${champ.name} (${String.format(java.util.Locale.US, 
+Modelos compatibles: ${analysis.probableDeviceModels.joinToString(
+Monitoreo Multi-Servidor (CN, NA, Global)
+Mostrar barra
+Motor de Inferencia del 10º Pick (On-Device)
+Métricas Generales de Usuarios
+Métricas de Monetización & CPM
+Mío
+NUEVO ROL ASIGNADO
+NUEVO ROL SECUNDARIO
+Naranja (EN)
+No hay anuncios para la etiqueta seleccionada
+No, Conservar
+Objectives Tab
+Oficial
+Oro: ${item.goldCost}
+Otorga o revoca la insignia de cuenta verificada para este invocador. La insignia se muestra junto a su nombre en su perfil y en la gestión de comunidad.
+P:${allyChamp.pickRate.toInt()}%
+P:${enemyChamp.pickRate.toInt()}%
+PATROCINIO APROBADO
+PODIO DE CREADORES
+PRO
+Panel de Creador (Admin)
+Pantalla Completa / Full (1.5x)
+Paquetes de Publicidad por Tiempo:
+Para: $targetName
+Patrocinador: ${if (notice.sponsorEmail.isNotBlank()) notice.sponsorEmail else 
+Pendientes ($pendingCount)
+Perfil de Creador
+Permite calcular el saldo restante, porcentaje de consumo y monitorear el gasto de este anuncio publicitario en tiempo real.
+Permite desbloquear avatares exclusivos individuales o regalar todo el catálogo de una vez.
+Pestaña: ${when (overlayHubTab) {
+                                        OverlayHubTab.DRAFT -> 
+Pick: ${String.format(java.util.Locale.US, 
+Pix (Brasil)
+Pix QR Code
+Plantillas rápidas para $displayUserName:
+Popularidad
+Português
+Posibles modelos de celular identificados:
+Precios CPM
+Precios calculados según el volumen de usuarios y engagement:
+Precios por Formato Multimedia (CPM):
+Presiona para ver completo
+Presupuesto
+Presupuesto agotado
+Presupuesto: $${String.format(Locale.US, 
+Principal: ${com.example.util.tr(champion.primaryRole.shortName)} • ${com.example.util.tr(champion.damageType.displayName)}
+Probabilidad Softmax: ${(candidate.softmaxProbability * 100).toInt()}%
+Prog: ${ad.durationValue} $unitLabel
+Protección activa: Hay campos con información. Guarda o vacía los campos para poder salir.
+Publicado por ${record.creatorName}
+QUITAR ROL SECUNDARIO
+Quitar Suscripción
+R${i + 1}
+RECORTES CAPTURADOS (TOCA PARA INSPECCIONAR)
+Recibidos: $totalRecv | Respondidos: $totalReplied | Hoy: $repliedToday | Semanal: $repliedWeek
+Recorte Escaneado
+Recuerda que al momento de quitar tu suscripción pierdes acceso total a las builds oficiales de este perfil. ¿Aún así deseas continuar con la baja?
+Reenviar Correo
+Regalar Avatar a $userName
+Registro Soporte Coach
+Registro y Estadísticas (Admin)
+Reiniciar
+Remover
+Rendimiento Publicitario Global
+Reporte CPM Coach
+Responder Mensaje de Soporte
+Respondido por: $authorName${if (authorMail != null) 
+Respuesta Soporte
+Restablecer
+Retención activa: 30 días para mensajes leídos y 60 días para mensajes pendientes.
+Revisar
+Rol / Línea: ${build.role}
+Rol Secundario: ${secondaryRole.replaceFirstChar { it.uppercase() }}
+Rol: ${champ.primaryRole.displayName}
+Rol: ${champ?.primaryRole?.displayName ?: 
+Rol: ${entry.role.replaceFirstChar { it.uppercase() }}
+Runa Clave: ${entry.name}
+Runas Situacionales (Opcional)
+SIN ROL SECUNDARIO
+Saldo: ${if (selectedCurrency == 
+Sao Paulo • $currentAmountText
+Score: ${draft.myScore}
+Secundaria ${index + 1}. ${entry.name}
+Sinergia S+ / Tier Soberano
+Sit. ${index + 1}. ${entry.name}
+Sit. Hechizo ${index + 1}. ${entry.name}
+Sit. Runa ${index + 1}. ${entry.name}
+Solicitado por moderador: $requestedByName
+Solicitudes de Moderadores
+Solo los Administradores principales tienen privilegios para cambiar el Rol Principal.
+Superposición en vivo sobre Wild Rift • Toca para abrir
+Suscribirse al Creador (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)
+Suscribirse por ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN
+Suscripciones ($subCount)
+Suscripción Activa (Acceso Total)
+Suscripción al Creador
+TIER ${stats.tier.label} (${stats.winRate.toInt()}%)
+Tamaño de Cuadro:
+Tarifa CPM Individual (USD)
+Tarifario Completo Coach
+Tarifas & Desglose CPM
+Tensor: ${report.tensorDimensions}
+Tienes $pendingRequestsCount solicitudes de moderador pendientes
+Tier ${allyChamp.tier}
+Tier ${build.championObj.tier}
+Tier ${enemyChamp.tier}
+Tier ${myEval.champion.tier}
+Tier ${roleProfile.tier}
+Tier ${stats.tier.label} • ${stats.primaryRole.displayName}
+Tier ${topPick.champion.tier}
+Toca la pantalla para cerrar
+Toca para reproducir / ver en pantalla completa
+Toca un recuadro para agregar un pick rival
+Todos (${history.size})
+Todos (${sponsorNotices.size})
+Total: ${messages.size} mensaje(s)
+Tu saldo
+Tu saldo:
+Tus Anuncios (${myNotices.size})
+TÚ
+Título
+Título (ej: Nueva Actualización)
+Título del mensaje
+UID: ${uid.take(10)}...
+URL Anuncio
+UUID: ${report.id}
+Umbral mín: ${(report.minConfidenceThreshold * 100).toInt()}%
+Usuario: $displayUserName
+Usuario: $name
+Usuario: $userName
+VISIÓN
+VS
+Vence: $endDateStr
+Venció el $expDateStr
+Ver
+Veredicto del Coach Soberano:
+Verificación Oficial de Cuenta
+Versión
+Versión: ${report.appVersion}
+Videos MP4 & Clips (2.5x)
+Visible en la tarjeta de novedades en el inicio.
+Visor Google MediaPipe / LiteRT
+Vista Previa Multimedia
+W:${allyChamp.winrate.toInt()}%
+W:${enemyChamp.winrate.toInt()}%
+WR Estimado: ${winrateDisplay}%
+WR: $winrateDisplay%
+WR: ${String.format(java.util.Locale.US, 
+WR: ${overview.overallWinRate.toInt()}%
+WR: ${pick.estimatedWinrate}%
+WR: ${rec.estimatedWinrate}%
+Wild Rift Assistant
+WildRift_Vision_Calibration
+Zed (41.2%) • Yasuo (38.5%)
+[Bota N2 Situacional] ${boot.itemName}
+[Botas N2] ${boot.itemName}
+[Mejora N3 Situacional] ${enchant.itemName}
+[Mejora N3] ${enchant.itemName}
+v${BuildConfig.VERSION_NAME}
+v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • $patchLabel
+v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • ${tr(WildRiftRepository.CURRENT_PATCH_VERSION)}
+v${updateInfo.latestVersionName}
+vs ${m.opponentName}
+© 2026 Diego Barba Chavez
+© 2026 Diego Barba Chavez. 
+« Coach »
+±${(calibrationStep * 100).format(1)}%
+±${(stepFactor * 100).format(1)}%
+¿Cambiar rol a ${target.displayName}?
+¿Confirmas asignar este nuevo rol al usuario '$currentName'?
+¿Estás seguro de que deseas cancelar tu suscripción al perfil de ${entry.name}?
+¿Estás seguro de que deseas eliminar permanentemente el anuncio "${targetNotice.title}"? Esta acción no se puede deshacer.
+¿Estás seguro de que deseas eliminar permanentemente este reporte?
+ÚNICA POR LÍNEA
+Únicos / Totales
+• $formattedDate
+• ${report.inferenceTimeMs} ms
+• ${tr(sitBootName)}:
+• ${tr(sitItemName)}:
+• Benchmark Mercado Gaming: $${String.format(Locale.US, 
+• CPM Recomendado Actual: $${String.format(Locale.US, 
+• Clics únicos esperados: ~%,d
+• Foto ${idx + 1}: ${analysis.primaryDeviceSummary}
+• Las imágenes de galería se convierten automáticamente al formato de nube para verse en CUALQUIER celular y no ponerse negras al reiniciar.\n• Para videos en múltiples celulares, usa enlaces de YouTube (o Shorts) o URLs web (.mp4). Los videos locales se guardan permanentemente en este celular.
+• Nivel / Calificación: ${dynamicRec.tierName}
+• Rango sugerido de venta: $${String.format(Locale.US, 
+• Una vez enviado el anuncio a revisión, NO SE PUEDE MODIFICAR.\n
+• Visitas esperadas: ~%,d
+↓ 
+↔ 
+⏱️ 
+⏳ 
+☁️ MULTIDISPOSITIVO ACTIVO (Sincronización en la nube)
+★ 
+⚔️ 
+⚠️ 
+⚠️ Al asignar el rol Baneado, la cuenta del usuario será suspendida de inmediato y no podrá utilizar los servicios de la app.
+⚠️ ¡ADVERTENCIA CRÍTICA!
+⚡ 
+✓ Desbloqueado
+✕ 
+✨ Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech.
+⭐ 
+⭐ ${tr(
+️ $target
+🇧🇷
+🇲🇽
+🎁 Regalar Todos (${allAvatars.size})
+🎨 
+🎯 
+🏆 
+👁️ ${String.format(Locale.US, 
+👑 
+👑 1° ${first.name}  •  🥈 2° ${second.name}  •  🥉 3° ${third.name}
+👤 ${draft.accountProfileName}
+👤 ${prof.name}
+👤 ${prof.name}${if (prof.tag.isNotBlank()) 
+👥 
+👥 ${creator.subscribersCount} subs
+👥 ${entry.subscribersCount} Suscriptores • 📦 ${creatorBuilds.size} Builds
+💔 
+💡 Criterio del Sistema:
+📅 $dateStr
+📅 Proyección de Precios Fijos (Sponsor):
+📭 No hay reportes de soporte en esta categoría
+📱 
+📱 $tagTotalFullscreen full
+📱 Celular inferido: ${firstPhotoAnalysis.primaryDeviceSummary}
+📱 Modelo probable: ${photoAnalysis.primaryDeviceSummary}
+🔒 
+🖱️ $tagTotalClicks clics (${String.format(Locale.US, 
+🛡️ 
+🤝 
