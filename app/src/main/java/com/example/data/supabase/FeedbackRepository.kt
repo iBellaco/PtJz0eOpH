@@ -99,13 +99,13 @@ object FeedbackRepository {
             }
 
             val reportId = if (!id.isNullOrBlank()) id else java.util.UUID.randomUUID().toString()
-            val report = InsertFeedbackReport(
-                id = reportId,
-                type = type,
-                title = title.trim(),
-                description = finalDescription,
-                appVersion = appVersion,
-                deviceInfo = deviceInfo
+            val mapWithId = mapOf(
+                "id" to reportId,
+                "type" to type,
+                "title" to title.trim(),
+                "description" to finalDescription,
+                "app_version" to appVersion,
+                "device_info" to deviceInfo
             )
 
             var supabaseSuccess = false
@@ -113,11 +113,11 @@ object FeedbackRepository {
 
             // 3. Insertar en la tabla feedbacks de Supabase (probar con ID y sin ID como fallback)
             try {
-                postgrest.from(TABLE_NAME).insert(report)
+                postgrest.from(TABLE_NAME).insert(mapWithId)
                 supabaseSuccess = true
                 Log.d(TAG, "Feedback enviado exitosamente a Supabase con ID")
             } catch (e1: Exception) {
-                Log.w(TAG, "Reintentando insercion en Supabase sin ID: ${e1.message}")
+                Log.w(TAG, "Fallo insercion con ID en Supabase: ${e1.message}. Reintentando sin ID como fallback.")
                 try {
                     val mapWithoutId = mapOf(
                         "type" to type,
@@ -131,7 +131,7 @@ object FeedbackRepository {
                     Log.d(TAG, "Feedback enviado exitosamente a Supabase sin ID")
                 } catch (e2: Exception) {
                     supabaseError = e2
-                    Log.e(TAG, "Error enviando a Supabase: ${e2.message}", e2)
+                    Log.e(TAG, "Error enviando a Supabase sin ID: ${e2.message}", e2)
                 }
             }
 

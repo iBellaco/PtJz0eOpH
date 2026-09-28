@@ -59,16 +59,12 @@ fun RoleBadge(
     size: RoleBadgeSize = RoleBadgeSize.COMPACT,
     modifier: Modifier = Modifier
 ) {
+    val resolvedRole = AppUserRole.fromId(role)
     val appRole = when {
         isBanned -> AppUserRole.BANNED
-        role.equals("admin", ignoreCase = true) -> AppUserRole.ADMIN
-        role.equals("moderador", ignoreCase = true) -> AppUserRole.MODERATOR
-        role.equals("creador_lvl2", ignoreCase = true) -> AppUserRole.CREATOR_LVL2
-        role.equals("streamer", ignoreCase = true) -> AppUserRole.STREAMER
-        role.equals("creador", ignoreCase = true) -> AppUserRole.CREATOR
-        role.equals("premium", ignoreCase = true) -> AppUserRole.PREMIUM
+        resolvedRole != AppUserRole.FREE -> resolvedRole
         isPremiumActive -> AppUserRole.PREMIUM
-        else -> AppUserRole.fromId(role)
+        else -> AppUserRole.FREE
     }
 
     // Animaciones constantes de pulso, aura y shimmer
