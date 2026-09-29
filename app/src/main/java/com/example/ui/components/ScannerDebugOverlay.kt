@@ -26,6 +26,7 @@ fun ScannerDebugOverlay(
 ) {
     val rawConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
+    val allyRoles by DraftVisionScanner.allyRolesBySlotFlow.collectAsStateWithLifecycle()
     val density = LocalDensity.current
 
     // Telemetría del motor de visión y estrategia de salto de fotogramas
@@ -38,25 +39,6 @@ fun ScannerDebugOverlay(
     // OPTIMIZACIÓN DE RENDIMIENTO (60-120 FPS):
     // Recordar pinturas nativas fuera de Canvas para eliminar asignaciones masivas de memoria
     // y evitar pausas de Garbage Collector (GC) que reducen la tasa de fotogramas del overlay.
-    val allyTextPaint = remember(density) {
-        android.graphics.Paint().apply {
-            color = android.graphics.Color.parseColor("#00E5FF")
-            textSize = with(density) { 10.sp.toPx() }
-            isAntiAlias = true
-            textAlign = android.graphics.Paint.Align.CENTER
-            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
-        }
-    }
-
-    val enemyTextPaint = remember(density) {
-        android.graphics.Paint().apply {
-            color = android.graphics.Color.parseColor("#FF5252")
-            textSize = with(density) { 10.sp.toPx() }
-            isAntiAlias = true
-            textAlign = android.graphics.Paint.Align.CENTER
-            setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
-        }
-    }
 
     val allyLabelPaint = remember(density) {
         android.graphics.Paint().apply {
@@ -113,6 +95,22 @@ fun ScannerDebugOverlay(
         val h = size.height
         if (w <= 0 || h <= 0) return@Canvas
 
+        val textRects = mutableListOf<android.graphics.Rect>()
+        fun drawDiagnosticText(text: String, x: Float, y: Float, paint: android.graphics.Paint) {
+            val width = paint.measureText(text)
+            val left = when (paint.textAlign) {
+                android.graphics.Paint.Align.CENTER -> x - width / 2f
+                android.graphics.Paint.Align.RIGHT -> x - width
+                else -> x
+            }
+            val metrics = paint.fontMetrics
+            textRects.add(android.graphics.Rect(
+                (left - 5f).toInt(), (y + metrics.top - 5f).toInt(),
+                (left + width + 5f).toInt(), (y + metrics.bottom + 5f).toInt()
+            ))
+            drawContext.canvas.nativeCanvas.drawText(text, x, y, paint)
+        }
+
         val currentConfig = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(w.toInt(), h.toInt(), rawConfig)
         val avatarDiameter = h * currentConfig.avatarDiameterRatio
         val avatarRadius = avatarDiameter / 2f
@@ -157,26 +155,17 @@ fun ScannerDebugOverlay(
             )
 
             // Etiqueta del slot / rol aliado dinámico: único 1 a 1 por equipo sin duplicados
-            val detectedAllyRole = DraftVisionScanner.allySlotRolesCache[sIdx]?.shortName
-                ?: DraftVisionScanner.allySlotOcrLaneCache[sIdx]?.shortName
+            val detectedAllyRole = allyRoles[sIdx]?.shortName
             val slotLabel = if (detectedAllyRole != null) "Aliado ${sIdx + 1} ($detectedAllyRole)" else "Aliado ${sIdx + 1}"
             val allyLabelX = (allyX - allyAvatarRad).coerceAtLeast(8f)
-            drawContext.canvas.nativeCanvas.drawText(
-                slotLabel,
+            val allyMatch = debugMatches["ally_$sIdx"]
+            drawDiagnosticText(
+                if (allyMatch != null) "$slotLabel: $allyMatch" else slotLabel,
                 allyLabelX,
                 allyY - allyAvatarRad - 6f,
                 allyLabelPaint
             )
             
-            val allyMatch = debugMatches["ally_$sIdx"]
-            if (allyMatch != null) {
-                drawContext.canvas.nativeCanvas.drawText(
-                    allyMatch,
-                    (allyOcrLeft + allyOcrRight) / 2f,
-                    allyY + (with(density) { 4.sp.toPx() }),
-                    allyTextPaint
-                )
-            }
             
             // -------------------------------------------------------------
             // 2. Columna Rival (Derecha: Círculo de Avatar + Región OCR)
@@ -237,21 +226,13 @@ fun ScannerDebugOverlay(
             }
 
             val enemyLabelX = (enemyX + avatarRadius).coerceAtMost(w - 10f)
-            drawContext.canvas.nativeCanvas.drawText(
-                enemySlotLabel,
+            drawDiagnosticText(
+                if (enemyMatch != null) "$enemySlotLabel: $enemyMatch" else enemySlotLabel,
                 enemyLabelX,
                 enemyY - avatarRadius - 6f,
                 enemyLabelPaint
             )
 
-            if (enemyMatch != null) {
-                drawContext.canvas.nativeCanvas.drawText(
-                    enemyMatch,
-                    (enemyOcrLeft + enemyOcrRight) / 2f,
-                    enemyY + (with(density) { 4.sp.toPx() }),
-                    enemyTextPaint
-                )
-            }
         }
 
         // -------------------------------------------------------------
@@ -276,7 +257,7 @@ fun ScannerDebugOverlay(
             radius = avatarRadius + 4f,
             style = Stroke(width = 3.0f)
         )
-        drawContext.canvas.nativeCanvas.drawText(
+        drawDiagnosticText(
             tenthLabel,
             tenthTargetX.coerceIn(52f, w - 52f),
             tenthTargetY + avatarRadius + 14f,
@@ -321,11 +302,12 @@ fun ScannerDebugOverlay(
             style = Stroke(width = 1f)
         )
 
-        drawContext.canvas.nativeCanvas.drawText(
+        drawDiagnosticText(
             hudText,
             hudX,
             hudY,
             hudPaint
         )
+        DraftVisionScanner.debugTextRects = textRects.toList()
     }
 }

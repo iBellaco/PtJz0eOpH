@@ -1022,19 +1022,6 @@ private fun FloatingOverlayContent(
     val manualLockedAllySlots = state.manualLockedAllySlots
     val manualLockedEnemySlots = state.manualLockedEnemySlots
 
-    // Funciones de asignación con Regla Estricta MOBA de Unicidad Absoluta (ningún campeón puede duplicarse en ningún bando)
-    val assignAllySlot: (Int, Champion) -> Unit = { targetIdx, champ ->
-        for (i in 0 until 5) {
-            if (enemies[i]?.id == champ.id) enemies[i] = null
-        }
-        for (i in 0 until 5) {
-            if (i != targetIdx && allies[i]?.id == champ.id) allies[i] = null
-        }
-        if (targetIdx in 0 until 5) {
-            allies[targetIdx] = champ
-        }
-    }
-
     val assignEnemySlot: (Int, Champion, Int?) -> Unit = { targetIdx, champ, conf ->
         // PROTECCIÓN ESTRICTA: Si el campeón ya está en el equipo aliado, NUNCA transferirlo al rival
         if (!allies.any { it?.id == champ.id }) {
@@ -1053,6 +1040,22 @@ private fun FloatingOverlayContent(
         } else {
             AppLogger.d("Overlay", "Ignorando asignación enemiga de ${champ.name}: pertenece al equipo aliado")
         }
+    }
+
+    val syncAlliedHud: (Map<LaneRole, Champion>) -> Int = { scanned ->
+        val next = com.example.service.screen.AllyDraftReconciler.hudAllies(
+            allies.toList(), scanned, manualLockedAllySlots.filterValues { it }.keys
+        )
+        val changes = next.indices.count { allies[it]?.id != next[it]?.id }
+        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+            next.forEachIndexed { index, champ -> allies[index] = champ }
+            for (index in enemies.indices) {
+                if (manualLockedEnemySlots[index] != true && next.any { it != null && it.id == enemies[index]?.id }) {
+                    enemies[index] = null
+                }
+            }
+        }
+        changes
     }
 
     var isScanning by state::isScanning
@@ -1191,20 +1194,14 @@ private fun FloatingOverlayContent(
                                             var fastPicksAdded = 0
                                             for ((turn, champ) in detectedPicks) {
                                                 if (turn.isAlly) {
-                                                    val role = DraftVisionScanner.getAllySlotRole(turn.slotIndex)
-                                                    val roleIdx = defaultRoles.indexOf(role)
-                                                    val emptyIdx = allies.indices.firstOrNull { allies[it] == null && manualLockedAllySlots[it] != true }
-                                                    val targetIdx = when {
-                                                        roleIdx != -1 && allies[roleIdx] == null && manualLockedAllySlots[roleIdx] != true -> roleIdx
-                                                        emptyIdx != null -> emptyIdx
-                                                        manualLockedAllySlots[turn.slotIndex] != true -> turn.slotIndex
-                                                        else -> allies.indices.firstOrNull { manualLockedAllySlots[it] != true } ?: turn.slotIndex
-                                                    }
-                                                    if (manualLockedAllySlots[targetIdx] != true && allies[targetIdx]?.id != champ.id) {
-                                                        assignAllySlot(targetIdx, champ)
+                                                    val rolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value
+                                                    if (rolesBySlot.size == 5) {
                                                         DraftVisionScanner.allySlotConfirmedChampions[turn.slotIndex] = champ
-                                                        fastPicksAdded++
-                                                        AppLogger.d("HighPriorityLoop", "Slot Aliado Activo ${turn.slotIndex} ($role) fijado en $targetIdx: ${champ.name}")
+                                                        val byRole = DraftVisionScanner.allySlotConfirmedChampions
+                                                            .mapIndexedNotNull { slot, picked ->
+                                                                rolesBySlot[slot]?.let { role -> picked?.let { role to it } }
+                                                            }.toMap()
+                                                        fastPicksAdded += syncAlliedHud(byRole)
                                                     }
                                                 } else {
                                                     val emptyIdx = enemies.indices.firstOrNull { enemies[it] == null && manualLockedEnemySlots[it] != true }
@@ -1225,7 +1222,6 @@ private fun FloatingOverlayContent(
                                                 val totalAllies = allies.filterNotNull().size
                                                 val totalEnemies = enemies.filterNotNull().size
                                                 if (totalAllies == 5 && totalEnemies == 5) {
-                                                    autoScanEnabled = false
                                                     scanNoticeMessage = "10/10 Campeones confirmados"
                                                 }
                                             }
@@ -1242,19 +1238,10 @@ private fun FloatingOverlayContent(
                                                 isFirstPick = result.detectedFirstPick
                                             }
 
-                                            var newAlliesAdded = 0
+                                            val newAlliesAdded = if (result.allyRolesBySlot.size == 5) syncAlliedHud(result.alliesByRole) else 0
                                             var newEnemiesAdded = 0
                                             
                                             defaultRoles.forEachIndexed { idx, role ->
-                                                if (manualLockedAllySlots[idx] != true) {
-                                                    val scannedAlly = result.alliesByRole[role]
-                                                    if (scannedAlly != null) {
-                                                        if (allies[idx] == null || allies[idx]?.id != scannedAlly.id) {
-                                                            assignAllySlot(idx, scannedAlly)
-                                                            newAlliesAdded++
-                                                        }
-                                                    }
-                                                }
                                                 if (manualLockedEnemySlots[idx] != true) {
                                                     val scannedEnemy = result.enemiesByRole[role]
                                                     if (scannedEnemy != null) {
@@ -1266,50 +1253,7 @@ private fun FloatingOverlayContent(
                                                 }
                                             }
 
-                                            // Preservar campeones aliados no asignados con correspondencia de rol estricta
-                                            for (slotIdx in 0..4) {
-                                                val champ = result.alliesBySlot[slotIdx] ?: continue
-                                                val isAlreadyInAllies = allies.any { it?.id == champ.id }
-                                                if (!isAlreadyInAllies) {
-                                                    val targetRole = DraftVisionScanner.allySlotRolesCache[slotIdx] ?: champ.primaryRole
-                                                    val roleIdx = defaultRoles.indexOf(targetRole)
-                                                    val targetIdx = if (roleIdx in 0..4 && allies[roleIdx] == null && manualLockedAllySlots[roleIdx] != true) {
-                                                        roleIdx
-                                                    } else {
-                                                        allies.indices.firstOrNull { allies[it] == null && manualLockedAllySlots[it] != true }
-                                                    }
-                                                    if (targetIdx != null) {
-                                                        assignAllySlot(targetIdx, champ)
-                                                        newAlliesAdded++
-                                                        AppLogger.d(TAG, "Campeón aliado detectado asignado a slot $targetIdx (${defaultRoles[targetIdx].shortName}): ${champ.name}")
-                                                    }
-                                                }
-                                            }
-
-                                            // Asignación directa y garantizada del 10º Pick
-                                            val tenthChamp = result.lastPickChampion
-                                            if (tenthChamp != null) {
-                                                val isTenthAlly = result.tenthPickIsAlly ?: (!isFirstPick)
-                                                if (isTenthAlly) {
-                                                    val emptyIdx = allies.indices.firstOrNull { idx -> allies[idx] == null && manualLockedAllySlots[idx] != true } ?: -1
-                                                    val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
-                                                    if (manualLockedAllySlots[targetIdx] != true) {
-                                                        assignAllySlot(targetIdx, tenthChamp)
-                                                        DraftVisionScanner.allySlotConfirmedChampions[(result.tenthPickSlotIndex ?: targetIdx).coerceIn(0, 4)] = tenthChamp
-                                                        newAlliesAdded++
-                                                        AppLogger.d(TAG, "10º Pick asignado automáticamente a Aliado Slot $targetIdx: ${tenthChamp.name}")
-                                                    }
-                                                } else {
-                                                    val emptyIdx = enemies.indices.firstOrNull { idx -> enemies[idx] == null && manualLockedEnemySlots[idx] != true } ?: -1
-                                                    val targetIdx = if (emptyIdx != -1) emptyIdx else (result.tenthPickSlotIndex ?: 4).coerceIn(0, 4)
-                                                    if (manualLockedEnemySlots[targetIdx] != true) {
-                                                        assignEnemySlot(targetIdx, tenthChamp, 100)
-                                                        DraftVisionScanner.enemySlotConfirmedChampions[(result.tenthPickSlotIndex ?: targetIdx).coerceIn(0, 4)] = tenthChamp
-                                                        newEnemiesAdded++
-                                                        AppLogger.d(TAG, "10º Pick asignado automáticamente a Rival Slot $targetIdx: ${tenthChamp.name}")
-                                                    }
-                                                }
-                                            }
+                                            // Both teams, including pick ten, were already assigned by role.
 
                                             val currentAllyPicks = allies.count { it != null }
                                             val currentEnemyPicks = enemies.count { it != null }
@@ -1330,16 +1274,17 @@ private fun FloatingOverlayContent(
                                                 }
                                             } else {
                                                 defaultRoles.forEachIndexed { idx, role ->
-                                                    val sName = result.allySummonerNamesByRole[role] ?: result.allySummonerNamesBySlot[idx]
+                                                    val sName = result.allySummonerNamesByRole[role]
                                                     if (!sName.isNullOrBlank()) {
-                                                        val current = state.allySummonerNames[idx]
-                                                        if (current.isNullOrBlank() || sName.length > current.length || (sName.contains(" ") && !current.contains(" "))) {
-                                                            state.allySummonerNames[idx] = sName
-                                                        }
+                                                        state.allySummonerNames[idx] = sName
+                                                    } else {
+                                                        state.allySummonerNames.remove(idx)
                                                     }
-                                                    val spells = result.allySpellsByRole[role] ?: result.allySpellsBySlot[idx]
+                                                    val spells = result.allySpellsByRole[role]
                                                     if (!spells.isNullOrEmpty()) {
                                                         state.allySpells[idx] = spells
+                                                    } else {
+                                                        state.allySpells.remove(idx)
                                                     }
                                                 }
                                             }
@@ -1356,9 +1301,8 @@ private fun FloatingOverlayContent(
                                                 com.example.util.UserPreferences.setActiveDraftRole(context, result.userExplicitlyDetectedRole)
                                                 scanNoticeMessage = "Auto-Scan: Tu rol detectado (${result.userExplicitlyDetectedRole.shortName})"
                                             } else if (isDraftFullyConfirmed) {
-                                                autoScanEnabled = false
                                                 scanNoticeMessage = "10/10 Campeones confirmados"
-                                                AppLogger.i("FloatingService", "Auto-Scan desactivado: 10/10 campeones confirmados.")
+                                                AppLogger.i("FloatingService", "10/10 confirmados: seguimiento de intercambios activo.")
                                             } else if (result.isPreparationPhase && (finalAlliesPicked < 5 || finalEnemiesPicked < 5)) {
                                                 scanNoticeMessage = "Fase de Preparación: completando selección ($finalAlliesPicked/5 vs $finalEnemiesPicked/5)..."
                                             } else if (newAlliesAdded > 0 || newEnemiesAdded > 0) {
@@ -1431,13 +1375,8 @@ private fun FloatingOverlayContent(
                         }
 
                         // 1. Asignación directa y de alta precisión por rol (respetando selecciones manuales)
+                        if (result.allyRolesBySlot.size == 5) syncAlliedHud(result.alliesByRole)
                         defaultRoles.forEachIndexed { idx, role ->
-                            if (manualLockedAllySlots[idx] != true) {
-                                val scannedAlly = result.alliesByRole[role]
-                                if (scannedAlly != null) {
-                                    assignAllySlot(idx, scannedAlly)
-                                }
-                            }
                             if (manualLockedEnemySlots[idx] != true) {
                                 val scannedEnemy = result.enemiesByRole[role]
                                 if (scannedEnemy != null) {
@@ -1446,24 +1385,6 @@ private fun FloatingOverlayContent(
                             }
                         }
 
-                        // Asignación directa y garantizada del 10º Pick respetando el bando
-                        val tenthChamp = result.lastPickChampion
-                        if (tenthChamp != null) {
-                            val isTenthAlly = result.tenthPickIsAlly ?: (!isFirstPick)
-                            if (isTenthAlly) {
-                                val targetIdx = (result.tenthPickSlotIndex ?: allies.indexOfFirst { it == null }).let { if (it in 0..4) it else 4 }
-                                if (manualLockedAllySlots[targetIdx] != true) {
-                                    assignAllySlot(targetIdx, tenthChamp)
-                                    AppLogger.d(TAG, "10º Pick asignado manualmente/directo a Aliado Slot $targetIdx: ${tenthChamp.name}")
-                                }
-                            } else {
-                                val targetIdx = (result.tenthPickSlotIndex ?: enemies.indexOfFirst { it == null }).let { if (it in 0..4) it else 4 }
-                                if (manualLockedEnemySlots[targetIdx] != true) {
-                                    assignEnemySlot(targetIdx, tenthChamp, 100)
-                                    AppLogger.d(TAG, "10º Pick asignado manualmente/directo a Rival Slot $targetIdx: ${tenthChamp.name}")
-                                }
-                            }
-                        }
 
                         // Verificación complementaria: si el rival ya tiene picks y aliados no, rival eligió 1º
                         val currentAllyPicks = allies.count { it != null }
@@ -1481,16 +1402,17 @@ private fun FloatingOverlayContent(
                             state.allySummonerNames.clear()
                         } else {
                             defaultRoles.forEachIndexed { idx, role ->
-                                val sName = result.allySummonerNamesByRole[role] ?: result.allySummonerNamesBySlot[idx]
+                                val sName = result.allySummonerNamesByRole[role]
                                 if (!sName.isNullOrBlank()) {
-                                    val current = state.allySummonerNames[idx]
-                                    if (current.isNullOrBlank() || sName.length > current.length || (sName.contains(" ") && !current.contains(" "))) {
-                                        state.allySummonerNames[idx] = sName
-                                    }
+                                    state.allySummonerNames[idx] = sName
+                                } else {
+                                    state.allySummonerNames.remove(idx)
                                 }
-                                val spells = result.allySpellsByRole[role] ?: result.allySpellsBySlot[idx]
+                                val spells = result.allySpellsByRole[role]
                                 if (!spells.isNullOrEmpty()) {
                                     state.allySpells[idx] = spells
+                                } else {
+                                    state.allySpells.remove(idx)
                                 }
                             }
                         }
@@ -3922,4 +3844,3 @@ private fun CoachContent(
         }
     }
 }
-
