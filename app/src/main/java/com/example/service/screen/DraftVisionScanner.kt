@@ -175,9 +175,9 @@ object DraftVisionScanner {
 
     suspend fun scanActiveSlotDirectly(bitmap: Bitmap, turn: DraftPickTurn, context: Context? = null): ScannedSlotInfo? {
         if (turn.turnNumber == 10) {
-            val calib = calibrationConfig
             val w = bitmap.width
             val h = bitmap.height
+            val calib = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(w, h, calibrationConfig)
             val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
                 sourceBitmap = bitmap,
                 width = w,
@@ -187,18 +187,22 @@ object DraftVisionScanner {
                 config = calib
             ) ?: return null
 
-            val confirmedChampIds = (allySlotConfirmedChampions.mapNotNull { it?.id } + 
-                    enemySlotConfirmedChampions.mapNotNull { it?.id } + 
-                    detectedBannedChampionIds).toSet()
-            val confirmedCount = allySlotConfirmedChampions.count { it != null } + enemySlotConfirmedChampions.count { it != null }
+            val otherPicks = getConfirmedPicksExcept(turn)
+            val confirmedChampIds = otherPicks.map { it.id }.toSet() + detectedBannedChampionIds
+            val targetChampion = if (turn.isAlly) {
+                allySlotConfirmedChampions.getOrNull(turn.slotIndex)
+            } else {
+                enemySlotConfirmedChampions.getOrNull(turn.slotIndex)
+            }
 
             val decision = LiteRTVisionClassifier.executeTenthPickInference(
                 cropBitmap = crop,
                 isAlly = turn.isAlly,
                 confirmedChampionIds = confirmedChampIds,
-                confirmedPicksCount = confirmedCount,
+                confirmedPicksCount = otherPicks.size,
                 slotIndex = turn.slotIndex,
-                context = context
+                context = context,
+                confirmedTargetChampion = targetChampion
             )
             try { crop.recycle() } catch (_: Throwable) {}
 
@@ -216,9 +220,25 @@ object DraftVisionScanner {
         return null
     }
 
+    internal fun getConfirmedPicksExcept(turn: DraftPickTurn): List<Champion> {
+        return allySlotConfirmedChampions.filterIndexed { index, _ ->
+            !turn.isAlly || index != turn.slotIndex
+        }.filterNotNull() + enemySlotConfirmedChampions.filterIndexed { index, _ ->
+            turn.isAlly || index != turn.slotIndex
+        }.filterNotNull()
+    }
+
+    internal fun getRememberedAllyRoles(currentRoles: Map<Int, LaneRole>): Map<Int, LaneRole> {
+        val roles = currentRoles.toMutableMap()
+        for ((slotIndex, role) in allySlotOcrLaneCache) {
+            if (slotIndex !in roles && role !in roles.values) roles[slotIndex] = role
+        }
+        return roles
+    }
+
     fun getAllySlotRole(slotIndex: Int): LaneRole {
-        return allySlotRolesCache[slotIndex] 
-            ?: allySlotOcrLaneCache[slotIndex] 
+        return allySlotOcrLaneCache[slotIndex]
+            ?: allySlotRolesCache[slotIndex]
             ?: allySlotConfirmedChampions.getOrNull(slotIndex)?.primaryRole
             ?: when (slotIndex) {
                 0 -> LaneRole.TOP
@@ -860,6 +880,14 @@ object DraftVisionScanner {
                 }
             }
 
+            // El nombre del campeon reemplaza la calle: conservar el rol OCR de ese slot.
+            for ((slotIndex, role) in getRememberedAllyRoles(currentScanFrameOcrLanes)) {
+                resolvedSlotRoles[slotIndex] = role
+                claimedRoles.add(role)
+                allySlots[slotIndex].explicitRole = role
+                allySlotRolesCache[slotIndex] = role
+            }
+
             // 2. PRIORIDAD HECHIZO CASTIGO (Smite) -> Jungla (Infalible en Wild Rift si no está asignado por texto)
             for (i in 0..4) {
                 if (!resolvedSlotRoles.containsKey(i)) {
@@ -874,9 +902,7 @@ object DraftVisionScanner {
                 }
             }
 
-            // 3. PRIORIDAD CAMPEONES CONFIRMADOS (Asignación Óptima por afinidad de rol primario/secundario)
-            // Si el slot ya tiene un campeón seleccionado (ej: Vi, Smolder, Sett, Viktor, Senna), se infiere directamente
-            // usando correspondencia bipartita antes de recurrir a cachés OCR antiguas que pudieran estar obsoletas.
+            // Inferir por afinidad solo las calles que nunca se pudieron leer por OCR.
             val availableRoles = allStandardRoles.filterNot { claimedRoles.contains(it) }.toMutableList()
 
             // 4. Para slots aliados sin carril confirmado que ya tienen campeón seleccionado:
@@ -1296,16 +1322,13 @@ object DraftVisionScanner {
         // - Si Aliado es 1ª Selección (isFirstPick == true) -> 10º Pick es RIVAL 5 (isAlly = false, slotIndex = 4).
         // Se activa cuando las 9 selecciones previas están listas o el slot objetivo está pendiente.
         // -----------------------------------------------------------------------------------------
-        val allyPickedCount = allySlots.count { it.champion != null }
-        val enemyPickedCount = enemySlots.count { it.champion != null }
-        val confirmedPicksCount = allyPickedCount + enemyPickedCount
         val tenthTurn = pickSequence.last()
         val tenthIsAlly = tenthTurn.isAlly
         val tenthSlotIndex = tenthTurn.slotIndex
 
-        val confirmedChampIds = (allySlots.mapNotNull { it.champion?.id } + enemySlots.mapNotNull { it.champion?.id } +
-                allySlotConfirmedChampions.mapNotNull { it?.id } + enemySlotConfirmedChampions.mapNotNull { it?.id } +
-                detectedBannedChampionIds).toSet()
+        val otherPicks = getConfirmedPicksExcept(tenthTurn)
+        val confirmedPicksCount = otherPicks.size
+        val confirmedChampIds = otherPicks.map { it.id }.toSet() + detectedBannedChampionIds
 
         var detectedTenthChampion: Champion? = null
         var isTenthConfirmed = false
@@ -1340,7 +1363,9 @@ object DraftVisionScanner {
             confirmedChampionIds = confirmedChampIds,
             confirmedPicksCount = confirmedPicksCount,
             slotIndex = tenthSlotIndex,
-            context = context
+            context = context,
+            confirmedTargetChampion = targetSlot.champion,
+            allowVisualConfirmation = !tenthIsAlly || currentScanFrameOcrLanes[tenthSlotIndex] == null
         )
 
         if (liteRTDecision != null && confirmedPicksCount >= 9) {
@@ -1469,7 +1494,7 @@ object DraftVisionScanner {
             total == 10 -> {
                 val tenthChamp = if (tenthIsAlly) allySlots[tenthSlotIndex].champion else enemySlots[tenthSlotIndex].champion
                 if (tenthChamp != null) {
-                    "10/10 Completo • 10º Pick por LiteRT (${tenthChamp.name})"
+                    "10/10 Completo • 10º Pick confirmado (${tenthChamp.name})"
                 } else {
                     "10/10 Completo • Selección finalizada"
                 }
