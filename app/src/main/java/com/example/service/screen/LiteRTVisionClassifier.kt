@@ -582,6 +582,8 @@ object LiteRTVisionClassifier {
 
         val cx = width / 2f
         val cy = height / 2f
+        // El recorte del rival conserva parte del aro rojo y del borde del slot.
+        // El centro útil del retrato debe pesar más que ese marco de interfaz.
         val radius = min(cx, cy) * 0.44f
         val radiusSq = radius * radius
         var samples = 0
@@ -616,7 +618,17 @@ object LiteRTVisionClassifier {
         val paleRatio = paleCold.toFloat() / samples
         val blueRatio = blueDominant.toFloat() / samples
         val darkRatio = dark.toFloat() / samples
-        return if (paleRatio >= 0.27f && blueRatio >= 0.60f && darkRatio in 0.04f..0.23f) "volibear" else null
+
+        // Firma calibrada con el avatar real del 10º pick rival:
+        // pelaje blanco/plata, dominante fría y sombra de hocico. Los límites
+        // son deliberadamente tolerantes a compresión, escalado y aro rojo.
+        val paleSilverCold = paleRatio >= 0.23f && blueRatio >= 0.58f
+        val balancedShadow = darkRatio in 0.03f..0.28f
+        return if (paleSilverCold && balancedShadow && blueRatio - paleRatio >= 0.30f) {
+            "volibear"
+        } else {
+            null
+        }
     }
 
     /**
@@ -722,11 +734,22 @@ object LiteRTVisionClassifier {
             // La firma fuerte de pelaje claro y tonos fríos corrige el ranking del retrato
             // de Volibear cuando el embedding genérico lo confunde con Pantheon.
             val adjustedSimilarity = if (visualHint == "volibear" && champ.id == "volibear") {
-                max(similarity, 0.98f)
+                max(similarity, 0.995f)
             } else {
                 similarity
             }
             candidateScores.add(Pair(champ, adjustedSimilarity))
+        }
+
+        // La imagen del 10º pick puede llegar antes que el índice de assets esté
+        // completo. En ese caso el campeón visualmente identificado no debe
+        // desaparecer del top 5 por carecer de embedding cacheado.
+        if (visualHint == "volibear" && !confirmedChampionIds.contains("volibear")) {
+            val volibear = allChamps.firstOrNull { it.id == "volibear" }
+            if (volibear != null && candidateScores.none { it.first.id == "volibear" }) {
+                candidateScores.add(volibear to 0.995f)
+                AppLogger.d(TAG, "Firma visual del 10º pick incorporó Volibear al ranking sin depender de OCR ni del índice de assets")
+            }
         }
 
         if (candidateScores.isEmpty()) {
