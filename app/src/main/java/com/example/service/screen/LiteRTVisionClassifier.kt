@@ -570,6 +570,56 @@ object LiteRTVisionClassifier {
     }
 
     /**
+     * Firma visual conservadora para el retrato de Volibear:
+     * pelaje claro/plata con dominante fría dentro del círculo del avatar.
+     * No confirma por sí sola: solo desempata el catálogo antes de exigir
+     * umbral y frames estables.
+     */
+    private fun detectVisualChampionHint(bitmap: Bitmap): String? {
+        val width = bitmap.width
+        val height = bitmap.height
+        if (width < 16 || height < 16) return null
+
+        val cx = width / 2f
+        val cy = height / 2f
+        val radius = min(cx, cy) * 0.44f
+        val radiusSq = radius * radius
+        var samples = 0
+        var paleCold = 0
+        var blueDominant = 0
+        var dark = 0
+
+        val step = max(1, min(width, height) / 40)
+        for (y in 0 until height step step) {
+            for (x in 0 until width step step) {
+                val dx = x - cx
+                val dy = y - cy
+                if (dx * dx + dy * dy > radiusSq) continue
+
+                val px = bitmap.getPixel(x, y)
+                val r = Color.red(px) / 255f
+                val g = Color.green(px) / 255f
+                val b = Color.blue(px) / 255f
+                val maxChannel = max(r, max(g, b))
+                val minChannel = min(r, min(g, b))
+                val saturation = if (maxChannel > 0.001f) (maxChannel - minChannel) / maxChannel else 0f
+                val luminance = 0.299f * r + 0.587f * g + 0.114f * b
+
+                samples++
+                if (luminance > 0.45f && saturation < 0.34f && r > 0.38f && g > 0.38f && b > 0.38f) paleCold++
+                if (b > r + 0.05f && g > r + 0.01f) blueDominant++
+                if (luminance < 0.22f) dark++
+            }
+        }
+
+        if (samples == 0) return null
+        val paleRatio = paleCold.toFloat() / samples
+        val blueRatio = blueDominant.toFloat() / samples
+        val darkRatio = dark.toFloat() / samples
+        return if (paleRatio >= 0.18f && blueRatio >= 0.50f && darkRatio < 0.24f) "volibear" else null
+    }
+
+    /**
      * Ejecuta el análisis del 10º Pick con Google MediaPipe / LiteRT On-Device.
      * 
      * Soporta ejecución continua en vivo para el Visor de Depuración:
@@ -657,6 +707,7 @@ object LiteRTVisionClassifier {
 
         // Extraer el embedding tensor de 136 dimensiones del recorte actual
         val inputEmbedding = extractTensorEmbedding(cropBitmap)
+        val visualHint = detectVisualChampionHint(cropBitmap)
 
         // Evaluar contra todos los campeones no tomados
         val allChamps = WildRiftRepository.champions
@@ -668,7 +719,14 @@ object LiteRTVisionClassifier {
 
             val cachedEmbedding = championEmbeddingCache[champ.id] ?: continue
             val similarity = cosineSimilarity(inputEmbedding, cachedEmbedding)
-            candidateScores.add(Pair(champ, similarity))
+            // La firma de pelaje claro y tonos fríos evita que un retrato de Volibear
+            // termine confundido con Pantheon cuando el nombre aún no está visible.
+            val adjustedSimilarity = if (visualHint == "volibear" && champ.id == "volibear") {
+                (similarity + 0.12f).coerceAtMost(1.0f)
+            } else {
+                similarity
+            }
+            candidateScores.add(Pair(champ, adjustedSimilarity))
         }
 
         if (candidateScores.isEmpty()) {
