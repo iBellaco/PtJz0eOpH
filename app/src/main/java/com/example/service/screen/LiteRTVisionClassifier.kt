@@ -589,9 +589,44 @@ object LiteRTVisionClassifier {
         confirmedChampionIds: Set<String>,
         confirmedPicksCount: Int,
         slotIndex: Int = 4,
-        context: Context? = null
+        context: Context? = null,
+        confirmedTargetChampion: Champion? = null,
+        allowVisualConfirmation: Boolean = true
     ): Pair<Champion, Int>? = withContext(Dispatchers.Default) {
         val slotDesc = if (isAlly) "Aliado 5 (10º Pick)" else "Rival 5 (10º Pick)"
+
+        // Un nombre ya leido no debe competir de nuevo contra similitudes de retratos.
+        if (confirmedTargetChampion != null) {
+            resetStabilityTracker()
+            val persistentCrop = try {
+                cropBitmap?.takeUnless { it.isRecycled }?.copy(Bitmap.Config.ARGB_8888, false)
+            } catch (_: Throwable) { null }
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.COMPLETED,
+                pickedChampion = confirmedTargetChampion,
+                confidencePercent = 100,
+                decisionReason = "Campeon conservado por OCR o confirmacion previa: ${confirmedTargetChampion.name}",
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                cropBitmap = persistentCrop,
+                isConfirmed = true,
+                requiredStableFrames = 0,
+                minConfidenceThreshold = getEffectiveThreshold(context)
+            )
+            return@withContext Pair(confirmedTargetChampion, 100)
+        }
+
+        if (!allowVisualConfirmation) {
+            resetStabilityTracker()
+            _reportFlow.value = LiteRTInferenceReport(
+                status = EngineStatus.WAITING_FOR_TENTH_PICK,
+                decisionReason = "Calle aliada visible: esperando nombre de campeon",
+                slotDescription = slotDesc,
+                evaluatedPicksCount = confirmedPicksCount,
+                minConfidenceThreshold = getEffectiveThreshold(context)
+            )
+            return@withContext null
+        }
 
         // Si no hay recorte válido disponible:
         if (cropBitmap == null || cropBitmap.isRecycled || cropBitmap.width < 16 || cropBitmap.height < 16) {
@@ -661,7 +696,8 @@ object LiteRTVisionClassifier {
 
         val candidateReports = top5.mapIndexed { index, pair ->
             val prob = probabilities[index]
-            val confPct = ((pair.second * 0.7f + prob * 0.3f) * 100).toInt().coerceIn(1, 99)
+            // Mostrar la misma similitud que se compara con el umbral configurado.
+            val confPct = (pair.second * 100).toInt().coerceIn(0, 100)
             LiteRTCandidateScore(
                 champion = pair.first,
                 similarityScore = pair.second,
