@@ -417,6 +417,7 @@ object DraftVisionScanner {
         val allyOcrChampions = Array<Champion?>(5) { null }
         val enemyOcrChampions = Array<Champion?>(5) { null }
         val textDiagnosticsList = mutableListOf<TextBlockDiagnostic>()
+        val targetedAllyChampions = Array<Champion?>(5) { null }
 
         // -----------------------------------------------------------------------------------------
         // PASO 1: OCR DIRECTO CON MÁXIMA FIDELIDAD ÓPTICA
@@ -438,6 +439,36 @@ object DraftVisionScanner {
                 recognizer.process(InputImage.fromBitmap(ocrBitmap, 0)).await()
             } finally {
                 if (ocrBitmap !== bitmap) ocrBitmap.recycle()
+            }
+
+            // A short champion name such as Vi is often lost in full-screen OCR.
+            // Read only the name band of each ally slot at a larger scale.
+            for (i in 0..4) {
+                val y = (height * calib.allySlotYRatios[i]).toInt()
+                val left = (width * (calib.allyAvatarCenterX + 0.035f)).toInt().coerceIn(0, width - 1)
+                val right = (width * calib.allyOcrMaxX).toInt().coerceIn(left + 1, width)
+                val top = (y - height * 0.075f).toInt().coerceIn(0, height - 1)
+                val bottom = (y + height * 0.075f).toInt().coerceIn(top + 1, height)
+                var crop: Bitmap? = null
+                var scaled: Bitmap? = null
+                try {
+                    crop = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
+                    scaled = Bitmap.createScaledBitmap(crop, (crop.width * 3).coerceAtMost(1400), (crop.height * 3).coerceAtMost(500), true)
+                    val slotText = recognizer.process(InputImage.fromBitmap(scaled, 0)).await()
+                    for (line in slotText.textBlocks.flatMap { it.lines }) {
+                        val candidate = ChampionNameResolver.findChampionInText(line.text, allChamps)
+                        if (candidate != null) {
+                            targetedAllyChampions[i] = candidate
+                            freshAllyChampions[i] = candidate
+                            break
+                        }
+                    }
+                } catch (_: Throwable) {
+                    // Full-screen OCR remains the fallback for this slot.
+                } finally {
+                    try { if (scaled != null && scaled !== crop) scaled.recycle() } catch (_: Throwable) {}
+                    try { crop?.recycle() } catch (_: Throwable) {}
+                }
             }
 
             // Detección proactiva de Clasificatoria Legendaria en pantalla completa
@@ -647,7 +678,7 @@ object DraftVisionScanner {
                 val entries = allySlotTexts[i]
 
                 var detectedRoleInSlot: LaneRole? = null
-                var detectedChampInSlot: Champion? = null
+                var detectedChampInSlot: Champion? = targetedAllyChampions[i]
                 var isSlotShowingLane = false
                 val summonerCandidates = mutableListOf<String>()
 
@@ -660,8 +691,8 @@ object DraftVisionScanner {
                     //    Bajo ninguna circunstancia debe bloquearse un campeón en este slot mientras el nombre de la calle siga visible.
                     // 3) Cuando ya NO diga el nombre de la calle y en su lugar aparezca el nombre del campeón, entonces se bloquea ese slot con ese campeón.
                     
-                    // PASO 1: Verificar si alguna línea del slot es el nombre de su calle asignada
-                    for ((line, box) in entries) {
+                    // Un campeón visible tiene prioridad sobre cualquier etiqueta de línea del mismo recorte.
+                    if (detectedChampInSlot == null) for ((line, box) in entries) {
                         if (DraftValidationLayer.isNoiseText(line)) continue
                         val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
                         val role = DraftValidationLayer.parseRoleFromText(strippedLine)
@@ -698,7 +729,7 @@ object DraftVisionScanner {
                     }
 
                     // PASO 2: Solo si NO se detectó ningún nombre de calle visible en el slot, buscar nombre de campeón
-                    if (detectedRoleInSlot == null) {
+                    if (detectedRoleInSlot == null && detectedChampInSlot == null) {
                         for ((line, box) in entries) {
                             if (DraftValidationLayer.isNoiseText(line)) continue
                             val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
@@ -795,6 +826,10 @@ object DraftVisionScanner {
                     }
                 }
 
+                if (targetedAllyChampions[i] != null) {
+                    AppLogger.d(TAG, "OCR dirigido Aliado Slot $i -> ${targetedAllyChampions[i]?.name}")
+                }
+
                 // Guardar nombre de invocador detectado al instante
                 if (summonerCandidates.isNotEmpty() && !isLegendaryRanked) {
                     val candidateName = summonerCandidates.first()
@@ -847,6 +882,17 @@ object DraftVisionScanner {
                     slot.champion = null
                     slot.confidencePercent = 0
                     slot.isLikelyUnpicked = true
+                }
+            }
+
+            // Un campeón confirmado por el lado aliado no puede quedar vivo en la memoria rival.
+            val currentAllyIds = allySlotConfirmedChampions.mapNotNull { it?.id }.toSet()
+            for (i in 0..4) {
+                if (currentAllyIds.contains(enemySlotConfirmedChampions[i]?.id)) {
+                    enemySlotConfirmedChampions[i] = null
+                    enemyOcrChampions[i] = null
+                    enemySlots[i].champion = null
+                    enemySlots[i].isLikelyUnpicked = true
                 }
             }
 

@@ -266,6 +266,12 @@ object ChampionNameResolver {
         val compact = normalizeCompact(trimmed)
         val compactStripped = normalizeCompact(stripped)
 
+        // OCR de nombres de dos letras puede confundir la "i" minúscula con "l" o "1".
+        // El alias queda limitado a estas dos lecturas para no convertir ruido corto en campeón.
+        if (compact == "vl" || compact == "v1" || compactStripped == "vl" || compactStripped == "v1") {
+            safeChamps.find { it.id.equals("vi", ignoreCase = true) }?.let { return it }
+        }
+
         // 1. Coincidencia directa por mapa de nombres canónicos oficiales (Cadena completa o con icono limpio)
         for (c in listOf(cleanStripped, compactStripped, clean, compact)) {
             if (c.isNotBlank()) {
