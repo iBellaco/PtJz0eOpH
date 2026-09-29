@@ -117,7 +117,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.ui.theme.TierAColor
 import com.example.model.LaneRole
-import com.example.ui.components.BugReportFeedbackDialog
 import com.example.ui.components.AdminFeedbackBottomSheet
 import com.example.ui.components.HextechOrbButton
 import com.example.ui.theme.DangerRed
@@ -175,7 +174,6 @@ fun MainDraftingScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     var isAssistantActive by remember { mutableStateOf(SystemPermissionHelper.isServiceRunning(context)) }
     var showPermissionDialog by remember { mutableStateOf(false) }
-    var showBugReportDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -252,9 +250,8 @@ fun MainDraftingScreen(
     }
 
     // Si hay un diálogo o modal abierto en la pantalla de inicio, el botón atrás lo cierra primero
-    BackHandler(enabled = showPermissionDialog || showBugReportDialog) {
+    BackHandler(enabled = showPermissionDialog) {
         if (showPermissionDialog) showPermissionDialog = false
-        if (showBugReportDialog) showBugReportDialog = false
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -330,39 +327,20 @@ fun MainDraftingScreen(
                             ) {
                                 Text("🎨", fontSize = 18.sp)
                             }
-
-                            Spacer(modifier = Modifier.width(6.dp))
-
-                            IconButton(
-                                onClick = { showLanguageDialog = true },
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(HextechSurface)
-                                    .border(1.dp, HextechGold.copy(alpha = 0.6f), CircleShape)
-                                    .size(38.dp)
-                                    .testTag("nav_language_button")
-                            ) {
-                                Text(if (currentLanguage == "pt") "🇧🇷" else "🇲🇽", fontSize = 18.sp)
-                            }
                         }
                     },
                     actions = {
                         IconButton(
-                            onClick = { showBugReportDialog = true },
+                            onClick = { showLanguageDialog = true },
                             modifier = Modifier
                                 .padding(end = 4.dp)
                                 .clip(CircleShape)
                                 .background(HextechSurface)
                                 .border(1.dp, HextechGold.copy(alpha = 0.6f), CircleShape)
                                 .size(38.dp)
-                                .testTag("nav_bug_report_button")
+                                .testTag("nav_language_button")
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.BugReport,
-                                contentDescription = "Reportar Bugs o Sugerencias",
-                                tint = HextechGold,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Text(if (currentLanguage == "pt") "🇧🇷" else "🇲🇽", fontSize = 18.sp)
                         }
 
                         // User Avatar Profile button
@@ -385,8 +363,6 @@ fun MainDraftingScreen(
                                 )
                             }
                         }
-
-
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
                 )
@@ -787,11 +763,7 @@ fun MainDraftingScreen(
             )
         }
 
-        if (showBugReportDialog) {
-            BugReportFeedbackDialog(
-                onDismiss = { showBugReportDialog = false }
-            )
-        }
+
 
 
 

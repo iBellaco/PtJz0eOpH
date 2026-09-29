@@ -71,6 +71,7 @@ import com.example.util.AppUpdateManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -567,6 +568,17 @@ fun DashboardScreen(
                             val effectiveUnreadCount = unreadCount
                             val showBadge = effectiveUnreadCount > 0
 
+                            val infiniteTransition = rememberInfiniteTransition(label = "bellPulseAnim")
+                            val bellScale by infiniteTransition.animateFloat(
+                                initialValue = 0.90f,
+                                targetValue = 1.15f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "bellScale"
+                            )
+
                             BadgedBox(
                                 badge = {
                                     if (showBadge) {
@@ -579,7 +591,22 @@ fun DashboardScreen(
                                     }
                                 }
                             ) {
-                                Icon(Icons.Default.Person, contentDescription = tr("Usuario"))
+                                val iconModifier = if (showBadge) {
+                                    Modifier
+                                        .size(24.dp)
+                                        .graphicsLayer {
+                                            scaleX = bellScale
+                                            scaleY = bellScale
+                                        }
+                                } else {
+                                    Modifier.size(24.dp)
+                                }
+
+                                Icon(
+                                    imageVector = if (showBadge) Icons.Default.Notifications else Icons.Default.Person,
+                                    contentDescription = if (showBadge) tr("Notificaciones") else tr("Usuario"),
+                                    modifier = iconModifier
+                                )
                             }
                         },
                         label = { Text(tr("Usuario")) },
