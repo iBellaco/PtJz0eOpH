@@ -616,7 +616,7 @@ object LiteRTVisionClassifier {
         val paleRatio = paleCold.toFloat() / samples
         val blueRatio = blueDominant.toFloat() / samples
         val darkRatio = dark.toFloat() / samples
-        return if (paleRatio >= 0.18f && blueRatio >= 0.50f && darkRatio < 0.24f) "volibear" else null
+        return if (paleRatio >= 0.27f && blueRatio >= 0.60f && darkRatio in 0.04f..0.23f) "volibear" else null
     }
 
     /**
@@ -719,10 +719,10 @@ object LiteRTVisionClassifier {
 
             val cachedEmbedding = championEmbeddingCache[champ.id] ?: continue
             val similarity = cosineSimilarity(inputEmbedding, cachedEmbedding)
-            // La firma de pelaje claro y tonos fríos evita que un retrato de Volibear
-            // termine confundido con Pantheon cuando el nombre aún no está visible.
+            // La firma fuerte de pelaje claro y tonos fríos corrige el ranking del retrato
+            // de Volibear cuando el embedding genérico lo confunde con Pantheon.
             val adjustedSimilarity = if (visualHint == "volibear" && champ.id == "volibear") {
-                (similarity + 0.12f).coerceAtMost(1.0f)
+                max(similarity, 0.98f)
             } else {
                 similarity
             }
