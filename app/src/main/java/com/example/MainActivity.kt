@@ -564,8 +564,8 @@ fun DashboardScreen(
                             val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                             val isLogged = authUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(authUser)
 
-                            val effectiveUnreadCount = if (isLogged) unreadCount else 0
-                            val showBadge = isLogged && (effectiveUnreadCount > 0)
+                            val effectiveUnreadCount = unreadCount
+                            val showBadge = effectiveUnreadCount > 0
 
                             BadgedBox(
                                 badge = {

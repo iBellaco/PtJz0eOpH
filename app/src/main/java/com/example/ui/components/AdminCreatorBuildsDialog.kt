@@ -1172,14 +1172,17 @@ fun CreatorProfileDialog(
         customBuilds.filter { it.creatorName.equals(entry.name, ignoreCase = true) }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false
+        )
+    ) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.85f),
+            modifier = Modifier.fillMaxSize(),
             color = HextechSurface,
-            shape = RoundedCornerShape(16.dp),
-            border = BorderStroke(1.5.dp, HextechGold)
+            shape = RoundedCornerShape(0.dp),
+            border = null
         ) {
             Column(
                 modifier = Modifier
@@ -1262,39 +1265,54 @@ fun CreatorProfileDialog(
 
                 // Botón de suscripción con verificación de límites
                 if (!isSubscribed) {
-                    Button(
-                        onClick = {
-                            val limits = CreatorSubscriptionManager.getCreatorLimits(entry.role)
-                            if (entry.subscribersCount >= limits.maxSubscribers) {
-                                CreatorSubscriptionManager.sendLimitExceededNotification(
-                                    creatorUid = entry.userId,
-                                    creatorName = entry.name
-                                )
-                                Toast.makeText(
-                                    context,
-                                    "El creador alcanzó el límite de su plan (${limits.maxSubscribers} subs). Se le envió una notificación para mejorar su plan.",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            } else {
-                                showSubscribeConfirm = true
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        androidx.compose.foundation.Image(
-                            painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_orange_essence),
-                            contentDescription = "Esencia Naranja",
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Suscribirse por ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN",
-                            color = HextechDarkBg,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
+                        OutlinedButton(
+                            onClick = onDismiss,
+                            modifier = Modifier.weight(0.35f),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, Color.Gray)
+                        ) {
+                            Text(tr("Cancelar"), color = Color.LightGray, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = {
+                                val limits = CreatorSubscriptionManager.getCreatorLimits(entry.role)
+                                if (entry.subscribersCount >= limits.maxSubscribers) {
+                                    CreatorSubscriptionManager.sendLimitExceededNotification(
+                                        creatorUid = entry.userId,
+                                        creatorName = entry.name
+                                    )
+                                    Toast.makeText(
+                                        context,
+                                        "El creador alcanzó el límite de su plan (${limits.maxSubscribers} subs). Se le envió una notificación para mejorar su plan.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    showSubscribeConfirm = true
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(0.65f)
+                        ) {
+                            androidx.compose.foundation.Image(
+                                painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_orange_essence),
+                                contentDescription = "Esencia Naranja",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = tr("Suscribirse") + " (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)",
+                                color = HextechDarkBg,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
                 } else {
                     Column(

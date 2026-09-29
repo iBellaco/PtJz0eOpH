@@ -122,6 +122,7 @@ fun SubscriptionPlansBottomSheet(
                 period = "/ mes",
                 isPopular = false,
                 features = premiumFeatures,
+                onCancel = onDismiss,
                 onSubscribe = {
                     Toast.makeText(context, "Servicio de suscripción temporalmente fuera de servicio", Toast.LENGTH_LONG).show()
                 }
@@ -136,6 +137,7 @@ fun SubscriptionPlansBottomSheet(
                 period = "/ año",
                 isPopular = true,
                 features = premiumFeatures,
+                onCancel = onDismiss,
                 onSubscribe = {
                     Toast.makeText(context, "Servicio de suscripción temporalmente fuera de servicio", Toast.LENGTH_LONG).show()
                 }
@@ -160,6 +162,7 @@ private fun PremiumPlanCard(
     period: String,
     isPopular: Boolean = false,
     features: List<FeatureItem>,
+    onCancel: () -> Unit,
     onSubscribe: () -> Unit
 ) {
     val gradientBrush = Brush.linearGradient(
@@ -255,24 +258,46 @@ private fun PremiumPlanCard(
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
-                    HextechAnimatedButton(
-                        onClick = onSubscribe,
-                        backgroundBrush = Brush.horizontalGradient(listOf(HextechGold, HextechGoldLight)),
-                        borderColor = HextechCyan,
-                        glowColor = HextechGold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(54.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        enableShimmer = true,
-                        enablePulse = true
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = tr("Suscribirse Ahora"),
-                            color = HextechDarkBg,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
+                        OutlinedButton(
+                            onClick = onCancel,
+                            modifier = Modifier
+                                .weight(0.35f)
+                                .height(54.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            border = BorderStroke(1.dp, Color.Gray),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = tr("Cancelar"),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        HextechAnimatedButton(
+                            onClick = onSubscribe,
+                            backgroundBrush = Brush.horizontalGradient(listOf(HextechGold, HextechGoldLight)),
+                            borderColor = HextechCyan,
+                            glowColor = HextechGold,
+                            modifier = Modifier
+                                .weight(0.65f)
+                                .height(54.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            enableShimmer = true,
+                            enablePulse = true
+                        ) {
+                            Text(
+                                text = tr("Suscribirse"),
+                                color = HextechDarkBg,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
                     }
                 }
             }

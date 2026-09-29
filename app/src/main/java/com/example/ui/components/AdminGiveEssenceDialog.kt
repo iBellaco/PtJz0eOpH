@@ -382,64 +382,91 @@ fun AdminGiveEssenceDialog(
                             val parsed = amount.toLongOrNull()
                             if (parsed != null && parsed > 0) {
                                 isProcessing = true
-                                val effectiveDelta = if (isAddition) parsed else -parsed
                                 val fieldName = if (selectedCurrency == "BLUE") "blueEssence" else "orangeEssence"
                                 val currTag = if (selectedCurrency == "BLUE") "EA" else "EN"
                                 val status = if (isAddition) "Añadido por Administrador" else "Descontado por Administrador"
-                                val amountStr = "${if (isAddition) "+" else "-"}$parsed $currTag"
 
                                 val db = FirebaseFirestore.getInstance()
                                 val userDocRef = db.collection("users").document(userUid)
 
-                                userDocRef.update(fieldName, FieldValue.increment(effectiveDelta))
-                                    .addOnSuccessListener {
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            SubscriptionHistoryManager.addRecordForUser(
-                                                uid = userUid,
-                                                durationMillis = 0L,
-                                                planName = "Ajuste de Administrador",
-                                                status = status,
-                                                amount = amountStr
-                                            )
-                                        }
+                                userDocRef.get().addOnSuccessListener { documentSnapshot ->
+                                    val currentBlue = documentSnapshot.getLong("blueEssence") ?: 0L
+                                    val currentOrange = documentSnapshot.getLong("orangeEssence") ?: 0L
+                                    val currentBalance = if (selectedCurrency == "BLUE") currentBlue else currentOrange
 
-                                        // Optional Inbox Notification Message
-                                        if (notifyUser && effectiveBody.isNotBlank()) {
-                                            val messageId = UUID.randomUUID().toString()
-                                            val messageData = hashMapOf<String, Any>(
-                                                "id" to messageId,
-                                                "title" to effectiveTitle,
-                                                "content" to effectiveBody,
-                                                "tag" to if (isAddition) "oferta" else "aviso",
-                                                "timestamp" to System.currentTimeMillis(),
-                                                "isRead" to false
-                                            )
-
-                                            userDocRef.collection("messages").document(messageId)
-                                                .set(messageData)
-                                                .addOnCompleteListener {
-                                                    userDocRef.set(
-                                                        hashMapOf(
-                                                            "hasUnreadMessages" to true,
-                                                            "unreadMessagesCount" to FieldValue.increment(1),
-                                                            "privateMessages" to FieldValue.arrayUnion(messageData)
-                                                        ),
-                                                        com.google.firebase.firestore.SetOptions.merge()
-                                                    ).addOnCompleteListener {
-                                                        isProcessing = false
-                                                        onSuccess()
-                                                        onDismiss()
-                                                    }
-                                                }
+                                    val finalDelta = if (isAddition) {
+                                        parsed
+                                    } else {
+                                        if (currentBalance <= 0L) {
+                                            0L
+                                        } else if (currentBalance < parsed) {
+                                            -currentBalance
                                         } else {
-                                            isProcessing = false
-                                            onSuccess()
-                                            onDismiss()
+                                            -parsed
                                         }
                                     }
-                                    .addOnFailureListener {
+
+                                    if (finalDelta == 0L && !isAddition) {
                                         isProcessing = false
+                                        onDismiss()
+                                        return@addOnSuccessListener
                                     }
+
+                                    val actualDeltaText = if (finalDelta > 0) "+$finalDelta" else "$finalDelta"
+                                    val amountStr = "$actualDeltaText $currTag"
+
+                                    userDocRef.update(fieldName, FieldValue.increment(finalDelta))
+                                        .addOnSuccessListener {
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                SubscriptionHistoryManager.addRecordForUser(
+                                                    uid = userUid,
+                                                    durationMillis = 0L,
+                                                    planName = "Ajuste de Administrador",
+                                                    status = status,
+                                                    amount = amountStr
+                                                )
+                                            }
+
+                                            // Optional Inbox Notification Message
+                                            if (notifyUser && effectiveBody.isNotBlank()) {
+                                                val messageId = UUID.randomUUID().toString()
+                                                val messageData = hashMapOf<String, Any>(
+                                                    "id" to messageId,
+                                                    "title" to effectiveTitle,
+                                                    "content" to effectiveBody,
+                                                    "tag" to if (isAddition) "oferta" else "aviso",
+                                                    "timestamp" to System.currentTimeMillis(),
+                                                    "isRead" to false
+                                                )
+
+                                                userDocRef.collection("messages").document(messageId)
+                                                    .set(messageData)
+                                                    .addOnCompleteListener {
+                                                        userDocRef.set(
+                                                            hashMapOf(
+                                                                "hasUnreadMessages" to true,
+                                                                "unreadMessagesCount" to FieldValue.increment(1),
+                                                                "privateMessages" to FieldValue.arrayUnion(messageData)
+                                                            ),
+                                                            com.google.firebase.firestore.SetOptions.merge()
+                                                        ).addOnCompleteListener {
+                                                            isProcessing = false
+                                                            onSuccess()
+                                                            onDismiss()
+                                                        }
+                                                    }
+                                            } else {
+                                                isProcessing = false
+                                                onSuccess()
+                                                onDismiss()
+                                            }
+                                        }
+                                        .addOnFailureListener {
+                                            isProcessing = false
+                                        }
+                                }.addOnFailureListener {
+                                    isProcessing = false
+                                }
                             }
                         },
                         enabled = !isProcessing && amount.isNotEmpty(),

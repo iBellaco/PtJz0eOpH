@@ -118,7 +118,8 @@ class AuthViewModel : ViewModel() {
                     if (!snap.exists()) {
                         userData["role"] = if ((firebaseUser.email ?: "").equals("barbadiego695@gmail.com", true)) "admin" else "user"
                         userData["createdAt"] = System.currentTimeMillis()
-                        userData["blueEssences"] = 100L
+                        userData["blueEssence"] = 100L
+                        userData["orangeEssence"] = 10L
                         userDocRef.set(userData, com.google.firebase.firestore.SetOptions.merge()).await()
                     } else {
                         userDocRef.update(
@@ -184,7 +185,8 @@ class AuthViewModel : ViewModel() {
                         "name" to _username.value.trim(),
                         "role" to if ((firebaseUser.email ?: "").equals("barbadiego695@gmail.com", true)) "admin" else "user",
                         "createdAt" to System.currentTimeMillis(),
-                        "blueEssences" to 100L,
+                        "blueEssence" to 100L,
+                        "orangeEssence" to 10L,
                         "last_active" to System.currentTimeMillis(),
                         "is_online" to true
                     )

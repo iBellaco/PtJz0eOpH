@@ -566,21 +566,24 @@ object SubscriptionManager {
         val db = FirebaseFirestore.getInstance()
         try {
             val userRef = db.collection("users").document(user.uid)
-            userRef.update("blueEssence", FieldValue.increment(amount)).await()
-            _blueEssence.value = _blueEssence.value + amount
+            val currentBlue = _blueEssence.value
+            val finalAmount = if (amount < 0 && currentBlue + amount < 0) -currentBlue else amount
+            if (finalAmount == 0L) return
+            userRef.update("blueEssence", FieldValue.increment(finalAmount)).await()
+            _blueEssence.value = (currentBlue + finalAmount).coerceAtLeast(0L)
 
             val isSub = reason?.contains("Suscrip", ignoreCase = true) == true
             val isAdmin = reason?.contains("Admin", ignoreCase = true) == true
-            val effectiveReason = reason ?: if (amount > 0) "Recarga de Esencia Azul" else "Consumo de Esencia Azul"
+            val effectiveReason = reason ?: if (finalAmount > 0) "Recarga de Esencia Azul" else "Consumo de Esencia Azul"
             val status = when {
-                isSub && amount < 0 -> "Descontado por Suscripción"
-                isSub && amount > 0 -> "Añadido por Suscripción"
-                isAdmin && amount < 0 -> "Descontado por Administrador"
-                isAdmin && amount > 0 -> "Añadido por Administrador"
-                amount > 0 -> "Añadido"
+                isSub && finalAmount < 0 -> "Descontado por Suscripción"
+                isSub && finalAmount > 0 -> "Añadido por Suscripción"
+                isAdmin && finalAmount < 0 -> "Descontado por Administrador"
+                isAdmin && finalAmount > 0 -> "Añadido por Administrador"
+                finalAmount > 0 -> "Añadido"
                 else -> "Descontado"
             }
-            val amountStr = if (amount > 0) "+$amount EA" else "$amount EA"
+            val amountStr = if (finalAmount > 0) "+$finalAmount EA" else "$finalAmount EA"
             SubscriptionHistoryManager.addRecordForUser(user.uid, 0L, effectiveReason, status, amountStr)
         } catch (e: Exception) {
             Log.e("SubscriptionManager", "Error incrementing blue essence", e)
@@ -593,21 +596,24 @@ object SubscriptionManager {
         val db = FirebaseFirestore.getInstance()
         try {
             val userRef = db.collection("users").document(user.uid)
-            userRef.update("orangeEssence", FieldValue.increment(amount)).await()
-            _orangeEssence.value = _orangeEssence.value + amount
+            val currentOrange = _orangeEssence.value
+            val finalAmount = if (amount < 0 && currentOrange + amount < 0) -currentOrange else amount
+            if (finalAmount == 0L) return
+            userRef.update("orangeEssence", FieldValue.increment(finalAmount)).await()
+            _orangeEssence.value = (currentOrange + finalAmount).coerceAtLeast(0L)
 
             val isSub = reason?.contains("Suscrip", ignoreCase = true) == true
             val isAdmin = reason?.contains("Admin", ignoreCase = true) == true
-            val effectiveReason = reason ?: if (amount > 0) "Recarga de Esencia Naranja" else "Consumo de Esencia Naranja"
+            val effectiveReason = reason ?: if (finalAmount > 0) "Recarga de Esencia Naranja" else "Consumo de Esencia Naranja"
             val status = when {
-                isSub && amount < 0 -> "Descontado por Suscripción"
-                isSub && amount > 0 -> "Añadido por Suscripción"
-                isAdmin && amount < 0 -> "Descontado por Administrador"
-                isAdmin && amount > 0 -> "Añadido por Administrador"
-                amount > 0 -> "Añadido"
+                isSub && finalAmount < 0 -> "Descontado por Suscripción"
+                isSub && finalAmount > 0 -> "Añadido por Suscripción"
+                isAdmin && finalAmount < 0 -> "Descontado por Administrador"
+                isAdmin && finalAmount > 0 -> "Añadido por Administrador"
+                finalAmount > 0 -> "Añadido"
                 else -> "Descontado"
             }
-            val amountStr = if (amount > 0) "+$amount EN" else "$amount EN"
+            val amountStr = if (finalAmount > 0) "+$finalAmount EN" else "$finalAmount EN"
             SubscriptionHistoryManager.addRecordForUser(user.uid, 0L, effectiveReason, status, amountStr)
         } catch (e: Exception) {
             Log.e("SubscriptionManager", "Error incrementing orange essence", e)

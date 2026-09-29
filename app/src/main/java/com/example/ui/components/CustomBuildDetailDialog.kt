@@ -279,33 +279,50 @@ fun CustomBuildDetailDialog(
                             }
                         }
 
-                        Button(
-                            onClick = {
-                                showSubscribeConfirm = true
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(46.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = HextechGold,
-                                contentColor = Color.Black
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            OutlinedButton(
+                                onClick = onDismiss,
+                                modifier = Modifier
+                                    .weight(0.35f)
+                                    .height(46.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                border = BorderStroke(1.dp, Color.Gray)
                             ) {
-                                androidx.compose.foundation.Image(
-                                    painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_orange_essence),
-                                    contentDescription = "Esencia Naranja",
-                                    modifier = Modifier.size(20.dp)
+                                Text(tr("Cancelar"), color = Color.LightGray, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
+
+                            Button(
+                                onClick = {
+                                    showSubscribeConfirm = true
+                                },
+                                modifier = Modifier
+                                    .weight(0.65f)
+                                    .height(46.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = HextechGold,
+                                    contentColor = Color.Black
                                 )
-                                Text(
-                                    text = "Suscribirse al Creador (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 13.sp
-                                )
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    androidx.compose.foundation.Image(
+                                        painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_orange_essence),
+                                        contentDescription = "Esencia Naranja",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = tr("Suscribirse") + " (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 12.sp,
+                                        maxLines = 1
+                                    )
+                                }
                             }
                         }
                     }
