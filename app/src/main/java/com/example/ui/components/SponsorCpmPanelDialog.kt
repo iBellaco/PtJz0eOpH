@@ -64,10 +64,10 @@ fun SponsorCpmPanelDialog(
     if (showBuyEssenceDialog) {
         BuyEssenceDialog(isAdmin = false, onDismiss = { showBuyEssenceDialog = false })
     }
-    
+
     // Lista local de anuncios pendientes (guardados en SharedPreferences para evitar que desaparezcan)
     val prefs = context.getSharedPreferences("sponsor_pending_ads", Context.MODE_PRIVATE)
-    var localPendingAds by remember { 
+    var localPendingAds by remember {
         mutableStateOf<List<AppNotice>>(
             try {
                 val json = prefs.getString("pending_ads", "[]") ?: "[]"
@@ -112,7 +112,7 @@ fun SponsorCpmPanelDialog(
         val localFiltered = localPendingAds.filter { it.sponsorEmail.equals(userEmail, true) || it.sponsorEmail.isBlank() }
         val remoteAdIds = remoteAds.map { it.id }.toSet()
         val combined = remoteAds + localFiltered.filter { it.id !in remoteAdIds }
-        
+
         // Conservar visibles durante 7 días después de haber expirado con contador regresivo de eliminación
         combined.filter { notice ->
             if (notice.expiresAtMillis > 0L) {
@@ -157,8 +157,8 @@ fun SponsorCpmPanelDialog(
     val activeAdsCount = remember(allNotices, currentMinute) {
         val nowCurrent = System.currentTimeMillis()
         val activePublicidadAds = allNotices.filter { notice ->
-            val isPubTag = notice.tag.equals("Publicidad", ignoreCase = true) || 
-                           notice.tag.equals("Ads", ignoreCase = true) || 
+            val isPubTag = notice.tag.equals("Publicidad", ignoreCase = true) ||
+                           notice.tag.equals("Ads", ignoreCase = true) ||
                            notice.tag.equals("PUBLICIDAD", ignoreCase = true)
             val isLive = notice.isApproved && notice.isEnabled && (notice.expiresAtMillis == 0L || notice.expiresAtMillis > nowCurrent)
             isPubTag && isLive
@@ -176,7 +176,7 @@ fun SponsorCpmPanelDialog(
 
     // El presupuesto se calcula de forma justa y accesible para una aplicación en crecimiento
     val autoBudget = remember(
-        selectedDurationUnit, 
+        selectedDurationUnit,
         durationValueInt,
         isHorizontalVideo,
         isVerticalVideo,
@@ -193,17 +193,17 @@ fun SponsorCpmPanelDialog(
             else -> 2.50
         }
         var total = unitPrice * durationValueInt
-        
+
         if (isHorizontalVideo || isVerticalVideo) {
             total += 1.00 * durationValueInt
         } else if (horizontalMediaInput.isNotBlank() || verticalMediaInput.isNotBlank()) {
             total += 0.50 * durationValueInt
         }
-        
+
         if (externalUrlInput.isNotBlank()) {
             total += 0.50 * durationValueInt
         }
-        
+
         // Más anuncios activos optimizan el costo en lugar de encarecerlo (eficiencia compartida de tráfico)
         val efficiencyDiscount = 1.0 / (1.0 + (activeAdsCount - 1) * 0.1)
         total *= efficiencyDiscount
@@ -218,7 +218,7 @@ fun SponsorCpmPanelDialog(
         if (uri == null) return@rememberLauncherForActivityResult
         val validation = NoticeMediaUtils.validateMediaForSlot(context, uri, isVerticalSlot = false)
         if (!validation.isValid) {
-            Toast.makeText(context, validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr(validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada"), Toast.LENGTH_LONG).show()
             return@rememberLauncherForActivityResult
         }
 
@@ -233,7 +233,7 @@ fun SponsorCpmPanelDialog(
             horizontalMediaInput = result
             isHorizontalVideo = isVideo
             isUploadingMedia = false
-            Toast.makeText(context, "Multimedia horizontal válida cargada (${validation.width}x${validation.height})", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr("Multimedia horizontal válida cargada (${validation.width}x${validation.height})"), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -244,7 +244,7 @@ fun SponsorCpmPanelDialog(
         if (uri == null) return@rememberLauncherForActivityResult
         val validation = NoticeMediaUtils.validateMediaForSlot(context, uri, isVerticalSlot = true)
         if (!validation.isValid) {
-            Toast.makeText(context, validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr(validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada"), Toast.LENGTH_LONG).show()
             return@rememberLauncherForActivityResult
         }
 
@@ -259,7 +259,7 @@ fun SponsorCpmPanelDialog(
             verticalMediaInput = result
             isVerticalVideo = isVideo
             isUploadingMedia = false
-            Toast.makeText(context, "Multimedia vertical válida cargada (${validation.width}x${validation.height})", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr("Multimedia vertical válida cargada (${validation.width}x${validation.height})"), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -309,7 +309,7 @@ fun SponsorCpmPanelDialog(
                         }
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                     }
                 }
 
@@ -326,7 +326,7 @@ fun SponsorCpmPanelDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Tus Anuncios (${myNotices.size})", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(com.example.util.tr("Tus Anuncios (${myNotices.size})"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Button(
                         onClick = {
                             titleInput = ""
@@ -413,7 +413,7 @@ fun SponsorCpmPanelDialog(
                         label = { Text(tr("Título del Anuncio * (Obligatorio)")) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = HextechGold, 
+                            focusedBorderColor = HextechGold,
                             unfocusedBorderColor = HextechSurfaceVariant,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White
@@ -448,7 +448,7 @@ fun SponsorCpmPanelDialog(
                                 ),
                                 border = BorderStroke(1.dp, parsedColor)
                             ) {
-                                Text(name, color = if (isSelected) HextechDarkBg else parsedColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr(name), color = if (isSelected) HextechDarkBg else parsedColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -456,7 +456,7 @@ fun SponsorCpmPanelDialog(
                     // Multimedia Horizontal (Banner/Video horizontal para inicio)
                     Text(tr("1. Multimedia Horizontal (Banner de Inicio):"), color = HextechCyan, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                     Text(tr("• Medidas recomendadas: 1920 x 1080 px (Relación 16:9)\n• Formatos: PNG, JPG/JPEG (máx 5 MB) o Video MP4 (máx 15s y 10 MB)"), color = TextSecondary, fontSize = 10.sp)
-                    
+
                     Button(
                         onClick = { horizontalPicker.launch(arrayOf("image/jpeg", "image/jpg", "image/png", "video/mp4")) },
                         modifier = Modifier.fillMaxWidth(),
@@ -466,7 +466,7 @@ fun SponsorCpmPanelDialog(
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = HextechGold)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (horizontalMediaInput.isBlank()) "Seleccionar desde Galería (Horizontal)" else "Cambiar Multimedia Horizontal", color = Color.White, fontSize = 12.sp)
+                        Text(com.example.util.tr(if (horizontalMediaInput.isBlank()) "Seleccionar desde Galería (Horizontal)" else "Cambiar Multimedia Horizontal"), color = Color.White, fontSize = 12.sp)
                     }
 
                     // Preview Horizontal
@@ -496,7 +496,7 @@ fun SponsorCpmPanelDialog(
                                 onClick = {
                                     horizontalMediaInput = ""
                                     isHorizontalVideo = false
-                                    Toast.makeText(context, "Multimedia horizontal eliminada", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Multimedia horizontal eliminada"), Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -505,7 +505,7 @@ fun SponsorCpmPanelDialog(
                                     .background(HextechDarkBg.copy(alpha = 0.85f), RoundedCornerShape(50))
                                     .border(1.dp, DangerRed, RoundedCornerShape(50))
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = "Borrar multimedia", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Borrar multimedia"), tint = DangerRed, modifier = Modifier.size(16.dp))
                             }
                         }
                     }
@@ -525,7 +525,7 @@ fun SponsorCpmPanelDialog(
                     ) {
                         Icon(Icons.Default.VideoLibrary, contentDescription = null, tint = HextechCyan)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (verticalMediaInput.isBlank()) "Seleccionar desde Galería (Vertical)" else "Cambiar Multimedia Vertical", color = Color.White, fontSize = 12.sp)
+                        Text(com.example.util.tr(if (verticalMediaInput.isBlank()) "Seleccionar desde Galería (Vertical)" else "Cambiar Multimedia Vertical"), color = Color.White, fontSize = 12.sp)
                     }
                     // Preview Vertical
                     if (verticalMediaInput.isNotBlank()) {
@@ -558,7 +558,7 @@ fun SponsorCpmPanelDialog(
                                     onClick = {
                                         verticalMediaInput = ""
                                         isVerticalVideo = false
-                                        Toast.makeText(context, "Multimedia vertical eliminada", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("Multimedia vertical eliminada"), Toast.LENGTH_SHORT).show()
                                     },
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
@@ -567,7 +567,7 @@ fun SponsorCpmPanelDialog(
                                         .background(HextechDarkBg.copy(alpha = 0.85f), RoundedCornerShape(50))
                                         .border(1.dp, DangerRed, RoundedCornerShape(50))
                                 ) {
-                                    Icon(Icons.Default.Close, contentDescription = "Borrar multimedia", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Borrar multimedia"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                 }
                             }
                         }
@@ -580,7 +580,7 @@ fun SponsorCpmPanelDialog(
                         label = { Text(tr("Enlace Web Externo (Opcional)")) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = HextechGold, 
+                            focusedBorderColor = HextechGold,
                             unfocusedBorderColor = HextechSurfaceVariant,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White
@@ -606,7 +606,7 @@ fun SponsorCpmPanelDialog(
                                 Text(tr("Calculado automáticamente (No modificable)"), color = HextechCyan, fontSize = 9.5.sp)
                             }
                             Text(
-                                text = "$$autoBudget USD",
+                                text = com.example.util.tr("$$autoBudget USD"),
                                 color = HextechGold,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
@@ -625,7 +625,7 @@ fun SponsorCpmPanelDialog(
                         Text(tr("Desglose del cálculo real y accesible:"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(tr("• Tarifa base justa (%s): USD %s").format(selectedDurationUnit, String.format(Locale.US, "%.2f", when (selectedDurationUnit) { "hour" -> 0.50; "day" -> 2.50; "week" -> 10.00; "month" -> 30.00; else -> 2.50 } * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
-                        
+
                         if (isHorizontalVideo || isVerticalVideo) {
                             Text(tr("• Costo de procesamiento multimedia: +$%s USD").format(String.format(Locale.US, "%.2f", 1.00 * durationValueInt)), color = TextSecondary, fontSize = 10.sp)
                         } else if (horizontalMediaInput.isNotBlank() || verticalMediaInput.isNotBlank()) {
@@ -641,16 +641,16 @@ fun SponsorCpmPanelDialog(
                         val estimatedBudgetFloat = autoBudget.toFloatOrNull() ?: 2.5f
                         val estimatedVisits = (estimatedBudgetFloat * 45).toInt().coerceAtLeast(15)
                         val estimatedClicks = (estimatedVisits * 0.04f).toInt().coerceAtLeast(1)
-                        
+
                         androidx.compose.material3.Divider(modifier = Modifier.padding(vertical = 6.dp), color = Color(0xFF334155))
                         Text(tr("Rendimiento Estimado Realista:"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text("• Visitas esperadas: ~%,d".format(Locale.getDefault(), estimatedVisits), color = TextSecondary, fontSize = 10.sp)
-                        Text("• Clics únicos esperados: ~%,d".format(Locale.getDefault(), estimatedClicks), color = TextSecondary, fontSize = 10.sp)
+                        Text(com.example.util.tr("• Visitas esperadas: ~%,d".format(Locale.getDefault(), estimatedVisits)), color = TextSecondary, fontSize = 10.sp)
+                        Text(com.example.util.tr("• Clics únicos esperados: ~%,d".format(Locale.getDefault(), estimatedClicks)), color = TextSecondary, fontSize = 10.sp)
                     }
 
                     Text(tr("Duración de la Publicación:"), color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    
+
                     // Cantidad Dinámica según Unidad
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -659,7 +659,7 @@ fun SponsorCpmPanelDialog(
                     ) {
                         OutlinedTextField(
                             value = durationValueInput,
-                            onValueChange = { newVal -> 
+                            onValueChange = { newVal ->
                                 if (newVal.all { char -> char.isDigit() }) {
                                     val parsed = newVal.toIntOrNull() ?: 0
                                     val maxVal = when (selectedDurationUnit) {
@@ -673,15 +673,15 @@ fun SponsorCpmPanelDialog(
                                         durationValueInput = newVal
                                     } else {
                                         durationValueInput = maxVal.toString()
-                                        Toast.makeText(context, "Máximo permitido: $maxVal", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("Máximo permitido: $maxVal"), Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             },
-                            label = { Text(quantityLabel) },
+                            label = { Text(com.example.util.tr(quantityLabel)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = HextechGold, 
+                                focusedBorderColor = HextechGold,
                                 unfocusedBorderColor = HextechSurfaceVariant,
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White
@@ -703,8 +703,8 @@ fun SponsorCpmPanelDialog(
                             val isSelected = selectedDurationUnit == unitId
                             FilterChip(
                                 selected = isSelected,
-                                onClick = { 
-                                    selectedDurationUnit = unitId 
+                                onClick = {
+                                    selectedDurationUnit = unitId
                                     val maxVal = when (unitId) {
                                         "hour" -> 12
                                         "day" -> 3
@@ -717,7 +717,7 @@ fun SponsorCpmPanelDialog(
                                         durationValueInput = maxVal.toString()
                                     }
                                 },
-                                label = { Text(unitLabel, fontSize = 10.sp) },
+                                label = { Text(com.example.util.tr(unitLabel), fontSize = 10.sp) },
                                 colors = FilterChipDefaults.filterChipColors(selectedContainerColor = HextechGold, selectedLabelColor = HextechDarkBg)
                             )
                         }
@@ -736,11 +736,11 @@ fun SponsorCpmPanelDialog(
                         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text(tr("Costo en Esencias Azules ($1 = 10 EA):"), color = TextSecondary, fontSize = 11.sp)
-                                Text("$requiredEssences EA", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text(com.example.util.tr("$requiredEssences EA"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text(tr("Tu Saldo Actual:"), color = TextSecondary, fontSize = 11.sp)
-                                Text("$currentBlueEssence EA", color = if (hasEnoughEssence) Color(0xFF10B981) else Color(0xFFEF4444), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text(com.example.util.tr("$currentBlueEssence EA"), color = if (hasEnoughEssence) Color(0xFF10B981) else Color(0xFFEF4444), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                             if (!hasEnoughEssence) {
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -768,11 +768,11 @@ fun SponsorCpmPanelDialog(
                         val parsedBudget = autoBudget.replace(',', '.').toDoubleOrNull() ?: 10.0
                         val requiredEssences = (parsedBudget * 10).toLong()
                         if (titleInput.trim().isBlank()) {
-                            Toast.makeText(context, "El título del anuncio es obligatorio", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, com.example.util.appTr("El título del anuncio es obligatorio"), Toast.LENGTH_SHORT).show()
                             return@Button
                         }
                         if (currentBlueEssence < requiredEssences) {
-                            Toast.makeText(context, "No tienes suficientes esencias azules ($requiredEssences EA requeridas). Recarga para publicar.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, com.example.util.appTr("No tienes suficientes esencias azules ($requiredEssences EA requeridas). Recarga para publicar."), Toast.LENGTH_LONG).show()
                             showBuyEssenceDialog = true
                             return@Button
                         }
@@ -796,7 +796,7 @@ fun SponsorCpmPanelDialog(
                         }
 
                         if (hasOverlap) {
-                            Toast.makeText(context, "⚠️ El horario o fechas seleccionadas ya están ocupadas por otro anuncio. No se puede publicar ni descontar esencias azules.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, com.example.util.appTr("⚠️ El horario o fechas seleccionadas ya están ocupadas por otro anuncio. No se puede publicar ni descontar esencias azules."), Toast.LENGTH_LONG).show()
                             return@Button
                         }
 
@@ -814,7 +814,7 @@ fun SponsorCpmPanelDialog(
             },
             dismissButton = {
                 TextButton(onClick = { showCreateDialog = false }) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(com.example.util.tr("Cancelar"), color = TextSecondary)
                 }
             }
         )
@@ -831,11 +831,11 @@ fun SponsorCpmPanelDialog(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        "• Una vez enviado el anuncio a revisión, NO SE PUEDE MODIFICAR.\n" +
+                        com.example.util.tr("• Una vez enviado el anuncio a revisión, NO SE PUEDE MODIFICAR.\n" +
                         "• Si el anuncio no es aceptado en 7 días, se hace la devolución de las esencias azules.\n" +
                         "• Formatos admitidos: Imágenes en formato PNG o JPG/JPEG y Videos en formato MP4 (máximo 10 segundos).\n" +
                         "• Regla de Seguridad y Enlaces: Está estrictamente prohibido agregar enlaces maliciosos, contenido inapropiado o incumplir las normas comunitarias.\n" +
-                        "• Penalización: Si se infringe cualquier regla, el anuncio será rechazado permanentemente y no será publicado.",
+                        "• Penalización: Si se infringe cualquier regla, el anuncio será rechazado permanentemente y no será publicado."),
                         color = Color.White,
                         fontSize = 12.sp
                     )
@@ -869,7 +869,7 @@ fun SponsorCpmPanelDialog(
                         val updatedLocalList = localPendingAds + newPendingNotice
                         localPendingAds = updatedLocalList
                         AppNoticeManager.submitPendingSponsorNotice(context, newPendingNotice)
-                        
+
                         val jsonArray = org.json.JSONArray()
                         updatedLocalList.forEach { n ->
                             val obj = org.json.JSONObject()
@@ -897,7 +897,7 @@ fun SponsorCpmPanelDialog(
                             com.example.util.SubscriptionManager.addBlueEssence(-requiredEssences)
                         }
 
-                        Toast.makeText(context, "Anuncio enviado a revisión. Se descontaron $requiredEssences EA.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, com.example.util.appTr("Anuncio enviado a revisión. Se descontaron $requiredEssences EA."), Toast.LENGTH_LONG).show()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
                 ) {
@@ -906,7 +906,7 @@ fun SponsorCpmPanelDialog(
             },
             dismissButton = {
                 TextButton(onClick = { showConfirmReviewDialog = false }) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(com.example.util.tr("Cancelar"), color = TextSecondary)
                 }
             }
         )
@@ -925,7 +925,7 @@ fun SponsorCpmPanelDialog(
             },
             text = {
                 Text(
-                    "¿Estás seguro de que deseas eliminar permanentemente el anuncio \"${targetNotice.title}\"? Esta acción no se puede deshacer.",
+                    com.example.util.tr("¿Estás seguro de que deseas eliminar permanentemente el anuncio \"${targetNotice.title}\"? Esta acción no se puede deshacer."),
                     color = Color.White,
                     fontSize = 13.sp
                 )
@@ -965,16 +965,16 @@ fun SponsorCpmPanelDialog(
 
                         val updated = allNotices.filter { it.id != noticeId }
                         AppNoticeManager.saveNotices(context, updated)
-                        Toast.makeText(context, "Anuncio eliminado permanentemente", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, com.example.util.appTr("Anuncio eliminado permanentemente"), Toast.LENGTH_SHORT).show()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
                 ) {
-                    Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(com.example.util.tr("Eliminar"), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { noticeToDelete = null }) {
-                    Text("Cancelar", color = TextSecondary)
+                    Text(com.example.util.tr("Cancelar"), color = TextSecondary)
                 }
             },
             containerColor = HextechSurfaceVariant
@@ -1052,13 +1052,13 @@ fun SponsorNoticeCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(notice.title, color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text(com.example.util.tr(notice.title), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 Surface(
                     shape = RoundedCornerShape(4.dp),
                     color = statusColor.copy(alpha = 0.2f)
                 ) {
                     Text(
-                        text = statusText,
+                        text = com.example.util.tr(statusText),
                         color = statusColor,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -1068,7 +1068,7 @@ fun SponsorNoticeCard(
             }
 
             if (notice.content.isNotBlank()) {
-                Text(notice.content, color = TextSecondary, fontSize = 12.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text(com.example.util.tr(notice.content), color = TextSecondary, fontSize = 12.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
 
             // Statistics Row
@@ -1082,16 +1082,16 @@ fun SponsorNoticeCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Vistas", color = TextSecondary, fontSize = 10.sp)
-                        Text("${metrics.impressions}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(com.example.util.tr("Vistas"), color = TextSecondary, fontSize = 10.sp)
+                        Text(com.example.util.tr("${metrics.impressions}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Clics", color = TextSecondary, fontSize = 10.sp)
-                        Text("${metrics.clicks}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(com.example.util.tr("Clics"), color = TextSecondary, fontSize = 10.sp)
+                        Text(com.example.util.tr("${metrics.clicks}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("CTR", color = TextSecondary, fontSize = 10.sp)
-                        Text(String.format(Locale.US, "%.1f%%", ctr), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(com.example.util.tr("CTR"), color = TextSecondary, fontSize = 10.sp)
+                        Text(com.example.util.tr(String.format(Locale.US, "%.1f%%", ctr)), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
@@ -1102,10 +1102,10 @@ fun SponsorNoticeCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("Presupuesto: $${String.format(Locale.US, "%.2f", notice.budget)} USD", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                    Text("Duración: ${notice.durationValue} $unitLabel", color = TextSecondary, fontSize = 10.sp)
+                    Text(com.example.util.tr("Presupuesto: $${String.format(Locale.US, "%.2f", notice.budget)} USD"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    Text(com.example.util.tr("Duración: ${notice.durationValue} $unitLabel"), color = TextSecondary, fontSize = 10.sp)
                     if (deletionNoticeStr != null) {
-                        Text(deletionNoticeStr, color = if (isExpired) DangerRed else HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                        Text(com.example.util.tr(deletionNoticeStr), color = if (isExpired) DangerRed else HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Medium)
                     }
                 }
 
@@ -1127,15 +1127,15 @@ ${if (deletionNoticeStr != null) "• Estado de tiempo: $deletionNoticeStr" else
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
                             val clip = ClipData.newPlainText("Estadísticas de Anuncio", statsText)
                             clipboard?.setPrimaryClip(clip)
-                            Toast.makeText(context, "Estadísticas copiadas al portapapeles", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, com.example.util.appTr("Estadísticas copiadas al portapapeles"), Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.size(32.dp)
                     ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copiar estadísticas", tint = HextechCyan, modifier = Modifier.size(17.dp))
+                        Icon(Icons.Default.ContentCopy, contentDescription = com.example.util.trNullable("Copiar estadísticas"), tint = HextechCyan, modifier = Modifier.size(17.dp))
                     }
 
                     IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(17.dp))
+                        Icon(Icons.Default.Delete, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(17.dp))
                     }
                 }
             }

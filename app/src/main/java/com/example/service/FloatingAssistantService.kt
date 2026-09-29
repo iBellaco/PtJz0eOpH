@@ -232,7 +232,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
     private var windowManager: WindowManager? = null
     private var floatingComposeView: ComposeView? = null
-    
+
     // Estado para la orientación de la pantalla real
     private val isDeviceLandscape = androidx.compose.runtime.mutableStateOf(false)
     private var closeTargetComposeView: ComposeView? = null
@@ -323,6 +323,14 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
+            com.example.util.AppLanguage.initialize(this)
+            serviceScope.launch {
+                com.example.util.AppLanguage.current.collect {
+                    createNotificationChannel()
+                    (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                        .notify(NOTIFICATION_ID, buildForegroundNotification())
+                }
+            }
             createNotificationChannel()
             val notification = buildForegroundNotification()
             val hasPendingCapture = ScreenCaptureManager.pendingMediaProjectionData != null
@@ -433,13 +441,13 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             val isLandscape = resources.displayMetrics.widthPixels > resources.displayMetrics.heightPixels
             val cWidth = floatingComposeView?.width?.takeIf { it > 0 } ?: if (isExpanded) ((if (isLandscape) 560 else 330) * density).toInt() else (46 * density).toInt()
             val cHeight = floatingComposeView?.height?.takeIf { it > 0 } ?: if (isExpanded) ((if (isLandscape) 390 else 520) * density).toInt() else (46 * density).toInt()
-            
+
             // Adjust coordinates to absolute screen pixels to match MediaProjection bitmap
             val loc = IntArray(2)
             floatingComposeView?.getLocationOnScreen(loc)
             val absoluteX = if (loc[0] != 0) loc[0] else params.x
             val absoluteY = if (loc[1] != 0) loc[1] else params.y
-            
+
             val margin = (32 * density).toInt() // Incremented margin to be safe
             DraftVisionScanner.overlayRect = android.graphics.Rect(absoluteX - margin, absoluteY - margin, absoluteX + cWidth + margin, absoluteY + cHeight + margin)
         } catch (_: Exception) {}
@@ -500,10 +508,10 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Asistente Flotante Wild Rift",
+                com.example.util.appTr("Asistente Flotante Wild Rift"),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Mantiene activo el asistente en superposición sobre Wild Rift"
+                description = com.example.util.appTr("Mantiene activo el asistente en superposición sobre Wild Rift")
             }
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
@@ -532,8 +540,8 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Coach Activo")
-            .setContentText("Superposición en vivo sobre Wild Rift • Toca para abrir")
+            .setContentTitle(com.example.util.appTr("Coach Activo"))
+            .setContentText(com.example.util.appTr("Superposición en vivo sobre Wild Rift • Toca para abrir"))
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -551,13 +559,13 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         val screenHeight = displayMetrics.heightPixels
         val density = displayMetrics.density
         val marginPx = (8 * density).toInt()
-        
+
         val isLandscape = displayMetrics.widthPixels > displayMetrics.heightPixels
         val cardWidthPx = ((if (isLandscape) 560 else 330) * density).toInt()
         val cardHeightPx = ((if (isLandscape) 390 else 520) * density).toInt()
         var bubbleSizePx = (46 * density).toInt() // local
 
-        
+
 
         val layoutType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -639,20 +647,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                val sharedPrefs = remember { getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
-                var selectedLanguage by remember { mutableStateOf(sharedPrefs.getString("selected_language", "es") ?: "es") }
-
-                DisposableEffect(sharedPrefs) {
-                    val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
-                        if (key == "selected_language") {
-                            selectedLanguage = prefs.getString(key, "es") ?: "es"
-                        }
-                    }
-                    sharedPrefs.registerOnSharedPreferenceChangeListener(listener)
-                    onDispose {
-                        sharedPrefs.unregisterOnSharedPreferenceChangeListener(listener)
-                    }
-                }
+                val selectedLanguage by com.example.util.AppLanguage.current.collectAsState()
 
                 androidx.compose.runtime.CompositionLocalProvider(LocalLanguage provides selectedLanguage) {
                     MyApplicationTheme {
@@ -672,7 +667,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 val currentHeight = if (overlayState.isExpanded) dynamicCardHeightPx else bubbleSizePx
                                 val maxX = currentScreenWidth - marginPx
                                 val maxY = (currentScreenHeight - currentHeight - marginPx).coerceAtLeast(marginPx)
-                                
+
                                 params.x = (params.x + dx).coerceIn(0, maxX)
                                 params.y = (params.y + dy).coerceIn(0, maxY)
 
@@ -682,16 +677,16 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                         // Centro de la burbuja flotante
                                         val bubbleCenterX = params.x + bubbleSizePx / 2
                                         val bubbleCenterY = params.y + bubbleSizePx / 2
-                                        
+
                                         // Centro del target circular inferior
                                         val targetCenterX = currentScreenWidth / 2
                                         val targetCenterY = currentScreenHeight - (24 * density).toInt() - (32 * density).toInt()
-                                        
+
                                         val dist = kotlin.math.hypot(
                                             (bubbleCenterX - targetCenterX).toDouble(),
                                             (bubbleCenterY - targetCenterY).toDouble()
                                         )
-                                        
+
                                         val isOver = dist < (72 * density) || (
                                             params.y >= currentScreenHeight - bubbleSizePx - (45 * density).toInt() &&
                                             kotlin.math.abs(bubbleCenterX - targetCenterX) < (80 * density).toInt()
@@ -712,10 +707,10 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                             val animator = ValueAnimator.ofFloat(0f, 1f)
                                             animator.duration = 250 // ms
                                             animator.interpolator = DecelerateInterpolator()
-                                            
+
                                             val startX = params.x
                                             val startY = params.y
-                                            
+
                                             animator.addUpdateListener { animation ->
                                                 val fraction = animation.animatedFraction
                                                 params.x = (startX + (targetX - startX) * fraction).toInt()
@@ -924,7 +919,7 @@ private fun FloatingCloseTarget(
                 border = BorderStroke(1.dp, if (isTargeted) Color.White else DangerRed.copy(alpha = 0.4f))
             ) {
                 Text(
-                    text = if (isTargeted) com.example.util.tr("✕ Soltar para desactivar") else com.example.util.tr("Arrastra aquí para cerrar"),
+                    text = com.example.util.tr(if (isTargeted) com.example.util.tr("✕ Soltar para desactivar") else com.example.util.tr("Arrastra aquí para cerrar")),
                     color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -994,9 +989,9 @@ private fun FloatingOverlayContent(
     val haptic = LocalHapticFeedback.current
     val currentLang = LocalLanguage.current
     var activeRole by state::activeRole
-    
+
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
-    
+
     LaunchedEffect(Unit) {
         val savedRoleStr = sharedPrefs.getString("saved_active_role", null)
         if (savedRoleStr != null) {
@@ -1006,7 +1001,7 @@ private fun FloatingOverlayContent(
             } catch (e: Exception) { }
         }
     }
-    
+
     LaunchedEffect(activeRole) {
         sharedPrefs.edit().putString("saved_active_role", activeRole.name).apply()
     }
@@ -1245,7 +1240,7 @@ private fun FloatingOverlayContent(
 
                                             val newAlliesAdded = if (result.allyRolesBySlot.size == 5) syncAlliedHud(result.alliesByRole) else 0
                                             var newEnemiesAdded = 0
-                                            
+
                                             defaultRoles.forEachIndexed { idx, role ->
                                                 if (manualLockedEnemySlots[idx] != true) {
                                                     val scannedEnemy = result.enemiesByRole[role]
@@ -1570,7 +1565,7 @@ private fun FloatingOverlayContent(
                                 )
                                 Spacer(modifier = Modifier.width(3.dp))
                                 Text(
-                                    text = "VISIÓN",
+                                    text = com.example.util.tr("VISIÓN"),
                                     color = HextechCyan,
                                     fontSize = 7.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -1651,7 +1646,7 @@ private fun FloatingOverlayContent(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Column {
-                                    Text("COACH", color = HextechGold, fontWeight = FontWeight.Black, fontSize = 11.5.sp, maxLines = 1)
+                                    Text(com.example.util.tr("COACH"), color = HextechGold, fontWeight = FontWeight.Black, fontSize = 11.5.sp, maxLines = 1)
                                     val isCaptureReady = screenCaptureManager?.isReady() == true
                                     val indicatorColor = when {
                                         !isCaptureReady -> Color(0xFFFFB300)
@@ -1685,7 +1680,7 @@ private fun FloatingOverlayContent(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = indicatorText,
+                                            text = com.example.util.tr(indicatorText),
                                             color = indicatorColor,
                                             fontSize = 8.5.sp,
                                             fontWeight = FontWeight.Bold,
@@ -1718,7 +1713,7 @@ private fun FloatingOverlayContent(
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = if (isLiveVisionActive) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = "Visión",
+                                            contentDescription = com.example.util.trNullable("Visión"),
                                             tint = if (isLiveVisionActive) HextechCyan else TextSecondary,
                                             modifier = Modifier.size(15.dp)
                                         )
@@ -1741,7 +1736,7 @@ private fun FloatingOverlayContent(
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Default.BugReport,
-                                            contentDescription = "Depurado",
+                                            contentDescription = com.example.util.trNullable("Depurado"),
                                             tint = HextechCyan,
                                             modifier = Modifier.size(14.dp)
                                         )
@@ -1764,7 +1759,7 @@ private fun FloatingOverlayContent(
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Default.Remove,
-                                            contentDescription = "Minimizar",
+                                            contentDescription = com.example.util.trNullable("Minimizar"),
                                             tint = HextechGold,
                                             modifier = Modifier.size(16.dp)
                                         )
@@ -1810,7 +1805,7 @@ private fun FloatingOverlayContent(
                                         modifier = Modifier.size(12.dp)
                                     )
                                     Text(
-                                        text = "Draft",
+                                        text = com.example.util.tr("Draft"),
                                         color = if (isDraftActive) HextechCyan else TextMuted,
                                         fontSize = 10.sp,
                                         fontWeight = if (isDraftActive) FontWeight.Bold else FontWeight.Medium
@@ -1845,7 +1840,7 @@ private fun FloatingOverlayContent(
                                         modifier = Modifier.size(12.dp)
                                     )
                                     Text(
-                                        text = "Tiers",
+                                        text = com.example.util.tr("Tiers"),
                                         color = if (isTierActive) HextechGold else TextMuted,
                                         fontSize = 10.sp,
                                         fontWeight = if (isTierActive) FontWeight.Bold else FontWeight.Medium
@@ -1880,7 +1875,7 @@ private fun FloatingOverlayContent(
                                         modifier = Modifier.size(12.dp)
                                     )
                                     Text(
-                                        text = "Champs",
+                                        text = com.example.util.tr("Champs"),
                                         color = if (isChampsActive) HextechCyan else TextMuted,
                                         fontSize = 10.sp,
                                         fontWeight = if (isChampsActive) FontWeight.Bold else FontWeight.Medium
@@ -1916,7 +1911,7 @@ private fun FloatingOverlayContent(
                                             modifier = Modifier.size(12.dp)
                                         )
                                         Text(
-                                            text = "Hist",
+                                            text = com.example.util.tr("Hist"),
                                             color = if (isHistoryActive) Color(0xFF00FF7F) else TextMuted,
                                             fontSize = 9.5.sp,
                                             fontWeight = if (isHistoryActive) FontWeight.Bold else FontWeight.Medium
@@ -1940,18 +1935,18 @@ private fun FloatingOverlayContent(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Pestaña: ${when (overlayHubTab) {
+                                    text = com.example.util.tr("Pestaña: ${when (overlayHubTab) {
                                         OverlayHubTab.DRAFT -> "Draft Coach"
                                         OverlayHubTab.TIER_LIST -> "Tiers & Builds"
                                         OverlayHubTab.CHAMPIONS -> "Campeones"
                                         OverlayHubTab.HISTORY -> "Historial & Perfiles"
-                                    }}",
+                                    }}"),
                                     color = HextechGold,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("Mostrar barra", color = HextechCyan, fontSize = 9.sp)
+                                    Text(com.example.util.tr("Mostrar barra"), color = HextechCyan, fontSize = 9.sp)
                                     Spacer(modifier = Modifier.width(2.dp))
                                     Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(12.dp))
                                 }
@@ -1981,7 +1976,7 @@ private fun FloatingOverlayContent(
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
-                                    text = scanNoticeMessage ?: "",
+                                    text = com.example.util.tr(scanNoticeMessage ?: ""),
                                     color = HextechCyan,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Medium
@@ -2004,15 +1999,15 @@ private fun FloatingOverlayContent(
                                         FloatingDraftCoachView(
                                             isLandscapeMode = isLandscapeMode,
                                             activeRole = activeRole,
-                                            onActiveRoleChange = { 
-                                                activeRole = it 
+                                            onActiveRoleChange = {
+                                                activeRole = it
                                                 state.isRoleManuallySelected = true
                                                 com.example.util.UserPreferences.setActiveDraftRole(context, it)
                                             },
                                             isFirstPick = isFirstPick,
-                                            onFirstPickToggle = { 
+                                            onFirstPickToggle = {
                                                 state.isFirstPickManuallySelected = true
-                                                isFirstPick = !isFirstPick 
+                                                isFirstPick = !isFirstPick
                                             },
                                             isLegendaryQueue = isLegendaryQueue,
                                             onToggleLegendaryQueue = { isLegendaryQueue = !isLegendaryQueue },
@@ -2028,25 +2023,25 @@ private fun FloatingOverlayContent(
                                             analysis = analysis,
                                             selectedChampionDetail = selectedChampionDetail,
                                             onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectedChampionDetail = it },
-                                            onOpenChampionPicker = { isAlly, idx -> 
+                                            onOpenChampionPicker = { isAlly, idx ->
                                                 autoScanEnabled = false
-                                                showChampionPickerForSlot = Pair(isAlly, idx) 
+                                                showChampionPickerForSlot = Pair(isAlly, idx)
                                             },
-                                             onSaveDraftClick = { 
+                                             onSaveDraftClick = {
                                                 if (isPremium) {
                                                     if (!state.isRoleManuallySelected) {
                                                         android.widget.Toast.makeText(context, trStr(currentLang, "Selecciona tu línea primero"), android.widget.Toast.LENGTH_SHORT).show()
                                                     } else if (allies.count { it != null } < 5 || enemies.count { it != null } < 5) {
                                                         android.widget.Toast.makeText(context, trStr(currentLang, "Debes seleccionar los 10 campeones"), android.widget.Toast.LENGTH_SHORT).show()
                                                     } else {
-                                                        showSaveDraftDialog = true 
+                                                        showSaveDraftDialog = true
                                                     }
                                                 } else {
                                                     android.widget.Toast.makeText(context, trStr(currentLang, "Requiere suscripción Premium"), android.widget.Toast.LENGTH_SHORT).show()
                                                 }
                                             },
                                             isSavedRecently = isSavedRecently,
-                                            onClearAll = { 
+                                            onClearAll = {
                                                 for (i in 0 until 5) {
                                                     allies[i] = null
                                                     enemies[i] = null
@@ -2061,7 +2056,7 @@ private fun FloatingOverlayContent(
                                                 state.isRoleManuallySelected = false
                                                 state.isFirstPickManuallySelected = false
                                                 DraftVisionScanner.resetSlotMemory()
-                                                android.widget.Toast.makeText(context, "Equipos vaciados", android.widget.Toast.LENGTH_SHORT).show()
+                                                android.widget.Toast.makeText(context, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
                                             },
                                             onGoToTierList = { overlayHubTab = OverlayHubTab.TIER_LIST },
                                             onManualEdit = { autoScanEnabled = false },
@@ -2114,7 +2109,7 @@ private fun FloatingOverlayContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "✕ " + tr("Detener Asistente"),
+                                text = com.example.util.tr("✕ " + tr("Detener Asistente")),
                                 color = DangerRed,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -2134,7 +2129,7 @@ private fun FloatingOverlayContent(
                                 Switch(
                                     checked = autoScanEnabled,
                                     enabled = true,
-                                    onCheckedChange = { isChecked -> 
+                                    onCheckedChange = { isChecked ->
                                         if (isChecked) {
                                             autoScanEnabled = true
                                             DraftVisionScanner.resetSlotMemory()
@@ -2239,29 +2234,29 @@ private fun FloatingOverlayContent(
             activeRole = activeRole,
             isFirstPick = isFirstPick,
             isLegendary = isLegendaryQueue,
-            allies = allies.mapIndexedNotNull { index, champ -> 
-                champ?.let { 
-                    val role = when (index) { 
-                        0 -> LaneRole.TOP 
-                        1 -> LaneRole.JUNGLE 
-                        2 -> LaneRole.MID 
-                        3 -> LaneRole.ADC 
-                        else -> LaneRole.SUPPORT 
-                    } 
-                    DraftSlot(it, role) 
-                } 
+            allies = allies.mapIndexedNotNull { index, champ ->
+                champ?.let {
+                    val role = when (index) {
+                        0 -> LaneRole.TOP
+                        1 -> LaneRole.JUNGLE
+                        2 -> LaneRole.MID
+                        3 -> LaneRole.ADC
+                        else -> LaneRole.SUPPORT
+                    }
+                    DraftSlot(it, role)
+                }
             },
-            enemies = enemies.mapIndexedNotNull { index, champ -> 
-                champ?.let { 
-                    val role = when (index) { 
-                        0 -> LaneRole.TOP 
-                        1 -> LaneRole.JUNGLE 
-                        2 -> LaneRole.MID 
-                        3 -> LaneRole.ADC 
-                        else -> LaneRole.SUPPORT 
-                    } 
-                    DraftSlot(it, role) 
-                } 
+            enemies = enemies.mapIndexedNotNull { index, champ ->
+                champ?.let {
+                    val role = when (index) {
+                        0 -> LaneRole.TOP
+                        1 -> LaneRole.JUNGLE
+                        2 -> LaneRole.MID
+                        3 -> LaneRole.ADC
+                        else -> LaneRole.SUPPORT
+                    }
+                    DraftSlot(it, role)
+                }
             },
             analysis = analysis,
             onDismiss = { showSaveDraftDialog = false },
@@ -2333,7 +2328,7 @@ private fun FloatingOverlayContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = (if (isAllySlot) tr("Elegir Aliado") else tr("Elegir Rival")) + (if (targetRole != null) " - ${com.example.util.tr(targetRole.displayName)}" else ""),
+                            text = com.example.util.tr((if (isAllySlot) tr("Elegir Aliado") else tr("Elegir Rival")) + (if (targetRole != null) " - ${com.example.util.tr(targetRole.displayName)}" else "")),
                             color = if (isAllySlot) AllyBlue else DangerRed,
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.5.sp
@@ -2378,7 +2373,7 @@ private fun FloatingOverlayContent(
                             if (searchChampQuery.isNotEmpty()) {
                                 Icon(
                                     Icons.Default.Close,
-                                    contentDescription = "Limpiar",
+                                    contentDescription = com.example.util.trNullable("Limpiar"),
                                     tint = TextMuted,
                                     modifier = Modifier.size(12.dp).clickable { searchChampQuery = "" }
                                 )
@@ -2420,7 +2415,7 @@ private fun FloatingOverlayContent(
                                         Spacer(modifier = Modifier.width(2.dp))
                                     }
                                     Text(
-                                        text = label,
+                                        text = com.example.util.tr(label),
                                         fontSize = 8.sp,
                                         fontWeight = if (isSel) FontWeight.Black else FontWeight.Medium,
                                         color = if (isSel) HextechDarkBg else TextPrimary,
@@ -2472,7 +2467,7 @@ private fun FloatingOverlayContent(
                                 ChampionAvatar(champion = champ, size = 26.dp)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(champ.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp, maxLines = 1)
+                                    Text(com.example.util.tr(champ.name), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.sp, maxLines = 1)
                                     Text(
                                         text = com.example.util.tr(champ.primaryRole.displayName),
                                         color = TextMuted,
@@ -2486,12 +2481,12 @@ private fun FloatingOverlayContent(
                                         .border(0.5.dp, HextechGold.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
                                         .padding(horizontal = 4.dp, vertical = 1.dp)
                                 ) {
-                                    Text(champ.tier, color = HextechGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                                    Text(com.example.util.tr(champ.tier), color = HextechGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
                                 }
                             }
                         }
                     }
-                    
+
                 }
             }
         }
@@ -2583,15 +2578,15 @@ private fun FloatingSaveMatchDialog(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "${myChampion?.name ?: "Mi Pick"} (${activeRole.shortName})",
+                                text = com.example.util.tr("${myChampion?.name ?: "Mi Pick"} (${activeRole.shortName})"),
                                 color = AllyBlue,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp
                             )
                             if (enemyOpponent != null) {
-                                Text(" vs ", color = TextMuted, fontSize = 10.sp)
+                                Text(com.example.util.tr(" vs "), color = TextMuted, fontSize = 10.sp)
                                 Text(
-                                    text = enemyOpponent.name,
+                                    text = com.example.util.tr(enemyOpponent.name),
                                     color = DangerRed,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp
@@ -2599,7 +2594,7 @@ private fun FloatingSaveMatchDialog(
                             }
                         }
                         Text(
-                            text = "WR: $winrateDisplay%",
+                            text = com.example.util.tr("WR: $winrateDisplay%"),
                             color = HextechGold,
                             fontWeight = FontWeight.Bold,
                             fontSize = 10.5.sp
@@ -2634,7 +2629,7 @@ private fun FloatingSaveMatchDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = profile.name,
+                                    text = com.example.util.tr(profile.name),
                                     color = if (isSelected) HextechCyan else TextPrimary,
                                     fontSize = 9.5.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
@@ -2677,7 +2672,7 @@ private fun FloatingSaveMatchDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = label,
+                                text = com.example.util.tr(label),
                                 color = if (isSel) accentColor else TextMuted,
                                 fontSize = 10.sp,
                                 fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium
@@ -2812,7 +2807,7 @@ private fun FloatingSaveMatchDialog(
                             coroutineScope.launch {
                                 val chosenProfile = profiles.find { it.id == selectedProfileId }
                                     ?: com.example.data.AccountProfileManager.getActiveProfile(context)
-                                
+
                                 val exists = DraftHistoryRepository.checkDraftExists(
                                     context = context,
                                     myRole = activeRole,
@@ -2841,7 +2836,7 @@ private fun FloatingSaveMatchDialog(
                                         accountProfileId = chosenProfile.id,
                                         accountProfileName = chosenProfile.name
                                     )
-                                    android.widget.Toast.makeText(context, "¡Partida guardada en el historial!", android.widget.Toast.LENGTH_SHORT).show()
+                                    android.widget.Toast.makeText(context, com.example.util.appTr("¡Partida guardada en el historial!"), android.widget.Toast.LENGTH_SHORT).show()
                                     isSaving = false
                                     onSaved()
                                 }
@@ -2867,7 +2862,7 @@ private fun FloatingSaveMatchDialog(
                 }
             }
         }
-        
+
         if (showDuplicateConfirmation) {
             androidx.compose.material3.AlertDialog(
                 onDismissRequest = { showDuplicateConfirmation = false },
@@ -2898,7 +2893,7 @@ private fun FloatingSaveMatchDialog(
                                     accountProfileId = chosenProfile.id,
                                     accountProfileName = chosenProfile.name
                                 )
-                                android.widget.Toast.makeText(context, "¡Partida guardada en el historial!", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, com.example.util.appTr("¡Partida guardada en el historial!"), android.widget.Toast.LENGTH_SHORT).show()
                                 isSaving = false
                                 onSaved()
                             }
@@ -3111,7 +3106,7 @@ private fun OverlayVersusDraftBoard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (isFirstPick) tr("1ª Selección: Aliados") else tr("1ª Selección: Rival"),
+                            text = com.example.util.tr(if (isFirstPick) tr("1ª Selección: Aliados") else tr("1ª Selección: Rival")),
                             color = if (isFirstPick) AllyBlue else DangerRed,
                             fontWeight = FontWeight.Bold,
                             fontSize = 9.5.sp
@@ -3134,7 +3129,7 @@ private fun OverlayVersusDraftBoard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (isLegendary) tr("Legendaria") else tr("Clasificatoria"),
+                            text = com.example.util.tr(if (isLegendary) tr("Legendaria") else tr("Clasificatoria")),
                             color = if (isLegendary) Color(0xFFFFB74D) else TextSecondary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 9.5.sp
@@ -3183,7 +3178,7 @@ private fun OverlayVersusDraftBoard(
                     modifier = Modifier.clickable { onToggleFirstPick?.invoke() }
                 ) {
                     Text(
-                        "VS",
+                        com.example.util.tr("VS"),
                         color = HextechGold,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 9.sp,
@@ -3268,7 +3263,7 @@ private fun OverlayVersusDraftBoard(
                                 ) {
                                     // 1. Nombre del Campeón
                                     Text(
-                                        text = allyChamp.name,
+                                        text = com.example.util.tr(allyChamp.name),
                                         color = if (isMyRole) HextechCyan else TextPrimary,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 11.sp,
@@ -3282,7 +3277,7 @@ private fun OverlayVersusDraftBoard(
                                         horizontalArrangement = Arrangement.Start
                                     ) {
                                         Text(
-                                            text = "W:${allyChamp.winrate.toInt()}%",
+                                            text = com.example.util.tr("W:${allyChamp.winrate.toInt()}%"),
                                             color = Color(0xFF00FF7F),
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -3290,7 +3285,7 @@ private fun OverlayVersusDraftBoard(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = "B:${allyChamp.banRate.toInt()}%",
+                                            text = com.example.util.tr("B:${allyChamp.banRate.toInt()}%"),
                                             color = DangerRed,
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -3298,7 +3293,7 @@ private fun OverlayVersusDraftBoard(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = "P:${allyChamp.pickRate.toInt()}%",
+                                            text = com.example.util.tr("P:${allyChamp.pickRate.toInt()}%"),
                                             color = Color(0xFFFF9800),
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -3307,7 +3302,7 @@ private fun OverlayVersusDraftBoard(
                                     }
                                     // 3. Tier List
                                     Text(
-                                        text = "Tier ${allyChamp.tier}",
+                                        text = com.example.util.tr("Tier ${allyChamp.tier}"),
                                         color = HextechGold,
                                         fontSize = 7.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -3338,13 +3333,13 @@ private fun OverlayVersusDraftBoard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = label,
+                                text = com.example.util.tr(label),
                                 color = if (isMyRole) HextechCyan else TextSecondary,
                                 fontSize = 8.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "VS",
+                                text = com.example.util.tr("VS"),
                                 color = HextechGold.copy(alpha = 0.7f),
                                 fontSize = 7.sp,
                                 fontWeight = FontWeight.Black
@@ -3369,7 +3364,7 @@ private fun OverlayVersusDraftBoard(
                                 ) {
                                     // 1. Nombre del Campeón
                                     Text(
-                                        text = enemyChamp.name,
+                                        text = com.example.util.tr(enemyChamp.name),
                                         color = DangerRed,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 11.sp,
@@ -3384,7 +3379,7 @@ private fun OverlayVersusDraftBoard(
                                         horizontalArrangement = Arrangement.End
                                     ) {
                                         Text(
-                                            text = "W:${enemyChamp.winrate.toInt()}%",
+                                            text = com.example.util.tr("W:${enemyChamp.winrate.toInt()}%"),
                                             color = Color(0xFF00FF7F),
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -3392,7 +3387,7 @@ private fun OverlayVersusDraftBoard(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = "B:${enemyChamp.banRate.toInt()}%",
+                                            text = com.example.util.tr("B:${enemyChamp.banRate.toInt()}%"),
                                             color = DangerRed,
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -3400,7 +3395,7 @@ private fun OverlayVersusDraftBoard(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = "P:${enemyChamp.pickRate.toInt()}%",
+                                            text = com.example.util.tr("P:${enemyChamp.pickRate.toInt()}%"),
                                             color = Color(0xFFFF9800),
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Bold,
@@ -3409,7 +3404,7 @@ private fun OverlayVersusDraftBoard(
                                     }
                                     // 3. Tier List
                                     Text(
-                                        text = "Tier ${enemyChamp.tier}",
+                                        text = com.example.util.tr("Tier ${enemyChamp.tier}"),
                                         color = HextechGold,
                                         fontSize = 7.5.sp,
                                         fontWeight = FontWeight.Bold,
@@ -3418,7 +3413,7 @@ private fun OverlayVersusDraftBoard(
                                     if (enemyChamp.secondaryRoles.isNotEmpty()) {
                                         val otherRoles = enemyChamp.secondaryRoles.joinToString("/") { it.shortName }
                                         Text(
-                                            text = "FLEX ($otherRoles)",
+                                            text = com.example.util.tr("FLEX ($otherRoles)"),
                                             color = HextechCyan,
                                             fontSize = 6.5.sp,
                                             fontWeight = FontWeight.Black,
@@ -3499,7 +3494,7 @@ private fun DraftAvatarBox(
                         .padding(horizontal = 2.5.dp, vertical = 0.5.dp)
                 ) {
                     Text(
-                        text = "TÚ",
+                        text = com.example.util.tr("TÚ"),
                         color = Color.Black,
                         fontSize = 7.5.sp,
                         fontWeight = FontWeight.Black
@@ -3514,7 +3509,7 @@ private fun DraftAvatarBox(
                     .clickable { onRemove() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Close, contentDescription = "Quitar", tint = Color.White, modifier = Modifier.size(11.dp))
+                Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Quitar"), tint = Color.White, modifier = Modifier.size(11.dp))
             }
         } else if (!placeholderInitial.isNullOrBlank()) {
             Box(
@@ -3522,7 +3517,7 @@ private fun DraftAvatarBox(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = placeholderInitial,
+                    text = com.example.util.tr(placeholderInitial),
                     color = HextechCyan,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Black
@@ -3531,7 +3526,7 @@ private fun DraftAvatarBox(
         } else {
             Icon(
                 Icons.Default.Add,
-                contentDescription = "Añadir",
+                contentDescription = com.example.util.trNullable("Añadir"),
                 tint = if (isEnemy) DangerRed.copy(alpha = 0.5f) else AllyBlue.copy(alpha = 0.5f),
                 modifier = Modifier.size(18.dp)
             )
@@ -3604,14 +3599,14 @@ private fun CoachContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = tr("RECOMENDACIÓN:") + " ${tr(activeRole.displayName)}",
+                text = com.example.util.tr(tr("RECOMENDACIÓN:") + " ${tr(activeRole.displayName)}"),
                 color = HextechGold,
                 fontSize = 10.5.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = if (isFirstPick) tr("1ª Elección") else tr("Counter Pick"),
+                text = com.example.util.tr(if (isFirstPick) tr("1ª Elección") else tr("Counter Pick")),
                 color = if (isFirstPick) HextechGold else HextechCyan,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
@@ -3636,7 +3631,7 @@ private fun CoachContent(
                         colors = CardDefaults.cardColors(containerColor = HextechDarkBg.copy(alpha = 0.6f)),
                         border = BorderStroke(0.5.dp, AllyBlue)
                     ) {
-                        Text(text = "${wombo.title}: ${wombo.description}", color = AllyBlue, fontSize = 8.5.sp, modifier = Modifier.padding(3.dp))
+                        Text(text = com.example.util.tr("${wombo.title}: ${wombo.description}"), color = AllyBlue, fontSize = 8.5.sp, modifier = Modifier.padding(3.dp))
                     }
                 }
             }
@@ -3657,13 +3652,13 @@ private fun CoachContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Daño Aliado: AD ${analysis.allyPhysicalDamagePercent}% | AP ${analysis.allyMagicDamagePercent}%",
+                        text = com.example.util.tr("Daño Aliado: AD ${analysis.allyPhysicalDamagePercent}% | AP ${analysis.allyMagicDamagePercent}%"),
                         color = AllyBlue,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Daño Enemigo: AD ${analysis.physicalDamagePercent}% | AP ${analysis.magicDamagePercent}%",
+                        text = com.example.util.tr("Daño Enemigo: AD ${analysis.physicalDamagePercent}% | AP ${analysis.magicDamagePercent}%"),
                         color = DangerRed,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.SemiBold
@@ -3671,7 +3666,7 @@ private fun CoachContent(
                 }
                 val winrateDisplay = (analysis.bestOverallPick?.estimatedWinrate ?: analysis.recommendations.firstOrNull()?.estimatedWinrate ?: 50.0).toInt()
                 Text(
-                    text = "WR Estimado: ${winrateDisplay}%",
+                    text = com.example.util.tr("WR Estimado: ${winrateDisplay}%"),
                     color = HextechGold,
                     fontSize = 8.5.sp,
                     fontWeight = FontWeight.Bold
@@ -3694,7 +3689,7 @@ private fun CoachContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = warningText,
+                        text = com.example.util.tr(warningText),
                         color = HextechGold,
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Medium,
@@ -3718,7 +3713,7 @@ private fun CoachContent(
                         ChampionAvatar(champion = explicitEnemyOpponent, size = 22.dp)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = tr("Matchup 1v1 vs") + " ${explicitEnemyOpponent.name}",
+                            text = com.example.util.tr(tr("Matchup 1v1 vs") + " ${explicitEnemyOpponent.name}"),
                             color = DangerRed,
                             fontSize = 9.5.sp,
                             fontWeight = FontWeight.Bold
@@ -3726,7 +3721,7 @@ private fun CoachContent(
                     }
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = analysis.directMatchupWarning ?: "Analizando ventana de poder en línea contra ${explicitEnemyOpponent.name}.",
+                        text = com.example.util.tr(analysis.directMatchupWarning ?: "Analizando ventana de poder en línea contra ${explicitEnemyOpponent.name}."),
                         color = TextPrimary,
                         fontSize = 8.5.sp
                     )
@@ -3755,7 +3750,7 @@ private fun CoachContent(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = if (isSavedRecently) tr("Guardado") else tr("Guardar"),
+                        text = com.example.util.tr(if (isSavedRecently) tr("Guardado") else tr("Guardar")),
                         color = if (isSavedRecently) Color(0xFF00FF7F) else HextechGold,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
@@ -3768,7 +3763,7 @@ private fun CoachContent(
                                 .background(HextechGold)
                                 .padding(horizontal = 2.5.dp, vertical = 0.5.dp)
                         ) {
-                            Text("PRO", color = HextechDarkBg, fontSize = 6.sp, fontWeight = FontWeight.Black)
+                            Text(com.example.util.tr("PRO"), color = HextechDarkBg, fontSize = 6.sp, fontWeight = FontWeight.Black)
                         }
                     }
                 }
@@ -3826,7 +3821,7 @@ private fun CoachContent(
                         Spacer(modifier = Modifier.width(6.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(pick.champion.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                                Text(com.example.util.tr(pick.champion.name), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Box(
                                     modifier = Modifier
@@ -3834,16 +3829,16 @@ private fun CoachContent(
                                         .background(TierSPlusColor)
                                         .padding(horizontal = 4.dp, vertical = 1.dp)
                                 ) {
-                                    Text(pick.champion.tier, color = Color.Black, fontSize = 7.5.sp, fontWeight = FontWeight.Black)
+                                    Text(com.example.util.tr(pick.champion.tier), color = Color.Black, fontSize = 7.5.sp, fontWeight = FontWeight.Black)
                                 }
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("WR: ${pick.estimatedWinrate}%", color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("WR: ${pick.estimatedWinrate}%"), color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                             }
                             Text(tr(pick.advantageBadge), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
                             Text(tr(pick.tacticalReason), color = TextMuted, fontSize = 8.sp, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
                         }
                     }
-                    
+
                 }
             }
         }

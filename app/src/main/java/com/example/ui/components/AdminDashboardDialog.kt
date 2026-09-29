@@ -162,7 +162,7 @@ fun AdminDashboardDialog(
     val context = LocalContext.current
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val isAdmin = userRole == "admin" || AuthManager.isCurrentUserAdmin()
-    
+
     if (!isAdmin) {
         LaunchedEffect(Unit) { onDismiss() }
         return
@@ -187,7 +187,7 @@ fun AdminDashboardDialog(
         DisposableEffect(Unit) {
             val pendingSet1 = mutableSetOf<String>()
             val pendingSet2 = mutableSetOf<String>()
-            
+
             val listener1 = FirebaseFirestore.getInstance().collection("support_reports")
                 .whereEqualTo("category", "MODERATOR_REQUEST")
                 .whereEqualTo("status", "PENDIENTE")
@@ -207,7 +207,7 @@ fun AdminDashboardDialog(
                         pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size
                     }
                 }
-            onDispose { 
+            onDispose {
                 listener1.remove()
                 listener2.remove()
             }
@@ -407,7 +407,7 @@ private fun AdminDashboardHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Cerrar",
+                        contentDescription = com.example.util.trNullable("Cerrar"),
                         tint = TextPrimary
                     )
                 }
@@ -460,7 +460,7 @@ private fun AdminDashboardHeader(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = if (pendingModeratorRequestsCount > 99) "99+" else pendingModeratorRequestsCount.toString(),
+                                text = com.example.util.tr(if (pendingModeratorRequestsCount > 99) "99+" else pendingModeratorRequestsCount.toString()),
                                 color = Color.White,
                                 fontSize = 8.5.sp,
                                 fontWeight = FontWeight.ExtraBold
@@ -573,7 +573,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
     fun copyToClipboard(label: String, text: String) {
         val clip = android.content.ClipData.newPlainText(label, text)
         clipboardManager?.setPrimaryClip(clip)
-        Toast.makeText(context, "Copiado al portapapeles: $text", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, com.example.util.appTr("Copiado al portapapeles: $text"), Toast.LENGTH_SHORT).show()
     }
 
     val hasFilledFields = title.isNotBlank() ||
@@ -588,7 +588,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
         if (hasFilledFields) {
             Toast.makeText(
                 context,
-                "No puedes salir mientras haya campos con información. Guarda el anuncio o límpialos para evitar cierres accidentales.",
+                com.example.util.appTr("No puedes salir mientras haya campos con información. Guarda el anuncio o límpialos para evitar cierres accidentales."),
                 Toast.LENGTH_LONG
             ).show()
         } else {
@@ -617,7 +617,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 externalUrl = ""
                 showManualVideoUrlInput = false
                 showManualExpandedUrlInput = false
-                Toast.makeText(context, "Edición cancelada.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, com.example.util.appTr("Edición cancelada."), Toast.LENGTH_SHORT).show()
             } else {
                 attemptDismiss()
             }
@@ -653,7 +653,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             Column {
                                 Text(tr("Gestor de Anuncios y Noticias"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                 Text(
-                                    if (hasFilledFields) "Edición activa (salida bloqueada contra pérdidas)" else "Pantalla completa • Gestión de avisos oficiales",
+                                    com.example.util.tr(if (hasFilledFields) "Edición activa (salida bloqueada contra pérdidas)" else "Pantalla completa • Gestión de avisos oficiales"),
                                     color = if (hasFilledFields) HextechGold else TextSecondary,
                                     fontSize = 11.sp
                                 )
@@ -667,7 +667,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         ) {
                             Icon(
                                 imageVector = if (hasFilledFields) Icons.Default.Lock else Icons.Default.Close,
-                                contentDescription = "Cerrar",
+                                contentDescription = com.example.util.trNullable("Cerrar"),
                                 tint = if (hasFilledFields) HextechGold else TextSecondary
                             )
                         }
@@ -712,7 +712,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     externalUrl = ""
                                     showManualVideoUrlInput = false
                                     showManualExpandedUrlInput = false
-                                    Toast.makeText(context, "Campos limpiados. Salida desbloqueada.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Campos limpiados. Salida desbloqueada."), Toast.LENGTH_SHORT).show()
                                 },
                                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                             ) {
@@ -801,7 +801,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     Text(tr("🖼️ Horizontal (Panel de Inicio / Tarjeta):"), color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                     Text(tr("1920 x 1080 px  (Relación 16:9)"), color = TextPrimary, fontSize = 10.sp)
                                 }
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = HextechCyan, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = com.example.util.trNullable("Copiar"), tint = HextechCyan, modifier = Modifier.size(16.dp))
                             }
                         }
 
@@ -827,7 +827,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     Text(tr("📱 Vertical (Vista Ampliada / Fullscreen):"), color = HextechGold, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                                     Text(tr("1080 x 1920 px  (9:16 Pantalla Completa)"), color = TextPrimary, fontSize = 10.sp)
                                 }
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = HextechGold, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = com.example.util.trNullable("Copiar"), tint = HextechGold, modifier = Modifier.size(16.dp))
                             }
                         }
                     }
@@ -870,7 +870,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                             containerColor = if (isSelected) HextechCyan else HextechSurface
                                         )
                                     ) {
-                                        Text(label, color = if (isSelected) HextechDarkBg else TextPrimary, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                                        Text(com.example.util.tr(label), color = if (isSelected) HextechDarkBg else TextPrimary, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -885,7 +885,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 val expiredNotices = noticesList.filter { notice -> notice.expiresAtMillis > 0L && notice.expiresAtMillis <= now }
 
                 if (activeNotices.isNotEmpty()) {
-                    Text("Anuncios Actuales (${activeNotices.size}):", color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(com.example.util.tr("Anuncios Actuales (${activeNotices.size}):"), color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     activeNotices.forEach { notice ->
                         val originalIndex = noticesList.indexOfFirst { it.id == notice.id }
@@ -906,7 +906,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(text = notice.tag, color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                        Text(text = com.example.util.tr(notice.tag), color = HextechGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                                         if (notice.sponsorEmail.isNotBlank() || notice.tag.equals("Publicidad", true)) {
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Surface(
@@ -924,10 +924,10 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                             }
                                         }
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text(text = "•", color = TextMuted, fontSize = 9.sp)
+                                        Text(text = com.example.util.tr("•"), color = TextMuted, fontSize = 9.sp)
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = notice.title.ifBlank { "Sin título" },
+                                            text = com.example.util.tr(notice.title.ifBlank { "Sin título" }),
                                             color = TextPrimary,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
@@ -935,7 +935,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                         )
                                     }
                                     Text(
-                                        text = notice.content,
+                                        text = com.example.util.tr(notice.content),
                                         color = TextSecondary,
                                         fontSize = 10.sp,
                                         maxLines = 1,
@@ -1012,7 +1012,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                                 ) {
                                                     Icon(Icons.Default.AttachMoney, contentDescription = null, tint = Color(0xFF00FF66), modifier = Modifier.size(10.dp))
                                                     Spacer(modifier = Modifier.width(2.dp))
-                                                    Text("$${String.format(Locale.US, "%.2f", notice.budget)}", color = Color(0xFF00FF66), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                                                    Text(com.example.util.tr("$${String.format(Locale.US, "%.2f", notice.budget)}"), color = Color(0xFF00FF66), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
                                                 }
                                             }
                                         }
@@ -1036,7 +1036,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                         },
                                         modifier = Modifier.size(28.dp)
                                     ) {
-                                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = HextechCyan, modifier = Modifier.size(14.dp))
+                                        Icon(Icons.Default.Edit, contentDescription = com.example.util.trNullable("Editar"), tint = HextechCyan, modifier = Modifier.size(14.dp))
                                     }
                                     IconButton(
                                         onClick = {
@@ -1054,7 +1054,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                         },
                                         modifier = Modifier.size(28.dp)
                                     ) {
-                                        Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(14.dp))
+                                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(14.dp))
                                     }
                                 }
                             }
@@ -1064,7 +1064,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 }
 
                 if (expiredNotices.isNotEmpty()) {
-                    Text("Anuncios Expirados (${expiredNotices.size}):", color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(com.example.util.tr("Anuncios Expirados (${expiredNotices.size}):"), color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     expiredNotices.forEach { notice ->
                         val originalIndex = noticesList.indexOfFirst { it.id == notice.id }
@@ -1084,7 +1084,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = "${notice.tag} • ${notice.title.ifBlank { "Sin título" }} (Expirado)", color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                    Text(text = com.example.util.tr("${notice.tag} • ${notice.title.ifBlank { "Sin título" }} (Expirado)"), color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                                 }
                                 IconButton(
                                     onClick = {
@@ -1092,7 +1092,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     },
                                     modifier = Modifier.size(28.dp)
                                 ) {
-                                    Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(14.dp))
                                 }
                             }
                         }
@@ -1109,7 +1109,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (editingIndex != null) "✏️ Editando Anuncio #${editingIndex!! + 1}" else "➕ Agregar Nuevo Anuncio:",
+                        text = com.example.util.tr(if (editingIndex != null) "✏️ Editando Anuncio #${editingIndex!! + 1}" else "➕ Agregar Nuevo Anuncio:"),
                         color = HextechGold,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -1155,7 +1155,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 containerColor = if (isSelected) HextechGold else HextechSurfaceVariant
                             )
                         ) {
-                            Text(tag, color = if (isSelected) HextechDarkBg else TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr(tag), color = if (isSelected) HextechDarkBg else TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1169,7 +1169,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     shape = RoundedCornerShape(8.dp)
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Text("🎨 " + tr("Color del Título:"), color = TextSecondary, fontSize = 11.sp)
+                Text(com.example.util.tr("🎨 " + tr("Color del Título:")), color = TextSecondary, fontSize = 11.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -1237,7 +1237,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             ),
                             border = BorderStroke(1.dp, parsedColor)
                         ) {
-                            Text(name, color = if (isSelected) HextechDarkBg else parsedColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr(name), color = if (isSelected) HextechDarkBg else parsedColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1256,23 +1256,23 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             try {
                                 val validation = NoticeMediaUtils.validateMediaForSlot(context, pickedUri, isVerticalSlot = false)
                                 if (!validation.isValid) {
-                                    Toast.makeText(context, validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada para banner horizontal", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, com.example.util.appTr(validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada para banner horizontal"), Toast.LENGTH_LONG).show()
                                     isProcessingMedia = false
                                     return@launch
                                 }
 
                                 if (validation.isVideo) {
-                                    Toast.makeText(context, "Procesando video horizontal...", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Procesando video horizontal..."), Toast.LENGTH_SHORT).show()
                                     val finalVideoUrl = com.example.util.NoticeMediaStorageManager.uploadOrSaveVideo(context, pickedUri)
                                     videoUrl = finalVideoUrl
-                                    Toast.makeText(context, "Video horizontal configurado exitosamente", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Video horizontal configurado exitosamente"), Toast.LENGTH_SHORT).show()
                                 } else {
                                     val cloudDataUrl = com.example.util.NoticeMediaStorageManager.convertImageToCloudDataUrl(context, pickedUri)
                                     videoUrl = cloudDataUrl
-                                    Toast.makeText(context, "Imagen horizontal configurada correctamente", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Imagen horizontal configurada correctamente"), Toast.LENGTH_SHORT).show()
                                 }
                             } catch (e: Exception) {
-                                Toast.makeText(context, "No se pudo procesar el archivo seleccionado", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("No se pudo procesar el archivo seleccionado"), Toast.LENGTH_SHORT).show()
                             } finally {
                                 isProcessingMedia = false
                             }
@@ -1329,7 +1329,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = if (isVideo) "🎬 Video Horizontal Configurado" else "🖼️ Imagen Horizontal Configurada",
+                                        text = com.example.util.tr(if (isVideo) "🎬 Video Horizontal Configurado" else "🖼️ Imagen Horizontal Configurada"),
                                         color = HextechCyan,
                                         fontSize = 11.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -1439,7 +1439,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             try {
                                 val validation = NoticeMediaUtils.validateMediaForSlot(context, pickedUri, isVerticalSlot = true)
                                 if (!validation.isValid) {
-                                    Toast.makeText(context, validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada para vista vertical", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, com.example.util.appTr(validation.errorMessage ?: "El archivo no cumple con el tamaño o proporción recomendada para vista vertical"), Toast.LENGTH_LONG).show()
                                     isProcessingMedia = false
                                     return@launch
                                 }
@@ -1447,14 +1447,14 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 if (validation.isVideo) {
                                     val finalVideoUrl = com.example.util.NoticeMediaStorageManager.uploadOrSaveVideo(context, pickedUri)
                                     expandedImageUrl = finalVideoUrl
-                                    Toast.makeText(context, "Video vertical configurado correctamente", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Video vertical configurado correctamente"), Toast.LENGTH_SHORT).show()
                                 } else {
                                     val cloudDataUrl = com.example.util.NoticeMediaStorageManager.convertImageToCloudDataUrl(context, pickedUri)
                                     expandedImageUrl = cloudDataUrl
-                                    Toast.makeText(context, "Imagen vertical subida correctamente", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Imagen vertical subida correctamente"), Toast.LENGTH_SHORT).show()
                                 }
                             } catch (e: Exception) {
-                                Toast.makeText(context, "No se pudo procesar el archivo seleccionado", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("No se pudo procesar el archivo seleccionado"), Toast.LENGTH_SHORT).show()
                             } finally {
                                 isProcessingMedia = false
                             }
@@ -1513,13 +1513,13 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = if (isVerticalVideo) "🎬 Video Vertical Configurado" else "📱 Imagen Vertical Configurada",
+                                        text = com.example.util.tr(if (isVerticalVideo) "🎬 Video Vertical Configurado" else "📱 Imagen Vertical Configurada"),
                                         color = HextechGold,
                                         fontSize = 11.5.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = if (isVerticalVideo) "Se reproducirá a pantalla completa en modo vertical al pulsar 'Ampliar'." else "Se mostrará a pantalla completa al pulsar 'Ampliar' o al tocar la imagen.",
+                                        text = com.example.util.tr(if (isVerticalVideo) "Se reproducirá a pantalla completa en modo vertical al pulsar 'Ampliar'." else "Se mostrará a pantalla completa al pulsar 'Ampliar' o al tocar la imagen."),
                                         color = TextMuted,
                                         fontSize = 9.5.sp
                                     )
@@ -1645,7 +1645,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "• Las imágenes de galería se convierten automáticamente al formato de nube para verse en CUALQUIER celular y no ponerse negras al reiniciar.\n• Para videos en múltiples celulares, usa enlaces de YouTube (o Shorts) o URLs web (.mp4). Los videos locales se guardan permanentemente en este celular.",
+                            text = com.example.util.tr("• Las imágenes de galería se convierten automáticamente al formato de nube para verse en CUALQUIER celular y no ponerse negras al reiniciar.\n• Para videos en múltiples celulares, usa enlaces de YouTube (o Shorts) o URLs web (.mp4). Los videos locales se guardan permanentemente en este celular."),
                             color = TextSecondary,
                             fontSize = 10.sp,
                             lineHeight = 14.sp
@@ -1668,7 +1668,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("4. 💰 " + tr("Presupuesto de Campaña / Anuncio (USD - Opcional):"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                Text(com.example.util.tr("4. 💰 " + tr("Presupuesto de Campaña / Anuncio (USD - Opcional):")), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
                     value = budgetText,
@@ -1678,7 +1678,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         }
                     },
                     label = { Text(tr("Presupuesto en USD (ej. 50.00)")) },
-                    placeholder = { Text("0.00") },
+                    placeholder = { Text(com.example.util.tr("0.00")) },
                     leadingIcon = {
                         Icon(Icons.Default.AttachMoney, contentDescription = null, tint = HextechGold)
                     },
@@ -1718,7 +1718,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 budgetText = ""
                                 showManualVideoUrlInput = false
                                 showManualExpandedUrlInput = false
-                                Toast.makeText(context, "Edición cancelada", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Edición cancelada"), Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
@@ -1733,11 +1733,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         Button(
                             onClick = {
                                 if (title.isBlank() && content.isBlank()) {
-                                    Toast.makeText(context, "Ingresa un título o contenido para el anuncio", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
                                 if (!isUrlValid || !isExpandedUrlValid) {
-                                    Toast.makeText(context, "URL multimedia inválida", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("URL multimedia inválida"), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
                                 val targetId = editingNoticeId ?: noticesList[editingIndex!!].id
@@ -1765,7 +1765,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 budgetText = ""
                                 showManualVideoUrlInput = false
                                 showManualExpandedUrlInput = false
-                                Toast.makeText(context, "Anuncio guardado en la lista", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Anuncio guardado en la lista"), Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg),
@@ -1778,11 +1778,11 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                     Button(
                         onClick = {
                             if (title.isBlank() && content.isBlank()) {
-                                Toast.makeText(context, "Ingresa un título o contenido para el anuncio", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Ingresa un título o contenido para el anuncio"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (!isUrlValid || !isExpandedUrlValid) {
-                                Toast.makeText(context, "URL multimedia inválida", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("URL multimedia inválida"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             val targetId = UUID.randomUUID().toString()
@@ -1809,7 +1809,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                             editingNoticeId = null
                             showManualVideoUrlInput = false
                             showManualExpandedUrlInput = false
-                            Toast.makeText(context, "Anuncio guardado en la lista", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, com.example.util.appTr("Anuncio guardado en la lista"), Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg),
@@ -1841,7 +1841,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 Icon(Icons.Default.Campaign, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = title.ifBlank { "Título del aviso..." },
+                                    text = com.example.util.tr(title.ifBlank { "Título del aviso..." }),
                                     color = HextechGold,
                                     fontSize = 12.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -1852,7 +1852,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 shape = RoundedCornerShape(4.dp)
                             ) {
                                 Text(
-                                    text = selectedTag.uppercase(),
+                                    text = com.example.util.tr(selectedTag.uppercase()),
                                     color = HextechGold,
                                     fontSize = 8.sp,
                                     fontWeight = FontWeight.Bold,
@@ -1862,7 +1862,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = content.ifBlank { "Escribe el contenido del anuncio para visualizarlo aquí..." },
+                            text = com.example.util.tr(content.ifBlank { "Escribe el contenido del anuncio para visualizarlo aquí..." }),
                             color = TextPrimary,
                             fontSize = 11.sp,
                             lineHeight = 14.sp
@@ -1921,7 +1921,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(if (hasFilledFields) "Cerrar (Bloqueado)" else "Cerrar", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text(com.example.util.tr(if (hasFilledFields) "Cerrar (Bloqueado)" else "Cerrar"), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
 
                         Button(
@@ -1937,10 +1937,10 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                 ) { success, errorMsg ->
                                     isSavingCloud = false
                                     if (success) {
-                                        Toast.makeText(context, "✅ ¡Anuncios sincronizados correctamente!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("✅ ¡Anuncios sincronizados correctamente!"), Toast.LENGTH_SHORT).show()
                                         onDismiss()
                                     } else {
-                                        Toast.makeText(context, "✅ Guardado localmente con éxito", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("✅ Guardado localmente con éxito"), Toast.LENGTH_SHORT).show()
                                         onDismiss()
                                     }
                                 }
@@ -2157,7 +2157,7 @@ fun EnhancedUserManagementPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (isMinimized) "Mostrando vista completa de usuarios" else "Monitoreo y herramientas activas",
+                text = com.example.util.tr(if (isMinimized) "Mostrando vista completa de usuarios" else "Monitoreo y herramientas activas"),
                 color = if (isMinimized) HextechGold else TextMuted,
                 fontSize = 11.sp,
                 fontWeight = if (isMinimized) FontWeight.SemiBold else FontWeight.Normal
@@ -2174,7 +2174,7 @@ fun EnhancedUserManagementPanel(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = if (isMinimized) "Ver Monitoreo / Reportes" else "Minimizar Monitoreo",
+                    text = com.example.util.tr(if (isMinimized) "Ver Monitoreo / Reportes" else "Minimizar Monitoreo"),
                     color = HextechCyan,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
@@ -2196,7 +2196,7 @@ fun EnhancedUserManagementPanel(
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Limpiar", tint = TextMuted)
+                                Icon(Icons.Default.Clear, contentDescription = com.example.util.trNullable("Limpiar"), tint = TextMuted)
                             }
                         }
                     },
@@ -2234,7 +2234,7 @@ fun EnhancedUserManagementPanel(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Tienes $pendingRequestsCount solicitudes de moderador pendientes",
+                                    text = com.example.util.tr("Tienes $pendingRequestsCount solicitudes de moderador pendientes"),
                                     color = HextechGold,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
@@ -2283,7 +2283,7 @@ fun EnhancedUserManagementPanel(
                             onClick = { selectedFilter = tab },
                             label = {
                                 Text(
-                                    text = "${tab.label} ($count)",
+                                    text = com.example.util.tr("${tab.label} ($count)"),
                                     fontSize = 11.5.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                 )
@@ -2319,7 +2319,7 @@ fun EnhancedUserManagementPanel(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = DangerRed, modifier = Modifier.size(40.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = errorMessage!!, color = DangerRed, textAlign = TextAlign.Center, fontSize = 13.sp)
+                    Text(text = com.example.util.tr(errorMessage!!), color = DangerRed, textAlign = TextAlign.Center, fontSize = 13.sp)
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(onClick = { loadUsers() }, colors = ButtonDefaults.buttonColors(containerColor = HextechGold)) {
                         Text(tr("Reintentar"), color = HextechDarkBg)
@@ -2354,7 +2354,7 @@ fun EnhancedUserManagementPanel(
                         onResetSlotsClick = {
                             val uid = user["uid"] as? String ?: return@EnhancedUserAdminCard
                             resetUserHardwareSlots(context, uid) {
-                                Toast.makeText(context, "Slots de hardware liberados exitosamente", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Slots de hardware liberados exitosamente"), Toast.LENGTH_SHORT).show()
                                 loadUsers()
                             }
                         }
@@ -2429,13 +2429,13 @@ private fun AdminKpiCards(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refrescar",
+                        contentDescription = com.example.util.trNullable("Refrescar"),
                         tint = if (isRefreshing) HextechGold else TextMuted,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (isRefreshing) "Actualizando..." else "Refrescar",
+                        text = com.example.util.tr(if (isRefreshing) "Actualizando..." else "Refrescar"),
                         color = if (isRefreshing) HextechGold else TextMuted,
                         fontSize = 11.sp
                     )
@@ -2536,13 +2536,13 @@ private fun KpiItemCard(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = value,
+                text = com.example.util.tr(value),
                 color = TextPrimary,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 15.sp
             )
             Text(
-                text = title,
+                text = com.example.util.tr(title),
                 color = TextMuted,
                 fontSize = 9.sp,
                 maxLines = 1,
@@ -2646,11 +2646,11 @@ fun EnhancedUserAdminCard(
                         modifier = Modifier.clickable {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             clipboard.setPrimaryClip(ClipData.newPlainText("Usuario" , name))
-                            Toast.makeText(context, "Usuario copiado: $name", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, com.example.util.appTr("Usuario copiado: $name"), Toast.LENGTH_SHORT).show()
                         }
                     ) {
                         Text(
-                            text = name,
+                            text = com.example.util.tr(name),
                             fontWeight = FontWeight.Bold,
                             color = if (role == "admin") HextechGold else TextPrimary,
                             fontSize = 14.sp,
@@ -2661,7 +2661,7 @@ fun EnhancedUserAdminCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Filled.Verified,
-                                contentDescription = "Verificado",
+                                contentDescription = com.example.util.trNullable("Verificado"),
                                 tint = if (role == "admin") HextechGold else HextechCyan,
                                 modifier = Modifier.size(14.dp)
                             )
@@ -2676,7 +2676,7 @@ fun EnhancedUserAdminCard(
                     if (email.isNotBlank()) {
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = email,
+                            text = com.example.util.tr(email),
                             color = TextSecondary,
                             fontSize = 11.5.sp,
                             maxLines = 1,
@@ -2684,7 +2684,7 @@ fun EnhancedUserAdminCard(
                             modifier = Modifier.clickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboard.setPrimaryClip(ClipData.newPlainText("Correo" , email))
-                                Toast.makeText(context, "Correo copiado: $email", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Correo copiado: $email"), Toast.LENGTH_SHORT).show()
                             }
                         )
                     }
@@ -2701,16 +2701,16 @@ fun EnhancedUserAdminCard(
                             modifier = Modifier.clickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboard.setPrimaryClip(ClipData.newPlainText("UID" , uid))
-                                Toast.makeText(context, "UID copiado", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("UID copiado"), Toast.LENGTH_SHORT).show()
                             }
                         ) {
                             Text(
-                                text = "UID: ${uid.take(10)}...",
+                                text = com.example.util.tr("UID: ${uid.take(10)}..."),
                                 color = TextMuted,
                                 fontSize = 10.sp
                             )
                             Spacer(modifier = Modifier.width(3.dp))
-                            Icon(Icons.Default.ContentCopy, contentDescription = "Copiar UID", tint = TextMuted, modifier = Modifier.size(10.dp))
+                            Icon(Icons.Default.ContentCopy, contentDescription = com.example.util.trNullable("Copiar UID"), tint = TextMuted, modifier = Modifier.size(10.dp))
                         }
 
                         // Badge de Conexión / Última Conexión en Vivo
@@ -2734,7 +2734,7 @@ fun EnhancedUserAdminCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = formatLastConnection(lastActiveTimestamp, isOnline, now),
+                                    text = com.example.util.tr(formatLastConnection(lastActiveTimestamp, isOnline, now)),
                                     color = if (isOnline) Color(0xFF00FF7F) else TextMuted,
                                     fontSize = 9.5.sp,
                                     fontWeight = if (isOnline) FontWeight.Bold else FontWeight.Normal
@@ -2766,7 +2766,7 @@ fun EnhancedUserAdminCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = getSubscriptionStatusText(role, premiumUntil, isPremiumActive, now),
+                            text = com.example.util.tr(getSubscriptionStatusText(role, premiumUntil, isPremiumActive, now)),
                             fontSize = 11.sp,
                             color = if (isPremiumActive) HextechCyan else TextMuted,
                             fontWeight = FontWeight.Medium
@@ -2775,7 +2775,7 @@ fun EnhancedUserAdminCard(
 
                     if (isPremiumActive && role != "admin" && premiumUntil != null && premiumUntil > 0L) {
                         Text(
-                            text = formatExpirationDateDetailed(premiumUntil),
+                            text = com.example.util.tr(formatExpirationDateDetailed(premiumUntil)),
                             color = if (premiumUntil - now < 3 * 86400000L) Color(0xFFFBBF24) else TextSecondary,
                             fontSize = 10.sp
                         )
@@ -2805,7 +2805,7 @@ fun EnhancedUserAdminCard(
                             )
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = "$blueEssence EA",
+                                text = com.example.util.tr("$blueEssence EA"),
                                 fontSize = 10.sp,
                                 color = Color(0xFF38BDF8),
                                 fontWeight = FontWeight.Bold
@@ -2826,7 +2826,7 @@ fun EnhancedUserAdminCard(
                             Icon(Icons.Default.Smartphone, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(11.dp))
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = "$deviceSlotsUsed/2 slots",
+                                text = com.example.util.tr("$deviceSlotsUsed/2 slots"),
                                 fontSize = 10.sp,
                                 color = if (deviceSlotsUsed >= 2) DangerRed else TextSecondary,
                                 fontWeight = FontWeight.SemiBold
@@ -2847,7 +2847,7 @@ fun EnhancedUserAdminCard(
                             Icon(Icons.Default.Palette, contentDescription = null, tint = HextechGold, modifier = Modifier.size(11.dp))
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = "$unlockedCount avatares",
+                                text = com.example.util.tr("$unlockedCount avatares"),
                                 fontSize = 10.sp,
                                 color = HextechGold,
                                 fontWeight = FontWeight.SemiBold
@@ -3088,7 +3088,7 @@ fun UserDetailManagementDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = currentName,
+                                text = com.example.util.tr(currentName),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = HextechGold
@@ -3101,7 +3101,7 @@ fun UserDetailManagementDialog(
                                 size = RoleBadgeSize.NORMAL
                             )
                             Text(
-                                text = email.ifBlank { "UID: $uid" },
+                                text = com.example.util.tr(email.ifBlank { "UID: $uid" }),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextMuted,
                                 fontSize = 11.sp
@@ -3110,7 +3110,7 @@ fun UserDetailManagementDialog(
                     }
 
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextPrimary)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextPrimary)
                     }
                 }
 
@@ -3157,7 +3157,7 @@ fun UserDetailManagementDialog(
                                 Button(
                                     onClick = {
                                         if (currentEmailInput.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(currentEmailInput.trim()).matches()) {
-                                            Toast.makeText(context, "Ingresa un correo electrónico válido", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("Ingresa un correo electrónico válido"), Toast.LENGTH_SHORT).show()
                                             return@Button
                                         }
                                         updateUserEmail(context, uid, currentEmailInput.trim()) { newEmail ->
@@ -3201,19 +3201,19 @@ fun UserDetailManagementDialog(
                                 ) {
                                     Column(modifier = Modifier.padding(8.dp)) {
                                         Text(
-                                            text = "Estado: ${if (isPremiumActive) "⭐ PREMIUM ACTIVO" else "⚪ GRATUITO"}",
+                                            text = com.example.util.tr("Estado: ${if (isPremiumActive) "⭐ PREMIUM ACTIVO" else "⚪ GRATUITO"}"),
                                             color = if (isPremiumActive) HextechCyan else TextSecondary,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 12.sp
                                         )
                                         Text(
-                                            text = getSubscriptionStatusText(currentRole, currentPremiumUntil, isPremiumActive),
+                                            text = com.example.util.tr(getSubscriptionStatusText(currentRole, currentPremiumUntil, isPremiumActive)),
                                             color = TextMuted,
                                             fontSize = 11.sp
                                         )
                                         if (currentPremiumUntil != null && currentPremiumUntil!! > 0L) {
                                             Text(
-                                                text = formatExpirationDateDetailed(currentPremiumUntil),
+                                                text = com.example.util.tr(formatExpirationDateDetailed(currentPremiumUntil)),
                                                 color = HextechGold,
                                                 fontSize = 11.sp
                                             )
@@ -3472,7 +3472,7 @@ fun UserDetailManagementDialog(
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                         primaryRoles.forEach { targetRole ->
                                             val isSelected = (currentRole.equals(targetRole.id, ignoreCase = true) && (!currentBanned || targetRole == AppUserRole.BANNED))
-                                            
+
                                             Surface(
                                                 onClick = {
                                                     if (!isSelected && !isChangingRole && isAdmin) {
@@ -3500,14 +3500,14 @@ fun UserDetailManagementDialog(
                                                         modifier = Modifier.weight(1f)
                                                     ) {
                                                         Text(
-                                                            text = targetRole.emoji,
+                                                            text = com.example.util.tr(targetRole.emoji),
                                                             fontSize = 15.sp,
                                                             modifier = Modifier.padding(end = 8.dp)
                                                         )
                                                         Column {
                                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                                 Text(
-                                                                    text = targetRole.displayName,
+                                                                    text = com.example.util.tr(targetRole.displayName),
                                                                     color = if (isSelected) targetRole.primaryColor else TextPrimary,
                                                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
                                                                     fontSize = 12.sp
@@ -3523,7 +3523,7 @@ fun UserDetailManagementDialog(
                                                                 }
                                                             }
                                                             Text(
-                                                                text = targetRole.description,
+                                                                text = com.example.util.tr(targetRole.description),
                                                                 color = TextMuted,
                                                                 fontSize = 10.5.sp,
                                                                 maxLines = 1,
@@ -3686,7 +3686,7 @@ fun UserDetailManagementDialog(
                                     // Lista de roles secundarios
                                     secondaryRoles.forEach { targetRole ->
                                         val isSelected = currentSecondaryRole.equals(targetRole.id, ignoreCase = true)
-                                        
+
                                         Surface(
                                             onClick = {
                                                 if (!isSelected && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
@@ -3716,7 +3716,7 @@ fun UserDetailManagementDialog(
                                                     Column {
                                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                                             Text(
-                                                                text = targetRole.displayName,
+                                                                text = com.example.util.tr(targetRole.displayName),
                                                                 color = if (isSelected) targetRole.primaryColor else TextPrimary,
                                                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
                                                                 fontSize = 12.sp
@@ -3732,7 +3732,7 @@ fun UserDetailManagementDialog(
                                                             }
                                                         }
                                                         Text(
-                                                            text = targetRole.description,
+                                                            text = com.example.util.tr(targetRole.description),
                                                             color = TextMuted,
                                                             fontSize = 10.5.sp,
                                                             maxLines = 1,
@@ -3806,7 +3806,7 @@ fun UserDetailManagementDialog(
                                         border = androidx.compose.foundation.BorderStroke(0.5.dp, if (currentVerified) HextechCyan else HextechCardBorder)
                                     ) {
                                         Text(
-                                            text = if (currentVerified) "VERIFICADA" else "NO VERIFICADA",
+                                            text = com.example.util.tr(if (currentVerified) "VERIFICADA" else "NO VERIFICADA"),
                                             color = if (currentVerified) HextechCyan else TextMuted,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
@@ -3865,7 +3865,7 @@ fun UserDetailManagementDialog(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = if (currentVerified) "Revocar Estado de Verificado" else "Otorgar Estado de Verificado",
+                                        text = com.example.util.tr(if (currentVerified) "Revocar Estado de Verificado" else "Otorgar Estado de Verificado"),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 12.sp
                                     )
@@ -3890,7 +3890,7 @@ fun UserDetailManagementDialog(
 
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "El usuario tiene $currentDeviceCount de 2 slots de hardware vinculados. Si el usuario cambió de teléfono o tiene problemas de sesión, puedes liberar todos sus slots.",
+                                    text = com.example.util.tr("El usuario tiene $currentDeviceCount de 2 slots de hardware vinculados. Si el usuario cambió de teléfono o tiene problemas de sesión, puedes liberar todos sus slots."),
                                     color = TextMuted,
                                     fontSize = 11.sp
                                 )
@@ -3905,7 +3905,7 @@ fun UserDetailManagementDialog(
                                                 put("registeredDevices", emptyList<String>())
                                                 put("sessionToken", "")
                                             })
-                                            Toast.makeText(context, "Slots de hardware liberados (0/2 en uso)", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("Slots de hardware liberados (0/2 en uso)"), Toast.LENGTH_SHORT).show()
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
@@ -3961,7 +3961,7 @@ fun UserDetailManagementDialog(
                                     Button(
                                         onClick = {
                                             giftAllAvatarsToUser(context, uid) {
-                                                Toast.makeText(context, "¡Todo el catálogo de avatares desbloqueado!", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, com.example.util.appTr("¡Todo el catálogo de avatares desbloqueado!"), Toast.LENGTH_SHORT).show()
                                                 onReloadAll()
                                             }
                                         },
@@ -3980,7 +3980,7 @@ fun UserDetailManagementDialog(
                                 Button(
                                     onClick = {
                                         revokeAllExclusiveAvatarsFromUser(context, uid) {
-                                            Toast.makeText(context, "¡Regalos de avatares retirados correctamente!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("¡Regalos de avatares retirados correctamente!"), Toast.LENGTH_SHORT).show()
                                             onReloadAll()
                                         }
                                     },
@@ -4056,7 +4056,7 @@ fun UserDetailManagementDialog(
                                     ) {
                                         Icon(if (currentBanned) Icons.Default.LockOpen else Icons.Default.Block, contentDescription = null, modifier = Modifier.size(15.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text(if (currentBanned) "Desbanear y Reactivar Cuenta" else "Suspender / Banear Cuenta", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text(com.example.util.tr(if (currentBanned) "Desbanear y Reactivar Cuenta" else "Suspender / Banear Cuenta"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -4104,7 +4104,7 @@ fun UserDetailManagementDialog(
                                                 )
                                                 Spacer(modifier = Modifier.width(3.dp))
                                                 Text(
-                                                    text = "$currentBlueEssence EA",
+                                                    text = com.example.util.tr("$currentBlueEssence EA"),
                                                     fontSize = 10.5.sp,
                                                     color = Color(0xFF38BDF8),
                                                     fontWeight = FontWeight.Bold
@@ -4128,7 +4128,7 @@ fun UserDetailManagementDialog(
                                                 )
                                                 Spacer(modifier = Modifier.width(3.dp))
                                                 Text(
-                                                    text = "$currentOrangeEssence EN",
+                                                    text = com.example.util.tr("$currentOrangeEssence EN"),
                                                     fontSize = 10.5.sp,
                                                     color = Color(0xFFFFB74D),
                                                     fontWeight = FontWeight.Bold
@@ -4179,8 +4179,8 @@ fun UserDetailManagementDialog(
         AdminGiveEssenceDialog(
             userUid = uid,
             onDismiss = { showGiveEssenceDialog = false },
-            onSuccess = { 
-                Toast.makeText(context, "Esencias actualizadas con éxito.", Toast.LENGTH_SHORT).show() 
+            onSuccess = {
+                Toast.makeText(context, com.example.util.appTr("Esencias actualizadas con éxito."), Toast.LENGTH_SHORT).show()
             }
         )
     }
@@ -4198,8 +4198,8 @@ fun UserDetailManagementDialog(
         AdminPrivateMessageDialog(
             userUid = uid,
             onDismiss = { showPrivateMessageDialog = false },
-            onSuccess = { 
-                Toast.makeText(context, "Mensaje privado enviado.", Toast.LENGTH_SHORT).show() 
+            onSuccess = {
+                Toast.makeText(context, com.example.util.appTr("Mensaje privado enviado."), Toast.LENGTH_SHORT).show()
             }
         )
     }
@@ -4211,7 +4211,7 @@ fun UserDetailManagementDialog(
             title = { Text(tr("Días Personalizados de Premium"), fontWeight = FontWeight.Bold, color = HextechGold) },
             text = {
                 Column {
-                    Text("Ingresa el número de días que deseas otorgarle a $currentName:", color = TextSecondary, fontSize = 13.sp)
+                    Text(com.example.util.tr("Ingresa el número de días que deseas otorgarle a $currentName:"), color = TextSecondary, fontSize = 13.sp)
                     Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = customDaysInput,
@@ -4238,7 +4238,7 @@ fun UserDetailManagementDialog(
                                 showCustomDaysDialog = false
                             }
                         } else {
-                            Toast.makeText(context, "Ingresa una cantidad válida de días", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, com.example.util.appTr("Ingresa una cantidad válida de días"), Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
@@ -4269,7 +4269,7 @@ fun UserDetailManagementDialog(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "¿Cambiar rol a ${target.displayName}?",
+                        text = com.example.util.tr("¿Cambiar rol a ${target.displayName}?"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -4279,7 +4279,7 @@ fun UserDetailManagementDialog(
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "¿Confirmas asignar este nuevo rol al usuario '$currentName'?",
+                        text = com.example.util.tr("¿Confirmas asignar este nuevo rol al usuario '$currentName'?"),
                         color = TextPrimary,
                         fontSize = 13.sp
                     )
@@ -4312,7 +4312,7 @@ fun UserDetailManagementDialog(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = target.description,
+                                text = com.example.util.tr(target.description),
                                 color = TextSecondary,
                                 fontSize = 11.sp,
                                 textAlign = TextAlign.Center
@@ -4405,7 +4405,7 @@ fun UserDetailManagementDialog(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isRemoving) "Quitar Rol Secundario" else "Cambiar Rol Secundario a ${target.displayName}",
+                        text = com.example.util.tr(if (isRemoving) "Quitar Rol Secundario" else "Cambiar Rol Secundario a ${target.displayName}"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -4415,11 +4415,11 @@ fun UserDetailManagementDialog(
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = if (isRemoving) {
+                        text = com.example.util.tr(if (isRemoving) {
                             "¿Confirmas quitar el rol secundario asignado al usuario '$currentName'?"
                         } else {
                             "¿Confirmas asignar el rol secundario '${target.displayName}' al usuario '$currentName'?"
-                        },
+                        }),
                         color = TextPrimary,
                         fontSize = 13.sp
                     )
@@ -4453,7 +4453,7 @@ fun UserDetailManagementDialog(
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = target.description,
+                                    text = com.example.util.tr(target.description),
                                     color = TextSecondary,
                                     fontSize = 11.sp,
                                     textAlign = TextAlign.Center
@@ -4539,7 +4539,7 @@ private fun DurationButton(
         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp)
     ) {
         Text(
-            text = label,
+            text = com.example.util.tr(label),
             color = if (accent) HextechDarkBg else TextPrimary,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
@@ -4624,14 +4624,14 @@ fun AdminAvatarGiftDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Regalar Avatar a $userName",
+                                text = com.example.util.tr("Regalar Avatar a $userName"),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = HextechGold
                             )
                             val unlockedExclusiveCount = currentUnlocked.count { id -> allAvatars.any { it.id == id } }
                             Text(
-                                text = "$unlockedExclusiveCount de ${allAvatars.size} exclusivos desbloqueados",
+                                text = com.example.util.tr("$unlockedExclusiveCount de ${allAvatars.size} exclusivos desbloqueados"),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = HextechCyan,
                                 fontSize = 11.sp
@@ -4640,7 +4640,7 @@ fun AdminAvatarGiftDialog(
                     }
 
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextPrimary)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextPrimary)
                     }
                 }
 
@@ -4684,7 +4684,7 @@ fun AdminAvatarGiftDialog(
                         FilterChip(
                             selected = isSel,
                             onClick = { selectedRarity = r },
-                            label = { Text(r, fontSize = 11.sp) },
+                            label = { Text(com.example.util.tr(r), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = HextechGold.copy(alpha = 0.25f),
                                 selectedLabelColor = HextechGold,
@@ -4706,7 +4706,7 @@ fun AdminAvatarGiftDialog(
                         onClick = {
                             giftAllAvatarsToUser(context, uid) {
                                 currentUnlocked = allAvatars.map { it.id }.toSet()
-                                Toast.makeText(context, "¡Todos los avatares han sido regalados!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("¡Todos los avatares han sido regalados!"), Toast.LENGTH_SHORT).show()
                                 onAvatarGifted("all")
                             }
                         },
@@ -4717,14 +4717,14 @@ fun AdminAvatarGiftDialog(
                     ) {
                         Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("🎁 Regalar Todos (${allAvatars.size})", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.White)
+                        Text(com.example.util.tr("🎁 Regalar Todos (${allAvatars.size})"), fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.White)
                     }
 
                     Button(
                         onClick = {
                             revokeAllExclusiveAvatarsFromUser(context, uid) {
                                 currentUnlocked = setOf("default_poro")
-                                Toast.makeText(context, "¡Regalos de avatares retirados!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("¡Regalos de avatares retirados!"), Toast.LENGTH_SHORT).show()
                                 onAvatarGifted("none")
                             }
                         },
@@ -4759,7 +4759,7 @@ fun AdminAvatarGiftDialog(
                             onGift = {
                                 giftSingleAvatarToUser(context, uid, item.id) {
                                     currentUnlocked = currentUnlocked + item.id
-                                    Toast.makeText(context, "¡Avatar ${item.name} regalado!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("¡Avatar ${item.name} regalado!"), Toast.LENGTH_SHORT).show()
                                     onAvatarGifted(item.id)
                                 }
                             },
@@ -4767,7 +4767,7 @@ fun AdminAvatarGiftDialog(
                                 val currentEquipped = user["avatarId"] as? String
                                 revokeSingleAvatarFromUser(context, uid, item.id, currentEquipped) {
                                     currentUnlocked = currentUnlocked - item.id
-                                    Toast.makeText(context, "¡Avatar ${item.name} retirado!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("¡Avatar ${item.name} retirado!"), Toast.LENGTH_SHORT).show()
                                     onAvatarGifted(item.id)
                                 }
                             }
@@ -4807,7 +4807,7 @@ private fun AvatarGiftCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = item.name,
+                text = com.example.util.tr(item.name),
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp,
                 color = TextPrimary,
@@ -4817,7 +4817,7 @@ private fun AvatarGiftCard(
             )
 
             Text(
-                text = item.rarity,
+                text = com.example.util.tr(item.rarity),
                 fontSize = 9.sp,
                 color = HextechGold,
                 maxLines = 1,
@@ -4942,27 +4942,27 @@ fun AdminBroadcastAnnouncementDialog(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = if (activeAnn.isUrgent) "ACTIVO (URGENTE)" else "ACTIVO EN DISPOSITIVOS",
+                                        text = com.example.util.tr(if (activeAnn.isUrgent) "ACTIVO (URGENTE)" else "ACTIVO EN DISPOSITIVOS"),
                                         color = if (activeAnn.isUrgent) DangerRed else Color(0xFF22C55E),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
                                 Text(
-                                    text = activeAnn.getFormattedDate(),
+                                    text = com.example.util.tr(activeAnn.getFormattedDate()),
                                     color = TextMuted,
                                     fontSize = 10.sp
                                 )
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = activeAnn.title,
+                                text = com.example.util.tr(activeAnn.title),
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )
                             Text(
-                                text = activeAnn.message,
+                                text = com.example.util.tr(activeAnn.message),
                                 color = TextSecondary,
                                 fontSize = 11.sp,
                                 maxLines = 2,
@@ -4975,9 +4975,9 @@ fun AdminBroadcastAnnouncementDialog(
                                     com.example.data.GlobalAnnouncementManager.deactivateAnnouncement(context) { success, err ->
                                         isDeactivating = false
                                         if (success) {
-                                            Toast.makeText(context, "Anuncio global desactivado", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("Anuncio global desactivado"), Toast.LENGTH_SHORT).show()
                                         } else {
-                                            Toast.makeText(context, "Error al desactivar: $err", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("Error al desactivar: $err"), Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 },
@@ -4989,7 +4989,7 @@ fun AdminBroadcastAnnouncementDialog(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    if (isDeactivating) "Desactivando..." else "Desactivar Anuncio Actual",
+                                    com.example.util.tr(if (isDeactivating) "Desactivando..." else "Desactivar Anuncio Actual"),
                                     color = Color.White,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -5031,7 +5031,7 @@ fun AdminBroadcastAnnouncementDialog(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(tr("Marcar como Urgente / Mantenimiento"), color = if (isUrgent) DangerRed else TextSecondary, fontSize = 12.sp)
                 }
-                
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { sendNotification = !sendNotification }
@@ -5050,7 +5050,7 @@ fun AdminBroadcastAnnouncementDialog(
             Button(
                 onClick = {
                     if (title.isBlank() || message.isBlank()) {
-                        Toast.makeText(context, "Por favor completa título y mensaje", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, com.example.util.appTr("Por favor completa título y mensaje"), Toast.LENGTH_SHORT).show()
                         return@Button
                     }
                     isPublishing = true
@@ -5063,17 +5063,17 @@ fun AdminBroadcastAnnouncementDialog(
                     ) { success, err ->
                         isPublishing = false
                         if (success) {
-                            Toast.makeText(context, "¡Anuncio global publicado a todos los dispositivos!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, com.example.util.appTr("¡Anuncio global publicado a todos los dispositivos!"), Toast.LENGTH_SHORT).show()
                             onDismiss()
                         } else {
-                            Toast.makeText(context, "Error al publicar: $err", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, com.example.util.appTr("Error al publicar: $err"), Toast.LENGTH_LONG).show()
                         }
                     }
                 },
                 enabled = !isPublishing,
                 colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
             ) {
-                Text(if (isPublishing) "Publicando..." else "Publicar", color = HextechDarkBg, fontWeight = FontWeight.Bold)
+                Text(com.example.util.tr(if (isPublishing) "Publicando..." else "Publicar"), color = HextechDarkBg, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -5115,11 +5115,11 @@ private fun applyPremiumDuration(
     userRef.set(updatePayload, SetOptions.merge())
         .addOnSuccessListener {
             val msg = if (isPermanent) "Premium Vitalicio otorgado" else "Premium otorgado por $days días"
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr(msg), Toast.LENGTH_SHORT).show()
             onSuccess(calculatedUntil)
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5139,11 +5139,11 @@ private fun removePremiumFromUser(
     db.collection("users").document(uid)
         .set(updatePayload, SetOptions.merge())
         .addOnSuccessListener {
-            Toast.makeText(context, "Suscripción revocada (Cambiado a Gratuito)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr("Suscripción revocada (Cambiado a Gratuito)"), Toast.LENGTH_SHORT).show()
             onSuccess()
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5164,11 +5164,11 @@ private fun updateUserVerification(
         .set(updatePayload, SetOptions.merge())
         .addOnSuccessListener {
             val msg = if (isVerified) "Verificación otorgada exitosamente" else "Verificación revocada"
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr(msg), Toast.LENGTH_SHORT).show()
             onSuccess()
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al actualizar verificación: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar verificación: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5190,7 +5190,7 @@ private fun resetUserHardwareSlots(
             onSuccess()
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al reiniciar slots: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al reiniciar slots: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5215,7 +5215,7 @@ private fun giftSingleAvatarToUser(
             userRef.set(updateData, SetOptions.merge())
                 .addOnSuccessListener { onSuccess() }
                 .addOnFailureListener { err ->
-                    Toast.makeText(context, "Error: ${err.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, com.example.util.appTr("Error: ${err.message}"), Toast.LENGTH_LONG).show()
                 }
         }
 }
@@ -5239,7 +5239,7 @@ private fun giftAllAvatarsToUser(
             onSuccess()
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al regalar avatares: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al regalar avatares: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5266,7 +5266,7 @@ private fun revokeSingleAvatarFromUser(
             onSuccess()
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al quitar avatar: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al quitar avatar: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5290,7 +5290,7 @@ private fun revokeAllExclusiveAvatarsFromUser(
             onSuccess()
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al remover avatares: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al remover avatares: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5301,7 +5301,7 @@ private fun updateUserRoleInCloud(
     onSuccess: (newRole: String, isBanned: Boolean) -> Unit
 ) {
     if (targetRoleId == "admin") {
-        Toast.makeText(context, "Operación denegada: No se puede asignar el rol de Administrador por directivas de seguridad.", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, com.example.util.appTr("Operación denegada: No se puede asignar el rol de Administrador por directivas de seguridad."), Toast.LENGTH_LONG).show()
         return
     }
 
@@ -5343,11 +5343,11 @@ private fun updateUserRoleInCloud(
         .set(updatePayload, SetOptions.merge())
         .addOnSuccessListener {
             val roleName = AppUserRole.fromId(targetRoleId).displayName
-            Toast.makeText(context, "Rol actualizado a $roleName", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr("Rol actualizado a $roleName"), Toast.LENGTH_SHORT).show()
             onSuccess(targetRoleId, isBanned)
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al actualizar rol: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar rol: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5371,11 +5371,11 @@ private fun updateUserSecondaryRoleInCloud(
             } else {
                 "Ninguno"
             }
-            Toast.makeText(context, "Rol secundario actualizado a $roleName", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr("Rol secundario actualizado a $roleName"), Toast.LENGTH_SHORT).show()
             onSuccess(targetSecondaryRoleId)
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al actualizar rol secundario: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar rol secundario: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5396,11 +5396,11 @@ private fun toggleUserBanStatus(
     db.collection("users").document(uid)
         .set(updatePayload, SetOptions.merge())
         .addOnSuccessListener {
-            Toast.makeText(context, if (isBanned) "Usuario BANEADO" else "Usuario Desbaneado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr(if (isBanned) "Usuario BANEADO" else "Usuario Desbaneado"), Toast.LENGTH_SHORT).show()
             onSuccess()
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5463,7 +5463,7 @@ private fun ServerScraperHealthCard() {
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = if (isSyncing) "Sincronizando..." else "En tiempo real",
+                        text = com.example.util.tr(if (isSyncing) "Sincronizando..." else "En tiempo real"),
                         color = if (isSyncing) HextechGold else HextechCyan,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
@@ -5473,7 +5473,7 @@ private fun ServerScraperHealthCard() {
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Estado de Red: $globalStatus",
+                text = com.example.util.tr("Estado de Red: $globalStatus"),
                 color = TextSecondary,
                 fontSize = 11.sp
             )
@@ -5503,7 +5503,7 @@ private fun ServerScraperHealthCard() {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "$regionPrefix ${status.name}",
+                            text = com.example.util.tr("$regionPrefix ${status.name}"),
                             color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
@@ -5512,7 +5512,7 @@ private fun ServerScraperHealthCard() {
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "${status.responseTimeMs} ms",
+                            text = com.example.util.tr("${status.responseTimeMs} ms"),
                             color = TextMuted,
                             fontSize = 10.sp
                         )
@@ -5523,7 +5523,7 @@ private fun ServerScraperHealthCard() {
                             border = BorderStroke(0.5.dp, if (status.isHealthy) Color(0xFF81C784) else Color(0xFFEF9A9A))
                         ) {
                             Text(
-                                text = if (status.isHealthy) "OPERATIVO (OK)" else (status.errorMessage ?: "ERROR"),
+                                text = com.example.util.tr(if (status.isHealthy) "OPERATIVO (OK)" else (status.errorMessage ?: "ERROR")),
                                 color = if (status.isHealthy) Color(0xFF81C784) else Color(0xFFEF9A9A),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
@@ -5551,11 +5551,11 @@ private fun updateUserEmail(
     db.collection("users").document(uid)
         .set(updatePayload, SetOptions.merge())
         .addOnSuccessListener {
-            Toast.makeText(context, "Correo electrónico actualizado exitosamente", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr("Correo electrónico actualizado exitosamente"), Toast.LENGTH_SHORT).show()
             onSuccess(newEmail.trim())
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al actualizar correo: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar correo: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5571,7 +5571,7 @@ private fun createModeratorApprovalRequest(
     val db = FirebaseFirestore.getInstance()
     val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
     val moderator = auth.currentUser
-    
+
     val reqId = db.collection("moderator_requests").document().id
     val payload = hashMapOf<String, Any>(
         "id" to reqId,
@@ -5585,15 +5585,15 @@ private fun createModeratorApprovalRequest(
         "status" to "PENDIENTE",
         "timestamp" to System.currentTimeMillis()
     )
-    
+
     db.collection("moderator_requests").document(reqId)
         .set(payload)
         .addOnSuccessListener {
-            Toast.makeText(context, "Solicitud enviada para aprobación del Administrador", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Solicitud enviada para aprobación del Administrador"), Toast.LENGTH_LONG).show()
             onSuccess()
         }
         .addOnFailureListener { e ->
-            Toast.makeText(context, "Error al crear solicitud: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al crear solicitud: ${e.message}"), Toast.LENGTH_LONG).show()
         }
 }
 
@@ -5611,7 +5611,7 @@ fun AdminModeratorRequestsDialog(
     fun loadRequests() {
         isLoading = true
         val combinedMap = mutableMapOf<String, MutableMap<String, Any>>()
-        
+
         // 1. Cargar desde support_reports (canal garantizado para solicitudes de moderador)
         db.collection("support_reports")
             .whereEqualTo("category", "MODERATOR_REQUEST")
@@ -5622,7 +5622,7 @@ fun AdminModeratorRequestsDialog(
                     data["id"] = doc.id
                     combinedMap[doc.id] = data
                 }
-                
+
                 // 2. Cargar también desde moderator_requests
                 db.collection("moderator_requests")
                     .get()
@@ -5653,7 +5653,7 @@ fun AdminModeratorRequestsDialog(
                         isLoading = false
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(context, "Error al cargar solicitudes: ${e.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, com.example.util.appTr("Error al cargar solicitudes: ${e.message}"), Toast.LENGTH_LONG).show()
                         isLoading = false
                     }
             }
@@ -5707,7 +5707,7 @@ fun AdminModeratorRequestsDialog(
                         )
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextPrimary)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextPrimary)
                     }
                 }
 
@@ -5720,14 +5720,14 @@ fun AdminModeratorRequestsDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = if (showHistory) "Mostrando: Historial de Solicitudes" else "Mostrando: Pendientes de Aprobación",
+                        text = com.example.util.tr(if (showHistory) "Mostrando: Historial de Solicitudes" else "Mostrando: Pendientes de Aprobación"),
                         color = TextSecondary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
                     TextButton(onClick = { showHistory = !showHistory }) {
                         Text(
-                            text = if (showHistory) "Ver Pendientes" else "Ver Historial",
+                            text = com.example.util.tr(if (showHistory) "Ver Pendientes" else "Ver Historial"),
                             color = HextechCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -5747,7 +5747,7 @@ fun AdminModeratorRequestsDialog(
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = if (showHistory) "No hay historial de solicitudes registrado" else "¡Todo al día! No tienes solicitudes pendientes",
+                                text = com.example.util.tr(if (showHistory) "No hay historial de solicitudes registrado" else "¡Todo al día! No tienes solicitudes pendientes"),
                                 color = TextMuted,
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center
@@ -5769,7 +5769,7 @@ fun AdminModeratorRequestsDialog(
                             val requestedByName = req["requestedByName"] as? String ?: "Moderador"
                             val status = req["status"] as? String ?: "PENDIENTE"
                             val timestamp = (req["timestamp"] as? Number)?.toLong() ?: 0L
-                            
+
                             val formattedTime = try {
                                 val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
                                 sdf.format(java.util.Date(timestamp))
@@ -5805,7 +5805,7 @@ fun AdminModeratorRequestsDialog(
                                             shape = RoundedCornerShape(4.dp)
                                         ) {
                                             Text(
-                                                text = if (type == "VERIFICATION") "VERIFICACIÓN" else "ROL SECUNDARIO",
+                                                text = com.example.util.tr(if (type == "VERIFICATION") "VERIFICACIÓN" else "ROL SECUNDARIO"),
                                                 color = if (type == "VERIFICATION") HextechCyan else HextechGold,
                                                 fontSize = 9.sp,
                                                 fontWeight = FontWeight.ExtraBold,
@@ -5813,7 +5813,7 @@ fun AdminModeratorRequestsDialog(
                                             )
                                         }
                                         Text(
-                                            text = formattedTime,
+                                            text = com.example.util.tr(formattedTime),
                                             color = TextMuted,
                                             fontSize = 10.sp
                                         )
@@ -5823,13 +5823,13 @@ fun AdminModeratorRequestsDialog(
 
                                     // Row 2: Target Info
                                     Text(
-                                        text = "Para: $targetName",
+                                        text = com.example.util.tr("Para: $targetName"),
                                         color = TextPrimary,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp
                                     )
                                     Text(
-                                        text = targetEmail,
+                                        text = com.example.util.tr(targetEmail),
                                         color = TextSecondary,
                                         fontSize = 11.sp
                                     )
@@ -5858,7 +5858,7 @@ fun AdminModeratorRequestsDialog(
                                                     shape = RoundedCornerShape(4.dp)
                                                 ) {
                                                     Text(
-                                                        text = if (verifyVal) "VERIFICAR" else "QUITAR VERIFICACIÓN",
+                                                        text = com.example.util.tr(if (verifyVal) "VERIFICAR" else "QUITAR VERIFICACIÓN"),
                                                         color = if (verifyVal) HextechCyan else DangerRed,
                                                         fontSize = 10.sp,
                                                         fontWeight = FontWeight.Bold,
@@ -5889,7 +5889,7 @@ fun AdminModeratorRequestsDialog(
 
                                     // Requested by
                                     Text(
-                                        text = "Solicitado por moderador: $requestedByName",
+                                        text = com.example.util.tr("Solicitado por moderador: $requestedByName"),
                                         color = TextSecondary,
                                         fontSize = 11.sp,
                                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -5907,7 +5907,7 @@ fun AdminModeratorRequestsDialog(
                                                     val updateMap = mapOf<String, Any>("status" to "RECHAZADA")
                                                     try { db.collection("support_reports").document(id).update(updateMap) } catch (_: Exception) {}
                                                     try { db.collection("moderator_requests").document(id).update(updateMap) } catch (_: Exception) {}
-                                                    Toast.makeText(context, "Solicitud rechazada", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, com.example.util.appTr("Solicitud rechazada"), Toast.LENGTH_SHORT).show()
                                                     loadRequests()
                                                 },
                                                 modifier = Modifier.weight(1f),
@@ -5950,7 +5950,7 @@ fun AdminModeratorRequestsDialog(
                                     } else {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            text = "ESTADO: $status",
+                                            text = com.example.util.tr("ESTADO: $status"),
                                             color = if (status == "APROBADA") Color(0xFF00FF7F) else DangerRed,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 11.sp

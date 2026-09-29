@@ -207,7 +207,7 @@ fun AdminGiveEssenceDialog(
                             shape = RoundedCornerShape(6.dp),
                             border = BorderStroke(0.5.dp, activeColor.copy(alpha = 0.5f))
                         ) {
-                            Text("+$preset", fontSize = 10.5.sp, color = activeColor)
+                            Text(com.example.util.tr("+$preset"), fontSize = 10.5.sp, color = activeColor)
                         }
                     }
                 }
@@ -266,7 +266,7 @@ fun AdminGiveEssenceDialog(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = if (isCustomMessage) "Mensaje personalizado:" else "Mensaje predeterminado:",
+                                        text = com.example.util.tr(if (isCustomMessage) "Mensaje personalizado:" else "Mensaje predeterminado:"),
                                         color = if (isCustomMessage) Color(0xFFF59E0B) else Color(0xFF94A3B8),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium
@@ -290,7 +290,7 @@ fun AdminGiveEssenceDialog(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = if (isCustomMessage) "Usar predeterminado" else "Personalizar mensaje",
+                                            text = com.example.util.tr(if (isCustomMessage) "Usar predeterminado" else "Personalizar mensaje"),
                                             color = if (isCustomMessage) Color(0xFF38BDF8) else Color(0xFFF59E0B),
                                             fontSize = 10.5.sp
                                         )
@@ -345,7 +345,7 @@ fun AdminGiveEssenceDialog(
                                                 )
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 Text(
-                                                    text = defaultTitle,
+                                                    text = com.example.util.tr(defaultTitle),
                                                     color = Color(0xFF38BDF8),
                                                     fontSize = 11.5.sp,
                                                     fontWeight = FontWeight.Bold
@@ -353,7 +353,7 @@ fun AdminGiveEssenceDialog(
                                             }
                                             Spacer(modifier = Modifier.height(4.dp))
                                             Text(
-                                                text = defaultBody,
+                                                text = com.example.util.tr(defaultBody),
                                                 color = Color(0xFFCBD5E1),
                                                 fontSize = 11.sp,
                                                 lineHeight = 14.sp
@@ -478,7 +478,7 @@ fun AdminGiveEssenceDialog(
                         if (isProcessing) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
                         } else {
-                            Text(if (isAddition) "Añadir Esencia" else "Descontar Esencia", fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr(if (isAddition) "Añadir Esencia" else "Descontar Esencia"), fontWeight = FontWeight.Bold)
                         }
                     }
                 }

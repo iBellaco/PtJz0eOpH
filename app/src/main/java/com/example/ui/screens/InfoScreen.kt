@@ -77,7 +77,7 @@ fun InfoScreen(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -106,7 +106,7 @@ fun InfoScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = com.example.util.trNullable("Back"), tint = TextPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -159,7 +159,7 @@ fun InfoScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "Coach",
+                            text = com.example.util.tr("Coach"),
                             color = HextechGoldLight,
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold
@@ -178,7 +178,7 @@ fun InfoScreen(
                             }
                         }
                         Text(
-                            text = "v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • $patchLabel",
+                            text = com.example.util.tr("v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • $patchLabel"),
                             color = TextMuted,
                             fontSize = 11.sp
                         )
@@ -303,7 +303,7 @@ fun InfoScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "© 2026 Diego Barba Chavez. " + tr("Todos los derechos reservados."),
+                    text = com.example.util.tr("© 2026 Diego Barba Chavez. " + tr("Todos los derechos reservados.")),
                     color = HextechGoldLight,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -324,7 +324,7 @@ fun InfoScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • ${tr(WildRiftRepository.CURRENT_PATCH_VERSION)}",
+                    text = com.example.util.tr("v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • ${tr(WildRiftRepository.CURRENT_PATCH_VERSION)}"),
                     color = HextechCyan.copy(alpha = 0.9f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold
@@ -369,7 +369,7 @@ fun InfoCard(
             ) {
                 Icon(icon, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                 Text(
-                    text = title,
+                    text = com.example.util.tr(title),
                     color = TextPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -384,8 +384,8 @@ fun InfoCard(
 @Composable
 fun InfoStep(title: String, description: String) {
     Column(modifier = Modifier.padding(bottom = 12.dp)) {
-        Text(text = title, color = HextechCyan, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(text = com.example.util.tr(title), color = HextechCyan, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(text = description, color = TextSecondary, fontSize = 13.sp, lineHeight = 18.sp)
+        Text(text = com.example.util.tr(description), color = TextSecondary, fontSize = 13.sp, lineHeight = 18.sp)
     }
 }

@@ -96,7 +96,8 @@ fun ScannerDebugOverlay(
         if (w <= 0 || h <= 0) return@Canvas
 
         val textRects = mutableListOf<android.graphics.Rect>()
-        fun drawDiagnosticText(text: String, x: Float, y: Float, paint: android.graphics.Paint) {
+        fun drawDiagnosticText(rawText: String, x: Float, y: Float, paint: android.graphics.Paint) {
+            val text = com.example.util.appTr(rawText)
             val width = paint.measureText(text)
             val left = when (paint.textAlign) {
                 android.graphics.Paint.Align.CENTER -> x - width / 2f
@@ -124,7 +125,7 @@ fun ScannerDebugOverlay(
             val allyX = w * currentConfig.getAllySlotX(sIdx)
             val allyAvatarDiam = h * currentConfig.getSlotDiameter(true, sIdx)
             val allyAvatarRad = allyAvatarDiam / 2f
-            
+
             // Círculo del avatar del slot aliado
             drawCircle(
                 color = Color(0xCC00E5FF),
@@ -165,8 +166,8 @@ fun ScannerDebugOverlay(
                 allyY - allyAvatarRad - 6f,
                 allyLabelPaint
             )
-            
-            
+
+
             // -------------------------------------------------------------
             // 2. Columna Rival (Derecha: Círculo de Avatar + Región OCR)
             // -------------------------------------------------------------
@@ -174,7 +175,7 @@ fun ScannerDebugOverlay(
             val enemyX = w * currentConfig.getEnemySlotX(sIdx)
             val enemyAvatarDiam = h * currentConfig.getSlotDiameter(false, sIdx)
             val enemyAvatarRad = enemyAvatarDiam / 2f
-            
+
             // Círculo del avatar del slot rival
             drawCircle(
                 color = Color(0xCCFF1744),
@@ -263,7 +264,7 @@ fun ScannerDebugOverlay(
             tenthTargetY + avatarRadius + 14f,
             tenthPickPaint
         )
-        
+
         // 4. Límites del Asistente Flotante
         if (overlayRect != null) {
             drawRect(

@@ -89,14 +89,14 @@ fun TutorialScreen(onFinish: () -> Unit) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            
+
             // Botón Salir superior
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 IconButton(onClick = onFinish) {
-                    Icon(Icons.Default.Close, contentDescription = "Cerrar Tutorial", tint = TextMuted)
+                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar Tutorial"), tint = TextMuted)
                 }
             }
 
@@ -129,9 +129,9 @@ fun TutorialScreen(onFinish: () -> Unit) {
                             )
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(32.dp))
-                    
+
                     Text(
                         text = tr(currentPage.title),
                         fontSize = 22.sp,
@@ -139,9 +139,9 @@ fun TutorialScreen(onFinish: () -> Unit) {
                         color = TextPrimary,
                         textAlign = TextAlign.Center
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     Text(
                         text = tr(currentPage.description),
                         fontSize = 15.sp,
@@ -174,7 +174,7 @@ fun TutorialScreen(onFinish: () -> Unit) {
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Botones inferiores
@@ -188,7 +188,7 @@ fun TutorialScreen(onFinish: () -> Unit) {
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    TextButton(onClick = { 
+                    TextButton(onClick = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage - 1)
                         }
@@ -196,7 +196,7 @@ fun TutorialScreen(onFinish: () -> Unit) {
                         Text(tr("Atrás"), color = TextMuted, fontSize = 14.sp)
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.weight(1f))
 
                 Button(
@@ -214,7 +214,7 @@ fun TutorialScreen(onFinish: () -> Unit) {
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
                 ) {
                     Text(
-                        text = if (pagerState.currentPage < pages.size - 1) tr("Siguiente") else tr("¡Empezar!"),
+                        text = com.example.util.tr(if (pagerState.currentPage < pages.size - 1) tr("Siguiente") else tr("¡Empezar!")),
                         color = HextechDarkBg,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp

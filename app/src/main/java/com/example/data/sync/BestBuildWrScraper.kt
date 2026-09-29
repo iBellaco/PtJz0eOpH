@@ -95,16 +95,18 @@ object BestBuildWrScraper {
             if (!saved.isNullOrBlank()) {
                 val legacy = if (saved.startsWith("[")) json.decodeFromString<List<Champion>>(saved).associateBy { it.id } else emptyMap()
                 val compact = if (saved.startsWith("{")) org.json.JSONObject(saved) else null
-                for (i in WildRiftRepository.champions.indices) {
-                    val champ = WildRiftRepository.champions[i]
+                val restored = WildRiftRepository.chineseStatsSnapshot().toMutableList()
+                for (i in restored.indices) {
+                    val champ = restored[i]
                     val stats = compact?.optJSONObject(champ.id)
                     val old = legacy[champ.id]
                     if (stats == null && old == null) continue
-                    WildRiftRepository.champions[i] = champ.copy(
+                    restored[i] = champ.copy(
                         winrate = stats?.optDouble("winrate", champ.winrate) ?: old!!.winrate,
                         pickRate = stats?.optDouble("pickRate", champ.pickRate) ?: old!!.pickRate,
                         banRate = stats?.optDouble("banRate", champ.banRate) ?: old!!.banRate)
                 }
+                WildRiftRepository.applyChineseStats(restored)
             }
         } catch (_: Exception) { }
 
@@ -145,7 +147,7 @@ object BestBuildWrScraper {
                     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
                         .putLong(KEY_LAST_TIMESTAMP, now).putString(KEY_LAST_FORMATTED, formatted)
                         .putString(KEY_CACHED_CHAMPIONS, org.json.JSONObject().apply {
-                            WildRiftRepository.champions.forEach { champ -> put(champ.id,
+                            WildRiftRepository.chineseStatsSnapshot().forEach { champ -> put(champ.id,
                                 org.json.JSONObject().put("winrate", champ.winrate)
                                     .put("pickRate", champ.pickRate).put("banRate", champ.banRate)) }
                         }.toString()).apply()

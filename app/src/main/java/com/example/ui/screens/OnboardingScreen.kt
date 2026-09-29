@@ -243,7 +243,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = if (isLastPage) tr("¡Comenzar ahora!") else tr("Siguiente"),
+                            text = com.example.util.tr(if (isLastPage) tr("¡Comenzar ahora!") else tr("Siguiente")),
                             color = HextechDarkBg,
                             fontWeight = FontWeight.Black,
                             fontSize = 15.sp
@@ -302,7 +302,7 @@ fun OnboardingPageContent(page: OnboardingPage) {
 
         // Subtitle badge
         Text(
-            text = page.subtitle.uppercase(),
+            text = com.example.util.tr(page.subtitle.uppercase()),
             color = page.accentColor,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
@@ -313,7 +313,7 @@ fun OnboardingPageContent(page: OnboardingPage) {
 
         // Title
         Text(
-            text = page.title,
+            text = com.example.util.tr(page.title),
             color = TextPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Black,
@@ -324,7 +324,7 @@ fun OnboardingPageContent(page: OnboardingPage) {
 
         // Description
         Text(
-            text = page.description,
+            text = com.example.util.tr(page.description),
             color = TextSecondary,
             fontSize = 13.5.sp,
             textAlign = TextAlign.Center,
@@ -366,7 +366,7 @@ fun OnboardingPageContent(page: OnboardingPage) {
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = highlight,
+                            text = com.example.util.tr(highlight),
                             color = TextPrimary,
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Medium

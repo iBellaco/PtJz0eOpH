@@ -227,7 +227,7 @@ fun LiteRTEngineViewerDialog(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = "LiteRT Motor",
+                            contentDescription = com.example.util.trNullable("LiteRT Motor"),
                             tint = Color(0xFF00E5FF),
                             modifier = Modifier.size(24.dp)
                         )
@@ -253,7 +253,7 @@ fun LiteRTEngineViewerDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
+                            contentDescription = com.example.util.trNullable("Cerrar"),
                             tint = Color.White
                         )
                     }
@@ -307,7 +307,7 @@ fun LiteRTEngineViewerDialog(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = badgeText,
+                            text = com.example.util.tr(badgeText),
                             color = badgeBorder,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 12.sp
@@ -386,45 +386,45 @@ fun LiteRTEngineViewerDialog(
                                 val champ = report.pickedChampion
                                 if (champ != null) {
                                     Text(
-                                        text = champ.name,
+                                        text = com.example.util.tr(champ.name),
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 17.sp
                                     )
                                     Text(
-                                        text = "Rol: ${champ.primaryRole.displayName}",
+                                        text = com.example.util.tr("Rol: ${champ.primaryRole.displayName}"),
                                         color = Color(0xFF38BDF8),
                                         fontSize = 12.sp
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "Coincidencia: ${report.confidencePercent}%",
+                                            text = com.example.util.tr("Coincidencia: ${report.confidencePercent}%"),
                                             color = Color(0xFF10B981),
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 12.sp
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = "• ${report.inferenceTimeMs} ms",
+                                            text = com.example.util.tr("• ${report.inferenceTimeMs} ms"),
                                             color = Color(0xFF94A3B8),
                                             fontSize = 11.sp
                                         )
                                     }
                                 } else {
                                     Text(
-                                        text = when (report.status) {
+                                        text = com.example.util.tr(when (report.status) {
                                             LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9,
                                             LiteRTVisionClassifier.EngineStatus.RUNNING_INFERENCE -> "Analizando retratos en vivo..."
                                             LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> "Slot final en espera"
                                             else -> "Evaluando retratos..."
-                                        },
+                                        }),
                                         color = Color(0xFF94A3B8),
                                         fontWeight = FontWeight.Medium,
                                         fontSize = 14.sp
                                     )
                                     Text(
-                                        text = when (report.status) {
+                                        text = com.example.util.tr(when (report.status) {
                                             LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> {
                                                 if (report.slotDescription.contains("Aliado", ignoreCase = true)) {
                                                     "Mostrando icono de línea. Visor escaneando retratos."
@@ -433,7 +433,7 @@ fun LiteRTEngineViewerDialog(
                                                 }
                                             }
                                             else -> report.slotDescription.ifBlank { "Slot 5 (10º Pick)" }
-                                        },
+                                        }),
                                         color = Color(0xFF64748B),
                                         fontSize = 11.sp
                                     )
@@ -455,13 +455,13 @@ fun LiteRTEngineViewerDialog(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Muestra: ${report.tensorDimensions}",
+                                    text = com.example.util.tr("Muestra: ${report.tensorDimensions}"),
                                     color = Color(0xFF64748B),
                                     fontSize = 10.sp,
                                     fontFamily = FontFamily.Monospace
                                 )
                                 Text(
-                                    text = "Umbral mín: ${(report.minConfidenceThreshold * 100).toInt()}%",
+                                    text = com.example.util.tr("Umbral mín: ${(report.minConfidenceThreshold * 100).toInt()}%"),
                                     color = Color(0xFF38BDF8),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
@@ -474,7 +474,7 @@ fun LiteRTEngineViewerDialog(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Estabilidad: ${report.stableFramesCount}/${report.requiredStableFrames} frames",
+                                    text = com.example.util.tr("Estabilidad: ${report.stableFramesCount}/${report.requiredStableFrames} frames"),
                                     color = if (report.isConfirmed) Color(0xFF10B981) else Color(0xFFF59E0B),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
@@ -523,7 +523,7 @@ fun LiteRTEngineViewerDialog(
                                 )
                             }
                             Text(
-                                text = "${(report.minConfidenceThreshold * 100).toInt()}%",
+                                text = com.example.util.tr("${(report.minConfidenceThreshold * 100).toInt()}%"),
                                 color = Color(0xFF00E5FF),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
@@ -557,7 +557,7 @@ fun LiteRTEngineViewerDialog(
                                 border = BorderStroke(1.dp, Color(0xFF475569)),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                             ) {
-                                Text("-5%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("-5%"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
 
                             Slider(
@@ -585,7 +585,7 @@ fun LiteRTEngineViewerDialog(
                                 border = BorderStroke(1.dp, Color(0xFF475569)),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                             ) {
-                                Text("+5%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("+5%"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -628,7 +628,7 @@ fun LiteRTEngineViewerDialog(
                             // Switch para alternar círculos en pantalla en vivo
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = if (isLiveVisionActive) "Ver en Pantalla: ON" else "Ver en Pantalla: OFF",
+                                    text = com.example.util.tr(if (isLiveVisionActive) "Ver en Pantalla: ON" else "Ver en Pantalla: OFF"),
                                     color = if (isLiveVisionActive) Color(0xFF00E5FF) else Color(0xFF94A3B8),
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold
@@ -690,7 +690,7 @@ fun LiteRTEngineViewerDialog(
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                 ) {
                                     Text(
-                                        text = target.title,
+                                        text = com.example.util.tr(target.title),
                                         color = if (isSel) Color(0xFF38BDF8) else Color(0xFF94A3B8),
                                         fontSize = 8.5.sp,
                                         fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
@@ -729,7 +729,7 @@ fun LiteRTEngineViewerDialog(
                                 .padding(horizontal = 8.dp, vertical = 5.dp)
                         ) {
                             Text(
-                                text = currentCoordsText,
+                                text = com.example.util.tr(currentCoordsText),
                                 color = Color(0xFF38BDF8),
                                 fontSize = 9.sp,
                                 fontFamily = FontFamily.Monospace,
@@ -760,7 +760,7 @@ fun LiteRTEngineViewerDialog(
                                     border = BorderStroke(1.dp, Color(0xFF38BDF8))
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Arriba", tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
+                                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = com.example.util.trNullable("Arriba"), tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
                                     }
                                 }
 
@@ -778,7 +778,7 @@ fun LiteRTEngineViewerDialog(
                                         border = BorderStroke(1.dp, Color(0xFF38BDF8))
                                     ) {
                                         Box(contentAlignment = Alignment.Center) {
-                                            Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Izquierda", tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
+                                            Icon(Icons.Default.KeyboardArrowLeft, contentDescription = com.example.util.trNullable("Izquierda"), tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
                                         }
                                     }
 
@@ -791,7 +791,7 @@ fun LiteRTEngineViewerDialog(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = "±${(calibrationStep * 100).format(1)}%",
+                                            text = com.example.util.tr("±${(calibrationStep * 100).format(1)}%"),
                                             color = Color.White,
                                             fontSize = 7.5.sp,
                                             fontWeight = FontWeight.Bold
@@ -808,7 +808,7 @@ fun LiteRTEngineViewerDialog(
                                         border = BorderStroke(1.dp, Color(0xFF38BDF8))
                                     ) {
                                         Box(contentAlignment = Alignment.Center) {
-                                            Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Derecha", tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
+                                            Icon(Icons.Default.KeyboardArrowRight, contentDescription = com.example.util.trNullable("Derecha"), tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
                                         }
                                     }
                                 }
@@ -823,7 +823,7 @@ fun LiteRTEngineViewerDialog(
                                     border = BorderStroke(1.dp, Color(0xFF38BDF8))
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Abajo", tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
+                                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = com.example.util.trNullable("Abajo"), tint = Color(0xFF38BDF8), modifier = Modifier.size(20.dp))
                                     }
                                 }
                             }
@@ -901,7 +901,7 @@ fun LiteRTEngineViewerDialog(
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
-                                                text = label,
+                                                text = com.example.util.tr(label),
                                                 color = if (isSel) Color(0xFF38BDF8) else Color(0xFF94A3B8),
                                                 fontSize = 7.5.sp,
                                                 fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
@@ -924,7 +924,7 @@ fun LiteRTEngineViewerDialog(
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText("WildRift_Vision_Calibration" , calibrationConfig.toFormattedCoordinatesString())
                                     clipboard.setPrimaryClip(clip)
-                                    Toast.makeText(context, "Coordenadas copiadas al portapapeles", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, com.example.util.appTr("Coordenadas copiadas al portapapeles"), Toast.LENGTH_LONG).show()
                                 },
                                 modifier = Modifier.weight(1.3f).height(34.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
@@ -941,7 +941,7 @@ fun LiteRTEngineViewerDialog(
                             Button(
                                 onClick = {
                                     DraftVisionScanner.resetCalibration(context)
-                                    Toast.makeText(context, "Calibración restablecida", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Calibración restablecida"), Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier.weight(0.9f).height(34.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
@@ -981,7 +981,7 @@ fun LiteRTEngineViewerDialog(
                                 } else {
                                     DraftVisionScanner.enemySlotConfirmedChampions[4] = selectedChamp
                                 }
-                                Toast.makeText(context, "10º Pick fijado: ${selectedChamp.name}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("10º Pick fijado: ${selectedChamp.name}"), Toast.LENGTH_SHORT).show()
                             }
                         )
                         Spacer(modifier = Modifier.height(6.dp))
@@ -1024,7 +1024,7 @@ fun LiteRTEngineViewerDialog(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = report.decisionReason,
+                        text = com.example.util.tr(report.decisionReason),
                         color = Color(0xFFCBD5E1),
                         fontSize = 12.sp,
                         lineHeight = 16.sp
@@ -1046,7 +1046,7 @@ fun LiteRTEngineViewerDialog(
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("Ruta de Diagnóstico 10º Pick" , path)
                         clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "Ruta copiada al portapapeles", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, com.example.util.appTr("Ruta copiada al portapapeles"), Toast.LENGTH_SHORT).show()
                     }
                 )
             }
@@ -1111,7 +1111,7 @@ private fun DiagnosticModeSection(
                         letterSpacing = 0.5.sp
                     )
                     Text(
-                        text = if (isEnabled) "Guardando recortes en caché para inspección" else "Modo diagnóstico inactivo",
+                        text = com.example.util.tr(if (isEnabled) "Guardando recortes en caché para inspección" else "Modo diagnóstico inactivo"),
                         color = if (isEnabled) Color(0xFF10B981) else Color(0xFF94A3B8),
                         fontSize = 10.sp
                     )
@@ -1182,7 +1182,7 @@ private fun DiagnosticModeSection(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "Copiar ruta",
+                                contentDescription = com.example.util.trNullable("Copiar ruta"),
                                 tint = Color(0xFF00E5FF),
                                 modifier = Modifier.size(15.dp)
                             )
@@ -1193,7 +1193,7 @@ private fun DiagnosticModeSection(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = if (cacheStats.directoryPath.isNotEmpty()) cacheStats.directoryPath else ".../cache/diagnostic_10th_pick",
+                    text = com.example.util.tr(if (cacheStats.directoryPath.isNotEmpty()) cacheStats.directoryPath else ".../cache/diagnostic_10th_pick"),
                     color = Color(0xFF38BDF8),
                     fontSize = 10.sp,
                     fontFamily = FontFamily.Monospace,
@@ -1208,7 +1208,7 @@ private fun DiagnosticModeSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "${cacheStats.totalFiles} recortes guardados • ${cacheStats.formattedTotalSize}",
+                        text = com.example.util.tr("${cacheStats.totalFiles} recortes guardados • ${cacheStats.formattedTotalSize}"),
                         color = Color(0xFFCBD5E1),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -1224,7 +1224,7 @@ private fun DiagnosticModeSection(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
-                                contentDescription = "Refrescar",
+                                contentDescription = com.example.util.trNullable("Refrescar"),
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -1241,7 +1241,7 @@ private fun DiagnosticModeSection(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.DeleteSweep,
-                                    contentDescription = "Limpiar",
+                                    contentDescription = com.example.util.trNullable("Limpiar"),
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -1277,7 +1277,7 @@ private fun DiagnosticModeSection(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Aún no se han guardado recortes en el directorio de caché.\nCuando el escáner apunte al 10º pick, se guardarán aquí automáticamente.",
+                    text = com.example.util.tr("Aún no se han guardado recortes en el directorio de caché.\nCuando el escáner apunte al 10º pick, se guardarán aquí automáticamente."),
                     color = Color(0xFF64748B),
                     fontSize = 11.sp,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -1339,21 +1339,21 @@ private fun SavedCropThumbnailCard(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = teamLabel,
+            text = com.example.util.tr(teamLabel),
             color = borderColor,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
-            text = frame.formattedTime,
+            text = com.example.util.tr(frame.formattedTime),
             color = Color(0xFFCBD5E1),
             fontSize = 9.sp,
             fontFamily = FontFamily.Monospace
         )
 
         Text(
-            text = frame.dimensionsText,
+            text = com.example.util.tr(frame.dimensionsText),
             color = Color(0xFF94A3B8),
             fontSize = 8.sp
         )
@@ -1420,7 +1420,7 @@ private fun DiagnosticFrameInspectorDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
+                            contentDescription = com.example.util.trNullable("Cerrar"),
                             tint = Color.White
                         )
                     }
@@ -1505,7 +1505,7 @@ private fun DiagnosticFrameInspectorDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Share,
-                            contentDescription = "Compartir",
+                            contentDescription = com.example.util.trNullable("Compartir"),
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -1519,7 +1519,7 @@ private fun DiagnosticFrameInspectorDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Eliminar",
+                            contentDescription = com.example.util.trNullable("Eliminar"),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -1542,13 +1542,13 @@ private fun MetricRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = label,
+            text = com.example.util.tr(label),
             color = Color(0xFF94A3B8),
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium
         )
         Text(
-            text = value,
+            text = com.example.util.tr(value),
             color = valueColor,
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
@@ -1584,7 +1584,7 @@ private fun CandidateRowItem(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
             Text(
-                text = "#${candidate.rank}",
+                text = com.example.util.tr("#${candidate.rank}"),
                 color = if (isWinner) Color(0xFF00E5FF) else Color(0xFF64748B),
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
@@ -1602,7 +1602,7 @@ private fun CandidateRowItem(
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = candidate.champion.name,
+                        text = com.example.util.tr(candidate.champion.name),
                         color = Color.White,
                         fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Medium,
                         fontSize = 13.sp
@@ -1625,7 +1625,7 @@ private fun CandidateRowItem(
                     }
                 }
                 Text(
-                    text = "Peso relativo: ${(candidate.softmaxProbability * 100).toInt()}%",
+                    text = com.example.util.tr("Peso relativo: ${(candidate.softmaxProbability * 100).toInt()}%"),
                     color = Color(0xFF94A3B8),
                     fontSize = 10.sp
                 )
@@ -1634,7 +1634,7 @@ private fun CandidateRowItem(
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = "${(candidate.similarityScore * 100).toInt()}% Coincidencia",
+                text = com.example.util.tr("${(candidate.similarityScore * 100).toInt()}% Coincidencia"),
                 color = if (passes) Color(0xFF10B981) else Color(0xFFF59E0B),
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp

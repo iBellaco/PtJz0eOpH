@@ -155,12 +155,12 @@ fun RoleBadge(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = badgeEmoji,
+                    text = com.example.util.tr(badgeEmoji),
                     fontSize = metrics.iconSize,
                     modifier = Modifier.padding(end = 4.dp)
                 )
                 Text(
-                    text = badgeText,
+                    text = com.example.util.tr(badgeText),
                     color = badgeColor,
                     fontSize = metrics.fontSize,
                     fontWeight = FontWeight.ExtraBold,

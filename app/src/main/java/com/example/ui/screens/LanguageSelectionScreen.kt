@@ -46,12 +46,13 @@ import com.example.util.AppLogger
 
 @Composable
 fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
-    var selectedLang by remember { mutableStateOf("es") }
+    var selectedLang by remember { mutableStateOf(com.example.util.AppLanguage.current.value) }
 
     val screenTitle = if (selectedLang == "pt") "Escolha seu idioma" else "Elige tu idioma"
     val screenSubtitle = if (selectedLang == "pt") "Selecione o idioma do assistente tático" else "Selecciona el idioma del asistente táctico"
     val buttonText = if (selectedLang == "pt") "Continuar em Português" else "Continuar en Español"
 
+    androidx.compose.runtime.CompositionLocalProvider(com.example.util.LocalLanguage provides selectedLang) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -69,13 +70,13 @@ fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = screenTitle,
+            text = com.example.util.tr(screenTitle),
             color = HextechGold,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = screenSubtitle,
+            text = com.example.util.tr(screenSubtitle),
             color = TextMuted,
             fontSize = 14.sp
         )
@@ -114,12 +115,13 @@ fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
             colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
         ) {
             Text(
-                text = buttonText,
+                text = com.example.util.tr(buttonText),
                 color = HextechDarkBg,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
         }
+    }
     }
 }
 
@@ -156,7 +158,7 @@ fun LanguageOption(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = flagEmoji,
+            text = com.example.util.tr(flagEmoji),
             fontSize = 26.sp,
             modifier = Modifier.alpha(if (isEnabled) 1.0f else 0.4f)
         )
@@ -164,7 +166,7 @@ fun LanguageOption(
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = title,
+                    text = com.example.util.tr(title),
                     color = if (isEnabled) TextPrimary else TextMuted,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -179,7 +181,7 @@ fun LanguageOption(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = trailingBadge,
+                            text = com.example.util.tr(trailingBadge),
                             color = HextechCyan,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
@@ -189,7 +191,7 @@ fun LanguageOption(
             }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = subtitle,
+                text = com.example.util.tr(subtitle),
                 color = if (isEnabled) HextechGoldLight else TextMuted.copy(alpha = 0.6f),
                 fontSize = 12.sp
             )

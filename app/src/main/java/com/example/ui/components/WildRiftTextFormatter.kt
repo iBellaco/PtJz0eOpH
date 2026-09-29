@@ -143,7 +143,7 @@ fun FormattedWildRiftText(
     overflow: TextOverflow = TextOverflow.Clip
 ) {
     Text(
-        text = formatWildRiftDescription(text, color),
+        text = com.example.util.tr(formatWildRiftDescription(text, color)),
         modifier = modifier,
         color = color,
         fontSize = fontSize,

@@ -178,7 +178,7 @@ fun CooldownTrackerPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "⏱️ " + tr("CD Tracker:") + " " + tr("Rival") + " " + tr(selectedRole.displayName),
+                text = com.example.util.tr("⏱️ " + tr("CD Tracker:") + " " + tr("Rival") + " " + tr(selectedRole.displayName)),
                 color = TextPrimary,
                 fontSize = if (isCompactOverlay) 11.5.sp else 13.sp,
                 fontWeight = FontWeight.Bold
@@ -259,7 +259,7 @@ fun CooldownTrackerPanel(
                                     )
                                 } else {
                                     Text(
-                                        text = spell.iconFallback,
+                                        text = com.example.util.tr(spell.iconFallback),
                                         color = if (isActive) DangerRed else spell.accentColor,
                                         fontWeight = FontWeight.Black,
                                         fontSize = if (isCompactOverlay) 9.sp else 11.sp
@@ -279,7 +279,7 @@ fun CooldownTrackerPanel(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
-                                    text = if (isActive) tr("Enfriamiento:") + " ${remainingSeconds}s " + tr("restante") else tr("Base:") + " ${spell.baseCooldownSeconds}s • " + tr("¡Listo para usar!"),
+                                    text = com.example.util.tr(if (isActive) tr("Enfriamiento:") + " ${remainingSeconds}s " + tr("restante") else tr("Base:") + " ${spell.baseCooldownSeconds}s • " + tr("¡Listo para usar!")),
                                     color = if (isActive) HextechGold else TextMuted,
                                     fontSize = if (isCompactOverlay) 9.sp else 10.5.sp
                                 )
@@ -297,7 +297,7 @@ fun CooldownTrackerPanel(
                                     onClick = { CooldownTrackerStateHolder.adjustTimer(selectedRole.name, spell.id, -10) },
                                     modifier = Modifier.size(24.dp)
                                 ) {
-                                    Text("-10", color = HextechCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    Text(com.example.util.tr("-10"), color = HextechCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                                 }
 
                                 // Indicador grande de segundos restantes
@@ -309,7 +309,7 @@ fun CooldownTrackerPanel(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "${remainingSeconds}s",
+                                        text = com.example.util.tr("${remainingSeconds}s"),
                                         color = Color.White,
                                         fontWeight = FontWeight.Black,
                                         fontSize = if (isCompactOverlay) 11.sp else 13.sp
@@ -321,7 +321,7 @@ fun CooldownTrackerPanel(
                                     onClick = { CooldownTrackerStateHolder.resetTimer(selectedRole.name, spell.id) },
                                     modifier = Modifier.size(24.dp)
                                 ) {
-                                    Icon(Icons.Default.Refresh, contentDescription = "Reiniciar", tint = TextMuted, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Refresh, contentDescription = com.example.util.trNullable("Reiniciar"), tint = TextMuted, modifier = Modifier.size(16.dp))
                                 }
                             }
                         } else {

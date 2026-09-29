@@ -30,7 +30,7 @@ fun FAQScreen(
 ) {
     var faqSearchQuery by remember { mutableStateOf("") }
     var selectedFaq by remember { mutableStateOf<Pair<String, String>?>(null) }
-    
+
     val faqs = remember {
         listOf(
             Pair(
@@ -262,9 +262,9 @@ fun FAQScreen(
 
     val filteredFaqs = remember(faqSearchQuery) {
         if (faqSearchQuery.isBlank()) faqs
-        else faqs.filter { 
-            it.first.contains(faqSearchQuery, ignoreCase = true) || 
-            it.second.contains(faqSearchQuery, ignoreCase = true) 
+        else faqs.filter {
+            it.first.contains(faqSearchQuery, ignoreCase = true) ||
+            it.second.contains(faqSearchQuery, ignoreCase = true)
         }
     }
 
@@ -299,7 +299,7 @@ fun FAQScreen(
                 trailingIcon = {
                     if (faqSearchQuery.isNotEmpty()) {
                         IconButton(onClick = { faqSearchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Limpiar", tint = TextMuted, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Limpiar"), tint = TextMuted, modifier = Modifier.size(18.dp))
                         }
                     }
                 },

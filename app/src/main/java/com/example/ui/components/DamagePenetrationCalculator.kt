@@ -95,7 +95,7 @@ fun DamagePenetrationCalculator(
                     Column {
                         Text(tr("Defensa Efectiva"), color = TextMuted, fontSize = 11.sp)
                         Text(
-                            text = "${effectiveResistance.roundToInt()} / ${rawResistance.roundToInt()}",
+                            text = com.example.util.tr("${effectiveResistance.roundToInt()} / ${rawResistance.roundToInt()}"),
                             color = HextechCyan,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black
@@ -106,14 +106,14 @@ fun DamagePenetrationCalculator(
                         Text(tr("Reducción de Daño"), color = TextMuted, fontSize = 11.sp)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "${baseReductionPercent.roundToInt()}%",
+                                text = com.example.util.tr("${baseReductionPercent.roundToInt()}%"),
                                 color = DangerRed,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = HextechGold, modifier = Modifier.size(14.dp).padding(horizontal = 2.dp))
                             Text(
-                                text = "${effectiveReductionPercent.roundToInt()}%",
+                                text = com.example.util.tr("${effectiveReductionPercent.roundToInt()}%"),
                                 color = AllyBlue,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Black
@@ -130,9 +130,9 @@ fun DamagePenetrationCalculator(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("${tr("Daño Real Infligido")}:", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Text(com.example.util.tr("${tr("Daño Real Infligido")}:"), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     Text(
-                        text = "${actualDamageDealt.roundToInt()} (+${damageIncreasePercent.roundToInt()}%)",
+                        text = com.example.util.tr("${actualDamageDealt.roundToInt()} (+${damageIncreasePercent.roundToInt()}%)"),
                         color = HextechGold,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
@@ -146,7 +146,7 @@ fun DamagePenetrationCalculator(
         // Controles y Sliders
         // 1. Armadura / Resistencia Mágica del Enemigo
         Text(
-            text = "${tr("Armadura / Resistencia Mágica")}: ${rawResistance.roundToInt()}",
+            text = com.example.util.tr("${tr("Armadura / Resistencia Mágica")}: ${rawResistance.roundToInt()}"),
             color = TextPrimary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
@@ -165,7 +165,7 @@ fun DamagePenetrationCalculator(
 
         // 2. Letalidad / Penetración Plana
         Text(
-            text = "${tr("Letalidad / Penetración Plana")}: ${flatPenetration.roundToInt()}",
+            text = com.example.util.tr("${tr("Letalidad / Penetración Plana")}: ${flatPenetration.roundToInt()}"),
             color = TextPrimary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
@@ -184,7 +184,7 @@ fun DamagePenetrationCalculator(
 
         // 3. Porcentaje de Penetración (% Armor Pen / % Magic Pen)
         Text(
-            text = "${tr("Penetración Porcentual")}: ${percentPenetration.roundToInt()}%",
+            text = com.example.util.tr("${tr("Penetración Porcentual")}: ${percentPenetration.roundToInt()}%"),
             color = TextPrimary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
@@ -246,7 +246,7 @@ fun DamagePenetrationCalculator(
                     }
                 }
                 Text(
-                    text = tacticalAdvice,
+                    text = com.example.util.tr(tacticalAdvice),
                     color = TextPrimary,
                     fontSize = 11.sp,
                     lineHeight = 15.sp

@@ -114,7 +114,7 @@ fun UserInboxDialog(
 
         val db = FirebaseFirestore.getInstance()
         val userDoc = db.collection("users").document(userUid)
-        
+
         // 1. Escuchar subcolección messages
         userDoc.collection("messages")
             .addSnapshotListener { snapshot, error ->
@@ -375,8 +375,8 @@ fun UserInboxDialog(
             val reportId = m["reportId"] as? String ?: id
             if (deletedIds.contains(id) || (reportId.isNotBlank() && deletedIds.contains(reportId))) continue
 
-            val isDeleted = (m["isDeleted"] as? Boolean) == true || 
-                            (m["deleted"] as? Boolean) == true || 
+            val isDeleted = (m["isDeleted"] as? Boolean) == true ||
+                            (m["deleted"] as? Boolean) == true ||
                             (m["status"] as? String)?.uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
             if (isDeleted) continue
 
@@ -395,8 +395,8 @@ fun UserInboxDialog(
             val reportId = m["reportId"] as? String ?: id
             if (deletedIds.contains(id) || (reportId.isNotBlank() && deletedIds.contains(reportId))) return
 
-            val isDeleted = (m["isDeleted"] as? Boolean) == true || 
-                            (m["deleted"] as? Boolean) == true || 
+            val isDeleted = (m["isDeleted"] as? Boolean) == true ||
+                            (m["deleted"] as? Boolean) == true ||
                             (m["status"] as? String)?.uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
             if (isDeleted) return
 
@@ -405,8 +405,8 @@ fun UserInboxDialog(
                 val rId = m["reportId"] as? String
                 if (currActive != null) {
                     if (currActive.isEmpty()) return
-                    val matchesActive = currActive.contains(id) || 
-                                       currActive.contains(reportId) || 
+                    val matchesActive = currActive.contains(id) ||
+                                       currActive.contains(reportId) ||
                                        (rId != null && currActive.contains(rId))
                     if (!matchesActive) return
                 } else {
@@ -518,7 +518,7 @@ fun UserInboxDialog(
             val mId = m["id"] as? String ?: ""
             val rId = m["reportId"] as? String ?: ""
             if (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId)) {
-                m.toMutableMap().apply { 
+                m.toMutableMap().apply {
                     put("isRead", true)
                     put("userRead", true)
                     put("hasNewAdminReply", false)
@@ -530,7 +530,7 @@ fun UserInboxDialog(
             val mId = m["id"] as? String ?: ""
             val rId = m["reportId"] as? String ?: ""
             if (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId)) {
-                m.toMutableMap().apply { 
+                m.toMutableMap().apply {
                     put("isRead", true)
                     put("userRead", true)
                     put("hasNewAdminReply", false)
@@ -542,7 +542,7 @@ fun UserInboxDialog(
             val mId = m["id"] as? String ?: ""
             val rId = m["reportId"] as? String ?: ""
             if (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId)) {
-                m.toMutableMap().apply { 
+                m.toMutableMap().apply {
                     put("isRead", true)
                     put("userRead", true)
                     put("hasNewAdminReply", false)
@@ -588,7 +588,7 @@ fun UserInboxDialog(
                         m.toMutableMap().apply { put("isRead", true) }
                     } else m
                 }
-                val remaining = updated.count { 
+                val remaining = updated.count {
                     val mId = it["id"] as? String ?: ""
                     val rId = it["reportId"] as? String ?: ""
                     (it["isRead"] as? Boolean) == false && !newRead.contains(mId) && !newRead.contains(rId)
@@ -832,7 +832,7 @@ fun UserInboxDialog(
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Icon(Icons.Default.HeadsetMic, contentDescription = null, tint = activeTheme.primary)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(title, fontWeight = FontWeight.Bold, color = activeTheme.primary, fontSize = 16.sp, maxLines = 1)
+                            Text(com.example.util.tr(title), fontWeight = FontWeight.Bold, color = activeTheme.primary, fontSize = 16.sp, maxLines = 1)
                         }
                         HextechAnimatedIconButton(
                             onClick = { selectedSupportMessage = null },
@@ -841,7 +841,7 @@ fun UserInboxDialog(
                             borderColor = Color.Transparent,
                             glowColor = activeTheme.primary
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = activeTheme.textSecondary, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = activeTheme.textSecondary, modifier = Modifier.size(20.dp))
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -913,7 +913,7 @@ fun UserInboxDialog(
                         borderColor = Color.Transparent,
                         glowColor = activeTheme.primary
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = activeTheme.textSecondary, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = activeTheme.textSecondary, modifier = Modifier.size(20.dp))
                     }
                 }
 
@@ -939,7 +939,7 @@ fun UserInboxDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            if (unreadCount > 0) "$unreadCount no leído(s)" else "Todos leídos",
+                            com.example.util.tr(if (unreadCount > 0) "$unreadCount no leído(s)" else "Todos leídos"),
                             color = if (unreadCount > 0) activeTheme.primaryLight else activeTheme.textSecondary,
                             fontSize = 12.sp
                         )
@@ -953,10 +953,10 @@ fun UserInboxDialog(
                         }
                     }
                 }
-                
+
                 Divider(color = activeTheme.cardBorder)
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 if (isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = activeTheme.primary)
@@ -1104,7 +1104,7 @@ fun UserInboxDialog(
                                                 modifier = Modifier.padding(end = 6.dp)
                                             ) {
                                                 Text(
-                                                    "${messageTag.emoji} ${messageTag.label.uppercase()}",
+                                                    com.example.util.tr("${messageTag.emoji} ${messageTag.label.uppercase()}"),
                                                     color = if (messageTag.textColor == Color.Black) messageTag.badgeBg else messageTag.textColor,
                                                     fontSize = 8.5.sp,
                                                     fontWeight = FontWeight.ExtraBold,
@@ -1120,7 +1120,7 @@ fun UserInboxDialog(
                                                     modifier = Modifier.padding(end = 6.dp)
                                                 ) {
                                                     Text(
-                                                        normalizedStatus,
+                                                        com.example.util.tr(normalizedStatus),
                                                         color = statusColor,
                                                         fontSize = 8.5.sp,
                                                         fontWeight = FontWeight.Bold,
@@ -1129,7 +1129,7 @@ fun UserInboxDialog(
                                                 }
                                             }
 
-                                            Text(title, color = if (!isRead) Color(0xFF0EA5E9) else Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                            Text(com.example.util.tr(title), color = if (!isRead) Color(0xFF0EA5E9) else Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                         }
 
                                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1141,7 +1141,7 @@ fun UserInboxDialog(
                                                     borderColor = Color.Transparent,
                                                     glowColor = Color(0xFF0EA5E9)
                                                 ) {
-                                                    Icon(Icons.Default.MarkEmailRead, contentDescription = "Marcar como leído", tint = Color(0xFF0EA5E9), modifier = Modifier.size(18.dp))
+                                                    Icon(Icons.Default.MarkEmailRead, contentDescription = com.example.util.trNullable("Marcar como leído"), tint = Color(0xFF0EA5E9), modifier = Modifier.size(18.dp))
                                                 }
                                                 Spacer(modifier = Modifier.width(4.dp))
                                             }
@@ -1154,12 +1154,12 @@ fun UserInboxDialog(
                                                     borderColor = Color.Transparent,
                                                     glowColor = DangerRed
                                                 ) {
-                                                    Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = DangerRed.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
+                                                    Icon(Icons.Default.Delete, contentDescription = com.example.util.trNullable("Borrar"), tint = DangerRed.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
                                                 }
                                             }
                                         }
                                     }
-                                    Text(dateStr, color = Color.Gray, fontSize = 11.sp)
+                                    Text(com.example.util.tr(dateStr), color = Color.Gray, fontSize = 11.sp)
                                     Spacer(modifier = Modifier.height(8.dp))
 
                                 if (isSupportTicket) {
@@ -1174,11 +1174,11 @@ fun UserInboxDialog(
                                             }
                                     ) {
                                             if (sender.isNotBlank()) {
-                                                Text(tr("Remitente:") + " $sender", color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                                Text(com.example.util.tr(tr("Remitente:") + " $sender"), color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                                 Spacer(modifier = Modifier.height(2.dp))
                                             }
                                             Text(
-                                                text = if (content.length > 90) content.substring(0, 90) + "..." else content,
+                                                text = com.example.util.tr(if (content.length > 90) content.substring(0, 90) + "..." else content),
                                                 color = Color.LightGray,
                                                 fontSize = 13.sp,
                                                 maxLines = 2
@@ -1221,9 +1221,9 @@ fun UserInboxDialog(
                                                                 horizontalArrangement = Arrangement.SpaceBetween,
                                                                 verticalAlignment = Alignment.CenterVertically
                                                             ) {
-                                                                Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                                                Text(com.example.util.tr(title), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                                                 IconButton(onClick = { showSupportPopup = false }) {
-                                                                    Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.Gray)
+                                                                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.Gray)
                                                                 }
                                                             }
                                                             Spacer(modifier = Modifier.height(8.dp))
@@ -1250,10 +1250,10 @@ fun UserInboxDialog(
                                         }
                                     } else {
                                         if (sender.isNotBlank()) {
-                                            Text(tr("Enviado por:") + " $sender", color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                            Text(com.example.util.tr(tr("Enviado por:") + " $sender"), color = Color(0xFF94A3B8), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                             Spacer(modifier = Modifier.height(4.dp))
                                         }
-                                        Text(content, color = Color.LightGray, fontSize = 13.sp)
+                                        Text(com.example.util.tr(content), color = Color.LightGray, fontSize = 13.sp)
                                     }
                                 }
                             }
@@ -1516,7 +1516,7 @@ fun UserSupportThreadCard(
                 })
             ) {
                 Text(
-                    text = liveStatus,
+                    text = com.example.util.tr(liveStatus),
                     color = when (liveStatus.uppercase()) {
                         "SOLUCIONADO", "CERRADO", "CLOSED" -> Color(0xFF34D399)
                         else -> Color(0xFFFBBF24)
@@ -1540,7 +1540,7 @@ fun UserSupportThreadCard(
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text(tr("Descripción:"), color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(originalContent, color = Color.LightGray, fontSize = 12.sp)
+                    Text(com.example.util.tr(originalContent), color = Color.LightGray, fontSize = 12.sp)
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))
@@ -1592,7 +1592,7 @@ fun UserSupportThreadCard(
         // Historial de conversación
         if (conversation.isNotEmpty()) {
             Text(
-                "Historial de Respuestas (${conversation.size})",
+                com.example.util.tr("Historial de Respuestas (${conversation.size})"),
                 color = Color(0xFF38BDF8),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
@@ -1630,7 +1630,7 @@ fun UserSupportThreadCard(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            if (isUserMsg) "👤 ${msg.senderName} (Tú)" else "🛡️ ${msg.senderName}",
+                                            com.example.util.tr(if (isUserMsg) "👤 ${msg.senderName} (Tú)" else "🛡️ ${msg.senderName}"),
                                             color = if (isUserMsg) Color(0xFFD4AF37) else Color(0xFF38BDF8),
                                             fontSize = 10.5.sp,
                                             fontWeight = FontWeight.Bold,
@@ -1645,7 +1645,7 @@ fun UserSupportThreadCard(
                                                 border = BorderStroke(0.5.dp, Color(0xFF38BDF8))
                                             ) {
                                                 Text(
-                                                    "SALUDO",
+                                                    com.example.util.tr("SALUDO"),
                                                     color = Color(0xFF38BDF8),
                                                     fontSize = 7.5.sp,
                                                     fontWeight = FontWeight.Bold,
@@ -1657,13 +1657,13 @@ fun UserSupportThreadCard(
                                     }
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        timeFormatter.format(Date(msg.timestampMillis)),
+                                        com.example.util.tr(timeFormatter.format(Date(msg.timestampMillis))),
                                         color = Color.Gray,
                                         fontSize = 9.sp
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(msg.text, color = Color.White, fontSize = 12.sp)
+                                Text(com.example.util.tr(msg.text), color = Color.White, fontSize = 12.sp)
                             }
                         }
                     }
@@ -1749,7 +1749,7 @@ fun UserSupportThreadCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${userReplyText.length}/500",
+                            text = com.example.util.tr("${userReplyText.length}/500"),
                             color = Color.Gray,
                             fontSize = 10.sp
                         )
@@ -1769,9 +1769,9 @@ fun UserSupportThreadCard(
                                     if (success) {
                                         userReplyText = ""
                                         conversation = SupportReplyManager.getConversation(context, reportId)
-                                        Toast.makeText(context, "Respuesta enviada a soporte", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("Respuesta enviada a soporte"), Toast.LENGTH_SHORT).show()
                                     } else {
-                                        Toast.makeText(context, "Error al enviar respuesta", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("Error al enviar respuesta"), Toast.LENGTH_SHORT).show()
                                     }
                                     isSending = false
                                 }

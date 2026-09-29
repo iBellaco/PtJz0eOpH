@@ -236,7 +236,7 @@ fun MetaAndDraftScreen(
     val isPremium by SubscriptionManager.isPremium.collectAsState()
     val lang = LocalLanguage.current
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    
+
     val sharedPrefs = remember { screenContext.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
     var activeRole by remember {
         val savedRoleStr = sharedPrefs.getString("saved_active_role", null)
@@ -394,7 +394,7 @@ fun MetaAndDraftScreen(
                         onClearAll = {
                             allySlots.clear()
                             enemySlots.clear()
-                            android.widget.Toast.makeText(screenContext, "Equipos vaciados", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(screenContext, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
                         }
                     )
                 }
@@ -443,7 +443,7 @@ fun MetaAndDraftScreen(
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = tabItem.title,
+                                            text = com.example.util.tr(tabItem.title),
                                             color = if (isSelected) HextechCyan else TextMuted,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                             fontSize = 12.5.sp
@@ -459,7 +459,7 @@ fun MetaAndDraftScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
-                                                    text = tabItem.count.toString(),
+                                                    text = com.example.util.tr(tabItem.count.toString()),
                                                     color = if (isSelected) HextechDarkBg else TextSecondary,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold
@@ -492,7 +492,7 @@ fun MetaAndDraftScreen(
                 title = {
                     Column {
                         Text(
-                            text = topBarTitle,
+                            text = com.example.util.tr(topBarTitle),
                             color = TextPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -586,7 +586,7 @@ fun MetaAndDraftScreen(
                         onClearAll = {
                             allySlots.clear()
                             enemySlots.clear()
-                            android.widget.Toast.makeText(screenContext, "Equipos vaciados", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(screenContext, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
                         }
                     )
                 }
@@ -635,7 +635,7 @@ fun MetaAndDraftScreen(
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = tabItem.title,
+                                            text = com.example.util.tr(tabItem.title),
                                             color = if (isSelected) HextechCyan else TextMuted,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                             fontSize = 12.5.sp
@@ -655,7 +655,7 @@ fun MetaAndDraftScreen(
                                                     .padding(horizontal = 6.dp, vertical = 1.dp)
                                             ) {
                                                 Text(
-                                                    text = "${tabItem.count}",
+                                                    text = com.example.util.tr("${tabItem.count}"),
                                                     color = if (isSelected) HextechDarkBg else HextechGold,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold
@@ -734,7 +734,7 @@ fun MetaAndDraftScreen(
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = tabItem.title,
+                                            text = com.example.util.tr(tabItem.title),
                                             color = if (isSelected) HextechCyan else TextMuted,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                             fontSize = 12.5.sp
@@ -754,7 +754,7 @@ fun MetaAndDraftScreen(
                                                     .padding(horizontal = 6.dp, vertical = 1.dp)
                                             ) {
                                                 Text(
-                                                    text = "${tabItem.count}",
+                                                    text = com.example.util.tr("${tabItem.count}"),
                                                     color = if (isSelected) HextechDarkBg else HextechGold,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold
@@ -987,7 +987,7 @@ fun ChampionsCatalogTab(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Limpiar",
+                                contentDescription = com.example.util.trNullable("Limpiar"),
                                 tint = TextMuted,
                                 modifier = Modifier.size(10.dp)
                             )
@@ -1007,7 +1007,7 @@ fun ChampionsCatalogTab(
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Limpiar", tint = TextMuted)
+                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Limpiar"), tint = TextMuted)
                         }
                     }
                 },
@@ -1072,7 +1072,7 @@ fun ChampionsCatalogTab(
             ) {
                 Icon(
                     imageVector = if (showFilterChips) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (showFilterChips) tr("Minimizar filtros") else tr("Expandir filtros"),
+                    contentDescription = com.example.util.trNullable(if (showFilterChips) tr("Minimizar filtros") else tr("Expandir filtros")),
                     tint = HextechGold,
                     modifier = Modifier.size(20.dp)
                 )
@@ -1141,7 +1141,7 @@ fun ChampionsCatalogTab(
                                 showOnlyFavorites = !showOnlyFavorites
                                 if (showOnlyFavorites) selectedRoleFilter = null
                             } else {
-                                android.widget.Toast.makeText(context, "Requiere suscripción Premium", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, com.example.util.appTr("Requiere suscripción Premium"), android.widget.Toast.LENGTH_SHORT).show()
                             }
                         },
                         label = {
@@ -1149,7 +1149,7 @@ fun ChampionsCatalogTab(
                                 Text(tr("Favoritos"), fontSize = if (isOverlay) 10.sp else 11.sp)
                                 Spacer(modifier = Modifier.width(3.dp))
                                 Text(
-                                    text = "($favCount)",
+                                    text = com.example.util.tr("($favCount)"),
                                     color = if (showOnlyFavorites) HextechDarkBg else HextechGold,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = if (isOverlay) 9.5.sp else 10.5.sp
@@ -1163,7 +1163,7 @@ fun ChampionsCatalogTab(
                                             .padding(horizontal = 2.5.dp, vertical = 0.5.dp)
                                     ) {
                                         Text(
-                                            text = "PRO",
+                                            text = com.example.util.tr("PRO"),
                                             color = if (showOnlyFavorites) HextechGold else HextechDarkBg,
                                             fontSize = 7.sp,
                                             fontWeight = FontWeight.Black
@@ -1189,10 +1189,10 @@ fun ChampionsCatalogTab(
                         },
                         label = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(if (isOverlay) tr("Todos") else tr("Todos los Roles"), fontSize = if (isOverlay) 10.sp else 11.sp)
+                                Text(com.example.util.tr(if (isOverlay) tr("Todos") else tr("Todos los Roles")), fontSize = if (isOverlay) 10.sp else 11.sp)
                                 Spacer(modifier = Modifier.width(3.dp))
                                 Text(
-                                    text = "($totalCount)",
+                                    text = com.example.util.tr("($totalCount)"),
                                     color = if (isAllSelected) HextechDarkBg else HextechGold,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = if (isOverlay) 9.5.sp else 10.5.sp
@@ -1218,7 +1218,7 @@ fun ChampionsCatalogTab(
                                     Text(tr(role.shortName), fontSize = if (isOverlay) 10.sp else 11.sp)
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text(
-                                        text = "($count)",
+                                        text = com.example.util.tr("($count)"),
                                         color = if (isSelected) HextechDarkBg else HextechGold,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = if (isOverlay) 9.5.sp else 10.5.sp
@@ -1257,7 +1257,7 @@ fun ChampionsCatalogTab(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = if (showOnlyFavorites) tr("No tienes campeones favoritos") else tr("No se encontraron campeones"),
+                        text = com.example.util.tr(if (showOnlyFavorites) tr("No tienes campeones favoritos") else tr("No se encontraron campeones")),
                         color = TextPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
@@ -1265,10 +1265,10 @@ fun ChampionsCatalogTab(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = if (showOnlyFavorites)
+                        text = com.example.util.tr(if (showOnlyFavorites)
                             tr("Toca la estrella ⭐ en cualquier campeón de la lista para añadirlo a tus favoritos y tener acceso directo.")
                         else
-                            tr("Prueba a buscar con otro nombre o restablece los filtros."),
+                            tr("Prueba a buscar con otro nombre o restablece los filtros.")),
                         color = TextMuted,
                         fontSize = 12.5.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -1310,12 +1310,12 @@ fun ChampionsCatalogTab(
                                 ) {
                                     val isFav = favorites.contains(champion.id.lowercase())
                                     IconButton(
-                                        onClick = { 
+                                        onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             if (isPremium) {
-                                                FavoriteChampionsManager.toggleFavorite(context, champion.id) 
+                                                FavoriteChampionsManager.toggleFavorite(context, champion.id)
                                             } else {
-                                                android.widget.Toast.makeText(context, "Requiere suscripción Premium", android.widget.Toast.LENGTH_SHORT).show()
+                                                android.widget.Toast.makeText(context, com.example.util.appTr("Requiere suscripción Premium"), android.widget.Toast.LENGTH_SHORT).show()
                                             }
                                         },
                                         modifier = Modifier
@@ -1324,14 +1324,14 @@ fun ChampionsCatalogTab(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Star,
-                                            contentDescription = if (isFav) tr("Quitar de Favoritos") else tr("Marcar como Favorito"),
+                                            contentDescription = com.example.util.trNullable(if (isFav) tr("Quitar de Favoritos") else tr("Marcar como Favorito")),
                                             tint = if (isFav) HextechGold else TextMuted.copy(alpha = 0.35f),
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = champion.name,
+                                        text = com.example.util.tr(champion.name),
                                         color = TextPrimary,
                                         fontSize = if (isOverlay) 13.sp else 16.sp,
                                         fontWeight = FontWeight.Bold
@@ -1346,7 +1346,7 @@ fun ChampionsCatalogTab(
                                     val winDeltaText = if (winDelta >= 0) "+${formattedDelta}%" else "${formattedDelta}%"
                                     val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
                                     Text(
-                                        text = if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText",
+                                        text = com.example.util.tr(if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText"),
                                         color = winDeltaColor,
                                         fontSize = 10.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -1358,7 +1358,7 @@ fun ChampionsCatalogTab(
                                         else -> "🌍 Global"
                                     }
                                     Text(
-                                        text = "$regionTag WR: $formattedWr%",
+                                        text = com.example.util.tr("$regionTag WR: $formattedWr%"),
                                         color = HextechGold,
                                         fontSize = 12.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -1381,20 +1381,20 @@ fun ChampionsCatalogTab(
                                             .padding(horizontal = 5.dp, vertical = 1.dp)
                                     ) {
                                         Text(
-                                            text = "⭐ " + tr("Flex en ") + tr(roleFilter.shortName),
+                                            text = com.example.util.tr("⭐ " + tr("Flex en ") + tr(roleFilter.shortName)),
                                             color = HextechGold,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
                                     Text(
-                                        text = "Principal: ${com.example.util.tr(champion.primaryRole.shortName)} • ${com.example.util.tr(champion.damageType.displayName)}",
+                                        text = com.example.util.tr("Principal: ${com.example.util.tr(champion.primaryRole.shortName)} • ${com.example.util.tr(champion.damageType.displayName)}"),
                                         color = HextechCyan,
                                         fontSize = 11.sp
                                     )
                                 } else {
                                     Text(
-                                        text = "${com.example.util.tr(champion.primaryRole.displayName)} • ${com.example.util.tr(champion.damageType.displayName)}",
+                                        text = com.example.util.tr("${com.example.util.tr(champion.primaryRole.displayName)} • ${com.example.util.tr(champion.damageType.displayName)}"),
                                         color = HextechCyan,
                                         fontSize = if (isOverlay) 9.5.sp else 11.5.sp
                                     )
@@ -1408,7 +1408,7 @@ fun ChampionsCatalogTab(
                                         ) {
                                             val lang = com.example.util.LocalLanguage.current
                                             Text(
-                                                text = tr("Flex: ") + champion.secondaryRoles.joinToString("/") { com.example.util.translations[lang]?.get(it.shortName) ?: it.shortName },
+                                                text = com.example.util.tr(tr("Flex: ") + champion.secondaryRoles.joinToString("/") { com.example.util.trStr(lang, it.shortName) }),
                                                 color = HextechCyan,
                                                 fontSize = 9.5.sp,
                                                 fontWeight = FontWeight.Medium
@@ -1559,7 +1559,7 @@ fun TierListTab(
                             border = BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.5f))
                         ) {
                             Text(
-                                text = "${tr(laneLabel)} • ${tr(selectedSort.displayName)}",
+                                text = com.example.util.tr("${tr(laneLabel)} • ${tr(selectedSort.displayName)}"),
                                 color = HextechGold,
                                 fontSize = 9.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -1574,7 +1574,7 @@ fun TierListTab(
                 ) {
                     Icon(
                         imageVector = if (showTierFilters) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = if (showTierFilters) tr("Minimizar filtros") else tr("Expandir filtros"),
+                        contentDescription = com.example.util.trNullable(if (showTierFilters) tr("Minimizar filtros") else tr("Expandir filtros")),
                         tint = HextechGold,
                         modifier = Modifier.size(20.dp)
                     )
@@ -1633,14 +1633,14 @@ fun TierListTab(
                 ) {
                     FilterChip(
                         selected = showFavoritesOnly,
-                        onClick = { 
+                        onClick = {
                             if (isPremium) {
-                                showFavoritesOnly = !showFavoritesOnly 
+                                showFavoritesOnly = !showFavoritesOnly
                             } else {
-                                Toast.makeText(context, "Requiere Premium", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Requiere Premium"), Toast.LENGTH_SHORT).show()
                             }
                         },
-                        label = { 
+                        label = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(tr("Favoritos"), fontSize = if (isOverlay) 10.sp else 11.5.sp)
                                 if (!isPremium) {
@@ -1651,7 +1651,7 @@ fun TierListTab(
                                             .background(HextechGold)
                                             .padding(horizontal = 2.5.dp, vertical = 0.5.dp)
                                     ) {
-                                        Text("PRO", color = HextechDarkBg, fontSize = 7.sp, fontWeight = FontWeight.Black)
+                                        Text(com.example.util.tr("PRO"), color = HextechDarkBg, fontSize = 7.sp, fontWeight = FontWeight.Black)
                                     }
                                 }
                             }
@@ -1671,7 +1671,7 @@ fun TierListTab(
                     FilterChip(
                         selected = selectedLane == null,
                         onClick = { selectedLane = null },
-                        label = { Text(if (isOverlay) tr("Todas") else tr("Todas las Líneas"), fontSize = if (isOverlay) 10.sp else 11.5.sp) },
+                        label = { Text(com.example.util.tr(if (isOverlay) tr("Todas") else tr("Todas las Líneas")), fontSize = if (isOverlay) 10.sp else 11.5.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = HextechCyan,
                             selectedLabelColor = HextechDarkBg
@@ -1816,12 +1816,12 @@ fun TierListTab(
                                 Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(HextechCyan))
                                 Text(tr("hace 24 horas"), color = HextechCyan, fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold)
                             }
-                            Text("➔", color = TextMuted, fontSize = 8.sp)
+                            Text(com.example.util.tr("➔"), color = TextMuted, fontSize = 8.sp)
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                                 Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(HextechGold))
                                 Text(tr("hace 12 horas"), color = HextechGold, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
                             }
-                            Text("➔", color = TextMuted, fontSize = 8.sp)
+                            Text(com.example.util.tr("➔"), color = TextMuted, fontSize = 8.sp)
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                                 Box(modifier = Modifier.size(5.dp).clip(CircleShape).background(Color(0xFF00FF7F)))
                                 Text(tr("actual"), color = Color(0xFF00FF7F), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
@@ -1871,7 +1871,7 @@ fun TierListTab(
                     )
                 }
             }
-            
+
             // Tier B / T4
             if (tierB.isNotEmpty()) {
                 item {
@@ -1923,7 +1923,7 @@ fun TierListTab(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${tr("Clasificación por")} ${tr(selectedSort.displayName)} (${championsToDisplay.size})",
+                            text = com.example.util.tr("${tr("Clasificación por")} ${tr(selectedSort.displayName)} (${championsToDisplay.size})"),
                             color = HextechGold,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
@@ -1979,7 +1979,7 @@ fun TierListTab(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = "${index + 1}",
+                                            text = com.example.util.tr("${index + 1}"),
                                             color = if (index < 3) HextechDarkBg else TextMuted,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Black
@@ -1990,7 +1990,7 @@ fun TierListTab(
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Column(modifier = Modifier.padding(end = 4.dp)) {
                                         Text(
-                                            text = champ.name,
+                                            text = com.example.util.tr(champ.name),
                                             color = TextPrimary,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 14.sp,
@@ -1999,7 +1999,7 @@ fun TierListTab(
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}",
+                                            text = com.example.util.tr("${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}"),
                                             color = HextechCyan,
                                             fontSize = 11.sp,
                                             maxLines = 1,
@@ -2025,26 +2025,26 @@ fun TierListTab(
                                                     val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
                                                     if (!isOverlay) {
                                                         Text(
-                                                            text = if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText",
+                                                            text = com.example.util.tr(if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText"),
                                                             color = winDeltaColor,
                                                             fontSize = 10.sp,
                                                             fontWeight = FontWeight.Bold
                                                         )
                                                     }
-                                                    Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                    Text(com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             TierSortOption.PICK_RATE -> {
-                                                Text("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(com.example.util.tr("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             TierSortOption.BAN_RATE -> {
-                                                Text("Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%", color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(com.example.util.tr("Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%", color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             else -> {}
                                         }
@@ -2071,7 +2071,7 @@ fun TierListTab(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = tr("Tendencia") + ":",
+                                        text = com.example.util.tr(tr("Tendencia") + ":"),
                                         color = TextMuted,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
@@ -2123,7 +2123,7 @@ fun TierSectionCard(
                         .background(tierColor)
                 )
                 Text(
-                    text = tierName,
+                    text = com.example.util.tr(tierName),
                     color = tierColor,
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.Bold
@@ -2160,7 +2160,7 @@ fun TierSectionCard(
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Column(modifier = Modifier.padding(end = 4.dp)) {
                                         Text(
-                                            text = champ.name,
+                                            text = com.example.util.tr(champ.name),
                                             color = TextPrimary,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 14.sp,
@@ -2169,7 +2169,7 @@ fun TierSectionCard(
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}",
+                                            text = com.example.util.tr("${com.example.util.tr(champ.primaryRole.shortName)} • ${com.example.util.tr(champ.damageType.displayName)}"),
                                             color = HextechCyan,
                                             fontSize = 11.sp,
                                             maxLines = 1,
@@ -2193,14 +2193,14 @@ fun TierSectionCard(
                                             val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
                                             if (!isOverlay) {
                                                 Text(
-                                                    text = if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText",
+                                                    text = com.example.util.tr(if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText"),
                                                     color = winDeltaColor,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold
                                                 )
                                             }
                                             Text(
-                                                text = tr("WR") + ": ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%",
+                                                text = com.example.util.tr(tr("WR") + ": ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%"),
                                                 color = HextechGold,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.5.sp
@@ -2209,7 +2209,7 @@ fun TierSectionCard(
                                         if (!isOverlay) {
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Text(
-                                                text = "Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%",
+                                                text = com.example.util.tr("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%"),
                                                 color = TextMuted,
                                                 fontSize = 10.sp,
                                                 maxLines = 1
@@ -2238,7 +2238,7 @@ fun TierSectionCard(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = tr("Tendencia") + ":",
+                                        text = com.example.util.tr(tr("Tendencia") + ":"),
                                         color = TextMuted,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
@@ -2360,7 +2360,7 @@ private fun ItemsCatalogTab() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "${filteredItems.size} ${tr("Objetos Oficiales")}",
+                text = com.example.util.tr("${filteredItems.size} ${tr("Objetos Oficiales")}"),
                 color = HextechCyan,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.SemiBold
@@ -2481,7 +2481,7 @@ private fun ItemsCatalogTab() {
             ) {
                 Icon(
                     imageVector = if (showFilterChips) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (showFilterChips) tr("Minimizar filtros") else tr("Expandir filtros"),
+                    contentDescription = com.example.util.trNullable(if (showFilterChips) tr("Minimizar filtros") else tr("Expandir filtros")),
                     tint = HextechGold,
                     modifier = Modifier.size(20.dp)
                 )
@@ -2509,7 +2509,7 @@ private fun ItemsCatalogTab() {
                                 Text(tr(label), fontSize = 11.sp)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "($count)",
+                                    text = com.example.util.tr("($count)"),
                                     color = if (isSelected) HextechDarkBg else HextechGold,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 10.5.sp
@@ -2564,7 +2564,7 @@ private fun ItemsCatalogTab() {
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "(${itemsInCat.size})",
+                                    text = com.example.util.tr("(${itemsInCat.size})"),
                                     color = catColor,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp
@@ -2653,7 +2653,7 @@ private fun selectedRuneItemModal(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = localizedName,
+                        text = com.example.util.tr(localizedName),
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
@@ -2682,7 +2682,7 @@ private fun selectedRuneItemModal(
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = " ${itm.goldCost} ${tr("Oro")}",
+                                text = com.example.util.tr(" ${itm.goldCost} ${tr("Oro")}"),
                                 color = HextechGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -2715,7 +2715,7 @@ private fun selectedRuneItemModal(
                                             .background(HextechCyan, CircleShape)
                                     )
                                     Text(
-                                        text = stat.parseHtmlColorToAnnotatedString(),
+                                        text = com.example.util.tr(stat.parseHtmlColorToAnnotatedString()),
                                         color = TextPrimary,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium
@@ -2757,7 +2757,7 @@ private fun selectedRuneItemModal(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text("", fontSize = 13.sp)
+                                    Text(com.example.util.tr(""), fontSize = 13.sp)
                                     Text(
                                         text = tr("Consejos del Coach:"),
                                         color = HextechGoldLight,
@@ -2767,7 +2767,7 @@ private fun selectedRuneItemModal(
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = localizedCoachTip,
+                                    text = com.example.util.tr(localizedCoachTip),
                                     color = TextPrimary.copy(alpha = 0.95f),
                                     fontSize = 11.5.sp,
                                     lineHeight = 15.5.sp
@@ -2823,7 +2823,7 @@ private fun ItemGridCard(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = localizedName,
+            text = com.example.util.tr(localizedName),
             color = TextPrimary,
             fontSize = 9.5.sp,
             fontWeight = FontWeight.Medium,
@@ -2834,7 +2834,7 @@ private fun ItemGridCard(
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
-            text = "${item.goldCost} G",
+            text = com.example.util.tr("${item.goldCost} G"),
             color = HextechGold,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold
@@ -2881,8 +2881,8 @@ private fun ItemListCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(localizedName, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
-                    Text(" ${item.goldCost} G", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                    Text(com.example.util.tr(localizedName), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
+                    Text(com.example.util.tr(" ${item.goldCost} G"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                 }
                 Text(tr(item.category), color = HextechCyan, fontSize = 10.5.sp)
                 if (statsList.isNotEmpty()) {
@@ -2899,7 +2899,7 @@ private fun ItemListCard(
                                         .background(HextechCyan, CircleShape)
                                 )
                                 Text(
-                                    text = stat.parseHtmlColorToAnnotatedString(),
+                                    text = com.example.util.tr(stat.parseHtmlColorToAnnotatedString()),
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Medium
@@ -2925,9 +2925,9 @@ private fun ItemListCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text("", fontSize = 10.sp)
+                        Text(com.example.util.tr(""), fontSize = 10.sp)
                         Text(
-                            text = localizedCoachTip,
+                            text = com.example.util.tr(localizedCoachTip),
                             color = HextechGoldLight.copy(alpha = 0.9f),
                             fontSize = 10.5.sp,
                             maxLines = 1,
@@ -2981,12 +2981,12 @@ private fun RunesTab() {
     val treeCategories = remember(filteredRunes) {
         val result = mutableListOf<Pair<String, List<RuneItem>>>()
         val groups = filteredRunes.groupBy { it.category }
-        
+
         val claveKey = groups.keys.firstOrNull { it.contains("Clave", ignoreCase = true) || it.contains("Keystone", ignoreCase = true) }
         if (claveKey != null) {
             result.add(claveKey to (groups[claveKey] ?: emptyList()))
         }
-        
+
         groups.forEach { (cat, items) ->
             if (cat != claveKey) {
                 result.add(cat to items)
@@ -3012,12 +3012,12 @@ private fun RunesTab() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "${filteredRunes.size} " + tr("Runas Oficiales"),
+                text = com.example.util.tr("${filteredRunes.size} " + tr("Runas Oficiales")),
                 color = HextechCyan,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.SemiBold
             )
-            
+
             // View mode toggle
             Row(
                 modifier = Modifier
@@ -3132,7 +3132,7 @@ private fun RunesTab() {
             ) {
                 Icon(
                     imageVector = if (showFilterChips) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (showFilterChips) tr("Minimizar filtros") else tr("Expandir filtros"),
+                    contentDescription = com.example.util.trNullable(if (showFilterChips) tr("Minimizar filtros") else tr("Expandir filtros")),
                     tint = HextechGold,
                     modifier = Modifier.size(20.dp)
                 )
@@ -3160,7 +3160,7 @@ private fun RunesTab() {
                                 Text(tr(label), fontSize = 11.sp)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "($count)",
+                                    text = com.example.util.tr("($count)"),
                                     color = if (isSelected) HextechDarkBg else HextechGold,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 10.5.sp
@@ -3216,7 +3216,7 @@ private fun RunesTab() {
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = "(${runesInCat.size})",
+                                        text = com.example.util.tr("(${runesInCat.size})"),
                                         color = catColor,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 12.sp
@@ -3490,12 +3490,12 @@ private fun SpellsTab() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "${filteredSpells.size} " + tr("Hechizos de Invocador"),
+                text = com.example.util.tr("${filteredSpells.size} " + tr("Hechizos de Invocador")),
                 color = HextechCyan,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.SemiBold
             )
-            
+
             // View mode toggle
             Row(
                 modifier = Modifier
@@ -3628,7 +3628,7 @@ private fun SpellsTab() {
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "CD ${spell.cooldown}",
+                                text = com.example.util.tr("CD ${spell.cooldown}"),
                                 color = HextechCyan,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -3677,7 +3677,7 @@ private fun SpellsTab() {
                                             .background(HextechGold.copy(alpha = 0.15f))
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
-                                        Text("CD: ${spell.cooldown}", color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(com.example.util.tr("CD: ${spell.cooldown}"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Box(
                                         modifier = Modifier
@@ -3732,7 +3732,7 @@ private fun SpellsTab() {
                             fontSize = 16.sp
                         )
                         Text(
-                            text = tr("Enfriamiento:") + " ${spell.cooldown}",
+                            text = com.example.util.tr(tr("Enfriamiento:") + " ${spell.cooldown}"),
                             color = HextechCyan,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -3953,7 +3953,7 @@ fun DraftAnalysisTab(
                         enemies = enemySlots,
                         accountProfileId = profileId
                     )
-                    
+
                     if (exists) {
                         pendingSaveData = PendingSaveData(result, notes, profileId, profileName, isLegendaryMatch, matchMode, myScore)
                     } else {
@@ -3978,7 +3978,7 @@ fun DraftAnalysisTab(
                             "DEFEAT" -> defeatToastText
                             else -> " $savedDraftToastText"
                         }
-                        android.widget.Toast.makeText(tabContext, toastMsg, android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(tabContext, com.example.util.appTr(toastMsg), android.widget.Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -4018,7 +4018,7 @@ fun DraftAnalysisTab(
                                 "DEFEAT" -> defeatToastText
                                 else -> " $savedDraftToastText"
                             }
-                            android.widget.Toast.makeText(tabContext, toastMsg, android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(tabContext, com.example.util.appTr(toastMsg), android.widget.Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = com.example.ui.theme.HextechGold)
@@ -4052,9 +4052,9 @@ fun DraftAnalysisTab(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .clickable { 
+                    .clickable {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onChangeRole() 
+                        onChangeRole()
                     }
                     .testTag("draft_active_role_pill"),
                 shape = RoundedCornerShape(14.dp),
@@ -4091,7 +4091,7 @@ fun DraftAnalysisTab(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = if (activeRole != null) com.example.util.tr(activeRole.displayName) else tr("Todas las líneas"),
+                                text = com.example.util.tr(if (activeRole != null) com.example.util.tr(activeRole.displayName) else tr("Todas las líneas")),
                                 color = HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black,
@@ -4106,7 +4106,7 @@ fun DraftAnalysisTab(
                         border = BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.6f))
                     ) {
                         Text(
-                            text = if (activeRole != null) tr("Cambiar") else tr("Elegir"),
+                            text = com.example.util.tr(if (activeRole != null) tr("Cambiar") else tr("Elegir")),
                             color = HextechCyan,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold,
@@ -4117,16 +4117,16 @@ fun DraftAnalysisTab(
             }
 
         }
-        
+
         val firstPickCard = @Composable {
             // First Pick / Blind Pick Mode Switch (Redesigned with Hextech theme)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .clickable { 
+                    .clickable {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onToggleFirstPick() 
+                        onToggleFirstPick()
                     }
                     .testTag("draft_first_pick_toggle"),
                 shape = RoundedCornerShape(14.dp),
@@ -4144,13 +4144,13 @@ fun DraftAnalysisTab(
                 ) {
                     Column {
                         Text(
-                            text = if (isFirstPick) tr("1er Pick") else tr("Counter Pick"),
+                            text = com.example.util.tr(if (isFirstPick) tr("1er Pick") else tr("Counter Pick")),
                             color = if (isFirstPick) HextechGold else HextechCyan,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Black
                         )
                         Text(
-                            text = if (isFirstPick) tr("Blind Pick") else tr("Adaptativo"),
+                            text = com.example.util.tr(if (isFirstPick) tr("Blind Pick") else tr("Adaptativo")),
                             color = if (isFirstPick) HextechGoldLight else TextMuted,
                             fontSize = 9.5.sp,
                             fontWeight = FontWeight.Medium
@@ -4159,10 +4159,10 @@ fun DraftAnalysisTab(
                     Spacer(modifier = Modifier.width(8.dp))
                     Switch(
                         checked = isFirstPick,
-                        onCheckedChange = { 
+                        onCheckedChange = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             if (activeRole == null) {
-                                android.widget.Toast.makeText(tabContext, "Selecciona tu línea primero", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(tabContext, com.example.util.appTr("Selecciona tu línea primero"), android.widget.Toast.LENGTH_SHORT).show()
                             } else {
                                 onToggleFirstPick()
                             }
@@ -4180,7 +4180,7 @@ fun DraftAnalysisTab(
                 }
             }
         }
-        
+
         if (isOverlay) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -4215,14 +4215,14 @@ fun DraftAnalysisTab(
                         val alliesSelected = allySlots.count { it.champion.id != "empty" }
                         val enemiesSelected = enemySlots.count { it.champion.id != "empty" }
                         if (activeRole == null) {
-                            android.widget.Toast.makeText(tabContext, "Selecciona tu línea primero", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(tabContext, com.example.util.appTr("Selecciona tu línea primero"), android.widget.Toast.LENGTH_SHORT).show()
                         } else if (alliesSelected < 5 || enemiesSelected < 5) {
-                            android.widget.Toast.makeText(tabContext, "Debes seleccionar los 5 campeones aliados y 5 enemigos", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(tabContext, com.example.util.appTr("Debes seleccionar los 5 campeones aliados y 5 enemigos"), android.widget.Toast.LENGTH_SHORT).show()
                         } else {
                             showSaveDraftDialog = true
                         }
                     } else {
-                        android.widget.Toast.makeText(tabContext, "Requiere suscripción Premium", android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(tabContext, com.example.util.appTr("Requiere suscripción Premium"), android.widget.Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier
@@ -4264,7 +4264,7 @@ fun DraftAnalysisTab(
                                 .padding(horizontal = 3.dp, vertical = 1.dp)
                         ) {
                             Text(
-                                text = "PRO",
+                                text = com.example.util.tr("PRO"),
                                 color = HextechDarkBg,
                                 fontSize = 7.sp,
                                 fontWeight = FontWeight.Black
@@ -4397,7 +4397,7 @@ fun DraftAnalysisTab(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(tr("Alerta Táctica de Matchup"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Text(analysis.directMatchupWarning, color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
+                        Text(com.example.util.tr(analysis.directMatchupWarning), color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
                     }
                 }
             }
@@ -4442,7 +4442,7 @@ fun DraftAnalysisTab(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "${tr("Cálculo 1v1 Automático")}: vs ${enemyLaneOpponent.name}",
+                                text = com.example.util.tr("${tr("Cálculo 1v1 Automático")}: vs ${enemyLaneOpponent.name}"),
                                 color = HextechGold,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.5.sp
@@ -4457,7 +4457,7 @@ fun DraftAnalysisTab(
                                 border = BorderStroke(1.dp, badgeColor)
                             ) {
                                 Text(
-                                    text = "$wrVsOpp% WR",
+                                    text = com.example.util.tr("$wrVsOpp% WR"),
                                     color = badgeColor,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
@@ -4471,7 +4471,7 @@ fun DraftAnalysisTab(
 
                     if (totalDecidedOpp > 0) {
                         Text(
-                            text = "${winsVsOpp}W - ${lossesVsOpp}L (${totalDecidedOpp} ${tr("partidas registradas")})",
+                            text = com.example.util.tr("${winsVsOpp}W - ${lossesVsOpp}L (${totalDecidedOpp} ${tr("partidas registradas")})"),
                             color = TextSecondary,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold
@@ -4483,7 +4483,7 @@ fun DraftAnalysisTab(
                             "Historial desfavorable en el 1v1. No te expongas a niveles 1-3; farmea con seguridad usando tu Habilidad 1 o Habilidad 2 desde distancia y espera tu pico de poder con Definitiva (H4)."
                         }
                         Text(
-                            text = adviceText,
+                            text = com.example.util.tr(adviceText),
                             color = TextMuted,
                             fontSize = 11.sp,
                             lineHeight = 15.sp
@@ -4528,7 +4528,7 @@ fun DraftAnalysisTab(
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(Icons.Default.Warning, contentDescription = null, tint = DangerRed, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(analysis.allyCompositionWarning, color = DangerRed, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(com.example.util.tr(analysis.allyCompositionWarning), color = DangerRed, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))
@@ -4545,9 +4545,9 @@ fun DraftAnalysisTab(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("${analysis.allyPhysicalDamagePercent}% " + tr("Físico"), color = Color(0xFFE57373), fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
-                Text("${analysis.allyMagicDamagePercent}% " + tr("Mágico"), color = Color(0xFF64B5F6), fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
-                Text("${analysis.allyTrueDamagePercent}% " + tr("Verdadero"), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                Text(com.example.util.tr("${analysis.allyPhysicalDamagePercent}% " + tr("Físico")), color = Color(0xFFE57373), fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                Text(com.example.util.tr("${analysis.allyMagicDamagePercent}% " + tr("Mágico")), color = Color(0xFF64B5F6), fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                Text(com.example.util.tr("${analysis.allyTrueDamagePercent}% " + tr("Verdadero")), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
             }
             Spacer(modifier = Modifier.height(12.dp))
         }
@@ -4568,9 +4568,9 @@ fun DraftAnalysisTab(
                 }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("${analysis.physicalDamagePercent}% " + tr("Físico"), color = Color(0xFFE57373), fontSize = 10.sp)
-                Text("${analysis.magicDamagePercent}% " + tr("Mágico"), color = Color(0xFF64B5F6), fontSize = 10.sp)
-                Text("${analysis.trueDamagePercent}% " + tr("Verdadero"), color = Color.White, fontSize = 10.sp)
+                Text(com.example.util.tr("${analysis.physicalDamagePercent}% " + tr("Físico")), color = Color(0xFFE57373), fontSize = 10.sp)
+                Text(com.example.util.tr("${analysis.magicDamagePercent}% " + tr("Mágico")), color = Color(0xFF64B5F6), fontSize = 10.sp)
+                Text(com.example.util.tr("${analysis.trueDamagePercent}% " + tr("Verdadero")), color = Color.White, fontSize = 10.sp)
             }
             Spacer(modifier = Modifier.height(14.dp))
         }
@@ -4592,13 +4592,13 @@ fun DraftAnalysisTab(
                 enemyLaneOpponent.advantageAgainst.any { it.equals(myChamp.name, ignoreCase = true) || it.equals(myChamp.id, ignoreCase = true) }
             )
             val shouldChange = isOffRole || myEval.advantageBadge.contains("ATÍPICA") || (myEval.estimatedWinrate < 48.0) || (isDirectLaneWeakness && myEval.estimatedWinrate < 50.0)
-            
+
             val recommendationText = when {
                 shouldChange -> tr("️ Considera cambiarlo")
                 myEval.advantageBadge.contains("DOMINAS LÍNEA") || myEval.advantageBadge.contains("COUNTER") -> tr(" Favorable en carril")
                 else -> tr(" Buena elección para tu línea")
             }
-            
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -4620,14 +4620,14 @@ fun DraftAnalysisTab(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = if (activeRole != null) tr("TU ELECCIÓN EN") + " ${com.example.util.tr(activeRole.displayName).uppercase()}" else tr("TU ELECCIÓN (GENERAL)"),
+                                text = com.example.util.tr(if (activeRole != null) tr("TU ELECCIÓN EN") + " ${com.example.util.tr(activeRole.displayName).uppercase()}" else tr("TU ELECCIÓN (GENERAL)")),
                                 color = if (shouldChange) DangerRed else HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black
                             )
                         }
                         Text(
-                            text = tr("Winrate Est.:") + " ${myEval.estimatedWinrate}%",
+                            text = com.example.util.tr(tr("Winrate Est.:") + " ${myEval.estimatedWinrate}%"),
                             color = if (shouldChange) DangerRed else HextechCyan,
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold
@@ -4639,17 +4639,17 @@ fun DraftAnalysisTab(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(myEval.champion.name, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr(myEval.champion.name), color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Tier ${myEval.champion.tier}",
+                                    text = com.example.util.tr("Tier ${myEval.champion.tier}"),
                                     color = HextechGold,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Text(
-                                text = recommendationText,
+                                text = com.example.util.tr(recommendationText),
                                 color = if (shouldChange) DangerRed else Color(0xFF81C784),
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -4661,7 +4661,7 @@ fun DraftAnalysisTab(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(tr(myEval.tacticalReason), color = TextPrimary.copy(alpha = 0.9f), fontSize = 12.sp, lineHeight = 16.sp)
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = tr("Toca para ver la build completa y el análisis táctico"),
@@ -4709,9 +4709,9 @@ fun DraftAnalysisTab(
             Spacer(modifier = Modifier.height(16.dp))
         } else {
             Button(
-                onClick = { 
+                onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onPickAllyRole(activeRole ?: LaneRole.MID) 
+                    onPickAllyRole(activeRole ?: LaneRole.MID)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -4732,7 +4732,7 @@ fun DraftAnalysisTab(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (activeRole != null) tr("SELECCIONAR MI PICK PARA") + " ${com.example.util.tr(activeRole.displayName).uppercase()}" else tr("SELECCIONAR MI CAMPEÓN (GLOBAL)"),
+                    text = com.example.util.tr(if (activeRole != null) tr("SELECCIONAR MI PICK PARA") + " ${com.example.util.tr(activeRole.displayName).uppercase()}" else tr("SELECCIONAR MI CAMPEÓN (GLOBAL)")),
                     fontWeight = FontWeight.Black,
                     fontSize = 13.sp,
                     letterSpacing = 0.5.sp
@@ -4751,7 +4751,7 @@ fun DraftAnalysisTab(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = if (isFirstPick) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival"),
+                    text = com.example.util.tr(if (isFirstPick) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival")),
                     color = HextechGold,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
@@ -4778,13 +4778,13 @@ fun DraftAnalysisTab(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = if (isFirstPick) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA"),
+                                text = com.example.util.tr(if (isFirstPick) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA")),
                                 color = HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Text(
-                                text = tr("Winrate Est.:") + " ${topPick.estimatedWinrate}%",
+                                text = com.example.util.tr(tr("Winrate Est.:") + " ${topPick.estimatedWinrate}%"),
                                 color = HextechCyan,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -4806,13 +4806,13 @@ fun DraftAnalysisTab(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = topPick.champion.name,
+                                        text = com.example.util.tr(topPick.champion.name),
                                         color = TextPrimary,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "Tier ${topPick.champion.tier}",
+                                        text = com.example.util.tr("Tier ${topPick.champion.tier}"),
                                         color = TierSPlusColor,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold
@@ -4850,7 +4850,7 @@ fun DraftAnalysisTab(
                                 if (topPick.synergyDetails.isNotBlank()) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "🤝 " + tr("Sinergia / Combo:"),
+                                            text = com.example.util.tr("🤝 " + tr("Sinergia / Combo:")),
                                             color = HextechCyan,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold
@@ -4867,7 +4867,7 @@ fun DraftAnalysisTab(
                                 if (topPick.counterDetails.isNotBlank()) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "🛡️ " + tr("Ventaja / Counter:"),
+                                            text = com.example.util.tr("🛡️ " + tr("Ventaja / Counter:")),
                                             color = HextechGold,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold
@@ -4923,7 +4923,7 @@ fun DraftAnalysisTab(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = tr("Otras Opciones Viables para") + " ${com.example.util.tr(activeRole.displayName)}:",
+                        text = com.example.util.tr(tr("Otras Opciones Viables para") + " ${com.example.util.tr(activeRole.displayName)}:"),
                         color = HextechCyan,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
@@ -4954,8 +4954,8 @@ fun DraftAnalysisTab(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(rec.champion.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text("WR: ${rec.estimatedWinrate}%", color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                        Text(com.example.util.tr(rec.champion.name), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(com.example.util.tr("WR: ${rec.estimatedWinrate}%"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(tr(rec.advantageBadge), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.height(2.dp))
@@ -4983,7 +4983,7 @@ fun DraftAnalysisTab(
                                 ) {
                                     if (rec.synergyDetails.isNotBlank()) {
                                         Text(
-                                            text = "🤝 " + rec.synergyDetails,
+                                            text = com.example.util.tr("🤝 " + rec.synergyDetails),
                                             color = HextechCyan,
                                             fontSize = 10.sp,
                                             maxLines = 1,
@@ -4993,7 +4993,7 @@ fun DraftAnalysisTab(
                                     }
                                     if (rec.counterDetails.isNotBlank()) {
                                         Text(
-                                            text = "🛡️ " + rec.counterDetails,
+                                            text = com.example.util.tr("🛡️ " + rec.counterDetails),
                                             color = HextechGoldLight,
                                             fontSize = 10.sp,
                                             maxLines = 1,
@@ -5056,7 +5056,7 @@ private fun TeamChampionSlot(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = slot.champion.name,
+                            text = com.example.util.tr(slot.champion.name),
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
@@ -5066,7 +5066,7 @@ private fun TeamChampionSlot(
                         if (isMyPick) {
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = " Mío",
+                                text = com.example.util.tr(" Mío"),
                                 color = HextechGold,
                                 fontSize = 9.5.sp,
                                 fontWeight = FontWeight.Black
@@ -5074,7 +5074,7 @@ private fun TeamChampionSlot(
                         }
                     }
                     Spacer(modifier = Modifier.height(2.dp))
-                    
+
                     // Chip interactivo para cambiar la línea asignada de este campeón
                     Box {
                         Row(
@@ -5098,7 +5098,7 @@ private fun TeamChampionSlot(
                             val roleLabel = com.example.util.tr(slot.assignedRole.shortName) +
                                     if (isOffMeta) " [${com.example.util.tr(slot.champion.primaryRole.shortName)}]" else ""
                             Text(
-                                text = roleLabel,
+                                text = com.example.util.tr(roleLabel),
                                 color = if (isMyPick) HextechGold else if (isEnemy) DangerRed else AllyBlue,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -5234,11 +5234,11 @@ private fun DraftChampionPickerSheet(
                 .padding(horizontal = 16.dp)
         ) {
             Text(
-                text = when (team) {
+                text = com.example.util.tr(when (team) {
                     "MYSELF" -> tr("Seleccionar Mi Campeón") + if (suggestedRole != null) " (${com.example.util.tr(suggestedRole.displayName)})" else ""
                     "ALLY" -> tr("Seleccionar Campeón Aliado")
                     else -> tr("Seleccionar Campeón Rival")
-                },
+                }),
                 color = when (team) {
                     "MYSELF" -> HextechGold
                     "ALLY" -> AllyBlue
@@ -5258,7 +5258,7 @@ private fun DraftChampionPickerSheet(
                 trailingIcon = {
                     if (search.isNotEmpty()) {
                         IconButton(onClick = { search = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Limpiar", tint = TextMuted)
+                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Limpiar"), tint = TextMuted)
                         }
                     }
                 },
@@ -5333,7 +5333,7 @@ private fun DraftChampionPickerSheet(
                         ChampionAvatar(champion = champ, size = 56.dp, showTierBadge = false)
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = champ.name,
+                            text = com.example.util.tr(champ.name),
                             color = TextPrimary,
                             fontSize = 10.sp,
                             maxLines = 1,
@@ -5432,7 +5432,7 @@ private fun ChampionGridCard(
             ChampionAvatar(champion = champion, size = 52.dp)
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = champion.name,
+                text = com.example.util.tr(champion.name),
                 color = TextPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp,
@@ -5448,7 +5448,7 @@ private fun ChampionGridCard(
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = "WR: ${String.format(java.util.Locale.US, "%.2f", champion.winrate)}%",
+                    text = com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", champion.winrate)}%"),
                     color = HextechGold,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
@@ -5558,7 +5558,7 @@ private fun SpellGridCard(
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = spell.cooldown,
+                    text = com.example.util.tr(spell.cooldown),
                     color = HextechGold,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
@@ -5585,7 +5585,7 @@ fun TierSelectionPanel(
     var showMultiServerStats by remember { mutableStateOf(false) }
     var isPanelMinimized by rememberSaveable { mutableStateOf(false) }
 
-    val isAutoSyncActive = isOnline && isLastSyncSuccess
+    val isAutoSyncActive = currentRegion == "CN" && isOnline && isLastSyncSuccess
 
     if (showMultiServerStats) {
         com.example.ui.components.MultiServerStatsDialog(
@@ -5631,7 +5631,7 @@ fun TierSelectionPanel(
                             border = BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.5f))
                         ) {
                             Text(
-                                text = activeLabel,
+                                text = com.example.util.tr(activeLabel),
                                 color = HextechGold,
                                 fontSize = if (isOverlay) 8.sp else 9.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -5677,7 +5677,7 @@ fun TierSelectionPanel(
                     ) {
                         Icon(
                             imageVector = if (isPanelMinimized) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
-                            contentDescription = if (isPanelMinimized) tr("Expandir panel") else tr("Minimizar panel"),
+                            contentDescription = com.example.util.trNullable(if (isPanelMinimized) tr("Expandir panel") else tr("Minimizar panel")),
                             tint = HextechCyan,
                             modifier = Modifier.size(20.dp)
                         )
@@ -5698,7 +5698,11 @@ fun TierSelectionPanel(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
                     ) {
-                        val regionItems = listOf(Triple("CN", tr("Servidor Chino"), "Meta CN"))
+                        val regionItems = listOf(
+                            Triple("GLOBAL", tr("Global"), tr("Referencia local")),
+                            Triple("NA", tr("América (NA)"), tr("Referencia local")),
+                            Triple("CN", tr("Servidor Chino"), tr("Meta CN"))
+                        )
                         regionItems.forEach { (regionId, label, sub) ->
                             val isSelected = currentRegion == regionId
                             Box(
@@ -5728,7 +5732,7 @@ fun TierSelectionPanel(
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
                                 ) {
                                     Text(
-                                        text = label,
+                                        text = com.example.util.tr(label),
                                         color = if (isSelected) HextechGold else TextMuted,
                                         fontSize = if (isOverlay) 8.5.sp else 10.sp,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -5736,7 +5740,7 @@ fun TierSelectionPanel(
                                         maxLines = 1
                                     )
                                     Text(
-                                        text = sub,
+                                        text = com.example.util.tr(sub),
                                         color = if (isSelected) HextechCyan else TextMuted.copy(alpha = 0.7f),
                                         fontSize = if (isOverlay) 7.5.sp else 8.5.sp,
                                         fontWeight = FontWeight.Normal,
@@ -5747,7 +5751,7 @@ fun TierSelectionPanel(
                             }
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // RANGO DE ELO PARA SERVIDOR CHINO: Retador/Soberano | Maestro/Gran Maestro | Esmeralda/Diamante | General
@@ -5822,13 +5826,15 @@ fun TierSelectionPanel(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = if (isSyncing) {
+                                    text = com.example.util.tr(if (currentRegion != "CN") {
+                                        tr("Referencia local • Sin estadísticas regionales en vivo")
+                                    } else if (isSyncing) {
                                         tr("Sincronizando datos de la Tier List...")
                                     } else if (isAutoSyncActive) {
                                         tr("Actualización automática activa • En vivo")
                                     } else {
                                         tr("Sin actualizar • Últimos datos:") + if (lastSyncFormattedTime.isNotBlank()) " $lastSyncFormattedTime" else " " + tr("Caché guardada")
-                                    },
+                                    }),
                                     color = if (isAutoSyncActive) (if (isSyncing) HextechCyan else Color(0xFF81C784)) else Color(0xFFFFB74D),
                                     fontSize = if (isOverlay) 8.sp else 9.5.sp,
                                     fontWeight = FontWeight.Medium,
@@ -5841,7 +5847,7 @@ fun TierSelectionPanel(
                                 color = if (isAutoSyncActive) HextechGold.copy(alpha = 0.15f) else Color(0xFFFF5252).copy(alpha = 0.15f)
                             ) {
                                 Text(
-                                    text = if (isAutoSyncActive) tr("Auto-Sync 24/7") else tr("Caché Local"),
+                                    text = com.example.util.tr(if (isAutoSyncActive) tr("Auto-Sync 24/7") else tr("Caché Local")),
                                     color = if (isAutoSyncActive) HextechGold else Color(0xFFFF8A80),
                                     fontSize = if (isOverlay) 7.5.sp else 8.5.sp,
                                     fontWeight = FontWeight.Bold,

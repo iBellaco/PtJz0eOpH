@@ -230,7 +230,7 @@ object GlobalAnnouncementManager {
             val lastDismissedTimestamp = prefs.getLong(KEY_DISMISSED_TIMESTAMP, 0L)
 
             // Si es un anuncio nuevo o actualizado con un timestamp superior al descartado
-            val isNewOrUpdated = (announcement.id != lastDismissedId) || 
+            val isNewOrUpdated = (announcement.id != lastDismissedId) ||
                     (announcement.timestamp > lastDismissedTimestamp && announcement.timestamp - lastDismissedTimestamp > 1000)
 
             _currentAnnouncement.value = announcement
@@ -339,10 +339,10 @@ object GlobalAnnouncementManager {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(
                     NOTIFICATION_CHANNEL_ID,
-                    "Comunicados Globales Coach",
+                    com.example.util.appTr("Comunicados Globales Coach"),
                     if (announcement.isUrgent) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_DEFAULT
                 ).apply {
-                    description = "Notificaciones oficiales de mantenimiento, parches y anuncios globales de Coach"
+                    description = com.example.util.appTr("Notificaciones oficiales de mantenimiento, parches y anuncios globales de Coach")
                     enableLights(true)
                     enableVibration(true)
                 }
@@ -377,8 +377,8 @@ object GlobalAnnouncementManager {
 
             val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(prefix + announcement.title)
-                .setContentText(announcement.message)
+                .setContentTitle(com.example.util.appTr(prefix + announcement.title))
+                .setContentText(com.example.util.appTr(announcement.message))
                 .setStyle(NotificationCompat.BigTextStyle().bigText(announcement.message))
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)

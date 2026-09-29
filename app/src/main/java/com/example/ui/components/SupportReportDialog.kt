@@ -152,7 +152,7 @@ fun SupportReportDialog(
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 context,
-                                "⚠️ Una foto supera el límite de 2 MB y fue descartada.",
+                                com.example.util.appTr("⚠️ Una foto supera el límite de 2 MB y fue descartada."),
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -170,7 +170,7 @@ fun SupportReportDialog(
                     val toAdd = addedList.take(spaceLeft)
                     base64Photos.addAll(toAdd)
                     if (toAdd.isNotEmpty()) {
-                        Toast.makeText(context, "${toAdd.size} foto(s) adjuntada(s)", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, com.example.util.appTr("${toAdd.size} foto(s) adjuntada(s)"), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -419,7 +419,7 @@ fun SupportReportDialog(
                             )
                         }
                         Text(
-                            text = "${base64Photos.size}/3",
+                            text = com.example.util.tr("${base64Photos.size}/3"),
                             color = if (base64Photos.size >= 3) HextechGold else TextSecondary,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
@@ -451,7 +451,7 @@ fun SupportReportDialog(
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
                                         imageVector = Icons.Default.AddPhotoAlternate,
-                                        contentDescription = "Agregar foto",
+                                        contentDescription = com.example.util.trNullable("Agregar foto"),
                                         tint = HextechCyan,
                                         modifier = Modifier.size(24.dp)
                                     )
@@ -553,7 +553,7 @@ fun SupportReportDialog(
                                 val analysis = remember(b64) { DevicePhotoModelDetector.analyzeBase64(b64) }
                                 if (analysis != null) {
                                     Text(
-                                        text = "• Foto ${idx + 1}: ${analysis.primaryDeviceSummary}",
+                                        text = com.example.util.tr("• Foto ${idx + 1}: ${analysis.primaryDeviceSummary}"),
                                         color = TextPrimary,
                                         fontSize = 11.sp,
                                         modifier = Modifier.padding(vertical = 1.dp)
@@ -693,7 +693,7 @@ fun SupportReportDialog(
                                         isSubmitting = false
                                         Toast.makeText(
                                             context,
-                                            "✅ Reporte de soporte enviado exitosamente. ¡Gracias!",
+                                            com.example.util.appTr("✅ Reporte de soporte enviado exitosamente. ¡Gracias!"),
                                             Toast.LENGTH_LONG
                                         ).show()
                                         onDismiss()
@@ -703,7 +703,7 @@ fun SupportReportDialog(
                                         isSubmitting = false
                                         Toast.makeText(
                                             context,
-                                            "Error al enviar reporte: ${e.localizedMessage}",
+                                            com.example.util.appTr("Error al enviar reporte: ${e.localizedMessage}"),
                                             Toast.LENGTH_LONG
                                         ).show()
                                     }
@@ -790,20 +790,20 @@ fun SupportReportDialog(
                         ) {
                             Column {
                                 Text(
-                                    text = "📱 Posible modelo detectado en esta foto:",
+                                    text = com.example.util.tr("📱 Posible modelo detectado en esta foto:"),
                                     color = HextechGold,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "${analysis.landscapeWidth} x ${analysis.landscapeHeight} (${analysis.aspectRatioLabel})",
+                                    text = com.example.util.tr("${analysis.landscapeWidth} x ${analysis.landscapeHeight} (${analysis.aspectRatioLabel})"),
                                     color = HextechCyan,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "Modelos compatibles: ${analysis.probableDeviceModels.joinToString(", ")}",
+                                    text = com.example.util.tr("Modelos compatibles: ${analysis.probableDeviceModels.joinToString(", ")}"),
                                     color = TextPrimary,
                                     fontSize = 11.sp
                                 )

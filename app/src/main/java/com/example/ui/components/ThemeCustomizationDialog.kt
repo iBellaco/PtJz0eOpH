@@ -50,7 +50,7 @@ fun ThemeCustomizationBottomSheet(
 ) {
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    
+
     val currentTheme = AppThemeManager.currentTheme
     val isOledMode = AppThemeManager.isOledMode
     val isParticlesEnabled = AppThemeManager.isParticlesEnabled
@@ -113,7 +113,7 @@ fun ThemeCustomizationBottomSheet(
                     borderColor = Color.Transparent,
                     glowColor = HextechGold
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextMuted, modifier = Modifier.size(18.dp))
                 }
             }
 
@@ -180,7 +180,7 @@ fun ThemeCustomizationBottomSheet(
                     )
                 }
             }
-            
+
             // Particles Toggle Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -231,13 +231,13 @@ fun ThemeCustomizationBottomSheet(
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(
                                                 imageVector = Icons.Default.Lock,
-                                                contentDescription = "Premium",
+                                                contentDescription = com.example.util.trNullable("Premium"),
                                                 tint = HextechDarkBg,
                                                 modifier = Modifier.size(10.dp)
                                             )
                                             Spacer(modifier = Modifier.width(2.dp))
                                             Text(
-                                                text = "PREMIUM",
+                                                text = com.example.util.tr("PREMIUM"),
                                                 color = HextechDarkBg,
                                                 fontSize = 8.5.sp,
                                                 fontWeight = FontWeight.Black
@@ -273,7 +273,7 @@ fun ThemeCustomizationBottomSheet(
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-            
+
             // Friendly Coach Advice Card
             Surface(
                 shape = RoundedCornerShape(10.dp),
@@ -286,7 +286,7 @@ fun ThemeCustomizationBottomSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("💡", fontSize = 18.sp)
+                    Text(com.example.util.tr("💡"), fontSize = 18.sp)
                     Column {
                         Text(
                             text = tr("Consejo del Coach Soberano"),
@@ -371,7 +371,7 @@ fun ThemeCustomizationBottomSheet(
                                         )
                                     )
                             )
-                            
+
                             // Glowing overlay if selected
                             if (isSelected || isInspected) {
                                 Box(
@@ -387,7 +387,7 @@ fun ThemeCustomizationBottomSheet(
                                         )
                                     )
                             }
-                            
+
                             Column(
                                 modifier = Modifier
                                     .align(Alignment.BottomStart)
@@ -408,7 +408,7 @@ fun ThemeCustomizationBottomSheet(
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-                            
+
                             if (isSelected) {
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
@@ -432,7 +432,7 @@ fun ThemeCustomizationBottomSheet(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
                                             imageVector = Icons.Default.Lock,
-                                            contentDescription = "Premium",
+                                            contentDescription = com.example.util.trNullable("Premium"),
                                             tint = HextechGold,
                                             modifier = Modifier.size(10.dp)
                                         )
@@ -727,7 +727,7 @@ private fun RegionVisualPreviewGridCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "WR",
+                                text = com.example.util.tr("WR"),
                                 color = inspectedTheme.primary,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.ExtraBold
@@ -736,7 +736,7 @@ private fun RegionVisualPreviewGridCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "Coach Live UI",
+                                text = com.example.util.tr("Coach Live UI"),
                                 color = inspectedTheme.textPrimary,
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -750,7 +750,7 @@ private fun RegionVisualPreviewGridCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Sinergia S+ / Tier Soberano",
+                                    text = com.example.util.tr("Sinergia S+ / Tier Soberano"),
                                     color = inspectedTheme.secondary,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -775,13 +775,13 @@ private fun RegionVisualPreviewGridCard(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Default.Lock,
-                                        contentDescription = "Premium",
+                                        contentDescription = com.example.util.trNullable("Premium"),
                                         tint = HextechDarkBg,
                                         modifier = Modifier.size(12.dp)
                                     )
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text(
-                                        text = "PREMIUM",
+                                        text = com.example.util.tr("PREMIUM"),
                                         color = HextechDarkBg,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Black

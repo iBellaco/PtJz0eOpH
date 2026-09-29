@@ -101,7 +101,7 @@ fun UserAvatarView(
     } catch (e: Exception) {
         HextechGold
     }
-    
+
     val rarityLower = avatar.rarity.lowercase()
     val borderWidth = when {
         rarityLower.contains("mítico") || rarityLower.contains("mitico") -> if (size > 60.dp) 3.5.dp else 2.5.dp
@@ -110,7 +110,7 @@ fun UserAvatarView(
         rarityLower.contains("raro") -> if (size > 60.dp) 2.dp else 1.5.dp
         else -> 1.dp
     }
-    
+
     val runicBorderBrush = when {
         rarityLower.contains("mítico") || rarityLower.contains("mitico") -> Brush.sweepGradient(listOf(Color(0xFFC4B5FD), Color(0xFF7C3AED), Color(0xFF5B21B6), Color(0xFFC4B5FD)))
         rarityLower.contains("legendario") -> Brush.sweepGradient(listOf(Color(0xFFFFD700), Color(0xFFB91C1C), Color(0xFF991B1B), Color(0xFFFFD700)))
@@ -118,7 +118,7 @@ fun UserAvatarView(
         rarityLower.contains("raro") -> Brush.linearGradient(listOf(Color(0xFF93C5FD), Color(0xFF2563EB), Color(0xFF93C5FD)))
         else -> Brush.linearGradient(listOf(parsedBorderColor, parsedBorderColor))
     }
-    
+
     val actualShowBorder = showBorder
 
     val infiniteTransition = rememberInfiniteTransition(label = "SoberanoGlow")
@@ -227,7 +227,7 @@ fun UserAvatarView(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = fallbackInitial.take(1).uppercase(),
+                text = com.example.util.tr(fallbackInitial.take(1).uppercase()),
                 color = HextechGoldLight,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = (avatarSize.value * 0.38f).sp,
@@ -301,7 +301,7 @@ fun Modifier.rankedBorderPainter(rank: String, glowPulse: Float, rotation: Float
         val cx = size.width / 2
         val cy = size.height / 2
         val r = size.width / 2
-        
+
         when (rank.uppercase()) {
             "MASTER" -> {
                 drawCircle(
@@ -380,7 +380,7 @@ fun Modifier.premiumBorderPainter(rarity: String): Modifier {
     val isMythic = rarityLower.contains("mítico") || rarityLower.contains("mitico")
     val isLegendary = rarityLower.contains("legendario")
     val isEpic = rarityLower.contains("épico") || rarityLower.contains("epico")
-    
+
     return this.drawWithCache {
         val strokeWidth = when {
             isMythic -> 4.dp.toPx()
@@ -388,7 +388,7 @@ fun Modifier.premiumBorderPainter(rarity: String): Modifier {
             isEpic -> 3.dp.toPx()
             else -> 2.5.dp.toPx() // Raro
         }
-        
+
         val primaryColor = when {
             isMythic -> Color(0xFFC4B5FD)
             isLegendary -> Color(0xFFFFD700)
@@ -407,14 +407,14 @@ fun Modifier.premiumBorderPainter(rarity: String): Modifier {
             isEpic -> Color(0xFF6B21A8)
             else -> Color(0xFF1E3A8A) // Raro
         }
-        
+
         val brush = Brush.sweepGradient(
             listOf(primaryColor, secondaryColor, darkColor, secondaryColor, primaryColor)
         )
-        
+
         onDrawWithContent {
             drawContent()
-            
+
             drawCircle(
                 brush = brush,
                 radius = size.width / 2 - strokeWidth / 2,
@@ -429,7 +429,7 @@ fun Modifier.premiumBorderPainter(rarity: String): Modifier {
                     }
                 )
             )
-            
+
             drawCircle(
                 color = when {
                     isMythic -> Color(0xFFE9D5FF)

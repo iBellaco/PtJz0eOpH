@@ -85,22 +85,22 @@ fun DraftEnemyTeamCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Equipo Rival",
+                    text = com.example.util.tr("Equipo Rival"),
                     color = DangerRed,
                     fontWeight = FontWeight.Black,
                     fontSize = 15.sp,
                     letterSpacing = 0.5.sp
                 )
                 Text(
-                    text = "${enemies.size}/5",
+                    text = com.example.util.tr("${enemies.size}/5"),
                     color = HextechGold,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(14.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -160,7 +160,7 @@ fun DraftEnemyTeamCard(
                                         size = 52.dp,
                                         showBorder = false
                                     )
-                                    
+
                                     // Botón de eliminar
                                     Box(
                                         modifier = Modifier
@@ -176,24 +176,24 @@ fun DraftEnemyTeamCard(
                                                 .clickable { onRemoveEnemy(selectedChamp) },
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = Color.White, modifier = Modifier.size(10.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = Color.White, modifier = Modifier.size(10.dp))
                                         }
                                     }
                                 }
                             } else {
                                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Icon(Icons.Default.Add, contentDescription = "Agregar", tint = HextechGold.copy(alpha = 0.5f), modifier = Modifier.size(24.dp))
+                                    Icon(Icons.Default.Add, contentDescription = com.example.util.trNullable("Agregar"), tint = HextechGold.copy(alpha = 0.5f), modifier = Modifier.size(24.dp))
                                 }
                             }
                         }
                     }
                 }
             }
-            
+
             if (enemies.isEmpty()) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Toca un recuadro para agregar un pick rival",
+                    text = com.example.util.tr("Toca un recuadro para agregar un pick rival"),
                     color = HextechGold.copy(alpha = 0.6f),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Normal

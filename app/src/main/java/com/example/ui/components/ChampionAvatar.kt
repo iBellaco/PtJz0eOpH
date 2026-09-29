@@ -93,7 +93,7 @@ fun ChampionAvatar(
     }
 
     Box(
-        contentAlignment = Alignment.BottomEnd, 
+        contentAlignment = Alignment.BottomEnd,
         modifier = modifier
             .size(size)
             .graphicsLayer {
@@ -118,7 +118,7 @@ fun ChampionAvatar(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = champion.name.take(2).uppercase(),
+                    text = com.example.util.tr(champion.name.take(2).uppercase()),
                     color = Color.White,
                     fontSize = (size.value * 0.32).sp,
                     fontWeight = FontWeight.Bold
@@ -137,7 +137,7 @@ fun ChampionAvatar(
                 }
                 else -> ""
             }
-            
+
             if (modelData != "") {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -149,8 +149,8 @@ fun ChampionAvatar(
                         .diskCacheKey(modelData.toString() + "_v1365")
                         .memoryCachePolicy(CachePolicy.ENABLED)
                         .listener(
-                            onError = { request, result -> 
-                                com.example.util.AppLogger.e("ImageLoader", "Failed to load ${request.data}: ${result.throwable.message}") 
+                            onError = { request, result ->
+                                com.example.util.AppLogger.e("ImageLoader", "Failed to load ${request.data}: ${result.throwable.message}")
                             }
                         )
                         .build(),
@@ -163,7 +163,7 @@ fun ChampionAvatar(
                 )
             }
         }
-        
+
         if (showTierBadge && (champion.tier.isNotBlank() || champion.cnTier.isNotBlank())) {
             val isCnMode = com.example.data.WildRiftRepository.activeRegionName == "CN"
             val displayTier = if (isCnMode && champion.cnTier.isNotBlank()) champion.cnTier else champion.tier
@@ -185,7 +185,7 @@ fun ChampionAvatar(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = displayTier,
+                    text = com.example.util.tr(displayTier),
                     color = tierColor,
                     fontSize = (size.value * 0.16).sp,
                     fontWeight = FontWeight.ExtraBold
@@ -238,7 +238,7 @@ fun AppAssetImage(
             )
         }
     }
-    
+
     val modelData: Any? = when {
         parsedUrl.startsWith("file:///android_asset/") -> android.net.Uri.parse(parsedUrl)
         parsedUrl.startsWith("file://") -> java.io.File(parsedUrl.removePrefix("file://"))
@@ -261,7 +261,7 @@ fun AppAssetImage(
     ) {
         // Fallback initials underneath
         Text(
-            text = fallbackText.take(2).uppercase(),
+            text = com.example.util.tr(fallbackText.take(2).uppercase()),
             color = borderColor.copy(alpha = 0.7f),
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold
@@ -278,8 +278,8 @@ fun AppAssetImage(
                     .diskCacheKey(modelData.toString() + "_v1365")
                     .memoryCachePolicy(CachePolicy.ENABLED)
                     .listener(
-                        onError = { request, result -> 
-                            com.example.util.AppLogger.e("ImageLoader", "Failed to load ${request.data}: ${result.throwable.message}") 
+                        onError = { request, result ->
+                            com.example.util.AppLogger.e("ImageLoader", "Failed to load ${request.data}: ${result.throwable.message}")
                         }
                     )
                     .build(),

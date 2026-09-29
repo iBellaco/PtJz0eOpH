@@ -71,7 +71,7 @@ fun AvatarSelectionBottomSheet(
     val validRegions = remember {
         setOf("Aguas Esturbias", "Ciudad de Bandle", "Demacia", "El Vacío", "Freljord", "Islas de la Sombra", "Jonia", "Ixtal", "Noxus", "Piltóver", "Runaterra", "Shurima", "Targon", "Zaun", "Poro")
     }
-    
+
     val prefs = remember { context.getSharedPreferences("avatar_prefs", android.content.Context.MODE_PRIVATE) }
     var favoriteAvatars by remember { mutableStateOf(prefs.getStringSet("favorites", emptySet())?.toSet() ?: emptySet()) }
 
@@ -80,13 +80,13 @@ fun AvatarSelectionBottomSheet(
         baseOptions + AvatarCatalog.avatars.map { it.region }.filter { validRegions.contains(it) }.distinct().sorted()
     }
     var selectedFilter by remember { mutableStateOf("Todas") }
-    
+
     LaunchedEffect(favoriteAvatars) {
         if (favoriteAvatars.isEmpty() && selectedFilter == "Favoritos") {
             selectedFilter = "Todas"
         }
     }
-    
+
     var selectedCategory by remember { mutableStateOf("Avatares") }
     var showPremiumRequiredDialog by remember { mutableStateOf<AvatarItem?>(null) }
     var isUpdating by remember { mutableStateOf(false) }
@@ -156,7 +156,7 @@ fun AvatarSelectionBottomSheet(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = if (isPremium) tr("Acceso Total Premium Desbloqueado") else tr("Avatares Exclusivos de League of Legends"),
+                            text = com.example.util.tr(if (isPremium) tr("Acceso Total Premium Desbloqueado") else tr("Avatares Exclusivos de League of Legends")),
                             color = if (isPremium) HextechCyan else TextSecondary,
                             fontSize = 12.sp
                         )
@@ -164,7 +164,7 @@ fun AvatarSelectionBottomSheet(
                 }
 
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextSecondary)
+                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextSecondary)
                 }
             }
 
@@ -217,7 +217,7 @@ fun AvatarSelectionBottomSheet(
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = currentAvatar.rarity.uppercase(),
+                                    text = com.example.util.tr(currentAvatar.rarity.uppercase()),
                                     color = currentRarityColor,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.ExtraBold
@@ -225,13 +225,13 @@ fun AvatarSelectionBottomSheet(
                             }
                         }
                         Text(
-                            text = currentAvatar.name,
+                            text = com.example.util.tr(currentAvatar.name),
                             color = HextechGoldLight,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${currentAvatar.title} • ${currentAvatar.region}",
+                            text = com.example.util.tr("${currentAvatar.title} • ${currentAvatar.region}"),
                             color = HextechCyan,
                             fontSize = 11.5.sp
                         )
@@ -260,7 +260,7 @@ fun AvatarSelectionBottomSheet(
                     contentPadding = PaddingValues(vertical = 8.dp),
                     elevation = null
                 ) {
-                    Text("Avatares", fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
+                    Text(com.example.util.tr("Avatares"), fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
                 }
 
                 Button(
@@ -387,7 +387,7 @@ fun AvatarSelectionBottomSheet(
                 groupedAvatars.forEach { (region, avatarsInRegion) ->
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Text(
-                            text = region.uppercase(),
+                            text = com.example.util.tr(region.uppercase()),
                             color = HextechGoldLight,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
@@ -407,18 +407,18 @@ fun AvatarSelectionBottomSheet(
                             .fillMaxWidth()
                             .clickable(enabled = canEquip || isEquipped) {
                                 if (isEquipped) {
-                                    Toast.makeText(context, "Este avatar ya está equipado.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Este avatar ya está equipado."), Toast.LENGTH_SHORT).show()
                                 } else {
                                     isUpdating = true
                                     SubscriptionManager.changeAvatar(
                                         avatarId = avatar.id,
                                         onSuccess = {
                                             isUpdating = false
-                                            Toast.makeText(context, "¡Avatar actualizado con éxito!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("¡Avatar actualizado con éxito!"), Toast.LENGTH_SHORT).show()
                                         },
                                         onError = { err ->
                                             isUpdating = false
-                                            Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, com.example.util.appTr(err), Toast.LENGTH_LONG).show()
                                         }
                                     )
                                 }
@@ -456,7 +456,7 @@ fun AvatarSelectionBottomSheet(
                                         customBorderColor = rarityColor,
                                         secondaryRole = ""
                                     )
-    
+
                                     if (isEquipped) {
                                         Box(
                                             modifier = Modifier
@@ -468,7 +468,7 @@ fun AvatarSelectionBottomSheet(
                                         ) {
                                             Icon(
                                                 Icons.Default.Check,
-                                                contentDescription = "Equipado",
+                                                contentDescription = com.example.util.trNullable("Equipado"),
                                                 tint = HextechDarkBg,
                                                 modifier = Modifier.size(12.dp)
                                             )
@@ -484,18 +484,18 @@ fun AvatarSelectionBottomSheet(
                                         ) {
                                             Icon(
                                                 Icons.Default.Lock,
-                                                contentDescription = "Bloqueado",
+                                                contentDescription = com.example.util.trNullable("Bloqueado"),
                                                 tint = HextechGold,
                                                 modifier = Modifier.size(14.dp)
                                             )
                                         }
                                     }
                                 }
-    
+
                                 Spacer(modifier = Modifier.height(6.dp))
 
                             Text(
-                                text = avatar.name,
+                                text = com.example.util.tr(avatar.name),
                                 color = if (isEquipped) HextechGoldLight else if (canEquip) TextPrimary else TextMuted,
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -505,7 +505,7 @@ fun AvatarSelectionBottomSheet(
                             )
 
                             Text(
-                                text = avatar.region,
+                                text = com.example.util.tr(avatar.region),
                                 color = if (canEquip) HextechCyan else TextMuted.copy(alpha = 0.7f),
                                 fontSize = 9.5.sp,
                                 maxLines = 1,
@@ -567,7 +567,7 @@ fun AvatarSelectionBottomSheet(
                                 }
                             }
                         }
-                        
+
                         // Botón de Favorito
                         IconButton(
                             onClick = {
@@ -587,7 +587,7 @@ fun AvatarSelectionBottomSheet(
                             val isFav = favoriteAvatars.contains(avatar.id)
                             Icon(
                                 imageVector = if (isFav) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = "Favorito",
+                                contentDescription = com.example.util.trNullable("Favorito"),
                                 tint = if (isFav) Color(0xFFE11D48) else TextMuted.copy(alpha = 0.5f),
                                 modifier = Modifier.size(16.dp)
                             )
@@ -620,7 +620,7 @@ fun AvatarSelectionBottomSheet(
                         val list = mutableListOf<String>()
                         list.add("NONE")    // Sin Marco especial (avatar limpio sin efectos)
                         list.add("DEFAULT") // Por Defecto (animación de rareza y resplandor del avatar sin marco de imagen)
-                        
+
                         // Marco del rol principal del usuario (si corresponde)
                         if (mainRoleFrame != null) {
                             list.add(mainRoleFrame)
@@ -638,7 +638,7 @@ fun AvatarSelectionBottomSheet(
                             if (!list.contains("CREADOR")) list.add("CREADOR")
                             if (!list.contains("STREAMER")) list.add("STREAMER")
                         }
-                        
+
                         list.distinct()
                     }
 
@@ -666,10 +666,10 @@ fun AvatarSelectionBottomSheet(
                                         SubscriptionManager.changeRankBorder(
                                             borderId = border,
                                             onSuccess = {
-                                                android.widget.Toast.makeText(context, "Marco actualizado", android.widget.Toast.LENGTH_SHORT).show()
+                                                android.widget.Toast.makeText(context, com.example.util.appTr("Marco actualizado"), android.widget.Toast.LENGTH_SHORT).show()
                                             },
                                             onError = { err ->
-                                                android.widget.Toast.makeText(context, err, android.widget.Toast.LENGTH_LONG).show()
+                                                android.widget.Toast.makeText(context, com.example.util.appTr(err), android.widget.Toast.LENGTH_LONG).show()
                                             }
                                         )
                                     },
@@ -718,7 +718,7 @@ fun AvatarSelectionBottomSheet(
                                         else -> border
                                     }
                                     Text(
-                                        text = borderLabel,
+                                        text = com.example.util.tr(borderLabel),
                                         color = if (isSelected) HextechGold else TextPrimary,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -760,13 +760,13 @@ fun AvatarSelectionBottomSheet(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = lockedAvatar.name,
+                        text = com.example.util.tr(lockedAvatar.name),
                         color = HextechGold,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "${lockedAvatar.title} • ${lockedAvatar.region}",
+                        text = com.example.util.tr("${lockedAvatar.title} • ${lockedAvatar.region}"),
                         color = HextechCyan,
                         fontSize = 12.sp
                     )

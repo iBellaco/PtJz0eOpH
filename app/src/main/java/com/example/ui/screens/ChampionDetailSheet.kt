@@ -119,10 +119,10 @@ fun ChampionDetailSheet(
     val availableRoles = remember(champion.id) {
         (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()
     }
-    var selectedRole by remember(champion.id) { 
-        mutableStateOf(champion.primaryRole) 
+    var selectedRole by remember(champion.id) {
+        mutableStateOf(champion.primaryRole)
     }
-    
+
     LaunchedEffect(champion.id) {
         if (selectedRole !in availableRoles) {
             selectedRole = champion.primaryRole
@@ -241,7 +241,7 @@ fun ChampionDetailSheet(
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = champion.name,
+                                text = com.example.util.tr(champion.name),
                                 color = TextPrimary,
                                 fontSize = titleFontSize,
                                 fontWeight = FontWeight.Bold
@@ -254,7 +254,7 @@ fun ChampionDetailSheet(
                                     .padding(horizontal = if (isCompact) 4.dp else 6.dp, vertical = if (isCompact) 1.dp else 2.dp)
                             ) {
                                 Text(
-                                    text = "Tier ${roleProfile.tier}",
+                                    text = com.example.util.tr("Tier ${roleProfile.tier}"),
                                     color = Color.Black,
                                     fontSize = if (isCompact) 8.5.sp else 11.sp,
                                     fontWeight = FontWeight.Black
@@ -269,7 +269,7 @@ fun ChampionDetailSheet(
                             )
                         }
                         Text(
-                            text = "${tr(selectedRole.displayName)}${if (selectedRole != champion.primaryRole) " (Flex)" else ""} • ${tr(champion.damageType.displayName)}",
+                            text = com.example.util.tr("${tr(selectedRole.displayName)}${if (selectedRole != champion.primaryRole) " (Flex)" else ""} • ${tr(champion.damageType.displayName)}"),
                             color = HextechCyan,
                             fontSize = if (isCompact) 9.5.sp else 12.sp,
                             fontWeight = FontWeight.Medium
@@ -280,18 +280,18 @@ fun ChampionDetailSheet(
                     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
                     Box(contentAlignment = Alignment.TopEnd) {
                         IconButton(
-                            onClick = { 
+                            onClick = {
                                 if (isPremium) {
-                                    FavoriteChampionsManager.toggleFavorite(context, champion.id) 
+                                    FavoriteChampionsManager.toggleFavorite(context, champion.id)
                                 } else {
-                                    android.widget.Toast.makeText(context, "Requiere suscripción Premium", android.widget.Toast.LENGTH_SHORT).show()
+                                    android.widget.Toast.makeText(context, com.example.util.appTr("Requiere suscripción Premium"), android.widget.Toast.LENGTH_SHORT).show()
                                 }
                             },
                             modifier = Modifier.testTag("detail_fav_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Star,
-                                contentDescription = if (isFavorite) tr("Quitar de Favoritos") else tr("Marcar como Favorito"),
+                                contentDescription = com.example.util.trNullable(if (isFavorite) tr("Quitar de Favoritos") else tr("Marcar como Favorito")),
                                 tint = if (isFavorite) HextechGold else TextMuted.copy(alpha = 0.4f),
                                 modifier = Modifier.size(24.dp)
                             )
@@ -304,7 +304,7 @@ fun ChampionDetailSheet(
                                     .background(HextechGold)
                                     .padding(horizontal = 3.dp, vertical = 0.5.dp)
                             ) {
-                                Text("PRO", color = HextechDarkBg, fontSize = 6.5.sp, fontWeight = FontWeight.Black)
+                                Text(com.example.util.tr("PRO"), color = HextechDarkBg, fontSize = 6.5.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }
@@ -378,8 +378,8 @@ fun ChampionDetailSheet(
                                         color = if (isSelected) HextechGold else HextechCardBorder,
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .clickable { 
-                                        selectedRole = role 
+                                    .clickable {
+                                        selectedRole = role
                                         selectedBuildOptionIndex = 0
                                     }
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
@@ -387,15 +387,15 @@ fun ChampionDetailSheet(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
-                                        text = roleLabel,
+                                        text = com.example.util.tr(roleLabel),
                                         color = if (isSelected) HextechGold else TextPrimary,
                                         fontSize = 11.sp,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
                                     if (isPrimary) {
-                                        Text("Main", color = HextechCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                        Text(com.example.util.tr("Main"), color = HextechCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                                     } else {
-                                        Text("Flex", color = TextPrimary, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
+                                        Text(com.example.util.tr("Flex"), color = TextPrimary, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
                                     }
                                 }
                             }
@@ -412,7 +412,7 @@ fun ChampionDetailSheet(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "⭐ ${tr("Estadísticas, hechizos, runas y build adaptadas a")} ${tr(selectedRole.displayName)}.",
+                                text = com.example.util.tr("⭐ ${tr("Estadísticas, hechizos, runas y build adaptadas a")} ${tr(selectedRole.displayName)}."),
                                 color = TextPrimary,
                                 fontSize = 11.sp
                             )
@@ -477,13 +477,13 @@ fun ChampionDetailSheet(
                         // Winrate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Victoria"), color = TextMuted, fontSize = 11.sp)
-                            Text("${String.format(java.util.Locale.US, "%.2f", roleProfile.winrate)}%", color = HextechGold, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", roleProfile.winrate)}%"), color = HextechGold, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                             val winDelta = roleProfile.winrateDelta
                             val formattedWinDelta = String.format(java.util.Locale.US, "%.2f", winDelta)
                             val winDeltaText = if (winDelta >= 0) "+${formattedWinDelta}%" else "${formattedWinDelta}%"
                             val winDeltaColor = if (winDelta >= 0) Color(0xFF4CAF50) else DangerRed
                             Text(
-                                text = if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText",
+                                text = com.example.util.tr(if (winDelta >= 0) "▲ $winDeltaText" else "▼ $winDeltaText"),
                                 color = winDeltaColor,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -493,13 +493,13 @@ fun ChampionDetailSheet(
                         // Pick Rate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Selección"), color = TextMuted, fontSize = 11.sp)
-                            Text("${String.format(java.util.Locale.US, "%.2f", roleProfile.pickRate)}%", color = HextechCyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", roleProfile.pickRate)}%"), color = HextechCyan, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                             val pickDelta = roleProfile.pickRateDelta
                             val formattedPickDelta = String.format(java.util.Locale.US, "%.2f", pickDelta)
                             val pickDeltaText = if (pickDelta >= 0) "+${formattedPickDelta}%" else "${formattedPickDelta}%"
                             val pickDeltaColor = if (pickDelta >= 0) Color(0xFF29B6F6) else Color(0xFFFFA726)
                             Text(
-                                text = if (pickDelta >= 0) "▲ $pickDeltaText" else "▼ $pickDeltaText",
+                                text = com.example.util.tr(if (pickDelta >= 0) "▲ $pickDeltaText" else "▼ $pickDeltaText"),
                                 color = pickDeltaColor,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -509,13 +509,13 @@ fun ChampionDetailSheet(
                         // Ban Rate + Delta
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Tasa de Bloqueo"), color = TextMuted, fontSize = 11.sp)
-                            Text("${String.format(java.util.Locale.US, "%.2f", roleProfile.banRate)}%", color = DangerRed, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", roleProfile.banRate)}%"), color = DangerRed, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                             val banDelta = roleProfile.banRateDelta
                             val formattedBanDelta = String.format(java.util.Locale.US, "%.2f", banDelta)
                             val banDeltaText = if (banDelta >= 0) "+${formattedBanDelta}%" else "${formattedBanDelta}%"
                             val banDeltaColor = if (banDelta >= 0) DangerRed else Color(0xFF4CAF50)
                             Text(
-                                text = if (banDelta >= 0) "▲ $banDeltaText" else "▼ $banDeltaText",
+                                text = com.example.util.tr(if (banDelta >= 0) "▲ $banDeltaText" else "▼ $banDeltaText"),
                                 color = banDeltaColor,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -569,7 +569,7 @@ fun ChampionDetailSheet(
             // ==========================================
             if (champion.skills.isNotEmpty()) {
                 Text(
-                    text = tr("Habilidades de") + " ${champion.name}",
+                    text = com.example.util.tr(tr("Habilidades de") + " ${champion.name}"),
                     color = HextechGold,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
@@ -613,14 +613,14 @@ fun ChampionDetailSheet(
                                             else -> if (skill.slotName.isNotBlank()) tr(skill.slotName) else if (skill.slot.isNotBlank()) "${tr("Habilidad")} ${skill.slot}:" else ""
                                         }
                                         Text(
-                                            text = if (slotTranslation.isNotBlank()) "$slotTranslation $localizedSkillName" else localizedSkillName,
+                                            text = com.example.util.tr(if (slotTranslation.isNotBlank()) "$slotTranslation $localizedSkillName" else localizedSkillName),
                                             color = TextPrimary,
                                             fontSize = if (isCompact) 11.sp else 13.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                         if (skill.cooldown.isNotBlank()) {
                                             Text(
-                                                text = skill.cooldown,
+                                                text = com.example.util.tr(skill.cooldown),
                                                 color = HextechCyan,
                                                 fontSize = if (isCompact) 9.sp else 11.sp,
                                                 fontWeight = FontWeight.SemiBold
@@ -708,7 +708,7 @@ fun ChampionDetailSheet(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "${tr("Build Táctica Oficial")} • ${selectedRole.shortName}",
+                    text = com.example.util.tr("${tr("Build Táctica Oficial")} • ${selectedRole.shortName}"),
                     color = HextechGold,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
@@ -722,7 +722,7 @@ fun ChampionDetailSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "↔ " + tr("Desliza opciones"),
+                            text = com.example.util.tr("↔ " + tr("Desliza opciones")),
                             color = HextechCyan,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold
@@ -737,7 +737,7 @@ fun ChampionDetailSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "ÚNICA POR LÍNEA",
+                            text = com.example.util.tr("ÚNICA POR LÍNEA"),
                             color = HextechGold,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Black
@@ -774,7 +774,7 @@ fun ChampionDetailSheet(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = label,
+                                    text = com.example.util.tr(label),
                                     color = if (isSelected) HextechGold else TextMuted,
                                     fontSize = if (isCompact) 10.sp else 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
@@ -830,7 +830,7 @@ fun ChampionDetailSheet(
                                 context.startActivity(android.content.Intent.createChooser(intent, shareTitle))
                             }
                             IconButton(onClick = shareBuild, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.Share, contentDescription = shareDesc, tint = HextechCyan, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Share, contentDescription = com.example.util.trNullable(shareDesc), tint = HextechCyan, modifier = Modifier.size(16.dp))
                             }
                             Box(
                                 modifier = Modifier
@@ -921,7 +921,7 @@ fun ChampionDetailSheet(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = "CORE ESSENTIALS",
+                                text = com.example.util.tr("CORE ESSENTIALS"),
                                 color = HextechGold,
                                 fontSize = 8.5.sp,
                                 fontWeight = FontWeight.Black
@@ -998,13 +998,13 @@ fun ChampionDetailSheet(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = tr("Objetos Situacionales") + " (${activeOption.situationalItems.size}):",
+                                text = com.example.util.tr(tr("Objetos Situacionales") + " (${activeOption.situationalItems.size}):"),
                                 color = HextechGold,
                                 fontSize = if (isCompact) 10.sp else 11.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "↔ " + tr("Desliza"),
+                                text = com.example.util.tr("↔ " + tr("Desliza")),
                                 color = HextechCyan,
                                 fontSize = if (isCompact) 8.sp else 9.sp,
                                 fontWeight = FontWeight.Medium
@@ -1094,7 +1094,7 @@ fun ChampionDetailSheet(
                             ) {
                                 Column(modifier = Modifier.padding(8.dp)) {
                                     Text(
-                                        text = "• ${tr(sitItemName)}:",
+                                        text = com.example.util.tr("• ${tr(sitItemName)}:"),
                                         color = HextechGold,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold
@@ -1159,7 +1159,7 @@ fun ChampionDetailSheet(
                         ) {
                             val dbBoot1 = com.example.data.WildRiftRepository.items.find { it.name.equals(currentBootBase, ignoreCase = true) || currentBootBase.contains(it.name, ignoreCase = true) }
                             val dbBoot2 = com.example.data.WildRiftRepository.items.find { it.name.equals(currentBootUpgrade, ignoreCase = true) || currentBootUpgrade.contains(it.name, ignoreCase = true) }
-                            
+
                             val boot1Icon = dbBoot1?.iconUrl ?: com.example.data.WildRiftItemsData.getItemIconByName(currentBootBase)
                             val boot2Icon = dbBoot2?.iconUrl ?: com.example.data.WildRiftItemsData.getItemIconByName(currentBootUpgrade)
 
@@ -1179,11 +1179,11 @@ fun ChampionDetailSheet(
                                     shape = RoundedCornerShape(8.dp)
                                 )
                             }
-                            
+
                             Spacer(modifier = Modifier.width(6.dp))
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = ">",
+                                contentDescription = com.example.util.trNullable(">"),
                                 tint = HextechCyan,
                                 modifier = Modifier.size(14.dp)
                             )
@@ -1279,7 +1279,7 @@ fun ChampionDetailSheet(
                                 ) {
                                     Column(modifier = Modifier.padding(6.dp)) {
                                         Text(
-                                            text = "• ${tr(sitBootName)}:",
+                                            text = com.example.util.tr("• ${tr(sitBootName)}:"),
                                             color = HextechCyan,
                                             fontSize = 9.5.sp,
                                             fontWeight = FontWeight.Bold
@@ -1353,7 +1353,7 @@ fun ChampionDetailSheet(
             // SECCIÓN RUNAS ASOCIADAS A ESTA OPCIÓN
             // ==========================================
             Text(
-                text = "${tr("Runas")} • ${activeOption.title}",
+                text = com.example.util.tr("${tr("Runas")} • ${activeOption.title}"),
                 color = HextechGold,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
@@ -1377,13 +1377,13 @@ fun ChampionDetailSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${tr("Runa Clave:")} ${tr(runesForActiveOption.firstOrNull() ?: "Principal")}",
+                            text = com.example.util.tr("${tr("Runa Clave:")} ${tr(runesForActiveOption.firstOrNull() ?: "Principal")}"),
                             color = HextechGold,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${tr("Secundarias:")} ${runesForActiveOption.drop(1).map { tr(it) }.joinToString(" • ")}",
+                            text = com.example.util.tr("${tr("Secundarias:")} ${runesForActiveOption.drop(1).map { tr(it) }.joinToString(" • ")}"),
                             color = HextechCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
@@ -1416,7 +1416,7 @@ fun ChampionDetailSheet(
                                         color = finalRuneBorderColor,
                                         shape = CircleShape
                                     )
-                                    .clickable { 
+                                    .clickable {
                                         runeForDetail = foundRune ?: com.example.model.RuneItem(
                                             id = rName.lowercase().replace(" ", "_"),
                                             name = rName,
@@ -1475,7 +1475,7 @@ fun ChampionDetailSheet(
                         Spacer(modifier = Modifier.height(6.dp))
                         val advantageList = roleProfile.advantageAgainst.take(3)
                         if (advantageList.isEmpty()) {
-                            Text("—", color = TextMuted, fontSize = 11.sp)
+                            Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1507,7 +1507,7 @@ fun ChampionDetailSheet(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
-                                                    text = target.take(2).uppercase(),
+                                                    text = com.example.util.tr(target.take(2).uppercase()),
                                                     color = TextPrimary,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold
@@ -1545,7 +1545,7 @@ fun ChampionDetailSheet(
                         Spacer(modifier = Modifier.height(6.dp))
                         val counteredList = roleProfile.counteredBy.take(3)
                         if (counteredList.isEmpty()) {
-                            Text("—", color = TextMuted, fontSize = 11.sp)
+                            Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1577,7 +1577,7 @@ fun ChampionDetailSheet(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
-                                                    text = counter.take(2).uppercase(),
+                                                    text = com.example.util.tr(counter.take(2).uppercase()),
                                                     color = TextPrimary,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold
@@ -1624,7 +1624,7 @@ fun ChampionDetailSheet(
                         }
                         val synergyList = rawSynergies.distinct().take(3)
                         if (synergyList.isEmpty()) {
-                            Text("—", color = TextMuted, fontSize = 11.sp)
+                            Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1656,7 +1656,7 @@ fun ChampionDetailSheet(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
-                                                    text = partner.take(2).uppercase(),
+                                                    text = com.example.util.tr(partner.take(2).uppercase()),
                                                     color = TextPrimary,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold
@@ -1863,7 +1863,7 @@ fun AdaptiveDetailAlertDialog(
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = "️ $target",
+                                        text = com.example.util.tr("️ $target"),
                                         color = TextPrimary,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium
@@ -1900,7 +1900,7 @@ fun AdaptiveDetailAlertDialog(
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = " ${tr(advice.recommendationTip)}",
+                            text = com.example.util.tr(" ${tr(advice.recommendationTip)}"),
                             color = TextPrimary,
                             fontSize = 11.5.sp,
                             lineHeight = 15.sp
@@ -1976,14 +1976,14 @@ fun AdaptiveDetailAlertDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                     }
                     Text(
-                        text = titleText,
+                        text = com.example.util.tr(titleText),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold
                     )
                 }
             },
             text = {
-                Text(descText, color = TextPrimary)
+                Text(com.example.util.tr(descText), color = TextPrimary)
             },
             confirmButton = {
                 TextButton(onClick = { matchupExplanationTarget = null }) {
@@ -2027,7 +2027,7 @@ fun AdaptiveDetailAlertDialog(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = localizedName,
+                        text = com.example.util.tr(localizedName),
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
@@ -2056,7 +2056,7 @@ fun AdaptiveDetailAlertDialog(
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = " ${item.goldCost} ${tr("Oro")}",
+                                text = com.example.util.tr(" ${item.goldCost} ${tr("Oro")}"),
                                 color = com.example.ui.theme.HextechGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -2088,7 +2088,7 @@ fun AdaptiveDetailAlertDialog(
                                             .background(com.example.ui.theme.HextechCyan, androidx.compose.foundation.shape.CircleShape)
                                     )
                                     Text(
-                                        text = stat.parseHtmlColorToAnnotatedString(),
+                                        text = com.example.util.tr(stat.parseHtmlColorToAnnotatedString()),
                                         color = TextPrimary,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium
@@ -2128,7 +2128,7 @@ fun AdaptiveDetailAlertDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text("", fontSize = 13.sp)
+                                    Text(com.example.util.tr(""), fontSize = 13.sp)
                                     Text(
                                         text = tr("Consejos del Coach:"),
                                         color = com.example.ui.theme.HextechGoldLight,

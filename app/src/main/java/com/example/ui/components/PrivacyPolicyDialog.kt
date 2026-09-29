@@ -110,7 +110,7 @@ fun PrivacyPolicyDialog(
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = if (isMandatoryAcceptance) tr("Cerrar y Salir") else tr("Cerrar"),
+                                contentDescription = com.example.util.trNullable(if (isMandatoryAcceptance) tr("Cerrar y Salir") else tr("Cerrar")),
                                 tint = TextSecondary
                             )
                         }
@@ -339,13 +339,13 @@ private fun ThirdPartyAgreementsContent() {
 fun PolicySection(title: String, body: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            text = title,
+            text = com.example.util.tr(title),
             color = HextechGoldLight,
             fontSize = 14.5.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = body,
+            text = com.example.util.tr(body),
             color = TextSecondary,
             fontSize = 12.5.sp,
             lineHeight = 17.5.sp
@@ -376,7 +376,7 @@ private fun LegalCheckbox(
             )
         )
         Text(
-            text = text,
+            text = com.example.util.tr(text),
             color = TextPrimary,
             fontSize = 12.sp,
             modifier = Modifier.padding(start = 2.dp)

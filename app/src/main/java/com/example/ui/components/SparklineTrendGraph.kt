@@ -184,7 +184,7 @@ fun SparklineTrendGraph(
                             .background(HextechCyan)
                     )
                     Text(
-                        text = if (showFullText) tr("hace 24 horas") else tr("hace 24h"),
+                        text = com.example.util.tr(if (showFullText) tr("hace 24 horas") else tr("hace 24h")),
                         color = HextechCyan.copy(alpha = 0.95f),
                         fontSize = if (showFullText) 6.8.sp else 6.5.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -205,7 +205,7 @@ fun SparklineTrendGraph(
                             .background(HextechGold)
                     )
                     Text(
-                        text = if (showFullText) tr("hace 12 horas") else tr("hace 12h"),
+                        text = com.example.util.tr(if (showFullText) tr("hace 12 horas") else tr("hace 12h")),
                         color = HextechGold,
                         fontSize = if (showFullText) 6.8.sp else 6.5.sp,
                         fontWeight = FontWeight.Bold,
@@ -226,7 +226,7 @@ fun SparklineTrendGraph(
                             .background(trendColor)
                     )
                     Text(
-                        text = if (showFullText) tr("actual") else tr("actual"),
+                        text = com.example.util.tr(if (showFullText) tr("actual") else tr("actual")),
                         color = trendColor,
                         fontSize = if (showFullText) 6.8.sp else 6.5.sp,
                         fontWeight = FontWeight.Bold,
@@ -317,7 +317,7 @@ fun DetailedTrendGraphCard(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "${String.format(Locale.US, "%.2f", winrate24h)}%",
+                        text = com.example.util.tr("${String.format(Locale.US, "%.2f", winrate24h)}%"),
                         color = TextPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -342,7 +342,7 @@ fun DetailedTrendGraphCard(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "${String.format(Locale.US, "%.2f", winrate12h)}%",
+                        text = com.example.util.tr("${String.format(Locale.US, "%.2f", winrate12h)}%"),
                         color = HextechGoldLight,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -368,7 +368,7 @@ fun DetailedTrendGraphCard(
                     )
                     val deltaStr = if (roundedDelta >= 0) "+${String.format(Locale.US, "%.2f", roundedDelta)}%" else "${String.format(Locale.US, "%.2f", roundedDelta)}%"
                     Text(
-                        text = "${String.format(Locale.US, "%.2f", roundedWinrate)}%",
+                        text = com.example.util.tr("${String.format(Locale.US, "%.2f", roundedWinrate)}%"),
                         color = trendColor,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black

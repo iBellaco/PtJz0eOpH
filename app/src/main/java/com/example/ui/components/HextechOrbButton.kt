@@ -299,7 +299,7 @@ fun HextechOrbButton(
 
                     // Texto de Acción Principal: INICIAR / DETENER / ACTIVAR
                     Text(
-                        text = if (!enabled) tr("ACTIVAR") else if (isActive) tr("DETENER") else tr("INICIAR"),
+                        text = com.example.util.tr(if (!enabled) tr("ACTIVAR") else if (isActive) tr("DETENER") else tr("INICIAR")),
                         color = if (!enabled) TextMuted else if (isActive) Color.White else secondaryLight,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Black,
@@ -311,7 +311,7 @@ fun HextechOrbButton(
 
                     // Nombre del Tema / Estado Regional
                     Text(
-                        text = if (!enabled) tr("OFF") else if (isActive) "ONLINE" else tr(theme.titleKey).uppercase(),
+                        text = com.example.util.tr(if (!enabled) tr("OFF") else if (isActive) "ONLINE" else tr(theme.titleKey).uppercase()),
                         color = if (!enabled) TextMuted else if (isActive) Color(0xFF00FFC2) else TextMuted,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,

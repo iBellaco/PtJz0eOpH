@@ -187,7 +187,7 @@ fun AdminSupportReportsDialog(
                         val isSupport = rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA") ||
                                 fb.title.contains("Soporte", ignoreCase = true) ||
                                 fb.title.contains("Ticket", ignoreCase = true)
-                        
+
                         if (!isSupport) continue
 
                         val id = fb.id ?: "${fb.title}_${fb.createdAt}"
@@ -556,7 +556,7 @@ fun AdminSupportReportsDialog(
             FeedbackRepository.STATUS_READ -> "Leído"
             else -> "Pendiente"
         }
-        Toast.makeText(context, "Estado actualizado: $statusLabel", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, com.example.util.appTr("Estado actualizado: $statusLabel"), Toast.LENGTH_SHORT).show()
     }
 
     Dialog(
@@ -596,7 +596,7 @@ fun AdminSupportReportsDialog(
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Volver",
+                                    contentDescription = com.example.util.trNullable("Volver"),
                                     tint = HextechCyan,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -630,7 +630,7 @@ fun AdminSupportReportsDialog(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "$pendingCount pendiente(s) • $readCount leído(s) • $solvedCount solucionado(s)",
+                                    text = com.example.util.tr("$pendingCount pendiente(s) • $readCount leído(s) • $solvedCount solucionado(s)"),
                                     color = if (pendingCount > 0) HextechCyan else TextMuted,
                                     fontSize = 11.sp
                                 )
@@ -644,7 +644,7 @@ fun AdminSupportReportsDialog(
                             ) {
                                 Icon(
                                     Icons.Default.Refresh,
-                                    contentDescription = "Recargar",
+                                    contentDescription = com.example.util.trNullable("Recargar"),
                                     tint = HextechCyan,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -654,7 +654,7 @@ fun AdminSupportReportsDialog(
                                 onClick = onDismiss,
                                 modifier = Modifier.size(32.dp)
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted)
+                                Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextMuted)
                             }
                         }
                     }
@@ -670,7 +670,7 @@ fun AdminSupportReportsDialog(
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }, modifier = Modifier.size(24.dp)) {
-                                    Icon(Icons.Default.Close, contentDescription = "Limpiar", tint = TextMuted, modifier = Modifier.size(15.dp))
+                                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Limpiar"), tint = TextMuted, modifier = Modifier.size(15.dp))
                                 }
                             }
                         },
@@ -722,7 +722,7 @@ fun AdminSupportReportsDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = label,
+                                    text = com.example.util.tr(label),
                                     color = if (isSelected) activeColor else TextSecondary,
                                     fontSize = 10.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -833,7 +833,7 @@ fun AdminSupportReportsDialog(
                                         onClick = {
                                             val clip = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                             clip.setPrimaryClip(ClipData.newPlainText("Registro Soporte Coach" , logText))
-                                            Toast.makeText(context, "Registro copiado al portapapeles", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("Registro copiado al portapapeles"), Toast.LENGTH_SHORT).show()
                                         },
                                         modifier = Modifier.height(28.dp),
                                         border = BorderStroke(0.8.dp, HextechGold),
@@ -847,7 +847,7 @@ fun AdminSupportReportsDialog(
                                 }
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = "Recibidos: $totalRecv | Respondidos: $totalReplied | Hoy: $repliedToday | Semanal: $repliedWeek",
+                                    text = com.example.util.tr("Recibidos: $totalRecv | Respondidos: $totalReplied | Hoy: $repliedToday | Semanal: $repliedWeek"),
                                     color = TextSecondary,
                                     fontSize = 11.sp
                                 )
@@ -935,7 +935,7 @@ fun AdminSupportReportsDialog(
                                         .background(if (pendingCount > 0) DangerRed else Color(0xFF10B981))
                                 )
                                 Text(
-                                    text = if (pendingCount > 0) "⚠️ $pendingCount ticket(s) pendientes" else "✅ Buzón al día",
+                                    text = com.example.util.tr(if (pendingCount > 0) "⚠️ $pendingCount ticket(s) pendientes" else "✅ Buzón al día"),
                                     color = if (pendingCount > 0) HextechGold else Color(0xFF10B981),
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -1018,14 +1018,14 @@ fun AdminSupportReportsDialog(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "\"${target.title}\"",
+                        text = com.example.util.tr("\"${target.title}\""),
                         color = HextechCyan,
                         fontSize = 12.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                     if (target.userEmail.isNotBlank()) {
                         Text(
-                            text = "De: ${target.userEmail}",
+                            text = com.example.util.tr("De: ${target.userEmail}"),
                             color = TextMuted,
                             fontSize = 11.sp
                         )
@@ -1058,7 +1058,7 @@ fun AdminSupportReportsDialog(
                             }
 
                             withContext(Dispatchers.Main) {
-                                Toast.makeText(context, "Reporte eliminado permanentemente", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Reporte eliminado permanentemente"), Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
@@ -1128,13 +1128,13 @@ fun AdminSupportReportsDialog(
                                 }
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "${analysis.landscapeWidth} x ${analysis.landscapeHeight} (${analysis.aspectRatioLabel})",
+                                    text = com.example.util.tr("${analysis.landscapeWidth} x ${analysis.landscapeHeight} (${analysis.aspectRatioLabel})"),
                                     color = HextechCyan,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = analysis.probableDeviceModels.joinToString(", "),
+                                    text = com.example.util.tr(analysis.probableDeviceModels.joinToString(", ")),
                                     color = TextPrimary,
                                     fontSize = 11.sp
                                 )
@@ -1231,7 +1231,7 @@ private fun UnifiedReportAdminCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = typeLabel,
+                            text = com.example.util.tr(typeLabel),
                             color = typeBadgeColor,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold
@@ -1255,7 +1255,7 @@ private fun UnifiedReportAdminCard(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = statusText,
+                            text = com.example.util.tr(statusText),
                             color = statusTextColor,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Black
@@ -1292,7 +1292,7 @@ private fun UnifiedReportAdminCard(
                             )
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = countdown.displayText,
+                                text = com.example.util.tr(countdown.displayText),
                                 color = countdownColor,
                                 fontSize = 8.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -1303,7 +1303,7 @@ private fun UnifiedReportAdminCard(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = dateStr,
+                        text = com.example.util.tr(dateStr),
                         color = TextMuted,
                         fontSize = 10.5.sp
                     )
@@ -1315,7 +1315,7 @@ private fun UnifiedReportAdminCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Eliminar",
+                                contentDescription = com.example.util.trNullable("Eliminar"),
                                 tint = DangerRed.copy(alpha = 0.85f),
                                 modifier = Modifier.size(17.dp)
                             )
@@ -1328,7 +1328,7 @@ private fun UnifiedReportAdminCard(
 
             // Título
             Text(
-                text = report.title,
+                text = com.example.util.tr(report.title),
                 color = TextPrimary,
                 fontSize = 13.5.sp,
                 fontWeight = FontWeight.Bold
@@ -1338,7 +1338,7 @@ private fun UnifiedReportAdminCard(
 
             // Descripción del reporte
             Text(
-                text = report.description,
+                text = com.example.util.tr(report.description),
                 color = TextSecondary,
                 fontSize = 12.sp,
                 lineHeight = 16.5.sp
@@ -1369,7 +1369,7 @@ private fun UnifiedReportAdminCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = emailOrName,
+                        text = com.example.util.tr(emailOrName),
                         color = HextechCyan,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
@@ -1390,7 +1390,7 @@ private fun UnifiedReportAdminCard(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = report.device,
+                            text = com.example.util.tr(report.device),
                             color = TextMuted,
                             fontSize = 10.sp,
                             maxLines = 1
@@ -1402,7 +1402,7 @@ private fun UnifiedReportAdminCard(
             if (report.appVersion.isNotBlank()) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Versión: ${report.appVersion}",
+                    text = com.example.util.tr("Versión: ${report.appVersion}"),
                     color = TextMuted.copy(alpha = 0.7f),
                     fontSize = 9.5.sp
                 )
@@ -1412,7 +1412,7 @@ private fun UnifiedReportAdminCard(
             if (report.photosBase64.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Capturas adjuntas (${report.photosBase64.size}):",
+                    text = com.example.util.tr("Capturas adjuntas (${report.photosBase64.size}):"),
                     color = HextechGold,
                     fontSize = 10.5.sp,
                     fontWeight = FontWeight.SemiBold
@@ -1455,7 +1455,7 @@ private fun UnifiedReportAdminCard(
                 if (firstPhotoAnalysis != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "📱 Celular inferido: ${firstPhotoAnalysis.primaryDeviceSummary}",
+                        text = com.example.util.tr("📱 Celular inferido: ${firstPhotoAnalysis.primaryDeviceSummary}"),
                         color = HextechCyan,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium
@@ -1711,12 +1711,12 @@ private fun UnifiedReportAdminCard(
                                         sdf.format(Date(report.repliedAtMillis))
                                     } catch (_: Exception) { "" }
                                 }
-                                Text(text = replyDateStr, color = TextMuted, fontSize = 9.sp)
+                                Text(text = com.example.util.tr(replyDateStr), color = TextMuted, fontSize = 9.sp)
                             }
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = report.adminReply,
+                            text = com.example.util.tr(report.adminReply),
                             color = TextPrimary,
                             fontSize = 11.5.sp,
                             lineHeight = 15.5.sp
@@ -1742,7 +1742,7 @@ private fun UnifiedReportAdminCard(
                                 modifier = Modifier.size(11.dp)
                             )
                             Text(
-                                text = "Respondido por: $authorName${if (authorMail != null) " • $authorMail" else ""}",
+                                text = com.example.util.tr("Respondido por: $authorName${if (authorMail != null) " • $authorMail" else ""}"),
                                 color = HextechGold,
                                 fontSize = 9.5.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -1769,7 +1769,7 @@ private fun UnifiedReportAdminCard(
                                 onClick = {
                                     val clip = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     clip.setPrimaryClip(ClipData.newPlainText("Respuesta Soporte" , report.adminReply))
-                                    Toast.makeText(context, "Respuesta copiada", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Respuesta copiada"), Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier.height(28.dp),
                                 border = BorderStroke(0.8.dp, HextechCardBorder),
@@ -1791,7 +1791,7 @@ private fun UnifiedReportAdminCard(
                                             )
                                             context.startActivity(intent)
                                         } catch (_: Exception) {
-                                            Toast.makeText(context, "No hay aplicación de correo disponible", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("No hay aplicación de correo disponible"), Toast.LENGTH_SHORT).show()
                                         }
                                     },
                                     modifier = Modifier.height(28.dp),

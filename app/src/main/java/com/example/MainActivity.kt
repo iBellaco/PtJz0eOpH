@@ -295,7 +295,11 @@ enum class AppScreen {
     META
 }
 
-class MainActivity : ComponentActivity() {    private val requestPermissionLauncher = registerForActivityResult(
+class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.example.util.AppLanguage.localizedContext(newBase))
+    }
+    private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
@@ -325,22 +329,22 @@ class MainActivity : ComponentActivity() {    private val requestPermissionLaunc
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // OWASP MASVS: Anti-Tampering & Screen Protection (DevSecOps)
         // com.example.util.AppSecurityManager.enableScreenProtection(this)
-        
+
         if (com.example.util.AppSecurityManager.isDeviceRooted() || com.example.util.AppSecurityManager.isDebuggerAttached()) {
             android.util.Log.w("AppSecurity", "WARNING: Device may be rooted or debugger is attached. Applying degraded functionality mode or just warning.")
             // Real apps might exit here: finishAffinity()
         }
-        
+
         AppThemeManager.init(this)
         com.example.util.SubscriptionManager.init(this)
         val currentAuthUser = com.example.util.AuthManager.getAuth()?.currentUser
         if (currentAuthUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(currentAuthUser)) {
-            com.example.util.DeviceAndSessionManager.registerDeviceAndSession(this, onError = { msg -> 
+            com.example.util.DeviceAndSessionManager.registerDeviceAndSession(this, onError = { msg ->
                 if (msg.contains("Límite de dispositivos", ignoreCase = true)) {
-                    android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_LONG).show()
+                    android.widget.Toast.makeText(this, com.example.util.appTr(msg), android.widget.Toast.LENGTH_LONG).show()
                     com.example.util.AuthManager.getAuth()?.signOut()
                 }
             })
@@ -365,7 +369,7 @@ class MainActivity : ComponentActivity() {    private val requestPermissionLaunc
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         DraftingApp()
-                        
+
 
                     }
                 }
@@ -409,13 +413,13 @@ fun DashboardScreen(
     val targetChampId = activity?.intent?.getStringExtra("OPEN_CHAMPION_DETAIL")
     val initialPage = if (activity?.intent?.getBooleanExtra("OPEN_TIER_LIST", false) == true || targetChampId != null) 2 else 0
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { 5 })
-    
+
     // Clear intent so we don't reopen tier list on rotation
     androidx.compose.runtime.LaunchedEffect(Unit) {
         activity?.intent?.removeExtra("OPEN_TIER_LIST")
         activity?.intent?.removeExtra("OPEN_CHAMPION_DETAIL")
     }
-    
+
     var showExitDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
@@ -558,7 +562,7 @@ fun DashboardScreen(
                     NavigationBarItem(
                         selected = pagerState.currentPage == 4,
                         onClick = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
-                        icon = { 
+                        icon = {
                             val unreadCount by com.example.util.SubscriptionManager.unreadMessagesCount.collectAsStateWithLifecycle(0)
                             val allNotices by com.example.data.AppNoticeManager.notices.collectAsStateWithLifecycle(com.example.data.AppNoticeManager.notices.value)
                             val userRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
@@ -586,7 +590,7 @@ fun DashboardScreen(
                                             containerColor = com.example.ui.theme.DangerRed,
                                             contentColor = Color.White
                                         ) {
-                                            Text(effectiveUnreadCount.toString())
+                                            Text(com.example.util.tr(effectiveUnreadCount.toString()))
                                         }
                                     }
                                 }
@@ -604,7 +608,7 @@ fun DashboardScreen(
 
                                 Icon(
                                     imageVector = if (showBadge) Icons.Default.Notifications else Icons.Default.Person,
-                                    contentDescription = if (showBadge) tr("Notificaciones") else tr("Usuario"),
+                                    contentDescription = com.example.util.trNullable(if (showBadge) tr("Notificaciones") else tr("Usuario")),
                                     modifier = iconModifier
                                 )
                             }
@@ -721,7 +725,7 @@ fun DraftingApp() {
     var hasSeenOnboarding by remember { mutableStateOf(sharedPrefs.getBoolean("has_seen_onboarding", false)) }
     var showLegalDialog by remember { mutableStateOf(isLanguageSet && !hasAcceptedLegal) }
     var currentScreen by remember { mutableStateOf(AppScreen.SPLASH) }
-    
+
     val coroutineScope = rememberCoroutineScope()
     var mainRole by remember { mutableStateOf(com.example.util.UserPreferences.getMainRole(context)) }
     var secondRole by remember { mutableStateOf(com.example.util.UserPreferences.getSecondRole(context)) }
@@ -734,6 +738,7 @@ fun DraftingApp() {
     LaunchedEffect(Unit) {
         // Inicializar listado maestro de campeones desde assets JSON
         com.example.data.WildRiftRepository.initChampions(context)
+        com.example.data.sync.ChineseMetaSyncService.loadRegion(context)
 
         // Ejecuta la sincronización en segundo plano al arrancar la app para traer los datos desde la nube
         com.example.data.sync.MetaCrawlerSyncService.syncPatchData(context)
@@ -742,7 +747,7 @@ fun DraftingApp() {
         // AppUpdateManager.checkForUpdates disabled
     }
 
-    var selectedLanguage by remember { mutableStateOf(sharedPrefs.getString("selected_language", "es") ?: "es") }
+    val selectedLanguage by com.example.util.AppLanguage.current.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(LocalLanguage provides selectedLanguage) {
         if (isBanned) {
@@ -753,14 +758,14 @@ fun DraftingApp() {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
                     Icon(Icons.Default.Block, contentDescription = null, tint = Color.Red, modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Cuenta Suspendida", color = Color.Red, fontSize = 24.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    Text(com.example.util.tr("Cuenta Suspendida"), color = Color.Red, fontSize = 24.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(tr("Tu acceso ha sido revocado permanentemente. Contacta con soporte si crees que esto es un error."), color = TextSecondary, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 }
             }
             return@CompositionLocalProvider
         }
-        
+
         // Modal de Alerta de Actualización Disponible con opción de descarga directa
         activeUpdateInfo?.let { update ->
             if (update.isUpdateAvailable) {
@@ -828,7 +833,7 @@ fun DraftingApp() {
                             .putString("selected_language", langCode)
                             .apply()
                         isLanguageSet = true
-                        selectedLanguage = langCode
+                        com.example.util.AppLanguage.select(context, langCode)
                         if (!hasAcceptedLegal) {
                             showLegalDialog = true
                         } else {
@@ -844,24 +849,24 @@ fun DraftingApp() {
                     onNavigateToFAQ = { currentScreen = AppScreen.FAQ },
                     onNavigateToLogin = { currentScreen = AppScreen.LOGIN },
                     mainRole = mainRole,
-                    onMainRoleChange = { 
+                    onMainRoleChange = {
                         mainRole = it
                         com.example.util.UserPreferences.setMainRole(context, it)
                     },
                     secondRole = secondRole,
-                    onSecondRoleChange = { 
+                    onSecondRoleChange = {
                         secondRole = it
                         com.example.util.UserPreferences.setSecondRole(context, it)
                     },
                     autofillRole = autofillRole,
-                    onAutofillRoleChange = { 
+                    onAutofillRoleChange = {
                         autofillRole = it
                         com.example.util.UserPreferences.setAutofillRole(context, it)
                     },
                     currentLanguage = selectedLanguage,
                     onLanguageChange = { newLang ->
                         sharedPrefs.edit().putString("selected_language", newLang).apply()
-                        selectedLanguage = newLang
+                        com.example.util.AppLanguage.select(context, newLang)
                     }
                 )
             }
