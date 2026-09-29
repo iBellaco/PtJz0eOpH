@@ -5,7 +5,7 @@ import com.example.model.DamageType
 import com.example.model.LaneRole
 
 /**
- * Catálogo y generador oficial de Runas de Wild Rift (Meta actualizado según WildRiftFire, WildRiftCore y Meta Pro Global).
+ * Catálogo y generador oficial de Runas de Wild Rift (catálogo local).
  * Cada campeón posee 2 combinaciones distintas y optimizadas:
  * - Opción 1: Build Principal / Meta Estándar (1 Runa Clave + 4 Secundarias de nuestro catálogo oficial).
  * - Opción 2: Build Alternativa / Situacional contra composiciones específicas (Poke, Burst, Tanques o Sustain).

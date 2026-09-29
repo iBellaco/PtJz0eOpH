@@ -40,41 +40,9 @@ object WildRiftRepository {
     // FUENTES DE DATOS Y META ACTUAL
     // ==========================================
     val metaSources: List<MetaDataSource> = listOf(
-        MetaDataSource(
-            id = "riot_games_oficial",
-            name = "Wild Rift Oficial (Riot Games)",
-            description = "Catálogo Oficial de Campeones y Habilidades",
-            url = "https://wildrift.leagueoflegends.com/es-es/champions/",
-            focusArea = "Datos Canónicos y Oficiales"
-        ),
-        MetaDataSource(
-            id = "wildriftcore",
-            name = "WildRiftCore (ES)",
-            description = "Runas en Español, Parches y Novedades",
-            url = "https://wildriftcore.com/es/",
-            focusArea = "Runas y Novedades en Español"
-        ),
-        MetaDataSource(
-            id = "meta_global",
-            name = "Meta Pro Global",
-            description = "Builds Óptimas e Ítems Situacionales",
-            url = "https://wildriftfire.com/",
-            focusArea = "Armado de Objetos Profundo"
-        ),
-        MetaDataSource(
-            id = "wildriftfire",
-            name = "WildRiftFire",
-            description = "Tier Lists Globales y Sinergias",
-            url = "https://www.wildriftfire.com/",
-            focusArea = "Tier List General (S+ a C)"
-        ),
-        MetaDataSource(
-            id = "wr_meta",
-            name = "WR-Meta",
-            description = "Estadísticas en Tiempo Real y Counters",
-            url = "https://wr-meta.com/",
-            focusArea = "Winrates y Counters Dinámicos"
-        )
+        MetaDataSource(id = "tencent_cn", name = "Servidor chino",
+            description = "Estadísticas de Wild Rift del servidor chino",
+            url = "https://lolm.qq.com/", focusArea = "Victorias, selecciones y bloqueos")
     )
 
     // CATÁLOGO DE HECHIZOS DE INVOCADOR (SUMMONER SPELLS)
@@ -195,7 +163,7 @@ object WildRiftRepository {
 
 
     private val baseChampions = mutableListOf<Champion>()
-    var activeRegionName by mutableStateOf("Global")
+    var activeRegionName by mutableStateOf("CN")
 
     @Synchronized
     fun initChampions(context: android.content.Context, forceReload: Boolean = false) {
@@ -472,7 +440,7 @@ object WildRiftRepository {
         tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS
     ): List<Champion> {
         val isCurrentActive = regionId.equals(activeRegionName, ignoreCase = true) ||
-            (regionId.equals("Global", ignoreCase = true) && (activeRegionName.equals("Global", ignoreCase = true) || activeRegionName.equals("BestBuildWR", ignoreCase = true)))
+            (regionId.equals("Global", ignoreCase = true) && (activeRegionName.equals("Global", ignoreCase = true) ))
 
         if (isCurrentActive && champions.isNotEmpty()) {
             return champions.sortedByDescending { it.winrate }.take(count)
@@ -871,7 +839,7 @@ object WildRiftRepository {
 
         val serverLabel = when (serverRegion) {
             "CN" -> "China ($rankTier)"
-            "Global", "BestBuildWR", "GLOBAL" -> "Global Meta"
+            "Global", "GLOBAL" -> "Global Meta"
             else -> "América"
         }
 

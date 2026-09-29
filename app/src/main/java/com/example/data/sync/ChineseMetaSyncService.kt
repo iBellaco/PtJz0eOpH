@@ -17,7 +17,7 @@ object ChineseMetaSyncService {
     private val _currentTier = MutableStateFlow(TencentRankTier.DIAMOND_PLUS)
     val currentTier: StateFlow<TencentRankTier> = _currentTier.asStateFlow()
 
-    private val _currentRegion = MutableStateFlow("Global")
+    private val _currentRegion = MutableStateFlow("CN")
     val currentRegion: StateFlow<String> = _currentRegion.asStateFlow()
 
     fun loadRegion(context: Context) {
@@ -25,19 +25,19 @@ object ChineseMetaSyncService {
     }
 
     fun setRegion(context: Context, regionId: String, scope: CoroutineScope) {
-        _currentRegion.value = regionId
-        WildRiftRepository.updateStatsForRegionAndTier(regionId, _currentTier.value)
-        _syncState.value = ChineseSyncState.Success(BestBuildWrScraper.lastSyncFormattedTime.value, _currentTier.value)
+        _currentRegion.value = "CN"
         scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            BestBuildWrScraper.syncGlobalTierList(context, regionId, force = true)
+            syncChineseMeta(context, _currentTier.value, forceRefresh = true)
         }
     }
 
     suspend fun syncChineseMeta(context: Context, tier: TencentRankTier = TencentRankTier.DIAMOND_PLUS, forceRefresh: Boolean = false) {
+        _syncState.value = ChineseSyncState.Syncing
         _currentTier.value = tier
-        WildRiftRepository.updateStatsForRegionAndTier(_currentRegion.value, tier)
         BestBuildWrScraper.syncGlobalTierList(context, _currentRegion.value, force = forceRefresh)
-        _syncState.value = ChineseSyncState.Success(BestBuildWrScraper.lastSyncFormattedTime.value, tier)
+        _syncState.value = if (BestBuildWrScraper.isLastSyncSuccess.value)
+            ChineseSyncState.Success(BestBuildWrScraper.lastSyncFormattedTime.value, tier)
+        else ChineseSyncState.Error("No se pudo actualizar; usando los últimos datos guardados.")
     }
 
     suspend fun getFilteredRankings(context: Context, tier: TencentRankTier, lane: LaneRole?): List<Champion> {

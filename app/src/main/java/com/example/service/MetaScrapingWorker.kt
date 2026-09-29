@@ -1,38 +1,27 @@
 package com.example.service
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
+import com.example.data.WildRiftRepository
+import com.example.data.sync.BestBuildWrScraper
+import com.example.util.AppLogger
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.json.JSONObject
 import java.util.concurrent.TimeUnit
-import com.example.data.WildRiftRepository
-import com.example.data.sync.ChineseMetaSyncService
-import com.example.data.sync.TencentRankTier
-import com.example.util.AppLogger
-import java.text.Normalizer
 
-class MetaScrapingWorker(
-    context: Context,
-    workerParams: WorkerParameters
-) : CoroutineWorker(context, workerParams) {
+class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
+    override suspend fun doWork(): Result {
+        BestBuildWrScraper.syncGlobalTierList(applicationContext, "CN")
+        return if (BestBuildWrScraper.isLastSyncSuccess.value) Result.success() else Result.retry()
+    }
 
-    private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
-        .build()
+    companion object {
+        private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS).build()
 
-    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        try {
-            AppLogger.d("MetaScrapingWorker", "Iniciando sincronización con Servidor Oficial de Tencent (lolm.qq.com)...")
-            
-            // Intentar consultar endpoints en vivo con OkHttpClient seguro
-            try {
+        internal fun fetchChineseStats(): Boolean {
                 // 1. Obtener la lista de Héroes y sus IDs oficiales de Tencent
                 val heroReq = Request.Builder()
                     .url("https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js")
@@ -41,7 +30,7 @@ class MetaScrapingWorker(
                     .header("Accept", "*/*")
                     .build()
 
-                val heroJsonStr = httpClient.newCall(heroReq).execute().use { resp ->
+                val heroJsonStr = client.newCall(heroReq).execute().use { resp ->
                     if (resp.isSuccessful) resp.body?.string() else null
                 }
 
@@ -55,7 +44,7 @@ class MetaScrapingWorker(
                         val tencentId = keys.next()
                         val heroData = heroJson.getJSONObject(tencentId)
                         tencentIdToData[tencentId] = Pair(
-                            heroData.getString("name"),
+                            heroData.optString("poster").substringAfterLast("/").substringBeforeLast("_"),
                             heroData.optString("alias", "")
                         )
                     }
@@ -68,7 +57,7 @@ class MetaScrapingWorker(
                         .header("Accept", "application/json, text/plain, */*")
                         .build()
 
-                    val rankJsonStr = httpClient.newCall(rankReq).execute().use { resp ->
+                    val rankJsonStr = client.newCall(rankReq).execute().use { resp ->
                         if (resp.isSuccessful) resp.body?.string() else null
                     }
 
@@ -96,7 +85,7 @@ class MetaScrapingWorker(
                                     val tencentAlias = tencentInfo.second.lowercase()
                                     
                                     val index = allChamps.indexOfFirst { 
-                                        matchAlias(it.id, it.name, tencentAlias) 
+                                        matchAlias(it.id, it.name, tencentAlias, tencentInfo.first) 
                                     }
                                     
                                     if (index != -1) {
@@ -113,33 +102,19 @@ class MetaScrapingWorker(
                             }
                             if (updatedCount > 0) {
                                 WildRiftRepository.champions.clear(); WildRiftRepository.champions.addAll(allChamps)
+                                return true
                                 AppLogger.d("MetaScrapingWorker", "Direct sync completed for $updatedCount champions.")
                             }
                         }
                     }
                 }
-            } catch (netEx: Exception) {
-                AppLogger.w("MetaScrapingWorker", "Consulta directa de scraping continuará vía snapshot espejo: ${netEx.message}")
-            }
-
-            // Sincronizar usando el servicio integral de estadísticas de Tencent China con cálculo de deltas y snapshot canónico
-            ChineseMetaSyncService.loadRegion(applicationContext)
-            val region = ChineseMetaSyncService.currentRegion.value
-            if (region == "CN") {
-                ChineseMetaSyncService.syncChineseMeta(applicationContext, TencentRankTier.DIAMOND_PLUS, forceRefresh = true)
-            } else if (region == "Global" || region == "BestBuildWR") {
-                com.example.data.sync.BestBuildWrScraper.syncGlobalTierList(applicationContext)
-            }
-            
-            AppLogger.d("MetaScrapingWorker", "Estadísticas extraídas y deltas calculados correctamente del servidor CN.")
-            Result.success()
-        } catch (e: Exception) {
-            AppLogger.e("MetaScrapingWorker", "Sincronización finalizada con respaldo local seguro: ${e.message}", e)
-            Result.success()
+            return false
         }
-    }
-
-    private fun matchAlias(ourId: String, ourName: String, tencentAlias: String): Boolean {
+    private fun matchAlias(ourId: String, ourName: String, tencentAlias: String, englishName: String): Boolean {
+        fun canonical(value: String) = value.lowercase().filter { it.isLetterOrDigit() }
+        val english = canonical(englishName).let { when (it) { "monkeyking" -> "wukong"; "nunu" -> "nunuwillump"; else -> it } }
+        if (english.isNotBlank() && (english == canonical(ourId) || english == canonical(ourName))) return true
+        if (tencentAlias.isBlank()) return false
         val normId = ourId.lowercase().replace("_", "").replace(" ", "")
         val normName = ourName.lowercase().replace(" ", "").replace("'", "")
         val normTencent = tencentAlias.replace("_", "")
@@ -182,5 +157,6 @@ class MetaScrapingWorker(
         
         return normId.contains(normTencent) || normTencent.contains(normId) ||
                normName.contains(normTencent) || normTencent.contains(normName)
+    }
     }
 }

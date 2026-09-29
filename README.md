@@ -15,19 +15,14 @@
 ## ⚡ Características Principales (100% Real)
 
 ### 1. 🔍 Escaneo y Lectura de Draft por OCR en Tiempo Real
-- **Detección Automática de Campeones:** Utiliza **Google ML Kit Text Recognition** sobre la captura de pantalla (`MediaProjection API`) para escanear en vivo la sala de selección de campeones (Pick 10, aliados y enemigos).
+- **Detección Automática de Campeones:** Utiliza **Google ML Kit Text Recognition** sobre la captura de pantalla (`MediaProjection API`) para escanear en vivo la sala de selección de campeones (selecciones del 1 al 9, aliados y enemigos).
 - **Reconocimiento de Invocadores con Espacios:** Sistema OCR adaptado para procesar nombres con espacios (ej. *"D I E G O"*) y filtrar ruido de chat de forma efectiva.
 - **Asignación Dinámica de Roles:** Seguimiento en tiempo real de carriles (Top, Jungle, Mid, ADC, Support) por si el usuario cambia de rol o realiza intercambios con un aliado.
 
-### 2. 🌐 Sincronización Global de Tier Lists (5 Fuentes + Servidores)
-- **Scraper Multifuente:** Monitoreo y extracción automática de estadísticas promediadas de **5 fuentes globales**:
-  1. *WildRiftFire* (`wildriftfire.com`)
-  2. *WildRiftCore* (`wildriftcore.com`)
-  3. *WildRiftGuides* (`wildriftguides.com`)
-  4. *BestBuildWR* (`bestbuildwr.com`)
-  5. *WR-Meta* (`wr-meta.com`)
-- **Panel de Estado en Administrador:** Diagnóstico en tiempo real del estado de salud, tiempos de respuesta HTTP y éxito de cada servidor de scraping.
-- **Selector de Servidores / Regiones:** Actualización automática del Winrate, Pickrate, Banrate y Tier de todos los campeones al cambiar de región (Global, CN, NA, EU, KR, etc.).
+### 2. Estadísticas del servidor chino
+- Consulta de victorias, selecciones y bloqueos desde el servidor chino.
+- Los fallos de conexión conservan los últimos datos guardados y muestran el estado real de la consulta.
+- El décimo pick se reconoce por coincidencia espacial de su avatar con los retratos locales, sin API de IA ni lectura del nombre oculto.
 
 ### 3. 🪟 Superposición Flotante en Pantalla (Overlay HUD)
 - **Burbuja Flotante Minimalista:** Permite ejecutar la aplicación directamente sobre el juego Wild Rift sin salir de la partida mediante el permiso `SYSTEM_ALERT_WINDOW`.

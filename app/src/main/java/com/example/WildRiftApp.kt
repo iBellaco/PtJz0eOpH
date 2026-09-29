@@ -113,29 +113,6 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
     }
 
     private fun setupInstantAndPeriodicScraping() {
-        val handler = CoroutineExceptionHandler { _, throwable ->
-            AppLogger.e("WildRiftApp", "Unhandled background exception caught safely", throwable)
-        }
-        CoroutineScope(Dispatchers.IO + handler).launch {
-                        try {
-                // com.example.data.supabase.SupabaseClientManager.fetchCurrentPatchVersion()
-                AppLogger.d("WildRiftApp", "Parche sincronizado desde Supabase.")
-            } catch (e: Exception) {
-                AppLogger.e("WildRiftApp", "Error sincronizando parche desde Supabase", e)
-            }
-            try {
-                ChineseMetaSyncService.loadRegion(this@WildRiftApp)
-                val region = ChineseMetaSyncService.currentRegion.value
-                if (region == "CN") {
-                    ChineseMetaSyncService.syncChineseMeta(this@WildRiftApp, forceRefresh = true)
-                } else if (region == "Global" || region == "BestBuildWR") {
-                    com.example.data.sync.BestBuildWrScraper.syncGlobalTierList(this@WildRiftApp)
-                }
-            } catch (e: Exception) {
-                AppLogger.e("WildRiftApp", "Error en auto-sincronización instantánea", e)
-            }
-        }
-
         try {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -178,7 +155,7 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
             .diskCache {
                 DiskCache.Builder()
                     .directory(cacheDir.resolve("image_cache"))
-                    .maxSizePercent(0.05)
+                    .maxSizeBytes(64L * 1024 * 1024)
                     .build()
             }
             .allowHardware(true)

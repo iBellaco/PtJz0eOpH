@@ -234,7 +234,7 @@ fun LiteRTEngineViewerDialog(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = tr("Visor Google MediaPipe / LiteRT"),
+                                text = tr("Visor Reconocimiento visual local"),
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
@@ -399,7 +399,7 @@ fun LiteRTEngineViewerDialog(
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "Confianza: ${report.confidencePercent}%",
+                                            text = "Coincidencia: ${report.confidencePercent}%",
                                             color = Color(0xFF10B981),
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 12.sp
@@ -415,9 +415,9 @@ fun LiteRTEngineViewerDialog(
                                     Text(
                                         text = when (report.status) {
                                             LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9,
-                                            LiteRTVisionClassifier.EngineStatus.RUNNING_INFERENCE -> "Analizando tensores en vivo..."
+                                            LiteRTVisionClassifier.EngineStatus.RUNNING_INFERENCE -> "Analizando retratos en vivo..."
                                             LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> "Slot final en espera"
-                                            else -> "Evaluando tensores..."
+                                            else -> "Evaluando retratos..."
                                         },
                                         color = Color(0xFF94A3B8),
                                         fontWeight = FontWeight.Medium,
@@ -427,9 +427,9 @@ fun LiteRTEngineViewerDialog(
                                         text = when (report.status) {
                                             LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK -> {
                                                 if (report.slotDescription.contains("Aliado", ignoreCase = true)) {
-                                                    "Mostrando icono de línea. Visor escaneando tensores."
+                                                    "Mostrando icono de línea. Visor escaneando retratos."
                                                 } else {
-                                                    "Mostrando yelmo espartano. Visor escaneando tensores."
+                                                    "Mostrando yelmo espartano. Visor escaneando retratos."
                                                 }
                                             }
                                             else -> report.slotDescription.ifBlank { "Slot 5 (10º Pick)" }
@@ -443,7 +443,7 @@ fun LiteRTEngineViewerDialog(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // Métricas técnicas del Tensor y Control de Estabilidad Temporal
+                        // Métricas técnicas del Retrato y Control de Estabilidad Temporal
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -455,7 +455,7 @@ fun LiteRTEngineViewerDialog(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Tensor: ${report.tensorDimensions}",
+                                    text = "Muestra: ${report.tensorDimensions}",
                                     color = Color(0xFF64748B),
                                     fontSize = 10.sp,
                                     fontFamily = FontFamily.Monospace
@@ -481,7 +481,7 @@ fun LiteRTEngineViewerDialog(
                                     fontFamily = FontFamily.Monospace
                                 )
                                 Text(
-                                    text = tr("Espacio: RGB [-1.0, 1.0]"),
+                                    text = tr("Espacio: RGB centrado por canal"),
                                     color = Color(0xFF64748B),
                                     fontSize = 10.sp,
                                     fontFamily = FontFamily.Monospace
@@ -959,7 +959,7 @@ fun LiteRTEngineViewerDialog(
 
                 // Tabla de Candidatos Comparados por LiteRT
                 Text(
-                    text = tr("COMPARACIÓN DE TENSORES (TOP 5 CANDIDATOS)"),
+                    text = tr("COMPARACIÓN DE RETRATOS (TOP 5 CANDIDATOS)"),
                     color = Color(0xFFE2E8F0),
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
@@ -1610,7 +1610,7 @@ private fun CandidateRowItem(
                     Spacer(modifier = Modifier.width(6.dp))
                     if (passes) {
                         Text(
-                            text = tr("APROBADO"),
+                            text = tr("SUPERA UMBRAL"),
                             color = Color(0xFF10B981),
                             fontSize = 8.sp,
                             fontWeight = FontWeight.Bold
@@ -1625,7 +1625,7 @@ private fun CandidateRowItem(
                     }
                 }
                 Text(
-                    text = "Probabilidad Softmax: ${(candidate.softmaxProbability * 100).toInt()}%",
+                    text = "Peso relativo: ${(candidate.softmaxProbability * 100).toInt()}%",
                     color = Color(0xFF94A3B8),
                     fontSize = 10.sp
                 )
@@ -1634,7 +1634,7 @@ private fun CandidateRowItem(
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = "${(candidate.similarityScore * 100).toInt()}% Tensor",
+                text = "${(candidate.similarityScore * 100).toInt()}% Coincidencia",
                 color = if (passes) Color(0xFF10B981) else Color(0xFFF59E0B),
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp

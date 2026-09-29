@@ -28,7 +28,7 @@ import kotlin.math.min
  * Gestor del Modo Diagnóstico para el 10º Pick de Wild Rift.
  * 
  * Guarda automáticamente los recortes exactos de fotogramas pasados a los motores de
- * reconocimiento (Google MediaPipe / LiteRT / Vision Classifier) en el directorio de caché de la app,
+ * reconocimiento (reconocimiento visual local) en el directorio de caché de la app,
  * permitiendo inspeccionar manualmente la calidad de la imagen, resolución, contraste,
  * iluminación y píxeles evaluados.
  */
