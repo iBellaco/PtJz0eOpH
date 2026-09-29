@@ -216,7 +216,7 @@ fun AdminFeedbackBottomSheet(
     onDismiss: () -> Unit
 ) {
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
-    
+
     // Explicit UI navigation logic verification: permitido para admin y moderador
     if (userRole != "admin" && userRole != "moderador" && !com.example.util.AuthManager.isCurrentUserAdmin()) {
         LaunchedEffect(Unit) {
@@ -319,8 +319,8 @@ fun AdminFeedbackBottomSheet(
                         }
 
                         // Actualizar en la lista de reportes en memoria
-                        val existingIdx = reports.indexOfFirst { 
-                            it.id == docId || (docTitle.isNotBlank() && it.title.trim().equals(docTitle.trim(), ignoreCase = true)) 
+                        val existingIdx = reports.indexOfFirst {
+                            it.id == docId || (docTitle.isNotBlank() && it.title.trim().equals(docTitle.trim(), ignoreCase = true))
                         }
                         if (existingIdx != -1) {
                             val cur = reports[existingIdx]
@@ -535,7 +535,7 @@ fun AdminFeedbackBottomSheet(
                                         .padding(horizontal = 6.dp, vertical = 1.dp)
                                 ) {
                                     Text(
-                                        text = "$totalCount",
+                                        text = com.example.util.tr("$totalCount"),
                                         color = HextechCyan,
                                         fontSize = 10.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -622,7 +622,7 @@ fun AdminFeedbackBottomSheet(
                                     tint = if (isSelected) HextechGold else TextMuted
                                 )
                                 Text(
-                                    text = "${tr(tab.titleKey)} ($count)",
+                                    text = com.example.util.tr("${tr(tab.titleKey)} ($count)"),
                                     color = if (isSelected) HextechGold else TextMuted,
                                     fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
@@ -764,10 +764,10 @@ fun AdminFeedbackBottomSheet(
                                 val res = FeedbackRepository.purgeOldReports(days = 7)
                                 isPurging = false
                                 if (res.isSuccess) {
-                                    Toast.makeText(context, " Purga de reportes >7 días completada", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr(" Purga de reportes >7 días completada"), Toast.LENGTH_SHORT).show()
                                     loadReports()
                                 } else {
-                                    Toast.makeText(context, "Error al purgar: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Error al purgar: ${res.exceptionOrNull()?.message}"), Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
@@ -832,7 +832,7 @@ fun AdminFeedbackBottomSheet(
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(text = tr("Error de conexión:"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = errorMessage!!, color = TextMuted, fontSize = 12.sp)
+                        Text(text = com.example.util.tr(errorMessage!!), color = TextMuted, fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(14.dp))
                         Button(
                             onClick = { loadReports() },
@@ -853,10 +853,10 @@ fun AdminFeedbackBottomSheet(
                         Icon(Icons.Default.Inbox, contentDescription = null, tint = TextMuted, modifier = Modifier.size(48.dp))
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = if (searchQuery.isNotBlank() || selectedSubFilter != "ALL" || currentCategoryTab != FeedbackCategoryTab.ALL) 
-                                tr("No hay resultados en esta vista") 
-                            else 
-                                tr("No hay reportes ni sugerencias registradas"),
+                            text = com.example.util.tr(if (searchQuery.isNotBlank() || selectedSubFilter != "ALL" || currentCategoryTab != FeedbackCategoryTab.ALL)
+                                tr("No hay resultados en esta vista")
+                            else
+                                tr("No hay reportes ni sugerencias registradas")),
                             color = TextSecondary,
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp
@@ -906,7 +906,7 @@ fun AdminFeedbackBottomSheet(
                                         FeedbackRepository.STATUS_REJECTED -> "Sugerencia Rechazada"
                                         else -> "Marcado como Pendiente"
                                     }
-                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr(msg), Toast.LENGTH_SHORT).show()
                                 },
                                 onReply = { reportToReply = report },
                                 onDelete = { reportToDelete = report },
@@ -921,7 +921,7 @@ fun AdminFeedbackBottomSheet(
                                         Fecha: ${report.createdAt ?: "N/A"}
                                     """.trimIndent()
                                     clipboard.setPrimaryClip(ClipData.newPlainText("Feedback Report", textToCopy))
-                                    Toast.makeText(context, " Reporte copiado al portapapeles", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr(" Reporte copiado al portapapeles"), Toast.LENGTH_SHORT).show()
                                 },
                                 onOpenImage = { bmp -> previewImageBitmap = bmp },
                                 onItemClick = {}
@@ -983,7 +983,7 @@ fun AdminFeedbackBottomSheet(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "\"${rep.title}\"",
+                        text = com.example.util.tr("\"${rep.title}\""),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -999,15 +999,15 @@ fun AdminFeedbackBottomSheet(
                                 val res = FeedbackRepository.deleteFeedback(rep)
                                 isDeleting = false
                                 if (res.isSuccess) {
-                                    Toast.makeText(context, "Elemento eliminado", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Elemento eliminado"), Toast.LENGTH_SHORT).show()
                                     reportToDelete = null
                                     loadReports()
                                 } else {
-                                    Toast.makeText(context, "Error: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Error: ${res.exceptionOrNull()?.message}"), Toast.LENGTH_SHORT).show()
                                 }
                             }
                         } else {
-                            Toast.makeText(context, "Eliminado localmente", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, com.example.util.appTr("Eliminado localmente"), Toast.LENGTH_SHORT).show()
                             reportToDelete = null
                         }
                     },
@@ -1058,10 +1058,10 @@ fun AdminFeedbackBottomSheet(
                             isDeleting = false
                             showClearAllConfirm = false
                             if (res.isSuccess) {
-                                Toast.makeText(context, "Todos los reportes fueron eliminados", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Todos los reportes fueron eliminados"), Toast.LENGTH_SHORT).show()
                                 loadReports()
                             } else {
-                                Toast.makeText(context, "Error: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Error: ${res.exceptionOrNull()?.message}"), Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
@@ -1091,8 +1091,8 @@ fun AdminFeedbackBottomSheet(
         var showControls by remember(previewImageBitmap) { mutableStateOf(true) }
 
         Dialog(
-            onDismissRequest = { 
-                previewImageBitmap = null 
+            onDismissRequest = {
+                previewImageBitmap = null
                 scale = 1f
                 offset = Offset.Zero
             },
@@ -1107,7 +1107,7 @@ fun AdminFeedbackBottomSheet(
                     insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
             }
-            
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1165,18 +1165,18 @@ fun AdminFeedbackBottomSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically, 
+                            verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(Icons.Default.Image, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                             Text(
-                                text = if (scale > 1.05f) "${tr("Captura")} (${(scale * 100).toInt()}%)" else tr("Captura Adjunta"), 
-                                color = HextechGold, 
-                                fontSize = 16.sp, 
+                                text = com.example.util.tr(if (scale > 1.05f) "${tr("Captura")} (${(scale * 100).toInt()}%)" else tr("Captura Adjunta")),
+                                color = HextechGold,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        
+
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                             // Zoom Out
                             IconButton(
@@ -1190,7 +1190,7 @@ fun AdminFeedbackBottomSheet(
                                 modifier = Modifier.size(36.dp),
                                 enabled = scale > 1f
                             ) {
-                                Icon(Icons.Default.ZoomOut, contentDescription = "Alejar", tint = if (scale > 1f) HextechCyan else TextMuted, modifier = Modifier.size(22.dp))
+                                Icon(Icons.Default.ZoomOut, contentDescription = com.example.util.trNullable("Alejar"), tint = if (scale > 1f) HextechCyan else TextMuted, modifier = Modifier.size(22.dp))
                             }
 
                             // Zoom In
@@ -1201,7 +1201,7 @@ fun AdminFeedbackBottomSheet(
                                 modifier = Modifier.size(36.dp),
                                 enabled = scale < 5f
                             ) {
-                                Icon(Icons.Default.ZoomIn, contentDescription = "Acercar", tint = if (scale < 5f) HextechCyan else TextMuted, modifier = Modifier.size(22.dp))
+                                Icon(Icons.Default.ZoomIn, contentDescription = com.example.util.trNullable("Acercar"), tint = if (scale < 5f) HextechCyan else TextMuted, modifier = Modifier.size(22.dp))
                             }
 
                             // Reset Zoom
@@ -1213,7 +1213,7 @@ fun AdminFeedbackBottomSheet(
                                     },
                                     modifier = Modifier.size(36.dp)
                                 ) {
-                                    Icon(Icons.Default.RestartAlt, contentDescription = "Restablecer", tint = HextechGold, modifier = Modifier.size(22.dp))
+                                    Icon(Icons.Default.RestartAlt, contentDescription = com.example.util.trNullable("Restablecer"), tint = HextechGold, modifier = Modifier.size(22.dp))
                                 }
                             }
 
@@ -1224,16 +1224,16 @@ fun AdminFeedbackBottomSheet(
                                 },
                                 modifier = Modifier.size(36.dp)
                             ) {
-                                Icon(Icons.Default.Download, contentDescription = "Descargar", tint = HextechGreen, modifier = Modifier.size(22.dp))
+                                Icon(Icons.Default.Download, contentDescription = com.example.util.trNullable("Descargar"), tint = HextechGreen, modifier = Modifier.size(22.dp))
                             }
 
                             // Cerrar
                             IconButton(
-                                onClick = { 
-                                    previewImageBitmap = null 
+                                onClick = {
+                                    previewImageBitmap = null
                                     scale = 1f
                                     offset = Offset.Zero
-                                }, 
+                                },
                                 modifier = Modifier.size(36.dp)
                             ) {
                                 Icon(Icons.Default.Close, contentDescription = tr("Cerrar"), tint = Color.White, modifier = Modifier.size(22.dp))
@@ -1297,7 +1297,7 @@ private fun StatusFilterChip(
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Text(
-                text = label,
+                text = com.example.util.tr(label),
                 color = if (isSelected) color else TextPrimary,
                 fontSize = 11.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
@@ -1309,7 +1309,7 @@ private fun StatusFilterChip(
                     .padding(horizontal = 4.dp, vertical = 1.dp)
             ) {
                 Text(
-                    text = count.toString(),
+                    text = com.example.util.tr(count.toString()),
                     color = if (isSelected) color else TextMuted,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
@@ -1426,7 +1426,7 @@ private fun ComprehensiveFeedbackCard(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                             Icon(typeIcon, contentDescription = null, tint = typeColor, modifier = Modifier.size(11.dp))
-                            Text(text = typeLabel, color = typeColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                            Text(text = com.example.util.tr(typeLabel), color = typeColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -1440,7 +1440,7 @@ private fun ComprehensiveFeedbackCard(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                             Icon(statusIcon, contentDescription = null, tint = statusColor, modifier = Modifier.size(11.dp))
-                            Text(text = statusLabel, color = statusColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                            Text(text = com.example.util.tr(statusLabel), color = statusColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -1467,12 +1467,12 @@ private fun ComprehensiveFeedbackCard(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                             Icon(Icons.Default.HourglassBottom, contentDescription = null, tint = countdownColor, modifier = Modifier.size(10.dp))
-                            Text(text = countdown.displayText, color = countdownColor, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                            Text(text = com.example.util.tr(countdown.displayText), color = countdownColor, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
                     Text(
-                        text = formattedDate,
+                        text = com.example.util.tr(formattedDate),
                         color = TextMuted,
                         fontSize = 10.sp
                     )
@@ -1488,7 +1488,7 @@ private fun ComprehensiveFeedbackCard(
                     IconButton(onClick = { expanded = !expanded }, modifier = Modifier.size(26.dp)) {
                         Icon(
                             imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (expanded) tr("Contraer") else tr("Expandir"),
+                            contentDescription = com.example.util.trNullable(if (expanded) tr("Contraer") else tr("Expandir")),
                             tint = HextechGold,
                             modifier = Modifier.size(18.dp)
                         )
@@ -1509,7 +1509,7 @@ private fun ComprehensiveFeedbackCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = report.title,
+                    text = com.example.util.tr(report.title),
                     color = TextPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -1521,13 +1521,13 @@ private fun ComprehensiveFeedbackCard(
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         clipboard.setPrimaryClip(ClipData.newPlainText("Título", report.title))
-                        Toast.makeText(context, " Título copiado al portapapeles", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, com.example.util.appTr(" Título copiado al portapapeles"), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copiar título",
+                        contentDescription = com.example.util.trNullable("Copiar título"),
                         tint = HextechGold,
                         modifier = Modifier.size(13.5.dp)
                     )
@@ -1559,7 +1559,7 @@ private fun ComprehensiveFeedbackCard(
                     verticalAlignment = Alignment.Top
                 ) {
                     Text(
-                        text = cleanDescription,
+                        text = com.example.util.tr(cleanDescription),
                         color = TextSecondary,
                         fontSize = 12.5.sp,
                         lineHeight = 17.sp,
@@ -1573,7 +1573,7 @@ private fun ComprehensiveFeedbackCard(
                         onClick = {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             clipboard.setPrimaryClip(ClipData.newPlainText("Descripción", cleanDescription))
-                            Toast.makeText(context, " Descripción copiada al portapapeles", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, com.example.util.appTr(" Descripción copiada al portapapeles"), Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier
                             .size(24.dp)
@@ -1581,7 +1581,7 @@ private fun ComprehensiveFeedbackCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Copiar descripción",
+                            contentDescription = com.example.util.trNullable("Copiar descripción"),
                             tint = HextechCyan,
                             modifier = Modifier.size(13.5.dp)
                         )
@@ -1631,7 +1631,7 @@ private fun ComprehensiveFeedbackCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ZoomIn,
-                                    contentDescription = "Ampliar",
+                                    contentDescription = com.example.util.trNullable("Ampliar"),
                                     tint = HextechGold,
                                     modifier = Modifier.size(12.dp)
                                 )
@@ -1766,7 +1766,7 @@ private fun ComprehensiveFeedbackCard(
                         }
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = finalReplyText,
+                            text = com.example.util.tr(finalReplyText),
                             color = TextPrimary,
                             fontSize = 11.sp,
                             lineHeight = 15.sp
@@ -1789,7 +1789,7 @@ private fun ComprehensiveFeedbackCard(
                             ) {
                                 Icon(Icons.Default.Person, contentDescription = null, tint = HextechGold, modifier = Modifier.size(10.dp))
                                 Text(
-                                    text = "${tr("Respondido por:")} $displayName${if (authorMail != null) " • $authorMail" else ""}",
+                                    text = com.example.util.tr("${tr("Respondido por:")} $displayName${if (authorMail != null) " • $authorMail" else ""}"),
                                     color = HextechGold,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Medium
@@ -1856,15 +1856,15 @@ private fun ComprehensiveFeedbackCard(
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     clipboard.setPrimaryClip(ClipData.newPlainText("Build Cruda", cleanDescription))
-                                    Toast.makeText(context, " Build copiada al portapapeles", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr(" Build copiada al portapapeles"), Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier.size(22.dp)
                             ) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = HextechGold, modifier = Modifier.size(13.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = com.example.util.trNullable("Copiar"), tint = HextechGold, modifier = Modifier.size(13.dp))
                             }
                         }
                         Text(
-                            text = cleanDescription,
+                            text = com.example.util.tr(cleanDescription),
                             color = TextSecondary,
                             fontSize = 10.5.sp,
                             lineHeight = 14.5.sp,
@@ -1873,7 +1873,7 @@ private fun ComprehensiveFeedbackCard(
                         Spacer(modifier = Modifier.height(4.dp))
                     }
                     Row(
-                        verticalAlignment = Alignment.CenterVertically, 
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1881,13 +1881,13 @@ private fun ComprehensiveFeedbackCard(
                             .clickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboard.setPrimaryClip(ClipData.newPlainText("Dispositivo", cleanDeviceInfo))
-                                Toast.makeText(context, " Dispositivo copiado", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr(" Dispositivo copiado"), Toast.LENGTH_SHORT).show()
                             }
                             .padding(vertical = 2.dp, horizontal = 4.dp)
                     ) {
                         Icon(Icons.Default.Smartphone, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                         Text(
-                            text = "${tr("Dispositivo:")} $cleanDeviceInfo",
+                            text = com.example.util.tr("${tr("Dispositivo:")} $cleanDeviceInfo"),
                             color = HextechCyan,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Medium
@@ -1896,7 +1896,7 @@ private fun ComprehensiveFeedbackCard(
                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = HextechCyan.copy(alpha = 0.5f), modifier = Modifier.size(11.dp))
                     }
                     Row(
-                        verticalAlignment = Alignment.CenterVertically, 
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1904,13 +1904,13 @@ private fun ComprehensiveFeedbackCard(
                             .clickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboard.setPrimaryClip(ClipData.newPlainText("Versión", report.appVersion))
-                                Toast.makeText(context, " Versión copiada", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr(" Versión copiada"), Toast.LENGTH_SHORT).show()
                             }
                             .padding(vertical = 2.dp, horizontal = 4.dp)
                     ) {
                         Icon(Icons.Default.Tune, contentDescription = null, tint = HextechGold, modifier = Modifier.size(13.dp))
                         Text(
-                            text = "${tr("Versión:")} ${report.appVersion}",
+                            text = com.example.util.tr("${tr("Versión:")} ${report.appVersion}"),
                             color = HextechGold,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Medium
@@ -1918,10 +1918,10 @@ private fun ComprehensiveFeedbackCard(
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = HextechGold.copy(alpha = 0.5f), modifier = Modifier.size(11.dp))
                     }
-                    
+
                     if (!report.parsedEmail.isNullOrBlank()) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically, 
+                            verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1929,13 +1929,13 @@ private fun ComprehensiveFeedbackCard(
                                 .clickable {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     clipboard.setPrimaryClip(ClipData.newPlainText("Correo", report.parsedEmail))
-                                    Toast.makeText(context, "️ Correo copiado", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("️ Correo copiado"), Toast.LENGTH_SHORT).show()
                                 }
                                 .padding(vertical = 2.dp, horizontal = 4.dp)
                         ) {
                             Icon(Icons.Default.Email, contentDescription = null, tint = Color(0xFF64B5F6), modifier = Modifier.size(13.dp))
                             Text(
-                                text = "Correo: ${report.parsedEmail}",
+                                text = com.example.util.tr("Correo: ${report.parsedEmail}"),
                                 color = Color(0xFF64B5F6),
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Medium
@@ -1944,10 +1944,10 @@ private fun ComprehensiveFeedbackCard(
                             Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color(0xFF64B5F6).copy(alpha = 0.5f), modifier = Modifier.size(11.dp))
                         }
                     }
-                    
+
                     if (!report.id.isNullOrBlank()) {
                         Text(
-                            text = "UUID: ${report.id}",
+                            text = com.example.util.tr("UUID: ${report.id}"),
                             color = TextMuted,
                             fontSize = 9.5.sp,
                             modifier = Modifier.padding(start = 4.dp)
@@ -1996,7 +1996,7 @@ private fun StatusActionButton(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = label,
+                text = com.example.util.tr(label),
                 color = if (isSelected) activeColor else TextPrimary,
                 fontSize = 10.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -2074,7 +2074,7 @@ private fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
                 contentValues.clear()
                 contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
                 resolver.update(imageUri, contentValues, null, null)
-                Toast.makeText(context, " Captura guardada en Galería (Imágenes)", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, com.example.util.appTr(" Captura guardada en Galería (Imágenes)"), Toast.LENGTH_SHORT).show()
                 return
             }
         } else {
@@ -2091,11 +2091,11 @@ private fun saveBitmapToGallery(context: Context, bitmap: Bitmap) {
                 arrayOf("image/png"),
                 null
             )
-            Toast.makeText(context, " Captura guardada en Galería (Imágenes)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr(" Captura guardada en Galería (Imágenes)"), Toast.LENGTH_SHORT).show()
             return
         }
     } catch (e: Exception) {
-        Toast.makeText(context, "Error al guardar imagen: ${e.localizedMessage ?: "Error desconocido"}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, com.example.util.appTr("Error al guardar imagen: ${e.localizedMessage ?: "Error desconocido"}"), Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -2151,18 +2151,18 @@ private fun findItemByName(rawName: String): WildRiftItem? {
     val clean = rawName.trim()
     if (clean.isEmpty() || clean.equals("Ninguno", ignoreCase = true) || clean.equals("N/A", ignoreCase = true)) return null
     val norm = normalizeSearchString(clean)
-    
+
     // Búsqueda exacta primero
     WildRiftItemsData.list.firstOrNull { it.name.equals(clean, ignoreCase = true) || it.nameEn.equals(clean, ignoreCase = true) }?.let { return it }
     WildRiftItemsData.list.firstOrNull { normalizeSearchString(it.name) == norm || normalizeSearchString(it.nameEn) == norm }?.let { return it }
-    
+
     // Búsqueda por contención
-    WildRiftItemsData.list.firstOrNull { 
+    WildRiftItemsData.list.firstOrNull {
         val normEs = normalizeSearchString(it.name)
         val normEn = normalizeSearchString(it.nameEn)
         normEs.contains(norm) || norm.contains(normEs) || normEn.contains(norm) || norm.contains(normEn)
     }?.let { return it }
-    
+
     return null
 }
 
@@ -2170,10 +2170,10 @@ private fun findRuneByName(rawName: String): RuneItem? {
     val clean = rawName.trim().removePrefix("Clave:").removePrefix("Secundarias:").trim()
     if (clean.isEmpty() || clean.equals("Ninguno", ignoreCase = true) || clean.equals("Ninguna", ignoreCase = true) || clean.equals("N/A", ignoreCase = true)) return null
     val norm = normalizeSearchString(clean)
-    
+
     WildRiftSpellsAndRunes.runes.firstOrNull { it.name.equals(clean, ignoreCase = true) || it.nameEn.equals(clean, ignoreCase = true) }?.let { return it }
     WildRiftSpellsAndRunes.runes.firstOrNull { normalizeSearchString(it.name) == norm || normalizeSearchString(it.nameEn) == norm }?.let { return it }
-    WildRiftSpellsAndRunes.runes.firstOrNull { 
+    WildRiftSpellsAndRunes.runes.firstOrNull {
         val normEs = normalizeSearchString(it.name)
         val normEn = normalizeSearchString(it.nameEn)
         normEs.contains(norm) || norm.contains(normEs) || normEn.contains(norm) || norm.contains(normEn)
@@ -2185,10 +2185,10 @@ private fun findSpellByName(rawName: String): SummonerSpellItem? {
     val clean = rawName.trim()
     if (clean.isEmpty() || clean.equals("Ninguno", ignoreCase = true) || clean.equals("N/A", ignoreCase = true)) return null
     val norm = normalizeSearchString(clean)
-    
+
     WildRiftSpellsAndRunes.summonerSpells.firstOrNull { it.name.equals(clean, ignoreCase = true) || it.nameEn.equals(clean, ignoreCase = true) }?.let { return it }
     WildRiftSpellsAndRunes.summonerSpells.firstOrNull { normalizeSearchString(it.name) == norm || normalizeSearchString(it.nameEn) == norm }?.let { return it }
-    WildRiftSpellsAndRunes.summonerSpells.firstOrNull { 
+    WildRiftSpellsAndRunes.summonerSpells.firstOrNull {
         val normEs = normalizeSearchString(it.name)
         val normEn = normalizeSearchString(it.nameEn)
         normEs.contains(norm) || norm.contains(normEs) || normEn.contains(norm) || norm.contains(normEn)
@@ -2253,7 +2253,7 @@ fun parseBuildSuggestionFromText(text: String, title: String = ""): ParsedBuildS
                     if (parts.isNotEmpty()) {
                         findRuneByName(parts[0])?.let { keystone = it }
                         for (i in 1 until parts.size) {
-                            findRuneByName(parts[i])?.let { 
+                            findRuneByName(parts[i])?.let {
                                 if (!secondaryRunesList.contains(it)) secondaryRunesList.add(it)
                             }
                         }
@@ -2410,7 +2410,7 @@ private fun GraphicalBuildSuggestionView(
                             .data(build.championAvatar)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                            
+
                             .build(),
                         contentDescription = build.championName,
                         modifier = Modifier.fillMaxSize(),
@@ -2424,7 +2424,7 @@ private fun GraphicalBuildSuggestionView(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = build.championName.take(2).uppercase(),
+                            text = com.example.util.tr(build.championName.take(2).uppercase()),
                             color = HextechGold,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
@@ -2436,7 +2436,7 @@ private fun GraphicalBuildSuggestionView(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        text = build.championName,
+                        text = com.example.util.tr(build.championName),
                         color = HextechGold,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
@@ -2450,7 +2450,7 @@ private fun GraphicalBuildSuggestionView(
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
                             Text(
-                                text = "Tier ${build.championObj.tier}",
+                                text = com.example.util.tr("Tier ${build.championObj.tier}"),
                                 color = HextechCyan,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold
@@ -2460,7 +2460,7 @@ private fun GraphicalBuildSuggestionView(
                 }
                 if (!build.role.isNullOrBlank()) {
                     Text(
-                        text = "Rol / Línea: ${build.role}",
+                        text = com.example.util.tr("Rol / Línea: ${build.role}"),
                         color = HextechCyan,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -2486,7 +2486,7 @@ private fun GraphicalBuildSuggestionView(
                                 .data(spell.iconUrl)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                                
+
                                 .build(),
                             contentDescription = spell.name,
                             modifier = Modifier.fillMaxSize(),
@@ -2507,7 +2507,7 @@ private fun GraphicalBuildSuggestionView(
                                 .data(rune.iconUrl)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                                
+
                                 .build(),
                             contentDescription = rune.name,
                             modifier = Modifier.fillMaxSize(),
@@ -2662,7 +2662,7 @@ private fun GraphicalBuildSuggestionView(
                                 fontSize = 9.sp
                             )
                             Text(
-                                text = boot.name,
+                                text = com.example.util.tr(boot.name),
                                 color = TextPrimary,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -2691,7 +2691,7 @@ private fun GraphicalBuildSuggestionView(
                                         .data(rune.iconUrl)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                                        
+
                                         .build(),
                                     contentDescription = rune.name,
                                     modifier = Modifier.fillMaxSize(),
@@ -2728,7 +2728,7 @@ private fun GraphicalBuildSuggestionView(
                         )
                     }
                     Text(
-                        text = build.tacticalNotes,
+                        text = com.example.util.tr(build.tacticalNotes),
                         color = TextPrimary,
                         fontSize = 11.sp,
                         lineHeight = 15.sp
@@ -2760,7 +2760,7 @@ private fun BuildItemSlot(
                 .data(item.iconUrl)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                
+
                 .build(),
             contentDescription = item.name,
             modifier = Modifier.fillMaxSize(),
@@ -2775,7 +2775,7 @@ private fun BuildItemSlot(
                 .padding(horizontal = 3.dp, vertical = 1.dp)
         ) {
             Text(
-                text = badgeText,
+                text = com.example.util.tr(badgeText),
                 color = badgeColor,
                 fontSize = 8.5.sp,
                 fontWeight = FontWeight.Bold

@@ -170,7 +170,7 @@ fun MainDraftingScreen(
     onLanguageChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
-    
+
     val lifecycleOwner = LocalLifecycleOwner.current
     var isAssistantActive by remember { mutableStateOf(SystemPermissionHelper.isServiceRunning(context)) }
     var showPermissionDialog by remember { mutableStateOf(false) }
@@ -264,7 +264,7 @@ fun MainDraftingScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "« Coach »",
+                                text = com.example.util.tr("« Coach »"),
                                 color = TextPrimary,
                                 fontSize = 17.5.sp,
                                 fontWeight = FontWeight.Black,
@@ -325,7 +325,7 @@ fun MainDraftingScreen(
                                     .size(38.dp)
                                     .testTag("nav_theme_button")
                             ) {
-                                Text("🎨", fontSize = 18.sp)
+                                Text(com.example.util.tr("🎨"), fontSize = 18.sp)
                             }
                         }
                     },
@@ -340,7 +340,7 @@ fun MainDraftingScreen(
                                 .size(38.dp)
                                 .testTag("nav_language_button")
                         ) {
-                            Text(if (currentLanguage == "pt") "🇧🇷" else "🇲🇽", fontSize = 18.sp)
+                            Text(com.example.util.tr(if (currentLanguage == "pt") "🇧🇷" else "🇲🇽"), fontSize = 18.sp)
                         }
 
                         // User Avatar Profile button
@@ -446,7 +446,7 @@ fun MainDraftingScreen(
                 }
 
 
-                
+
                 val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
                 var isIgnoringBatteryOpt by remember { mutableStateOf(SystemPermissionHelper.isIgnoringBatteryOptimizations(context)) }
                 var hasOverlayPermission by remember { mutableStateOf(SystemPermissionHelper.hasOverlayPermission(context)) }
@@ -461,7 +461,7 @@ fun MainDraftingScreen(
                         }
                     )
                 }
-                
+
                 val requestStoragePermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
                     contract = androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
                 ) { permissions ->
@@ -668,8 +668,8 @@ fun MainDraftingScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = if (isAssistantActive) tr("Asistente Hextech Activo • Toca la cámara flotante")
-                           else tr("Presiona ACTIVAR para iniciar el Asistente Flotante"),
+                    text = com.example.util.tr(if (isAssistantActive) tr("Asistente Hextech Activo • Toca la cámara flotante")
+                           else tr("Presiona ACTIVAR para iniciar el Asistente Flotante")),
                     color = if (isAssistantActive) HextechCyan else TextMuted,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
@@ -689,7 +689,7 @@ fun MainDraftingScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "© 2026 Diego Barba Chavez",
+                            text = com.example.util.tr("© 2026 Diego Barba Chavez"),
                             color = HextechGoldLight,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -705,7 +705,7 @@ fun MainDraftingScreen(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Alfa v${com.example.BuildConfig.VERSION_NAME} (${com.example.BuildConfig.VERSION_CODE})",
+                            text = com.example.util.tr("Alfa v${com.example.BuildConfig.VERSION_NAME} (${com.example.BuildConfig.VERSION_CODE})"),
                             color = TextMuted.copy(alpha = 0.9f),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -809,11 +809,11 @@ fun MainDraftingScreen(
                                 .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("🇲🇽", fontSize = 24.sp)
+                            Text(com.example.util.tr("🇲🇽"), fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Español", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("Español Oficial • Disponible", color = HextechGoldLight, fontSize = 11.5.sp)
+                                Text(com.example.util.tr("Español"), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(com.example.util.tr("Español Oficial • Disponible"), color = HextechGoldLight, fontSize = 11.5.sp)
                             }
                             if (currentLanguage == "es") {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
@@ -833,11 +833,11 @@ fun MainDraftingScreen(
                                 .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("🇧🇷", fontSize = 24.sp)
+                            Text(com.example.util.tr("🇧🇷"), fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Português", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("Português Oficial (Brasil)", color = HextechGoldLight, fontSize = 11.5.sp)
+                                Text(com.example.util.tr("Português"), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(com.example.util.tr("Português Oficial (Brasil)"), color = HextechGoldLight, fontSize = 11.5.sp)
                             }
                             if (currentLanguage == "pt") {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
@@ -1036,16 +1036,16 @@ fun NoticeCategoryCard(
                                 onClick = {
                                     isPinned = !isPinned
                                     if (isPinned) {
-                                        Toast.makeText(context, "📌 Publicación fijada. No rotará automáticamente.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("📌 Publicación fijada. No rotará automáticamente."), Toast.LENGTH_SHORT).show()
                                     } else {
-                                        Toast.makeText(context, "Rotación automática activada.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("Rotación automática activada."), Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 modifier = Modifier.size(28.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.PushPin,
-                                    contentDescription = if (isPinned) "Desfijar publicación" else "Fijar publicación",
+                                    contentDescription = com.example.util.trNullable(if (isPinned) "Desfijar publicación" else "Fijar publicación"),
                                     tint = if (isPinned) tagColor else tagColor.copy(alpha = 0.4f),
                                     modifier = Modifier.size(17.dp)
                                 )
@@ -1074,7 +1074,7 @@ fun NoticeCategoryCard(
                     ) { noticeItem ->
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                text = noticeItem.title,
+                                text = com.example.util.tr(noticeItem.title),
                                 color = try { Color(android.graphics.Color.parseColor(noticeItem.titleColor)) } catch (_: Exception) { HextechGold },
                                 fontSize = 13.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -1082,7 +1082,7 @@ fun NoticeCategoryCard(
                             if (noticeItem.content.isNotBlank()) {
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = noticeItem.content,
+                                    text = com.example.util.tr(noticeItem.content),
                                     color = try { Color(android.graphics.Color.parseColor(noticeItem.contentColor)) } catch (_: Exception) { TextSecondary },
                                     fontSize = 12.sp,
                                     lineHeight = 16.sp

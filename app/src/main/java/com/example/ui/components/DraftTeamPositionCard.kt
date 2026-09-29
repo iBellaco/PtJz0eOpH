@@ -141,7 +141,7 @@ fun DraftTeamPositionCard(
                         .padding(horizontal = 7.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "$count / 5",
+                        text = com.example.util.tr("$count / 5"),
                         color = if (isEnemy) DangerRed else HextechCyan,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -310,7 +310,7 @@ fun DraftTeamPositionCard(
                                                     .padding(horizontal = 3.dp, vertical = 1.dp)
                                             ) {
                                                 Text(
-                                                    text = "Mío",
+                                                    text = com.example.util.tr("Mío"),
                                                     color = Color.Black,
                                                     fontSize = 8.sp,
                                                     fontWeight = FontWeight.Black
@@ -353,7 +353,7 @@ fun DraftTeamPositionCard(
                                         )
                                         if (isMyRole) {
                                             Text(
-                                                text = "Mío",
+                                                text = com.example.util.tr("Mío"),
                                                 color = HextechCyan,
                                                 fontSize = if (isOverlay) 5.sp else 7.5.sp,
                                                 fontWeight = FontWeight.Black
@@ -368,7 +368,7 @@ fun DraftTeamPositionCard(
                         if (displayChamp != null) {
                             Spacer(modifier = Modifier.height(if (isMyRole) 8.dp else 3.dp))
                             Text(
-                                text = displayChamp.name,
+                                text = com.example.util.tr(displayChamp.name),
                                 color = if (isMyRole) HextechCyan else TextPrimary,
                                 fontSize = if (isOverlay) 6.sp else 8.sp,
                                 fontWeight = FontWeight.Bold,
@@ -392,7 +392,7 @@ fun DraftTeamPositionCard(
                                         .padding(horizontal = 3.dp, vertical = 0.5.dp)
                                 ) {
                                     Text(
-                                        text = "${slot.confidence}%",
+                                        text = com.example.util.tr("${slot.confidence}%"),
                                         color = if (slot.confidence >= 80) HextechCyan else HextechGold,
                                         fontSize = if (isOverlay) 6.sp else 7.5.sp,
                                         fontWeight = FontWeight.Bold,
@@ -403,7 +403,7 @@ fun DraftTeamPositionCard(
                         } else {
                             Spacer(modifier = Modifier.height(if (isMyRole) 8.dp else 3.dp))
                             Text(
-                                text = "-",
+                                text = com.example.util.tr("-"),
                                 color = TextMuted,
                                 fontSize = if (isOverlay) 6.sp else 8.sp,
                                 textAlign = TextAlign.Center

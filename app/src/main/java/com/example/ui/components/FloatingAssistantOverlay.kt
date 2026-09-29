@@ -49,14 +49,14 @@ fun FloatingAssistantOverlay(
     var isExpanded by remember { mutableStateOf(false) }
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(100f) }
-    
+
     var activeTab by remember { mutableStateOf(OverlayTab.DRAFT) }
-    
+
     // Draft state
     var activeRole by remember { mutableStateOf(initialRole ?: LaneRole.MID) }
     var draftSearchQuery by remember { mutableStateOf("") }
     var lockedChampion by remember { mutableStateOf<Champion?>(null) }
-    
+
     // Items state
     var itemSearchQuery by remember { mutableStateOf("") }
     var itemSelectedCategory by remember { mutableStateOf<String?>(null) }
@@ -66,7 +66,7 @@ fun FloatingAssistantOverlay(
 
     // Spells state
     var spellsSearchQuery by remember { mutableStateOf("") }
-    
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -93,7 +93,7 @@ fun FloatingAssistantOverlay(
                         .clickable { isExpanded = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.AutoAwesome, contentDescription = "Open Assistant", tint = HextechCyan)
+                    Icon(Icons.Default.AutoAwesome, contentDescription = com.example.util.trNullable("Open Assistant"), tint = HextechCyan)
                 }
             } else {
                 // Expanded panel
@@ -115,18 +115,18 @@ fun FloatingAssistantOverlay(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Wild Rift Assistant", color = HextechGold, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr("Wild Rift Assistant"), color = HextechGold, fontWeight = FontWeight.Bold)
                             Row {
                                 IconButton(onClick = { isExpanded = false }, modifier = Modifier.size(24.dp)) {
-                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Minimize", tint = HextechCyan)
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = com.example.util.trNullable("Minimize"), tint = HextechCyan)
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 IconButton(onClick = onClose, modifier = Modifier.size(24.dp)) {
-                                    Icon(Icons.Default.Close, contentDescription = "Close", tint = DangerRed)
+                                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Close"), tint = DangerRed)
                                 }
                             }
                         }
-                        
+
                         // Tabs
                         ScrollableTabRow(
                             selectedTabIndex = activeTab.ordinal,
@@ -142,7 +142,7 @@ fun FloatingAssistantOverlay(
                                 )
                             }
                         }
-                        
+
                         // Content
                         Box(modifier = Modifier.weight(1f).padding(8.dp)) {
                             when (activeTab) {
@@ -196,7 +196,7 @@ private fun OverlayDraftTabContent(
     onClearChampion: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Text("Draft Analysis (Coming Soon...)", color = HextechCyan)
+        Text(com.example.util.tr("Draft Analysis (Coming Soon...)"), color = HextechCyan)
     }
 }
 
@@ -222,7 +222,7 @@ private fun OverlayItemsTabContent(
             matchCategory && matchQuery
         }
     }
-    
+
     Column(modifier = Modifier.fillMaxSize()) {
         OutlinedTextField(
             value = searchQuery,
@@ -236,7 +236,7 @@ private fun OverlayItemsTabContent(
             )
         )
         Spacer(modifier = Modifier.height(6.dp))
-        
+
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.fillMaxWidth()
@@ -273,9 +273,9 @@ private fun OverlayItemsTabContent(
                 }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(6.dp))
-        
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -308,15 +308,15 @@ private fun OverlayItemsTabContent(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(localizedName, color = HextechGoldLight, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                Text("${item.goldCost} ${tr("Oro")}", color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr(localizedName), color = HextechGoldLight, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text(com.example.util.tr("${item.goldCost} ${tr("Oro")}"), color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                             if (localizedStats.isNotBlank()) {
-                                Text(localizedStats.parseHtmlColorToAnnotatedString(), color = HextechCyan, fontSize = 10.sp)
+                                Text(com.example.util.tr(localizedStats.parseHtmlColorToAnnotatedString()), color = HextechCyan, fontSize = 10.sp)
                             }
                             if (localizedPassive.isNotBlank()) {
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(localizedPassive, color = TextPrimary.copy(alpha = 0.85f), fontSize = 10.sp, lineHeight = 13.sp)
+                                Text(com.example.util.tr(localizedPassive), color = TextPrimary.copy(alpha = 0.85f), fontSize = 10.sp, lineHeight = 13.sp)
                             }
                         }
                     }
@@ -329,7 +329,7 @@ private fun OverlayItemsTabContent(
 @Composable
 private fun OverlayObjectivesTabContent() {
     Column(modifier = Modifier.fillMaxSize()) {
-        Text("Objectives Tab", color = HextechCyan)
+        Text(com.example.util.tr("Objectives Tab"), color = HextechCyan)
     }
 }
 
@@ -412,11 +412,11 @@ private fun OverlayRunesTabContent(
                             ChampionAvatar(champion = champ, size = 32.dp, showTierBadge = false)
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
-                                Text(champ.name, color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Text("${tr(champ.primaryRole.shortName)}", color = HextechGold, fontSize = 10.sp)
+                                Text(com.example.util.tr(champ.name), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("${tr(champ.primaryRole.shortName)}"), color = HextechGold, fontSize = 10.sp)
                             }
                         }
-                        Icon(Icons.Default.Check, contentDescription = "Seleccionar", tint = HextechCyan, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Check, contentDescription = com.example.util.trNullable("Seleccionar"), tint = HextechCyan, modifier = Modifier.size(16.dp))
                     }
                 }
             }
@@ -443,13 +443,13 @@ private fun OverlayRunesTabContent(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "${lockedChampion.name} (${tr("Fijado")})",
+                            text = com.example.util.tr("${lockedChampion.name} (${tr("Fijado")})"),
                             color = HextechCyan,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${tr(lockedChampion.primaryRole.displayName)} • ${tr("Página de Runas")}",
+                            text = com.example.util.tr("${tr(lockedChampion.primaryRole.displayName)} • ${tr("Página de Runas")}"),
                             color = HextechGoldLight,
                             fontSize = 10.sp
                         )
@@ -460,7 +460,7 @@ private fun OverlayRunesTabContent(
                     onClick = onClearChampion,
                     modifier = Modifier.size(24.dp)
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = "Cambiar campeón", tint = TextMuted, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cambiar campeón"), tint = TextMuted, modifier = Modifier.size(16.dp))
                 }
             }
 
@@ -475,14 +475,14 @@ private fun OverlayRunesTabContent(
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
                     Text(
-                        text = " " + tr("Runa Clave Recomendada"),
+                        text = com.example.util.tr(" " + tr("Runa Clave Recomendada")),
                         color = HextechCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = lockedChampion.recommendedRunes,
+                        text = com.example.util.tr(lockedChampion.recommendedRunes),
                         color = HextechGoldLight,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black
@@ -493,7 +493,7 @@ private fun OverlayRunesTabContent(
                             .split("•")
                             .map { it.trim() }
                             .filter { it.isNotEmpty() }
-                        
+
                         if (parsedRunes.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
                             @OptIn(ExperimentalLayoutApi::class)
@@ -518,14 +518,14 @@ private fun OverlayRunesTabContent(
                                             Box(modifier = Modifier.size(4.dp).background(HextechCyan, CircleShape))
                                             Spacer(modifier = Modifier.width(4.dp))
                                         }
-                                        Text(rName, color = TextPrimary.copy(alpha = 0.9f), fontSize = 11.sp)
+                                        Text(com.example.util.tr(rName), color = TextPrimary.copy(alpha = 0.9f), fontSize = 11.sp)
                                     }
                                 }
                             }
                         } else {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = lockedChampion.runeTreeDetails,
+                                text = com.example.util.tr(lockedChampion.runeTreeDetails),
                                 color = TextPrimary.copy(alpha = 0.9f),
                                 fontSize = 11.sp,
                                 lineHeight = 15.sp
@@ -617,11 +617,11 @@ private fun OverlaySpellsTabContent(
                             ChampionAvatar(champion = champ, size = 32.dp, showTierBadge = false)
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
-                                Text(champ.name, color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                Text("${tr(champ.primaryRole.shortName)} • ${tr("Hechizos")}: ${champ.recommendedSpells.joinToString("+")}", color = HextechGold, fontSize = 10.sp)
+                                Text(com.example.util.tr(champ.name), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("${tr(champ.primaryRole.shortName)} • ${tr("Hechizos")}: ${champ.recommendedSpells.joinToString("+")}"), color = HextechGold, fontSize = 10.sp)
                             }
                         }
-                        Icon(Icons.Default.Check, contentDescription = "Seleccionar", tint = HextechGold, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Check, contentDescription = com.example.util.trNullable("Seleccionar"), tint = HextechGold, modifier = Modifier.size(16.dp))
                     }
                 }
             }
@@ -648,13 +648,13 @@ private fun OverlaySpellsTabContent(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "${lockedChampion.name} (${tr("Fijado")})",
+                            text = com.example.util.tr("${lockedChampion.name} (${tr("Fijado")})"),
                             color = HextechGold,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${tr(lockedChampion.primaryRole.displayName)} • ${tr("Hechizos & Orden de Habilidades")}",
+                            text = com.example.util.tr("${tr(lockedChampion.primaryRole.displayName)} • ${tr("Hechizos & Orden de Habilidades")}"),
                             color = HextechCyan,
                             fontSize = 10.sp
                         )
@@ -665,7 +665,7 @@ private fun OverlaySpellsTabContent(
                     onClick = onClearChampion,
                     modifier = Modifier.size(24.dp)
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = "Cambiar campeón", tint = TextMuted, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cambiar campeón"), tint = TextMuted, modifier = Modifier.size(16.dp))
                 }
             }
 
@@ -680,7 +680,7 @@ private fun OverlaySpellsTabContent(
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
                     Text(
-                        text = " " + tr("Hechizos de Invocador Recomendados"),
+                        text = com.example.util.tr(" " + tr("Hechizos de Invocador Recomendados")),
                         color = HextechGold,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -713,14 +713,14 @@ private fun OverlaySpellsTabContent(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = " " + tr("Prioridad de Habilidades"),
+                        text = com.example.util.tr(" " + tr("Prioridad de Habilidades")),
                         color = HextechCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = tr("Maxeo:") + " ${lockedChampion.skillOrder}",
+                        text = com.example.util.tr(tr("Maxeo:") + " ${lockedChampion.skillOrder}"),
                         color = TextPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold

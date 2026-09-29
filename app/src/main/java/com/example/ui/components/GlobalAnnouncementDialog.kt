@@ -96,7 +96,7 @@ fun GlobalAnnouncementDialog(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (announcement.isUrgent) "AVISO URGENTE / MANTENIMIENTO" else "COMUNICADO OFICIAL",
+                            text = com.example.util.tr(if (announcement.isUrgent) "AVISO URGENTE / MANTENIMIENTO" else "COMUNICADO OFICIAL"),
                             color = accentColor,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
@@ -111,7 +111,7 @@ fun GlobalAnnouncementDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
+                            contentDescription = com.example.util.trNullable("Cerrar"),
                             tint = TextSecondary,
                             modifier = Modifier.size(20.dp)
                         )
@@ -145,7 +145,7 @@ fun GlobalAnnouncementDialog(
 
                 // Título del anuncio
                 Text(
-                    text = announcement.title,
+                    text = com.example.util.tr(announcement.title),
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -157,7 +157,7 @@ fun GlobalAnnouncementDialog(
                 if (announcement.timestamp > 0L) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Emitido: ${announcement.getFormattedDate()}",
+                        text = com.example.util.tr("Emitido: ${announcement.getFormattedDate()}"),
                         color = TextMuted,
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center
@@ -178,7 +178,7 @@ fun GlobalAnnouncementDialog(
                         .padding(14.dp)
                 ) {
                     Text(
-                        text = announcement.message,
+                        text = com.example.util.tr(announcement.message),
                         color = TextSecondary,
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
@@ -207,7 +207,7 @@ fun GlobalAnnouncementDialog(
                     colors = ButtonDefaults.buttonColors(containerColor = accentColor)
                 ) {
                     Text(
-                        text = "Entendido",
+                        text = com.example.util.tr("Entendido"),
                         color = HextechDarkBg,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -250,7 +250,7 @@ fun GlobalAnnouncementBanner(
         Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = announcement.title,
+                text = com.example.util.tr(announcement.title),
                 color = Color.White,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -258,7 +258,7 @@ fun GlobalAnnouncementBanner(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = if (announcement.isUrgent) "Aviso urgente de mantenimiento • Toca para leer" else "Comunicado oficial activo • Toca para leer",
+                text = com.example.util.tr(if (announcement.isUrgent) "Aviso urgente de mantenimiento • Toca para leer" else "Comunicado oficial activo • Toca para leer"),
                 color = TextSecondary,
                 fontSize = 11.sp,
                 maxLines = 1
@@ -266,7 +266,7 @@ fun GlobalAnnouncementBanner(
         }
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "Ver",
+            text = com.example.util.tr("Ver"),
             color = accentColor,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold

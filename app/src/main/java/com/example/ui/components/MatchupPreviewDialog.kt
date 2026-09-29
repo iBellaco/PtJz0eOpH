@@ -44,16 +44,16 @@ fun MatchupPreviewDialog(
     activeRole: LaneRole,
     onDismiss: () -> Unit
 ) {
-    val isMyCounter = enemyOpponent.counteredBy.any { 
-        it.equals(myChampion.name, ignoreCase = true) || it.equals(myChampion.id, ignoreCase = true) 
-    } || myChampion.advantageAgainst.any { 
-        it.equals(enemyOpponent.name, ignoreCase = true) || it.equals(enemyOpponent.id, ignoreCase = true) 
+    val isMyCounter = enemyOpponent.counteredBy.any {
+        it.equals(myChampion.name, ignoreCase = true) || it.equals(myChampion.id, ignoreCase = true)
+    } || myChampion.advantageAgainst.any {
+        it.equals(enemyOpponent.name, ignoreCase = true) || it.equals(enemyOpponent.id, ignoreCase = true)
     }
 
-    val isEnemyCounter = myChampion.counteredBy.any { 
-        it.equals(enemyOpponent.name, ignoreCase = true) || it.equals(enemyOpponent.id, ignoreCase = true) 
-    } || enemyOpponent.advantageAgainst.any { 
-        it.equals(myChampion.name, ignoreCase = true) || it.equals(myChampion.id, ignoreCase = true) 
+    val isEnemyCounter = myChampion.counteredBy.any {
+        it.equals(enemyOpponent.name, ignoreCase = true) || it.equals(enemyOpponent.id, ignoreCase = true)
+    } || enemyOpponent.advantageAgainst.any {
+        it.equals(myChampion.name, ignoreCase = true) || it.equals(myChampion.id, ignoreCase = true)
     }
 
     val matchupFavor = when {
@@ -99,14 +99,14 @@ fun MatchupPreviewDialog(
                                 fontSize = 17.sp
                             )
                             Text(
-                                text = "${tr("Enfrentamiento en")} ${tr(activeRole.displayName)}",
+                                text = com.example.util.tr("${tr("Enfrentamiento en")} ${tr(activeRole.displayName)}"),
                                 color = TextSecondary,
                                 fontSize = 11.sp
                             )
                         }
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextMuted)
                     }
                 }
 
@@ -139,7 +139,7 @@ fun MatchupPreviewDialog(
                                     ChampionAvatar(champion = myChampion, size = 52.dp, showTierBadge = true)
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
-                                        text = myChampion.name,
+                                        text = com.example.util.tr(myChampion.name),
                                         color = TextPrimary,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp
@@ -151,7 +151,7 @@ fun MatchupPreviewDialog(
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
-                                        text = "WR: ${String.format(java.util.Locale.US, "%.2f", myChampion.winrate)}%",
+                                        text = com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", myChampion.winrate)}%"),
                                         color = HextechGold,
                                         fontSize = 10.sp
                                     )
@@ -177,7 +177,7 @@ fun MatchupPreviewDialog(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = "VS",
+                                            text = com.example.util.tr("VS"),
                                             color = Color.White,
                                             fontWeight = FontWeight.Black,
                                             fontSize = 13.sp
@@ -185,11 +185,11 @@ fun MatchupPreviewDialog(
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = when (matchupFavor) {
+                                        text = com.example.util.tr(when (matchupFavor) {
                                             "FAVORABLE" -> tr("Favorable")
                                             "DESFAVORABLE" -> tr("Difícil")
                                             else -> tr("Habilidad")
-                                        },
+                                        }),
                                         color = when (matchupFavor) {
                                             "FAVORABLE" -> Color(0xFF4CAF50)
                                             "DESFAVORABLE" -> DangerRed
@@ -208,7 +208,7 @@ fun MatchupPreviewDialog(
                                     ChampionAvatar(champion = enemyOpponent, size = 52.dp, showTierBadge = true)
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
-                                        text = enemyOpponent.name,
+                                        text = com.example.util.tr(enemyOpponent.name),
                                         color = TextPrimary,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp
@@ -220,7 +220,7 @@ fun MatchupPreviewDialog(
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
-                                        text = "WR: ${String.format(java.util.Locale.US, "%.2f", enemyOpponent.winrate)}%",
+                                        text = com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", enemyOpponent.winrate)}%"),
                                         color = DangerRed.copy(alpha = 0.8f),
                                         fontSize = 10.sp
                                     )
@@ -233,7 +233,7 @@ fun MatchupPreviewDialog(
 
                     // 1. Fase de Líneas (Niveles 1-5 y Power Spikes)
                     Text(
-                        text = "⏱️ " + tr("Ventanas de Poder & Fase de Líneas"),
+                        text = com.example.util.tr("⏱️ " + tr("Ventanas de Poder & Fase de Líneas")),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -260,12 +260,12 @@ fun MatchupPreviewDialog(
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = if (isMyCounter) 
-                                        tr("Ventaja en intercambios tempranos. En Wild Rift la primera oleada otorga nivel 2 inmediato; presiona para denegar el Fruto de Miel (1:15).") 
-                                    else if (isEnemyCounter) 
+                                    text = com.example.util.tr(if (isMyCounter)
+                                        tr("Ventaja en intercambios tempranos. En Wild Rift la primera oleada otorga nivel 2 inmediato; presiona para denegar el Fruto de Miel (1:15).")
+                                    else if (isEnemyCounter)
                                         tr("Precaución en fase temprana. Cede la prioridad de la primera oleada, farmea bajo torre y espera tu pico al nivel 3 (kit completo).")
-                                    else 
-                                        tr("Línea neutra de Wild Rift. Controla los arbustos de línea, guarda la Flor del Adivino y castiga tras esquivar su habilidad principal."),
+                                    else
+                                        tr("Línea neutra de Wild Rift. Controla los arbustos de línea, guarda la Flor del Adivino y castiga tras esquivar su habilidad principal.")),
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp
@@ -318,7 +318,7 @@ fun MatchupPreviewDialog(
 
                     // 2. Cooldowns Clave & Habilidades a Esquivar
                     Text(
-                        text = "🎯 " + tr("Análisis Táctico del Rival"),
+                        text = com.example.util.tr("🎯 " + tr("Análisis Táctico del Rival")),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -355,7 +355,7 @@ fun MatchupPreviewDialog(
                     Spacer(modifier = Modifier.height(12.dp))
                     // 3. Sinergias y Macro Wild Rift
                     Text(
-                        text = "🤝 " + tr("Sinergias y Macro (Wild Rift)"),
+                        text = com.example.util.tr("🤝 " + tr("Sinergias y Macro (Wild Rift)")),
                         color = HextechCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -404,18 +404,18 @@ fun MatchupPreviewDialog(
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
-                                    text = "Veredicto del Coach Soberano:",
+                                    text = com.example.util.tr("Veredicto del Coach Soberano:"),
                                     color = HextechGold,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Black
                                 )
                                 Text(
-                                    text = if (isMyCounter) 
+                                    text = com.example.util.tr(if (isMyCounter)
                                         "Tienes la ventaja de campeón. Mantén el control de la oleada y usa los arbustos laterales para rotar rápido y emboscar (roam) a otras líneas."
                                     else if (isEnemyCounter)
                                         "Mantén la calma y no cedas oro. En Wild Rift el juego tardío llega rápido; agrupa con tu equipo tan pronto caiga la primera torre."
                                     else
-                                        "Duelo equilibrado. Mantén visión en el río con Lente Revelador antes de los objetivos y castiga cuando use habilidades en la oleada.",
+                                        "Duelo equilibrado. Mantén visión en el río con Lente Revelador antes de los objetivos y castiga cuando use habilidades en la oleada."),
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp

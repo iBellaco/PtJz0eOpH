@@ -88,7 +88,7 @@ fun AuthFlowContainer(
     val auth = AuthManager.getAuth()
     val context = LocalContext.current
     var currentUser by remember { mutableStateOf(auth?.currentUser) }
-    
+
     LaunchedEffect(Unit) {
         currentUser = auth?.currentUser
     }
@@ -96,7 +96,7 @@ fun AuthFlowContainer(
     LaunchedEffect(currentUser) {
         SubscriptionManager.init(context)
     }
-    
+
     // Check if user is already authenticated
     if (currentUser != null && !AuthManager.isGuestOrUnauthenticated(currentUser)) {
         AuthenticatedProfilePanel(
@@ -127,7 +127,7 @@ fun AuthFlowContainer(
                 if (errorMessage.contains("Límite de dispositivos", ignoreCase = true)) {
                     auth?.signOut()
                     currentUser = null
-                    android.widget.Toast.makeText(context, errorMessage, android.widget.Toast.LENGTH_LONG).show()
+                    android.widget.Toast.makeText(context, com.example.util.appTr(errorMessage), android.widget.Toast.LENGTH_LONG).show()
                 } else {
                     currentUser = auth?.currentUser
                     com.example.util.SubscriptionManager.init(context)
@@ -432,7 +432,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "$currentBlueEssence " + tr("EA"),
+                                text = com.example.util.tr("$currentBlueEssence " + tr("EA")),
                                 color = HextechCyan,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
@@ -469,7 +469,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "$currentOrangeEssence " + tr("EN"),
+                                text = com.example.util.tr("$currentOrangeEssence " + tr("EN")),
                                 color = Color(0xFFFF9E1B),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
@@ -743,7 +743,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
                 Text(
-                    text = finalUserName,
+                    text = com.example.util.tr(finalUserName),
                     color = activeTheme.secondary,
                     fontSize = 20.sp,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
@@ -794,7 +794,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             // Avatar Title & Region subtitle
             Text(
-                text = "${tr(equippedAvatar.title)} • ${tr(equippedAvatar.region)}",
+                text = com.example.util.tr("${tr(equippedAvatar.title)} • ${tr(equippedAvatar.region)}"),
                 color = activeTheme.primary,
                 fontSize = 12.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
@@ -812,7 +812,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "${tr(activeTheme.regionTag).uppercase()} • ${tr(activeTheme.titleKey)}",
+                        text = com.example.util.tr("${tr(activeTheme.regionTag).uppercase()} • ${tr(activeTheme.titleKey)}"),
                         color = activeTheme.primaryLight,
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.Bold
@@ -832,7 +832,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = if (isEmailVisible) (user.email ?: "") else "••••••••@••••.com",
+                    text = com.example.util.tr(if (isEmailVisible) (user.email ?: "") else "••••••••@••••.com"),
                     color = activeTheme.textSecondary,
                     fontSize = 13.5.sp
                 )
@@ -882,7 +882,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "📱 " + tr("Dispositivos Conectados:"),
+                                text = com.example.util.tr("📱 " + tr("Dispositivos Conectados:")),
                                 color = activeTheme.secondary,
                                 fontSize = 12.5.sp,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
@@ -894,7 +894,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "$registeredDevicesCount " + tr("de 2 en uso"),
+                                    text = com.example.util.tr("$registeredDevicesCount " + tr("de 2 en uso")),
                                     color = activeTheme.primary,
                                     fontSize = 11.sp,
                                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
@@ -912,14 +912,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     AnimatedVisibility(visible = isSecurityExpanded) {
                         Column(modifier = Modifier.padding(top = 10.dp)) {
                             Text(
-                                text = "🔒 " + com.example.util.tr("Por seguridad de tu cuenta, la liberación y reasignación de slots de hardware es gestionada exclusivamente por los Administradores desde el panel de soporte."),
+                                text = com.example.util.tr("🔒 " + com.example.util.tr("Por seguridad de tu cuenta, la liberación y reasignación de slots de hardware es gestionada exclusivamente por los Administradores desde el panel de soporte.")),
                                 color = activeTheme.textSecondary,
                                 fontSize = 10.5.sp,
                                 lineHeight = 14.sp
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "⚠️ " + com.example.util.tr("Recomendación: Se recomienda no cerrar sesión para evitar un mal funcionamiento o problemas a futuro con tu cuenta, sincronización de licencias y el acceso fluido a tus herramientas de drafting."),
+                                text = com.example.util.tr("⚠️ " + com.example.util.tr("Recomendación: Se recomienda no cerrar sesión para evitar un mal funcionamiento o problemas a futuro con tu cuenta, sincronización de licencias y el acceso fluido a tus herramientas de drafting.")),
                                 color = activeTheme.textMuted,
                                 fontSize = 10.5.sp,
                                 lineHeight = 14.sp
@@ -979,7 +979,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "↔ " + tr("Desliza temas"),
+                                text = com.example.util.tr("↔ " + tr("Desliza temas")),
                                 color = activeTheme.primary,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -1058,7 +1058,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Text("💡", fontSize = 22.sp)
+                        Text(com.example.util.tr("💡"), fontSize = 22.sp)
                         Column {
                             Text(
                                 text = tr("Consejo del Coach Soberano"),
@@ -1101,7 +1101,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "${tr("Suscripción por Vencer")} ($remainingFormatted)",
+                                text = com.example.util.tr("${tr("Suscripción por Vencer")} ($remainingFormatted)"),
                                 color = com.example.ui.theme.DangerRed,
                                 fontSize = 13.sp,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
@@ -1144,9 +1144,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(10.dp))
-            
+
             // Animated button for Plans
             com.example.ui.components.HextechAnimatedButton(
                 onClick = { showPlansDialog = true },
@@ -1173,7 +1173,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isPremium) tr("Planes / Pase") else tr("Ver Planes Pro"),
+                    text = com.example.util.tr(if (isPremium) tr("Planes / Pase") else tr("Ver Planes Pro")),
                     color = activeTheme.primary,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
                     fontSize = 13.sp,
@@ -1191,7 +1191,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     if (hasCreatorRole) {
                         showAdminCreatorDialog = true
                     } else {
-                        Toast.makeText(context, creatorToastMessage, Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, com.example.util.appTr(creatorToastMessage), Toast.LENGTH_LONG).show()
                     }
                 },
                 backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
@@ -1220,7 +1220,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     fontSize = 13.sp
                 )
             }
-            
+
             if (showHistoryDialog) {
                 com.example.ui.components.SubscriptionHistoryDialog(
                     userId = user.uid,
@@ -1230,7 +1230,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             }
 
             Spacer(modifier = Modifier.height(14.dp))
-            
+
             if (userRole == "admin") {
                 // Panel de Administración / Gestión (Solo para Administradores)
                 com.example.ui.components.HextechAnimatedButton(
@@ -1296,7 +1296,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (hasPendingSponsorsForAuth) tr("Panel de Moderador (¡Solicitud Pendiente!)") else tr("Panel de Moderador"),
+                                text = com.example.util.tr(if (hasPendingSponsorsForAuth) tr("Panel de Moderador (¡Solicitud Pendiente!)") else tr("Panel de Moderador")),
                                 color = Color.White,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                             )
@@ -1309,7 +1309,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                                     .align(Alignment.CenterEnd)
                                     .padding(end = 16.dp)
                             ) {
-                                Text("!")
+                                Text(com.example.util.tr("!"))
                             }
                         }
                     }
@@ -1366,7 +1366,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
-            
+
             com.example.ui.components.HextechAnimatedOutlinedButton(
                 onClick = { showSignOutConfirm = true },
                 backgroundColor = com.example.ui.theme.HextechSurfaceVariant.copy(alpha = 0.5f),

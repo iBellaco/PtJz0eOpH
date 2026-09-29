@@ -77,7 +77,7 @@ fun AdAvailabilityCalendarPanel(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Calendario de Disponibilidad",
+                        text = com.example.util.tr("Calendario de Disponibilidad"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -95,7 +95,7 @@ fun AdAvailabilityCalendarPanel(
                         border = BorderStroke(1.dp, if (activePublicityAds.isNotEmpty()) Color(0xFFF59E0B) else Color(0xFF10B981))
                     ) {
                         Text(
-                            text = if (activePublicityAds.isNotEmpty()) "${activePublicityAds.size} Ocupados" else "Libre",
+                            text = com.example.util.tr(if (activePublicityAds.isNotEmpty()) "${activePublicityAds.size} Ocupados" else "Libre"),
                             color = if (activePublicityAds.isNotEmpty()) Color(0xFFF59E0B) else Color(0xFF10B981),
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
@@ -110,7 +110,7 @@ fun AdAvailabilityCalendarPanel(
                     ) {
                         Icon(
                             imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (isExpanded) "Minimizar" else "Expandir",
+                            contentDescription = com.example.util.trNullable(if (isExpanded) "Minimizar" else "Expandir"),
                             tint = HextechGold,
                             modifier = Modifier.size(18.dp)
                         )
@@ -121,7 +121,7 @@ fun AdAvailabilityCalendarPanel(
             // Contenido expandible
             if (isExpanded) {
                 Text(
-                    text = "Consulte las fechas, horas, días y semanas ocupadas antes de programar su anuncio.",
+                    text = com.example.util.tr("Consulte las fechas, horas, días y semanas ocupadas antes de programar su anuncio."),
                     color = TextSecondary,
                     fontSize = 10.5.sp
                 )
@@ -143,7 +143,7 @@ fun AdAvailabilityCalendarPanel(
                             Text(tr("Activos / En Cola"), color = TextSecondary, fontSize = 9.sp)
                             Spacer(modifier = Modifier.height(1.dp))
                             Text(
-                                text = "${activePublicityAds.size}",
+                                text = com.example.util.tr("${activePublicityAds.size}"),
                                 color = HextechGold,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
@@ -160,10 +160,10 @@ fun AdAvailabilityCalendarPanel(
                             modifier = Modifier.padding(8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Estado Red", color = TextSecondary, fontSize = 9.sp)
+                            Text(com.example.util.tr("Estado Red"), color = TextSecondary, fontSize = 9.sp)
                             Spacer(modifier = Modifier.height(1.dp))
                             Text(
-                                text = if (activePublicityAds.size >= 5) "Alta Demanda" else "Disponible",
+                                text = com.example.util.tr(if (activePublicityAds.size >= 5) "Alta Demanda" else "Disponible"),
                                 color = if (activePublicityAds.size >= 5) Color(0xFFF59E0B) else Color(0xFF10B981),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp
@@ -175,7 +175,7 @@ fun AdAvailabilityCalendarPanel(
                 // Lista detallada de franjas horarias / días / semanas / meses ocupados
                 if (activePublicityAds.isNotEmpty()) {
                     Text(
-                        text = "Franjas y Fechas Ocupadas:",
+                        text = com.example.util.tr("Franjas y Fechas Ocupadas:"),
                         color = HextechCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp
@@ -209,7 +209,7 @@ fun AdAvailabilityCalendarPanel(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = ad.title,
+                                        text = com.example.util.tr(ad.title),
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 10.sp,
@@ -217,12 +217,12 @@ fun AdAvailabilityCalendarPanel(
                                     )
                                     Spacer(modifier = Modifier.height(1.dp))
                                     Text(
-                                        text = "Prog: ${ad.durationValue} $unitLabel",
+                                        text = com.example.util.tr("Prog: ${ad.durationValue} $unitLabel"),
                                         color = HextechGold,
                                         fontSize = 9.sp
                                     )
                                     Text(
-                                        text = "Desde: $startStr | Hasta: $endStr",
+                                        text = com.example.util.tr("Desde: $startStr | Hasta: $endStr"),
                                         color = TextSecondary,
                                         fontSize = 8.5.sp
                                     )
@@ -232,7 +232,7 @@ fun AdAvailabilityCalendarPanel(
                                     color = (if (ad.isApproved) DangerRed else Color(0xFFF59E0B)).copy(alpha = 0.2f)
                                 ) {
                                     Text(
-                                        text = if (ad.isApproved) "OCUPADO" else "EN COLA",
+                                        text = com.example.util.tr(if (ad.isApproved) "OCUPADO" else "EN COLA"),
                                         color = if (ad.isApproved) DangerRed else Color(0xFFF59E0B),
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
@@ -254,7 +254,7 @@ fun AdAvailabilityCalendarPanel(
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Espacios totalmente disponibles para programar.",
+                                text = com.example.util.tr("Espacios totalmente disponibles para programar."),
                                 color = Color(0xFF10B981),
                                 fontSize = 10.sp
                             )

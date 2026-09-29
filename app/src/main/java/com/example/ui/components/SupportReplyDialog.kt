@@ -259,7 +259,7 @@ fun SupportReplyDialog(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ArrowBack,
-                                    contentDescription = "Volver",
+                                    contentDescription = com.example.util.trNullable("Volver"),
                                     tint = HextechCyan,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -283,13 +283,13 @@ fun SupportReplyDialog(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "Conversación de Soporte",
+                                    text = com.example.util.tr("Conversación de Soporte"),
                                     color = HextechGold,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Usuario: $displayUserName",
+                                    text = com.example.util.tr("Usuario: $displayUserName"),
                                     color = HextechCyan,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -324,7 +324,7 @@ fun SupportReplyDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = reportTitle.ifBlank { "Ticket de soporte" },
+                                    text = com.example.util.tr(reportTitle.ifBlank { "Ticket de soporte" }),
                                     color = HextechCyan,
                                     fontSize = 13.5.sp,
                                     fontWeight = FontWeight.Bold,
@@ -332,7 +332,7 @@ fun SupportReplyDialog(
                                 )
                                 if (userEmail.isNotBlank()) {
                                     Text(
-                                        text = userEmail,
+                                        text = com.example.util.tr(userEmail),
                                         color = TextMuted,
                                         fontSize = 10.5.sp,
                                         maxLines = 1
@@ -341,7 +341,7 @@ fun SupportReplyDialog(
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = reportDescription,
+                                text = com.example.util.tr(reportDescription),
                                 color = TextSecondary,
                                 fontSize = 11.5.sp,
                                 lineHeight = 15.5.sp
@@ -358,14 +358,14 @@ fun SupportReplyDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Historial de Conversación (${conversationMessages.size}):",
+                            text = com.example.util.tr("Historial de Conversación (${conversationMessages.size}):"),
                             color = HextechGold,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                         if (conversationMessages.isNotEmpty()) {
                             Text(
-                                text = "En vivo",
+                                text = com.example.util.tr("En vivo"),
                                 color = Color(0xFF10B981),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -386,7 +386,7 @@ fun SupportReplyDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Aún no hay respuestas enviadas. Selecciona una plantilla o escribe tu mensaje abajo.",
+                                text = com.example.util.tr("Aún no hay respuestas enviadas. Selecciona una plantilla o escribe tu mensaje abajo."),
                                 color = TextMuted,
                                 fontSize = 11.sp,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -421,7 +421,7 @@ fun SupportReplyDialog(
                                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                                 ) {
                                                     Text(
-                                                        text = if (isFromSupport) "🛡️ Soporte Coach (${msg.senderName})" else "👤 $displayUserName",
+                                                        text = com.example.util.tr(if (isFromSupport) "🛡️ Soporte Coach (${msg.senderName})" else "👤 $displayUserName"),
                                                         color = roleColor,
                                                         fontSize = 11.sp,
                                                         fontWeight = FontWeight.Bold,
@@ -436,7 +436,7 @@ fun SupportReplyDialog(
                                                             border = BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.5f))
                                                         ) {
                                                             Text(
-                                                                text = "Saludo predeterminado",
+                                                                text = com.example.util.tr("Saludo predeterminado"),
                                                                 color = HextechCyan,
                                                                 fontSize = 8.sp,
                                                                 fontWeight = FontWeight.Bold,
@@ -449,7 +449,7 @@ fun SupportReplyDialog(
                                                 }
                                                 if (isFromSupport && !msg.senderEmail.isNullOrBlank()) {
                                                     Text(
-                                                        text = msg.senderEmail,
+                                                        text = com.example.util.tr(msg.senderEmail),
                                                         color = TextMuted,
                                                         fontSize = 9.sp,
                                                         maxLines = 1,
@@ -459,14 +459,14 @@ fun SupportReplyDialog(
                                             }
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = dateFormat.format(Date(msg.timestampMillis)),
+                                                text = com.example.util.tr(dateFormat.format(Date(msg.timestampMillis))),
                                                 color = TextMuted,
                                                 fontSize = 9.5.sp
                                             )
                                         }
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            text = msg.text,
+                                            text = com.example.util.tr(msg.text),
                                             color = Color.White,
                                             fontSize = 12.sp,
                                             lineHeight = 16.sp
@@ -486,7 +486,7 @@ fun SupportReplyDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Plantillas rápidas para $displayUserName:",
+                            text = com.example.util.tr("Plantillas rápidas para $displayUserName:"),
                             color = HextechGold,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold
@@ -528,7 +528,7 @@ fun SupportReplyDialog(
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    text = label,
+                                    text = com.example.util.tr(label),
                                     color = HextechCyan,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Medium
@@ -541,7 +541,7 @@ fun SupportReplyDialog(
 
                     // Campo de redacción de respuesta
                     Text(
-                        text = "Escribir nuevo mensaje o seguimiento:",
+                        text = com.example.util.tr("Escribir nuevo mensaje o seguimiento:"),
                         color = HextechCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
@@ -552,7 +552,7 @@ fun SupportReplyDialog(
                         onValueChange = { replyText = SupportReplyManager.sanitizePlainText(it, 500) },
                         placeholder = {
                             Text(
-                                text = "Escribe aquí la respuesta para $displayUserName...",
+                                text = com.example.util.tr("Escribe aquí la respuesta para $displayUserName..."),
                                 fontSize = 12.sp,
                                 color = TextMuted
                             )
@@ -574,7 +574,7 @@ fun SupportReplyDialog(
                         horizontalArrangement = Arrangement.End
                     ) {
                         Text(
-                            text = "${replyText.length}/500",
+                            text = com.example.util.tr("${replyText.length}/500"),
                             color = TextMuted,
                             fontSize = 10.sp
                         )
@@ -599,7 +599,7 @@ fun SupportReplyDialog(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Marcar mensaje como leído / atendido",
+                            text = com.example.util.tr("Marcar mensaje como leído / atendido"),
                             color = TextPrimary,
                             fontSize = 11.5.sp
                         )
@@ -627,10 +627,10 @@ fun SupportReplyDialog(
                                             )
                                             context.startActivity(intent)
                                         } catch (e: Exception) {
-                                            Toast.makeText(context, "No se encontró aplicación de correo", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("No se encontró aplicación de correo"), Toast.LENGTH_SHORT).show()
                                         }
                                     } else {
-                                        Toast.makeText(context, "Escribe una respuesta antes de enviar por correo", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("Escribe una respuesta antes de enviar por correo"), Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 modifier = Modifier
@@ -655,7 +655,7 @@ fun SupportReplyDialog(
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp)
                         ) {
-                            Text("Cerrar", color = TextMuted, fontSize = 11.5.sp)
+                            Text(com.example.util.tr("Cerrar"), color = TextMuted, fontSize = 11.5.sp)
                         }
 
                         // Botón de guardar y enviar respuesta (permite seguir mandando mensajes)
@@ -663,7 +663,7 @@ fun SupportReplyDialog(
                             onClick = {
                                 val cleanText = replyText.trim()
                                 if (cleanText.isBlank()) {
-                                    Toast.makeText(context, "El mensaje no puede estar vacío", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("El mensaje no puede estar vacío"), Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
                                 isSending = true
@@ -687,7 +687,7 @@ fun SupportReplyDialog(
                                     val updatedConv = SupportReplyManager.getConversation(context, reportId)
                                     conversationMessages = updatedConv
                                     replyText = "" // Dejar campo listo para enviar más mensajes
-                                    Toast.makeText(context, "Mensaje enviado exitosamente. Puedes seguir respondiendo.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Mensaje enviado exitosamente. Puedes seguir respondiendo."), Toast.LENGTH_SHORT).show()
                                     onReplySent(cleanText, markAsRead)
                                 }
                             },
@@ -703,7 +703,7 @@ fun SupportReplyDialog(
                             } else {
                                 Icon(Icons.Default.Send, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Responder", color = HextechDarkBg, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("Responder"), color = HextechDarkBg, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

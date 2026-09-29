@@ -120,20 +120,20 @@ fun BuyEssenceDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                "Comprar $currentCurrencyName",
+                                com.example.util.tr("Comprar $currentCurrencyName"),
                                 fontWeight = FontWeight.Bold,
                                 color = accentColor,
                                 fontSize = 16.sp
                             )
                             Text(
-                                text = if (isOrange) "Saldo actual: $orangeEssenceBalance EN" else "Saldo actual: $blueEssenceBalance EA",
+                                text = com.example.util.tr(if (isOrange) "Saldo actual: $orangeEssenceBalance EN" else "Saldo actual: $blueEssenceBalance EA"),
                                 color = Color(0xFF94A3B8),
                                 fontSize = 11.5.sp
                             )
                         }
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.Gray)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.Gray)
                     }
                 }
 
@@ -173,7 +173,7 @@ fun BuyEssenceDialog(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                "Esencia Azul",
+                                com.example.util.tr("Esencia Azul"),
                                 color = if (!isOrange) HextechCyan else Color(0xFF94A3B8),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
@@ -206,7 +206,7 @@ fun BuyEssenceDialog(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                "Esencia Naranja",
+                                com.example.util.tr("Esencia Naranja"),
                                 color = if (isOrange) HextechGold else Color(0xFF94A3B8),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
@@ -237,7 +237,7 @@ fun BuyEssenceDialog(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "En mantenimiento: Las compras de $currentCurrencyName están temporalmente deshabilitadas por mantenimiento técnico.",
+                                text = com.example.util.tr("En mantenimiento: Las compras de $currentCurrencyName están temporalmente deshabilitadas por mantenimiento técnico."),
                                 color = Color.White,
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
@@ -253,7 +253,7 @@ fun BuyEssenceDialog(
                         border = BorderStroke(1.dp, accentColor.copy(alpha = 0.4f))
                     ) {
                         Text(
-                            text = if (isOrange) "👑 Modo Administrador: Recarga de Esencia Naranja ($1 USD = 1 EN)" else "👑 Modo Administrador: Recarga de Esencia Azul sin restricciones.",
+                            text = com.example.util.tr(if (isOrange) "👑 Modo Administrador: Recarga de Esencia Naranja ($1 USD = 1 EN)" else "👑 Modo Administrador: Recarga de Esencia Azul sin restricciones."),
                             color = accentColor,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold,
@@ -298,14 +298,14 @@ fun BuyEssenceDialog(
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
-                                        text = pack.first,
+                                        text = com.example.util.tr(pack.first),
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp
                                     )
                                 }
                                 Text(
-                                    text = pack.third,
+                                    text = com.example.util.tr(pack.third),
                                     color = accentColor,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
@@ -330,7 +330,7 @@ fun BuyEssenceDialog(
                                     SubscriptionManager.addBlueEssence(pack.second)
                                 }
                                 isPurchasing = false
-                                Toast.makeText(context, "¡Recarga de ${pack.first} aplicada exitosamente!", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, com.example.util.appTr("¡Recarga de ${pack.first} aplicada exitosamente!"), Toast.LENGTH_LONG).show()
                                 onDismiss()
                             }
                         }
@@ -352,7 +352,7 @@ fun BuyEssenceDialog(
                         Icon(Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (isAdmin) Color(0xFF0F172A) else Color.Gray)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (isAdmin) "Comprar (Sin Restricciones)" else "Comprar (En Mantenimiento)",
+                            text = com.example.util.tr(if (isAdmin) "Comprar (Sin Restricciones)" else "Comprar (En Mantenimiento)"),
                             color = if (isAdmin) Color(0xFF0F172A) else Color.Gray,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.5.sp

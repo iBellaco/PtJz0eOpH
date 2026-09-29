@@ -70,7 +70,7 @@ fun SubscriptionPlansBottomSheet(
                     .size(48.dp)
                     .padding(bottom = 8.dp)
             )
-            
+
             Text(
                 text = tr("Desbloquea tu Máximo Potencial"),
                 color = TextPrimary,
@@ -79,7 +79,7 @@ fun SubscriptionPlansBottomSheet(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             Text(
                 text = tr("Elige el plan que mejor se adapte a tu estilo de juego: pases temporales por horas/días o suscripción continua."),
                 color = TextSecondary,
@@ -124,7 +124,7 @@ fun SubscriptionPlansBottomSheet(
                 features = premiumFeatures,
                 onCancel = onDismiss,
                 onSubscribe = {
-                    Toast.makeText(context, "Servicio de suscripción temporalmente fuera de servicio", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, com.example.util.appTr("Servicio de suscripción temporalmente fuera de servicio"), Toast.LENGTH_LONG).show()
                 }
             )
 
@@ -139,7 +139,7 @@ fun SubscriptionPlansBottomSheet(
                 features = premiumFeatures,
                 onCancel = onDismiss,
                 onSubscribe = {
-                    Toast.makeText(context, "Servicio de suscripción temporalmente fuera de servicio", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, com.example.util.appTr("Servicio de suscripción temporalmente fuera de servicio"), Toast.LENGTH_LONG).show()
                 }
             )
 
@@ -168,7 +168,7 @@ private fun PremiumPlanCard(
     val gradientBrush = Brush.linearGradient(
         colors = listOf(HextechGold, HextechCyan)
     )
-    
+
     val bgGradientBrush = Brush.linearGradient(
         colors = listOf(HextechGold.copy(alpha = 0.15f), HextechCyan.copy(alpha = 0.05f))
     )
@@ -197,21 +197,21 @@ private fun PremiumPlanCard(
                     ) {
                         Column {
                             Text(
-                                text = title,
+                                text = com.example.util.tr(title),
                                 color = HextechGold,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
-                                    text = price,
+                                    text = com.example.util.tr(price),
                                     color = TextPrimary,
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
                                 Text(
-                                    text = period,
+                                    text = com.example.util.tr(period),
                                     color = TextSecondary,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
@@ -248,16 +248,16 @@ private fun PremiumPlanCard(
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = feature.text,
+                                text = com.example.util.tr(feature.text),
                                 color = if (feature.isHighlight) HextechGold else TextPrimary,
                                 fontSize = 14.sp,
                                 fontWeight = if (feature.isHighlight) FontWeight.Bold else FontWeight.Normal
                             )
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -302,7 +302,7 @@ private fun PremiumPlanCard(
                 }
             }
         }
-        
+
         // Floating Badge
         if (isPopular) {
             Box(
@@ -345,13 +345,13 @@ private fun FreePlanCard(
             ) {
                 Column {
                     Text(
-                        text = title,
+                        text = com.example.util.tr(title),
                         color = TextSecondary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = price,
+                        text = com.example.util.tr(price),
                         color = TextMuted,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
@@ -379,7 +379,7 @@ private fun FreePlanCard(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = feature.text,
+                        text = com.example.util.tr(feature.text),
                         color = if (feature.isIncluded) TextSecondary else TextMuted,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Normal

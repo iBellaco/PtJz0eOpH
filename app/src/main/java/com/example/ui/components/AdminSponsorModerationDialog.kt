@@ -114,11 +114,11 @@ fun AdminSponsorModerationDialog(
                             if (isSyncing) {
                                 CircularProgressIndicator(modifier = Modifier.size(18.dp), color = HextechGold, strokeWidth = 2.dp)
                             } else {
-                                Icon(Icons.Default.Refresh, contentDescription = "Sincronizar", tint = HextechGold)
+                                Icon(Icons.Default.Refresh, contentDescription = com.example.util.trNullable("Sincronizar"), tint = HextechGold)
                             }
                         }
                         IconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                         }
                     }
                 }
@@ -157,7 +157,7 @@ fun AdminSponsorModerationDialog(
                     FilterChip(
                         selected = selectedFilter == "PENDING",
                         onClick = { selectedFilter = "PENDING" },
-                        label = { Text("Pendientes ($pendingCount)", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                        label = { Text(com.example.util.tr("Pendientes ($pendingCount)"), fontSize = 11.sp, fontWeight = FontWeight.Bold) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Color(0xFFF59E0B),
                             selectedLabelColor = HextechDarkBg
@@ -166,7 +166,7 @@ fun AdminSponsorModerationDialog(
                     FilterChip(
                         selected = selectedFilter == "APPROVED",
                         onClick = { selectedFilter = "APPROVED" },
-                        label = { Text("Aprobados ($approvedCount)", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                        label = { Text(com.example.util.tr("Aprobados ($approvedCount)"), fontSize = 11.sp, fontWeight = FontWeight.Bold) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Color(0xFF10B981),
                             selectedLabelColor = HextechDarkBg
@@ -175,7 +175,7 @@ fun AdminSponsorModerationDialog(
                     FilterChip(
                         selected = selectedFilter == "ALL",
                         onClick = { selectedFilter = "ALL" },
-                        label = { Text("Todos (${sponsorNotices.size})", fontSize = 11.sp) },
+                        label = { Text(com.example.util.tr("Todos (${sponsorNotices.size})"), fontSize = 11.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = HextechGold,
                             selectedLabelColor = HextechDarkBg
@@ -200,7 +200,7 @@ fun AdminSponsorModerationDialog(
                                 "APPROVED" -> "No hay anuncios aprobados aún."
                                 else -> "No hay anuncios de patrocinadores registrados."
                             }
-                            Text(emptyMsg, color = TextSecondary, fontSize = 13.sp)
+                            Text(com.example.util.tr(emptyMsg), color = TextSecondary, fontSize = 13.sp)
                         }
                     }
                 } else {
@@ -215,11 +215,11 @@ fun AdminSponsorModerationDialog(
                                 notice = notice,
                                 onApprove = {
                                     AppNoticeManager.approveSponsorNotice(context, notice.id)
-                                    Toast.makeText(context, "Anuncio aprobado y visible en el panel de anuncios", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Anuncio aprobado y visible en el panel de anuncios"), Toast.LENGTH_SHORT).show()
                                 },
                                 onReject = {
                                     AppNoticeManager.rejectSponsorNotice(context, notice.id)
-                                    Toast.makeText(context, "Anuncio rechazado y eliminado", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("Anuncio rechazado y eliminado"), Toast.LENGTH_SHORT).show()
                                 }
                             )
                         }
@@ -268,10 +268,10 @@ fun AdminSponsorNoticeItem(
                     ) {
                         Column {
                             Text(tr("Vista Previa Multimedia"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text(if (isVertical) "Orientación: Vertical" else "Orientación: Horizontal", color = HextechCyan, fontSize = 11.sp)
+                            Text(com.example.util.tr(if (isVertical) "Orientación: Vertical" else "Orientación: Horizontal"), color = HextechCyan, fontSize = 11.sp)
                         }
                         IconButton(onClick = { showMediaViewerDialog = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                         }
                     }
                     Box(
@@ -328,7 +328,7 @@ fun AdminSponsorNoticeItem(
             isFirestoreDoc = true,
             onDismiss = { showDmDialog = false },
             onReplySent = { replyText, _ ->
-                Toast.makeText(context, "DM enviado a ${notice.sponsorEmail}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, com.example.util.appTr("DM enviado a ${notice.sponsorEmail}"), Toast.LENGTH_SHORT).show()
             }
         )
     }
@@ -350,13 +350,13 @@ fun AdminSponsorNoticeItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(notice.title, color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text(com.example.util.tr(notice.title), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 Surface(
                     shape = RoundedCornerShape(4.dp),
                     color = statusColor.copy(alpha = 0.2f)
                 ) {
                     Text(
-                        text = statusText,
+                        text = com.example.util.tr(statusText),
                         color = statusColor,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -365,7 +365,7 @@ fun AdminSponsorNoticeItem(
                 }
             }
 
-            Text(notice.content, color = TextSecondary, fontSize = 12.sp, maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            Text(com.example.util.tr(notice.content), color = TextSecondary, fontSize = 12.sp, maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
 
             // Clickable Media Preview Banner (Toca para ver imagen o video)
             Card(
@@ -402,7 +402,7 @@ fun AdminSponsorNoticeItem(
                         }
                         Column {
                             Text(
-                                text = if (isVideo) "Video adjunto (${if (isVertical) "Vertical" else "Horizontal"})" else "Imagen adjunta (${if (isVertical) "Vertical" else "Horizontal"})",
+                                text = com.example.util.tr(if (isVideo) "Video adjunto (${if (isVertical) "Vertical" else "Horizontal"})" else "Imagen adjunta (${if (isVertical) "Vertical" else "Horizontal"})"),
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp
@@ -414,7 +414,7 @@ fun AdminSponsorNoticeItem(
                             )
                         }
                     }
-                    Icon(Icons.Default.Visibility, contentDescription = "Ver", tint = HextechGold, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Visibility, contentDescription = com.example.util.trNullable("Ver"), tint = HextechGold, modifier = Modifier.size(18.dp))
                 }
             }
 
@@ -437,7 +437,7 @@ fun AdminSponsorNoticeItem(
                         color = HextechSurfaceVariant
                     ) {
                         Text(
-                            text = if (isVideo) "VIDEO" else "IMAGEN",
+                            text = com.example.util.tr(if (isVideo) "VIDEO" else "IMAGEN"),
                             color = HextechGold,
                             fontSize = 9.5.sp,
                             fontWeight = FontWeight.Bold,
@@ -451,7 +451,7 @@ fun AdminSponsorNoticeItem(
                         color = HextechSurfaceVariant
                     ) {
                         Text(
-                            text = if (isVertical) "VERTICAL" else "HORIZONTAL",
+                            text = com.example.util.tr(if (isVertical) "VERTICAL" else "HORIZONTAL"),
                             color = HextechCyan,
                             fontSize = 9.5.sp,
                             fontWeight = FontWeight.Bold,
@@ -473,7 +473,7 @@ fun AdminSponsorNoticeItem(
                         Icon(Icons.Default.Link, contentDescription = null, tint = if (hasUrl) Color(0xFF10B981) else TextSecondary, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (hasUrl) "URL: ${notice.externalUrl}" else "Sin URL externa",
+                            text = com.example.util.tr(if (hasUrl) "URL: ${notice.externalUrl}" else "Sin URL externa"),
                             color = if (hasUrl) Color(0xFF10B981) else TextSecondary,
                             fontSize = 10.sp,
                             maxLines = 1,
@@ -488,7 +488,7 @@ fun AdminSponsorNoticeItem(
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                     val clip = android.content.ClipData.newPlainText("URL Anuncio" , notice.externalUrl)
                                     clipboard.setPrimaryClip(clip)
-                                    Toast.makeText(context, "URL copiada al portapapeles", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr("URL copiada al portapapeles"), Toast.LENGTH_SHORT).show()
                                 },
                                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                             ) {
@@ -501,7 +501,7 @@ fun AdminSponsorNoticeItem(
                                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.externalUrl.trim()))
                                         context.startActivity(intent)
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "No se pudo abrir la URL", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("No se pudo abrir la URL"), Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
@@ -551,11 +551,11 @@ fun AdminSponsorNoticeItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Patrocinador: ${if (notice.sponsorEmail.isNotBlank()) notice.sponsorEmail else "N/D"}", color = HextechCyan, fontSize = 11.sp)
-                    Text("Presupuesto: $${String.format(Locale.US, "%.2f", notice.budget)} USD", color = TextSecondary, fontSize = 11.sp)
-                    Text("Duración: ${notice.durationValue} $unitLabel", color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    Text(com.example.util.tr("Patrocinador: ${if (notice.sponsorEmail.isNotBlank()) notice.sponsorEmail else "N/D"}"), color = HextechCyan, fontSize = 11.sp)
+                    Text(com.example.util.tr("Presupuesto: $${String.format(Locale.US, "%.2f", notice.budget)} USD"), color = TextSecondary, fontSize = 11.sp)
+                    Text(com.example.util.tr("Duración: ${notice.durationValue} $unitLabel"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                     if (expirationStr != null) {
-                        Text(expirationStr, color = if (expirationStr.startsWith("Expirado")) DangerRed else Color(0xFF10B981), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(com.example.util.tr(expirationStr), color = if (expirationStr.startsWith("Expirado")) DangerRed else Color(0xFF10B981), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 

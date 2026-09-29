@@ -292,7 +292,7 @@ fun DraftHistoryScreen(
                             Toast.makeText(context, trStr(effectiveLang, "Error al guardar el archivo"), Toast.LENGTH_SHORT).show()
                         }
                     } catch (e: Exception) {
-                        Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, com.example.util.appTr("Error: ${e.localizedMessage}"), Toast.LENGTH_SHORT).show()
                     } finally {
                         isProcessingBackup = false
                     }
@@ -314,7 +314,7 @@ fun DraftHistoryScreen(
                         pendingImportJson = fileText
                         showImportConfirmDialog = true
                     } catch (e: Exception) {
-                        Toast.makeText(context, "Error al leer archivo: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, com.example.util.appTr("Error al leer archivo: ${e.localizedMessage}"), Toast.LENGTH_SHORT).show()
                     } finally {
                         isProcessingBackup = false
                     }
@@ -433,7 +433,7 @@ fun DraftHistoryScreen(
                                 modifier = Modifier.testTag("draft_history_title")
                             )
                             Text(
-                                text = "${draftsList.size} " + tr("partidas guardadas"),
+                                text = com.example.util.tr("${draftsList.size} " + tr("partidas guardadas")),
                                 color = HextechCyan,
                                 fontSize = 9.5.sp
                             )
@@ -448,7 +448,7 @@ fun DraftHistoryScreen(
                         ) {
                             Icon(
                                 imageVector = if (isNavMinimized) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                                contentDescription = if (isNavMinimized) tr("Expandir barra de navegación") else tr("Minimizar barra de navegación"),
+                                contentDescription = com.example.util.trNullable(if (isNavMinimized) tr("Expandir barra de navegación") else tr("Minimizar barra de navegación")),
                                 tint = HextechGold,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -493,7 +493,7 @@ fun DraftHistoryScreen(
                                 modifier = Modifier.testTag("draft_history_title")
                             )
                             Text(
-                                text = "${draftsList.size} " + tr("partidas guardadas"),
+                                text = com.example.util.tr("${draftsList.size} " + tr("partidas guardadas")),
                                 color = HextechCyan,
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Medium
@@ -519,7 +519,7 @@ fun DraftHistoryScreen(
                         ) {
                             Icon(
                                 imageVector = if (isNavMinimized) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                                contentDescription = if (isNavMinimized) tr("Expandir barra") else tr("Minimizar barra"),
+                                contentDescription = com.example.util.trNullable(if (isNavMinimized) tr("Expandir barra") else tr("Minimizar barra")),
                                 tint = HextechGold,
                                 modifier = Modifier.size(22.dp)
                             )
@@ -595,7 +595,7 @@ fun DraftHistoryScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = activeSelectedProfile?.name ?: tr("Todas"),
+                                text = com.example.util.tr(activeSelectedProfile?.name ?: tr("Todas")),
                                 color = HextechGold,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -623,7 +623,7 @@ fun DraftHistoryScreen(
                             )
                             profiles.forEach { prof ->
                                 DropdownMenuItem(
-                                    text = { Text("👤 ${prof.name}${if (prof.tag.isNotBlank()) " #${prof.tag}" else ""}") },
+                                    text = { Text(com.example.util.tr("👤 ${prof.name}${if (prof.tag.isNotBlank()) " #${prof.tag}" else ""}")) },
                                     onClick = {
                                         selectedProfileIdFilter = prof.id
                                         AccountProfileManager.setActiveProfile(context, prof.id)
@@ -772,7 +772,7 @@ fun DraftHistoryScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "↔ " + tr("Desliza para ver más perfiles"),
+                                    text = com.example.util.tr("↔ " + tr("Desliza para ver más perfiles")),
                                     color = HextechCyan,
                                     fontSize = 8.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -814,11 +814,11 @@ fun DraftHistoryScreen(
                                     },
                                     label = {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text("👤 ${prof.name}", fontSize = 10.5.sp)
+                                            Text(com.example.util.tr("👤 ${prof.name}"), fontSize = 10.5.sp)
                                             if (prof.tag.isNotBlank()) {
-                                                Text(" #${prof.tag}", fontSize = 9.sp, color = if (isSelected) HextechDarkBg else HextechCyan)
+                                                Text(com.example.util.tr(" #${prof.tag}"), fontSize = 9.sp, color = if (isSelected) HextechDarkBg else HextechCyan)
                                             }
-                                            Text(" ($countForProf)", fontSize = 9.5.sp)
+                                            Text(com.example.util.tr(" ($countForProf)"), fontSize = 9.5.sp)
                                         }
                                     },
                                     trailingIcon = {
@@ -905,7 +905,7 @@ fun DraftHistoryScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = if (activeSelectedProfile != null) "${tr("Tier List")} (${activeSelectedProfile.name})" else tr("Mi Tier List Personal"),
+                                text = com.example.util.tr(if (activeSelectedProfile != null) "${tr("Tier List")} (${activeSelectedProfile.name})" else tr("Mi Tier List Personal")),
                                 color = if (currentHistoryTab == "TIER_LIST") HextechDarkBg else TextPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp,
@@ -957,8 +957,8 @@ fun DraftHistoryScreen(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    Text(" $victoriesCount " + tr("Vic."), color = Color(0xFF81C784), fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
-                                    Text(" $defeatsCount " + tr("Derr."), color = DangerRed, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(com.example.util.tr(" $victoriesCount " + tr("Vic.")), color = Color(0xFF81C784), fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(com.example.util.tr(" $defeatsCount " + tr("Derr.")), color = DangerRed, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -973,7 +973,7 @@ fun DraftHistoryScreen(
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         Text(
-                                            text = "$winRate%",
+                                            text = com.example.util.tr("$winRate%"),
                                             color = if (winRate >= 50) Color(0xFF81C784) else DangerRed,
                                             fontSize = 15.sp,
                                             fontWeight = FontWeight.Black
@@ -1036,7 +1036,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedQueueFilter == "NORMAL",
                             onClick = { selectedQueueFilter = if (selectedQueueFilter == "NORMAL") null else "NORMAL" },
-                            label = { Text("⚔️ " + tr("Partidas Normales"), fontSize = 11.sp) },
+                            label = { Text(com.example.util.tr("⚔️ " + tr("Partidas Normales")), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = HextechGold,
                                 selectedLabelColor = HextechDarkBg
@@ -1045,7 +1045,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedQueueFilter == "LEGENDARY",
                             onClick = { selectedQueueFilter = if (selectedQueueFilter == "LEGENDARY") null else "LEGENDARY" },
-                            label = { Text("🏆 " + tr("Legendarias"), fontSize = 11.sp) },
+                            label = { Text(com.example.util.tr("🏆 " + tr("Legendarias")), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = Color(0xFFE040FB),
                                 selectedLabelColor = Color.White
@@ -1063,7 +1063,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedResultFilter == null,
                             onClick = { selectedResultFilter = null },
-                            label = { Text(tr("Todos") + " ($totalCount)", fontSize = 11.sp) },
+                            label = { Text(com.example.util.tr(tr("Todos") + " ($totalCount)"), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = HextechCyan,
                                 selectedLabelColor = HextechDarkBg
@@ -1072,7 +1072,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedResultFilter == "PENDING",
                             onClick = { selectedResultFilter = if (selectedResultFilter == "PENDING") null else "PENDING" },
-                            label = { Text("⏳ " + tr("En espera") + " ($pendingCount)", fontSize = 11.sp) },
+                            label = { Text(com.example.util.tr("⏳ " + tr("En espera") + " ($pendingCount)"), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = HextechGold,
                                 selectedLabelColor = HextechDarkBg
@@ -1081,7 +1081,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedResultFilter == "VICTORY",
                             onClick = { selectedResultFilter = if (selectedResultFilter == "VICTORY") null else "VICTORY" },
-                            label = { Text("👑 " + tr("Victorias") + " ($victoriesCount)", fontSize = 11.sp) },
+                            label = { Text(com.example.util.tr("👑 " + tr("Victorias") + " ($victoriesCount)"), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = Color(0xFF81C784),
                                 selectedLabelColor = Color.Black
@@ -1090,7 +1090,7 @@ fun DraftHistoryScreen(
                         FilterChip(
                             selected = selectedResultFilter == "DEFEAT",
                             onClick = { selectedResultFilter = if (selectedResultFilter == "DEFEAT") null else "DEFEAT" },
-                            label = { Text("💔 " + tr("Derrotas") + " ($defeatsCount)", fontSize = 11.sp) },
+                            label = { Text(com.example.util.tr("💔 " + tr("Derrotas") + " ($defeatsCount)"), fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = DangerRed,
                                 selectedLabelColor = Color.White
@@ -1099,7 +1099,7 @@ fun DraftHistoryScreen(
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
-                    
+
                     if (pendingCount > 0) {
                         val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition(label = "pulse")
                         val alpha by infiniteTransition.animateFloat(
@@ -1163,7 +1163,7 @@ fun DraftHistoryScreen(
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = if (draftsList.isEmpty()) tr("Tu historial está limpio.") else tr("No se encontraron partidas con ese filtro"),
+                                text = com.example.util.tr(if (draftsList.isEmpty()) tr("Tu historial está limpio.") else tr("No se encontraron partidas con ese filtro")),
                                 color = TextPrimary,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
@@ -1171,10 +1171,10 @@ fun DraftHistoryScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = if (draftsList.isEmpty())
+                                text = com.example.util.tr(if (draftsList.isEmpty())
                                     tr("Ve al Asistente de Draft, crea tu primera composición y guárdala para analizarla después.")
                                 else
-                                    tr("Intenta cambiar el término de búsqueda o restablecer los filtros de resultado y rol."),
+                                    tr("Intenta cambiar el término de búsqueda o restablecer los filtros de resultado y rol.")),
                                 color = TextMuted,
                                 fontSize = 12.5.sp,
                                 textAlign = TextAlign.Center,
@@ -1385,7 +1385,7 @@ fun DraftHistoryScreen(
                                 if (isAdmin) {
                                     showBlueEssenceStore = prof.id
                                 } else {
-                                    android.widget.Toast.makeText(context, "Servicio temporalmente fuera de servicio", android.widget.Toast.LENGTH_SHORT).show()
+                                    android.widget.Toast.makeText(context, com.example.util.appTr("Servicio temporalmente fuera de servicio"), android.widget.Toast.LENGTH_SHORT).show()
                                 }
                             }
                             .padding(12.dp),
@@ -1400,7 +1400,7 @@ fun DraftHistoryScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "${tr("Esencias")}: ${prof.blueEssence}",
+                                text = com.example.util.tr("${tr("Esencias")}: ${prof.blueEssence}"),
                                 color = HextechCyan,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
@@ -1411,7 +1411,7 @@ fun DraftHistoryScreen(
 
                     if (profiles.size > 1 && prof.id != "default") {
                         Spacer(modifier = Modifier.height(14.dp))
-                        
+
                         OutlinedButton(
                             onClick = {
                                 profileToClearHistory = prof
@@ -1426,7 +1426,7 @@ fun DraftHistoryScreen(
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(tr("Vaciar Historial del Perfil"), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
-                        
+
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedButton(
                             onClick = {
@@ -1591,20 +1591,20 @@ fun DraftHistoryScreen(
         AdaptiveHistoryDialog(
             isOverlay = effectiveOverlay,
             onDismissRequest = { showClearAllConfirm = false },
-            title = { 
+            title = {
                 Text(
-                    if (isAllSelected) tr("Borrar todo el historial") else tr("Vaciar historial del perfil"), 
-                    color = DangerRed, 
+                    com.example.util.tr(if (isAllSelected) tr("Borrar todo el historial") else tr("Vaciar historial del perfil")),
+                    color = DangerRed,
                     fontWeight = FontWeight.Bold
-                ) 
+                )
             },
-            text = { 
+            text = {
                 Text(
-                    if (isAllSelected) tr("¿Estás seguro de vaciar todas las partidas y composiciones guardadas de todas tus cuentas?")
-                    else tr("¿Estás seguro de vaciar todas las partidas guardadas de la cuenta '%s'?").format(profName), 
-                    color = TextSecondary, 
+                    com.example.util.tr(if (isAllSelected) tr("¿Estás seguro de vaciar todas las partidas y composiciones guardadas de todas tus cuentas?")
+                    else tr("¿Estás seguro de vaciar todas las partidas guardadas de la cuenta '%s'?").format(profName)),
+                    color = TextSecondary,
                     fontSize = 13.sp
-                ) 
+                )
             },
             confirmButton = {
                 Button(
@@ -1620,7 +1620,7 @@ fun DraftHistoryScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
                 ) {
-                    Text(if (isAllSelected) tr("Borrar Todo") else tr("Vaciar Historial"), color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(com.example.util.tr(if (isAllSelected) tr("Borrar Todo") else tr("Vaciar Historial")), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -1684,13 +1684,13 @@ fun DraftHistoryScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.AccountCircle, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("${profiles.size} " + tr("Perfiles registrados"), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("${profiles.size} " + tr("Perfiles registrados")), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Leaderboard, contentDescription = null, tint = HextechGold, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("${draftsList.size} " + tr("Partidas e historial para Tier List"), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("${draftsList.size} " + tr("Partidas e historial para Tier List")), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -1705,7 +1705,7 @@ fun DraftHistoryScreen(
                                 exportFileLauncher.launch("WildRift_TierList_Backup_$timestamp.json")
                                 showBackupRestoreDialog = false
                             } else {
-                                Toast.makeText(context, "Abre la app principal para exportar a archivos del sistema.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Abre la app principal para exportar a archivos del sistema."), Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -1726,7 +1726,7 @@ fun DraftHistoryScreen(
                                 importFileLauncher.launch(arrayOf("application/json", "text/*"))
                                 showBackupRestoreDialog = false
                             } else {
-                                Toast.makeText(context, "Abre la app principal para importar archivos del sistema.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Abre la app principal para importar archivos del sistema."), Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -1839,11 +1839,11 @@ fun DraftHistoryScreen(
                                 if (result.success) {
                                     Toast.makeText(
                                         context,
-                                        "Restaurados ${result.profilesImported} perfiles y ${result.draftsImported} partidas.",
+                                        com.example.util.appTr("Restaurados ${result.profilesImported} perfiles y ${result.draftsImported} partidas."),
                                         Toast.LENGTH_LONG
                                     ).show()
                                 } else {
-                                    Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, com.example.util.appTr(result.message), Toast.LENGTH_LONG).show()
                                 }
                             }
                         }
@@ -1854,7 +1854,7 @@ fun DraftHistoryScreen(
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(if (importMergeMode) tr("Combinar e Importar") else tr("Reemplazar Todo"), fontWeight = FontWeight.Bold)
+                    Text(com.example.util.tr(if (importMergeMode) tr("Combinar e Importar") else tr("Reemplazar Todo")), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -1958,7 +1958,7 @@ private fun SavedDraftCard(
                         border = BorderStroke(0.8.dp, modeColor)
                     ) {
                         Text(
-                            text = modeLabel,
+                            text = com.example.util.tr(modeLabel),
                             color = modeColor,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -1974,7 +1974,7 @@ private fun SavedDraftCard(
                             border = BorderStroke(0.8.dp, HextechGold.copy(alpha = 0.7f))
                         ) {
                             Text(
-                                text = "Score: ${draft.myScore}",
+                                text = com.example.util.tr("Score: ${draft.myScore}"),
                                 color = HextechGold,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
@@ -1990,7 +1990,7 @@ private fun SavedDraftCard(
                             border = BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.5f))
                         ) {
                             Text(
-                                text = "👤 ${draft.accountProfileName}",
+                                text = com.example.util.tr("👤 ${draft.accountProfileName}"),
                                 color = HextechCyan,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -2000,7 +2000,7 @@ private fun SavedDraftCard(
                     }
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = "• $formattedDate",
+                        text = com.example.util.tr("• $formattedDate"),
                         color = TextMuted,
                         fontSize = 10.sp
                     )
@@ -2015,7 +2015,7 @@ private fun SavedDraftCard(
                         modifier = Modifier.clickable { resultMenuExpanded = true }
                     ) {
                         Text(
-                            text = resultLabel,
+                            text = com.example.util.tr(resultLabel),
                             color = resultBorder,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold,
@@ -2029,14 +2029,14 @@ private fun SavedDraftCard(
                         modifier = Modifier.background(HextechSurface)
                     ) {
                         DropdownMenuItem(
-                            text = { Text("👑 " + tr("Victoria"), color = Color(0xFF81C784), fontWeight = FontWeight.Bold) },
+                            text = { Text(com.example.util.tr("👑 " + tr("Victoria")), color = Color(0xFF81C784), fontWeight = FontWeight.Bold) },
                             onClick = {
                                 onUpdateResult("VICTORY")
                                 resultMenuExpanded = false
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("💔 " + tr("Derrota"), color = DangerRed, fontWeight = FontWeight.Bold) },
+                            text = { Text(com.example.util.tr("💔 " + tr("Derrota")), color = DangerRed, fontWeight = FontWeight.Bold) },
                             onClick = {
                                 onUpdateResult("DEFEAT")
                                 resultMenuExpanded = false
@@ -2055,7 +2055,7 @@ private fun SavedDraftCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = draft.title,
+                    text = com.example.util.tr(draft.title),
                     color = TextPrimary,
                     fontSize = if (isOverlay) 12.5.sp else 13.5.sp,
                     fontWeight = FontWeight.Bold,
@@ -2065,7 +2065,7 @@ private fun SavedDraftCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "${draft.estimatedWinrate}% " + tr("WR Est."),
+                    text = com.example.util.tr("${draft.estimatedWinrate}% " + tr("WR Est.")),
                     color = HextechCyan,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
@@ -2090,7 +2090,7 @@ private fun SavedDraftCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "🔵",
+                            text = com.example.util.tr("🔵"),
                             fontSize = 9.sp,
                             modifier = Modifier.width(18.dp)
                         )
@@ -2106,7 +2106,7 @@ private fun SavedDraftCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "🔴",
+                            text = com.example.util.tr("🔴"),
                             fontSize = 9.sp,
                             modifier = Modifier.width(18.dp)
                         )
@@ -2143,7 +2143,7 @@ private fun SavedDraftCard(
 
                     // VS Badge
                     Text(
-                        text = "VS",
+                        text = com.example.util.tr("VS"),
                         color = DangerRed,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
@@ -2169,7 +2169,7 @@ private fun SavedDraftCard(
             if (draft.notes.isNotBlank()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = " ${draft.notes}",
+                    text = com.example.util.tr(" ${draft.notes}"),
                     color = TextSecondary,
                     fontSize = 11.sp,
                     maxLines = 1,
@@ -2349,7 +2349,7 @@ private fun DraftDetailInnerContent(
             ) {
                 Column {
                     Text(
-                        text = draft.title,
+                        text = com.example.util.tr(draft.title),
                         color = TextPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -2361,7 +2361,7 @@ private fun DraftDetailInnerContent(
                     }
                     val detailScoreText = if (draft.myScore.isNotBlank()) " • 🏅 Score: ${draft.myScore}" else ""
                     Text(
-                        text = tr("Línea:") + " ${com.example.util.tr(roleObj.displayName)} • " + (if (draft.isFirstPick) tr("Primer Pick") else tr("Counter Pick")) + detailModeText + detailScoreText,
+                        text = com.example.util.tr(tr("Línea:") + " ${com.example.util.tr(roleObj.displayName)} • " + (if (draft.isFirstPick) tr("Primer Pick") else tr("Counter Pick")) + detailModeText + detailScoreText),
                         color = if (draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true)) Color(0xFFC084FC) else HextechGold,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
@@ -2414,7 +2414,7 @@ private fun DraftDetailInnerContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = if (draft.accountProfileName.isNotBlank()) draft.accountProfileName else tr("Principal"),
+                                text = com.example.util.tr(if (draft.accountProfileName.isNotBlank()) draft.accountProfileName else tr("Principal")),
                                 color = HextechGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -2433,9 +2433,9 @@ private fun DraftDetailInnerContent(
                             DropdownMenuItem(
                                 text = {
                                     Column {
-                                        Text(prof.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        Text(com.example.util.tr(prof.name), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         if (prof.tag.isNotBlank()) {
-                                            Text("#${prof.tag}", color = HextechCyan, fontSize = 10.sp)
+                                            Text(com.example.util.tr("#${prof.tag}"), color = HextechCyan, fontSize = 10.sp)
                                         }
                                     }
                                 },
@@ -2471,7 +2471,7 @@ private fun DraftDetailInnerContent(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(slot.champion.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text(com.example.util.tr(slot.champion.name), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     if (slot.assignedRole == roleObj) {
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(tr("(Mío)"), color = HextechGold, fontSize = 10.sp, fontWeight = FontWeight.Black)
@@ -2485,7 +2485,7 @@ private fun DraftDetailInnerContent(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = tr(slot.assignedRole.displayName) + " • Tier ${slot.champion.tier}",
+                                        text = com.example.util.tr(tr(slot.assignedRole.displayName) + " • Tier ${slot.champion.tier}"),
                                         color = HextechCyan,
                                         fontSize = 11.sp
                                     )
@@ -2493,7 +2493,7 @@ private fun DraftDetailInnerContent(
                             }
                         }
                         Text(
-                            text = "${String.format(java.util.Locale.US, "%.2f", slot.champion.winrate)}% WR",
+                            text = com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", slot.champion.winrate)}% WR"),
                             color = HextechGold,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
@@ -2524,10 +2524,10 @@ private fun DraftDetailInnerContent(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(slot.champion.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text(com.example.util.tr(slot.champion.name), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     if (slot.assignedRole == roleObj) {
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("(" + tr("Rival Directo") + ")", color = DangerRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        Text(com.example.util.tr("(" + tr("Rival Directo") + ")"), color = DangerRed, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -2538,7 +2538,7 @@ private fun DraftDetailInnerContent(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = tr(slot.assignedRole.displayName) + " • Tier ${slot.champion.tier}",
+                                        text = com.example.util.tr(tr(slot.assignedRole.displayName) + " • Tier ${slot.champion.tier}"),
                                         color = TextMuted,
                                         fontSize = 11.sp
                                     )
@@ -2546,7 +2546,7 @@ private fun DraftDetailInnerContent(
                             }
                         }
                         Text(
-                            text = "${String.format(java.util.Locale.US, "%.2f", slot.champion.winrate)}% WR",
+                            text = com.example.util.tr("${String.format(java.util.Locale.US, "%.2f", slot.champion.winrate)}% WR"),
                             color = HextechGold,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
@@ -2567,9 +2567,9 @@ private fun DraftDetailInnerContent(
             }
             Spacer(modifier = Modifier.height(2.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("${draft.allyDamagePhysical}% " + tr("Físico"), color = Color(0xFFE57373), fontSize = 9.5.sp)
-                Text("${draft.allyDamageMagic}% " + tr("Mágico"), color = Color(0xFF64B5F6), fontSize = 9.5.sp)
-                Text("${draft.allyDamageTrue}% " + tr("Verdadero"), color = Color.White, fontSize = 9.5.sp)
+                Text(com.example.util.tr("${draft.allyDamagePhysical}% " + tr("Físico")), color = Color(0xFFE57373), fontSize = 9.5.sp)
+                Text(com.example.util.tr("${draft.allyDamageMagic}% " + tr("Mágico")), color = Color(0xFF64B5F6), fontSize = 9.5.sp)
+                Text(com.example.util.tr("${draft.allyDamageTrue}% " + tr("Verdadero")), color = Color.White, fontSize = 9.5.sp)
             }
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -2624,7 +2624,7 @@ private fun DraftDetailInnerContent(
                 }
             } else {
                 Text(
-                    text = if (draft.notes.isNotBlank()) draft.notes else tr("Sin notas adicionales registradas."),
+                    text = com.example.util.tr(if (draft.notes.isNotBlank()) draft.notes else tr("Sin notas adicionales registradas.")),
                     color = if (draft.notes.isNotBlank()) TextPrimary else TextMuted,
                     fontSize = 12.sp,
                     lineHeight = 16.sp

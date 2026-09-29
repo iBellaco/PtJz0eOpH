@@ -55,7 +55,7 @@ fun BlueEssenceStoreDialog(
 
     if (!isAdmin) {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Servicio temporalmente fuera de servicio", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Servicio temporalmente fuera de servicio"), Toast.LENGTH_LONG).show()
             onDismiss()
         }
         return
@@ -97,8 +97,8 @@ fun BlueEssenceStoreDialog(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text(if (selectedCurrency == "BLUE") "Economía de Esencia Azul (Admin)" else "Economía de Esencia Naranja (Admin)", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Text("Saldo: ${if (selectedCurrency == "BLUE") prof.blueEssence else prof.orangeEssence} ${if (selectedCurrency == "BLUE") "EA" else "EN"}", color = HextechCyan, fontSize = 13.sp)
+                            Text(com.example.util.tr(if (selectedCurrency == "BLUE") "Economía de Esencia Azul (Admin)" else "Economía de Esencia Naranja (Admin)"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(com.example.util.tr("Saldo: ${if (selectedCurrency == "BLUE") prof.blueEssence else prof.orangeEssence} ${if (selectedCurrency == "BLUE") "EA" else "EN"}"), color = HextechCyan, fontSize = 13.sp)
                         }
                     }
                     HextechAnimatedIconButton(
@@ -108,10 +108,10 @@ fun BlueEssenceStoreDialog(
                         borderColor = Color.Transparent,
                         glowColor = HextechGold
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextMuted, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextMuted, modifier = Modifier.size(18.dp))
                     }
                 }
-                
+
                 // Currency Switcher
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -149,7 +149,7 @@ fun BlueEssenceStoreDialog(
                     ) {
                         Icon(Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Tienda EA", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(com.example.util.tr("Tienda EA"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                     Button(
                         onClick = { selectedTab = 1 },
@@ -162,7 +162,7 @@ fun BlueEssenceStoreDialog(
                     ) {
                         Icon(Icons.Default.WorkspacePremium, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Canjear Items", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(com.example.util.tr("Canjear Items"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                     Button(
                         onClick = { selectedTab = 2 },
@@ -175,7 +175,7 @@ fun BlueEssenceStoreDialog(
                     ) {
                         Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Historial", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(com.example.util.tr("Historial"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -191,7 +191,7 @@ fun BlueEssenceStoreDialog(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             item {
-                                Text("Recargar Esencias Azules (Admin)", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(com.example.util.tr("Recargar Esencias Azules (Admin)"), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                 Spacer(modifier = Modifier.height(4.dp))
                             }
                             val packs = if (selectedCurrency == "BLUE") listOf(
@@ -215,7 +215,7 @@ fun BlueEssenceStoreDialog(
                                             } else {
                                                 AccountProfileManager.buyOrangeEssence(context, profileId, amount, price)
                                             }
-                                            Toast.makeText(context, "+$amount ${if (selectedCurrency == "BLUE") "EA" else "EN"} añadidos con éxito", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("+$amount ${if (selectedCurrency == "BLUE") "EA" else "EN"} añadidos con éxito"), Toast.LENGTH_SHORT).show()
                                         },
                                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
                                     border = BorderStroke(1.dp, HextechCardBorder),
@@ -234,8 +234,8 @@ fun BlueEssenceStoreDialog(
                                         )
                                         Spacer(modifier = Modifier.width(14.dp))
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(title, color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                            Text("+$amount ${if (selectedCurrency == "BLUE") "Esencias Azules" else "Esencias Naranjas"}", color = HextechCyan, fontSize = 12.sp)
+                                            Text(com.example.util.tr(title), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                            Text(com.example.util.tr("+$amount ${if (selectedCurrency == "BLUE") "Esencias Azules" else "Esencias Naranjas"}"), color = HextechCyan, fontSize = 12.sp)
                                         }
                                         Box(
                                             modifier = Modifier
@@ -243,7 +243,7 @@ fun BlueEssenceStoreDialog(
                                                 .background(HextechGold)
                                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                                         ) {
-                                            Text("$$price", color = HextechDarkBg, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp)
+                                            Text(com.example.util.tr("$$price"), color = HextechDarkBg, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp)
                                         }
                                     }
                                 }
@@ -292,7 +292,7 @@ fun BlueEssenceStoreDialog(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(title, color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                            Text(com.example.util.tr(title), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Image(
                                                     painter = painterResource(id = if (selectedCurrency == "BLUE") R.drawable.ic_blue_essence else R.drawable.ic_orange_essence),
@@ -300,11 +300,11 @@ fun BlueEssenceStoreDialog(
                                                     modifier = Modifier.size(18.dp)
                                                 )
                                                 Spacer(modifier = Modifier.width(4.dp))
-                                                Text("$cost ${if (selectedCurrency == "BLUE") "EA" else "EN"}", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                                Text(com.example.util.tr("$cost ${if (selectedCurrency == "BLUE") "EA" else "EN"}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        Text(desc, color = TextMuted, fontSize = 11.sp)
+                                        Text(com.example.util.tr(desc), color = TextMuted, fontSize = 11.sp)
                                         Spacer(modifier = Modifier.height(10.dp))
                                         HextechAnimatedButton(
                                             onClick = {
@@ -317,9 +317,9 @@ fun BlueEssenceStoreDialog(
                                                     scope.launch {
                                                         // ... lógica de suscripción ...
                                                     }
-                                                    Toast.makeText(context, "¡Canje exitoso de '$title'!", Toast.LENGTH_LONG).show()
+                                                    Toast.makeText(context, com.example.util.appTr("¡Canje exitoso de '$title'!"), Toast.LENGTH_LONG).show()
                                                 } else {
-                                                    Toast.makeText(context, "${if (selectedCurrency == "BLUE") "Esencias Azules" else "Esencias Naranjas"} insuficientes (Necesitas $cost ${if (selectedCurrency == "BLUE") "EA" else "EN"})", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, com.example.util.appTr("${if (selectedCurrency == "BLUE") "Esencias Azules" else "Esencias Naranjas"} insuficientes (Necesitas $cost ${if (selectedCurrency == "BLUE") "EA" else "EN"})"), Toast.LENGTH_SHORT).show()
                                                 }
                                             },
                                             backgroundColor = HextechGold,
@@ -377,17 +377,17 @@ fun BlueEssenceStoreDialog(
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Column {
                                                     Text(
-                                                        text = "+$amount ${if (selectedCurrency == "BLUE") "Esencias Azules" else "Esencias Naranjas"}",
+                                                        text = com.example.util.tr("+$amount ${if (selectedCurrency == "BLUE") "Esencias Azules" else "Esencias Naranjas"}"),
                                                         color = HextechCyan,
                                                         fontWeight = FontWeight.Bold,
                                                         fontSize = 13.sp
                                                     )
                                                     val date = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(timestamp))
-                                                    Text(text = date, color = TextMuted, fontSize = 10.sp)
+                                                    Text(text = com.example.util.tr(date), color = TextMuted, fontSize = 10.sp)
                                                 }
                                             }
                                             Text(
-                                                text = "$$price USD",
+                                                text = com.example.util.tr("$$price USD"),
                                                 color = HextechGold,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 13.sp

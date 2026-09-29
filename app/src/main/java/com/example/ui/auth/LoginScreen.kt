@@ -59,7 +59,7 @@ fun LoginScreen(
             label = "Correo electrónico"
         )
         Spacer(modifier = Modifier.height(6.dp))
-        
+
         // Acceso rápido horizontal para dominios de correo
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -85,7 +85,7 @@ fun LoginScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = domain,
+                            text = com.example.util.tr(domain),
                             color = HextechCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -95,7 +95,7 @@ fun LoginScreen(
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         PasswordTextField(
             value = password,
             onValueChange = viewModel::updatePassword,

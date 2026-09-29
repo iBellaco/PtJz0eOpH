@@ -22,12 +22,22 @@ object ChineseMetaSyncService {
 
     fun loadRegion(context: Context) {
         BestBuildWrScraper.initialize(context)
+        val saved = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            .getString("selected_meta_region", "CN") ?: "CN"
+        _currentRegion.value = MetaRegion.normalize(saved)
+        WildRiftRepository.selectMetaRegion(_currentRegion.value)
     }
 
     fun setRegion(context: Context, regionId: String, scope: CoroutineScope) {
-        _currentRegion.value = "CN"
-        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            syncChineseMeta(context, _currentTier.value, forceRefresh = true)
+        val region = MetaRegion.normalize(regionId)
+        _currentRegion.value = region
+        context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit()
+            .putString("selected_meta_region", region).apply()
+        WildRiftRepository.selectMetaRegion(region)
+        if (region == "CN") {
+            scope.launch { syncChineseMeta(context, _currentTier.value, forceRefresh = true) }
+        } else {
+            _syncState.value = ChineseSyncState.Idle
         }
     }
 

@@ -38,8 +38,9 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        com.example.util.AppLanguage.initialize(this)
         com.example.util.CrashLogger.init(this)
-        
+
         // --- Firebase App Check (Play Integrity) ---
         try {
             com.google.firebase.FirebaseApp.initializeApp(this)
@@ -84,7 +85,7 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
         } catch (e: Exception) {
             AppLogger.e("WildRiftApp", "Error cargando caché inicial", e)
         }
-        
+
         // Garantizar que los campeones siempre estén en memoria (si la caché estaba vacía o corrupta)
         if (com.example.data.WildRiftRepository.champions.isEmpty()) {
             com.example.data.WildRiftRepository.initChampions(this)
@@ -177,7 +178,7 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
             }
 
 
-            
+
 
             .crossfade(true)
             .bitmapConfig(Bitmap.Config.ARGB_8888)

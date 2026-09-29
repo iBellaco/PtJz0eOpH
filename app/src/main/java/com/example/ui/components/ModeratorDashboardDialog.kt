@@ -40,7 +40,7 @@ fun ModeratorDashboardDialog(
 ) {
     val context = LocalContext.current
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
-    
+
     // Safety check: only moderators are allowed
     if (userRole != "moderador") {
         LaunchedEffect(Unit) { onDismiss() }
@@ -137,7 +137,7 @@ fun ModeratorDashboardDialog(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Cerrar",
+                                contentDescription = com.example.util.trNullable("Cerrar"),
                                 tint = Color.White
                             )
                         }
@@ -260,8 +260,8 @@ fun ModeratorDashboardDialog(
 private fun isUserVerified(user: Map<String, Any>): Boolean {
     val role = (user["role"] as? String ?: user["userRole"] as? String ?: "").lowercase().trim()
     val email = (user["email"] as? String ?: user["userEmail"] as? String ?: "").lowercase().trim()
-    val isVerifiedBool = (user["isVerified"] as? Boolean) == true || 
-                         (user["verified"] as? Boolean) == true || 
+    val isVerifiedBool = (user["isVerified"] as? Boolean) == true ||
+                         (user["verified"] as? Boolean) == true ||
                          (user["officialVerified"] as? Boolean) == true ||
                          (user["is_verified"] as? Boolean) == true ||
                          (user["verifiedBadge"] as? Boolean) == true
@@ -289,7 +289,7 @@ fun ModeratorUserListPanel() {
         listenerRegistration = FirebaseFirestore.getInstance().collection("users")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    Toast.makeText(context, "Error al cargar usuarios: ${error.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, com.example.util.appTr("Error al cargar usuarios: ${error.message}"), Toast.LENGTH_LONG).show()
                     isLoading = false
                     return@addSnapshotListener
                 }
@@ -350,7 +350,7 @@ fun ModeratorUserListPanel() {
         } else if (filteredUsers.isEmpty()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = if (searchQuery.isBlank()) "No se encontraron usuarios" else "No se encontraron coincidencias para '$searchQuery'",
+                    text = com.example.util.tr(if (searchQuery.isBlank()) "No se encontraron usuarios" else "No se encontraron coincidencias para '$searchQuery'"),
                     color = Color(0xFF64748B),
                     fontSize = 13.sp
                 )
@@ -394,7 +394,7 @@ fun ModeratorUserListPanel() {
                                 Column {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = name,
+                                            text = com.example.util.tr(name),
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.5.sp
@@ -403,7 +403,7 @@ fun ModeratorUserListPanel() {
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Icon(
                                                 imageVector = Icons.Default.Verified,
-                                                contentDescription = "Verificado",
+                                                contentDescription = com.example.util.trNullable("Verificado"),
                                                 tint = HextechCyan,
                                                 modifier = Modifier.size(14.dp)
                                             )
@@ -412,7 +412,7 @@ fun ModeratorUserListPanel() {
                                     if (secondaryRole.isNotBlank()) {
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "Rol Secundario: ${secondaryRole.replaceFirstChar { it.uppercase() }}",
+                                            text = com.example.util.tr("Rol Secundario: ${secondaryRole.replaceFirstChar { it.uppercase() }}"),
                                             color = HextechGold,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Medium
@@ -420,10 +420,10 @@ fun ModeratorUserListPanel() {
                                     }
                                 }
                             }
-                            
+
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Sugerir Modificación",
+                                contentDescription = com.example.util.trNullable("Sugerir Modificación"),
                                 tint = HextechGold,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -484,7 +484,7 @@ fun ModeratorUserProposalDialog(
                         fontSize = 16.sp
                     )
                     IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                     }
                 }
 
@@ -493,7 +493,7 @@ fun ModeratorUserProposalDialog(
                 // User details (Protección estricta de privacidad: email oculto a moderadores)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Usuario: $name",
+                        text = com.example.util.tr("Usuario: $name"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.5.sp
@@ -502,26 +502,26 @@ fun ModeratorUserProposalDialog(
                         Spacer(modifier = Modifier.width(6.dp))
                         Icon(
                             imageVector = Icons.Default.Verified,
-                            contentDescription = "Verificado",
+                            contentDescription = com.example.util.trNullable("Verificado"),
                             tint = HextechCyan,
                             modifier = Modifier.size(15.dp)
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(11.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Contacto privado • ID: ${uid.take(8).uppercase()}...",
+                        text = com.example.util.tr("Contacto privado • ID: ${uid.take(8).uppercase()}..."),
                         color = Color(0xFF94A3B8),
                         fontSize = 11.sp
                     )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Resumen del Estado Actual del Usuario
                 Surface(
                     color = HextechDarkBg.copy(alpha = 0.7f),
@@ -542,9 +542,9 @@ fun ModeratorUserProposalDialog(
                                 Text(tr("No Verificado"), color = Color(0xFFEF4444), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                             }
                             if (currentSecondaryRoleRaw.isNotBlank()) {
-                                Text(" • ", color = Color(0xFF64748B), fontSize = 11.sp)
+                                Text(com.example.util.tr(" • "), color = Color(0xFF64748B), fontSize = 11.sp)
                                 Text(
-                                    text = currentSecondaryRoleRaw.replace("_", " ").replaceFirstChar { it.uppercase() },
+                                    text = com.example.util.tr(currentSecondaryRoleRaw.replace("_", " ").replaceFirstChar { it.uppercase() }),
                                     color = HextechGold,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -649,7 +649,7 @@ fun ModeratorUserProposalDialog(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = roleName,
+                                text = com.example.util.tr(roleName),
                                 color = if (isSelected) HextechGold else Color(0xFFF1F5F9),
                                 fontSize = 11.5.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
@@ -706,12 +706,12 @@ fun ModeratorUserProposalDialog(
                     Button(
                         onClick = {
                             isSending = true
-                            
+
                             val isVerifiedChanged = targetVerified != currentVerified
                             val isSecondaryRoleChanged = targetSecondaryRole.lowercase() != currentSecondaryRole.lowercase()
 
                             if (!isVerifiedChanged && !isSecondaryRoleChanged) {
-                                Toast.makeText(context, "No has sugerido ningun cambio nuevo", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("No has sugerido ningun cambio nuevo"), Toast.LENGTH_SHORT).show()
                                 isSending = false
                                 return@Button
                             }
@@ -792,7 +792,7 @@ private fun createModeratorApprovalRequest(
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
     val moderator = auth.currentUser
-    
+
     val reqId = "mod_req_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().take(6)
     val payload = hashMapOf<String, Any>(
         "id" to reqId,
@@ -813,14 +813,14 @@ private fun createModeratorApprovalRequest(
         "timestamp" to System.currentTimeMillis(),
         "createdAt" to com.google.firebase.Timestamp.now()
     )
-    
+
     // Escribir en support_reports garantizando acceso permitido
     db.collection("support_reports").document(reqId)
         .set(payload)
         .addOnSuccessListener {
             // Intentar también en moderator_requests como respaldo
             try { db.collection("moderator_requests").document(reqId).set(payload) } catch (_: Exception) {}
-            Toast.makeText(context, "Solicitud enviada para aprobación del Administrador", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Solicitud enviada para aprobación del Administrador"), Toast.LENGTH_LONG).show()
             onSuccess()
         }
         .addOnFailureListener {
@@ -828,11 +828,11 @@ private fun createModeratorApprovalRequest(
             db.collection("support_reports").document(reqId)
                 .set(payload, com.google.firebase.firestore.SetOptions.merge())
                 .addOnSuccessListener {
-                    Toast.makeText(context, "Solicitud enviada para aprobación del Administrador", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, com.example.util.appTr("Solicitud enviada para aprobación del Administrador"), Toast.LENGTH_LONG).show()
                     onSuccess()
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(context, "Error al enviar solicitud: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, com.example.util.appTr("Error al enviar solicitud: ${e.message}"), Toast.LENGTH_LONG).show()
                 }
         }
 }

@@ -230,7 +230,7 @@ fun DraftCalibrationPanel(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Cerrar Calibrador",
+                        contentDescription = com.example.util.trNullable("Cerrar Calibrador"),
                         tint = TextMuted,
                         modifier = Modifier.size(16.dp)
                     )
@@ -269,13 +269,13 @@ fun DraftCalibrationPanel(
                                     .border(0.8.dp, HextechCyan.copy(alpha = 0.5f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("${idx + 1}", color = HextechCyan, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("${idx + 1}"), color = HextechCyan, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
 
                     // Título Top Bar
-                    Text("BARRA SUPERIOR", color = HextechGold.copy(alpha = 0.7f), fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                    Text(com.example.util.tr("BARRA SUPERIOR"), color = HextechGold.copy(alpha = 0.7f), fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
 
                     // Top 5 Rivales
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -288,7 +288,7 @@ fun DraftCalibrationPanel(
                                     .border(0.8.dp, DangerRed.copy(alpha = 0.5f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("${idx + 1}", color = Color.White, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("${idx + 1}"), color = Color.White, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -316,7 +316,7 @@ fun DraftCalibrationPanel(
                                 .border(0.8.dp, if (isTargeted) HextechCyan else AllyBlue.copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(allyRoles.getOrElse(i) { "$i" }, color = if (isTargeted) HextechCyan else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr(allyRoles.getOrElse(i) { "$i" }), color = if (isTargeted) HextechCyan else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -327,13 +327,13 @@ fun DraftCalibrationPanel(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "DETECCIÓN 10º PICK & SLOTS",
+                        text = com.example.util.tr("DETECCIÓN 10º PICK & SLOTS"),
                         color = HextechGold.copy(alpha = 0.85f),
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Black
                     )
                     Text(
-                        text = "10º Rival Top: ${(config.topEnemy5XRatio * 100).format(1)}% | Top Y: ${(config.topAvatarYRatio * 100).format(1)}%",
+                        text = com.example.util.tr("10º Rival Top: ${(config.topEnemy5XRatio * 100).format(1)}% | Top Y: ${(config.topAvatarYRatio * 100).format(1)}%"),
                         color = HextechCyan,
                         fontSize = 7.5.sp,
                         fontFamily = FontFamily.Monospace
@@ -347,7 +347,7 @@ fun DraftCalibrationPanel(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "Calibrando: ${selectedTarget.title}",
+                            text = com.example.util.tr("Calibrando: ${selectedTarget.title}"),
                             color = HextechGold,
                             fontSize = 8.sp,
                             fontWeight = FontWeight.Bold
@@ -376,7 +376,7 @@ fun DraftCalibrationPanel(
                                 .border(0.8.dp, if (isTargeted) Color(0xFFFF5252) else DangerRed.copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("R${i + 1}", color = if (isTargeted) Color(0xFFFF5252) else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
+                            Text(com.example.util.tr("R${i + 1}"), color = if (isTargeted) Color(0xFFFF5252) else TextMuted, fontSize = 6.5.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -386,7 +386,7 @@ fun DraftCalibrationPanel(
 
             // SELECTOR DE OBJETIVO A CALIBRAR (CHIPS HORIZONTALES)
             Text(
-                text = "1. Selecciona qué elemento calibrar:",
+                text = com.example.util.tr("1. Selecciona qué elemento calibrar:"),
                 color = TextPrimary,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold
@@ -413,7 +413,7 @@ fun DraftCalibrationPanel(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = target.title,
+                            text = com.example.util.tr(target.title),
                             color = if (isSel) HextechCyan else TextMuted,
                             fontSize = 8.sp,
                             fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
@@ -445,7 +445,7 @@ fun DraftCalibrationPanel(
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Arriba", tint = HextechGold, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.KeyboardArrowUp, contentDescription = com.example.util.trNullable("Arriba"), tint = HextechGold, modifier = Modifier.size(20.dp))
                         }
                     }
 
@@ -463,7 +463,7 @@ fun DraftCalibrationPanel(
                             border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Izquierda", tint = HextechGold, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.KeyboardArrowLeft, contentDescription = com.example.util.trNullable("Izquierda"), tint = HextechGold, modifier = Modifier.size(20.dp))
                             }
                         }
 
@@ -476,7 +476,7 @@ fun DraftCalibrationPanel(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "±${(stepFactor * 100).format(1)}%",
+                                text = com.example.util.tr("±${(stepFactor * 100).format(1)}%"),
                                 color = HextechCyan,
                                 fontSize = 7.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -493,7 +493,7 @@ fun DraftCalibrationPanel(
                             border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Derecha", tint = HextechGold, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.KeyboardArrowRight, contentDescription = com.example.util.trNullable("Derecha"), tint = HextechGold, modifier = Modifier.size(20.dp))
                             }
                         }
                     }
@@ -508,7 +508,7 @@ fun DraftCalibrationPanel(
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Abajo", tint = HextechGold, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = com.example.util.trNullable("Abajo"), tint = HextechGold, modifier = Modifier.size(20.dp))
                         }
                     }
                 }
@@ -521,7 +521,7 @@ fun DraftCalibrationPanel(
                     verticalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Text(
-                        text = "Tamaño de Cuadro:",
+                        text = com.example.util.tr("Tamaño de Cuadro:"),
                         color = TextPrimary,
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Bold
@@ -541,7 +541,7 @@ fun DraftCalibrationPanel(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Add, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                                 Spacer(modifier = Modifier.width(2.dp))
-                                Text("Agrandar", color = HextechCyan, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("Agrandar"), color = HextechCyan, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                             }
                         }
 
@@ -555,7 +555,7 @@ fun DraftCalibrationPanel(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Remove, contentDescription = null, tint = DangerRed, modifier = Modifier.size(13.dp))
                                 Spacer(modifier = Modifier.width(2.dp))
-                                Text("Reducir", color = DangerRed, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                Text(com.example.util.tr("Reducir"), color = DangerRed, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -566,7 +566,7 @@ fun DraftCalibrationPanel(
                         horizontalArrangement = Arrangement.spacedBy(3.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Paso:", color = TextMuted, fontSize = 7.5.sp)
+                        Text(com.example.util.tr("Paso:"), color = TextMuted, fontSize = 7.5.sp)
                         val steps = listOf(
                             Pair("0.1%", 0.001f),
                             Pair("0.5%", 0.005f),
@@ -585,7 +585,7 @@ fun DraftCalibrationPanel(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = label,
+                                    text = com.example.util.tr(label),
                                     color = if (isSel) HextechGold else TextMuted,
                                     fontSize = 7.sp,
                                     fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
@@ -609,7 +609,7 @@ fun DraftCalibrationPanel(
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("WildRift_Vision_Calibration", config.toFormattedCoordinatesString())
                         clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "Coordenadas copiadas al portapapeles", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, com.example.util.appTr("Coordenadas copiadas al portapapeles"), Toast.LENGTH_LONG).show()
                     },
                     modifier = Modifier.weight(1.3f).height(34.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
@@ -619,7 +619,7 @@ fun DraftCalibrationPanel(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.ContentCopy, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(13.dp))
                         Spacer(modifier = Modifier.width(3.dp))
-                        Text("Copiar Coordenadas", color = HextechDarkBg, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                        Text(com.example.util.tr("Copiar Coordenadas"), color = HextechDarkBg, fontSize = 9.sp, fontWeight = FontWeight.Black)
                     }
                 }
 
@@ -628,7 +628,7 @@ fun DraftCalibrationPanel(
                     onClick = {
                         DraftVisionScanner.resetCalibration(context)
                         config = DraftVisionScanner.calibrationConfig
-                        Toast.makeText(context, "Valores restablecidos de fábrica", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, com.example.util.appTr("Valores restablecidos de fábrica"), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.weight(0.9f).height(34.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = HextechSurface),
@@ -636,7 +636,7 @@ fun DraftCalibrationPanel(
                     shape = RoundedCornerShape(6.dp),
                     contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
-                    Text("Restablecer", color = TextMuted, fontSize = 8.sp, fontWeight = FontWeight.SemiBold)
+                    Text(com.example.util.tr("Restablecer"), color = TextMuted, fontSize = 8.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

@@ -164,6 +164,26 @@ object WildRiftRepository {
 
     private val baseChampions = mutableListOf<Champion>()
     var activeRegionName by mutableStateOf("CN")
+    private var chineseChampions: List<Champion> = emptyList()
+
+    @Synchronized
+    fun selectMetaRegion(region: String) {
+        val normalized = com.example.data.sync.MetaRegion.normalize(region)
+        if (activeRegionName == "CN" && champions.isNotEmpty()) chineseChampions = champions.toList()
+        activeRegionName = normalized
+        val source = if (normalized == "CN" && chineseChampions.isNotEmpty()) chineseChampions else baseChampions
+        if (source.isNotEmpty()) { champions.clear(); champions.addAll(source) }
+    }
+
+    @Synchronized
+    fun applyChineseStats(updated: List<Champion>) {
+        chineseChampions = updated.toList()
+        if (activeRegionName == "CN") { champions.clear(); champions.addAll(updated) }
+    }
+
+    fun chineseStatsSnapshot(): List<Champion> =
+        if (activeRegionName == "CN") champions.toList() else chineseChampions.ifEmpty { baseChampions.toList() }
+
 
     @Synchronized
     fun initChampions(context: android.content.Context, forceReload: Boolean = false) {
@@ -172,7 +192,7 @@ object WildRiftRepository {
             val format = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
             val parsed1 = context.resources.openRawResource(com.example.R.raw.champions_part1).bufferedReader().use { reader ->
                 format.decodeFromString<List<Champion>>(reader.readText()).map {
-                    val updated = if (it.winrateDelta == 0.0) it.copy(winrateDelta = (Math.random() * 3.0) - 1.5) else it
+                    val updated = it
                     if (updated.avatarUrl.isBlank() || updated.avatarUrl.startsWith("http")) {
                         updated.copy(avatarUrl = "file:///android_asset/champions/${updated.id}.png")
                     } else updated
@@ -180,7 +200,7 @@ object WildRiftRepository {
             }
             val parsed2 = context.resources.openRawResource(com.example.R.raw.champions_part2).bufferedReader().use { reader ->
                 format.decodeFromString<List<Champion>>(reader.readText()).map {
-                    val updated = if (it.winrateDelta == 0.0) it.copy(winrateDelta = (Math.random() * 3.0) - 1.5) else it
+                    val updated = it
                     if (updated.avatarUrl.isBlank() || updated.avatarUrl.startsWith("http")) {
                         updated.copy(avatarUrl = "file:///android_asset/champions/${updated.id}.png")
                     } else updated
@@ -191,6 +211,7 @@ object WildRiftRepository {
             baseChampions.addAll(parsed2)
             champions.clear()
             champions.addAll(baseChampions)
+            chineseChampions = baseChampions.toList()
             android.util.Log.d("WildRiftRepository", "Loaded ${champions.size} champions successfully")
         } catch (e: Exception) {
             lastError = e.stackTraceToString()
@@ -237,195 +258,13 @@ object WildRiftRepository {
         regionId: String,
         tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS
     ): List<Champion> {
-        val seed = (regionId.hashCode() * 31L) + (tencentTier.name.hashCode() * 17L) + (syncCycle.toLong() * 997L)
-
-        return sourceList.map { champ ->
-            val champRandom = java.util.Random(seed + champ.id.hashCode().toLong())
-
-            val isHighSkillCapOrAssassin = champ.id in listOf(
-                "leesin", "zed", "yasuo", "yone", "aatrox", "camille", "renekton",
-                "akali", "irelia", "kassadin", "kaisa", "vayne", "fiora", "riven",
-                "jax", "pantheon", "talon", "khazix", "kayn", "darius", "sett",
-                "pyke", "lucian", "gragas", "jayce", "katarina", "samira", "hwei"
-            )
-
-            val isSimpleOrLowEloStomper = champ.id in listOf(
-                "garen", "masteryi", "annie", "malphite", "teemo", "lux", "nasus",
-                "blitzcrank", "warwick", "missfortune", "yuumi", "ashe", "brand",
-                "veigar", "dr_mundo", "amumu", "soraka"
-            )
-
-            when (regionId) {
-                "CN" -> {
-                    // Adaptación por Elo para el Servidor Chino (Tencent Super-Server) con rangos de WinRate realistas y coherentes (47.0% - 52.8%)
-                    val (winrate, pickRate, banRate, delta) = when (tencentTier) {
-                        com.example.data.sync.TencentRankTier.CHALLENGER -> {
-                            if (isHighSkillCapOrAssassin) {
-                                val wr = 51.2 + (champRandom.nextDouble() * 1.6) // 51.2% - 52.8%
-                                val pr = 8.0 + (champRandom.nextDouble() * 10.0)
-                                val br = 12.0 + (champRandom.nextDouble() * 16.0)
-                                val d = 0.2 + (champRandom.nextDouble() * 0.6)
-                                Tuple4(wr, pr, br, d)
-                            } else if (isSimpleOrLowEloStomper) {
-                                val wr = 47.5 + (champRandom.nextDouble() * 1.5) // 47.5% - 49.0%
-                                val pr = 2.0 + (champRandom.nextDouble() * 4.0)
-                                val br = 1.0 + (champRandom.nextDouble() * 3.0)
-                                val d = -0.3 - (champRandom.nextDouble() * 0.5)
-                                Tuple4(wr, pr, br, d)
-                            } else {
-                                val wr = 48.8 + (champRandom.nextDouble() * 2.2) // 48.8% - 51.0%
-                                val pr = 4.0 + (champRandom.nextDouble() * 8.0)
-                                val br = 2.0 + (champRandom.nextDouble() * 8.0)
-                                val d = (champRandom.nextDouble() * 0.6) - 0.3
-                                Tuple4(wr, pr, br, d)
-                            }
-                        }
-                        com.example.data.sync.TencentRankTier.MASTER_PLUS -> {
-                            if (isHighSkillCapOrAssassin) {
-                                val wr = 50.8 + (champRandom.nextDouble() * 1.6) // 50.8% - 52.4%
-                                val pr = 7.5 + (champRandom.nextDouble() * 9.0)
-                                val br = 10.0 + (champRandom.nextDouble() * 14.0)
-                                val d = 0.2 + (champRandom.nextDouble() * 0.5)
-                                Tuple4(wr, pr, br, d)
-                            } else if (isSimpleOrLowEloStomper) {
-                                val wr = 47.8 + (champRandom.nextDouble() * 1.5) // 47.8% - 49.3%
-                                val pr = 3.0 + (champRandom.nextDouble() * 5.0)
-                                val br = 1.5 + (champRandom.nextDouble() * 4.0)
-                                val d = -0.2 - (champRandom.nextDouble() * 0.4)
-                                Tuple4(wr, pr, br, d)
-                            } else {
-                                val wr = 49.0 + (champRandom.nextDouble() * 2.0) // 49.0% - 51.0%
-                                val pr = 5.0 + (champRandom.nextDouble() * 7.0)
-                                val br = 3.0 + (champRandom.nextDouble() * 7.0)
-                                val d = (champRandom.nextDouble() * 0.5) - 0.25
-                                Tuple4(wr, pr, br, d)
-                            }
-                        }
-                        com.example.data.sync.TencentRankTier.DIAMOND_PLUS -> {
-                            if (isHighSkillCapOrAssassin) {
-                                val wr = 50.5 + (champRandom.nextDouble() * 1.7) // 50.5% - 52.2%
-                                val pr = 7.0 + (champRandom.nextDouble() * 8.0)
-                                val br = 8.0 + (champRandom.nextDouble() * 12.0)
-                                val d = 0.15 + (champRandom.nextDouble() * 0.45)
-                                Tuple4(wr, pr, br, d)
-                            } else {
-                                val wr = 48.5 + (champRandom.nextDouble() * 2.5) // 48.5% - 51.0%
-                                val pr = 5.0 + (champRandom.nextDouble() * 8.0)
-                                val br = 3.0 + (champRandom.nextDouble() * 8.0)
-                                val d = (champRandom.nextDouble() * 0.5) - 0.25
-                                Tuple4(wr, pr, br, d)
-                            }
-                        }
-                        com.example.data.sync.TencentRankTier.ALL_RANKS -> {
-                            if (isSimpleOrLowEloStomper) {
-                                val wr = 50.2 + (champRandom.nextDouble() * 2.0) // 50.2% - 52.2%
-                                val pr = 8.0 + (champRandom.nextDouble() * 10.0)
-                                val br = 5.0 + (champRandom.nextDouble() * 12.0)
-                                val d = 0.2 + (champRandom.nextDouble() * 0.4)
-                                Tuple4(wr, pr, br, d)
-                            } else if (isHighSkillCapOrAssassin) {
-                                val wr = 47.8 + (champRandom.nextDouble() * 1.8) // 47.8% - 49.6%
-                                val pr = 6.0 + (champRandom.nextDouble() * 7.0)
-                                val br = 4.0 + (champRandom.nextDouble() * 8.0)
-                                val d = -0.2 - (champRandom.nextDouble() * 0.4)
-                                Tuple4(wr, pr, br, d)
-                            } else {
-                                val wr = 48.8 + (champRandom.nextDouble() * 2.2) // 48.8% - 51.0%
-                                val pr = 6.0 + (champRandom.nextDouble() * 7.0)
-                                val br = 3.0 + (champRandom.nextDouble() * 6.0)
-                                val d = (champRandom.nextDouble() * 0.4) - 0.2
-                                Tuple4(wr, pr, br, d)
-                            }
-                        }
-                    }
-
-                    val newTier = when {
-                        winrate >= 51.5 -> "S+"
-                        winrate >= 50.5 -> "S"
-                        winrate >= 49.5 -> "A+"
-                        winrate >= 48.5 -> "A"
-                        winrate >= 47.5 -> "B"
-                        else -> "C"
-                    }
-                    val cnTierFormatted = when (newTier) {
-                        "S+" -> "T0"
-                        "S" -> "T1"
-                        "A+" -> "T2"
-                        "A" -> "T3"
-                        "B" -> "T4"
-                        else -> "T5"
-                    }
-                    champ.copy(
-                        winrate = winrate,
-                        pickRate = pickRate,
-                        banRate = banRate,
-                        tier = newTier,
-                        cnTier = cnTierFormatted,
-                        winrateDelta = delta
-                    )
-                }
-                "NA" -> {
-                    // Meta Servidor América / NA con winrates realistas (47.5% - 52.5%)
-                    val isNaPriority = champ.id in listOf(
-                        "lux", "jinx", "caitlyn", "karma", "orianna", "malphite", "vi",
-                        "sona", "seraphine", "tristana", "ahri", "janna", "ezreal", "nautilus",
-                        "ashe", "morgana", "brand", "veigar", "sion", "leona", "lulu"
-                    )
-                    val baseWinrate = if (isNaPriority) {
-                        50.5 + (champRandom.nextDouble() * 2.0) // 50.5% - 52.5%
-                    } else {
-                        47.8 + (champRandom.nextDouble() * 2.5) // 47.8% - 50.3%
-                    }
-                    val newPick = (4.0 + (champRandom.nextDouble() * 10.0)).coerceIn(2.0, 20.0)
-                    val newBan = (2.0 + (champRandom.nextDouble() * 12.0)).coerceIn(0.5, 20.0)
-                    val newTier = when {
-                        baseWinrate >= 51.5 -> "S+"
-                        baseWinrate >= 50.5 -> "S"
-                        baseWinrate >= 49.5 -> "A+"
-                        baseWinrate >= 48.5 -> "A"
-                        else -> "B"
-                    }
-                    val delta = if (isNaPriority) 0.2 + (champRandom.nextDouble() * 0.4) else (champRandom.nextDouble() * 0.6) - 0.3
-                    champ.copy(
-                        winrate = baseWinrate,
-                        pickRate = newPick,
-                        banRate = newBan,
-                        tier = newTier,
-                        cnTier = newTier,
-                        winrateDelta = delta
-                    )
-                }
-                else -> {
-                    // Meta Servidor Global (Promedio balanceado 5 fuentes, 47.5% - 52.5%)
-                    val newWinrate = 48.2 + (champRandom.nextDouble() * 4.0) // 48.2% - 52.2%
-                    val newPick = 3.5 + (champRandom.nextDouble() * 10.0)
-                    val newBan = 2.0 + (champRandom.nextDouble() * 10.0)
-                    val newTier = when {
-                        newWinrate >= 51.5 -> "S+"
-                        newWinrate >= 50.5 -> "S"
-                        newWinrate >= 49.5 -> "A+"
-                        newWinrate >= 48.5 -> "A"
-                        else -> "B"
-                    }
-                    champ.copy(
-                        winrate = newWinrate,
-                        pickRate = newPick,
-                        banRate = newBan,
-                        tier = newTier,
-                        cnTier = newTier,
-                        winrateDelta = (champRandom.nextDouble() * 0.8) - 0.4
-                    )
-                }
-            }
-        }
+        // Preserve the bundled references: no synthetic regional percentages.
+        return if (com.example.data.sync.MetaRegion.normalize(regionId) == "CN")
+            chineseStatsSnapshot().ifEmpty { sourceList } else sourceList.toList()
     }
 
     fun updateStatsForRegionAndTier(regionId: String, tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS) {
-        val sourceList = if (baseChampions.isNotEmpty()) baseChampions else champions.toList()
-        activeRegionName = regionId
-        val updatedList = computeChampionsForRegionAndTier(sourceList, regionId, tencentTier)
-        champions.clear()
-        champions.addAll(updatedList)
+        selectMetaRegion(regionId)
     }
 
     private data class Tuple4(val wr: Double, val pr: Double, val br: Double, val delta: Double)
@@ -547,7 +386,7 @@ object WildRiftRepository {
             reasonParts.add(if (isPt) msgPt else if (isEn) msgEn else msgEs)
         }
 
-        
+
         val directCounters = champ.advantageAgainst.filter { adv ->
             enemies.any { it.name.equals(adv, ignoreCase = true) || it.id.equals(adv, ignoreCase = true) }
         }.toMutableList()
@@ -580,12 +419,12 @@ object WildRiftRepository {
                 }
             }
         }
-        
+
         // Ponderación de counters y sinergias generales
         score += (directCounters.size * 2.8)
         score -= (directWeaknesses.size * 2.2)
         score += (directSynergies.size * 2.2)
-        
+
         // Análisis específico del rival directo de línea (Matchup de carril)
         if (enemyLaneOpponent != null) {
             val opponent = enemyLaneOpponent
@@ -593,7 +432,7 @@ object WildRiftRepository {
                     opponent.counteredBy.any { it.equals(champ.name, ignoreCase = true) || it.equals(champ.id, ignoreCase = true) }
             val isDirectLaneWeakness = champ.counteredBy.any { it.equals(opponent.name, ignoreCase = true) || it.equals(opponent.id, ignoreCase = true) } ||
                     opponent.advantageAgainst.any { it.equals(champ.name, ignoreCase = true) || it.equals(champ.id, ignoreCase = true) }
-            
+
             if (isDirectLaneCounter) {
                 score += 5.0
                 if (badge.isBlank()) badge = if (isPt) " DOMINA A ROTA (${champ.name} vs ${opponent.name})" else " DOMINAS LÍNEA (${champ.name} vs ${opponent.name})"
@@ -603,7 +442,7 @@ object WildRiftRepository {
                 if (badge.isBlank()) badge = if (isPt) "️ CONFRONTO DESFAVORÁVEL (${opponent.name})" else "️ MATCHUP DESFAVORABLE (${opponent.name})"
                 reasonParts.add(if (isPt) "Rota difícil contra ${opponent.name}. Evite trocas longas no início e solicite apoio do caçador." else "Línea difícil contra ${opponent.name}. Evita tradeos largos en early y solicita apoyo del jungla.")
             }
-            
+
             // Caso especial: ADC / Rango en línea de Barón (Top)
             if (myRole == LaneRole.TOP && opponent.isRanged && !champ.isRanged) {
                 reasonParts.add(if (isPt) "Rival com alcance (${opponent.name} no Top): Jogue recuado nos níveis 1-3, compre Escudo de Doran / Ventos Revigorantes e faça all-in quando o rival gastar sua habilidade de fuga." else "Rival con rango (${opponent.name} en Top): Juega pasivo niveles 1-3, compra Escudo de Doran / Segundo Aire y all-in cuando gaste su habilidad de escape.")
@@ -611,11 +450,11 @@ object WildRiftRepository {
                 reasonParts.add(if (isPt) "Vantagem de alcance no Top: Pressione ${opponent.name} nos níveis 1-2 mas congele perto da sua torre para evitar emboscadas." else "Ventaja de rango en Top: Acosa a ${opponent.name} en niveles 1-2 pero congela cerca de tu torre para evitar gankeos.")
             }
         }
-        
+
         if (isAllyFullAd && champ.damageType == DamageType.MAGIC) { score += 3.5 }
         else if (isAllyFullAp && champ.damageType == DamageType.PHYSICAL) { score += 3.5 }
         if (frontlineAllies == 0 && champ.isFrontline) { score += 2.8 }
-        
+
         if (badge.isBlank()) {
             if (directCounters.isNotEmpty() && directCounters.size >= directWeaknesses.size) {
                 badge = if (isPt) " COUNTER FORTE (+${directCounters.size})" else " COUNTER FUERTE (+${directCounters.size})"
@@ -640,7 +479,7 @@ object WildRiftRepository {
                 reasonParts.add(if (isPt) "Opção neutra e consistente neste cenário." else "Opción neutral y consistente en este escenario.")
             }
         }
-        
+
         val mainSkill = champ.skills.find { it.slot == "1" }?.let { if (isPt) it.namePt.ifBlank { com.example.util.trStr("pt", it.name) } else it.name } ?: champ.skills.firstOrNull()?.name ?: if (isPt) "habilidades" else "habilidades"
         synergyText = if (directSynergies.isNotEmpty()) {
             if (isPt) "Sincronize suas iniciações e combine $mainSkill junto com ${directSynergies.joinToString(", ")} para dominar as lutas de equipe."
@@ -649,7 +488,7 @@ object WildRiftRepository {
             if (isPt) "Campeão independente. Priorize seu próprio escalonamento e $mainSkill."
             else "Campeón independiente. Prioriza tu propio escalado y $mainSkill."
         }
-        
+
         counterText = if (directCounters.isNotEmpty()) {
             if (isPt) "Use sua $mainSkill para anular: ${directCounters.joinToString(", ")}."
             else "Usa tu $mainSkill para anular completamente a: ${directCounters.joinToString(", ")}."
@@ -660,7 +499,7 @@ object WildRiftRepository {
             if (isPt) "Confronto estável sem counters diretos à vista."
             else "Enfrentamiento estable sin counters directos a la vista."
         }
-        
+
         val localizedTacticalAdvice = com.example.util.trStr(lang, champ.tacticalAdvice)
         return DraftRecommendation(
             champion = champ,
@@ -718,7 +557,7 @@ object WildRiftRepository {
         val allyMagicCount = activeAllies.count { it.damageType == DamageType.MAGIC }
         val isAllyFullAd = activeAllies.isNotEmpty() && allyPhysCount >= 3 && allyMagicCount == 0
         val isAllyFullAp = activeAllies.isNotEmpty() && allyMagicCount >= 3 && allyPhysCount == 0
-        
+
         var allyPhysPct = 0
         var allyMagicPct = 0
         var allyTruePct = 0
@@ -727,7 +566,7 @@ object WildRiftRepository {
             var aPhys = 0
             var aMag = 0
             var aTrue = 0
-            activeAllies.forEach { 
+            activeAllies.forEach {
                 when (it.damageType) {
                     DamageType.PHYSICAL -> aPhys++
                     DamageType.MAGIC -> aMag++
@@ -738,7 +577,7 @@ object WildRiftRepository {
             allyPhysPct = (aPhys * 100) / totalAlly
             allyMagicPct = (aMag * 100) / totalAlly
             allyTruePct = (100 - (allyPhysPct + allyMagicPct)).coerceAtLeast(0)
-            
+
             if (allyPhysPct >= 80) {
                 allyCompositionWarning = com.example.util.trStr(lang, "Exceso de Daño Físico aliado (AD). El rival acumulará armadura.")
             } else if (allyMagicPct >= 75) {
@@ -777,7 +616,7 @@ object WildRiftRepository {
         val enemyTanks = activeEnemies.filter { it.isFrontline }
         val enemyRangedAdvantage = activeEnemies.filter { it.id in listOf("caitlyn", "lux", "xerath", "varus", "ezreal", "ziggs", "corki") }
         val enemyDashHeavy = activeEnemies.filter { it.id in listOf("yasuo", "yone", "irelia", "riven", "lee_sin", "akali", "katarina", "fizz") }
-        
+
         if (enemyLaneOpponent != null && enemyLaneOpponent.id != "empty") {
             val opponent = enemyLaneOpponent
             if (myRole == LaneRole.TOP && opponent.isRanged) {
@@ -799,7 +638,7 @@ object WildRiftRepository {
                 directCounterBestPick = countersList
             }
         }
-        
+
         if (directMatchupWarning == null && (activeAllies.isNotEmpty() || activeEnemies.isNotEmpty())) {
             if (isAllyFullAd && myRole != LaneRole.SUPPORT && myRole != LaneRole.ADC) {
                 directMatchupWarning = com.example.util.trStr(lang, "Nuestra composición es full Daño Físico (AD). El enemigo acumulará armadura.")

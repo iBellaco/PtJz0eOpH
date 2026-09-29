@@ -189,7 +189,7 @@ fun BatteryAndOverlayNoticeCard(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = if (hasOverlayPermission) tr(" Concedido (Ventana flotante habilitada)") else tr(" Pendiente: Toca para autorizar"),
+                            text = com.example.util.tr(if (hasOverlayPermission) tr(" Concedido (Ventana flotante habilitada)") else tr(" Pendiente: Toca para autorizar")),
                             color = if (hasOverlayPermission) HextechCyan else DangerRed,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
@@ -244,7 +244,7 @@ fun BatteryAndOverlayNoticeCard(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = if (isBatteryExempt) tr(" Sin restricciones (No se cerrará en segundo plano)") else tr(" Optimizado: Toca para quitar restricción"),
+                            text = com.example.util.tr(if (isBatteryExempt) tr(" Sin restricciones (No se cerrará en segundo plano)") else tr(" Optimizado: Toca para quitar restricción")),
                             color = if (isBatteryExempt) HextechCyan else DangerRed,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
@@ -298,7 +298,7 @@ fun BatteryAndOverlayNoticeCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (!hasOverlayPermission) tr("Conceder Permiso") else if (isServiceRunning) tr("Detener Flotante") else tr("Lanzar Flotante en Juego"),
+                        text = com.example.util.tr(if (!hasOverlayPermission) tr("Conceder Permiso") else if (isServiceRunning) tr("Detener Flotante") else tr("Lanzar Flotante en Juego")),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.5.sp
                     )

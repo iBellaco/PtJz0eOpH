@@ -180,7 +180,7 @@ fun DonationDialog(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = " " + tr("¡Gracias por apoyar a la comunidad!"),
+                                text = com.example.util.tr(" " + tr("¡Gracias por apoyar a la comunidad!")),
                                 color = HextechGold,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
@@ -255,8 +255,8 @@ private fun DonationMethodCard(
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text(title, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text(subtitle, color = TextMuted, fontSize = 11.sp)
+                    Text(com.example.util.tr(title), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(com.example.util.tr(subtitle), color = TextMuted, fontSize = 11.sp)
                 }
             }
 
@@ -267,7 +267,7 @@ private fun DonationMethodCard(
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                 modifier = Modifier.height(34.dp)
             ) {
-                Text(actionText, color = Color.White, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                Text(com.example.util.tr(actionText), color = Color.White, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -297,8 +297,8 @@ private fun DonationCryptoCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(title, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
-                    Text(network, color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Medium)
+                    Text(com.example.util.tr(title), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
+                    Text(com.example.util.tr(network), color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Medium)
                 }
                 OutlinedButton(
                     onClick = onCopy,
@@ -308,7 +308,7 @@ private fun DonationCryptoCard(
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                     modifier = Modifier.height(32.dp)
                 ) {
-                    Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.ContentCopy, contentDescription = com.example.util.trNullable("Copiar"), modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(tr("Copiar"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
@@ -325,7 +325,7 @@ private fun DonationCryptoCard(
                     .clickable { onCopy() }
             ) {
                 Text(
-                    text = address,
+                    text = com.example.util.tr(address),
                     color = TextSecondary,
                     fontSize = 11.sp,
                     maxLines = 1
@@ -344,7 +344,7 @@ private fun DonationPixCard(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     var showQRModal by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    
+
     val qrCodeUrl = androidx.compose.runtime.remember(pixCode) {
         val encoded = android.net.Uri.encode(pixCode)
         "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=$encoded&bgcolor=ffffff&color=000000&margin=2"
@@ -375,7 +375,7 @@ private fun DonationPixCard(
                 )
                 androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.width(8.dp))
                 androidx.compose.material3.Text(
-                    text = title,
+                    text = com.example.util.tr(title),
                     color = TextPrimary,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     fontSize = 15.sp
@@ -395,7 +395,7 @@ private fun DonationPixCard(
                     )
                 }
             }
-            
+
             androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(6.dp))
             androidx.compose.material3.Text(
                 text = tr("QR Code e Pix Copia e Cola"),
@@ -422,7 +422,7 @@ private fun DonationPixCard(
                         .data(qrCodeUrl)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                        
+
                         .build(),
                     contentDescription = "QR Pix",
                     modifier = androidx.compose.ui.Modifier.fillMaxSize(),
@@ -438,7 +438,7 @@ private fun DonationPixCard(
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
                 modifier = androidx.compose.ui.Modifier.fillMaxWidth()
             ) {
-                androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.QrCode2, contentDescription = "Ver QR", modifier = androidx.compose.ui.Modifier.size(18.dp), tint = androidx.compose.ui.graphics.Color.Black)
+                androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.QrCode2, contentDescription = com.example.util.trNullable("Ver QR"), modifier = androidx.compose.ui.Modifier.size(18.dp), tint = androidx.compose.ui.graphics.Color.Black)
                 androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.width(8.dp))
                 androidx.compose.material3.Text(tr("Ver QR Ampliado"), color = androidx.compose.ui.graphics.Color.Black, fontSize = 13.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             }
@@ -469,7 +469,7 @@ private fun DonationPixCard(
                             androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.QrCode2, contentDescription = null, tint = androidx.compose.ui.graphics.Color(0xFF32BCAD))
                             androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.width(8.dp))
                             androidx.compose.material3.Text(
-                                text = "Pix QR Code",
+                                text = com.example.util.tr("Pix QR Code"),
                                 color = TextPrimary,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                                 fontSize = 16.sp
@@ -479,9 +479,9 @@ private fun DonationPixCard(
                             androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
                         }
                     }
-                    
+
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
-                    
+
                     androidx.compose.foundation.layout.Box(
                         modifier = androidx.compose.ui.Modifier
                             .size(260.dp)
@@ -496,32 +496,32 @@ private fun DonationPixCard(
                                 .data(qrCodeUrl)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                                
+
                                 .build(),
                             contentDescription = "Pix QR Ampliado",
                             modifier = androidx.compose.ui.Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Fit
                         )
                     }
-                    
+
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
-                    
+
                     androidx.compose.material3.Text(
-                        text = "Beneficiario: BRLA DIGITAL LTDA",
+                        text = com.example.util.tr("Beneficiario: BRLA DIGITAL LTDA"),
                         color = HextechGold,
                         fontSize = 13.sp,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                     androidx.compose.material3.Text(
-                        text = amountText,
+                        text = com.example.util.tr(amountText),
                         color = TextSecondary,
                         fontSize = 12.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
-                    
+
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(20.dp))
-                    
+
                     androidx.compose.material3.Button(
                         onClick = {
                             onCopy()
@@ -570,7 +570,7 @@ private fun copyToClipboard(context: Context, text: String, label: String) {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
-        Toast.makeText(context, "Copiado al portapapeles: $label", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, com.example.util.appTr("Copiado al portapapeles: $label"), Toast.LENGTH_SHORT).show()
     } catch (e: Exception) {
         // ignore
     }
@@ -583,12 +583,12 @@ private fun downloadQr(context: Context, url: String) {
         request.setDescription("Descargando código QR Pix")
         request.setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         request.setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS, "Pix_QR.png")
-        
+
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
         downloadManager.enqueue(request)
-        Toast.makeText(context, "Descarga iniciada...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, com.example.util.appTr("Descarga iniciada..."), Toast.LENGTH_SHORT).show()
     } catch (e: Exception) {
-        Toast.makeText(context, "Error al descargar", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, com.example.util.appTr("Error al descargar"), Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -601,10 +601,10 @@ private fun DonationPixCombinedCard() {
 
     val pixCode1 = "00020126580014br.gov.bcb.pix0136ff439919-4119-405d-838a-6c3e3efd8b5552040000530398654045.275802BR5917BRLA DIGITAL LTDA6009Sao Paulo62290525c898e88196a346fa968d9eada6304654C"
     val pixCode2 = "00020126580014br.gov.bcb.pix0136ff439919-4119-405d-838a-6c3e3efd8b55520400005303986540526.455802BR5917BRLA DIGITAL LTDA6009Sao Paulo622905258e3dc64ffc0c48fab562857a5630478FA"
-    
+
     val currentPixCode = if (selectedOption == 1) pixCode1 else if (selectedOption == 2) pixCode2 else ""
     val currentAmountText = if (selectedOption == 1) "R$ 5.27" else if (selectedOption == 2) "R$ 26.45" else ""
-    
+
     val qrCodeUrl = androidx.compose.runtime.remember(currentPixCode) {
         val encoded = android.net.Uri.encode(currentPixCode)
         "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=$encoded&bgcolor=ffffff&color=000000&margin=2"
@@ -635,7 +635,7 @@ private fun DonationPixCombinedCard() {
                 )
                 androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.width(8.dp))
                 androidx.compose.material3.Text(
-                    text = "Pix (Brasil)",
+                    text = com.example.util.tr("Pix (Brasil)"),
                     color = TextPrimary,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     fontSize = 15.sp
@@ -655,9 +655,9 @@ private fun DonationPixCombinedCard() {
                     )
                 }
             }
-            
+
             androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(12.dp))
-            
+
             // Selector de opciones
             androidx.compose.foundation.layout.Row(
                 modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
@@ -675,7 +675,7 @@ private fun DonationPixCombinedCard() {
                 ) {
                     androidx.compose.material3.Text(tr("Opción 1"), fontSize = 12.sp, maxLines = 1)
                 }
-                
+
                 val isOption2 = selectedOption == 2
                 androidx.compose.material3.OutlinedButton(
                     onClick = { selectedOption = 2 },
@@ -691,15 +691,15 @@ private fun DonationPixCombinedCard() {
             }
 
             androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(12.dp))
-            
+
             if (selectedOption != null) {
                 androidx.compose.material3.Text(
-                    text = "Sao Paulo • $currentAmountText",
+                    text = com.example.util.tr("Sao Paulo • $currentAmountText"),
                     color = HextechGold,
                     fontSize = 13.sp,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                 )
-                
+
                 androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(8.dp))
                 androidx.compose.material3.Text(
                     text = tr("QR Code e Pix Copia e Cola"),
@@ -708,7 +708,7 @@ private fun DonationPixCombinedCard() {
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
                 androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
-    
+
                 // QR code centrado
                 androidx.compose.foundation.layout.Box(
                     modifier = androidx.compose.ui.Modifier
@@ -725,7 +725,7 @@ private fun DonationPixCombinedCard() {
                             .data(qrCodeUrl)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                            
+
                             .build(),
                         contentDescription = "QR Pix",
                         modifier = androidx.compose.ui.Modifier.fillMaxSize(),
@@ -733,7 +733,7 @@ private fun DonationPixCombinedCard() {
                     )
                 }
                 androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
-                
+
                 androidx.compose.material3.Button(
                     onClick = { copyToClipboard(context, currentPixCode, "Código Pix Copia e Cola") },
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = HextechBlue),
@@ -742,7 +742,7 @@ private fun DonationPixCombinedCard() {
                 ) {
                     androidx.compose.material3.Icon(
                         imageVector = androidx.compose.material.icons.Icons.Default.ContentCopy,
-                        contentDescription = "Copy",
+                        contentDescription = com.example.util.trNullable("Copy"),
                         modifier = androidx.compose.ui.Modifier.size(16.dp)
                     )
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.width(8.dp))
@@ -751,16 +751,16 @@ private fun DonationPixCombinedCard() {
             }
         }
     }
-    
+
     if (showQRModal) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { showQRModal = false },
             containerColor = HextechSurface,
             title = {
                 androidx.compose.material3.Text(
-                    text = tr("Escanea el Código QR"), 
-                    color = TextPrimary, 
-                    fontSize = 16.sp, 
+                    text = tr("Escanea el Código QR"),
+                    color = TextPrimary,
+                    fontSize = 16.sp,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
             },
@@ -781,7 +781,7 @@ private fun DonationPixCombinedCard() {
                                 .data(qrCodeUrl)
 .crossfade(true)
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
-                                
+
                                 .build(),
                             contentDescription = "QR Pix",
                             modifier = androidx.compose.ui.Modifier.fillMaxSize(),
@@ -790,7 +790,7 @@ private fun DonationPixCombinedCard() {
                     }
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
                     androidx.compose.material3.Text(
-                        text = "${tr("Valor:")} $currentAmountText",
+                        text = com.example.util.tr("${tr("Valor:")} $currentAmountText"),
                         color = HextechGold,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                         fontSize = 16.sp

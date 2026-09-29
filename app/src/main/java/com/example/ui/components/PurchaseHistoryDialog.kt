@@ -221,14 +221,14 @@ fun PurchaseHistoryDialog(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "$blueEssenceBalance",
+                                    text = com.example.util.tr("$blueEssenceBalance"),
                                     color = HextechCyan,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 22.sp
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "EA",
+                                    text = com.example.util.tr("EA"),
                                     color = HextechGold,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
@@ -253,7 +253,7 @@ fun PurchaseHistoryDialog(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = if (isPremium) "Exclusivo PRO" else "Cuenta Activa",
+                                    text = com.example.util.tr(if (isPremium) "Exclusivo PRO" else "Cuenta Activa"),
                                     color = if (isPremium) HextechGold else Color(0xFF10B981),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -289,7 +289,7 @@ fun PurchaseHistoryDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = label,
+                                text = com.example.util.tr(label),
                                 color = if (isSelected) HextechDarkBg else Color.LightGray,
                                 fontSize = 11.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
@@ -359,7 +359,7 @@ fun PurchaseHistoryDialog(
 
                                         Column {
                                             Text(
-                                                text = tx.title,
+                                                text = com.example.util.tr(tx.title),
                                                 color = Color.White,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 13.sp
@@ -367,12 +367,12 @@ fun PurchaseHistoryDialog(
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(
-                                                    text = "ID: ${tx.id}",
+                                                    text = com.example.util.tr("ID: ${tx.id}"),
                                                     color = Color.Gray,
                                                     fontSize = 10.5.sp
                                                 )
                                                 Text(
-                                                    text = " • $dateStr",
+                                                    text = com.example.util.tr(" • $dateStr"),
                                                     color = Color.Gray,
                                                     fontSize = 10.5.sp
                                                 )
@@ -382,7 +382,7 @@ fun PurchaseHistoryDialog(
 
                                     Column(horizontalAlignment = Alignment.End) {
                                         Text(
-                                            text = tx.amountText,
+                                            text = com.example.util.tr(tx.amountText),
                                             fontWeight = FontWeight.Black,
                                             color = if (tx.isPositive) Color(0xFF10B981) else HextechCyan,
                                             fontSize = 13.5.sp
@@ -393,7 +393,7 @@ fun PurchaseHistoryDialog(
                                             color = Color(0xFF10B981).copy(alpha = 0.15f)
                                         ) {
                                             Text(
-                                                text = tx.status,
+                                                text = com.example.util.tr(tx.status),
                                                 color = Color(0xFF10B981),
                                                 fontSize = 9.sp,
                                                 fontWeight = FontWeight.Bold,

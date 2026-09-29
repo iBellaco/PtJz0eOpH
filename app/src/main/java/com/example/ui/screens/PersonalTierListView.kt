@@ -173,14 +173,14 @@ fun PersonalTierListView(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (selectedRoleFilter != null) "${tr("Línea")}: ${tr(selectedRoleFilter!!.displayName)}" else tr("Todas las Líneas"),
+                        text = com.example.util.tr(if (selectedRoleFilter != null) "${tr("Línea")}: ${tr(selectedRoleFilter!!.displayName)}" else tr("Todas las Líneas")),
                         color = HextechGold,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
                     if (searchQuery.isNotBlank()) {
                         Text(
-                            text = " • \"$searchQuery\"",
+                            text = com.example.util.tr(" • \"$searchQuery\""),
                             color = HextechCyan,
                             fontSize = 11.sp,
                             maxLines = 1,
@@ -238,7 +238,7 @@ fun PersonalTierListView(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "↔ " + tr("Desliza"),
+                            text = com.example.util.tr("↔ " + tr("Desliza")),
                             color = HextechGold,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold
@@ -426,11 +426,11 @@ fun PersonalTierListView(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (selectedRoleFilter != null) {
+                            text = com.example.util.tr(if (selectedRoleFilter != null) {
                                 "🏆 Tier List Personal: ${selectedRoleFilter?.displayName}"
                             } else {
                                 "🏆 Tier List Personal (Todos los Campeones)"
-                            },
+                            }),
                             color = HextechGold,
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold
@@ -619,7 +619,7 @@ private fun PersonalOverviewCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(tr("Mi Desempeño"), color = HextechGold, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        Text("${overview.totalGames} " + tr("partidas"), color = TextMuted, fontSize = 10.5.sp)
+                        Text(com.example.util.tr("${overview.totalGames} " + tr("partidas")), color = TextMuted, fontSize = 10.5.sp)
                     }
                 }
 
@@ -630,7 +630,7 @@ private fun PersonalOverviewCard(
                         border = BorderStroke(1.dp, wrColor)
                     ) {
                         Text(
-                            text = "WR: ${overview.overallWinRate.toInt()}%",
+                            text = com.example.util.tr("WR: ${overview.overallWinRate.toInt()}%"),
                             color = wrColor,
                             fontWeight = FontWeight.Black,
                             fontSize = 11.5.sp,
@@ -644,7 +644,7 @@ private fun PersonalOverviewCard(
                     ) {
                         Icon(
                             imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (isExpanded) tr("Minimizar") else tr("Expandir"),
+                            contentDescription = com.example.util.trNullable(if (isExpanded) tr("Minimizar") else tr("Expandir")),
                             tint = HextechGold,
                             modifier = Modifier.size(18.dp)
                         )
@@ -671,7 +671,7 @@ private fun PersonalOverviewCard(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Victorias"), color = TextMuted, fontSize = 10.sp)
                             Text(
-                                text = "${overview.totalWins}W - ${overview.totalLosses}L",
+                                text = com.example.util.tr("${overview.totalWins}W - ${overview.totalLosses}L"),
                                 color = Color(0xFF81C784),
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -690,7 +690,7 @@ private fun PersonalOverviewCard(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Mejor Línea"), color = TextMuted, fontSize = 10.sp)
                             Text(
-                                text = if (overview.bestRole != null) "${overview.bestRole.displayName} (${overview.bestRoleWinRate.toInt()}%)" else "N/A",
+                                text = com.example.util.tr(if (overview.bestRole != null) "${overview.bestRole.displayName} (${overview.bestRoleWinRate.toInt()}%)" else "N/A"),
                                 color = HextechCyan,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
@@ -709,7 +709,7 @@ private fun PersonalOverviewCard(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tr("Signature Pick"), color = TextMuted, fontSize = 10.sp)
                             Text(
-                                text = overview.signatureChampion?.championName ?: "N/A",
+                                text = com.example.util.tr(overview.signatureChampion?.championName ?: "N/A"),
                                 color = HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
@@ -786,14 +786,14 @@ private fun PersonalOverviewCard(
                                                     fontWeight = FontWeight.Bold
                                                 )
                                                 Text(
-                                                    text = best.opponentName,
+                                                    text = com.example.util.tr(best.opponentName),
                                                     color = TextPrimary,
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     maxLines = 1
                                                 )
                                                 Text(
-                                                    text = "${best.wins}W - ${best.losses}L (${best.winRate.toInt()}% WR)",
+                                                    text = com.example.util.tr("${best.wins}W - ${best.losses}L (${best.winRate.toInt()}% WR)"),
                                                     color = Color(0xFF81C784),
                                                     fontSize = 9.sp,
                                                     fontWeight = FontWeight.SemiBold
@@ -836,14 +836,14 @@ private fun PersonalOverviewCard(
                                                     fontWeight = FontWeight.Bold
                                                 )
                                                 Text(
-                                                    text = nem.opponentName,
+                                                    text = com.example.util.tr(nem.opponentName),
                                                     color = TextPrimary,
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     maxLines = 1
                                                 )
                                                 Text(
-                                                    text = "${nem.wins}W - ${nem.losses}L (${nem.winRate.toInt()}% WR)",
+                                                    text = com.example.util.tr("${nem.wins}W - ${nem.losses}L (${nem.winRate.toInt()}% WR)"),
                                                     color = DangerRed,
                                                     fontSize = 9.sp,
                                                     fontWeight = FontWeight.SemiBold
@@ -871,7 +871,7 @@ private fun PersonalOverviewCard(
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            text = overview.coach1v1Analysis,
+                                            text = com.example.util.tr(overview.coach1v1Analysis),
                                             color = TextSecondary,
                                             fontSize = 10.sp,
                                             lineHeight = 14.sp
@@ -949,7 +949,7 @@ private fun TierRowVisual(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = grade.label,
+                            text = com.example.util.tr(grade.label),
                             color = HextechDarkBg,
                             fontWeight = FontWeight.Black,
                             fontSize = 14.sp
@@ -965,7 +965,7 @@ private fun TierRowVisual(
                 }
 
                 Text(
-                    text = "${champions.size} " + tr("campeones"),
+                    text = com.example.util.tr("${champions.size} " + tr("campeones")),
                     color = TextMuted,
                     fontSize = 11.sp
                 )
@@ -1037,7 +1037,7 @@ private fun ChampionTierPill(
                         .padding(horizontal = 3.dp, vertical = 1.dp)
                 ) {
                     Text(
-                        text = stats.primaryRole.shortName,
+                        text = com.example.util.tr(stats.primaryRole.shortName),
                         color = HextechCyan,
                         fontSize = 8.5.sp,
                         fontWeight = FontWeight.Bold
@@ -1048,7 +1048,7 @@ private fun ChampionTierPill(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = stats.championName,
+                text = com.example.util.tr(stats.championName),
                 color = TextPrimary,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
@@ -1058,7 +1058,7 @@ private fun ChampionTierPill(
             // Winrate Badge
             if (stats.totalGames == 0) {
                 Text(
-                    text = "0% (0 " + tr("part.") + ")",
+                    text = com.example.util.tr("0% (0 " + tr("part.") + ")"),
                     color = TextMuted,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Normal
@@ -1066,7 +1066,7 @@ private fun ChampionTierPill(
             } else {
                 val wrColor = if (stats.winRate >= 50.0) Color(0xFF81C784) else DangerRed
                 Text(
-                    text = "${stats.winRate.toInt()}% (${stats.wins}V-${stats.losses}D)",
+                    text = com.example.util.tr("${stats.winRate.toInt()}% (${stats.wins}V-${stats.losses}D)"),
                     color = wrColor,
                     fontSize = 9.5.sp,
                     fontWeight = FontWeight.SemiBold
@@ -1119,7 +1119,7 @@ private fun PersonalChampionDetailedCard(
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = stats.championName,
+                                text = com.example.util.tr(stats.championName),
                                 color = TextPrimary,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
@@ -1132,7 +1132,7 @@ private fun PersonalChampionDetailedCard(
                                     .padding(horizontal = 5.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = stats.primaryRole.displayName,
+                                    text = com.example.util.tr(stats.primaryRole.displayName),
                                     color = HextechCyan,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -1141,7 +1141,7 @@ private fun PersonalChampionDetailedCard(
                         }
 
                         Text(
-                            text = "${stats.totalGames} " + tr("partidas") + " • ${stats.wins}V - ${stats.losses}D",
+                            text = com.example.util.tr("${stats.totalGames} " + tr("partidas") + " • ${stats.wins}V - ${stats.losses}D"),
                             color = TextMuted,
                             fontSize = 11.sp
                         )
@@ -1165,7 +1165,7 @@ private fun PersonalChampionDetailedCard(
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "TIER ${stats.tier.label} (${stats.winRate.toInt()}%)",
+                        text = com.example.util.tr("TIER ${stats.tier.label} (${stats.winRate.toInt()}%)"),
                         color = tierBg,
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Black
@@ -1189,7 +1189,7 @@ private fun PersonalChampionDetailedCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stats.coachVerdict,
+                text = com.example.util.tr(stats.coachVerdict),
                 color = TextSecondary,
                 fontSize = 11.5.sp,
                 lineHeight = 15.5.sp
@@ -1231,13 +1231,13 @@ private fun PersonalChampionDetailModal(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = stats.championName,
+                            text = com.example.util.tr(stats.championName),
                             color = HextechGold,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
                         Text(
-                            text = "Tier ${stats.tier.label} • ${stats.primaryRole.displayName}",
+                            text = com.example.util.tr("Tier ${stats.tier.label} • ${stats.primaryRole.displayName}"),
                             color = HextechCyan,
                             fontSize = 11.5.sp
                         )
@@ -1269,7 +1269,7 @@ private fun PersonalChampionDetailModal(
                         Column {
                             Text(tr("Tasa de Victoria Real"), color = TextMuted, fontSize = 11.sp)
                             Text(
-                                text = "${stats.winRate.toInt()}% Win Rate",
+                                text = com.example.util.tr("${stats.winRate.toInt()}% Win Rate"),
                                 color = if (stats.winRate >= 50.0) Color(0xFF81C784) else DangerRed,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Black
@@ -1279,7 +1279,7 @@ private fun PersonalChampionDetailModal(
                         Column(horizontalAlignment = Alignment.End) {
                             Text(tr("Balance"), color = TextMuted, fontSize = 11.sp)
                             Text(
-                                text = "${stats.wins} " + tr("Vic") + " - ${stats.losses} " + tr("Derr"),
+                                text = com.example.util.tr("${stats.wins} " + tr("Vic") + " - ${stats.losses} " + tr("Derr")),
                                 color = TextPrimary,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
@@ -1305,9 +1305,9 @@ private fun PersonalChampionDetailModal(
                                     .padding(vertical = 2.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(r.role.displayName, color = TextPrimary, fontSize = 11.5.sp)
+                                Text(com.example.util.tr(r.role.displayName), color = TextPrimary, fontSize = 11.5.sp)
                                 Text(
-                                    text = "${r.winRate.toInt()}% (${r.wins}W - ${r.losses}L)",
+                                    text = com.example.util.tr("${r.winRate.toInt()}% (${r.wins}W - ${r.losses}L)"),
                                     color = if (r.winRate >= 50.0) Color(0xFF81C784) else DangerRed,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -1337,9 +1337,9 @@ private fun PersonalChampionDetailModal(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("vs ${m.opponentName}", color = TextPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.Medium)
+                                Text(com.example.util.tr("vs ${m.opponentName}"), color = TextPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.Medium)
                                 Text(
-                                    text = "${m.wins}W - ${m.losses}L (${m.winRate.toInt()}%)",
+                                    text = com.example.util.tr("${m.wins}W - ${m.losses}L (${m.winRate.toInt()}%)"),
                                     color = if (m.winRate >= 50.0) Color(0xFF81C784) else DangerRed,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -1403,11 +1403,11 @@ private fun PersonalChampionDetailModal(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(draft.title, color = TextPrimary, fontSize = 11.sp, maxLines = 1)
-                                        Text(draft.userRole, color = HextechCyan, fontSize = 9.5.sp)
+                                        Text(com.example.util.tr(draft.title), color = TextPrimary, fontSize = 11.sp, maxLines = 1)
+                                        Text(com.example.util.tr(draft.userRole), color = HextechCyan, fontSize = 9.5.sp)
                                     }
                                     Text(
-                                        text = if (isWin) "Victoria >" else "Derrota >",
+                                        text = com.example.util.tr(if (isWin) "Victoria >" else "Derrota >"),
                                         color = if (isWin) Color(0xFF81C784) else DangerRed,
                                         fontSize = 10.5.sp,
                                         fontWeight = FontWeight.Bold

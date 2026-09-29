@@ -128,7 +128,7 @@ fun CustomBuildDetailDialog(
                     }
                     Column {
                         Text(
-                            text = record.buildTitle,
+                            text = com.example.util.tr(record.buildTitle),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
@@ -136,7 +136,7 @@ fun CustomBuildDetailDialog(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = "${record.championName} • Rol: ${record.role} • Creador: ${record.creatorName}",
+                            text = com.example.util.tr("${record.championName} • Rol: ${record.role} • Creador: ${record.creatorName}"),
                             color = HextechGold,
                             fontSize = 12.sp,
                             maxLines = 1,
@@ -156,12 +156,12 @@ fun CustomBuildDetailDialog(
                     }) {
                         Icon(
                             if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Favorito",
+                            contentDescription = com.example.util.trNullable("Favorito"),
                             tint = if (isFavorite) DangerRed else HextechGold
                         )
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                     }
                 }
             }
@@ -185,19 +185,19 @@ fun CustomBuildDetailDialog(
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Icon(Icons.Default.Star, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                         Text(
-                            text = String.format("%.1f", avgRating),
+                            text = com.example.util.tr(String.format("%.1f", avgRating)),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
                         Text(
-                            text = "(${record.voteCount} votos)",
+                            text = com.example.util.tr("(${record.voteCount} votos)"),
                             color = TextSecondary,
                             fontSize = 12.sp
                         )
                     }
                     Text(
-                        text = "Publicado por ${record.creatorName}",
+                        text = com.example.util.tr("Publicado por ${record.creatorName}"),
                         color = HextechCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
@@ -233,14 +233,14 @@ fun CustomBuildDetailDialog(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
-                                contentDescription = "Protegida",
+                                contentDescription = com.example.util.trNullable("Protegida"),
                                 tint = HextechGold,
                                 modifier = Modifier.size(32.dp)
                             )
                         }
 
                         Text(
-                            text = "Build Protegida para Suscriptores",
+                            text = com.example.util.tr("Build Protegida para Suscriptores"),
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 17.sp,
@@ -248,7 +248,7 @@ fun CustomBuildDetailDialog(
                         )
 
                         Text(
-                            text = "Esta build fue creada por ${record.creatorName}. Debes estar suscrito a este creador para desbloquear y ver sus objetos, runas y estrategias completas.",
+                            text = com.example.util.tr("Esta build fue creada por ${record.creatorName}. Debes estar suscrito a este creador para desbloquear y ver sus objetos, runas y estrategias completas."),
                             color = TextSecondary,
                             fontSize = 13.sp,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -266,12 +266,12 @@ fun CustomBuildDetailDialog(
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
-                                    text = "Tu saldo:",
+                                    text = com.example.util.tr("Tu saldo:"),
                                     color = TextSecondary,
                                     fontSize = 12.sp
                                 )
                                 Text(
-                                    text = "$currentBlueEssence EA",
+                                    text = com.example.util.tr("$currentBlueEssence EA"),
                                     color = HextechCyan,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
@@ -317,7 +317,7 @@ fun CustomBuildDetailDialog(
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Text(
-                                        text = tr("Suscribirse") + " (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)",
+                                        text = com.example.util.tr(tr("Suscribirse") + " (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)"),
                                         fontWeight = FontWeight.ExtraBold,
                                         fontSize = 12.sp,
                                         maxLines = 1
@@ -370,8 +370,8 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text(item.itemName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text(item.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr(item.itemName), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Text(com.example.util.tr(item.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -416,8 +416,8 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text("[Botas N2] ${boot.itemName}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            if (boot.description.isNotBlank()) Text(boot.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr("[Botas N2] ${boot.itemName}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (boot.description.isNotBlank()) Text(com.example.util.tr(boot.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -452,8 +452,8 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text("[Mejora N3] ${enchant.itemName}", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            if (enchant.description.isNotBlank()) Text(enchant.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr("[Mejora N3] ${enchant.itemName}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (enchant.description.isNotBlank()) Text(com.example.util.tr(enchant.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -498,8 +498,8 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text("[Bota N2 Situacional] ${boot.itemName}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            if (boot.description.isNotBlank()) Text(boot.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr("[Bota N2 Situacional] ${boot.itemName}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (boot.description.isNotBlank()) Text(com.example.util.tr(boot.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -534,8 +534,8 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text("[Mejora N3 Situacional] ${enchant.itemName}", color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            if (enchant.description.isNotBlank()) Text(enchant.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr("[Mejora N3 Situacional] ${enchant.itemName}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (enchant.description.isNotBlank()) Text(com.example.util.tr(enchant.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -580,8 +580,8 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text(item.itemName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text(item.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr(item.itemName), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Text(com.example.util.tr(item.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -627,12 +627,12 @@ fun CustomBuildDetailDialog(
                                         }
                                         Column {
                                             Text(
-                                                text = (if (isKeystone) "[Clave] " else "[Secundaria] ") + rune.runeName,
+                                                text = com.example.util.tr((if (isKeystone) "[Clave] " else "[Secundaria] ") + rune.runeName),
                                                 color = if (isKeystone) HextechGold else Color.White,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 13.sp
                                             )
-                                            Text(rune.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr(rune.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -676,8 +676,8 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text(spell.spellName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text(spell.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr(spell.spellName), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Text(com.example.util.tr(spell.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -721,8 +721,8 @@ fun CustomBuildDetailDialog(
                                             )
                                         }
                                         Column {
-                                            Text(spell.spellName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text(spell.description, color = TextSecondary, fontSize = 11.sp)
+                                            Text(com.example.util.tr(spell.spellName), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            Text(com.example.util.tr(spell.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -797,7 +797,7 @@ fun CustomBuildDetailDialog(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = if (hasVoted) "¡Gracias por tu valoración!" else "Califica esta Build (1 a 5 Estrellas)",
+                        text = com.example.util.tr(if (hasVoted) "¡Gracias por tu valoración!" else "Califica esta Build (1 a 5 Estrellas)"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -811,14 +811,14 @@ fun CustomBuildDetailDialog(
                                 onClick = {
                                     if (!hasVoted) {
                                         CustomChampionBuildsManager.rateBuild(context, record.id, i)
-                                        Toast.makeText(context, "¡Calificación de $i estrellas enviada!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, com.example.util.appTr("¡Calificación de $i estrellas enviada!"), Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 modifier = Modifier.size(36.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Star,
-                                    contentDescription = "$i estrellas",
+                                    contentDescription = com.example.util.trNullable("$i estrellas"),
                                     tint = if (i <= userRating) HextechGold else TextSecondary,
                                     modifier = Modifier.size(28.dp)
                                 )
@@ -853,7 +853,7 @@ fun CustomBuildDetailDialog(
                         modifier = Modifier.size(32.dp)
                     )
                     Text(
-                        text = "Suscripción al Creador",
+                        text = com.example.util.tr("Suscripción al Creador"),
                         color = Color(0xFFFF9E1B),
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
@@ -883,12 +883,12 @@ fun CustomBuildDetailDialog(
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
                                     Text(
-                                        text = "Costo de Suscripción",
+                                        text = com.example.util.tr("Costo de Suscripción"),
                                         color = Color.LightGray,
                                         fontSize = 11.sp
                                     )
                                     Text(
-                                        text = "${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas",
+                                        text = com.example.util.tr("${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas"),
                                         color = Color(0xFFFF9E1B),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.5.sp
@@ -897,12 +897,12 @@ fun CustomBuildDetailDialog(
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
-                                    text = "Tu saldo",
+                                    text = com.example.util.tr("Tu saldo"),
                                     color = Color.LightGray,
                                     fontSize = 10.sp
                                 )
                                 Text(
-                                    text = "$currentOrangeBalance EN",
+                                    text = com.example.util.tr("$currentOrangeBalance EN"),
                                     color = if (currentOrangeBalance >= CreatorSubscriptionManager.SUBSCRIPTION_EN_COST) Color.White else DangerRed,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp
@@ -912,7 +912,7 @@ fun CustomBuildDetailDialog(
                     }
 
                     Text(
-                        text = "Al suscribirte al perfil oficial de ${record.creatorName}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas (EN) de tu cuenta de forma definitiva. Un porcentaje será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?",
+                        text = com.example.util.tr("Al suscribirte al perfil oficial de ${record.creatorName}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas (EN) de tu cuenta de forma definitiva. Un porcentaje será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?"),
                         color = Color.White,
                         fontSize = 11.5.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -940,7 +940,7 @@ fun CustomBuildDetailDialog(
                                     creatorUid = record.creatorUserId,
                                     context = context
                                 ) { success, msg ->
-                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, com.example.util.appTr(msg), Toast.LENGTH_SHORT).show()
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(
@@ -949,7 +949,7 @@ fun CustomBuildDetailDialog(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Confirmar (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = HextechDarkBg)
+                            Text(com.example.util.tr("Confirmar (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)"), fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = HextechDarkBg)
                         }
                     }
                 }

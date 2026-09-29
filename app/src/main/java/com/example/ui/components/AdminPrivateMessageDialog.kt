@@ -106,7 +106,7 @@ fun AdminPrivateMessageDialog(
                             border = if (isSelected) androidx.compose.foundation.BorderStroke(1.5.dp, Color.White) else null
                         ) {
                             Text(
-                                "${tag.emoji} ${tag.label}",
+                                com.example.util.tr("${tag.emoji} ${tag.label}"),
                                 color = if (isSelected) tag.textColor else Color.White,
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
@@ -149,7 +149,7 @@ fun AdminPrivateMessageDialog(
                             Icon(icon, contentDescription = null, tint = if (isSelected) Color.White else btnColor, modifier = Modifier.size(13.dp))
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                target.label,
+                                com.example.util.tr(target.label),
                                 color = if (isSelected) Color.White else btnColor,
                                 fontSize = 10.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
@@ -158,9 +158,9 @@ fun AdminPrivateMessageDialog(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(10.dp))
-                
+
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
@@ -173,9 +173,9 @@ fun AdminPrivateMessageDialog(
                         focusedBorderColor = Color(0xFFF59E0B)
                     )
                 )
-                
+
                 Spacer(modifier = Modifier.height(6.dp))
-                
+
                 OutlinedTextField(
                     value = content,
                     onValueChange = { content = it },
@@ -187,14 +187,14 @@ fun AdminPrivateMessageDialog(
                         focusedBorderColor = Color(0xFFF59E0B)
                     )
                 )
-                
+
                 if (statusText.isNotBlank()) {
                     Spacer(modifier = Modifier.height(6.dp))
-                    Text(statusText, color = Color(0xFF38BDF8), fontSize = 11.sp)
+                    Text(com.example.util.tr(statusText), color = Color(0xFF38BDF8), fontSize = 11.sp)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -230,7 +230,7 @@ fun AdminPrivateMessageDialog(
                                                     "privateMessages", FieldValue.arrayUnion(messageData)
                                                 ).addOnCompleteListener {
                                                     isProcessing = false
-                                                    Toast.makeText(context, "¡Mensaje enviado con éxito!", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, com.example.util.appTr("¡Mensaje enviado con éxito!"), Toast.LENGTH_SHORT).show()
                                                     onSuccess()
                                                     onDismiss()
                                                 }
@@ -242,7 +242,7 @@ fun AdminPrivateMessageDialog(
                                                     "privateMessages", FieldValue.arrayUnion(messageData)
                                                 ).addOnCompleteListener {
                                                     isProcessing = false
-                                                    Toast.makeText(context, "¡Mensaje enviado!", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, com.example.util.appTr("¡Mensaje enviado!"), Toast.LENGTH_SHORT).show()
                                                     onSuccess()
                                                     onDismiss()
                                                 }
@@ -265,7 +265,7 @@ fun AdminPrivateMessageDialog(
 
                                             if (targetDocs.isEmpty()) {
                                                 isProcessing = false
-                                                Toast.makeText(context, "No se encontraron usuarios destinatarios.", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, com.example.util.appTr("No se encontraron usuarios destinatarios."), Toast.LENGTH_SHORT).show()
                                                 return@addOnSuccessListener
                                             }
 
@@ -293,7 +293,7 @@ fun AdminPrivateMessageDialog(
                                                     completedCount++
                                                     if (completedCount >= total) {
                                                         isProcessing = false
-                                                        Toast.makeText(context, "¡Comunicado enviado a $total usuario(s)!", Toast.LENGTH_LONG).show()
+                                                        Toast.makeText(context, com.example.util.appTr("¡Comunicado enviado a $total usuario(s)!"), Toast.LENGTH_LONG).show()
                                                         onSuccess()
                                                         onDismiss()
                                                     }
@@ -301,7 +301,7 @@ fun AdminPrivateMessageDialog(
                                             }
                                         }.addOnFailureListener { e ->
                                             isProcessing = false
-                                            Toast.makeText(context, "Error obteniendo usuarios: ${e.message}", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, com.example.util.appTr("Error obteniendo usuarios: ${e.message}"), Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 }
@@ -449,7 +449,7 @@ fun AdminUserMessagesViewerDialog(
                                 fontSize = 15.sp
                             )
                             Text(
-                                "Usuario: $userName",
+                                com.example.util.tr("Usuario: $userName"),
                                 color = Color.LightGray,
                                 fontSize = 11.5.sp,
                                 maxLines = 1
@@ -461,7 +461,7 @@ fun AdminUserMessagesViewerDialog(
                         onClick = onDismiss,
                         modifier = Modifier.size(32.dp)
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.LightGray)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.LightGray)
                     }
                 }
 
@@ -474,7 +474,7 @@ fun AdminUserMessagesViewerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Total: ${messages.size} mensaje(s)",
+                        text = com.example.util.tr("Total: ${messages.size} mensaje(s)"),
                         color = Color.LightGray,
                         fontSize = 11.sp
                     )
@@ -515,7 +515,7 @@ fun AdminUserMessagesViewerDialog(
                     }
                 } else if (errorMessage != null) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(errorMessage ?: "", color = Color(0xFFEF4444), fontSize = 12.sp)
+                        Text(com.example.util.tr(errorMessage ?: ""), color = Color(0xFFEF4444), fontSize = 12.sp)
                     }
                 } else if (messages.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -566,7 +566,7 @@ fun AdminUserMessagesViewerDialog(
                                             border = androidx.compose.foundation.BorderStroke(1.dp, msgTag.badgeBg.copy(alpha = 0.5f))
                                         ) {
                                             Text(
-                                                text = "${msgTag.emoji} ${msgTag.label.uppercase()}",
+                                                text = com.example.util.tr("${msgTag.emoji} ${msgTag.label.uppercase()}"),
                                                 color = msgTag.badgeBg,
                                                 fontSize = 9.sp,
                                                 fontWeight = FontWeight.Bold,
@@ -580,7 +580,7 @@ fun AdminUserMessagesViewerDialog(
                                                 shape = RoundedCornerShape(4.dp)
                                             ) {
                                                 Text(
-                                                    text = if (msg.isRead) "✓ Leído" else "⏳ Pendiente",
+                                                    text = com.example.util.tr(if (msg.isRead) "✓ Leído" else "⏳ Pendiente"),
                                                     color = if (msg.isRead) Color(0xFF00FF66) else Color(0xFFF59E0B),
                                                     fontSize = 8.5.sp,
                                                     fontWeight = FontWeight.SemiBold,
@@ -613,17 +613,17 @@ fun AdminUserMessagesViewerDialog(
                                                             ).addOnCompleteListener {
                                                                 isDeletingId = null
                                                                 messages = messages.filter { it.id != msg.id }
-                                                                Toast.makeText(context, "Mensaje eliminado.", Toast.LENGTH_SHORT).show()
+                                                                Toast.makeText(context, com.example.util.appTr("Mensaje eliminado."), Toast.LENGTH_SHORT).show()
                                                             }
                                                         } else {
                                                             isDeletingId = null
                                                             messages = messages.filter { it.id != msg.id }
-                                                            Toast.makeText(context, "Mensaje eliminado.", Toast.LENGTH_SHORT).show()
+                                                            Toast.makeText(context, com.example.util.appTr("Mensaje eliminado."), Toast.LENGTH_SHORT).show()
                                                         }
                                                     }.addOnFailureListener {
                                                         isDeletingId = null
                                                         messages = messages.filter { it.id != msg.id }
-                                                        Toast.makeText(context, "Mensaje eliminado.", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, com.example.util.appTr("Mensaje eliminado."), Toast.LENGTH_SHORT).show()
                                                     }
                                                 },
                                                 modifier = Modifier.size(24.dp),
@@ -634,7 +634,7 @@ fun AdminUserMessagesViewerDialog(
                                                 } else {
                                                     Icon(
                                                         imageVector = Icons.Default.Delete,
-                                                        contentDescription = "Eliminar",
+                                                        contentDescription = com.example.util.trNullable("Eliminar"),
                                                         tint = Color(0xFFEF4444),
                                                         modifier = Modifier.size(14.dp)
                                                     )
@@ -645,20 +645,20 @@ fun AdminUserMessagesViewerDialog(
 
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = msg.title,
+                                        text = com.example.util.tr(msg.title),
                                         color = Color.White,
                                         fontSize = 12.5.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = msg.content,
+                                        text = com.example.util.tr(msg.content),
                                         color = Color(0xFFCBD5E1),
                                         fontSize = 11.sp
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
-                                        text = "📅 $dateStr",
+                                        text = com.example.util.tr("📅 $dateStr"),
                                         color = Color.Gray,
                                         fontSize = 9.5.sp
                                     )

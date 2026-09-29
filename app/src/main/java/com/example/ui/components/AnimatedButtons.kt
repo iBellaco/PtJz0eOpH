@@ -431,7 +431,7 @@ fun HextechAnimatedTextLink(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = text,
+            text = com.example.util.tr(text),
             color = color,
             fontSize = fontSize,
             fontWeight = fontWeight

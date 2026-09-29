@@ -89,12 +89,12 @@ fun ChampionBuildCreatorDialog(
     val userRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
     val authUser = remember { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }
 
-    var selectedChampion by remember { 
+    var selectedChampion by remember {
         mutableStateOf(
             if (existingRecord != null) champions.find { it.id.equals(existingRecord.championId, ignoreCase = true) } else champions.firstOrNull()
-        ) 
+        )
     }
-    var selectedRole by remember { 
+    var selectedRole by remember {
         mutableStateOf(
             if (existingRecord != null) {
                 com.example.model.LaneRole.values().find { it.displayName.equals(existingRecord.role, ignoreCase = true) } ?: selectedChampion?.primaryRole ?: com.example.model.LaneRole.MID
@@ -111,8 +111,8 @@ fun ChampionBuildCreatorDialog(
     }
 
     var buildTitle by remember { mutableStateOf(existingRecord?.buildTitle ?: "") }
-    
-    val coreItems = remember { 
+
+    val coreItems = remember {
         mutableStateListOf<EditableItemEntry>().apply {
             if (existingRecord != null) {
                 if (existingRecord.coreItemsWithDesc.isNotEmpty()) {
@@ -123,7 +123,7 @@ fun ChampionBuildCreatorDialog(
             }
         }
     }
-    val situationalItems = remember { 
+    val situationalItems = remember {
         mutableStateListOf<EditableItemEntry>().apply {
             if (existingRecord != null) {
                 if (existingRecord.situationalItemsWithDesc.isNotEmpty()) {
@@ -154,26 +154,26 @@ fun ChampionBuildCreatorDialog(
             existingRecord?.situationalBootsT3Item?.let { EditableItemEntry(it.itemName, com.example.data.WildRiftItemsData.getItemIconByName(it.itemName), it.description) }
         )
     }
-    var coreKeystone by remember { 
+    var coreKeystone by remember {
         mutableStateOf<EditableRuneEntry?>(
             existingRecord?.coreRunes?.firstOrNull()?.let { EditableRuneEntry(it.runeName, it.iconUrl, it.description) }
-        ) 
+        )
     }
-    val coreSecondaryRunes = remember { 
+    val coreSecondaryRunes = remember {
         mutableStateListOf<EditableRuneEntry>().apply {
             if (existingRecord != null && existingRecord.coreRunes.size > 1) {
                 addAll(existingRecord.coreRunes.drop(1).map { EditableRuneEntry(it.runeName, it.iconUrl, it.description) })
             }
         }
     }
-    val situationalRunes = remember { 
+    val situationalRunes = remember {
         mutableStateListOf<EditableRuneEntry>().apply {
             if (existingRecord != null) {
                 addAll(existingRecord.situationalRunes.map { EditableRuneEntry(it.runeName, it.iconUrl, it.description) })
             }
         }
     }
-    val coreSpells = remember { 
+    val coreSpells = remember {
         mutableStateListOf<EditableSpellEntry>().apply {
             if (existingRecord != null) {
                 if (existingRecord.coreSpells.isNotEmpty()) {
@@ -184,7 +184,7 @@ fun ChampionBuildCreatorDialog(
             }
         }
     }
-    val situationalSpells = remember { 
+    val situationalSpells = remember {
         mutableStateListOf<EditableSpellEntry>().apply {
             if (existingRecord != null) {
                 addAll(existingRecord.situationalSpells.map { EditableSpellEntry(it.spellName, it.iconUrl, it.description) })
@@ -203,13 +203,13 @@ fun ChampionBuildCreatorDialog(
                 val size = inputStream?.available() ?: 0
                 inputStream?.close()
                 if (size > 20 * 1024 * 1024) {
-                    Toast.makeText(context, "El video supera el límite máximo de 20MB", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, com.example.util.appTr("El video supera el límite máximo de 20MB"), Toast.LENGTH_SHORT).show()
                 } else {
                     gameplayVideoUri = uri.toString()
-                    Toast.makeText(context, "Gameplay MP4 adjuntado con éxito", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, com.example.util.appTr("Gameplay MP4 adjuntado con éxito"), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Error al adjuntar video", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, com.example.util.appTr("Error al adjuntar video"), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -223,13 +223,13 @@ fun ChampionBuildCreatorDialog(
                 val size = inputStream?.available() ?: 0
                 inputStream?.close()
                 if (size > 20 * 1024 * 1024) {
-                    Toast.makeText(context, "El video supera el límite máximo de 20MB", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, com.example.util.appTr("El video supera el límite máximo de 20MB"), Toast.LENGTH_SHORT).show()
                 } else {
                     comboVideoUri = uri.toString()
-                    Toast.makeText(context, "Video de combos adjuntado con éxito", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, com.example.util.appTr("Video de combos adjuntado con éxito"), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Error al adjuntar video de combos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, com.example.util.appTr("Error al adjuntar video de combos"), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -282,7 +282,7 @@ fun ChampionBuildCreatorDialog(
                         }
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                     }
                 }
 
@@ -322,13 +322,13 @@ fun ChampionBuildCreatorDialog(
                                 }
                                 Column {
                                     Text(
-                                        text = champ?.name ?: "Seleccionar campeón...",
+                                        text = com.example.util.tr(champ?.name ?: "Seleccionar campeón..."),
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp
                                     )
                                     Text(
-                                        text = "Rol: ${champ?.primaryRole?.displayName ?: "-"}",
+                                        text = com.example.util.tr("Rol: ${champ?.primaryRole?.displayName ?: "-"}"),
                                         color = TextSecondary,
                                         fontSize = 10.sp
                                     )
@@ -369,7 +369,7 @@ fun ChampionBuildCreatorDialog(
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Text(
-                                        text = role.shortName,
+                                        text = com.example.util.tr(role.shortName),
                                         color = if (isSelected) HextechGold else Color.White,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
@@ -403,7 +403,7 @@ fun ChampionBuildCreatorDialog(
                          verticalAlignment = Alignment.CenterVertically
                      ) {
                          Text(
-                             text = "3. Objetos Core (${coreItems.size}/3) *Desc. Obligatoria",
+                             text = com.example.util.tr("3. Objetos Core (${coreItems.size}/3) *Desc. Obligatoria"),
                              color = HextechCyan,
                              fontWeight = FontWeight.Bold,
                              fontSize = 13.sp,
@@ -411,7 +411,7 @@ fun ChampionBuildCreatorDialog(
                          )
                          TextButton(onClick = {
                              if (coreItems.size >= 3) {
-                                 Toast.makeText(context, "Límite de 3 objetos core alcanzado", Toast.LENGTH_SHORT).show()
+                                 Toast.makeText(context, com.example.util.appTr("Límite de 3 objetos core alcanzado"), Toast.LENGTH_SHORT).show()
                              } else {
                                  showItemPickerForCore = true
                              }
@@ -439,13 +439,13 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = entry.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("${index + 1}. ${entry.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("${index + 1}. ${entry.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
                                         IconButton(
                                             onClick = { coreItems.remove(entry) },
                                             modifier = Modifier.size(24.dp)
                                         ) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     }
                                     OutlinedTextField(
@@ -475,7 +475,7 @@ fun ChampionBuildCreatorDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "4. Objetos Situacionales *Desc. Obligatoria",
+                            text = com.example.util.tr("4. Objetos Situacionales *Desc. Obligatoria"),
                             color = HextechCyan,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -505,13 +505,13 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = entry.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Sit. ${index + 1}. ${entry.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Sit. ${index + 1}. ${entry.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
                                         IconButton(
                                             onClick = { situationalItems.remove(entry) },
                                             modifier = Modifier.size(24.dp)
                                         ) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     }
                                     OutlinedTextField(
@@ -538,7 +538,7 @@ fun ChampionBuildCreatorDialog(
 
                     // 5. Botas y Mejoras (Obligatorias)
                     Text(
-                        text = "5. Botas y Mejoras (Obligatorias) *Desc. Obligatoria",
+                        text = com.example.util.tr("5. Botas y Mejoras (Obligatorias) *Desc. Obligatoria"),
                         color = HextechCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -565,14 +565,14 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = bootsT2!!.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Botas Nivel 2: ${bootsT2!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Botas Nivel 2: ${bootsT2!!.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         } else {
                                             Text(tr("Botas Nivel 2 *Requerido"), color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
                                         }
                                     }
                                     if (bootsT2 != null) {
                                         IconButton(onClick = { bootsT2 = null }, modifier = Modifier.size(24.dp)) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     } else {
                                         TextButton(onClick = { showItemPickerForBootsT2 = true }) {
@@ -618,14 +618,14 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = bootsT3!!.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Mejora Nivel 3: ${bootsT3!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Mejora Nivel 3: ${bootsT3!!.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         } else {
                                             Text(tr("Mejora Nivel 3 *Requerido"), color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
                                         }
                                     }
                                     if (bootsT3 != null) {
                                         IconButton(onClick = { bootsT3 = null }, modifier = Modifier.size(24.dp)) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     } else {
                                         TextButton(onClick = { showItemPickerForBootsT3 = true }) {
@@ -655,7 +655,7 @@ fun ChampionBuildCreatorDialog(
 
                     // 5b. Botas y Mejoras Situacionales (Opcional)
                     Text(
-                        text = "5b. Botas y Mejoras Situacionales (Opcional)",
+                        text = com.example.util.tr("5b. Botas y Mejoras Situacionales (Opcional)"),
                         color = HextechCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -682,14 +682,14 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = situationalBootsT2!!.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Bota Nivel 2 Situacional: ${situationalBootsT2!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Bota Nivel 2 Situacional: ${situationalBootsT2!!.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         } else {
                                             Text(tr("Añadir Bota Nivel 2 Situacional"), color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
                                         }
                                     }
                                     if (situationalBootsT2 != null) {
                                         IconButton(onClick = { situationalBootsT2 = null }, modifier = Modifier.size(24.dp)) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     } else {
                                         TextButton(onClick = { showItemPickerForSituationalBootsT2 = true }) {
@@ -735,14 +735,14 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = situationalBootsT3!!.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Mejora Nivel 3 Situacional: ${situationalBootsT3!!.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Mejora Nivel 3 Situacional: ${situationalBootsT3!!.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         } else {
                                             Text(tr("Añadir Mejora Nivel 3 Situacional"), color = TextSecondary, fontWeight = FontWeight.Medium, fontSize = 12.sp)
                                         }
                                     }
                                     if (situationalBootsT3 != null) {
                                         IconButton(onClick = { situationalBootsT3 = null }, modifier = Modifier.size(24.dp)) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     } else {
                                         TextButton(onClick = { showItemPickerForSituationalBootsT3 = true }) {
@@ -772,7 +772,7 @@ fun ChampionBuildCreatorDialog(
 
                     // 6. Runa Clave (1 Runa obligatoria con descripción)
                     Text(
-                        text = "6. Runa Clave (1 Runa) *Desc. Obligatoria",
+                        text = com.example.util.tr("6. Runa Clave (1 Runa) *Desc. Obligatoria"),
                         color = HextechCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -806,13 +806,13 @@ fun ChampionBuildCreatorDialog(
                                             fallbackText = entry.name.take(2),
                                             modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                         )
-                                        Text("Runa Clave: ${entry.name}", color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        Text(com.example.util.tr("Runa Clave: ${entry.name}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                     }
                                     IconButton(
                                         onClick = { coreKeystone = null },
                                         modifier = Modifier.size(24.dp)
                                     ) {
-                                        Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                     }
                                 }
                                 OutlinedTextField(
@@ -838,7 +838,7 @@ fun ChampionBuildCreatorDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "7. Runas Secundarias (${coreSecondaryRunes.size}/4) *Desc. Obligatoria",
+                            text = com.example.util.tr("7. Runas Secundarias (${coreSecondaryRunes.size}/4) *Desc. Obligatoria"),
                             color = HextechCyan,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -870,13 +870,13 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = entry.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Secundaria ${index + 1}. ${entry.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Secundaria ${index + 1}. ${entry.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
                                         IconButton(
                                             onClick = { coreSecondaryRunes.remove(entry) },
                                             modifier = Modifier.size(24.dp)
                                         ) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     }
                                     OutlinedTextField(
@@ -906,7 +906,7 @@ fun ChampionBuildCreatorDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Runas Situacionales (Opcional)",
+                            text = com.example.util.tr("Runas Situacionales (Opcional)"),
                             color = HextechCyan,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -936,13 +936,13 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = entry.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Sit. Runa ${index + 1}. ${entry.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Sit. Runa ${index + 1}. ${entry.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
                                         IconButton(
                                             onClick = { situationalRunes.remove(entry) },
                                             modifier = Modifier.size(24.dp)
                                         ) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     }
                                     OutlinedTextField(
@@ -969,7 +969,7 @@ fun ChampionBuildCreatorDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "6. Hechizos Core (Imágenes) *Desc. Obligatoria",
+                            text = com.example.util.tr("6. Hechizos Core (Imágenes) *Desc. Obligatoria"),
                             color = HextechCyan,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -999,13 +999,13 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = entry.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Hechizo ${index + 1}. ${entry.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Hechizo ${index + 1}. ${entry.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
                                         IconButton(
                                             onClick = { coreSpells.remove(entry) },
                                             modifier = Modifier.size(24.dp)
                                         ) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     }
                                     OutlinedTextField(
@@ -1035,7 +1035,7 @@ fun ChampionBuildCreatorDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Hechizos Situacionales (Opcional)",
+                            text = com.example.util.tr("Hechizos Situacionales (Opcional)"),
                             color = HextechCyan,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
@@ -1065,13 +1065,13 @@ fun ChampionBuildCreatorDialog(
                                                 fallbackText = entry.name.take(2),
                                                 modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                             )
-                                            Text("Sit. Hechizo ${index + 1}. ${entry.name}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                            Text(com.example.util.tr("Sit. Hechizo ${index + 1}. ${entry.name}"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
                                         IconButton(
                                             onClick = { situationalSpells.remove(entry) },
                                             modifier = Modifier.size(24.dp)
                                         ) {
-                                            Icon(Icons.Default.Close, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     }
                                     OutlinedTextField(
@@ -1104,13 +1104,13 @@ fun ChampionBuildCreatorDialog(
                          Icon(Icons.Default.Videocam, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                          Spacer(modifier = Modifier.width(8.dp))
                          Text(
-                             text = if (gameplayVideoUri != null) "✓ Gameplay MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)",
+                             text = com.example.util.tr(if (gameplayVideoUri != null) "✓ Gameplay MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)"),
                              color = if (gameplayVideoUri != null) HextechGold else Color.White,
                              fontWeight = FontWeight.Bold,
                              fontSize = 12.sp
                          )
                      }
- 
+
                      if (gameplayVideoUri != null) {
                          Spacer(modifier = Modifier.height(4.dp))
                          Card(
@@ -1142,7 +1142,7 @@ fun ChampionBuildCreatorDialog(
                                          .size(28.dp)
                                          .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                                  ) {
-                                     Icon(Icons.Default.Close, contentDescription = "Eliminar video", tint = Color.White, modifier = Modifier.size(16.dp))
+                                     Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar video"), tint = Color.White, modifier = Modifier.size(16.dp))
                                  }
                              }
                          }
@@ -1163,7 +1163,7 @@ fun ChampionBuildCreatorDialog(
                          Icon(Icons.Default.Videocam, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                          Spacer(modifier = Modifier.width(8.dp))
                          Text(
-                             text = if (comboVideoUri != null) "✓ Video de Combos MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)",
+                             text = com.example.util.tr(if (comboVideoUri != null) "✓ Video de Combos MP4 Adjuntado" else "Seleccionar archivo MP4 (Máx 20MB)"),
                              color = if (comboVideoUri != null) HextechGold else Color.White,
                              fontWeight = FontWeight.Bold,
                              fontSize = 12.sp
@@ -1201,7 +1201,7 @@ fun ChampionBuildCreatorDialog(
                                          .size(28.dp)
                                          .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                                  ) {
-                                     Icon(Icons.Default.Close, contentDescription = "Eliminar video combos", tint = Color.White, modifier = Modifier.size(16.dp))
+                                     Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar video combos"), tint = Color.White, modifier = Modifier.size(16.dp))
                                  }
                              }
                          }
@@ -1222,79 +1222,79 @@ fun ChampionBuildCreatorDialog(
                         onClick = {
                             val champ = selectedChampion ?: champions.firstOrNull()
                             if (champ == null) {
-                                Toast.makeText(context, "Selecciona un campeón", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Selecciona un campeón"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (buildTitle.trim().isBlank()) {
-                                Toast.makeText(context, "Ingresa un título para la build", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Ingresa un título para la build"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                              if (coreItems.size != 3) {
-                                 Toast.makeText(context, "Debes añadir exactamente 3 objetos core", Toast.LENGTH_SHORT).show()
+                                 Toast.makeText(context, com.example.util.appTr("Debes añadir exactamente 3 objetos core"), Toast.LENGTH_SHORT).show()
                                  return@Button
                              }
                             if (coreItems.any { it.description.trim().isBlank() }) {
-                                Toast.makeText(context, "Todos los objetos core deben tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Todos los objetos core deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (situationalItems.any { it.description.trim().isBlank() }) {
-                                Toast.makeText(context, "Todos los objetos situacionales deben tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Todos los objetos situacionales deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (bootsT2 == null) {
-                                Toast.makeText(context, "Debes seleccionar las Botas de Nivel 2", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Debes seleccionar las Botas de Nivel 2"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (bootsT2?.description?.trim()?.isBlank() == true) {
-                                Toast.makeText(context, "La descripción de las Botas de Nivel 2 es obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("La descripción de las Botas de Nivel 2 es obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (bootsT3 == null) {
-                                Toast.makeText(context, "Debes seleccionar la Mejora de Botas de Nivel 3", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Debes seleccionar la Mejora de Botas de Nivel 3"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (bootsT3?.description?.trim()?.isBlank() == true) {
-                                Toast.makeText(context, "La descripción de la Mejora de Botas de Nivel 3 es obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("La descripción de la Mejora de Botas de Nivel 3 es obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (situationalBootsT2 != null && situationalBootsT2?.description?.trim()?.isBlank() == true) {
-                                Toast.makeText(context, "La descripción de la Bota Nivel 2 Situacional es obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("La descripción de la Bota Nivel 2 Situacional es obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (situationalBootsT3 != null && situationalBootsT3?.description?.trim()?.isBlank() == true) {
-                                Toast.makeText(context, "La descripción de la Mejora Nivel 3 Situacional es obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("La descripción de la Mejora Nivel 3 Situacional es obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (coreKeystone == null) {
-                                Toast.makeText(context, "Debes seleccionar 1 Runa Clave", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Debes seleccionar 1 Runa Clave"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (coreKeystone?.description?.trim()?.isBlank() == true) {
-                                Toast.makeText(context, "La Runa Clave debe tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("La Runa Clave debe tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (coreSecondaryRunes.size < 4) {
-                                Toast.makeText(context, "Debes seleccionar exactamente 4 Runas Secundarias", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Debes seleccionar exactamente 4 Runas Secundarias"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (coreSecondaryRunes.any { it.description.trim().isBlank() }) {
-                                Toast.makeText(context, "Todas las runas secundarias deben tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Todas las runas secundarias deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (situationalRunes.any { it.description.trim().isBlank() }) {
-                                Toast.makeText(context, "Todas las runas situacionales deben tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Todas las runas situacionales deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (coreSpells.isEmpty()) {
-                                Toast.makeText(context, "Debes añadir al menos un hechizo core", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Debes añadir al menos un hechizo core"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (coreSpells.any { it.description.trim().isBlank() }) {
-                                Toast.makeText(context, "Todos los hechizos core deben tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Todos los hechizos core deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
                             if (situationalSpells.any { it.description.trim().isBlank() }) {
-                                Toast.makeText(context, "Todos los hechizos situacionales deben tener su descripción obligatoria", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Todos los hechizos situacionales deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
 
@@ -1330,16 +1330,16 @@ fun ChampionBuildCreatorDialog(
 
                             if (existingRecord != null) {
                                 CustomChampionBuildsManager.updateBuild(context, record)
-                                Toast.makeText(context, "¡Build avanzada actualizada con éxito!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("¡Build avanzada actualizada con éxito!"), Toast.LENGTH_SHORT).show()
                             } else {
                                 CustomChampionBuildsManager.addBuild(context, record)
-                                Toast.makeText(context, "¡Build avanzada de ${champ.name} creada y publicada con éxito!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("¡Build avanzada de ${champ.name} creada y publicada con éxito!"), Toast.LENGTH_SHORT).show()
                             }
                             onDismiss()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
                     ) {
-                        Text(if (existingRecord != null) "Actualizar Build" else "Publicar Build", color = HextechDarkBg, fontWeight = FontWeight.Bold)
+                        Text(com.example.util.tr(if (existingRecord != null) "Actualizar Build" else "Publicar Build"), color = HextechDarkBg, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1384,7 +1384,7 @@ fun ChampionBuildCreatorDialog(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 ChampionAvatar(champion = champ, size = 32.dp)
-                                Text(champ.name, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                                Text(com.example.util.tr(champ.name), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                             }
                         }
                     }
@@ -1421,7 +1421,7 @@ fun ChampionBuildCreatorDialog(
                         else -> "Seleccionar Objeto"
                     }
                     Text(
-                        text = pickerTitle,
+                        text = com.example.util.tr(pickerTitle),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -1435,7 +1435,7 @@ fun ChampionBuildCreatorDialog(
                         singleLine = true
                     )
                      val filteredItems = remember(
-                         searchFilterQuery, items, 
+                         searchFilterQuery, items,
                          showItemPickerForCore, showItemPickerForSituational,
                          showItemPickerForBootsT2, showItemPickerForBootsT3,
                          showItemPickerForSituationalBootsT2, showItemPickerForSituationalBootsT3,
@@ -1450,13 +1450,13 @@ fun ChampionBuildCreatorDialog(
                                  base.filter { it.category == "Botas Nivel 3" }
                              }
                              showItemPickerForCore -> {
-                                 base.filter { item -> 
+                                 base.filter { item ->
                                      !item.category.contains("Botas", ignoreCase = true) &&
-                                     coreItems.none { it.name.equals(item.name, ignoreCase = true) } 
+                                     coreItems.none { it.name.equals(item.name, ignoreCase = true) }
                                  }
                              }
                              else -> { // showItemPickerForSituational
-                                 base.filter { item -> 
+                                 base.filter { item ->
                                      !item.category.contains("Botas", ignoreCase = true) &&
                                      coreItems.none { it.name.equals(item.name, ignoreCase = true) } &&
                                      situationalItems.none { it.name.equals(item.name, ignoreCase = true) }
@@ -1477,7 +1477,7 @@ fun ChampionBuildCreatorDialog(
                                      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp)
                                  ) {
                                      Text(
-                                         text = categoryName,
+                                         text = com.example.util.tr(categoryName),
                                          color = HextechGold,
                                          fontWeight = FontWeight.Bold,
                                          fontSize = 11.sp,
@@ -1530,8 +1530,8 @@ fun ChampionBuildCreatorDialog(
                                          modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                      )
                                      Column {
-                                         Text(item.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                         Text("Oro: ${item.goldCost}", color = HextechGold, fontSize = 10.sp)
+                                         Text(com.example.util.tr(item.name), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                         Text(com.example.util.tr("Oro: ${item.goldCost}"), color = HextechGold, fontSize = 10.sp)
                                      }
                                  }
                              }
@@ -1558,11 +1558,11 @@ fun ChampionBuildCreatorDialog(
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = when {
+                        text = com.example.util.tr(when {
                             showRunePickerForKeystone -> "Seleccionar Runa Clave"
                             showRunePickerForSecondary -> "Seleccionar Runa Secundaria (${coreSecondaryRunes.size}/4)"
                             else -> "Seleccionar Runa Situacional"
-                        },
+                        }),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -1597,7 +1597,7 @@ fun ChampionBuildCreatorDialog(
                                      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp)
                                  ) {
                                      Text(
-                                         text = categoryName,
+                                         text = com.example.util.tr(categoryName),
                                          color = HextechCyan,
                                          fontWeight = FontWeight.Bold,
                                          fontSize = 11.sp,
@@ -1635,8 +1635,8 @@ fun ChampionBuildCreatorDialog(
                                          modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                      )
                                      Column {
-                                         Text(rune.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                         Text("Categoría: ${rune.category}", color = HextechGold, fontSize = 10.sp)
+                                         Text(com.example.util.tr(rune.name), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                         Text(com.example.util.tr("Categoría: ${rune.category}"), color = HextechGold, fontSize = 10.sp)
                                      }
                                  }
                              }
@@ -1662,7 +1662,7 @@ fun ChampionBuildCreatorDialog(
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = if (showSpellPickerForCore) "Seleccionar Hechizo Core" else "Seleccionar Hechizo Situacional",
+                        text = com.example.util.tr(if (showSpellPickerForCore) "Seleccionar Hechizo Core" else "Seleccionar Hechizo Situacional"),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -1709,8 +1709,8 @@ fun ChampionBuildCreatorDialog(
                                     modifier = Modifier.size(28.dp).clip(RoundedCornerShape(4.dp))
                                 )
                                 Column {
-                                    Text(spell.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                    Text("CD: ${spell.cooldown}", color = HextechGold, fontSize = 10.sp)
+                                    Text(com.example.util.tr(spell.name), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(com.example.util.tr("CD: ${spell.cooldown}"), color = HextechGold, fontSize = 10.sp)
                                 }
                             }
                         }

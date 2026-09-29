@@ -579,7 +579,7 @@ fun NoticeMediaViewer(
                     ) {
                         Icon(
                             imageVector = if (isYtMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
-                            contentDescription = if (isYtMuted) "Quitar silencio" else "Silenciar",
+                            contentDescription = com.example.util.trNullable(if (isYtMuted) "Quitar silencio" else "Silenciar"),
                             tint = if (isYtMuted) currentPrimaryColor else HextechGold,
                             modifier = Modifier.size(15.dp)
                         )
@@ -594,7 +594,7 @@ fun NoticeMediaViewer(
                         ) {
                             Icon(
                                 Icons.Default.Fullscreen,
-                                contentDescription = "Pantalla Completa",
+                                contentDescription = com.example.util.trNullable("Pantalla Completa"),
                                 tint = currentPrimaryColor,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -773,7 +773,7 @@ fun NoticeWebVideoPlayer(
             ) {
                 Icon(
                     Icons.Default.Fullscreen,
-                    contentDescription = "Pantalla Completa",
+                    contentDescription = com.example.util.trNullable("Pantalla Completa"),
                     tint = HextechCyan,
                     modifier = Modifier.size(16.dp)
                 )
@@ -1089,7 +1089,7 @@ fun LocalGalleryVideoPlayer(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = errorMessage ?: "No se pudo reproducir el video",
+                    text = com.example.util.tr(errorMessage ?: "No se pudo reproducir el video"),
                     color = Color(0xFFE0E0E0),
                     fontSize = 11.sp,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -1137,7 +1137,7 @@ fun LocalGalleryVideoPlayer(
             ) {
                 Icon(
                     imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = if (isPlaying) "Pausar" else "Reproducir",
+                    contentDescription = com.example.util.trNullable(if (isPlaying) "Pausar" else "Reproducir"),
                     tint = themePrimary,
                     modifier = Modifier.size(15.dp)
                 )
@@ -1160,7 +1160,7 @@ fun LocalGalleryVideoPlayer(
             ) {
                 Icon(
                     imageVector = if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
-                    contentDescription = if (isMuted) "Quitar silencio" else "Silenciar",
+                    contentDescription = com.example.util.trNullable(if (isMuted) "Quitar silencio" else "Silenciar"),
                     tint = if (isMuted) themePrimary else HextechGold,
                     modifier = Modifier.size(15.dp)
                 )
@@ -1175,7 +1175,7 @@ fun LocalGalleryVideoPlayer(
                 ) {
                     Icon(
                         Icons.Default.Fullscreen,
-                        contentDescription = "Pantalla Completa",
+                        contentDescription = com.example.util.trNullable("Pantalla Completa"),
                         tint = themePrimary,
                         modifier = Modifier.size(16.dp)
                     )
@@ -1326,7 +1326,7 @@ fun NoticeMediaFullscreenDialog(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (isLandscape) tr("Modo Vertical") else tr("Pantalla Completa"),
+                            text = com.example.util.tr(if (isLandscape) tr("Modo Vertical") else tr("Pantalla Completa")),
                             color = HextechCyan,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold

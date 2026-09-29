@@ -197,7 +197,7 @@ fun SaveDraftDialog(
                                 )
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = selectedProfile.name,
+                                        text = com.example.util.tr(selectedProfile.name),
                                         color = HextechGold,
                                         fontSize = 12.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -205,7 +205,7 @@ fun SaveDraftDialog(
                                     if (selectedProfile.tag.isNotBlank()) {
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = "#${selectedProfile.tag}",
+                                            text = com.example.util.tr("#${selectedProfile.tag}"),
                                             color = HextechCyan,
                                             fontSize = 11.sp
                                         )
@@ -232,7 +232,7 @@ fun SaveDraftDialog(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = profile.name,
+                                            text = com.example.util.tr(profile.name),
                                             color = if (profile.id == selectedProfile.id) HextechGold else TextPrimary,
                                             fontWeight = if (profile.id == selectedProfile.id) FontWeight.Bold else FontWeight.Normal,
                                             fontSize = 13.sp
@@ -240,7 +240,7 @@ fun SaveDraftDialog(
                                         if (profile.tag.isNotBlank()) {
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Text(
-                                                text = "#${profile.tag}",
+                                                text = com.example.util.tr("#${profile.tag}"),
                                                 color = HextechCyan,
                                                 fontSize = 11.sp
                                             )
@@ -290,13 +290,13 @@ fun SaveDraftDialog(
                             }
                             Column {
                                 Text(
-                                    text = if (myChampion != null && enemyLaneOpponent != null) {
+                                    text = com.example.util.tr(if (myChampion != null && enemyLaneOpponent != null) {
                                         "${myChampion.name} vs ${enemyLaneOpponent.name}"
                                     } else if (myChampion != null) {
                                         myChampion.name
                                     } else {
                                         tr("Draft de Equipo")
-                                    },
+                                    }),
                                     color = TextPrimary,
                                     fontSize = 13.5.sp,
                                     fontWeight = FontWeight.Bold,
@@ -322,7 +322,7 @@ fun SaveDraftDialog(
                         }
 
                         Text(
-                            text = "${estimatedWinrate.toInt()}% WR",
+                            text = com.example.util.tr("${estimatedWinrate.toInt()}% WR"),
                             color = HextechCyan,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -368,7 +368,7 @@ fun SaveDraftDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = label,
+                                text = com.example.util.tr(label),
                                 color = if (isSel) accentColor else TextSecondary,
                                 fontSize = 11.sp,
                                 fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,

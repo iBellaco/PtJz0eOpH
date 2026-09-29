@@ -72,7 +72,7 @@ fun AdminDatabaseConsumptionDialog(
                         }
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                     }
                 }
 
@@ -150,12 +150,12 @@ fun CloudServiceConsumptionCard(
                             .background(color)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
+                    Text(com.example.util.tr(title), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
                 }
-                Text(String.format(java.util.Locale.US, "%.1f%% usado", percentage * 100), color = color, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text(com.example.util.tr(String.format(java.util.Locale.US, "%.1f%% usado", percentage * 100)), color = color, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
 
-            Text(description, color = TextSecondary, fontSize = 11.sp)
+            Text(com.example.util.tr(description), color = TextSecondary, fontSize = 11.sp)
 
             LinearProgressIndicator(
                 progress = { percentage },
@@ -171,9 +171,9 @@ fun CloudServiceConsumptionCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(String.format(java.util.Locale.US, "Consumido: %.2f MB", consumedMb), color = TextPrimary, fontSize = 11.sp)
-                Text(String.format(java.util.Locale.US, "Disponible: %.2f MB", remainingMb), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                Text(String.format(java.util.Locale.US, "Capacidad: %.0f MB", capacityMb), color = TextMuted, fontSize = 11.sp)
+                Text(com.example.util.tr(String.format(java.util.Locale.US, "Consumido: %.2f MB", consumedMb)), color = TextPrimary, fontSize = 11.sp)
+                Text(com.example.util.tr(String.format(java.util.Locale.US, "Disponible: %.2f MB", remainingMb)), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                Text(com.example.util.tr(String.format(java.util.Locale.US, "Capacidad: %.0f MB", capacityMb)), color = TextMuted, fontSize = 11.sp)
             }
         }
     }

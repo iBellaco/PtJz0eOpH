@@ -145,10 +145,10 @@ object AppUpdateManager {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
-            Toast.makeText(context, "Abriendo descarga de la actualización...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr("Abriendo descarga de la actualización..."), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             AppLogger.e(TAG, "Fallo al abrir enlace de actualización", e)
-            Toast.makeText(context, "Error al abrir enlace: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, com.example.util.appTr("Error al abrir enlace: ${e.localizedMessage}"), Toast.LENGTH_LONG).show()
         }
     }
 

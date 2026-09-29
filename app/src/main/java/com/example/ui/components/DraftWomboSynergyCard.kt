@@ -48,8 +48,8 @@ object WomboComboSynergyDetector {
 
         fun find(vararg targets: String): Champion? {
             for (t in targets) {
-                val found = names.values.firstOrNull { 
-                    it.name.contains(t, ignoreCase = true) || it.id.contains(t, ignoreCase = true) 
+                val found = names.values.firstOrNull {
+                    it.name.contains(t, ignoreCase = true) || it.id.contains(t, ignoreCase = true)
                 }
                 if (found != null) return found
             }
@@ -355,7 +355,7 @@ fun DraftWomboSynergyCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = wombo.champ1.name,
+                            text = com.example.util.tr(wombo.champ1.name),
                             color = TextPrimary,
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold
@@ -394,7 +394,7 @@ fun DraftWomboSynergyCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = wombo.champ2.name,
+                            text = com.example.util.tr(wombo.champ2.name),
                             color = TextPrimary,
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold
@@ -437,7 +437,7 @@ fun DraftWomboSynergyCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "${tr("Tip Coach")}: ${tr(wombo.executionTip)}",
+                    text = com.example.util.tr("${tr("Tip Coach")}: ${tr(wombo.executionTip)}"),
                     color = HextechCyanLight,
                     fontSize = 10.5.sp,
                     fontWeight = FontWeight.Medium,

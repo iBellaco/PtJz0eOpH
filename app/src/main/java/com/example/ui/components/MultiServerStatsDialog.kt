@@ -44,21 +44,6 @@ val TextSecondary = Color(0xFF8B949E)
 fun MultiServerStatsDialog(
     onDismiss: () -> Unit
 ) {
-    // Live live simulation ticker for real-time automatic updates
-    var liveMatchOffset by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(3000L)
-            liveMatchOffset += (1..15).random()
-        }
-    }
-
-    val chinaMatches = 18400000 + liveMatchOffset * 100
-    val globalMatches = 9900000 + liveMatchOffset * 60
-    val naMatches = 6200000 + liveMatchOffset * 40
-    val totalMatches = chinaMatches + globalMatches + naMatches
-    val totalFormatted = String.format(java.util.Locale.US, "%.1f", totalMatches / 1_000_000.0) + " " + tr("Millones")
-
     val currentRegion by com.example.data.sync.ChineseMetaSyncService.currentRegion.collectAsState()
     val currentTier by com.example.data.sync.ChineseMetaSyncService.currentTier.collectAsState()
 
@@ -123,7 +108,7 @@ fun MultiServerStatsDialog(
                                     fontWeight = FontWeight.Black
                                 )
                                 Text(
-                                    text = tr("Consolidación Multi-Servidor Parche 7.2e • En Vivo"),
+                                    text = tr("China en línea • Global y NA locales"),
                                     color = HextechCyan,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -137,7 +122,7 @@ fun MultiServerStatsDialog(
                                 .clip(CircleShape)
                                 .background(HextechSurfaceVariant)
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = TextPrimary, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = TextPrimary, modifier = Modifier.size(18.dp))
                         }
                     }
 
@@ -157,7 +142,7 @@ fun MultiServerStatsDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = tr("Muestra Global Analizada"),
+                                    text = tr("Fuentes disponibles"),
                                     color = HextechGold,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
@@ -177,19 +162,19 @@ fun MultiServerStatsDialog(
                                             .clip(CircleShape)
                                             .background(HextechCyan.copy(alpha = alpha))
                                     )
-                                    Text(text = "LIVE", color = HextechCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    Text(text = tr("China / Local"), color = HextechCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = totalFormatted,
+                                text = "3",
                                 color = TextPrimary,
                                 fontSize = 28.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tr("Partidas clasificatorias de alto rango (Diamante, Maestro y Aspirante) en Wild Rift Móvil."),
+                                text = tr("China: estadísticas en línea. Global y NA: referencias locales."),
                                 color = TextSecondary,
                                 fontSize = 11.5.sp,
                                 lineHeight = 16.sp
@@ -199,77 +184,14 @@ fun MultiServerStatsDialog(
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // NUEVO PANEL: MÉTRICAS AVANZADAS Y TENDENCIAS DEL PARCHE 7.2E
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, HextechGold.copy(alpha = 0.4f), RoundedCornerShape(14.dp)),
-                        colors = CardDefaults.cardColors(containerColor = HextechSurface)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Analytics, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = tr("Métricas Avanzadas y Tendencias del Parche 7.2e"),
-                                    color = HextechGold,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            // Metric 1: Average Match Duration
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Timer, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(text = tr("Duración Promedio de Partida"), color = TextPrimary, fontSize = 12.sp)
-                                }
-                                Text(text = "17m 42s", color = HextechCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Metric 2: Global Ban Rate Leaders
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Security, contentDescription = null, tint = Color(0xFFFF6B6B), modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(text = tr("Top Baneos (Diamante+)"), color = TextPrimary, fontSize = 12.sp)
-                                }
-                                Text(text = "Zed (41.2%) • Yasuo (38.5%)", color = Color(0xFFFF6B6B), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    Text(
-                        text = tr("DESGLOSE POR SERVIDORES OFICIALES"),
-                        color = HextechGold,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
                     // Server 1: China Tencent
                     ServerStatCard(
                         flag = "🇨🇳",
                         serverName = tr("Servidor Chino (lolm.qq.com)"),
-                        matchesText = String.format(java.util.Locale.US, "%.1fM", chinaMatches / 1_000_000.0),
+                        matchesText = tr("Muestra no publicada"),
                         topChampions = topCn,
                         borderColor = HextechGold,
-                        dataSource = "Tencent Super-Server"
+                        dataSource = tr("Servidor chino")
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -277,11 +199,12 @@ fun MultiServerStatsDialog(
                     // Server 2: Global
                     ServerStatCard(
                         flag = "🌍",
-                        serverName = tr("Servidor Global (Meta Live)"),
-                        matchesText = String.format(java.util.Locale.US, "%.1fM", globalMatches / 1_000_000.0),
+                        serverName = tr("Global (referencia local)"),
+                        matchesText = tr("Referencia local"),
                         topChampions = topGlobal,
                         borderColor = HextechCyan,
-                        dataSource = "Global Cloud Sync"
+                        dataSource = tr("Referencia local"),
+                        isLocal = true
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -289,11 +212,12 @@ fun MultiServerStatsDialog(
                     // Server 3: Norteamérica NA
                     ServerStatCard(
                         flag = "🇺🇸",
-                        serverName = tr("Servidor Norteamérica (NA)"),
-                        matchesText = String.format(java.util.Locale.US, "%.1fM", naMatches / 1_000_000.0),
+                        serverName = tr("América (NA, referencia local)"),
+                        matchesText = tr("Referencia local"),
                         topChampions = topNa,
                         borderColor = Color(0xFF4A90E2),
-                        dataSource = "Riot Americas Cache"
+                        dataSource = tr("Referencia local"),
+                        isLocal = true
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -319,7 +243,8 @@ fun ServerStatCard(
     matchesText: String,
     topChampions: List<com.example.model.Champion>,
     borderColor: Color,
-    dataSource: String
+    dataSource: String,
+    isLocal: Boolean = false
 ) {
     var showDetailDialog by remember { mutableStateOf(false) }
 
@@ -333,32 +258,32 @@ fun ServerStatCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Info, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "${tr("Detalle de Análisis:")} $serverName", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(text = com.example.util.tr("${tr("Detalle de Análisis:")} $serverName"), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             },
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "${tr("Este bloque consolida las partidas oficiales recopiladas en tiempo real mediante")} $dataSource.",
+                        text = if (isLocal) tr("Lista incluida en la app; no representa estadísticas regionales en vivo.") else tr("Estadísticas consultadas en el servidor chino y conservadas para usar sin conexión."),
                         fontSize = 12.sp,
                         color = TextPrimary,
                         lineHeight = 16.sp
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "${tr("• Muestra analizada:")} $matchesText ${tr("partidas en curso y finalizadas.")}",
+                        text = com.example.util.tr(matchesText),
                         fontSize = 11.5.sp,
                         color = HextechGold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = tr("• Rango de jugadores: Diamante, Maestro, Gran Maestro y Aspirante."),
+                        text = tr("La referencia local se conserva al cambiar de servidor."),
                         fontSize = 11.5.sp,
                         color = TextSecondary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = tr("• Criterio de filtrado: Partidas de alta prioridad con tasa de victoria (WR) validada por el motor de IA."),
+                        text = tr("No se generan porcentajes aleatorios."),
                         fontSize = 11.5.sp,
                         color = TextSecondary
                     )
@@ -389,11 +314,11 @@ fun ServerStatCard(
                 verticalAlignment = Alignment.Top,
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = flag, fontSize = 24.sp, modifier = Modifier.padding(top = 2.dp))
+                Text(text = com.example.util.tr(flag), fontSize = 24.sp, modifier = Modifier.padding(top = 2.dp))
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = serverName,
+                        text = com.example.util.tr(serverName),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
@@ -414,7 +339,7 @@ fun ServerStatCard(
                                 else -> TextPrimary.copy(alpha = 0.85f)
                             }
                             Text(
-                                text = "Meta #$rankNumber: ${champ.name} (${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% WR)",
+                                text = com.example.util.tr("Meta #$rankNumber: ${champ.name} (${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% WR)"),
                                 color = rankColor,
                                 fontSize = 11.5.sp,
                                 fontWeight = if (rankNumber == 1) FontWeight.Bold else FontWeight.Medium
@@ -423,7 +348,7 @@ fun ServerStatCard(
                     }
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = dataSource,
+                        text = com.example.util.tr(dataSource),
                         color = TextSecondary,
                         fontSize = 10.sp
                     )
@@ -437,7 +362,7 @@ fun ServerStatCard(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = matchesText,
+                        text = com.example.util.tr(matchesText),
                         color = HextechGold,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Black
@@ -445,13 +370,13 @@ fun ServerStatCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         imageVector = Icons.Default.Info,
-                        contentDescription = "Detalle",
+                        contentDescription = com.example.util.trNullable("Detalle"),
                         tint = HextechCyan,
                         modifier = Modifier.size(14.dp)
                     )
                 }
                 Text(
-                    text = tr("analizadas"),
+                    text = if (isLocal) tr("Sin conexión") else tr("Servidor chino"),
                     color = TextSecondary,
                     fontSize = 10.sp
                 )

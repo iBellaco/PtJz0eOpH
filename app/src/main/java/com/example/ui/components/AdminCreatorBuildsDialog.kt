@@ -327,15 +327,15 @@ fun AdminCreatorBuildsDialog(
             val avatarId = u["avatarId"] as? String ?: "default_poro"
             val rankBorder = u["rankBorder"] as? String ?: "NONE"
             val isAdmin = uRole == "admin"
-            
+
             // Calcular suscriptores para este creador
             val subsCount = registeredUsers.count { ru ->
                 val subList = (ru["subscribedCreators"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
                 subList.any { sub -> sub == userId || sub.trim().lowercase() == uName.lowercase() }
             }
-            
+
             val buildsCount = customBuilds.count { it.creatorName.equals(uName, ignoreCase = true) }
-            
+
             CreatorPodiumEntry(
                 userId = userId,
                 name = uName,
@@ -448,15 +448,15 @@ fun AdminCreatorBuildsDialog(
                         CustomChampionBuildsManager.syncFromCloud(context) { success ->
                             Toast.makeText(
                                 context,
-                                if (success) "Builds sincronizadas en tiempo real" else "Sincronizando builds...",
+                                com.example.util.appTr(if (success) "Builds sincronizadas en tiempo real" else "Sincronizando builds..."),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
                     }) {
-                        Icon(Icons.Default.Sync, contentDescription = "Sincronizar builds", tint = HextechGold)
+                        Icon(Icons.Default.Sync, contentDescription = com.example.util.trNullable("Sincronizar builds"), tint = HextechGold)
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                        Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                     }
                 }
             }
@@ -490,7 +490,7 @@ fun AdminCreatorBuildsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "👥 " + com.example.util.tr("Lista de Creadores Oficiales"),
+                        text = com.example.util.tr("👥 " + com.example.util.tr("Lista de Creadores Oficiales")),
                         color = HextechGold,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.5.sp
@@ -501,13 +501,13 @@ fun AdminCreatorBuildsDialog(
                     ) {
                         Icon(
                             imageVector = if (isCreatorsListExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (isCreatorsListExpanded) "Minimizar lista de creadores" else "Expandir lista de creadores",
+                            contentDescription = com.example.util.trNullable(if (isCreatorsListExpanded) "Minimizar lista de creadores" else "Expandir lista de creadores"),
                             tint = HextechGold,
                             modifier = Modifier.size(18.dp)
                         )
                     }
                 }
-                
+
                 AnimatedVisibility(visible = isCreatorsListExpanded) {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -545,14 +545,14 @@ fun AdminCreatorBuildsDialog(
                                         )
                                     }
                                     Text(
-                                        text = creator.name,
+                                        text = com.example.util.tr(creator.name),
                                         color = TextPrimary,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
-                                    
+
                                     val displayLabel = when (creator.role) {
                                         "creador" -> "Creador Lvl 1"
                                         "creador_lvl2" -> "Creador Lvl 2"
@@ -562,16 +562,16 @@ fun AdminCreatorBuildsDialog(
                                         "streamer" -> "Streamer"
                                         else -> creator.role.replaceFirstChar { it.uppercase() }
                                     }
-                                    
+
                                     Text(
-                                        text = displayLabel,
+                                        text = com.example.util.tr(displayLabel),
                                         color = HextechGoldLight,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
                                     )
-                                    
+
                                     Text(
-                                        text = "👥 ${creator.subscribersCount} subs",
+                                        text = com.example.util.tr("👥 ${creator.subscribersCount} subs"),
                                         color = TextSecondary,
                                         fontSize = 8.5.sp
                                     )
@@ -590,7 +590,7 @@ fun AdminCreatorBuildsDialog(
                     if (myBuildsCount >= limits.maxChampions) {
                         Toast.makeText(
                             context,
-                            "Límite de builds alcanzado para tu plan (${limits.maxChampions} build/s). Por favor mejora tu nivel.",
+                            com.example.util.appTr("Límite de builds alcanzado para tu plan (${limits.maxChampions} build/s). Por favor mejora tu nivel."),
                             Toast.LENGTH_LONG
                         ).show()
                     } else {
@@ -620,7 +620,7 @@ fun AdminCreatorBuildsDialog(
                         selectedFilter = BuildsFilterTab.ALL
                         selectedCreatorFilter = null
                     },
-                    label = { Text("${tr("Todas")} (${customBuilds.size})") },
+                    label = { Text(com.example.util.tr("${tr("Todas")} (${customBuilds.size})")) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = HextechGold.copy(alpha = 0.2f),
                         selectedLabelColor = HextechGold
@@ -630,7 +630,7 @@ fun AdminCreatorBuildsDialog(
                 FilterChip(
                     selected = selectedFilter == BuildsFilterTab.FAVORITES,
                     onClick = { selectedFilter = BuildsFilterTab.FAVORITES },
-                    label = { Text("${tr("Mis Favoritos")} (${favorites.size})") },
+                    label = { Text(com.example.util.tr("${tr("Mis Favoritos")} (${favorites.size})")) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = DangerRed.copy(alpha = 0.2f),
                         selectedLabelColor = DangerRed
@@ -644,7 +644,7 @@ fun AdminCreatorBuildsDialog(
                     FilterChip(
                         selected = true,
                         onClick = { selectedCreatorFilter = null },
-                        label = { Text("${tr("Creador:")} $selectedCreatorFilter ✕") },
+                        label = { Text(com.example.util.tr("${tr("Creador:")} $selectedCreatorFilter ✕")) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = HextechCyan.copy(alpha = 0.25f),
                             selectedLabelColor = HextechCyan
@@ -663,9 +663,9 @@ fun AdminCreatorBuildsDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        if (selectedCreatorFilter != null) "No hay builds para el creador \"$selectedCreatorFilter\"."
+                        com.example.util.tr(if (selectedCreatorFilter != null) "No hay builds para el creador \"$selectedCreatorFilter\"."
                         else if (selectedFilter == BuildsFilterTab.FAVORITES) "No tienes builds favoritas guardadas."
-                        else "No hay builds creadas todavía.",
+                        else "No hay builds creadas todavía."),
                         color = TextSecondary,
                         fontSize = 13.sp,
                         textAlign = TextAlign.Center
@@ -713,7 +713,7 @@ fun AdminCreatorBuildsDialog(
                                         }
                                         Column {
                                             Text(
-                                                text = "${record.championName} - ${record.buildTitle}",
+                                                text = com.example.util.tr("${record.championName} - ${record.buildTitle}"),
                                                 color = Color.White,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 13.sp,
@@ -725,7 +725,7 @@ fun AdminCreatorBuildsDialog(
                                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                                             ) {
                                                 Text(
-                                                    text = "Creador: ${record.creatorName} • ${record.role}",
+                                                    text = com.example.util.tr("Creador: ${record.creatorName} • ${record.role}"),
                                                     color = HextechGold,
                                                     fontSize = 11.sp,
                                                     maxLines = 1,
@@ -738,7 +738,7 @@ fun AdminCreatorBuildsDialog(
                                             ) {
                                                 Icon(Icons.Default.Star, contentDescription = null, tint = HextechGold, modifier = Modifier.size(12.dp))
                                                 Text(
-                                                    text = "${String.format(Locale.US, "%.1f", avgRating)} (${record.voteCount} votos)",
+                                                    text = com.example.util.tr("${String.format(Locale.US, "%.1f", avgRating)} (${record.voteCount} votos)"),
                                                     color = TextSecondary,
                                                     fontSize = 10.sp
                                                 )
@@ -751,16 +751,16 @@ fun AdminCreatorBuildsDialog(
                                             onClick = { buildToEdit = record },
                                             modifier = Modifier.size(32.dp)
                                         ) {
-                                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = HextechGold, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Edit, contentDescription = com.example.util.trNullable("Editar"), tint = HextechGold, modifier = Modifier.size(16.dp))
                                         }
                                         IconButton(
                                             onClick = {
                                                 CustomChampionBuildsManager.deleteBuild(context, record.id)
-                                                Toast.makeText(context, "Build eliminada", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, com.example.util.appTr("Build eliminada"), Toast.LENGTH_SHORT).show()
                                             },
                                             modifier = Modifier.size(32.dp)
                                         ) {
-                                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = DangerRed, modifier = Modifier.size(16.dp))
+                                            Icon(Icons.Default.Delete, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }
                                     }
                                 }
@@ -834,7 +834,7 @@ fun CreatorPodiumCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.EmojiEvents,
-                        contentDescription = "Podio de Creadores",
+                        contentDescription = com.example.util.trNullable("Podio de Creadores"),
                         tint = HextechGold,
                         modifier = Modifier.size(18.dp)
                     )
@@ -894,7 +894,7 @@ fun CreatorPodiumCard(
                     ) {
                         Icon(
                             imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (isExpanded) "Minimizar podio" else "Expandir podio",
+                            contentDescription = com.example.util.trNullable(if (isExpanded) "Minimizar podio" else "Expandir podio"),
                             tint = HextechGold,
                             modifier = Modifier.size(20.dp)
                         )
@@ -914,7 +914,7 @@ fun CreatorPodiumCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "👑 1° ${first.name}  •  🥈 2° ${second.name}  •  🥉 3° ${third.name}",
+                        text = com.example.util.tr("👑 1° ${first.name}  •  🥈 2° ${second.name}  •  🥉 3° ${third.name}"),
                         color = HextechGoldLight,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
@@ -923,7 +923,7 @@ fun CreatorPodiumCard(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = if (podiumTab == CreatorPodiumTab.OFFICIAL) "TOP 3 OFICIAL" else "TOP 3 POPULARIDAD",
+                        text = com.example.util.tr(if (podiumTab == CreatorPodiumTab.OFFICIAL) "TOP 3 OFICIAL" else "TOP 3 POPULARIDAD"),
                         color = HextechGold.copy(alpha = 0.85f),
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
@@ -1065,7 +1065,7 @@ private fun PodiumColumn(
             border = BorderStroke(0.6.dp, badgeColor.copy(alpha = 0.7f))
         ) {
             Text(
-                text = rankBadgeText,
+                text = com.example.util.tr(rankBadgeText),
                 color = badgeColor,
                 fontSize = if (rank == 1) 9.5.sp else 8.5.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -1094,7 +1094,7 @@ private fun PodiumColumn(
 
         // Nombre de usuario
         Text(
-            text = entry.name,
+            text = com.example.util.tr(entry.name),
             color = if (rank == 1) HextechGold else Color.White,
             fontWeight = if (rank == 1) FontWeight.ExtraBold else FontWeight.Bold,
             fontSize = if (rank == 1) 12.5.sp else 11.sp,
@@ -1105,11 +1105,11 @@ private fun PodiumColumn(
 
         // Resumen de estadísticas del creador según el modo activo (popularidad vs oficial)
         Text(
-            text = if (isPopularityMode) {
+            text = com.example.util.tr(if (isPopularityMode) {
                 "👥 ${entry.subscribersCount} Subs • ⭐ ${entry.totalVotes} v."
             } else {
                 "${entry.buildsCount} builds • 👥 ${entry.subscribersCount} Subs"
-            },
+            }),
             color = if (rank == 1) HextechGoldLight else TextSecondary,
             fontSize = if (rank == 1) 9.5.sp else 8.5.sp,
             fontWeight = if (rank == 1) FontWeight.SemiBold else FontWeight.Normal,
@@ -1133,7 +1133,7 @@ private fun PodiumColumn(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "$rank",
+                text = com.example.util.tr("$rank"),
                 color = numeralColor,
                 fontSize = if (rank == 1) 28.sp else if (rank == 2) 22.sp else 18.sp,
                 fontWeight = FontWeight.Black,
@@ -1158,7 +1158,7 @@ fun CreatorProfileDialog(
 
     val creatorKey = if (entry.userId.isNotBlank()) entry.userId else entry.name
     val isSubscribed = remember(subscribedSet, creatorKey, entry.name) {
-        CreatorSubscriptionManager.isSubscribed(creatorKey) || 
+        CreatorSubscriptionManager.isSubscribed(creatorKey) ||
         CreatorSubscriptionManager.isSubscribed(entry.name) ||
         entry.name.lowercase().contains("system") ||
         userRole == "admin"
@@ -1214,10 +1214,10 @@ fun CreatorProfileDialog(
                             }
                             context.startActivity(android.content.Intent.createChooser(shareIntent, "Compartir Perfil de Creador"))
                         }) {
-                            Icon(Icons.Default.Share, contentDescription = "Compartir Perfil", tint = HextechGold)
+                            Icon(Icons.Default.Share, contentDescription = com.example.util.trNullable("Compartir Perfil"), tint = HextechGold)
                         }
                         IconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+                            Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                         }
                     }
                 }
@@ -1243,19 +1243,19 @@ fun CreatorProfileDialog(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = entry.name,
+                            text = com.example.util.tr(entry.name),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
                         Text(
-                            text = "Rol: ${entry.role.replaceFirstChar { it.uppercase() }}",
+                            text = com.example.util.tr("Rol: ${entry.role.replaceFirstChar { it.uppercase() }}"),
                             color = HextechGold,
                             fontSize = 12.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "👥 ${entry.subscribersCount} Suscriptores • 📦 ${creatorBuilds.size} Builds",
+                            text = com.example.util.tr("👥 ${entry.subscribersCount} Suscriptores • 📦 ${creatorBuilds.size} Builds"),
                             color = TextSecondary,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Medium
@@ -1288,7 +1288,7 @@ fun CreatorProfileDialog(
                                     )
                                     Toast.makeText(
                                         context,
-                                        "El creador alcanzó el límite de su plan (${limits.maxSubscribers} subs). Se le envió una notificación para mejorar su plan.",
+                                        com.example.util.appTr("El creador alcanzó el límite de su plan (${limits.maxSubscribers} subs). Se le envió una notificación para mejorar su plan."),
                                         Toast.LENGTH_LONG
                                     ).show()
                                 } else {
@@ -1306,7 +1306,7 @@ fun CreatorProfileDialog(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = tr("Suscribirse") + " (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)",
+                                text = com.example.util.tr(tr("Suscribirse") + " (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)"),
                                 color = HextechDarkBg,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp,
@@ -1389,7 +1389,7 @@ fun CreatorProfileDialog(
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
                                 Text(
-                                    text = "¿Estás seguro de que deseas cancelar tu suscripción al perfil de ${entry.name}?",
+                                    text = com.example.util.tr("¿Estás seguro de que deseas cancelar tu suscripción al perfil de ${entry.name}?"),
                                     color = Color.White,
                                     fontSize = 12.5.sp,
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -1466,7 +1466,7 @@ fun CreatorProfileDialog(
                                         onClick = {
                                             showUnsubscribeConfirm2 = false
                                             CreatorSubscriptionManager.unsubscribe(creatorKey, context)
-                                            Toast.makeText(context, "Suscripción cancelada correctamente", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, com.example.util.appTr("Suscripción cancelada correctamente"), Toast.LENGTH_SHORT).show()
                                             onDismiss()
                                         },
                                         colors = ButtonDefaults.buttonColors(containerColor = DangerRed),
@@ -1538,7 +1538,7 @@ fun CreatorProfileDialog(
                                                     fontSize = 11.sp
                                                 )
                                                 Text(
-                                                    text = "${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas",
+                                                    text = com.example.util.tr("${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas"),
                                                     color = Color(0xFFFF9E1B),
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 13.5.sp
@@ -1552,7 +1552,7 @@ fun CreatorProfileDialog(
                                                 fontSize = 10.sp
                                             )
                                             Text(
-                                                text = "$currentOrangeBalance EN",
+                                                text = com.example.util.tr("$currentOrangeBalance EN"),
                                                 color = if (currentOrangeBalance >= CreatorSubscriptionManager.SUBSCRIPTION_EN_COST) Color.White else DangerRed,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.sp
@@ -1562,7 +1562,7 @@ fun CreatorProfileDialog(
                                 }
 
                                 Text(
-                                    text = "Al suscribirte al perfil oficial de ${entry.name}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas (EN) de tu cuenta de forma definitiva. Un porcentaje será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?",
+                                    text = com.example.util.tr("Al suscribirte al perfil oficial de ${entry.name}, se descontarán ${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} Esencias Naranjas (EN) de tu cuenta de forma definitiva. Un porcentaje será entregado directamente al creador como soporte a su trabajo. ¿Deseas confirmar la suscripción?"),
                                     color = Color.White,
                                     fontSize = 11.5.sp,
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -1589,7 +1589,7 @@ fun CreatorProfileDialog(
                                                 creatorUid = entry.userId,
                                                 context = context
                                             ) { success, msg ->
-                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, com.example.util.appTr(msg), Toast.LENGTH_SHORT).show()
                                             }
                                         },
                                         colors = ButtonDefaults.buttonColors(
@@ -1598,7 +1598,7 @@ fun CreatorProfileDialog(
                                         shape = RoundedCornerShape(8.dp),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("Confirmar (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = HextechDarkBg)
+                                        Text(com.example.util.tr("Confirmar (${CreatorSubscriptionManager.SUBSCRIPTION_EN_COST} EN)"), fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = HextechDarkBg)
                                     }
                                 }
                             }
@@ -1659,13 +1659,13 @@ fun CreatorProfileDialog(
                                     }
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = b.buildTitle,
+                                            text = com.example.util.tr(b.buildTitle),
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp
                                         )
                                         Text(
-                                            text = "${b.championName} • ${b.role}",
+                                            text = com.example.util.tr("${b.championName} • ${b.role}"),
                                             color = HextechGold,
                                             fontSize = 11.sp
                                         )
@@ -1673,7 +1673,7 @@ fun CreatorProfileDialog(
                                     if (isLocked) {
                                         Icon(
                                             imageVector = Icons.Default.Lock,
-                                            contentDescription = "Bloqueado",
+                                            contentDescription = com.example.util.trNullable("Bloqueado"),
                                             tint = HextechGold,
                                             modifier = Modifier.size(16.dp)
                                         )

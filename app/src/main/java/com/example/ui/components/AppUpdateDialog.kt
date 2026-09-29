@@ -89,7 +89,7 @@ fun AppUpdateDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.RocketLaunch,
-                            contentDescription = "Update Rocket",
+                            contentDescription = com.example.util.trNullable("Update Rocket"),
                             tint = HextechGold,
                             modifier = Modifier.size(28.dp)
                         )
@@ -110,19 +110,19 @@ fun AppUpdateDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "v${BuildConfig.VERSION_NAME}",
+                            text = com.example.util.tr("v${BuildConfig.VERSION_NAME}"),
                             color = Color.Gray,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = "  ",
+                            text = com.example.util.tr("  "),
                             color = HextechGold,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "v${updateInfo.latestVersionName}",
+                            text = com.example.util.tr("v${updateInfo.latestVersionName}"),
                             color = HextechCyan,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
@@ -155,7 +155,7 @@ fun AppUpdateDialog(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = updateInfo.releaseNotes.ifBlank { tr("release_notes_fallback") },
+                            text = com.example.util.tr(updateInfo.releaseNotes.ifBlank { tr("release_notes_fallback") }),
                             color = Color(0xFFCBD5E1),
                             fontSize = 12.sp,
                             lineHeight = 16.sp
@@ -185,7 +185,7 @@ fun AppUpdateDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.CloudDownload,
-                            contentDescription = "Download",
+                            contentDescription = com.example.util.trNullable("Download"),
                             tint = HextechDarkBg,
                             modifier = Modifier.size(20.dp)
                         )
@@ -227,7 +227,7 @@ fun AppUpdateDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
-                            contentDescription = "Patch Info",
+                            contentDescription = com.example.util.trNullable("Patch Info"),
                             tint = HextechGold,
                             modifier = Modifier.size(28.dp)
                         )

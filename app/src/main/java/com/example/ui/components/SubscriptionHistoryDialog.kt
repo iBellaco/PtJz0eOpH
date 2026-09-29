@@ -88,14 +88,14 @@ fun SubscriptionHistoryDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Historial de Suscripciones",
+                                text = com.example.util.tr("Historial de Suscripciones"),
                                 color = HextechCyan,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             if (!userEmail.isNullOrBlank()) {
                                 Text(
-                                    text = userEmail,
+                                    text = com.example.util.tr(userEmail),
                                     color = TextSecondary,
                                     fontSize = 11.sp,
                                     maxLines = 1
@@ -114,7 +114,7 @@ fun SubscriptionHistoryDialog(
                         ) {
                             Icon(
                                 Icons.Default.Refresh,
-                                contentDescription = "Actualizar",
+                                contentDescription = com.example.util.trNullable("Actualizar"),
                                 tint = HextechCyan,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -129,7 +129,7 @@ fun SubscriptionHistoryDialog(
                         ) {
                             Icon(
                                 Icons.Default.Close,
-                                contentDescription = "Cerrar",
+                                contentDescription = com.example.util.trNullable("Cerrar"),
                                 tint = TextSecondary,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -198,13 +198,13 @@ fun SubscriptionHistoryDialog(
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Column {
                                         Text(
-                                            text = "Esencia Azul",
+                                            text = com.example.util.tr("Esencia Azul"),
                                             color = TextSecondary,
                                             fontSize = 9.5.sp,
                                             maxLines = 1
                                         )
                                         Text(
-                                            text = "$currentBlueEssence EA",
+                                            text = com.example.util.tr("$currentBlueEssence EA"),
                                             color = HextechCyan,
                                             fontSize = 12.5.sp,
                                             fontWeight = FontWeight.Bold,
@@ -239,13 +239,13 @@ fun SubscriptionHistoryDialog(
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Column {
                                         Text(
-                                            text = "Esencia Naranja",
+                                            text = com.example.util.tr("Esencia Naranja"),
                                             color = TextSecondary,
                                             fontSize = 9.5.sp,
                                             maxLines = 1
                                         )
                                         Text(
-                                            text = "$currentOrangeEssence EN",
+                                            text = com.example.util.tr("$currentOrangeEssence EN"),
                                             color = Color(0xFFFF9E1B),
                                             fontSize = 12.5.sp,
                                             fontWeight = FontWeight.Bold,
@@ -274,7 +274,7 @@ fun SubscriptionHistoryDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "+ Recargar",
+                                    text = com.example.util.tr("+ Recargar"),
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.ExtraBold
                                 )
@@ -305,7 +305,7 @@ fun SubscriptionHistoryDialog(
                         border = BorderStroke(1.dp, if (selectedFilter == "ALL") HextechCyan else HextechCardBorder)
                     ) {
                         Text(
-                            text = "Todos (${history.size})",
+                            text = com.example.util.tr("Todos (${history.size})"),
                             color = if (selectedFilter == "ALL") HextechCyan else TextSecondary,
                             fontSize = 11.sp,
                             fontWeight = if (selectedFilter == "ALL") FontWeight.Bold else FontWeight.Normal,
@@ -323,7 +323,7 @@ fun SubscriptionHistoryDialog(
                         border = BorderStroke(1.dp, if (selectedFilter == "ESSENCE") Color(0xFFFF9E1B) else HextechCardBorder)
                     ) {
                         Text(
-                            text = "Esencias ($essenceCount)",
+                            text = com.example.util.tr("Esencias ($essenceCount)"),
                             color = if (selectedFilter == "ESSENCE") Color(0xFFFF9E1B) else TextSecondary,
                             fontSize = 11.sp,
                             fontWeight = if (selectedFilter == "ESSENCE") FontWeight.Bold else FontWeight.Normal,
@@ -341,7 +341,7 @@ fun SubscriptionHistoryDialog(
                         border = BorderStroke(1.dp, if (selectedFilter == "SUBS") HextechGold else HextechCardBorder)
                     ) {
                         Text(
-                            text = "Suscripciones ($subCount)",
+                            text = com.example.util.tr("Suscripciones ($subCount)"),
                             color = if (selectedFilter == "SUBS") HextechGoldLight else TextSecondary,
                             fontSize = 11.sp,
                             fontWeight = if (selectedFilter == "SUBS") FontWeight.Bold else FontWeight.Normal,
@@ -370,7 +370,7 @@ fun SubscriptionHistoryDialog(
                             CircularProgressIndicator(color = HextechGold, modifier = Modifier.size(36.dp))
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "Consultando registros en la nube...",
+                                text = com.example.util.tr("Consultando registros en la nube..."),
                                 color = TextSecondary,
                                 fontSize = 12.sp
                             )
@@ -395,14 +395,14 @@ fun SubscriptionHistoryDialog(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = if (selectedFilter == "ESSENCE") "Sin movimientos de esencias" else if (selectedFilter == "SUBS") "Sin registros de membresías" else "No hay historial disponible",
+                                text = com.example.util.tr(if (selectedFilter == "ESSENCE") "Sin movimientos de esencias" else if (selectedFilter == "SUBS") "Sin registros de membresías" else "No hay historial disponible"),
                                 color = TextPrimary,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "Tus registros de consumo, recargas, suscripciones y asignaciones aparecerán aquí.",
+                                text = com.example.util.tr("Tus registros de consumo, recargas, suscripciones y asignaciones aparecerán aquí."),
                                 color = TextSecondary,
                                 fontSize = 12.sp,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -504,7 +504,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = record.planName.ifEmpty { if (isOrange) "Movimiento de Esencia Naranja" else "Movimiento de Esencia Azul" },
+                            text = com.example.util.tr(record.planName.ifEmpty { if (isOrange) "Movimiento de Esencia Naranja" else "Movimiento de Esencia Azul" }),
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.5.sp,
@@ -518,7 +518,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                             border = BorderStroke(0.5.dp, originColor.copy(alpha = 0.5f))
                         ) {
                             Text(
-                                text = originTag,
+                                text = com.example.util.tr(originTag),
                                 color = originColor,
                                 fontSize = 9.5.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -533,7 +533,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 // Columna derecha: Monto destacado y estado
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = formattedAmount,
+                        text = com.example.util.tr(formattedAmount),
                         color = actionColor,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 15.sp
@@ -545,7 +545,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                         border = BorderStroke(0.5.dp, actionBorder)
                     ) {
                         Text(
-                            text = actionTag,
+                            text = com.example.util.tr(actionTag),
                             color = actionColor,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
@@ -566,12 +566,12 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Fecha: $dateString",
+                    text = com.example.util.tr("Fecha: $dateString"),
                     color = TextSecondary,
                     fontSize = 11.sp
                 )
                 Text(
-                    text = record.status.ifBlank { if (isDeduction) "Descontado" else "Añadido" },
+                    text = com.example.util.tr(record.status.ifBlank { if (isDeduction) "Descontado" else "Añadido" }),
                     color = actionColor,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold
@@ -622,7 +622,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = record.planName.ifEmpty { "Suscripción Premium" },
+                    text = com.example.util.tr(record.planName.ifEmpty { "Suscripción Premium" }),
                     color = if (isActive) HextechGoldLight else TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.5.sp,
@@ -630,7 +630,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (record.amount.isNotBlank()) record.amount else "$0.00",
+                    text = com.example.util.tr(if (record.amount.isNotBlank()) record.amount else "$0.00"),
                     color = HextechGold,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.5.sp
@@ -640,7 +640,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
 
             if (isRevocation) {
                 Text(
-                    text = "Fecha de registro: $dateString",
+                    text = com.example.util.tr("Fecha de registro: $dateString"),
                     color = DangerRed,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -660,12 +660,12 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Activado: $dateString",
+                            text = com.example.util.tr("Activado: $dateString"),
                             color = TextSecondary,
                             fontSize = 11.5.sp
                         )
                         Text(
-                            text = "Vence: $endDateStr",
+                            text = com.example.util.tr("Vence: $endDateStr"),
                             color = if (isExpired) Color(0xFFFFB74D) else HextechGoldLight,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Medium
@@ -675,7 +675,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                     if (isGift) {
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Concesión Oficial de Administrador",
+                            text = com.example.util.tr("Concesión Oficial de Administrador"),
                             color = HextechCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold
@@ -694,7 +694,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = displayStatus,
+                    text = com.example.util.tr(displayStatus),
                     color = statusColor,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
