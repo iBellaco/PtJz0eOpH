@@ -2349,7 +2349,7 @@ private fun ItemsCatalogTab() {
     ) {
         Spacer(modifier = Modifier.height(10.dp))
 
-        // WR-Meta Database Status Banner & View Switcher
+        // Estado de estadísticas del servidor chino
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -5693,20 +5693,14 @@ fun TierSelectionPanel(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(if (isOverlay) 8.dp else 10.dp))
 
-                    // SELECTOR DE 3 SERVIDORES: Servidor Chino (Meta Tencent) | Global (Meta Live) | América (NA) (Local Cache)
+                    // Fuente de estadísticas del servidor chino
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
                     ) {
-                        val regionItems = listOf(
-                            Triple("CN", tr("🇨🇳 Servidor Chino"), "Meta CN"),
-                            Triple("Global", tr("🌐 Global"), "Meta Live"),
-                            Triple("NA", tr("🇺🇸 América (NA)"), "Local Cache")
-                        )
+                        val regionItems = listOf(Triple("CN", tr("Servidor Chino"), "Meta CN"))
                         regionItems.forEach { (regionId, label, sub) ->
-                            val isSelected = (regionId == "CN" && currentRegion == "CN") ||
-                                             (regionId == "NA" && currentRegion == "NA") ||
-                                             (regionId == "Global" && (currentRegion == "Global" || currentRegion == "BestBuildWR"))
+                            val isSelected = currentRegion == regionId
                             Box(
                                 modifier = Modifier
                                     .weight(1f)

@@ -3,11 +3,12 @@ name: Build and Release APK
 on:
   push:
     branches:
-      - '**'
-    tags:
-      - '**'
-  pull_request:
+      - main
   workflow_dispatch:
+
+concurrency:
+  group: coach-apk-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -113,7 +114,7 @@ jobs:
               -storepass android \
               -alias androiddebugkey \
               -keypass android \
-              -dname "CN=Wild Rift Drafting,O=AI Studio,C=US" \
+              -dname "CN=Wild Rift Drafting,O=Coach,C=US" \
               -keyalg RSA \
               -keysize 2048 \
               -validity 10000
@@ -182,7 +183,7 @@ jobs:
           CI: "true"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          gradle :app:assembleDebug --stacktrace --no-daemon -x test -x lint -x lintVitalRelease
+          gradle :app:testDebugUnitTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest :app:assembleDebug --stacktrace --no-daemon -x lint -x lintVitalRelease
           
           EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$EXPECTED_APK" ]; then

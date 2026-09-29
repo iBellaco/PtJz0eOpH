@@ -8,7 +8,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Módulo de Pre-procesamiento de Imagen para Motores de Visión por Computadora (MediaPipe / LiteRT / OCR).
+ * Módulo de Pre-procesamiento de Imagen para Motores de Visión por Computadora (reconocimiento visual local y OCR).
  * 
  * Aplica:
  * 1. Conversión de alta fidelidad a escala de grises por luminancia perceptual.
@@ -22,7 +22,7 @@ object DraftImagePreprocessor {
     /**
      * Pre-procesa una captura de pantalla completa para aislar y maximizar la legibilidad
      * del texto de campeones y roles, suprimiendo activamente los iconos de maestría
-     * e insignias gráficas antes de alimentar el motor OCR / MediaPipe.
+     * e insignias gráficas antes de alimentar el motor OCR y reconocimiento visual local.
      */
     fun preprocessForOcr(
         sourceBitmap: Bitmap,

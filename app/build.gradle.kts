@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 813
-    versionName = "1.1.10.97"
+    versionCode = 814
+    versionName = "1.1.10.98"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -146,18 +146,12 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.mlkit.text.recognition)
   implementation(libs.androidx.work.runtime.ktx)
-  // implementation(libs.jsoup) // No utilizado
-  // implementation("androidx.documentfile:documentfile:1.0.1") // No utilizado
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.kotlinx.coroutines.play.services)
   implementation(libs.okhttp)
-  // implementation(libs.generativeai) // Removido para funcionamiento 100% offline y reduccion de peso
-  // implementation("com.squareup.retrofit2:retrofit:2.12.0") // No utilizado
-  // implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.12.0") // No utilizado
   implementation(libs.supabase.postgrest)
   implementation(libs.ktor.client.okhttp)
-  implementation(libs.supabase.auth)
 
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)

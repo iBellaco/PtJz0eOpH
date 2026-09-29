@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.example.BuildConfig
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import kotlinx.serialization.json.Json
 import io.github.jan.supabase.serializer.KotlinXSerializer
@@ -110,7 +109,6 @@ object SupabaseClientManager {
                     supabaseKey = key
                 ) {
                     install(Postgrest)
-                    install(Auth)
                     defaultSerializer = KotlinXSerializer(Json {
                         ignoreUnknownKeys = true
                         encodeDefaults = true

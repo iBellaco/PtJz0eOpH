@@ -1154,7 +1154,12 @@ private fun FloatingOverlayContent(
                     val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
                     // Garantizar ciclo de sincronización global periódico o continuo si el visor está abierto
-                    val isGlobalSyncCycle = showLiteRTViewer || isDraftComplete || !hasActiveTurns || (loopCycleCounter % 4L == 0L)
+                    val isGlobalSyncCycle = when {
+                        isDraftComplete || !hasActiveTurns -> true
+                        confirmedPicksCount >= 9 -> false
+                        isTenthPickActive -> loopCycleCounter % 12L == 0L
+                        else -> loopCycleCounter % 4L == 0L
+                    }
 
                     val dynamicLoopDelay = when {
                         showLiteRTViewer -> 50L // 20 Hz ultra-fluido en vivo para pruebas del usuario
@@ -2268,7 +2273,7 @@ private fun FloatingOverlayContent(
         )
     }
 
-    // Modal del Visor Google MediaPipe / LiteRT para el 10º Pick
+    // Modal del Visor Reconocimiento visual local para el 10º Pick
     if (showLiteRTViewer) {
         com.example.ui.components.LiteRTEngineViewerDialog(
             onDismissRequest = { showLiteRTViewer = false }

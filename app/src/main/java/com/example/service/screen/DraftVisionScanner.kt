@@ -1278,7 +1278,7 @@ object DraftVisionScanner {
         val pickSequence = getDraftPickSequence(effectiveFirstPick)
 
         // -----------------------------------------------------------------------------------------
-        // PASO 3.5: MOTOR GOOGLE MEDIAPIPE / LITE RT TENSOR CLASSIFIER PARA EL 10º PICK
+        // PASO 3.5: MOTOR RECONOCIMIENTO DE RETRATOS LOCALES PARA EL 10º PICK
         // REGLA CRÍTICA:
         // - Si Rival es 1ª Selección (isFirstPick == false) -> 10º Pick es ALIADO 5 (isAlly = true, slotIndex = 4).
         // - Si Aliado es 1ª Selección (isFirstPick == true) -> 10º Pick es RIVAL 5 (isAlly = false, slotIndex = 4).
@@ -1300,7 +1300,7 @@ object DraftVisionScanner {
         val targetAlreadyConfirmed = targetNameConfirmed &&
             (if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] != null else enemySlotConfirmedChampions[tenthSlotIndex] != null)
 
-        // EXTRACCIÓN Y ANÁLISIS EN VIVO CONTINUO DEL 10º PICK (Google MediaPipe / LiteRT):
+        // EXTRACCIÓN Y ANÁLISIS EN VIVO CONTINUO DEL 10º PICK (Reconocimiento visual local):
         // Se extrae el recorte del slot en cada fotograma para alimentar el visor en tiempo real y permitir pruebas del usuario en todo momento.
         val tenthCrop: Bitmap? = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
             sourceBitmap = bitmap,
@@ -1347,7 +1347,7 @@ object DraftVisionScanner {
                 enemySlots[tenthSlotIndex].isLikelyUnpicked = false
                 enemySlotConfirmedChampions[tenthSlotIndex] = champWinner
             }
-            AppLogger.d(TAG, "Google MediaPipe / LiteRT decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
+            AppLogger.d(TAG, "Reconocimiento visual local decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
         } else if (targetAlreadyConfirmed) {
             // Preservar la confirmación previa del 10º pick en el modelo de juego
             val cachedChamp = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] else enemySlotConfirmedChampions[tenthSlotIndex]
