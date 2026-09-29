@@ -194,8 +194,10 @@ object DraftVisionScanner {
             val confirmedChampIds = otherPicks.map { it.id }.toSet() + detectedBannedChampionIds
             val targetChampion = if (turn.isAlly) {
                 allySlotConfirmedChampions.getOrNull(turn.slotIndex)
+                    ?.takeIf { allySlotNameConfirmed[turn.slotIndex] }
             } else {
                 enemySlotConfirmedChampions.getOrNull(turn.slotIndex)
+                    ?.takeIf { enemySlotNameConfirmed[turn.slotIndex] }
             }
 
             val decision = LiteRTVisionClassifier.executeTenthPickInference(
@@ -316,6 +318,10 @@ object DraftVisionScanner {
     // Memoria persistente de campeones confirmados por slot para evitar que desaparezcan al terminar o transicionar
     val allySlotConfirmedChampions = arrayOfNulls<Champion>(5)
     val enemySlotConfirmedChampions = arrayOfNulls<Champion>(5)
+    // Origen de la confirmación: solo el nombre del campeón leído por OCR puede bloquear un slot.
+    // Las predicciones visuales del décimo pick deben volver a evaluarse en cada fotograma.
+    private val allySlotNameConfirmed = BooleanArray(5)
+    private val enemySlotNameConfirmed = BooleanArray(5)
 
     // Filtros de estabilización temporal (anti-parpadeo y anti-oscilación)
     private class SlotTemporalFilter {
@@ -353,6 +359,8 @@ object DraftVisionScanner {
         allySummonerNamesCache.clear()
         allySlotConfirmedChampions.fill(null)
         enemySlotConfirmedChampions.fill(null)
+        allySlotNameConfirmed.fill(false)
+        enemySlotNameConfirmed.fill(false)
         detectedBannedChampionIds.clear()
         allySlotFilters.forEach { it.reset() }
         enemySlotFilters.forEach { it.reset() }
@@ -428,7 +436,9 @@ object DraftVisionScanner {
         var isPreparationBannerDetected = false
         try {
             // Diagnostic labels are our output, never evidence about the game.
-            val exclusions = if (showCalibrationBoxes.value) debugTextRects else emptyList()
+            // Las etiquetas laterales del diagnóstico se dibujan fuera de la ventana central.
+            // Deben excluirse siempre; de lo contrario el OCR puede leer "Pantheon" del propio overlay.
+            val exclusions = debugTextRects
             val ocrBitmap = if (exclusions.isEmpty()) bitmap else bitmap.copy(Bitmap.Config.ARGB_8888, true) ?: bitmap
             val visionText = try {
                 if (ocrBitmap !== bitmap) {
@@ -707,6 +717,7 @@ object DraftVisionScanner {
                             // Al estar visible el nombre de la calle, el slot está 100% sin campeón seleccionado
                             detectedChampInSlot = null
                             allySlotConfirmedChampions[i] = null
+                            allySlotNameConfirmed[i] = false
                             allyOcrChampions[i] = null
                             slot.champion = null
                             slot.confidencePercent = 0
@@ -857,6 +868,7 @@ object DraftVisionScanner {
                 // Si en frames subsiguientes no se detecta nuevo texto, se MANTIENE intacto el campeón ya confirmado.
                 if (detectedChampInSlot != null) {
                     allySlotConfirmedChampions[i] = detectedChampInSlot
+                    allySlotNameConfirmed[i] = true
                     allyOcrChampions[i] = detectedChampInSlot
                     slot.champion = detectedChampInSlot
                     slot.confidencePercent = 100
@@ -865,11 +877,12 @@ object DraftVisionScanner {
                     // El slot está mostrando el nombre de la línea asignada (ej. "CALLE CENTRAL", "APOYO", "JUNGLA").
                     // Esto indica de forma concluyente que el jugador AÚN NO ha seleccionado ningún campeón.
                     allySlotConfirmedChampions[i] = null
+                    allySlotNameConfirmed[i] = false
                     allyOcrChampions[i] = null
                     slot.champion = null
                     slot.confidencePercent = 0
                     slot.isLikelyUnpicked = true
-                } else if (allySlotConfirmedChampions[i] != null) {
+                } else if (allySlotConfirmedChampions[i] != null && allySlotNameConfirmed[i]) {
                     // Mantener el campeón ya confirmado previamente
                     val existingChamp = allySlotConfirmedChampions[i]
                     allyOcrChampions[i] = existingChamp
@@ -878,10 +891,13 @@ object DraftVisionScanner {
                     slot.isLikelyUnpicked = false
                 } else {
                     // El slot aún no ha seleccionado ningún campeón
+                    allySlotConfirmedChampions[i] = null
+                    allySlotNameConfirmed[i] = false
                     allyOcrChampions[i] = null
                     slot.champion = null
                     slot.confidencePercent = 0
                     slot.isLikelyUnpicked = true
+                    allySlotFilters[i].reset()
                 }
             }
 
@@ -1026,21 +1042,25 @@ object DraftVisionScanner {
                 // Si en fotogramas posteriores no se detecta nuevo texto, se MANTIENE intacto el campeón ya confirmado.
                 if (detectedEnemyChamp != null) {
                     enemySlotConfirmedChampions[i] = detectedEnemyChamp
+                    enemySlotNameConfirmed[i] = true
                     enemyOcrChampions[i] = detectedEnemyChamp
                     enemySlots[i].champion = detectedEnemyChamp
                     enemySlots[i].confidencePercent = 100
                     enemySlots[i].isLikelyUnpicked = false
-                } else if (enemySlotConfirmedChampions[i] != null) {
+                } else if (enemySlotConfirmedChampions[i] != null && enemySlotNameConfirmed[i]) {
                     val existingEnemy = enemySlotConfirmedChampions[i]
                     enemyOcrChampions[i] = existingEnemy
                     enemySlots[i].champion = existingEnemy
                     enemySlots[i].confidencePercent = 100
                     enemySlots[i].isLikelyUnpicked = false
                 } else {
+                    enemySlotConfirmedChampions[i] = null
+                    enemySlotNameConfirmed[i] = false
                     enemyOcrChampions[i] = null
                     enemySlots[i].champion = null
                     enemySlots[i].confidencePercent = 0
                     enemySlots[i].isLikelyUnpicked = true
+                    enemySlotFilters[i].reset()
                 }
             }
         } catch (e: Exception) {
@@ -1276,7 +1296,9 @@ object DraftVisionScanner {
         var isTenthConfirmed = false
 
         val targetSlot = if (tenthIsAlly) allySlots[tenthSlotIndex] else enemySlots[tenthSlotIndex]
-        val targetAlreadyConfirmed = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] != null else enemySlotConfirmedChampions[tenthSlotIndex] != null
+        val targetNameConfirmed = if (tenthIsAlly) allySlotNameConfirmed[tenthSlotIndex] else enemySlotNameConfirmed[tenthSlotIndex]
+        val targetAlreadyConfirmed = targetNameConfirmed &&
+            (if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] != null else enemySlotConfirmedChampions[tenthSlotIndex] != null)
 
         // EXTRACCIÓN Y ANÁLISIS EN VIVO CONTINUO DEL 10º PICK (Google MediaPipe / LiteRT):
         // Se extrae el recorte del slot en cada fotograma para alimentar el visor en tiempo real y permitir pruebas del usuario en todo momento.
@@ -1306,7 +1328,7 @@ object DraftVisionScanner {
             confirmedPicksCount = confirmedPicksCount,
             slotIndex = tenthSlotIndex,
             context = context,
-            confirmedTargetChampion = targetSlot.champion,
+            confirmedTargetChampion = targetSlot.champion?.takeIf { targetNameConfirmed },
             allowVisualConfirmation = !tenthIsAlly || currentScanFrameOcrLanes[tenthSlotIndex] == null
         )
 
