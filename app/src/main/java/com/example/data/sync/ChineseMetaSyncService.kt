@@ -17,13 +17,13 @@ object ChineseMetaSyncService {
     private val _currentTier = MutableStateFlow(TencentRankTier.DIAMOND_PLUS)
     val currentTier: StateFlow<TencentRankTier> = _currentTier.asStateFlow()
 
-    private val _currentRegion = MutableStateFlow("CN")
+    private val _currentRegion = MutableStateFlow("GLOBAL")
     val currentRegion: StateFlow<String> = _currentRegion.asStateFlow()
 
     fun loadRegion(context: Context) {
         BestBuildWrScraper.initialize(context)
         val saved = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            .getString("selected_meta_region", "CN") ?: "CN"
+            .getString("selected_meta_region", "GLOBAL") ?: "GLOBAL"
         _currentRegion.value = MetaRegion.normalize(saved)
         WildRiftRepository.selectMetaRegion(_currentRegion.value)
     }
