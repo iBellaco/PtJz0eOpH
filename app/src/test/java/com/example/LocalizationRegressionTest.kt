@@ -59,6 +59,14 @@ class LocalizationRegressionTest {
         assertFalse(trStr("pt", "Referencia local • Sin estadísticas regionales en vivo").contains("Sin estadísticas"))
     }
 
+    @Test fun `known UI labels never leak Spanish panel wording into Portuguese`() {
+        assertEquals("Expandir painel", trStr("pt", "Expandir panel"))
+        assertEquals("Minimizar painel", trStr("pt", "Minimizar panel"))
+        assertEquals("Recarga de Essência Azul", trStr("pt", "Recarga de Esencia Azul"))
+        assertEquals("Tier List Global ativa", trStr("pt", "Tier List Global activa"))
+        assertEquals("Tier List NA ativa", trStr("pt", "Tier List NA activa"))
+    }
+
     @Test fun `unknown user text and URLs remain intact`() {
         val message = "Diego_42: GG Volibear!"
         assertEquals(message, trStr("pt", message))
