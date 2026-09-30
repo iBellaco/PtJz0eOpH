@@ -683,10 +683,18 @@ object WildRiftChampionRunesMeta {
      * Resuelve las runas oficiales según campeón y rol, asegurando que todos los nombres
      * existan estrictamente en el catálogo oficial de WildRiftSpellsAndRunes.runes.
      */
+    fun getChampionSpecificRunes(championId: String): ChampionRunePair? =
+        championSpecificRunes[championId.lowercase().trim()]
+
     fun resolveRunes(
         champ: Champion,
         role: LaneRole
     ): Pair<List<String>, List<String>> {
+        val specific = championSpecificRunes[champ.id.lowercase().trim()]
+        if (specific != null) {
+            return Pair(specific.option1, specific.option2)
+        }
+
         val matchingBuild = champ.builds.firstOrNull { 
             it.role.equals(role.name, ignoreCase = true) || 
             it.role.equals(role.shortName, ignoreCase = true) ||
@@ -697,59 +705,49 @@ object WildRiftChampionRunesMeta {
             (role == LaneRole.SUPPORT && (it.role.equals("support", ignoreCase = true) || it.role.equals("supp", ignoreCase = true)))
         } ?: champ.builds.firstOrNull()
 
-        if (matchingBuild != null && matchingBuild.runes.isNotBlank()) {
-            val parsed = matchingBuild.runes.split(",").map { it.trim() }.filter { it.isNotBlank() }
-            if (parsed.size >= 5) {
-                return Pair(parsed, parsed)
-            }
-        }
-
-        val specific = championSpecificRunes[champ.id.lowercase().trim()]
-        if (specific != null) {
-            return Pair(specific.option1, specific.option2)
-        }
-
         // Fallback arquetípico inteligente si el campeón es nuevo o no está en el mapa estático:
-        val opt1: List<String>
-        val opt2: List<String>
+        val archetypeOpt1: List<String>
+        val archetypeOpt2: List<String>
 
         when {
             // Asesino / Mago Burst
             champ.damageType == DamageType.MAGIC && !champ.isFrontline && !champ.isRanged -> {
-                opt1 = listOf("Electrocutar", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Banda de Maná")
-                opt2 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Cazador Ingenioso", "Trascendencia")
+                archetypeOpt1 = listOf("Electrocutar", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Banda de Maná")
+                archetypeOpt2 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Cazador Ingenioso", "Trascendencia")
             }
             // Mago Control / Rango
             champ.damageType == DamageType.MAGIC && champ.isRanged && role != LaneRole.SUPPORT -> {
-                opt1 = listOf("Cometa Arcano", "Banda de Maná", "Trascendencia", "Piroláser", "Revestimiento de Huesos")
-                opt2 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Banda de Maná")
+                archetypeOpt1 = listOf("Cometa Arcano", "Banda de Maná", "Trascendencia", "Piroláser", "Revestimiento de Huesos")
+                archetypeOpt2 = listOf("Primer Golpe", "Impacto Repentino", "Colección de Globos Oculares", "Tirano", "Banda de Maná")
             }
-            // Soporte Encantador
+            // Soporte Encantador (Healer / Shielder)
             role == LaneRole.SUPPORT && champ.damageType == DamageType.MAGIC -> {
-                opt1 = listOf("Aery", "Banda de Maná", "Trascendencia", "Piroláser", "Revitalizar")
-                opt2 = listOf("Guardián", "Fuente de Vida", "Revitalizar", "Sobrecrecimiento", "Banda de Maná")
+                archetypeOpt1 = listOf("Aery", "Banda de Maná", "Trascendencia", "Piroláser", "Revitalizar")
+                archetypeOpt2 = listOf("Guardián", "Fuente de Vida", "Revitalizar", "Sobrecrecimiento", "Banda de Maná")
             }
-            // Soporte Tanque / Iniciador
-            role == LaneRole.SUPPORT && champ.isFrontline -> {
-                opt1 = listOf("Soberano Gélido", "Fuente de Vida", "Revestimiento de Huesos", "Sobrecrecimiento", "Hextello")
-                opt2 = listOf("Guardián", "Fuente de Vida", "Perseverancia", "Inquebrantable", "Celeridad")
+            // Tanque / Iniciador
+            champ.isFrontline || (role == LaneRole.SUPPORT && champ.damageType == DamageType.PHYSICAL) -> {
+                archetypeOpt1 = listOf("Garras del Inmortal", "Demoler", "Revestimiento de Huesos", "Sobrecrecimiento", "Triunfo")
+                archetypeOpt2 = listOf("Soberano Gélido", "Fuente de Vida", "Fuerzas Renovadas", "Inquebrantable", "Triunfo")
             }
             // Tirador / ADC
             champ.isRanged && champ.damageType == DamageType.PHYSICAL -> {
-                opt1 = listOf("Compás Letal", "Brutal", "Leyenda: Linaje", "Golpe de Gracia", "Sobrecrecimiento")
-                opt2 = listOf("Pies Veloces", "Triunfo", "Leyenda: Linaje", "Derribado", "Revestimiento de Huesos")
+                archetypeOpt1 = listOf("Compás Letal", "Brutal", "Leyenda: Linaje", "Golpe de Gracia", "Fuerzas Renovadas")
+                archetypeOpt2 = listOf("Pies Veloces", "Triunfo", "Leyenda: Linaje", "Derribado", "Revestimiento de Huesos")
             }
-            // Tanque Frontline
-            champ.isFrontline -> {
-                opt1 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Triunfo")
-                opt2 = listOf("Soberano Gélido", "Fuente de Vida", "Revestimiento de Huesos", "Inquebrantable", "Trascendencia")
-            }
-            // Luchador AD / Bruiser
+            // Luchador / Duelista AD
             else -> {
-                opt1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos")
-                opt2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Brutal")
+                archetypeOpt1 = listOf("Conquistador", "Triunfo", "Leyenda: Velocidad", "Último Esfuerzo", "Revestimiento de Huesos")
+                archetypeOpt2 = listOf("Garras del Inmortal", "Demoler", "Fuerzas Renovadas", "Sobrecrecimiento", "Triunfo")
             }
         }
+
+        val parsedRec = champ.recommendedRunes.split(",").map { it.trim() }.filter { it.isNotBlank() }
+        val parsedBuild = matchingBuild?.runes?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList()
+        val parsedBuild2 = champ.build2Runes.split(",").map { it.trim() }.filter { it.isNotBlank() }
+
+        val opt1 = if (parsedRec.size >= 5) parsedRec else if (parsedBuild.size >= 5) parsedBuild else archetypeOpt1
+        val opt2 = if (parsedBuild2.size >= 5) parsedBuild2 else archetypeOpt2
 
         return Pair(opt1, opt2)
     }

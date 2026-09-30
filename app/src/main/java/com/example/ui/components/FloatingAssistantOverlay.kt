@@ -481,12 +481,26 @@ private fun OverlayRunesTabContent(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = com.example.util.tr(lockedChampion.recommendedRunes),
-                        color = HextechGoldLight,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Black
-                    )
+                    val cleanKeystone = lockedChampion.recommendedRunes.split(",").firstOrNull()?.replace(Regex("\\s*\\(.*\\)"), "")?.replace(Regex("^(Clave|Secundarias|Secundaria):\\s*"), "")?.trim() ?: "Conquistador"
+                    val keystoneRune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(cleanKeystone)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (keystoneRune != null) {
+                            AppAssetImage(
+                                url = keystoneRune.iconUrl,
+                                contentDescription = keystoneRune.name,
+                                fallbackText = "",
+                                modifier = Modifier.size(22.dp),
+                                shape = CircleShape
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
+                        Text(
+                            text = com.example.util.tr(cleanKeystone),
+                            color = HextechGoldLight,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                     if (lockedChampion.runeTreeDetails.isNotBlank()) {
                         val parsedRunes = lockedChampion.runeTreeDetails
                             .replace(Regex("^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+:\\s*"), "")

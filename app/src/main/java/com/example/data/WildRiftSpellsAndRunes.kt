@@ -48,7 +48,7 @@ object WildRiftSpellsAndRunes {
     }
 
     fun getRuneIconByName(name: String): String {
-        val clean = name.trim()
+        val clean = name.replace(Regex("\\s*\\(.*\\)"), "").replace(Regex("^(Clave|Secundarias|Secundaria):\\s*"), "").trim()
         if (clean.isEmpty()) return "file:///android_asset/runes/conqueror.png"
         
         // Direct match
@@ -132,7 +132,7 @@ object WildRiftSpellsAndRunes {
     }
 
     fun getRuneByName(name: String): RuneItem? {
-        val clean = name.trim()
+        val clean = name.replace(Regex("\\s*\\(.*\\)"), "").replace(Regex("^(Clave|Secundarias|Secundaria):\\s*"), "").trim()
         if (clean.isEmpty()) return null
         val exact = runes.find { it.name.equals(clean, ignoreCase = true) }
         if (exact != null) return exact
@@ -208,6 +208,38 @@ object WildRiftSpellsAndRunes {
         }
 
         return runes.find { clean.contains(it.name, ignoreCase = true) || it.name.contains(clean, ignoreCase = true) }
+    }
+
+    fun getRuneDescription(name: String): String {
+        val found = getRuneByName(name)
+        if (found != null && found.description.isNotBlank()) return found.description
+        val clean = name.trim().lowercase()
+        return when {
+            clean.contains("electroc") -> "Aumenta el daño de ráfaga tras conectar 3 ataques o habilidades consecutivas."
+            clean.contains("conquist") -> "Acumula daño adaptable y amplifica la curación en escaramuzas prolongadas."
+            clean.contains("garras") || clean.contains("inmortal") -> "Mejora los intercambios en línea otorgando daño mágico adicional y vida máxima permanente."
+            clean.contains("primer golpe") || clean.contains("first strike") -> "Otorga daño verdadero adicional y oro al iniciar combate contra enemigos frágiles."
+            clean.contains("aery") -> "Potencia el hostigamiento a distancia y protege con escudos a los aliados cercanos."
+            clean.contains("cometa") -> "Lanza un cometa con daño adaptable en área tras ralentizar o impactar habilidades."
+            clean.contains("irrupci") || clean.contains("phase") -> "Otorga gran aceleración y resistencia a ralentizaciones tras 3 ataques o habilidades."
+            clean.contains("huesos") || clean.contains("revestimiento") -> "Reduce drásticamente el daño de los siguientes 3 ataques tras recibir ráfagas de daño."
+            clean.contains("fuerzas renovadas") || clean.contains("segundo aire") -> "Regenera vida faltante tras recibir daño, ideal contra composiciones de hostigamiento."
+            clean.contains("orbe") && clean.contains("anulad") -> "Otorga un escudo mágico protector inmediato al caer por debajo del 35% de vida."
+            clean.contains("triunfo") -> "Restaura vida tras eliminaciones y aumenta el daño contra enemigos con baja salud."
+            clean.contains("golpe bajo") -> "Inflige daño verdadero adicional a campeones con movimiento ralentizado o inmovilizado."
+            clean.contains("capa del nimbo") -> "Brinda velocidad de movimiento explosiva y efecto fantasmal al usar un hechizo de invocador."
+            clean.contains("sobrecrecimiento") -> "Aumenta la vida máxima de forma permanente al morir súbditos y monstruos cercanos."
+            clean.contains("demoler") -> "Carga un golpe destructivo contra estructuras para conseguir placas y torres rápidamente."
+            clean.contains("tirano") -> "Aumenta el daño infligido contra objetivos ralentizados o inmovilizados."
+            clean.contains("impacto repentino") -> "Otorga letalidad o penetración mágica tras usar desplazamientos o sigilo."
+            clean.contains("globos oculares") -> "Otorga daño adaptable acumulativo permanente por cada derribo de campeón."
+            clean.contains("banda de man") -> "Incrementa el maná máximo y su regeneración continua al golpear con habilidades."
+            clean.contains("trascendencia") -> "Otorga aceleración de habilidad y reduce enfriamientos tras conseguir eliminaciones."
+            clean.contains("pirol") -> "Prende fuego al enemigo infligiendo daño mágico residual en intercambios de línea."
+            clean.contains("velocidad") -> "Otorga aceleración de habilidades progresiva acumulable con eliminaciones."
+            clean.contains("golpe de gracia") -> "Inflige daño extra a campeones enemigos que tengan menos del 40% de vida."
+            else -> "Alternativa situacional recomendada para adaptarse a la composición rival."
+        }
     }
 
     fun getSpellByName(name: String): SummonerSpellItem? {

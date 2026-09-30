@@ -323,7 +323,7 @@ fun ServerStatCard(
                                 else -> TextPrimary.copy(alpha = 0.85f)
                             }
                             Text(
-                                text = com.example.util.tr("Meta #$rankNumber: ${champ.name} (${if (champ.hasRegionalStats) com.example.util.regionalPercent(champ, champ.winrate) + " WR" else champ.tier})"),
+                                text = com.example.util.tr("Meta #$rankNumber: ${champ.name} (${com.example.util.championStatPercent(champ, champ.winrate, "wr")} WR)"),
                                 color = rankColor,
                                 fontSize = 11.5.sp,
                                 fontWeight = if (rankNumber == 1) FontWeight.Bold else FontWeight.Medium

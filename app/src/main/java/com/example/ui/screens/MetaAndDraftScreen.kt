@@ -1353,7 +1353,7 @@ fun ChampionsCatalogTab(
                                         fontSize = 10.5.sp,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    val formattedWr = com.example.util.regionalPercent(champion, champion.winrate)
+                                    val formattedWr = com.example.util.championStatPercent(champion, champion.winrate, "wr")
                                     val regionTag = when (currentRegion) {
                                         "CN" -> "🇨🇳 CN"
                                         else -> "🌍 Global"
@@ -2061,20 +2061,20 @@ fun TierListTab(
                                                             fontWeight = FontWeight.Bold
                                                         )
                                                     }
-                                                    Text(com.example.util.tr("WR: ${com.example.util.regionalPercent(champ, champ.winrate)}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                    Text(com.example.util.tr("WR: ${com.example.util.championStatPercent(champ, champ.winrate, "wr")}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text(com.example.util.tr("Pick: ${com.example.util.regionalPercent(champ, champ.pickRate)} • Ban: ${com.example.util.regionalPercent(champ, champ.banRate)}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("Pick: ${com.example.util.championStatPercent(champ, champ.pickRate, "pick")} • Ban: ${com.example.util.championStatPercent(champ, champ.banRate, "ban")}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             TierSortOption.PICK_RATE -> {
-                                                Text(com.example.util.tr("Pick: ${com.example.util.regionalPercent(champ, champ.pickRate)}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(com.example.util.tr("Pick: ${com.example.util.championStatPercent(champ, champ.pickRate, "pick")}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text(com.example.util.tr("WR: ${com.example.util.regionalPercent(champ, champ.winrate)} • Ban: ${com.example.util.regionalPercent(champ, champ.banRate)}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("WR: ${com.example.util.championStatPercent(champ, champ.winrate, "wr")} • Ban: ${com.example.util.championStatPercent(champ, champ.banRate, "ban")}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             TierSortOption.BAN_RATE -> {
-                                                Text(com.example.util.tr("Ban: ${com.example.util.regionalPercent(champ, champ.banRate)}"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(com.example.util.tr("Ban: ${com.example.util.championStatPercent(champ, champ.banRate, "ban")}"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text(com.example.util.tr("WR: ${com.example.util.regionalPercent(champ, champ.winrate)} • Pick: ${com.example.util.regionalPercent(champ, champ.pickRate)}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("WR: ${com.example.util.championStatPercent(champ, champ.winrate, "wr")} • Pick: ${com.example.util.championStatPercent(champ, champ.pickRate, "pick")}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             else -> {}
                                         }
@@ -2232,7 +2232,7 @@ fun TierSectionCard(
                                                 )
                                             }
                                             Text(
-                                                text = com.example.util.tr(tr("WR") + ": ${com.example.util.regionalPercent(champ, champ.winrate)}"),
+                                                text = com.example.util.tr(tr("WR") + ": ${com.example.util.championStatPercent(champ, champ.winrate, "wr")}"),
                                                 color = HextechGold,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.5.sp
@@ -2241,7 +2241,7 @@ fun TierSectionCard(
                                         if (!isOverlay) {
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Text(
-                                                text = com.example.util.tr("Pick: ${com.example.util.regionalPercent(champ, champ.pickRate)} • Ban: ${com.example.util.regionalPercent(champ, champ.banRate)}"),
+                                                text = com.example.util.tr("Pick: ${com.example.util.championStatPercent(champ, champ.pickRate, "pick")} • Ban: ${com.example.util.championStatPercent(champ, champ.banRate, "ban")}"),
                                                 color = TextMuted,
                                                 fontSize = 10.sp,
                                                 maxLines = 1
@@ -5594,7 +5594,7 @@ private fun ChampionGridCard(
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = com.example.util.tr("WR: ${com.example.util.regionalPercent(champion, champion.winrate)}"),
+                    text = com.example.util.tr("WR: ${com.example.util.championStatPercent(champion, champion.winrate, "wr")}"),
                     color = HextechGold,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold

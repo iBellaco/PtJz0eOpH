@@ -1629,7 +1629,7 @@ fun ChampionDetailSheet(
             // ==========================================
             val isUserPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
             val isPremium = isUserPremium || com.example.util.SubscriptionManager.isPremium.value || com.example.util.SubscriptionManager.userRole.value == "admin"
-            val maxMatchupCount = if (isPremium) 10 else 3
+            val maxMatchupCount = 3
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
