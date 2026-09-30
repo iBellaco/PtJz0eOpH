@@ -163,7 +163,7 @@ object WildRiftRepository {
 
 
     private val baseChampions = mutableListOf<Champion>()
-    var activeRegionName by mutableStateOf("CN")
+    var activeRegionName by mutableStateOf("GLOBAL")
     private var chineseChampions: List<Champion> = emptyList()
 
     @Synchronized
