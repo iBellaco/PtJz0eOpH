@@ -8,42 +8,59 @@ import org.junit.Test
 class WildRiftItemsCatalogTest {
 
     @Test
-    fun `support category contains all new support items and mission evolutions`() {
+    fun `support category contains basic starter items and completed support items`() {
         val supportItems = WildRiftItemsData.getItemsForCategory("Apoyo")
         val supportIds = supportItems.map { it.id }
 
-        assertEquals(25, supportItems.size)
-        assertEquals("black_mist_scythe", supportIds[0])
-        assertEquals("bulwark_of_the_mountain", supportIds[1])
-        assertEquals("echoes_of_helia", supportIds[2])
-        assertEquals("whispering_headband", supportIds[3])
-        assertEquals("diadem_of_songs", supportIds[4])
+        assertEquals(27, supportItems.size)
+        assertEquals("spectral_sickle", supportIds[0])
+        assertEquals("relic_shield", supportIds[1])
+        assertEquals("black_mist_scythe", supportIds[2])
+        assertEquals("bulwark_of_the_mountain", supportIds[3])
+        assertEquals("echoes_of_helia", supportIds[4])
+        assertEquals("whispering_headband", supportIds[5])
+        assertEquals("diadem_of_songs", supportIds[6])
 
+        assertTrue("Hoz espectral must be in Apoyo", "spectral_sickle" in supportIds)
+        assertTrue("Escudo reliquia must be in Apoyo", "relic_shield" in supportIds)
         assertTrue("Guadaña de la Niebla Negra must be in Apoyo", "black_mist_scythe" in supportIds)
         assertTrue("Baluarte de la montaña must be in Apoyo", "bulwark_of_the_mountain" in supportIds)
         assertTrue("Diadema susurrante must be in Apoyo", "whispering_headband" in supportIds)
         assertTrue("Diadema melodiosa must be in Apoyo", "diadem_of_songs" in supportIds)
-        assertFalse("Hoz espectral must not be in Apoyo", "spectral_sickle" in supportIds)
-        assertFalse("Escudo reliquia must not be in Apoyo", "relic_shield" in supportIds)
+        assertFalse("Moneda antigua must be deleted", "ancient_coin" in supportIds)
     }
 
     @Test
-    fun `basic support category contains spectral sickle, relic shield, and ancient coin`() {
-        val basicSupportItems = WildRiftItemsData.getItemsForCategory("Apoyo (Básicos)")
-        val basicIds = basicSupportItems.map { it.id }
+    fun `evolution items have zero gold cost and declare evolvesFrom`() {
+        val muramana = WildRiftItemsData.getItemById("muramana")
+        assertNotNull(muramana)
+        assertEquals(0, muramana!!.goldCost)
+        assertEquals("Manamune", muramana.evolvesFrom)
 
-        assertEquals(3, basicSupportItems.size)
-        assertEquals("spectral_sickle", basicIds[0])
-        assertEquals("relic_shield", basicIds[1])
-        assertEquals("ancient_coin", basicIds[2])
+        val diadem = WildRiftItemsData.getItemById("diadem_of_songs")
+        assertNotNull(diadem)
+        assertEquals(0, diadem!!.goldCost)
+        assertEquals("Diadema susurrante", diadem.evolvesFrom)
 
-        val sickle = basicSupportItems[0]
-        val shield = basicSupportItems[1]
-        val coin = basicSupportItems[2]
+        val seraph = WildRiftItemsData.getItemById("seraph_s_embrace")
+        assertNotNull(seraph)
+        assertEquals(0, seraph!!.goldCost)
+        assertEquals("Báculo del arcángel", seraph.evolvesFrom)
 
-        assertEquals("file:///android_asset/offline_images/spectral_sickle.webp", sickle.iconUrl)
-        assertEquals("file:///android_asset/offline_images/relic_shield.webp", shield.iconUrl)
-        assertEquals("", coin.iconUrl)
+        val granInvierno = WildRiftItemsData.getItemById("fimbulwinter")
+        assertNotNull(granInvierno)
+        assertEquals(0, granInvierno!!.goldCost)
+        assertEquals("Llegada del invierno", granInvierno.evolvesFrom)
+
+        val scythe = WildRiftItemsData.getItemById("black_mist_scythe")
+        assertNotNull(scythe)
+        assertEquals(0, scythe!!.goldCost)
+        assertEquals("Hoz espectral", scythe.evolvesFrom)
+
+        val bulwark = WildRiftItemsData.getItemById("bulwark_of_the_mountain")
+        assertNotNull(bulwark)
+        assertEquals(0, bulwark!!.goldCost)
+        assertEquals("Escudo reliquia", bulwark.evolvesFrom)
     }
 
     @Test

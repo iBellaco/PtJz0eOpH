@@ -2604,32 +2604,104 @@ private fun ItemsCatalogTab() {
                                 )
                             }
 
-                            if (isGridView) {
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+                            val isApoyoCategory = categoryName.equals("Apoyo", ignoreCase = true)
+                            val basicSupportItems = if (isApoyoCategory) itemsInCat.filter { it.id in listOf("spectral_sickle", "relic_shield") } else emptyList()
+                            val advancedSupportItems = if (isApoyoCategory) itemsInCat.filter { it.id !in listOf("spectral_sickle", "relic_shield") } else itemsInCat
+
+                            if (isApoyoCategory && basicSupportItems.isNotEmpty()) {
+                                // Sub-section header for BÁSICO
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 6.dp)
                                 ) {
-                                    itemsInCat.forEach { item ->
-                                        ItemGridCard(
-                                            item = item,
-                                            onClick = { itemForDetail = item },
-                                            modifier = Modifier.width(68.dp),
-                                            borderColor = catColor
+                                    Box(
+                                        modifier = Modifier
+                                            .background(HextechCyan.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                                            .border(0.5.dp, HextechCyan.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = tr("BÁSICO"),
+                                            color = HextechCyan,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Black,
+                                            letterSpacing = 0.5.sp
                                         )
                                     }
                                 }
-                            } else {
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.padding(bottom = 6.dp)
-                                ) {
-                                    itemsInCat.forEach { item ->
-                                        ItemListCard(
-                                            item = item,
-                                            onClick = { itemForDetail = item },
-                                            borderColor = catColor
-                                        )
+
+                                if (isGridView) {
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                                    ) {
+                                        basicSupportItems.forEach { item ->
+                                            ItemGridCard(
+                                                item = item,
+                                                onClick = { itemForDetail = item },
+                                                modifier = Modifier.width(68.dp),
+                                                borderColor = HextechCyan
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Column(
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.padding(bottom = 10.dp)
+                                    ) {
+                                        basicSupportItems.forEach { item ->
+                                            ItemListCard(
+                                                item = item,
+                                                onClick = { itemForDetail = item },
+                                                borderColor = HextechCyan
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (advancedSupportItems.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(0.5.dp)
+                                            .background(HextechGold.copy(alpha = 0.2f))
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            }
+
+                            if (advancedSupportItems.isNotEmpty()) {
+                                if (isGridView) {
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+                                    ) {
+                                        advancedSupportItems.forEach { item ->
+                                            ItemGridCard(
+                                                item = item,
+                                                onClick = { itemForDetail = item },
+                                                modifier = Modifier.width(68.dp),
+                                                borderColor = catColor
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Column(
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.padding(bottom = 6.dp)
+                                    ) {
+                                        advancedSupportItems.forEach { item ->
+                                            ItemListCard(
+                                                item = item,
+                                                onClick = { itemForDetail = item },
+                                                borderColor = catColor
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -2709,17 +2781,33 @@ private fun selectedRuneItemModal(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        Box(
-                            modifier = Modifier
-                                .background(HextechGold.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
-                                .padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Text(
-                                text = com.example.util.tr(" ${itm.goldCost} ${tr("Oro")}"),
-                                color = HextechGold,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                        if (itm.isEvolution || itm.goldCost <= 0) {
+                            Box(
+                                modifier = Modifier
+                                    .background(HextechCyan.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                    .border(0.5.dp, HextechCyan.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = if (itm.evolvesFrom.isNotBlank()) "${tr("Evolución de:")} ${itm.evolvesFrom}" else tr("Evolución (Sin coste de oro)"),
+                                    color = HextechCyan,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .background(HextechGold.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = com.example.util.tr(" ${itm.goldCost} ${tr("Oro")}"),
+                                    color = HextechGold,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
 
@@ -2866,12 +2954,21 @@ private fun ItemGridCard(
             lineHeight = 11.sp
         )
         Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = com.example.util.tr("${item.goldCost} G"),
-            color = HextechGold,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold
-        )
+        if (item.isEvolution || item.goldCost <= 0) {
+            Text(
+                text = tr("Evolución"),
+                color = HextechCyan,
+                fontSize = 8.5.sp,
+                fontWeight = FontWeight.Bold
+            )
+        } else {
+            Text(
+                text = com.example.util.tr("${item.goldCost} G"),
+                color = HextechGold,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -2915,7 +3012,23 @@ private fun ItemListCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(com.example.util.tr(localizedName), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
-                    Text(com.example.util.tr(" ${item.goldCost} G"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                    if (item.isEvolution || item.goldCost <= 0) {
+                        Surface(
+                            color = HextechCyan.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(4.dp),
+                            border = BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.5f))
+                        ) {
+                            Text(
+                                text = if (item.evolvesFrom.isNotBlank()) "${tr("Evolución de")} ${item.evolvesFrom}" else tr("Evolución"),
+                                color = HextechCyan,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp,
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.5.dp)
+                            )
+                        }
+                    } else {
+                        Text(com.example.util.tr(" ${item.goldCost} G"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                    }
                 }
                 Text(tr(item.category), color = HextechCyan, fontSize = 10.5.sp)
                 if (statsList.isNotEmpty()) {

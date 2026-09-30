@@ -193,17 +193,18 @@ WildRiftItem(
             nameEn = "Muramana",
             namePt = "Muramana",
             category = "Objetos con Daños Físicos",
-            goldCost = 2900,
+            goldCost = 0,
             stats = "+40 Daño de ataque • +1200 Maná máximo • +15 Velocidad de habilidades",
             statsEn = "+40 Attack Damage • +1200 Max Mana • +15 Ability Haste",
             statsPt = "+40 de Dano de Ataque • +1200 de Mana máximo • +15 de Aceleração de Habilidade",
             passive = "Asombro: Otorga una cantidad de daño de ataque equivalente a un 2% del maná máximo y restaura un 15% de todo el maná gastado.\nImpacto: Los ataques contra campeones infligen un 1,5% del maná máximo como daño físico adicional, y el daño de habilidades contra campeones inflige un 3,5% del maná máximo (3% para campeones a distancia) como daño físico adicional. Este efecto solo se puede activar una vez por ataque o lanzamiento de habilidad contra el mismo campeón.",
             passiveEn = "Awe: Grants Attack Damage equal to 2% of max Mana and refunds 15% of all Mana spent.\nShock: Attacks against champions deal 1.5% max Mana bonus physical damage, and abilities deal 3.5% max Mana (3% for ranged) bonus physical damage. Triggers once per attack or ability on the same champion.",
             passivePt = "Assombro: Concede Dano de Ataque equivalente a 2% do Mana máximo e restaura 15% do Mana gasto.\nChoque: Ataques contra campeões causam 1,5% do Mana máximo como dano físico adicional, e habilidades causam 3,5% (3% para ataque à distância) como dano físico adicional.",
-            coachTip = "Forma evolucionada tras completar la carga de maná de Manamune. Transforma tu reserva de maná (+1200) en daño de ataque adicional y añade daño de impacto en ataques y habilidades.",
-            coachTipEn = "Upgraded form upon completing Manamune's Mana Charge. Adds massive on-hit and ability physical damage scaling with max Mana (+1200).",
-            coachTipPt = "Forma evoluída do Manamune. Converte a reserva massiva de Mana (+1200) em dano de ataque adicional e dano de impacto em ataques e habilidades.",
-            iconUrl = "file:///android_asset/offline_images/08f2da37400fbff1179c90b251358dac.webp"
+            coachTip = "Evolución directa de Manamune al alcanzar la carga máxima de maná (+700). Sin coste de oro. Transforma tu reserva de maná (+1200) en daño de ataque adicional y añade daño de impacto en ataques y habilidades.",
+            coachTipEn = "Direct evolution of Manamune upon reaching 700 Mana Charge (No gold cost). Adds massive on-hit and ability physical damage scaling with max Mana (+1200).",
+            coachTipPt = "Evolução direta do Manamune ao completar 700 de Mana (Sem custo de ouro). Converte a reserva massiva de Mana (+1200) em dano de ataque adicional e impacto.",
+            iconUrl = "file:///android_asset/offline_images/08f2da37400fbff1179c90b251358dac.webp",
+            evolvesFrom = "Manamune"
         ),
 WildRiftItem(
             id = "trinity_force",
@@ -669,17 +670,18 @@ WildRiftItem(
             nameEn = "Seraph's Embrace",
             namePt = "Abraço de Seraph",
             category = "Objetos de Daño Mágico",
-            goldCost = 3000,
+            goldCost = 0,
             stats = "+60 Poder de habilidad • +1200 Maná máximo • +25 Velocidad de habilidades",
             statsEn = "+60 Ability Power • +1200 Max Mana • +25 Ability Haste",
             statsPt = "+60 Poder de Habilidade • +1200 Mana Máximo • +25 Aceleração de Habilidade",
             passive = "Asombro: Otorga una cantidad de poder de habilidad equivalente a un 2% del maná máximo y restaura un 25% de todo el maná gastado.\nSalvavidas: Al recibir daño que te haga bajar del 35% de vida, recibes un escudo que absorbe una cantidad de daño equivalente al 16% de tu maná máximo durante 2 s. Solo puedes tener 1 objeto de Lágrima de la diosa (70 s de enfriamiento).",
             passiveEn = "Awe: Grants Ability Power equal to 2% max Mana and refunds 25% of all Mana spent.\nLifeline: Taking damage that reduces you below 35% Health grants a shield absorbing damage equal to 16% of your max Mana for 2 seconds. Limited to 1 Tear of the Goddess item (70s Cooldown).",
             passivePt = "Assombro: Concede Poder de Habilidade equivalente a 2% do Mana máximo e restaura 25% de todo o Mana gasto.\nSalva-Vidas: Ao sofrer dano que deixe a vida abaixo de 35%, recebe um escudo que absorve dano equivalente a 16% do Mana máximo por 2s. Limitado a 1 item de Lágrima da Deusa (70s de Tempo de Recarga).",
-            coachTip = "Transformación definitiva tras completar la Lágrima de la diosa. Otorga un escudo salvavidas masivo del 16% de tu maná máximo y amplifica el daño mágico continuo.",
-            coachTipEn = "Upgraded form of Archangel's Staff. Grants massive AP scaling with mana and a 16% max mana lifeline shield.",
-            coachTipPt = "Forma aprimorada do Cajado do Arcanjo. Concede escudo de sobrevivência de 16% do Mana máximo e altíssimo poder mágico.",
-            iconUrl = "file:///android_asset/offline_images/0bfb36d8b1370271319b5895293c4056.webp"
+            coachTip = "Evolución directa de Báculo del arcángel tras completar la Lágrima de la diosa (700 de maná). Sin coste de oro. Otorga un escudo salvavidas masivo del 16% de tu maná máximo y amplifica el daño mágico continuo.",
+            coachTipEn = "Direct evolution of Archangel's Staff upon reaching 700 Mana Charge (No gold cost). Grants a massive 16% max mana lifeline shield and high AP.",
+            coachTipPt = "Evolução direta do Cajado do Arcanjo ao completar 700 de Mana (Sem custo de ouro). Concede escudo salva-vidas de 16% do Mana máximo e altíssimo AP.",
+            iconUrl = "file:///android_asset/offline_images/0bfb36d8b1370271319b5895293c4056.webp",
+            evolvesFrom = "Báculo del arcángel"
         ),
 WildRiftItem(
             id = "infinity_orb",
@@ -1041,17 +1043,18 @@ WildRiftItem(
             nameEn = "Fimbulwinter",
             namePt = "Fimbulwinter",
             category = "Objetos Defensivos",
-            goldCost = 2600,
+            goldCost = 0,
             stats = "+500 Vida máxima • +1200 Maná máximo • +15 Velocidad de habilidades",
             statsEn = "+500 Max Health • +1200 Max Mana • +15 Ability Haste",
             statsPt = "+500 de Vida Máxima • +1200 de Mana Máximo • +15 de Aceleração de Habilidade",
             passive = "Asombro: Otorga una cantidad de vida adicional equivalente a un 15% del maná máximo y restaura un 15% de todo el maná gastado.\nColoso helado: Al obstaculizar el movimiento de un campeón enemigo, otorga un escudo que absorbe una cantidad de daño equivalente a 120 + 4,5% del maná máximo durante 3 s. El escudo aumenta un 80% si hay más de un campeón enemigo cerca (8 s de enfriamiento). El escudo tiene un 50% de efectividad para campeones a distancia.",
             passiveEn = "Awe: Grants bonus health equal to 15% of max Mana and refunds 15% of all Mana spent.\nFrozen Colossus: Immobilizing or slowing an enemy champion grants a shield absorbing 120 + 4.5% max Mana for 3s, increased by 80% near multiple enemies (8s Cooldown, 50% effective for ranged).",
             passivePt = "Assombro: Concede Vida adicional equivalente a 15% do Mana máximo e restaura 15% do Mana gasto.\nColosso Congelado: Ao imobilizar ou reduzir a velocidade de um campeão inimigo, concede um escudo que absorve 120 + 4,5% do Mana máximo por 3s (aumentado em 80% com múltiplos inimigos).",
-            coachTip = "Forma evolucionada tras completar la carga de maná de Llegada del invierno. Otorga +500 de vida, +1200 de maná y un escudo masivo (Coloso helado) al ralentizar o inmovilizar a un rival.",
-            coachTipEn = "Upgraded form upon completing Winter's Approach. Grants +500 Health, +1200 Mana and massive shield upon slowing/immobilizing enemies.",
-            coachTipPt = "Forma evoluída da Aproximação Invernal. Concede +500 de Vida, +1200 de Mana e um escudo massivo ao aplicar controle de grupo.",
-            iconUrl = "file:///android_asset/offline_images/ae7584f101f22466aaeaca45438a8371.webp"
+            coachTip = "Evolución directa de Llegada del invierno al alcanzar la carga máxima de maná (+700). Sin coste de oro. Otorga +500 de vida, +1200 de maná y un escudo masivo (Coloso helado) al ralentizar o inmovilizar a un rival.",
+            coachTipEn = "Direct evolution of Winter's Approach upon reaching 700 Mana Charge (No gold cost). Grants +500 Health, +1200 Mana and massive shield upon slowing/immobilizing enemies.",
+            coachTipPt = "Evolução direta da Aproximação Invernal ao atingir 700 de Mana (Sem custo de ouro). Concede +500 de Vida, +1200 de Mana e escudo massivo em controle de grupo.",
+            iconUrl = "file:///android_asset/offline_images/ae7584f101f22466aaeaca45438a8371.webp",
+            evolvesFrom = "Llegada del invierno"
         ),
 WildRiftItem(
             id = "force_of_nature",
@@ -1291,7 +1294,7 @@ WildRiftItem(
             coachTipEn = "This item greatly increases your survivability during teamfights. Its active grants a powerful shield that scales with your bonus Health, allowing you to withstand heavy focus fire and remain on the frontline longer. It is an excellent choice for tanks and bruisers who need to absorb large amounts of damage while protecting their team.",
             iconUrl = "file:///android_asset/offline_images/c6e47425e00b913bb5917d5fa15f1b3b.webp"
         ),
-WildRiftItem(
+        WildRiftItem(
             id = "spectral_sickle",
             name = "Hoz espectral",
             nameEn = "Spectral Sickle",
@@ -1309,7 +1312,7 @@ WildRiftItem(
             coachTipPt = "Item inicial ideal para suportes de dano e poke na rota em dupla.",
             iconUrl = "file:///android_asset/offline_images/spectral_sickle.webp"
         ),
-WildRiftItem(
+        WildRiftItem(
             id = "relic_shield",
             name = "Escudo reliquia",
             nameEn = "Relic Shield",
@@ -1328,58 +1331,42 @@ WildRiftItem(
             iconUrl = "file:///android_asset/offline_images/relic_shield.webp"
         ),
         WildRiftItem(
-            id = "ancient_coin",
-            name = "Moneda antigua",
-            nameEn = "Ancient Coin",
-            namePt = "Moeda Antiga",
-            category = "Objetos de Apoyo",
-            goldCost = 500,
-            stats = "+100 Vida máxima • +5 Velocidad de habilidades • +5% Velocidad de movimiento",
-            statsEn = "+100 Max Health • +5 Ability Haste • +5% Move Speed",
-            statsPt = "+100 Vida Máxima • +5 Aceleração de Habilidade • +5% Vel. de Movimento",
-            passive = "Tributo: Las tropas enemigas abatidas cerca de ti tienen probabilidad de soltar monedas de oro (55 de oro) o monedas de maná (restauran 20-80 de maná o vida). Misión: Al reunir 750 de oro se transforma en Talismán de la ascensión.",
-            passiveEn = "Tribute: Nearby dying enemy minions drop gold coins (55 gold) or mana coins (restore 20-80 mana/health). Quest: Transform at 750 gold.",
-            passivePt = "Tributo: Tropas inimigas abatidas próximas podem soltar moedas de ouro ou mana. Missão: Transforma ao acumular 750 de ouro.",
-            coachTip = "Objeto inicial clásico de apoyo para campeones con estilo pasivo o de escalado seguro que priorizan el sustento de maná y economía protegida.",
-            coachTipEn = "Classic starting item for passive/scaling supports focusing on mana sustain and safe gold generation.",
-            coachTipPt = "Item inicial clássico para suportes de utilidade focados em sustentação de mana e ouro seguro.",
-            iconUrl = ""
-        ),
-        WildRiftItem(
             id = "bulwark_of_the_mountain",
             name = "Baluarte de la montaña",
             nameEn = "Bulwark of the Mountain",
             namePt = "Baluarte da Montanha",
             category = "Objetos de Apoyo",
-            goldCost = 500,
+            goldCost = 0,
             stats = "+175 Vida máxima • +10 Velocidad de habilidades",
             statsEn = "+175 Max Health • +10 Ability Haste",
             statsPt = "+175 Vida Máxima • +10 Aceleração de Habilidade",
             passive = "Estallido de alma: Cada 60 s, obtienes 75 de oro, 25 de vida y 2 de daño de ataque o 4 de poder de habilidad (adaptable); hasta 250 de vida y 20 de daño de ataque o 40 de poder de habilidad (adaptable).\nInfliges 2 más de daño a los guardianes de visión revelados con lentes de gran alcance, guardianes de control o flores del adivino.\nFuera de combate, otorga un 10% de velocidad de movimiento al moverte hacia tu Compañero ideal. Si os encontráis a más de 2500 unidades de distancia, esta bonificación aumenta a un 30%.",
             passiveEn = "Soulburst: Every 60s, gain 75 gold, 25 Health, and 2 Attack Damage or 4 Ability Power (Adaptive); up to 250 Health and 20 AD or 40 AP (Adaptive).\nDeals 2 bonus damage to revealed enemy wards.\nOut of combat, grants 10% movement speed towards your Ideal Partner (increases to 30% if over 2500 units apart).",
             passivePt = "Explosão de Alma: A cada 60s, concede 75 de ouro, 25 de Vida e 2 de Dano de Ataque ou 4 de Poder de Habilidade (Adaptativo); até 250 de Vida e 20 de AD ou 40 de AP.\nCausa 2 de dano adicional a sentinelas reveladas.\nFora de combate, concede 10% de velocidade de movimento em direção ao seu Parceiro Ideal (aumenta para 30% se estiver a mais de 2500 unidades de distância).",
-            coachTip = "Transformación completada del Escudo reliquia para soportes protectores y tanques. Proporciona vida escalable, aceleración de habilidades y rotaciones ultrarrápidas hacia tu carry aliado.",
-            coachTipEn = "Completed evolution of Relic Shield. Grants scaling health, ability haste, and high roam speed towards your linked carry.",
-            coachTipPt = "Evolução completa do Escudo Relicário para suportes tanques.",
-            iconUrl = "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp"
+            coachTip = "Evolución directa de Escudo reliquia tras obtener 750 de oro de botín de guerra. Sin coste de oro. Proporciona vida escalable, aceleración de habilidades y rotaciones ultrarrápidas hacia tu carry aliado.",
+            coachTipEn = "Direct evolution of Relic Shield upon earning 750 gold from Tribute quest (No gold cost). Grants scaling health, ability haste, and high roam speed towards linked carry.",
+            coachTipPt = "Evolução direta do Escudo Relicário ao acumular 750 de ouro de missão (Sem custo de ouro). Concede vida escalável e aceleração.",
+            iconUrl = "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+            evolvesFrom = "Escudo reliquia"
         ),
-WildRiftItem(
+        WildRiftItem(
             id = "black_mist_scythe",
             name = "Guadaña de la Niebla Negra",
             nameEn = "Black Mist Scythe",
             namePt = "Foice da Névoa Negra",
             category = "Objetos de Apoyo",
-            goldCost = 500,
+            goldCost = 0,
             stats = "+10 Velocidad de habilidades",
             statsEn = "+10 Ability Haste",
             statsPt = "+10 Aceleração de Habilidade",
             passive = "Versátil: Otorga 14 de daño de ataque o 28 de poder de habilidad (adaptable).\nEstallido de alma: Cada 60 s, obtienes 75 de oro, 25 de vida y 2 de daño de ataque o 4 de poder de habilidad (adaptable); hasta 250 de vida y 20 de daño de ataque o 40 de poder de habilidad (adaptable).\nInfliges 2 más de daño a los guardianes de visión revelados con lentes de gran alcance, guardianes de control o flores del adivino.\nFuera de combate, otorga un 10% de velocidad de movimiento al moverte hacia tu Compañero ideal. Si os encontráis a más de 2500 unidades de distancia, esta bonificación aumenta a un 30%.",
             passiveEn = "Versatile: Grants 14 Attack Damage or 28 Ability Power (Adaptive).\nSoulburst: Every 60s, gain 75 gold, 25 Health, and 2 Attack Damage or 4 Ability Power (Adaptive); up to 250 Health and 20 AD or 40 AP (Adaptive).\nDeals 2 bonus damage to revealed enemy wards.\nOut of combat, grants 10% movement speed towards your Ideal Partner (increases to 30% if over 2500 units apart).",
             passivePt = "Versátil: Concede 14 de Dano de Ataque ou 28 de Poder de Habilidade (Adaptativo).\nExplosão de Alma: A cada 60s, concede 75 de ouro, 25 de Vida e 2 de Dano de Ataque ou 4 de Poder de Habilidade (Adaptativo); até 250 de Vida e 20 de AD ou 40 de AP.\nCausa 2 de dano adicional a sentinelas reveladas.\nFora de combate, concede 10% de velocidade de movimento em direção ao seu Parceiro Ideal (aumenta para 30% se estiver a mais de 2500 unidades de distância).",
-            coachTip = "Transformación completada de la Hoz espectral. Otorga estadísticas progresivas de vida y daño/AP, daño aumentado para limpiar guardianes de visión y velocidad masiva para reagrupar con tu tirador.",
-            coachTipEn = "Completed evolution of Spectral Sickle. Provides adaptive stats, ward clearing bonus, and quick regrouping speed with your linked partner.",
-            coachTipPt = "Evolução completa da Foice Espectral para suportes ofensivos.",
-            iconUrl = "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp"
+            coachTip = "Evolución directa de Hoz espectral tras obtener 750 de oro de tributo. Sin coste de oro. Otorga estadísticas progresivas de vida y daño/AP, daño aumentado para limpiar guardianes de visión y velocidad masiva para reagrupar con tu tirador.",
+            coachTipEn = "Direct evolution of Spectral Sickle upon earning 750 gold from Tribute quest (No gold cost). Provides adaptive stats, ward clearing bonus, and quick roam speed towards linked partner.",
+            coachTipPt = "Evolução direta da Foice Espectral ao acumular 750 de ouro de missão (Sem custo de ouro). Concede atributos adaptativos e dano em sentinelas.",
+            iconUrl = "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+            evolvesFrom = "Hoz espectral"
         ),
 WildRiftItem(
             id = "ardent_censer",
@@ -1887,17 +1874,18 @@ WildRiftItem(
             nameEn = "Melodious Diadem",
             namePt = "Diadema Melodiosa",
             category = "Objetos de Apoyo",
-            goldCost = 2400,
+            goldCost = 0,
             stats = "+200 Vida máxima • +1200 Maná máximo • +50% Regeneración de maná • +8% Poder de curaciones y escudos",
             statsEn = "+200 Max Health • +1200 Max Mana • +50% Base Mana Regen • +8% Heal and Shield Power",
             statsPt = "+200 Vida Máxima • +1200 Mana Máximo • +50% Regeneração de Mana • +8% Poder de Cura e Escudo",
             passive = "Armonía: Otorga un 0,25% del maná máximo como poder de curaciones y escudos adicional. Lanzar una habilidad restaura un 25% de su coste de maná.\nDiadema: Mientras tú o un aliado al que hayas otorgado una curación o escudo en los últimos 3 s estéis en combate con campeones, cura cada segundo al aliado con menos vida en un radio de 800 unidades una cantidad de vida equivalente al 0,8% de tu maná máximo.",
             passiveEn = "Harmony: Grants 0.25% Healing and Shield Power per max Mana. Casting an ability refunds 25% of its Mana cost.\nDiadem: While you or an ally you healed or shielded within the last 3s is in combat with champions, heals the lowest-health ally within 800 units each second for 0.8% of your max Mana.",
             passivePt = "Harmonia: Concede 0,25% de Poder de Cura e Escudo adicional com base no Mana máximo. Conjurar habilidades restaura 25% do custo de Mana.\nDiadema: Enquanto você ou um aliado curado/escudado nos últimos 3s estiver em combate com campeões, cura o aliado com menos vida em 800 unidades a cada segundo em 0,8% do seu Mana máximo.",
-            coachTip = "Forma evolucionada tras completar la carga de maná de Diadema susurrante. Otorga una inmensa reserva de maná (+1200) y cura automáticamente al aliado con menos vida en combate por un 0.8% de tu maná máximo por segundo.",
-            coachTipEn = "Upgraded form upon reaching 700 Mana Charge. Heals the lowest-health ally in combat for 0.8% max Mana per second.",
-            coachTipPt = "Forma evoluída após completar 700 de Mana. Cura o aliado com menos vida a cada segundo com base em 0,8% do Mana máximo.",
-            iconUrl = "file:///android_asset/offline_images/diadem_of_songs.webp"
+            coachTip = "Evolución directa de Diadema susurrante tras completar la carga de 700 de maná. Sin coste de oro. Otorga una inmensa reserva de maná (+1200) y cura automáticamente al aliado con menos vida en combate por un 0.8% de tu maná máximo por segundo.",
+            coachTipEn = "Direct evolution of Whispering Headband upon reaching 700 Mana Charge (No gold cost). Heals lowest-health ally in combat for 0.8% max Mana per second.",
+            coachTipPt = "Evolução direta da Diadema Sussurrante ao completar 700 de Mana (Sem custo de ouro). Cura o aliado com menos vida a cada segundo com base em 0,8% do Mana máximo.",
+            iconUrl = "file:///android_asset/offline_images/diadem_of_songs.webp",
+            evolvesFrom = "Diadema susurrante"
         )
     )
 
@@ -2268,9 +2256,6 @@ WildRiftItem(
         "la guadaña de la niebla negra" to "black_mist_scythe",
         "guadana de la niebla negra" to "black_mist_scythe",
         "la guadana de la niebla negra" to "black_mist_scythe",
-        "ancient coin" to "ancient_coin",
-        "moneda antigua" to "ancient_coin",
-        "la moneda antigua" to "ancient_coin",
         "bulwark of the mountain" to "bulwark_of_the_mountain",
         "baluarte de la montaña" to "bulwark_of_the_mountain",
         "el baluarte de la montaña" to "bulwark_of_the_mountain",
@@ -2418,7 +2403,6 @@ WildRiftItem(
         "Mágico",
         "Defensa",
         "Apoyo",
-        "Apoyo (Básicos)",
         "Botas Nivel 2",
         "Botas Nivel 3"
     )
@@ -2493,6 +2477,7 @@ WildRiftItem(
             "death_s_dance", "zhonya_s_hourglass"
         ),
         "Apoyo" to listOf(
+            "spectral_sickle", "relic_shield",
             "black_mist_scythe", "bulwark_of_the_mountain", "echoes_of_helia",
             "whispering_headband", "diadem_of_songs", "abyssal_mask", "ardent_censer",
             "staff_of_flowing_water", "zeke_s_convergence", "yordle_trap",
@@ -2502,8 +2487,11 @@ WildRiftItem(
             "oceanid_s_trident", "morellonomicon", "radiant_virtue_wild_rift", "thornmail",
             "dawnshroud", "cryptbloom"
         ),
+        "Básico" to listOf(
+            "spectral_sickle", "relic_shield"
+        ),
         "Apoyo (Básicos)" to listOf(
-            "spectral_sickle", "relic_shield", "ancient_coin"
+            "spectral_sickle", "relic_shield"
         ),
         "Botas Nivel 2" to listOf(
             "gluttonous_greaves", "berserker_s_greaves", "mercury_s_treads", "plated_steelcaps", "ionian_boots_of_lucidity", "boots_of_mana", "boots_of_dynamism"

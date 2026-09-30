@@ -188,8 +188,11 @@ data class WildRiftItem(
     val coachTipEn: String = "",
     val coachTipPt: String = "",
     val iconUrl: String,
-    val color: String = ""
+    val color: String = "",
+    val evolvesFrom: String = ""
 ) {
+    val isEvolution: Boolean
+        get() = evolvesFrom.isNotBlank() || goldCost == 0
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
         "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
