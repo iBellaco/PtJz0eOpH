@@ -84,4 +84,22 @@ class WildRiftItemsCatalogTest {
             assertTrue("Category $category should not be empty", items.isNotEmpty())
         }
     }
+
+    @Test
+    fun `catalog contains zero duplicate items and zero legacy PC items`() {
+        val allItems = WildRiftItemsData.list
+        val ids = allItems.map { it.id }
+        val names = allItems.map { it.name }
+
+        val duplicateIds = ids.groupBy { it }.filter { it.value.size > 1 }.keys
+        val duplicateNames = names.groupBy { it }.filter { it.value.size > 1 }.keys
+
+        assertTrue("Found duplicate item IDs: $duplicateIds", duplicateIds.isEmpty())
+        assertTrue("Found duplicate item Names: $duplicateNames", duplicateNames.isEmpty())
+
+        val legacyIds = setOf("quicksilver_sash", "seeker_s_armguard", "soul_transfer")
+        for (legacy in legacyIds) {
+            assertNull("Legacy item $legacy must not exist in catalog", allItems.find { it.id == legacy })
+        }
+    }
 }

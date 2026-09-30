@@ -80,27 +80,8 @@ object WildRiftLocalCache {
                 hasLoadedAny = true
             }
 
-            val itemsJson = prefs.getString(KEY_ITEMS, null)
-            if (!itemsJson.isNullOrBlank()) {
-                val loadedItems = json.decodeFromString<List<WildRiftItem>>(itemsJson)
-                
-                if (loadedItems.isNotEmpty()) {
-                    // Filter out spells that were previously saved as basic items
-                    val spellIds = com.example.data.WildRiftSpellsAndRunes.summonerSpells.map { it.id }.toSet()
-                    val filteredItems = loadedItems.filter { item ->
-                        val isSpell = item.id.endsWith("_basic") && item.id.replace("_basic", "") in spellIds.map { it.replace("spell_", "") }
-                        !isSpell && !item.id.startsWith("spell_")
-                    }
-                    val canonicalList = com.example.data.WildRiftItemsData.list
-                    val canonicalMap = canonicalList.associateBy { it.id }
-                    val mergedItems = canonicalList.map { canonical ->
-                        canonical
-                    }
-                    WildRiftRepository.items = mergedItems.distinctBy { it.id }
-                    hasLoadedAny = true
-                }
-
-            }
+            // Always use the official, validated canonical item catalog
+            WildRiftRepository.items = com.example.data.WildRiftItemsData.list
 
             val championsJson = prefs.getString(KEY_CHAMPIONS, null)
             if (!championsJson.isNullOrBlank()) {

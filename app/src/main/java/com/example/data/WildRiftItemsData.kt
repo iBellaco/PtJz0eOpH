@@ -4,7 +4,7 @@ import com.example.model.WildRiftItem
 
 object WildRiftItemsData {
     val list: List<WildRiftItem> = listOf(
-        WildRiftItem(
+WildRiftItem(
             id = "fiendhunter_bolts",
             name = "Dardos rastreademonios",
             nameEn = "Fiendhunter Bolts",
@@ -22,7 +22,7 @@ object WildRiftItemsData {
             coachTipPt = "Item essencial para atiradores dependentes da ultimate. Aumenta a velocidade de ataque e garante rajadas de dano crítico imediato após ativar a ultimate.",
             iconUrl = "file:///android_asset/offline_images/fiendhunter-bolts.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "stormrazor",
             name = "Navaja de asalto",
             nameEn = "Stormrazor",
@@ -37,7 +37,7 @@ object WildRiftItemsData {
             coachTipEn = "Facilitates chasing enemies and setup auto attacks thanks to its heavy initial slow.",
             iconUrl = "file:///android_asset/offline_images/stormrazor.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "bloodthirster",
             name = "Sanguinaria",
             nameEn = "Bloodthirster",
@@ -51,7 +51,7 @@ object WildRiftItemsData {
             coachTipEn = "Provides massive raw AD and sustain to keep your health bar topped off before and during fights.",
             iconUrl = "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "guardian_angel",
             name = "Ángel de la guarda",
             nameEn = "Guardian Angel",
@@ -65,7 +65,7 @@ object WildRiftItemsData {
             coachTipEn = "Ideal late-game purchase to secure decisive teamfights and prevent getting picked before dealing damage.",
             iconUrl = "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "blade_of_the_ruined_king",
             name = "Hoja del rey arruinado",
             nameEn = "Blade of the Ruined King",
@@ -79,7 +79,7 @@ object WildRiftItemsData {
             coachTipEn = "Top core spike item against health-stacking tanks and bruisers.",
             iconUrl = "file:///android_asset/offline_images/537435e5e6691bd654c89dba3aa169ef.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "runaan_s_hurricane",
             name = "Huracán de Runaan",
             nameEn = "Runaan's Hurricane",
@@ -93,7 +93,7 @@ object WildRiftItemsData {
             coachTipEn = "Crucial for ranged marksmen with strong on-hit effects or AoE damage in grouped teamfights.",
             iconUrl = "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "youmuu_s_ghostblade",
             name = "Filo fantasmal de Youmuu",
             nameEn = "Youmuu's Ghostblade",
@@ -107,7 +107,7 @@ object WildRiftItemsData {
             coachTipEn = "Excellent first item for AD assassins. Provides great out-of-combat mobility to roam quickly across the map and gank side lanes.",
             iconUrl = "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "duskblade_of_draktharr",
             name = "Filoscuro de Draktharr",
             nameEn = "Duskblade of Draktharr",
@@ -121,7 +121,7 @@ object WildRiftItemsData {
             coachTipEn = "Key burst item for AD assassins. Delivers a devastating first strike with a massive slow to lock in combos, resetting on champion takedowns in teamfights.",
             iconUrl = "file:///android_asset/offline_images/d23e07c846f67b0006a5e83797744539.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "infinity_edge",
             name = "Filo Infinito",
             nameEn = "Infinity Edge",
@@ -135,7 +135,7 @@ object WildRiftItemsData {
             coachTipEn = "The ultimate critical strike item for marksmen. Drastically boosts auto-attack burst damage.",
             iconUrl = "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "mortal_reminder",
             name = "Recordatorio letal",
             nameEn = "Mortal Reminder",
@@ -149,7 +149,7 @@ object WildRiftItemsData {
             coachTipEn = "Crucial purchase when the enemy composition features high healing (Soraka, Yuumi) or lifesteal (Olaf, Aatrox).",
             iconUrl = "file:///android_asset/offline_images/015057112ebdc55f96b3dfa9252ba3c5.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "black_cleaver",
             name = "Cuchilla negra",
             nameEn = "Black Cleaver",
@@ -169,7 +169,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Item indispensável para campeões de Dano Físico contra oponentes com Armadura. Reduz a Armadura inimiga com cada acerto e concede Velocidade de Movimento para manter a perseguição.",
             iconUrl = "file:///android_asset/offline_images/c98e3aff8b69a404445bcedab6bc9b96.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "manamune",
             name = "Manamune",
             nameEn = "Manamune",
@@ -187,7 +187,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Indispensável para atiradores focados em spam de habilidades (como Ezreal ou Varus) para solucionar problemas de mana e obter um ótimo escalonamento.",
             iconUrl = "file:///android_asset/offline_images/aba4fb973b550edadd3be632fb355f74.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "muramana",
             name = "Muramana",
             nameEn = "Muramana",
@@ -201,7 +201,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for AD champions who rely on mana to activate their abilities and auto-attacks. It provides bonuses to attack damage, maximum mana, and ability haste, significantly enhancing your attacks and abilities. The",
             iconUrl = "file:///android_asset/offline_images/08f2da37400fbff1179c90b251358dac.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "trinity_force",
             name = "Fuerza de trinidad",
             nameEn = "Trinity Force",
@@ -215,7 +215,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Great early spike for marksmen who weave abilities with basic attacks (Ezreal, Lucian, Corki).",
             iconUrl = "file:///android_asset/offline_images/1475e9776e1486a548893bcbfba5b0ce.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "maw_of_malmortius",
             name = "Fauces de Malmortius",
             nameEn = "Maw of Malmortius",
@@ -233,7 +233,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "A melhor proteção contra magos de dano explosivo e assassinos de Poder de Habilidade (como Syndra, Akali ou Evelynn).",
             iconUrl = "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "death_s_dance",
             name = "Baile de la muerte",
             nameEn = "Death's Dance",
@@ -247,7 +247,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item converts incoming damage into a delayed effect, letting you stay in fights longer and smooth out damage spikes. It boosts your survivability with armor and ability haste, and successful takedowns cleanse the delayed damage while instantly healing you. — Perfect for bruisers and tanks who need to absorb bursts of damage and then quickly recover to keep fighting.",
             iconUrl = "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "phantom_dancer",
             name = "Bailarín Espectral",
             nameEn = "Phantom Dancer",
@@ -261,7 +261,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Provides immense attack speed and mobility to effectively kite enemies during fights.",
             iconUrl = "file:///android_asset/offline_images/8e27a7598b14f664ed0c345151d0278c.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "nashor_s_tooth",
             name = "Diente de Nashor",
             nameEn = "Nashor's Tooth",
@@ -275,7 +275,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Key item for hybrid champions leveraging attack speed and on-hit magic damage.",
             iconUrl = "file:///android_asset/offline_images/721c3fa5d5bbda08bcc8de214d0ff715.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "wit_s_end",
             name = "Final del ingenio",
             nameEn = "Wit's End",
@@ -289,7 +289,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Excellent defensive/offensive hybrid item for marksmen facing heavy magic damage compositions.",
             iconUrl = "file:///android_asset/offline_images/77c41c15fa7642a1d42a2717e2a7e6ca.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "essence_reaver",
             name = "Segador de esencia",
             nameEn = "Essence Reaver",
@@ -303,7 +303,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Perfect for caster marksmen who rely on frequent ability usage alongside critical strikes.",
             iconUrl = "file:///android_asset/offline_images/essence_reaver.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "serylda_s_grudge",
             name = "Rencor de Serylda",
             nameEn = "Serylda’s Grudge",
@@ -317,7 +317,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item blends heavy armor penetration with crowd control: your active abilities and empowered hits slow targets, and repeated slows trigger a bleed that also applies grievous wounds. Perfect for champions who need to kite, execute priority targets, and curb their healing.",
             iconUrl = "file:///android_asset/offline_images/672c2f3191c28c8f729dd0b4a67d17b8.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "navori_quickblades",
             name = "Filoveloz de Navori",
             nameEn = "Navori Quickblades",
@@ -331,7 +331,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Perfect for caster marksmen who constantly cycle H1, H2, and H3 during combat.",
             iconUrl = "file:///android_asset/offline_images/ddb7b42ff818a8e2d2f541c9dc96a0fc.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "edge_of_night",
             name = "Filo de la noche",
             nameEn = "Edge of Night",
@@ -345,7 +345,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Indispensable offensive-defensive item against champions with targeted CC or long-range initiates.",
             iconUrl = "file:///android_asset/offline_images/9d3f49bbe18458be5b63ce1d74b3e91c.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "divine_sunderer",
             name = "Desgarrador divino",
             nameEn = "Divine Sunderer",
@@ -359,7 +359,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item offers a strong blend of survivability and damage: after using an ability your next basic attack is empowered to deal bonus damage based on the target’s max health, and it heals you when used on enemy champions. Perfect for fighter-bruisiers and solo laners who weave abilities into autos and need sustain versus tanks and duelists.",
             iconUrl = "file:///android_asset/offline_images/691296760b88f9735ddee2799f4992d4.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "serpent_s_fang",
             name = "Colmillo de serpiente",
             nameEn = "Serpent's Fang",
@@ -373,7 +373,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Essential anti-shield item against enemy comps with heavy shields (Lulu, Karma, Lux, Shen, Sterak). Drastically reduces new and existing shields.",
             iconUrl = "file:///android_asset/offline_images/9056fe258a17cfe13919ec1b3e222f4a.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "chempunk_chainsword",
             name = "Mecanoespada punki",
             nameEn = "Chempunk Chainsword",
@@ -391,7 +391,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Item essencial para lutadores e assassinos contra composições com alta cura e sustentação (Dr. Mundo, Soraka, Yuumi, Aatrox, Darius). Corta 50% das curas inimigas enquanto concede vida e dano.",
             iconUrl = "file:///android_asset/offline_images/86e753262caa8f290509232bb4e34f15.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "the_collector",
             name = "Recaudadora",
             nameEn = "The Collector",
@@ -405,7 +405,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Ideal for securing early kills, snowballing gold advantages, and finishing off low health enemies.",
             iconUrl = "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "sterak_s_gage",
             name = "Calibrador de Sterak",
             nameEn = "Sterak's Gage",
@@ -419,7 +419,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for champions who need survivability in team fights, granting a massive shield and tenacity when dropping below 35% health.",
             iconUrl = "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "spear_of_shojin",
             name = "Lanza de Shojin",
             nameEn = "Spear of Shojin",
@@ -433,7 +433,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item provides a mix of survivability and empowered ability usage: it increases your staying power, reduces ability cooldowns, and temporarily boosts your ability and passive damage after engaging enemies or clearing monsters. Perfect for duelist bruisers who want to cast more often in fights and gain an edge in extended skirmishes or split-push scenarios. Suited for champions who weave autos with frequent ability casts.",
             iconUrl = "file:///android_asset/offline_images/41f521861c5c4a43c061989ace78c171.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "titanic_hydra",
             name = "Hidra titánica",
             nameEn = "Titanic Hydra",
@@ -451,7 +451,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Este item converte seus ataques básicos em uma ferramenta de área (AoE): periodicamente seu próximo golpe se torna um ataque de varredura que causa Dano Físico adicional aos inimigos próximos e afeta alvos atrás do golpe principal. Acelera a limpeza de tropas, adiciona dano extra em lutas de equipe e ajuda a pressionar estruturas quando construído adequadamente.",
             iconUrl = "file:///android_asset/offline_images/a587350906b08db7aacfec025271682b.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "terminus",
             name = "El final",
             nameEn = "Terminus",
@@ -465,7 +465,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Outstanding dual scaling item providing both defensive resistances and offensive penetration in long skirmishes.",
             iconUrl = "file:///android_asset/offline_images/75dd4d584ca6b34dad5d3d12404ca40d.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "sundered_sky",
             name = "Firmamento desgarrado",
             nameEn = "Sundered Sky",
@@ -483,7 +483,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Excelente para iniciações e trocas na rota. Seu primeiro golpe contra cada inimigo causa um acerto crítico devastador e cura uma parte da sua Vida perdida.",
             iconUrl = "file:///android_asset/offline_images/e23e4ba0819c936167a00e9a1aee7389.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "eclipse",
             name = "Eclipse",
             nameEn = "Eclipse",
@@ -501,21 +501,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Este item é ideal para assassinos e duelistas que buscam causar dano por percentual de vida e obter um escudo de proteção constante em trocas rápidas.",
             iconUrl = "file:///android_asset/offline_images/58e5a4886b2f0f5814d36b8dfabff5a6.webp"
         ),
-        WildRiftItem(
-            id = "soul_transfer",
-            name = "Arcoescudo Inmortal",
-            nameEn = "Soul Transfer",
-            category = "Objetos con Daños Físicos",
-            goldCost = 3200,
-            stats = "+25 Daño de Ataque • +25% Tasa Crítica • +30% Velocidad de Ataque",
-            statsEn = "+25 Attack Damage • +25% Critical Rate • +30% Attack Speed",
-            passive = "Danza de las sombras: cuando tu ataque golpea críticamente a un campeón enemigo o a un monstruo grande, invoca un clon que dura 4 segundos para atacar a los enemigos cercanos. El clon hereda el 20% de tu daño de ataque y además gana el 30% de tu índice crítico como velocidad de ataque. Pueden existir hasta dos clones a la vez. Si un clon se aleja más de 600 unidades de ti, desaparecerá antes de tiempo.",
-            passiveEn = "Shadow Dance: When your attack Critically Strikes an enemy champion or a large monster, summon a clone that lasts 4 second(s) to attack nearby enemies. The clone inherits 20% of your Attack Damage and additionally gains 30% of your Critical Rate as Attack Speed. Up to two clones can exist at one time.If a clone moves more than 600 units away from you, it will disappear early.",
-            coachTip = "Este objeto es perfecto para campeones que dependen de golpes críticos y ataques automáticos, especialmente en peleas en equipo prolongadas. Otorga daño de ataque adicional, probabilidad de golpe crítico y velocidad de ataque. En un golpe crítico contra un campeón o un monstruo grande, invocas un clon que ataca a los enemigos cercanos; el clon hereda una parte de tu DA y convierte la probabilidad de crítico adicional en velocidad de ataque. Ideal para tiradores que frecuentemente lanzan críticos y necesitan daño adicional contra múltiples objetivos.",
-            coachTipEn = "This item is perfect for champions relying on critical strikes and auto-attacks, especially in extended teamfights. It grants bonus attack damage, critical strike chance, and attack speed. On a critical strike against a champion or large monster, you summon a clone that attacks nearby enemies— the clone inherits a portion of your AD and converts extra crit chance into attack speed. Ideal for marksmen who frequently land crits and need extra multi-target damage.",
-            iconUrl = "file:///android_asset/offline_images/df3df474dc044b21421f740011f419a2.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "lord_dominik_s_regards",
             name = "Recuerdos de Lord Dominik",
             nameEn = "Lord Dominik's Regards",
@@ -529,7 +515,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Essential when enemy frontline stacks high armor and health.",
             iconUrl = "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "experimental_hexplate",
             name = "Experimento de hexarmadura",
             nameEn = "Experimental Hexplate",
@@ -547,7 +533,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Excelente em campeões cujo estilo de jogo gira em torno de suas ultimates, como Nocturne ou Xin Zhao.",
             iconUrl = "file:///android_asset/offline_images/b2e930bbfbaf70f3183bf1732eb6c052.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "hullbreaker",
             name = "Rompecascos",
             nameEn = "Hullbreaker",
@@ -561,7 +547,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "The ultimate split-push item. If you plan to ignore your team to take down towers, this is your item.",
             iconUrl = "file:///android_asset/offline_images/0678b476a01b8e1b5fa9754e8858ee93.png"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "luden_s_echo",
             name = "Eco de Luden",
             nameEn = "Luden's Echo",
@@ -575,7 +561,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item greatly enhances your burst damage by empowering your next damaging ability or empowered attack with an additional magic explosion that also strikes nearby enemies. It is an excellent choice for mages who excel at wave clearing, poking multiple targets, and dominating short trades with high burst potential.",
             iconUrl = "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "morellonomicon",
             name = "Morellonomicón",
             nameEn = "Morellonomicon",
@@ -589,7 +575,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is designed to counter champions with strong healing and sustain. Any magic damage you deal applies Grievous Wounds, greatly reducing the effectiveness of enemy healing and regeneration. It is an excellent choice for mages and AP supports against teams that rely heavily on healing, lifesteal, or regeneration.",
             iconUrl = "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "rabadon_s_deathcap",
             name = "Sombrero mortal de Rabadon",
             nameEn = "Rabadon's Deathcap",
@@ -603,7 +589,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is the ultimate Ability Power amplifier for any mage. It not only provides a massive amount of AP but also increases your total Ability Power, dramatically boosting your spell damage, healing, and all other AP scaling effects. An essential late-game purchase for champions looking to maximize their spellcasting potential and unleash devastating burst damage.",
             iconUrl = "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "rylai_s_crystal_scepter",
             name = "Cetro de cristal de Rylai",
             nameEn = "Rylai's Crystal Scepter",
@@ -617,7 +603,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item enhances your crowd control by causing your abilities and empowered attacks to slow enemies with every hit. The bonus health improves your durability, while the consistent slow makes it much easier to land follow-up abilities, chase fleeing targets, and support your teammates. It is an excellent choice for damage-over-time mages and champions who rely on keeping enemies within the range of their abilities.",
             iconUrl = "file:///android_asset/offline_images/da88ffd23441e3d461aec00c69f066b3.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "liandry_s_torment",
             name = "Tormento de Liandry",
             nameEn = "Liandry's Torment",
@@ -631,7 +617,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item excels in extended fights. Your abilities and empowered attacks ignite enemies, dealing damage over time based on their maximum health, while your overall damage steadily increases the longer you remain in combat. It is an excellent choice for damage-over-time mages and AP bruisers who want to wear down even the toughest frontline champions.",
             iconUrl = "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "rod_of_ages",
             name = "Vara de las edades",
             nameEn = "Rod of Ages",
@@ -645,7 +631,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item grows stronger over the course of the game, gradually increasing its stats and becoming one of the best scaling options available. It provides an excellent balance of durability, mana, and Ability Power while restoring both health and mana during combat, allowing you to stay in fights much longer. A perfect choice for mages and AP bruisers who thrive in the late game and excel in extended teamfights.",
             iconUrl = "file:///android_asset/offline_images/3961150fddbbe87f5e4b119da3cf03ff.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "lich_bane",
             name = "Perdición del liche",
             nameEn = "Lich Bane",
@@ -659,21 +645,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for champions who weave abilities between their basic attacks. After casting a spell, your next attack is empowered with a powerful burst of bonus magic damage, greatly increasing your combo potential. The bonus movement speed also improves your mobility, making it easier to reposition and chase targets. An excellent choice for mobile mages, AP assassins, and hybrid champions who rely on short, high-damage ability rotations.",
             iconUrl = "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp"
         ),
-        WildRiftItem(
-            id = "nashor_s_tooth",
-            name = "Diente de Nashor",
-            nameEn = "Nashor's Tooth",
-            category = "Objetos de Daño Mágico",
-            goldCost = 2900,
-            stats = "+45% Velocidad de ataque • +20 Celeridad de habilidad",
-            statsEn = "+45% Attack Speed • +20 Ability Haste",
-            passive = "Mordedura mordaz: Los ataques básicos infligen daño mágico adicional al impactar en función de tu daño de ataque o poder de habilidad.",
-            passiveEn = "Icathian Bite: Basic attacks deal bonus magic damage on hit scaling with AP/AD.",
-            coachTip = "Un objeto clave para campeones híbridos que aprovechan al máximo la velocidad de ataque y el daño por impacto.",
-            coachTipEn = "Key item for hybrid champions leveraging attack speed and on-hit magic damage.",
-            iconUrl = "file:///android_asset/offline_images/721c3fa5d5bbda08bcc8de214d0ff715.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "archangel_s_staff",
             name = "Bastón del arcángel",
             nameEn = "Archangel's Staff",
@@ -687,7 +659,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for mages who rely on a large mana pool and need significant ability power scaling.",
             iconUrl = "file:///android_asset/offline_images/53c64305bd1c31856f272d2196a1163e.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "seraph_s_embrace",
             name = "Abrazo del serafín",
             nameEn = "Seraph's Embrace",
@@ -705,7 +677,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Forma aprimorada do Cajado do Arcanjo. Concede escudo de sobrevivência de 16% do Mana máximo e altíssimo poder mágico.",
             iconUrl = "file:///android_asset/offline_images/0bfb36d8b1370271319b5895293c4056.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "infinity_orb",
             name = "Orbe infinito",
             nameEn = "Infinity Orb",
@@ -719,7 +691,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item greatly enhances a mage's finishing power. It provides a large boost to Ability Power and magic penetration while allowing your abilities and empowered attacks to deal increased damage to low-health enemies. An excellent choice for mages and AP assassins who want to execute targets more reliably and maximize their burst potential.",
             iconUrl = "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "oceanid_s_trident",
             name = "Tridente de Oceánida",
             nameEn = "Oceanid's Trident",
@@ -733,7 +705,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is designed to counter shield-heavy champions. Your abilities significantly reduce the effectiveness of shields enemies receive, while the first hit can also weaken shields that are already active. It is an excellent choice for mages and AP supports against shield-reliant compositions, allowing your team to break through enemy defenses and eliminate priority targets more effectively.",
             iconUrl = "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "cosmic_drive",
             name = "Impulso Cósmico",
             nameEn = "Cosmic Drive",
@@ -747,7 +719,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item combines Ability Power, durability, and exceptional mobility. Dealing damage with your abilities grants a burst of movement speed, making it easier to kite enemies, chase fleeing targets, or reposition safely during fights. It is an excellent choice for mobile mages, AP bruisers, and champions who thrive in extended skirmishes while constantly staying on the move.",
             iconUrl = "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "riftmaker",
             name = "Creagrietas",
             nameEn = "Riftmaker",
@@ -761,7 +733,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is built for extended fights, gradually increasing your damage the longer you remain in combat. Once fully ramped up, it grants Omni Vamp for improved sustain, while your bonus Health is partially converted into Ability Power, further increasing your overall damage. An excellent choice for AP bruisers and battlemages who excel in prolonged teamfights and thrive by scaling throughout combat.",
             iconUrl = "file:///android_asset/offline_images/8ab6dc6493eda1a50bf731f8fa715087.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "horizon_focus",
             name = "Precisión infalible",
             nameEn = "Horizon Focus",
@@ -775,21 +747,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for long-range mages and poke-oriented champions. Hitting an enemy with a spell from a distance marks and reveals them while increasing all subsequent damage they take. It also exposes nearby enemy champions, providing valuable vision for your team and making follow-up attacks much easier. An excellent choice for artillery mages and champions who excel at controlling fights from a safe distance.",
             iconUrl = "file:///android_asset/offline_images/8f0a15511fe5a7a9cce26cc981494f47.webp"
         ),
-        WildRiftItem(
-            id = "runaan_s_hurricane",
-            name = "Huracán de Runaan",
-            nameEn = "Runaan's Hurricane",
-            category = "Objetos de Daño Mágico",
-            goldCost = 2900,
-            stats = "+25% Tasa Crítica • +35% Velocidad de ataque • +5% Velocidad de movimiento",
-            statsEn = "+25% Critical Rate • +35% Attack Speed • +5% Move Speed",
-            passive = "Viento furioso: Los ataques básicos a distancia disparan proyectiles a hasta 2 enemigos cercanos, cada uno de los cuales inflige daño físico equivalente al 55% del daño de ataque. Pueden asestar golpes críticos y aplican efectos al impactar.",
-            passiveEn = "Wind's Fury: Basic ranged attacks fire bolts at up to 2 nearby enemies, dealing 55% physical damage each. Bolts can critically strike and apply on-hit effects.",
-            coachTip = "Imprescindible para tiradores a distancia con fuertes efectos al impactar o daño de área en peleas agrupadas.",
-            coachTipEn = "Crucial for ranged marksmen with strong on-hit effects or AoE damage in grouped teamfights.",
-            iconUrl = "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "malignance",
             name = "Malignidad",
             nameEn = "Malignance",
@@ -803,7 +761,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for champions who focus on their ultimate abilities and want to maximize their effectiveness in fights. It provides bonuses to ability power, magic penetration, maximum mana, and ability haste. The",
             iconUrl = "file:///android_asset/offline_images/68be73b96d8fcacbb963525fd45e91c5.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "guinsoo_s_rageblade",
             name = "Hoja de furia de Guinsoo",
             nameEn = "Guinsoo's Rageblade",
@@ -817,7 +775,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Exponentially empowers on-hit marksmen and champions with stackable passives (like Vayne or Kai'Sa).",
             iconUrl = "file:///android_asset/offline_images/82b3ab99fbfd8659968e324bfeeb1ae6.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "blackfire_torch",
             name = "Antorcha de fuego negro",
             nameEn = "Blackfire Torch",
@@ -831,7 +789,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for mages who specialize in sustained spell damage. Your abilities ignite enemies, burning them over time, and the more enemies affected by the burn, the more Ability Power you gain. It excels on champions with area-of-effect and damage-over-time abilities, boosting both your overall damage and your ability to clear waves and jungle camps efficiently.",
             iconUrl = "file:///android_asset/offline_images/9b539fd10498d48a66695583ed2736c1.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "dusk_and_dawn",
             name = "Amanecer y anochecer",
             nameEn = "Dusk and Dawn",
@@ -845,7 +803,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for champions who weave abilities into their basic attacks. After casting a spell, your next attack is empowered with bonus magic damage and then triggers all on-hit effects an additional time, dramatically increasing your overall damage output. It excels on hybrid AP fighters and melee mages who rely on chaining abilities and auto-attacks to maximize their DPS.",
             iconUrl = "file:///android_asset/offline_images/76543735b249a44f523b705363ec15cc.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "stormsurge",
             name = "Sobrecarga tormentosa",
             nameEn = "Stormsurge",
@@ -859,7 +817,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for mages capable of delivering heavy burst damage. After landing a strong combo, it marks the target, grants you a burst of movement speed, and follows up with an additional magic strike. If the target dies before the effect triggers, it immediately explodes in an area and rewards you with bonus gold. An excellent choice for scaling mages and AP assassins looking to secure kills and snowball their advantage.",
             iconUrl = "file:///android_asset/offline_images/420de2dd4a92054b5d8520f26c3a0c53.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "void_staff",
             name = "Bastón del Vacío",
             nameEn = "Void Staff",
@@ -873,7 +831,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is the premier choice against enemies stacking magic resistance. It greatly increases the effectiveness of your spells through powerful magic penetration, allowing you to deal consistent damage even to the toughest targets. An excellent pickup for any mage once the enemy team starts investing in magic resistance.",
             iconUrl = "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "cryptbloom",
             name = "Florescencia sepulcral",
             nameEn = "Cryptbloom",
@@ -887,7 +845,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item combines powerful magic penetration with valuable team utility. In addition to boosting your spell damage, champions you recently damaged release a healing nova upon death, restoring health to nearby allies. It is an excellent choice for mages who want to deal heavy damage while providing extra sustain for their team during extended teamfights.",
             iconUrl = "file:///android_asset/offline_images/beab6482899783d2692a415124c086ee.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "bloodletter_s_curse",
             name = "Maldición sanguinolenta",
             nameEn = "Bloodletter's Curse",
@@ -901,7 +859,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item greatly enhances your magic damage by gradually reducing the target's magic resistance whenever your abilities or passive effects deal damage. It excels in extended fights, allowing both you and your AP teammates to deal increasingly higher damage to the same target. An excellent choice for AP bruisers, damage-over-time mages, and champions who can consistently keep the debuff active on multiple enemies.",
             iconUrl = "file:///android_asset/offline_images/ce15eea1024a5297205252cd85892523.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "banshees_veil",
             name = "Velo del hada de la muerte",
             nameEn = "Banshee's Veil",
@@ -915,7 +873,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item provides strong protection against magic damage while granting a spell shield that blocks the next hostile ability. It is especially effective against champions who rely on landing a single key spell to start their combo or burst you down. A great choice for mages and AP fighters who need to maintain safe positioning and deny enemy engage or pick potential.",
             iconUrl = "file:///android_asset/offline_images/cf77ad618891d973e7cd6babb40f24a5.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "hextech_roketbelt",
             name = "Cintomisil hextech",
             nameEn = "Hextech Roketbelt",
@@ -929,7 +887,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item combines Ability Power with extra mobility, allowing you to quickly close the gap or reposition during combat. Its active grants a short dash while firing a cone of rockets that deal area magic damage. It is an excellent choice for AP assassins, mobile mages, and engage-oriented champions who need to dive in, secure kills, or dodge key enemy abilities.",
             iconUrl = "file:///android_asset/offline_images/7edd3e0a1f50a5616ea44d0628f13d15.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "zhonya_s_hourglass",
             name = "Reloj de arena de Zhonya",
             nameEn = "Zhonya's Hourglass",
@@ -943,7 +901,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item combines high Ability Power with extra armor, while its defining feature is the ability to become completely invulnerable for a short time. Its active effect allows you to survive lethal damage, avoid crucial enemy abilities, or buy time for your cooldowns to recover. It is an excellent choice for mages and AP assassins who need to outlive enemy focus and turn the tide of a teamfight.",
             iconUrl = "file:///android_asset/offline_images/2baadaec94cd1e205e425a57cb1f52e5.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "redemption",
             name = "Redención",
             nameEn = "Redemption",
@@ -957,21 +915,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is designed to provide game-changing team support. Its active restores health to all allied units in a large area while dealing true damage to enemy champions, making it a powerful tool for turning the tide of teamfights. The ability to cast it even after death makes it especially valuable for supports who want to continue impacting fights even after being eliminated.",
             iconUrl = "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp"
         ),
-        WildRiftItem(
-            id = "guardian_angel",
-            name = "Ángel de la guarda",
-            nameEn = "Guardian Angel",
-            category = "Objetos Defensivos",
-            goldCost = 3200,
-            stats = "+45 Daño de ataque • +40 Armadura",
-            statsEn = "+45 Attack Damage • +40 Armor",
-            passive = "Resucitar: Tras sufrir daño letal, restaura un 50% de la vida básica y un 100% del maná máximo después de 4 s de inmovilidad (180 s de enfriamiento).",
-            passiveEn = "Reborn: Upon taking lethal damage, restores 50% base Health and 100% max Mana after 4s stasis (180s Cooldown).",
-            coachTip = "Ideal para la fase tardía (Late Game) para asegurar peleas de equipo decisivas y evitar ser eliminado antes de aportar tu daño.",
-            coachTipEn = "Ideal late-game purchase to secure decisive teamfights and prevent getting picked before dealing damage.",
-            iconUrl = "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "sunfire_aegis",
             name = "Égida de fuego solar",
             nameEn = "Sunfire Aegis",
@@ -985,7 +929,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for tanks and bruisers who spend most of the fight in the middle of the action. It continuously burns nearby enemies, with the damage increasing the longer you remain in combat, and once fully stacked, your attacks spread additional fire around the target. It is an excellent choice for frontline champions who want consistent area damage while maintaining high durability, as well as faster wave and jungle camp clearing.",
             iconUrl = "file:///android_asset/offline_images/446cb1deb4616fba85f68c078be08339.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "randuin_s_omen",
             name = "Presagio de Randuin",
             nameEn = "Randuin's Omen",
@@ -999,7 +943,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is built to counter crit-heavy builds. It provides a large health pool and armor while reducing damage from critical strikes, making you much tougher in head-on engagements. When you are critically struck, you gain stacks that boost your movement and slow resistance, helping you hold position and control fight spacing. — Perfect for tanks and bruisers who need to stand up to high-crit auto-attackers and survive extended teamfights.",
             iconUrl = "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "thornmail",
             name = "Malla de espinas",
             nameEn = "Thornmail",
@@ -1013,7 +957,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item reflects a portion of incoming physical damage back to attackers as magic damage and applies an effect that reduces enemy healing effectiveness. A strong pick versus teams with heavy auto-attack damage and sustain — ideal for tanks and bruisers who need to absorb focus and cut down opponent healing.",
             iconUrl = "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "warmog_s_armor",
             name = "Armadura de Warmog",
             nameEn = "Warmog's Armor",
@@ -1027,21 +971,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is a top survivability pickup: it grants a massive health pool and strong out-of-combat regeneration, letting you recover quickly between fights. It also amplifies healing and shields, making you much harder to finish off. Perfect for tanks and bruisers who need high survivability and fast recovery after engagements.",
             iconUrl = "file:///android_asset/offline_images/f141ec3263251399bc6226e325c1d998.webp"
         ),
-        WildRiftItem(
-            id = "sterak_s_gage",
-            name = "Calibrador de Sterak",
-            nameEn = "Sterak's Gage",
-            category = "Objetos Defensivos",
-            goldCost = 3200,
-            stats = "+400 Vida máxima • +20% Tenacidad",
-            statsEn = "+400 Max Health • +20% Tenacity",
-            passive = "Mano dura: +50% del daño de ataque básico como daño físico adicional.\nSalvavidas: Al recibir daño que te haga bajar del 35% de vida, recibes un escudo equivalente al 75% de la vida adicional que se desvanece a lo largo de 5 s (70 s de enfriamiento).\nFuria de Sterak: Activar Salvavidas aumenta tu tamaño y te otorga un 30% de tenacidad durante 8 s.",
-            passiveEn = "Heavy Handed: +50% base Attack Damage as bonus Attack Damage.\nLifeline: Taking damage that reduces Health below 35% grants a shield equal to 75% bonus Health decaying over 5s (70s Cooldown).\nSterak's Fury: Triggering Lifeline increases size and grants 30% Tenacity for 8s.",
-            coachTip = "El objeto definitivo de supervivencia para colosos y luchadores en primera línea. Otorga un escudo masivo y tenacidad al descender del 35% de vida para soportar el burst enemigo.",
-            coachTipEn = "This item is perfect for champions who need survivability in team fights, granting a massive shield and tenacity when dropping below 35% health.",
-            iconUrl = "file:///android_asset/offline_images/919bc13bc2461bb522082722e34a456d.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "iceborn_gauntlet",
             name = "Guantelete de hielo",
             nameEn = "Iceborn Gauntlet",
@@ -1055,7 +985,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item greatly boosts your health, armor, mana, and ability haste, making you much tankier. After casting an ability, your next attack in an area deals bonus physical damage and creates an icy field that slows enemies inside by 30%. The field’s size scales with your armor. This makes the item a great choice for champions who want to combine high survivability with crowd control and extra AOE damage.",
             iconUrl = "file:///android_asset/offline_images/0ec5d7a3b173c4f04ca3cc32e35c2e43.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "dead_man_s_plate",
             name = "Coraza del muerto",
             nameEn = "Dead Man's Plate",
@@ -1069,7 +999,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item provides a substantial boost to health and armor, and its “Momentum” passive builds movement speed as you move—up to a cap—until you land an attack, which then triggers “Crushing Blow”, dealing bonus magic damage based on the momentum removed and slowing enemies at full stacks. This makes it an excellent choice for tanks and bruisers who need extra mobility to engage quickly and sustain through fights. Tips: ideal for champions who need to close distance and absorb damage; pairs extremely well with Spellblade items (e.g., Divine Sunderer) for additional burst damage on engage.",
             iconUrl = "file:///android_asset/offline_images/856d8989c3c87e50fc7b8e997f9facbc.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "zeke_s_convergence",
             name = "Convergencia de Zeke",
             nameEn = "Zeke's Convergence",
@@ -1083,21 +1013,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for tanky support champions who initiate fights and provide frontline crowd control. It grants armor, health, mana, and ability haste. When you cast your ultimate, an icy blizzard surrounds you, dealing damage and slowing enemies, while leaving a trail that grants bonus movement speed to allies. During the effect, the attacks of a nearby marked ally deal additional magic damage, giving your team a powerful advantage in teamfights.",
             iconUrl = "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp"
         ),
-        WildRiftItem(
-            id = "death_s_dance",
-            name = "Baile de la muerte",
-            nameEn = "Death's Dance",
-            category = "Objetos Defensivos",
-            goldCost = 3300,
-            stats = "+50 Daño de ataque • +45 Armadura • +15 Velocidad de habilidades",
-            statsEn = "+50 Attack Damage • +45 Armor • +15 Ability Haste",
-            passive = "Cauterizar: Un 30% de todo el daño físico y daño mágico recibidos (12% si se trata de un campeón a distancia) se inflige a lo largo de 3 s como daño verdadero.\nReto: Cuando muere un campeón al que has infligido daño en los últimos 3 s, se elimina una reserva de daño de Cauterizar restante y restaura vida equivalente al 90% del daño de ataque adicional a lo largo de 2 s.",
-            passiveEn = "Cauterize: 30% of physical and magic damage received (12% for ranged) is taken over 3s as true damage.\nDefy: Takedowns cleanse Cauterize remaining damage pool and restore 90% bonus AD as Health over 2s.",
-            coachTip = "Este elemento convierte el daño recibido en un efecto retardado, lo que te permite permanecer en las peleas por más tiempo y suavizar los picos de daño. Aumenta tu capacidad de supervivencia con armadura y aceleración de habilidades, y los derribos exitosos limpian el daño retrasado mientras te curan instantáneamente. — Perfecto para matones y tanques que necesitan absorber ráfagas de daño y luego recuperarse rápidamente para seguir luchando.",
-            coachTipEn = "This item converts incoming damage into a delayed effect, letting you stay in fights longer and smooth out damage spikes. It boosts your survivability with armor and ability haste, and successful takedowns cleanse the delayed damage while instantly healing you. — Perfect for bruisers and tanks who need to absorb bursts of damage and then quickly recover to keep fighting.",
-            iconUrl = "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "winter_s_approach",
             name = "Llegada del invierno",
             nameEn = "Winter's Approach",
@@ -1111,7 +1027,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Perfect defensive item for tanks needing mana scaling and massive shielding upon transforming.",
             iconUrl = "file:///android_asset/offline_images/ed3f1fac19870153dfdc6bed7a071edd.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "fimbulwinter",
             name = "Fimbulinvierno",
             nameEn = "Fimbulwinter",
@@ -1125,7 +1041,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item provides massive mana, health, and ability haste, and its “Frozen Colossus” passive consumes mana when you slow or immobilize an enemy to grant a strong shield that scales with your mana pool and increases near multiple enemies. Perfect for spell-weaving tanks needing extra protection from their mana reserves.",
             iconUrl = "file:///android_asset/offline_images/ae7584f101f22466aaeaca45438a8371.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "force_of_nature",
             name = "Fuerza de la naturaleza",
             nameEn = "Force of Nature",
@@ -1139,7 +1055,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item provides a substantial boost to health and magic resistance, and its “Absorb” passive stacks up when you take ability damage from enemy champions, reducing all incoming magic damage and granting bonus movement speed at max stacks. It’s perfect for tanks who need to withstand teams heavy in magic damage and maintain mobility to be in the right position during fights. Pick this up when the enemy team builds magic damage (e.g., Syndra, Brand) and you need extra movement speed to initiate effectively or escape dangerous situations.",
             iconUrl = "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "frozen_heart",
             name = "Corazón de hielo",
             nameEn = "Frozen Heart",
@@ -1153,7 +1069,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is ideal for tanks and support champions who need to slow enemy attack speed and maintain a healthy mana pool. It provides substantial bonuses to armor, mana, and ability haste. The “Winter’s Caress” passive applies up to four stacks of Chill on enemy champions through your basic attacks, abilities, or any magic damage they take—each stack slows their attack speed by 9%, up to 36% at full stacks. This weakens enemy marksmen and fighters, making it harder for them to deal sustained damage in fights.",
             iconUrl = "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "dawnshroud",
             name = "Velo del amanecer",
             nameEn = "Dawnshroud",
@@ -1167,8 +1083,8 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is great for tanks and support initiators. When you immobilize an enemy or are immobilized near foes, it reveals nearby champions, deals an explosive burst of magic damage, and briefly boosts your defenses. Perfect for zone control, reliable engages, and countering enemy dive attempts.",
             iconUrl = "file:///android_asset/offline_images/dawnshroud.webp"
         ),
-        WildRiftItem(
-            id = "amaranth_s_twinguard",
+WildRiftItem(
+            id = "amaranth_twinguard",
             name = "Coraza dual purpúrea",
             nameEn = "Amaranth's Twinguard",
             category = "Objetos Defensivos",
@@ -1181,7 +1097,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for champions who spend a lot of time in the thick of fights and need extra durability and crowd control resistance. It provides bonuses to armor and magic resistance. The “Endurance” passive stacks up to five times during combat, and at full stacks you increase in size, gain enhanced tenacity, and receive bonus armor and magic resistance until you exit combat. This allows you to stay in the frontline longer and withstand enemy attacks more effectively. Due to its versatile utility, this item is one of the most popular defensive choices in the game and is used by the majority of tanks, fighters, and other classes.",
             iconUrl = "file:///android_asset/offline_images/amaranths_twinguard.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "mantle_of_the_twelfth_hour",
             name = "Manto de la Duodécima Hora",
             nameEn = "Mantle of the Twelfth Hour",
@@ -1195,7 +1111,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for champions who find themselves on the brink of death and need an instant survivability boost. When you take damage that drops you below 35% health, you gain bonus maximum health, significant movement speed, and high slow resistance for a short duration. This gives you the chance to escape danger or stay in the fight. The item is especially effective for tanks and bruisers who need to endure critical moments while retaining mobility at low health.",
             iconUrl = "file:///android_asset/offline_images/0529996e54514079a61b4cee270526fb.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "searing_crown",
             name = "Corona abrasadora",
             nameEn = "Searing Crown",
@@ -1209,7 +1125,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for champions who want to combine high survivability with bonus health-percentage damage. It provides a substantial boost to health and armor, and its “Fiery Touch” passive burns targets on hit with attacks or abilities, dealing magic damage equal to a percentage of their maximum health. This makes it effective against tanks and high-health champions, while also speeding up waveclear and jungle clear. Ideal for tanks and bruisers who want to leave a mark in fights while staying durable.",
             iconUrl = "file:///android_asset/offline_images/8c585684ae11f4bd1818521dc47bcc3d.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "heartsteel",
             name = "Corazón de acero",
             nameEn = "Heartsteel",
@@ -1223,39 +1139,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for tanks and bruisers who want to combine maximum survivability with massive burst damage against enemy champions. It provides a huge health pool, enhanced out-of-combat regeneration, and ability haste. The “Colossal Consumption” passive requires a 2.5-second charge when near an enemy champion, after which your next strike deals significant bonus physical damage based on your max health and grants you 15% of the damage dealt as bonus health. This allows you to both absorb damage and heal during skirmishes, making the item an excellent choice for extended fights and closing out teamfights. Excellent synergy with Spirit Visage: the healing amplification and regeneration boost from Spirit Visage further enhance the health restoration from this item’s passive, providing incredible survivability and sustain in combat.",
             iconUrl = "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp"
         ),
-        WildRiftItem(
-            id = "titanic_hydra",
-            name = "Hidra titánica",
-            nameEn = "Titanic Hydra",
-            namePt = "Hidra Titânica",
-            category = "Objetos Defensivos",
-            goldCost = 3000,
-            stats = "+450 Vida máxima • +40 Daño de ataque",
-            statsEn = "+450 Max Health • +40 Attack Damage",
-            statsPt = "+450 de Vida Máxima • +40 de Dano de Ataque",
-            passive = "Hender: Cada 1.75 s, tu siguiente ataque inflige daño físico adicional equivalente a 25 + 3% de la vida adicional (también se aplica a torretas), lo que crea una onda de choque que inflige daño físico equivalente a 80 + 10% de la vida adicional a los enemigos detrás del objetivo. (Los campeones a distancia infligen un 75% del daño).",
-            passiveEn = "Cleave: Every 1.75s, next attack deals bonus physical damage equal to 25 + 3% bonus Health, creating a shockwave dealing 80 + 10% bonus Health behind target.",
-            passivePt = "Hender: Cada 1,75 s, seu próximo ataque causa Dano Físico adicional equivalente a 25 + 3% de Vida adicional (também se aplica a torres), criando uma onda de choque que causa Dano Físico equivalente a 80 + 10% de Vida adicional aos inimigos atrás do alvo. (Campeões de ataque à distância causam 75% do dano).",
-            coachTip = "Este elemento convierte tus ataques básicos en una herramienta AOE: periódicamente tu próximo golpe se convierte en un golpe de barrido que inflige daño físico adicional a los enemigos cercanos y afecta a los objetivos detrás del golpe principal. Acelera la eliminación de olas, agrega daño adicional en las peleas en equipo y ayuda a presionar las estructuras cuando se construye adecuadamente. Es más adecuado para matones cuerpo a cuerpo y tanques que combinan una gran reserva de salud con autos frecuentes; ideal para jugadores que desean impactar tanto en intercambios 1 contra 1 como en enfrentamientos prolongados.",
-            coachTipEn = "This item turns your basic attacks into an AOE tool: periodically your next hit becomes a sweeping strike that deals bonus physical damage to nearby enemies and affects targets behind the primary hit. It speeds up waveclear, adds extra damage in teamfights, and helps pressure structures when built appropriately. Best suited for melee bruisers and tanks who combine a big health pool with frequent autos — great for players who want impact both in 1v1 trades and prolonged engagements.",
-            coachTipPt = "Este item converte seus ataques básicos em uma ferramenta de área (AoE): periodicamente seu próximo golpe se torna um ataque de varredura que causa Dano Físico adicional aos inimigos próximos e afeta alvos atrás do golpe principal. Acelera a limpeza de tropas, adiciona dano extra em lutas de equipe e ajuda a pressionar estruturas quando construído adequadamente.",
-            iconUrl = "file:///android_asset/offline_images/a587350906b08db7aacfec025271682b.webp"
-        ),
-        WildRiftItem(
-            id = "redemption",
-            name = "Redención",
-            nameEn = "Redemption",
-            category = "Objetos Defensivos",
-            goldCost = 2450,
-            stats = "+40 Poder de habilidad • +50% Regeneración de maná • +10 Velocidad de habilidades • +8% Poder de curaciones y escudos",
-            statsEn = "+150 Max Health • +50 Ability Power • +50% Mana Regen • +15 Ability Haste • +5% Heal and Shield Strength",
-            passive = "Intervención (activa): Selecciona una zona amplia como objetivo. Después de 2,5 s, restaura de 150 a 350 de vida (según el nivel de los aliados) a las unidades aliadas e inflige un 10% de vida máxima como daño verdadero a los campeones enemigos (60 s de enfriamiento). Se puede lanzar tras haber muerto.",
-            passiveEn = "Intervention (Active): Target a large area. After 2.5s, restore 150-350 Health (based on ally's level) to allied units and deal 10% of max as true damage to enemy champions. (60s Cooldown)Can be cast while dead.",
-            coachTip = "Gran objeto de impacto en zona para peleas de equipo y objetivos neutrales. Puede ser utilizado incluso tras ser eliminado para dar vuelta una pelea clave.",
-            coachTipEn = "This item is designed to provide game-changing team support. Its active restores health to all allied units in a large area while dealing true damage to enemy champions, making it a powerful tool for turning the tide of teamfights. The ability to cast it even after death makes it especially valuable for supports who want to continue impacting fights even after being eliminated.",
-            iconUrl = "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "kaenic_rookern",
             name = "Rookern kaénico",
             nameEn = "Kaenic Rookern",
@@ -1269,7 +1153,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "The premier magic resistance item against heavy AP damage, granting high MR and a scaling magic damage absorption shield.",
             iconUrl = "file:///android_asset/offline_images/93b2f7e8e684cf1ec4aabcdc13c89c8e.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "yordle_trap",
             name = "Trampa para yordles",
             nameEn = "Yordle Trap",
@@ -1283,7 +1167,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is designed for champions with displacement abilities and strong engage tools. Successfully displacing an enemy grants you bonus movement speed while marking the target, reducing their Armor and Magic Resistance to make them easier for your team to eliminate. If the marked target dies, you and nearby allies receive bonus gold, helping your team snowball its advantage. It is an excellent choice for tanks and engage supports with knockbacks, pulls, or knock-up abilities.",
             iconUrl = "file:///android_asset/offline_images/3b1afe564977a0cbc6238247c6a1089b.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "radiant_virtue_wild_rift",
             name = "Virtud radiante",
             nameEn = "Radiant Virtue",
@@ -1297,7 +1181,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item boosts your durability by granting extra max health, armor, and ability haste. Its passive causes you to transcend after casting your ultimate: you temporarily raise your max health, and nearby allies are healed based on that boosted health. The healing is reduced for ranged champions. A strong pick for frontliners and supports who want to survive engages while providing teamwide sustain during fights.",
             iconUrl = "file:///android_asset/offline_images/7e13a61aa958f9626d5bf76025a85e0a.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "midday_tunic",
             name = "Túnica del mediodía",
             nameEn = "Midday Tunic",
@@ -1311,7 +1195,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Cost-effective defensive item providing armor and health, ideal for tanks and supports in mid game.",
             iconUrl = "file:///android_asset/offline_images/mantle_twelfth_hour.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "abyssal_mask",
             name = "Máscara abisal",
             nameEn = "Abyssal Mask",
@@ -1325,7 +1209,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is a solid anti-magic pickup: it boosts your magic resistance while reducing the magic resist of nearby enemies, making them easier to shred with spell damage. Great for tanks and frontliners who need to both soak magic damage and amplify their team’s ability to take down AP threats and durable targets.",
             iconUrl = "file:///android_asset/offline_images/c08d478db157d63bf53cc63e98254f91.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "hollow_radiance",
             name = "Fulgor vano",
             nameEn = "Hollow Radiance",
@@ -1339,7 +1223,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item turns you into a steady source of pressure in fights: while engaged, it emits an area magic damage aura that helps clear waves and punish nearby small targets. On killing a neutral or enemy, it detonates for area damage, making it great for fast clears and threat creation when entering skirmishes. Perfect for tanks and frontline bruisers who need to hold the center of fights and force opponents into mistakes.",
             iconUrl = "file:///android_asset/offline_images/0ef7e5460d345f44edfd1f0718286415.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "knight_s_vow",
             name = "Promesa de caballero",
             nameEn = "Knight's Vow",
@@ -1353,8 +1237,8 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item lets you act as a protective anchor for a designated ally: some of the damage they take is redirected to you, and you heal when that ally deals damage. Perfect for tanky supports and peel-focused bruisers who want to keep a carry safe — it provides a reliable way to soak focus, sustain through fights, and maintain teamfight presence.",
             iconUrl = "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
         ),
-        WildRiftItem(
-            id = "wild_rift__overlord_s_bloodmail",
+WildRiftItem(
+            id = "overlord_s_bloodmail",
             name = "Sangría del soberano",
             nameEn = "Overlord's Bloodmail",
             category = "Objetos Defensivos",
@@ -1367,8 +1251,8 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item converts bonus health into attack power and ramps up your damage when you drop into dangerous HP ranges — a hybrid pick for players who want to be both tanky and threatening. It suits bruisers and solo laners who stack health and embrace high-risk, high-reward skirmishes: the more bonus health you have, the stronger your raw attacks become, and when you fight at low health you deal amplified damage. Great for aggressive duelists who win trades by trading survivability for burst.",
             iconUrl = "file:///android_asset/offline_images/3c62884953388c0a2e57ca679bab692a.webp"
         ),
-        WildRiftItem(
-            id = "wild_rift__unending_despair",
+WildRiftItem(
+            id = "unending_despair",
             name = "Desesperanza eterna",
             nameEn = "Unending Despair",
             category = "Objetos Defensivos",
@@ -1381,35 +1265,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item turns you into a self-sustaining frontline: while fighting you periodically deal magic damage around you and heal for a portion of that damage. Great for tanks and frontliners — it helps you soak focus, remain in the heart of fights longer, and excel in extended team engagements. Less effective in very short burst trades or on champions that avoid standing in the center of combat.",
             iconUrl = "file:///android_asset/offline_images/unending_despair.webp"
         ),
-        WildRiftItem(
-            id = "banshee_s_veil",
-            name = "Velo del hada de la muerte",
-            nameEn = "Banshee's Veil",
-            category = "Objetos Defensivos",
-            goldCost = 3000,
-            stats = "+105 Poder de Habilidad • +40 Resistencia Mágica",
-            statsEn = "+105 Ability Power • +40 Magic Resistance",
-            passive = "Anular: Otorga un escudo contra hechizos que bloquea la siguiente habilidad hostil. (Reutilización de 30 s)",
-            passiveEn = "Annul: Grants a spell shield that blocks the next hostile ability. (30s Cooldown)",
-            coachTip = "Este objeto proporciona una fuerte protección contra el daño mágico y al mismo tiempo otorga un escudo contra hechizos que bloquea la siguiente habilidad hostil. Es especialmente efectivo contra campeones que dependen de lanzar un solo hechizo clave para iniciar su combo o derribarte. Una excelente opción para magos y luchadores AP que necesitan mantener una posición segura y negar el potencial de ataque o selección del enemigo.",
-            coachTipEn = "This item provides strong protection against magic damage while granting a spell shield that blocks the next hostile ability. It is especially effective against champions who rely on landing a single key spell to start their combo or burst you down. A great choice for mages and AP fighters who need to maintain safe positioning and deny enemy engage or pick potential.",
-            iconUrl = "file:///android_asset/offline_images/cf77ad618891d973e7cd6babb40f24a5.webp"
-        ),
-        WildRiftItem(
-            id = "zhonya_s_hourglass",
-            name = "Reloj de arena de Zhonya",
-            nameEn = "Zhonya's Hourglass",
-            category = "Objetos Defensivos",
-            goldCost = 3300,
-            stats = "+40 Armadura • +110 Poder de Habilidad",
-            statsEn = "+40 Armor • +110 Ability Power",
-            passive = "Estasis (activa): te vuelves invulnerable e inalcanzable durante 2,5 segundos, pero no puedes moverte, atacar, lanzar habilidades ni usar objetos. (Enfriamiento de los 90)",
-            passiveEn = "Stasis (Active): Become invulnerable and untargetable for 2.5 seconds, but unable to move, attack, cast abilities or use items. (90s Cooldown)",
-            coachTip = "Este objeto combina un alto poder de habilidad con armadura adicional, mientras que su característica definitoria es la capacidad de volverse completamente invulnerable por un corto tiempo. Su efecto activo te permite sobrevivir a daños letales, evitar habilidades enemigas cruciales o ganar tiempo para que se recuperen tus tiempos de reutilización. Es una excelente opción para magos y asesinos AP que necesitan sobrevivir al foco enemigo y cambiar el rumbo de una pelea en equipo.",
-            coachTipEn = "This item combines high Ability Power with extra armor, while its defining feature is the ability to become completely invulnerable for a short time. Its active effect allows you to survive lethal damage, avoid crucial enemy abilities, or buy time for your cooldowns to recover. It is an excellent choice for mages and AP assassins who need to outlive enemy focus and turn the tide of a teamfight.",
-            iconUrl = "file:///android_asset/offline_images/2baadaec94cd1e205e425a57cb1f52e5.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "gargoyle_stoneplate",
             name = "Protector pétreo de gárgola",
             nameEn = "Gargoyle Stoneplate",
@@ -1423,7 +1279,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item greatly increases your survivability during teamfights. Its active grants a powerful shield that scales with your bonus Health, allowing you to withstand heavy focus fire and remain on the frontline longer. It is an excellent choice for tanks and bruisers who need to absorb large amounts of damage while protecting their team.",
             iconUrl = "file:///android_asset/offline_images/c6e47425e00b913bb5917d5fa15f1b3b.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "spectral_sickle",
             name = "Hoz espectral",
             nameEn = "Spectral Sickle",
@@ -1441,7 +1297,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Item inicial ideal para suportes de dano e poke na rota em dupla.",
             iconUrl = "file:///android_asset/offline_images/spectral_sickle.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "relic_shield",
             name = "Escudo reliquia",
             nameEn = "Relic Shield",
@@ -1459,7 +1315,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Item inicial essencial para suportes tanques e protetores.",
             iconUrl = "file:///android_asset/offline_images/relic_shield.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "bulwark_of_the_mountain",
             name = "Baluarte de la montaña",
             nameEn = "Bulwark of the Mountain",
@@ -1477,7 +1333,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Evolução completa do Escudo Relicário para suportes tanques.",
             iconUrl = "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "black_mist_scythe",
             name = "Guadaña de la Niebla Negra",
             nameEn = "Black Mist Scythe",
@@ -1495,21 +1351,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Evolução completa da Foice Espectral para suportes ofensivos.",
             iconUrl = "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp"
         ),
-        WildRiftItem(
-            id = "morellonomicon",
-            name = "Morellonomicón",
-            nameEn = "Morellonomicon",
-            category = "Objetos de Apoyo",
-            goldCost = 2650,
-            stats = "+300 salud máxima • +75 poder de habilidad • +15 celeridad de habilidad",
-            statsEn = "+300 Max Health • +75 Ability Power • +15 Ability Haste",
-            passive = "Aflicción: Infligir daño mágico a campeones enemigos inflige un 50 % de heridas graves durante 3 segundos. Las heridas graves reducen la eficacia de los efectos de curación y regeneración.",
-            passiveEn = "Affliction: Dealing magic damage to enemy champions inflicts 50% Grievous Wounds for 3 seconds.Grievous Wounds reduces the effectiveness of Healing and Regeneration effects.",
-            coachTip = "Este objeto está diseñado para contrarrestar campeones con una fuerte curación y sustentación. Cualquier daño mágico que inflijas aplica heridas graves, lo que reduce en gran medida la efectividad de la curación y regeneración del enemigo. Es una excelente opción para magos y apoyos AP contra equipos que dependen en gran medida de la curación, el robo de vida o la regeneración.",
-            coachTipEn = "This item is designed to counter champions with strong healing and sustain. Any magic damage you deal applies Grievous Wounds, greatly reducing the effectiveness of enemy healing and regeneration. It is an excellent choice for mages and AP supports against teams that rely heavily on healing, lifesteal, or regeneration.",
-            iconUrl = "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "ardent_censer",
             name = "Incensario ardiente",
             nameEn = "Ardent Censer",
@@ -1523,7 +1365,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item enhances your heals and shields, granting shielded allies increased attack speed and bonus magic damage on their attacks for a short duration. Perfect for enchanter supports who want to protect and empower their carries when it matters most.",
             iconUrl = "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "harmonic_echo",
             name = "Eco armónico",
             nameEn = "Harmonic Echo",
@@ -1537,7 +1379,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item greatly enhances your healing and shielding capabilities. Moving and casting abilities builds Harmony, empowering your next heal or shield with additional healing, while allies at low health receive an even stronger recovery. It is an excellent choice for enchanter supports who focus on keeping their team alive and saving allies during critical moments.",
             iconUrl = "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "staff_of_flowing_water",
             name = "Bastón de aguas fluidas",
             nameEn = "Staff of Flowing Water",
@@ -1551,21 +1393,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Premier support item for enchanters with AP allies, buffing both you and your ally with ability power and haste upon heals or shields.",
             iconUrl = "file:///android_asset/offline_images/0514e703e9172ec9266ef8121ae07b3b.webp"
         ),
-        WildRiftItem(
-            id = "oceanid_s_trident",
-            name = "Tridente de Oceánida",
-            nameEn = "Oceanid's Trident",
-            category = "Objetos de Apoyo",
-            goldCost = 2600,
-            stats = "+200 de salud máxima • +80 de poder de habilidad • +10 de celeridad de habilidad",
-            statsEn = "+200 Max Health • +80 Ability Power • +10 Ability Haste",
-            passive = "Arma letal: infligir daño de habilidad a un campeón enemigo reduce los escudos que obtiene durante 3 segundos. Se aplican habilidades de área de efecto (5% de AP adicional + 25)% de reducción de escudo, con un límite de 45%; mientras que las habilidades de un solo objetivo aplican (5% de AP adicional + 40)% de reducción de escudo, con un límite de 60%. Cuando dañas a un enemigo que no se ve afectado por Arma letal, todos los escudos que tiene se reducen en los mismos valores.",
-            passiveEn = "Lethal Weapon: Dealing ability damage to an enemy champion reduces any shields they gain for 3 seconds. Area of effect abilities apply (5% of bonus AP + 25)% shield reduction, capped at 45%; while single target abilities apply (5% of bonus AP + 40)% shield reduction, capped at 60%. When you damage an enemy who is unaffected by Lethal Weapon, all shields on them are reduced by the same values.",
-            coachTip = "Este objeto está diseñado para contrarrestar a campeones con muchos escudos. Tus habilidades reducen significativamente la efectividad de los escudos que reciben los enemigos, mientras que el primer golpe también puede debilitar los escudos que ya están activos. Es una excelente opción para magos y apoyos AP contra composiciones que dependen de escudos, lo que permite a tu equipo atravesar las defensas enemigas y eliminar objetivos prioritarios de manera más efectiva.",
-            coachTipEn = "This item is designed to counter shield-heavy champions. Your abilities significantly reduce the effectiveness of shields enemies receive, while the first hit can also weaken shields that are already active. It is an excellent choice for mages and AP supports against shield-reliant compositions, allowing your team to break through enemy defenses and eliminate priority targets more effectively.",
-            iconUrl = "file:///android_asset/offline_images/f800a2be044a17e73fe7079161df361a.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "imperial_mandate",
             name = "Mandato imperial",
             nameEn = "Imperial Mandate",
@@ -1579,91 +1407,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Ideal for supports with CC. Marks enemies to allow allies to detonate extra magic burst and gain movement speed.",
             iconUrl = "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp"
         ),
-        WildRiftItem(
-            id = "zeke_s_convergence",
-            name = "Convergencia de Zeke",
-            nameEn = "Zeke's Convergence",
-            category = "Objetos de Apoyo",
-            goldCost = 2400,
-            stats = "+300 Vida máxima • +25 Armadura • +25 Resistencia mágica • +10 Velocidad de habilidades",
-            statsEn = "+40 Armor • +350 Max Health • +150 Max Mana • +15 Ability Haste",
-            passive = "Convergencia: Otorga 10 de velocidad de habilidad definitiva.\nTempestad de fuego escarchado: Al usar tu habilidad definitiva, se desata una tormenta a tu alrededor durante 5 s. La tormenta inflige 150 de daño mágico total a los campeones enemigos en un radio de 350 unidades y los ralentiza un 30%. Si no hay campeones enemigos al alcance cuando se lanza la definitiva, la tormenta se retrasa hasta que un campeón enemigo se ponga a su alcance o durante un máximo de 5 s (30 s de enfriamiento).",
-            passiveEn = "Harbinger: Casting your ultimate surrounds you with a blizzard and ignites a nearby ally's attacks for 10 seconds. Your blizzard deals a maximum of 320–600 damage, slows enemies by 25% and leaves a trail behind you. Allied champions on the trail gain 40 bonus Movement Speed for 1 second. (30s Cooldown)",
-            coachTip = "Ideal para soportes de iniciación y tanques. Al usar la definitiva desata una zona de ralentización y daño continuo para atrapar a los enemigos en peleas de equipo.",
-            coachTipEn = "This item is perfect for tanky support champions who initiate fights and provide frontline crowd control. It grants armor, health, mana, and ability haste. When you cast your ultimate, an icy blizzard surrounds you, dealing damage and slowing enemies, while leaving a trail that grants bonus movement speed to allies. During the effect, the attacks of a nearby marked ally deal additional magic damage, giving your team a powerful advantage in teamfights.",
-            iconUrl = "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp"
-        ),
-        WildRiftItem(
-            id = "frozen_heart",
-            name = "Corazón de hielo",
-            nameEn = "Frozen Heart",
-            category = "Objetos de Apoyo",
-            goldCost = 2550,
-            stats = "+80 Armadura • +400 Maná máximo • +20 Velocidad de habilidades",
-            statsEn = "+80 Armor • +250 Max Mana • +20 Ability Haste",
-            passive = "Caricia invernal: Reduce la velocidad de ataque de los campeones enemigos situados a 650 unidades de ti en un 25%.",
-            passiveEn = "Winter's Caress: Basic attacks and magic damage caused by you or inflicted upon you and nearby allies, will apply stacks of Chill to the enemy champion for 3 seconds. Each stack of Chill slows enemy attack speed by 9%, up to a maximum of 4 stacks or 36% attack speed reduction. Each individual ability has a 3 seconds cooldown on applying Chill stacks.",
-            coachTip = "Aura defensiva primordial contra composiciones con mucha velocidad de ataque o atiradores en el equipo enemigo.",
-            coachTipEn = "This item is ideal for tanks and support champions who need to slow enemy attack speed and maintain a healthy mana pool. It provides substantial bonuses to armor, mana, and ability haste. The “Winter’s Caress” passive applies up to four stacks of Chill on enemy champions through your basic attacks, abilities, or any magic damage they take—each stack slows their attack speed by 9%, up to 36% at full stacks. This weakens enemy marksmen and fighters, making it harder for them to deal sustained damage in fights.",
-            iconUrl = "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp"
-        ),
-        WildRiftItem(
-            id = "dawnshroud",
-            name = "Velo del amanecer",
-            nameEn = "Dawnshroud",
-            category = "Objetos de Apoyo",
-            goldCost = 2550,
-            stats = "+250 Vida máxima • +50 Armadura • +30 Resistencia mágica",
-            statsEn = "+250 Max Health • +50 Armor • +30 Magic Resistance",
-            passive = "Luz solar: Al inmovilizar o sufrir inmovilización de un campeón enemigo, revela y daña a los campeones enemigos cercanos.",
-            passiveEn = "Dawnbringer: When you immobilize a champion champion or are immobilized within 400 units of an enemy champion, reveal all nearby enemy champions for 3 seconds, deal magic damage equal to 40 + 2.5% bonusand gain 20% Armor and Magic Resistance (3s Cooldown)",
-            coachTip = "Otorga vision y daño en area adicional cuando aplicas o sufres inmovilizaciones, genial para soportes tanques de choque.",
-            coachTipEn = "This item is great for tanks and support initiators. When you immobilize an enemy or are immobilized near foes, it reveals nearby champions, deals an explosive burst of magic damage, and briefly boosts your defenses. Perfect for zone control, reliable engages, and countering enemy dive attempts.",
-            iconUrl = "file:///android_asset/offline_images/dawnshroud.webp"
-        ),
-        WildRiftItem(
-            id = "yordle_trap",
-            name = "Trampa para yordles",
-            nameEn = "Yordle Trap",
-            category = "Objetos de Apoyo",
-            goldCost = 2400,
-            stats = "+200 Vida máxima • +20 Armadura • +20 Resistencia mágica • +15 Velocidad de habilidades",
-            statsEn = "+350 Max Health • +40 Armor • +15 Ability Haste",
-            passive = "Captador: Ralentizar o inmovilizar a un campeón enemigo os inspira a ti y a los campeones aliados cercanos durante 8 s (4 s para campeones a distancia). Mientras dure la inspiración, obtienes 20 de velocidad de movimiento y un 30% de velocidad de ataque (20% para campeones a distancia). Además, tus aliados obtienen velocidad de ataque (30% para campeones cuerpo a cuerpo; 20% para campeones a distancia). Obtienes 20 de oro adicional si tus aliados o tú asesináis a un campeón durante la inspiración.",
-            passiveEn = "Catcher: After using abilities to apply crowd control effects that displace the enemy, gain 10% Movement Speed for 3 second(s) and mark the target, reducing their Armor and Magic Resist by 5–12 for 8 second(s). If the target dies while they are marked, their death grants 100–140 bonus gold () that will be evenly shared among you and nearby allies.This bonus gold can only be obtained once every 10 second(s).",
-            coachTip = "Excelente objeto para soportes con control de masas que buscan aumentar la movilidad y velocidad de ataque de todo el equipo en escaramuzas.",
-            coachTipEn = "This item is designed for champions with displacement abilities and strong engage tools. Successfully displacing an enemy grants you bonus movement speed while marking the target, reducing their Armor and Magic Resistance to make them easier for your team to eliminate. If the marked target dies, you and nearby allies receive bonus gold, helping your team snowball its advantage. It is an excellent choice for tanks and engage supports with knockbacks, pulls, or knock-up abilities.",
-            iconUrl = "file:///android_asset/offline_images/3b1afe564977a0cbc6238247c6a1089b.webp"
-        ),
-        WildRiftItem(
-            id = "knight_s_vow",
-            name = "Promesa de caballero",
-            nameEn = "Knight's Vow",
-            category = "Objetos de Apoyo",
-            goldCost = 2450,
-            stats = "+200 Vida máxima • +100% Regeneración de vida • +40 Armadura • +10 Velocidad de habilidades",
-            statsEn = "+400 Max Health • +40 Armor • +10 Ability Haste",
-            passive = "Sacrificio: Mientras tu aliado digno se encuentre cerca, el 12% del daño que reciba se redirige a ti y te curas un 10% del daño que inflija a campeones.\nJuramento: Cuando compras o recompras este objeto, designas a un aliado que sea digno.",
-            passiveEn = "Pledge: While in combat, deal magic damage equal to 20–30 plus 1% of bonus Health per second for 5 second(s) to nearby enemies. Deals 125% damage against monsters and 200% damage against minions.\nSacrifice: Killing a neutral monster or an enemy deals magic damage equal to 30 plus 2% of bonus Health in an area around them.",
-            coachTip = "Esencial para tanques de apoyo que necesitan proteger a un hiperacribillador o atirador prioritario, redirigiendo parte de su daño hacia ti.",
-            coachTipEn = "This item lets you act as a protective anchor for a designated ally: some of the damage they take is redirected to you, and you heal when that ally deals damage. Perfect for tanky supports and peel-focused bruisers who want to keep a carry safe — it provides a reliable way to soak focus, sustain through fights, and maintain teamfight presence.",
-            iconUrl = "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
-        ),
-        WildRiftItem(
-            id = "redemption",
-            name = "Redención",
-            nameEn = "Redemption",
-            category = "Objetos de Apoyo",
-            goldCost = 2450,
-            stats = "+40 Poder de habilidad • +50% Regeneración de maná • +10 Velocidad de habilidades • +8% Poder de curaciones y escudos",
-            statsEn = "+150 Max Health • +50 Ability Power • +50% Mana Regen • +15 Ability Haste • +5% Heal and Shield Strength",
-            passive = "Intervención (activa): Selecciona una zona amplia como objetivo. Después de 2,5 s, restaura de 150 a 350 de vida (según el nivel de los aliados) a las unidades aliadas e inflige un 10% de vida máxima como daño verdadero a los campeones enemigos (60 s de enfriamiento). Se puede lanzar tras haber muerto.",
-            passiveEn = "Intervention (Active): Target a large area. After 2.5s, restore 150-350 Health (based on ally's level) to allied units and deal 10% of max as true damage to enemy champions. (60s Cooldown)Can be cast while dead.",
-            coachTip = "Gran objeto de impacto en zona para peleas de equipo y objetivos neutrales. Puede ser utilizado incluso tras ser eliminado para dar vuelta una pelea clave.",
-            coachTipEn = "This item is designed to provide game-changing team support. Its active restores health to all allied units in a large area while dealing true damage to enemy champions, making it a powerful tool for turning the tide of teamfights. The ability to cast it even after death makes it especially valuable for supports who want to continue impacting fights even after being eliminated.",
-            iconUrl = "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "mikael_s_blessing",
             name = "Bendición de Mikael",
             nameEn = "Mikael's Blessing",
@@ -1677,7 +1421,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is designed to protect allies from crowd control. Its active removes most disabling effects from a targeted ally, instantly restores their health, and briefly grants immunity to further crowd control. It is an excellent choice for supports who want to keep their carries alive and ensure they can continue fighting through crucial moments.",
             iconUrl = "file:///android_asset/offline_images/bbc3dbd2e1b410b93581181f83ef1e54.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "locket_of_the_iron_solari",
             name = "Medallón de los Solari de Hierro",
             nameEn = "Locket of the Iron Solari",
@@ -1691,7 +1435,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item provides powerful team-wide protection during fights. Its active grants a shield to you and nearby allies, helping your team survive burst damage and reducing the impact of enemy engages. It is an excellent choice for tanks and supports who stay close to their teammates and want to maximize their team's survivability in teamfights.",
             iconUrl = "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "shurelya_s_battlesong",
             name = "Canción de batalla de Shurelya",
             nameEn = "Shurelya's Battlesong",
@@ -1705,35 +1449,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item greatly enhances your team's mobility. Its active grants nearby allied champions a burst of movement speed, allowing your team to engage fights, chase fleeing enemies, or disengage from dangerous situations more effectively. It is an excellent choice for supports and utility champions who excel at controlling the pace of teamfights and enabling their teammates.",
             iconUrl = "file:///android_asset/offline_images/47f3b1e1cbcb3ead1b9819b2367ee282.webp"
         ),
-        WildRiftItem(
-            id = "quicksilver_sash",
-            name = "Fajín de mercurio",
-            nameEn = "Quicksilver Sash",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 1100,
-            stats = "+25 <font color='#E0B0FF'>resistencia mágica</font>",
-            statsEn = "+25 Magic Resistance",
-            passive = "Mercurio (Activa): Elimina todos los efectos de control de masas (excepto levantamientos y empujes) y otorga 50% de velocidad de movimiento por 1.5s. (reutilización 60s).",
-            passiveEn = "Quicksilver (Active): Removes all crowd control effects currently affecting you, and become immune to crowd control effects for 0.25 seconds.\nPerseverance (Passive): When the Quicksilver effects ends, grant 30% Tenacity and 30% Slow Resist for 1.5 seconds. (60s Cooldown)Cannot be used during knock up or knock back effects.",
-            coachTip = "Cómpralo estrictamente cuando te enfrentes a un control de masas letal (como la ultimate de Malzahar, Leona o Ashe).",
-            coachTipEn = "This enchant instantly removes most crowd control effects and briefly grants immunity to further disables. Once the effect ends, it provides increased resistance to crowd control and slows, helping you escape dangerous situations or continue fighting without interruption. It is an excellent choice against teams with heavy crowd control, allowing you to stay mobile and effective in crucial moments.",
-            iconUrl = "file:///android_asset/offline_images/f4b2c195dbd314e51668359f9abc086b.webp"
-        ),
-        WildRiftItem(
-            id = "seeker_s_armguard",
-            name = "Brazalete de la buscadora",
-            nameEn = "Seeker's Armguard",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 1400,
-            stats = "+15 Armadura • +25 Poder de habilidad",
-            statsEn = "+15 Armor • +25 Ability Power",
-            passive = "Éstasis (activa): El campeón se vuelve invulnerable e inalcanzable durante 2,5 s, pero tampoco podrá moverse, atacar, lanzar hechizos ni usar objetos. (150 s de enfriamiento).",
-            passiveEn = "Stasis (Active): Become invulnerable and untargetable for 2.5s, but unable to move, attack, cast spells or use items. (150s Cooldown).",
-            coachTip = "El Brazalete de la buscadora proporciona la invaluable activa de Éstasis (2.5 s de invulnerabilidad) a mitad de partida, permitiendo esquivar definitivas letales y combos de asesinos antes de completar el Reloj de arena de Zhonya.",
-            coachTipEn = "Seeker's Armguard provides the invaluable Stasis active (2.5s invulnerability) at mid-tier cost, allowing you to dodge lethal ultimates and assassin combos before finishing Zhonya's Hourglass.",
-            iconUrl = "file:///android_asset/offline_images/a3b6e6c6102ce5f573811ec15758dfb2.png"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "stridebreaker",
             name = "Cortasendas",
             nameEn = "Stridebreaker",
@@ -1747,7 +1463,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item combines mobility, damage, and crowd control, making it easier to stick to your targets. Its active lets you dash a short distance, damage nearby enemies, and heavily slow them.",
             iconUrl = "file:///android_asset/offline_images/d53ef50c7883f58fceafbc13bdd071b6.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "goredrinker",
             name = "Chupasangre",
             nameEn = "Goredrinker",
@@ -1761,7 +1477,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "This item is perfect for fighters who excel in extended combat. It grants Omni Vamp, while its active ability deals area physical damage and restores health based on the number of enemy champions hit.",
             iconUrl = "file:///android_asset/offline_images/faa4bc60887a69d10e46b9926fbfc130.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "galeforce",
             name = "Viento huracanado",
             nameEn = "Galeforce",
@@ -1775,7 +1491,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Grants vital active mobility to dodge key enemy skillshots or execute fleeing champions.",
             iconUrl = "file:///android_asset/offline_images/1aeafb7896806a2f556ff126daf52d91.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "mercurial_scimitar",
             name = "Cimitarra mercurial",
             nameEn = "Mercurial Scimitar",
@@ -1789,105 +1505,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Buy against game-decisive CC abilities (like H4 ultimates from Lissandra, Malzahar, Morgana, or Ashe).",
             iconUrl = "file:///android_asset/offline_images/bfba991bdd26cac9dc642cd79060d0f5.webp"
         ),
-        WildRiftItem(
-            id = "hextech_roketbelt",
-            name = "Cintomisil hextech",
-            nameEn = "Hextech Roketbelt",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 2700,
-            stats = "+250 salud máxima • +70 poder de habilidad • +20 celeridad de habilidad",
-            statsEn = "+250 Max Health • +70 Ability Power • +20 Ability Haste",
-            passive = "Protobelt (activo): corre hacia adelante y libera un cono de misiles, que inflige 100 más un 10 % de daño mágico. (Reutilización de 30 s) Si los campeones o monstruos son alcanzados por más de un misil, los misiles posteriores al primero causarán solo un 10 % de daño.",
-            passiveEn = "Protobelt (Active): Dash forward and unleash a cone of missiles, dealing 100 plus 10% magic damage. (30s Cooldown)If champions or monsters are hit by more than one missile, missiles after the first will deal only 10% damage.",
-            coachTip = "Este objeto combina poder de habilidad con movilidad adicional, lo que te permite cerrar la brecha o reposicionarte rápidamente durante el combate. Su activa otorga una carrera corta mientras dispara un cono de cohetes que causan daño mágico de área. Es una excelente opción para asesinos AP, magos móviles y campeones orientados al combate que necesitan sumergirse, asegurar muertes o esquivar habilidades enemigas clave.",
-            coachTipEn = "This item combines Ability Power with extra mobility, allowing you to quickly close the gap or reposition during combat. Its active grants a short dash while firing a cone of rockets that deal area magic damage. It is an excellent choice for AP assassins, mobile mages, and engage-oriented champions who need to dive in, secure kills, or dodge key enemy abilities.",
-            iconUrl = "file:///android_asset/offline_images/7edd3e0a1f50a5616ea44d0628f13d15.webp"
-        ),
-        WildRiftItem(
-            id = "zhonya_s_hourglass",
-            name = "Reloj de arena de Zhonya",
-            nameEn = "Zhonya's Hourglass",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 3300,
-            stats = "+40 Armadura • +110 Poder de Habilidad",
-            statsEn = "+40 Armor • +110 Ability Power",
-            passive = "Estasis (activa): te vuelves invulnerable e inalcanzable durante 2,5 segundos, pero no puedes moverte, atacar, lanzar habilidades ni usar objetos. (Enfriamiento de los 90)",
-            passiveEn = "Stasis (Active): Become invulnerable and untargetable for 2.5 seconds, but unable to move, attack, cast abilities or use items. (90s Cooldown)",
-            coachTip = "Este objeto combina un alto poder de habilidad con armadura adicional, mientras que su característica definitoria es la capacidad de volverse completamente invulnerable por un corto tiempo. Su efecto activo te permite sobrevivir a daños letales, evitar habilidades enemigas cruciales o ganar tiempo para que se recuperen tus tiempos de reutilización. Es una excelente opción para magos y asesinos AP que necesitan sobrevivir al foco enemigo y cambiar el rumbo de una pelea en equipo.",
-            coachTipEn = "This item combines high Ability Power with extra armor, while its defining feature is the ability to become completely invulnerable for a short time. Its active effect allows you to survive lethal damage, avoid crucial enemy abilities, or buy time for your cooldowns to recover. It is an excellent choice for mages and AP assassins who need to outlive enemy focus and turn the tide of a teamfight.",
-            iconUrl = "file:///android_asset/offline_images/2baadaec94cd1e205e425a57cb1f52e5.webp"
-        ),
-        WildRiftItem(
-            id = "redemption",
-            name = "Redención",
-            nameEn = "Redemption",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 2450,
-            stats = "+40 Poder de habilidad • +50% Regeneración de maná • +10 Velocidad de habilidades • +8% Poder de curaciones y escudos",
-            statsEn = "+150 Max Health • +50 Ability Power • +50% Mana Regen • +15 Ability Haste • +5% Heal and Shield Strength",
-            passive = "Intervención (activa): Selecciona una zona amplia como objetivo. Después de 2,5 s, restaura de 150 a 350 de vida (según el nivel de los aliados) a las unidades aliadas e inflige un 10% de vida máxima como daño verdadero a los campeones enemigos (60 s de enfriamiento). Se puede lanzar tras haber muerto.",
-            passiveEn = "Intervention (Active): Target a large area. After 2.5s, restore 150-350 Health (based on ally's level) to allied units and deal 10% of max as true damage to enemy champions. (60s Cooldown)Can be cast while dead.",
-            coachTip = "Gran objeto de impacto en zona para peleas de equipo y objetivos neutrales. Puede ser utilizado incluso tras ser eliminado para dar vuelta una pelea clave.",
-            coachTipEn = "This item is designed to provide game-changing team support. Its active restores health to all allied units in a large area while dealing true damage to enemy champions, making it a powerful tool for turning the tide of teamfights. The ability to cast it even after death makes it especially valuable for supports who want to continue impacting fights even after being eliminated.",
-            iconUrl = "file:///android_asset/offline_images/7c4aa6c8827f314917041dc3a4d63c05.webp"
-        ),
-        WildRiftItem(
-            id = "gargoyle_stoneplate",
-            name = "Protector pétreo de gárgola",
-            nameEn = "Gargoyle Stoneplate",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 2900,
-            stats = "+200 Vida máxima • +45 Armadura • +45 Resistencia mágica • +10 Velocidad de habilidades",
-            statsEn = "+200 Max Health • +45 Armor • +45 Magic Resistance • +10 Ability Haste",
-            passive = "Protector pétreo (activa): Otorga un escudo que absorbe un daño equivalente a 100 + 90% de la vida adicional y un aumento de tamaño, que disminuye a lo largo de 2,5 s (60 s de enfriamiento).",
-            passiveEn = "Stoneplate (Active): Gain a base shield that absorbs damage equal to 100 plus 90% bonusand gain size, decayng over 2.5s. (60s Cooldown)",
-            coachTip = "Este elemento aumenta enormemente tu capacidad de supervivencia durante las peleas en equipo. Su actividad activa otorga un escudo poderoso que aumenta con tu salud adicional, lo que te permite resistir fuego intenso y permanecer en la línea del frente por más tiempo. Es una excelente opción para tanques y matones que necesitan absorber grandes cantidades de daño mientras protegen a su equipo.",
-            coachTipEn = "This item greatly increases your survivability during teamfights. Its active grants a powerful shield that scales with your bonus Health, allowing you to withstand heavy focus fire and remain on the frontline longer. It is an excellent choice for tanks and bruisers who need to absorb large amounts of damage while protecting their team.",
-            iconUrl = "file:///android_asset/offline_images/c6e47425e00b913bb5917d5fa15f1b3b.webp"
-        ),
-        WildRiftItem(
-            id = "mikael_s_blessing",
-            name = "Bendición de Mikael",
-            nameEn = "Mikael's Blessing",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 2500,
-            stats = "+300 Vida máxima • +50% Regeneración de maná • +15 Velocidad de habilidades • +9% Poder de curaciones y escudos",
-            statsEn = "+300 Max Health • +50% Mana Regen • +15 Ability Haste • +9% Heal and Shield Strength",
-            passive = "Purificar (activa): Elimina todos los efectos de control de adversario (excepto el lanzamiento por los aires y la supresión) de un campeón aliado, le otorga inmunidad al control de adversario durante 0,2 s y le cura 150-250 de vida (75 s de enfriamiento).",
-            passiveEn = "Purify (Active): Remove all crowd control debuffs (excluding knock up and suppression) from an allied champion, grant them crowd control immunity for 0.2s, and heal them for 150–250 Health. (75s Cooldown)",
-            coachTip = "Crucial frente a composiciones enemigas cargadas de inmovilizaciones o aturdimientos, permitiendo liberar al instante a tu tirador o aliado clave.",
-            coachTipEn = "This item is designed to protect allies from crowd control. Its active removes most disabling effects from a targeted ally, instantly restores their health, and briefly grants immunity to further crowd control. It is an excellent choice for supports who want to keep their carries alive and ensure they can continue fighting through crucial moments.",
-            iconUrl = "file:///android_asset/offline_images/bbc3dbd2e1b410b93581181f83ef1e54.webp"
-        ),
-        WildRiftItem(
-            id = "locket_of_the_iron_solari",
-            name = "Medallón de los Solari de Hierro",
-            nameEn = "Locket of the Iron Solari",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 2600,
-            stats = "+200 Vida máxima • +40 Armadura • +40 Resistencia mágica • +10 Velocidad de habilidades",
-            statsEn = "+200 Max Health • +30 Armor • +30 Magic Resistance • +10 Ability Haste",
-            passive = "Devoción (activa): Otorga a ti y a los campeones aliados cercanos un escudo que absorbe daño durante 3 s (90 s de enfriamiento).",
-            passiveEn = "Locket (Active): Grants a shield to yourself and nearby allied champions that each absorbs 250-370 damage for 2.5 seconds. (60s Cooldown)This effect is reduced by 50% if the target has been affected by another Locket in the last 20 seconds.",
-            coachTip = "Escudo activo grupal indispensable contra composiciones con gran daño de area o ráfagas explosivas.",
-            coachTipEn = "This item provides powerful team-wide protection during fights. Its active grants a shield to you and nearby allies, helping your team survive burst damage and reducing the impact of enemy engages. It is an excellent choice for tanks and supports who stay close to their teammates and want to maximize their team's survivability in teamfights.",
-            iconUrl = "file:///android_asset/offline_images/90e64403fbbc718c296e56622bc21fac.webp"
-        ),
-        WildRiftItem(
-            id = "shurelya_s_battlesong",
-            name = "Canción de batalla de Shurelya",
-            nameEn = "Shurelya's Battlesong",
-            category = "Objetos de Hechizo Activos",
-            goldCost = 2500,
-            stats = "+55 Poder de habilidad • +50% Regeneración de maná • +20 Velocidad de habilidades • +4% Velocidad de movimiento",
-            statsEn = "+55 Ability Power • +50% Mana Regeneration • +20 Ability Haste • +5% Move Speed",
-            passive = "Discurso inspirador (activa): Otorga un 30% de velocidad de movimiento a los aliados cercanos durante 4 s (60 s de enfriamiento).",
-            passiveEn = "Inspiring Speech (Active): Grant nearby allies champions 30% Move Speed for 4 seconds. (60s Cooldown)",
-            coachTip = "Objeto tactico de gran utilidad para iniciar peleas grupales o rotar rapidamente entre carriles con todo tu equipo.",
-            coachTipEn = "This item greatly enhances your team's mobility. Its active grants nearby allied champions a burst of movement speed, allowing your team to engage fights, chase fleeing enemies, or disengage from dangerous situations more effectively. It is an excellent choice for supports and utility champions who excel at controlling the pace of teamfights and enabling their teammates.",
-            iconUrl = "file:///android_asset/offline_images/47f3b1e1cbcb3ead1b9819b2367ee282.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "gluttonous_greaves",
             name = "Grebas codiciosas",
             nameEn = "Gluttonous Greaves",
@@ -1901,7 +1519,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots combine mobility, adaptive offensive power, and sustained healing. They increase your damage while Omnivamp restores health from all damage you deal. Champion takedowns further increase your Omnivamp, making them an excellent choice for champions who want to balance high damage output with strong sustain during extended fights.",
             iconUrl = "file:///android_asset/offline_images/bc6f5486fc82c342fc0b285e2ad49198.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "berserker_s_greaves",
             name = "Grebas de berserker",
             nameEn = "Berserker's Greaves",
@@ -1915,7 +1533,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots grant a significant boost to attack speed and movement speed, while empowering your basic attacks with on‑hit life steal. — A great pick for marksmen and auto‑attack bruisers who need mobility, rapid attack cadence, and constant sustain in fights.",
             iconUrl = "file:///android_asset/offline_images/8556456bfeb2b62e7a7b055721646ad8.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "mercury_s_treads",
             name = "Botas de mercurio",
             nameEn = "Mercury's Treads",
@@ -1929,7 +1547,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots increase your Magic Resistance while making you more resilient to crowd control through Tenacity. The bonus Health and movement speed improve both survivability and mobility, allowing you to perform more effectively against magic damage and heavy-CC team compositions. They are an excellent choice for tanks, fighters, and any champion who needs to stay in the fight longer.",
             iconUrl = "file:///android_asset/offline_images/f72e2b0af20dc12975a0a056994e0bfd.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "plated_steelcaps",
             name = "Botas blindadas",
             nameEn = "Plated Steelcaps",
@@ -1943,7 +1561,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots provide reliable protection against champions who rely heavily on basic attacks. They increase your Health and Armor, while the passive further reduces damage taken from enemy champion attacks. An excellent choice against marksmen, AD fighters, and other auto-attack-focused champions.",
             iconUrl = "file:///android_asset/offline_images/cb35750fcaf34bd2f1355eb5dcee18af.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "ionian_boots_of_lucidity",
             name = "Botas jonias de la lucidez",
             nameEn = "Ionian Boots of Lucidity",
@@ -1957,7 +1575,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots are designed for champions who rely on casting abilities as often as possible. They provide mana regeneration, Ability Haste, and further reduce the cooldown of Summoner Spells, allowing you to use key abilities more frequently while bringing back Flash, Smite, Ignite, and other Summoner Spells faster. They are an excellent choice for mages, supports, fighters, and any champion who benefits from maximizing ability uptime.",
             iconUrl = "file:///android_asset/offline_images/1f02ca361ef7d963b109dacc267d8e18.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "boots_of_mana",
             name = "Botas de maná",
             nameEn = "Boots of Mana",
@@ -1971,7 +1589,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots greatly enhance your early magic damage by providing Ability Power, magic penetration, and increased mana regeneration. They also improve wave clear by dealing bonus true damage to minions, while champions without Mana instead gain additional health regeneration. They are an excellent choice for mages and AP supports who value strong laning, frequent spell casting, and efficient wave clearing.",
             iconUrl = "file:///android_asset/offline_images/cba2fca06ca760dec5b86c66077bee07.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "boots_of_dynamism",
             name = "Botas dinámicas",
             nameEn = "Boots of Dynamism",
@@ -1985,7 +1603,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots increase your physical damage by providing bonus Attack Damage and armor penetration. They are especially effective during the early stages of the game, allowing you to cut through enemy defenses and win trades more easily. They are an excellent choice for marksmen, assassins, and fighters looking to maximize their damage output and eliminate enemies more efficiently.",
             iconUrl = "file:///android_asset/offline_images/474ef0da4f590ed15a53564d5bf4faf4.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "immortal_treds",
             name = "Botas inmortales",
             nameEn = "Immortal Treds",
@@ -1999,7 +1617,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots combine adaptive offensive power, sustain, and increased combat effectiveness. While above 50% Health, you deal increased damage, and when below 50% Health, you benefit from stronger healing and shielding to improve your survivability. The additional Omnivamp further restores Health from all damage you deal. They are an excellent choice for fighters, AP bruisers, and champions who want to balance offensive power with sustained durability throughout extended fights.",
             iconUrl = "file:///android_asset/offline_images/efdc50afd3ac80c011c522c3054ae881.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "gunmetal_greaves",
             name = "Grebas de metal",
             nameEn = "Gunmetal Greaves",
@@ -2013,7 +1631,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots greatly increase your attack speed while improving your mobility in combat. Attacking enemy champions grants a burst of movement speed, making it easier to chase opponents or kite effectively, while Physical Vamp and on-hit healing provide valuable sustain during extended fights. They are an excellent choice for marksmen and champions who rely on frequent basic attacks to deal damage.",
             iconUrl = "file:///android_asset/offline_images/a16b9ea6b70744268c92bedd120157ca.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "chainlaced_crushers",
             name = "Trituradoras encadenadas",
             nameEn = "Chainlaced Crushers",
@@ -2027,7 +1645,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots greatly improve your survivability against magic damage. After taking magic damage from an enemy champion, you gain a magic shield that helps absorb follow-up spells, while the bonus Magic Resistance and Tenacity make you far more resilient against AP threats and crowd control. They are an excellent choice against teams with heavy magic damage and strong CC.",
             iconUrl = "file:///android_asset/offline_images/b7ad42a5e367d9d95c1c0884fcbc3af6.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "armored_advance",
             name = "Avance blindado",
             nameEn = "Armored Advance",
@@ -2041,7 +1659,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots provide excellent protection against physical damage. They reduce damage taken from enemy champion attacks and grant a protective shield after taking physical damage from a champion, helping you survive extended trades and heavy bursts of physical damage. They are an excellent choice against marksmen, fighters, and other champions who rely primarily on physical attacks.",
             iconUrl = "file:///android_asset/offline_images/ed83e5effcd6985567d86c8d0704a554.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "crimson_lucidity",
             name = "Lucidez carmesí",
             nameEn = "Crimson Lucidity",
@@ -2055,7 +1673,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots are ideal for champions who rely on casting abilities as often as possible. They greatly reduce the cooldown of both abilities and Summoner Spells while granting bonus movement speed whenever you heal or shield allies, cast spells, or damage enemies with abilities. They are an excellent choice for mages, supports, and fighters who value high mobility and maximum ability uptime.",
             iconUrl = "file:///android_asset/offline_images/5cf776558a30c79bcc001444973eb023.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "spellslinger_s_shoes",
             name = "Botas del lanzahechizos",
             nameEn = "Spellslinger's Shoes",
@@ -2069,7 +1687,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots greatly increase your magic damage through a combination of Ability Power and both flat and percentage magic penetration. The high mana regeneration allows for frequent spell casting, while the bonus true damage to minions significantly improves wave clear. Champions without Mana instead gain increased health regeneration. They are an excellent choice for mages and AP supports who value strong damage, constant lane pressure, and efficient farming.",
             iconUrl = "file:///android_asset/offline_images/04cb752504f7354c82af07eef16dca51.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "armorcrusher_boots",
             name = "Botas quebrantarmaduras",
             nameEn = "Armorcrusher Boots",
@@ -2083,65 +1701,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "These boots greatly increase your physical damage by providing bonus Attack Damage along with both flat and percentage armor penetration. The additional out-of-combat movement speed allows you to rotate around the map faster, chase enemies more effectively, and respond to fights more quickly. They are an excellent choice for marksmen, assassins, and fighters who value high mobility and maximum damage against armored targets.",
             iconUrl = "file:///android_asset/offline_images/b3e005086063ca6a745bfa89489c0b18.webp"
         ),
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-        WildRiftItem(
+WildRiftItem(
             id = "kraken_slayer",
             name = "Verdugo de Krakens",
             nameEn = "Kraken Slayer",
@@ -2155,91 +1715,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Essential for shredding tanks and frontline champions with sustained true damage.",
             iconUrl = "file:///android_asset/offline_images/429b846f590224d8699b0e85a75a402c.webp"
         ),
-        WildRiftItem(
-            id = "stridebreaker",
-            name = "Cortasendas",
-            nameEn = "Stridebreaker",
-            category = "Objetos con Daños Físicos",
-            goldCost = 3100,
-            stats = "+400 Vida máxima • +40 Daño de ataque • +25% Velocidad de ataque",
-            statsEn = "+400 Max Health • +40 Attack Damage • +25% Attack Speed",
-            passive = "Onda de choque (activa): Al activarla, se desliza una pequeña distancia, lo que inflige un 100% de daño físico a los enemigos cercanos y los ralentiza un 40% durante 3 s (25 s de enfriamiento).\nZancada (pasiva): Otorga 20 de velocidad de movimiento durante 2 s al infligir daño físico.",
-            passiveEn = "Shockwave (Active): Dash a short distance dealing 100% physical damage and slowing nearby enemies by 40% for 3s (25s Cooldown).\nTemper: Grants 20 Move Speed for 2s on dealing physical damage.",
-            coachTip = "Este objeto combina movilidad, daño y control de masas, facilitando mantenerse sobre los objetivos. Su activa te permite realizar un deslizamiento corto y ralentizar enormemente a los enemigos cercanos.",
-            coachTipEn = "This item combines mobility, damage, and crowd control, making it easier to stick to your targets. Its active lets you dash a short distance, damage nearby enemies, and heavily slow them.",
-            iconUrl = "file:///android_asset/offline_images/d53ef50c7883f58fceafbc13bdd071b6.webp"
-        ),
-        WildRiftItem(
-            id = "goredrinker",
-            name = "Chupasangre",
-            nameEn = "Goredrinker",
-            category = "Objetos con Daños Físicos",
-            goldCost = 3100,
-            stats = "+350 Vida máxima • +40 Daño de ataque • +15 Velocidad de habilidades",
-            statsEn = "+350 Max Health • +40 Attack Damage • +15 Ability Haste",
-            passive = "Chupasangre (pasiva): Otorga un 8% de omnisucción.\nCuchillada sedienta (activa): Inflige un 175% del daño básico como daño físico a los enemigos cercanos. Restaura una cantidad de vida equivalente a un 20% del DA + 10% de la vida que falta por cada campeón enemigo golpeado (12 s de enfriamiento).",
-            passiveEn = "Goredrinker: Grants 8% Omnivamp.\nThirsting Slash (Active): Deals 175% base AD as physical damage to nearby enemies and heals for 20% AD + 10% missing Health per champion hit (12s Cooldown).",
-            coachTip = "Este objeto es ideal para luchadores en combates prolongados. Otorga Omnivampirismo y su activa inflige daño de área y restaura salud en base a la cantidad de campeones enemigos golpeados.",
-            coachTipEn = "This item is perfect for fighters who excel in extended combat. It grants Omni Vamp, while its active ability deals area physical damage and restores health based on the number of enemy champions hit.",
-            iconUrl = "file:///android_asset/offline_images/faa4bc60887a69d10e46b9926fbfc130.webp"
-        ),
-        WildRiftItem(
-            id = "guinsoo_s_rageblade",
-            name = "Hoja de furia de Guinsoo",
-            nameEn = "Guinsoo's Rageblade",
-            category = "Objetos con Daños Físicos",
-            goldCost = 3000,
-            stats = "+30% Velocidad de ataque • +30 Daño de ataque • +30 Poder de habilidad",
-            statsEn = "+30% Attack Speed • +30 Attack Damage • +30 Ability Power",
-            passive = "Golpe hirviente: Los ataques básicos otorgan velocidad de ataque acumulable. Cada tercer ataque activa dos veces los efectos al impactar.",
-            passiveEn = "Seething Strike: Basic attacks grant stacking attack speed. Every third attack triggers on-hit effects twice.",
-            coachTip = "Potencia exponencialmente a campeones con pasivas de impacto o efectos de ataque continuo (como Vayne o Kai'Sa).",
-            coachTipEn = "Exponentially empowers on-hit marksmen and champions with stackable passives (like Vayne or Kai'Sa).",
-            iconUrl = "file:///android_asset/offline_images/82b3ab99fbfd8659968e324bfeeb1ae6.webp"
-        ),
-        WildRiftItem(
-            id = "overlord_s_bloodmail",
-            name = "Sangría del soberano",
-            nameEn = "Overlord's Bloodmail",
-            category = "Objetos con Daños Físicos",
-            goldCost = 3200,
-            stats = "+450 Vida Máxima • +30 Daño de Ataque",
-            statsEn = "+450 Max Health • +30 Attack Damage",
-            passive = "Tiranía: Obtienes Daño de Ataque adicional igual al 2.5% de tu vida extra.\nRepresalia: Aumenta tu daño según la vida que te falte.",
-            passiveEn = "Tyranny: Gain Attack Damage equal to 2.5% of your bonus Health.\nRetribution: Gain up to 9% increased Attack Damage based on missing Health.",
-            coachTip = "Convierte la vida adicional en poder de ataque y potencia tu daño cuando tu salud baja a niveles peligrosos. Es ideal para luchadores agresivos que priorizan objetos de vida.",
-            coachTipEn = "Converts bonus health into attack power and ramps up your damage when you drop into dangerous HP ranges. It suits bruisers and solo laners who stack health and embrace high-risk skirmishes.",
-            iconUrl = "file:///android_asset/offline_images/3c62884953388c0a2e57ca679bab692a.webp"
-        ),
-        WildRiftItem(
-            id = "mercurial_scimitar",
-            name = "Cimitarra mercurial",
-            nameEn = "Mercurial Scimitar",
-            category = "Objetos con Daños Físicos",
-            goldCost = 3100,
-            stats = "+45 Daño de ataque • +40 Resistencia mágica • +12% Robo de vida físico",
-            statsEn = "+45 Attack Damage • +40 Magic Resist • +12% Physical Vamp",
-            passive = "Fajín de mercurio (Activa): Elimina todos los efectos de control de masas (excepto levantamientos) y otorga un 50% de velocidad de movimiento adicional durante 1.5 s (60 s de enfriamiento).\nPerseverancia: Otorga tenacidad y resistencia a ralentizaciones.",
-            passiveEn = "Quicksilver (Active): Removes all crowd control debuffs (except airborne) and grants 50% bonus movement speed for 1.5s (60s Cooldown).\nPerseverance: Grants tenacity and slow resistance.",
-            coachTip = "Compre este objeto si el equipo enemigo tiene controles de masas decisivos (como las definitivas H4 de Lissandra, Malzahar, Morgana o Ashe).",
-            coachTipEn = "Buy against game-decisive CC abilities (like H4 ultimates from Lissandra, Malzahar, Morgana, or Ashe).",
-            iconUrl = "file:///android_asset/offline_images/bfba991bdd26cac9dc642cd79060d0f5.webp"
-        ),
-        WildRiftItem(
-            id = "galeforce",
-            name = "Viento huracanado",
-            nameEn = "Galeforce",
-            category = "Objetos con Daños Físicos",
-            goldCost = 3100,
-            stats = "+50 Daño de ataque • +25% Probabilidad de impacto crítico • +15% Velocidad de ataque • +5% Velocidad de movimiento",
-            statsEn = "+50 Attack Damage • +25% Critical Rate • +15% Attack Speed • +5% Move Speed",
-            passive = "Impulso Zephyr (Activa): Te desplazas rápidamente hacia la dirección seleccionada y disparas 3 proyectiles a los enemigos cercanos, priorizando campeones con poca vida (90 s de enfriamiento).",
-            passiveEn = "Cloudburst (Active): Dash in target direction, firing 3 missiles at low-health nearby enemies (90s Cooldown).",
-            coachTip = "Otorga una movilidad activa crucial para esquivar habilidades clave o rematar a campeones enemigos que intentan escapar.",
-            coachTipEn = "Grants vital active mobility to dodge key enemy skillshots or execute fleeing champions.",
-            iconUrl = "file:///android_asset/offline_images/1aeafb7896806a2f556ff126daf52d91.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "immortal_shieldbow",
             name = "Arcoescudo Inmortal",
             nameEn = "Immortal Shieldbow",
@@ -2253,7 +1729,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Top defensive option against dive heavy enemy comps and physical burst assassins.",
             iconUrl = "file:///android_asset/offline_images/immortal_shieldbow.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "crown_of_the_shattered_queen",
             name = "Corona de la Reina Fragmentada",
             nameEn = "Crown of the Shattered Queen",
@@ -2267,35 +1743,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "The premier survival item for mages and AP assassins against burst damage and hard engages.",
             iconUrl = "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp"
         ),
-        WildRiftItem(
-            id = "amaranth_twinguard",
-            name = "Coraza dual purpúrea",
-            nameEn = "Amaranth Twinguard",
-            category = "Objetos Defensivos",
-            goldCost = 3200,
-            stats = "+300 Vida máxima • +50 Armadura • +50 Resistencia mágica",
-            statsEn = "+55 Armor • +55 Magic Resist",
-            passive = "Resistencia: Otorga 1 acumulación(es) de Resistencia cada 1 s mientras estés en combate contra campeones enemigos (máximo de acumulaciones: 5). Con el máximo de acumulaciones, otorga un 20% de tamaño y un 20% de tenacidad, y aumenta un 30% Armadura adicional y un 30% Resistencia mágica adicional hasta que dejes de combatir contra campeones.",
-            passiveEn = "Amaranth's Armor: Each second in combat with champions grants a stack (max 5). At max stacks, increases bonus Armor and Magic Resist by 30% and grants 20% tenacity until out of combat.",
-            coachTip = "El objeto defensivo por excelencia para tanques e hiper-resistencias en teamfights prolongadas.",
-            coachTipEn = "The ultimate defensive capstone for tanks and bruisers in prolonged teamfights.",
-            iconUrl = "file:///android_asset/offline_images/amaranths_twinguard.webp"
-        ),
-        WildRiftItem(
-            id = "unending_despair",
-            name = "Desesperanza eterna",
-            nameEn = "Unending Despair",
-            category = "Objetos Defensivos",
-            goldCost = 3000,
-            stats = "+300 Vida máxima • +40 Armadura • +40 Resistencia mágica • +10 Velocidad de habilidades",
-            statsEn = "+400 Max Health • +55 Armor • +15 Ability Haste",
-            passive = "Angustia: Cada 4 s en combate con un campeón, infliges un 3% de tu vida máxima como daño mágico a los campeones cercanos y te curas un 250% del daño infligido. Angustia no se ve afectada por la velocidad de objetos.",
-            passiveEn = "Anguish: Every 4s in combat with enemy champions, deal magic damage equal to 3% max Health to nearby enemies and heal for 100% of the damage dealt.",
-            coachTip = "Proporciona daño sostenido en área y autocuración constante para tanques en peleas grupales.",
-            coachTipEn = "Provides sustained AoE damage and constant self-healing for tanks in group fights.",
-            iconUrl = "file:///android_asset/offline_images/unending_despair.webp"
-        ),
-        WildRiftItem(
+WildRiftItem(
             id = "rapid_firecannon",
             name = "Cañón de Fuego Rápido",
             nameEn = "Rapid Firecannon",
@@ -2313,7 +1761,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Essencial para atiradores que precisam iniciar combates de uma distância segura antes de entrar em lutas de equipe completas.",
             iconUrl = "file:///android_asset/offline_images/rapid_firecannon.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "yun_tal_wildarrows",
             name = "Flechas de los Yun Tal",
             nameEn = "Yun Tal Wildarrows",
@@ -2331,7 +1779,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Excelente opção de primeiro item crítico após o Patch 7.3a. Concede grande velocidade de ataque base e rajada extra de velocidade de ataque ao causar acertos críticos.",
             iconUrl = "file:///android_asset/offline_images/yun_tal_wildarrows.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "statikk_shiv",
             name = "Puñal de Statikk",
             nameEn = "Statikk Shiv",
@@ -2349,7 +1797,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Aumenta consideravelmente a velocidade de limpeza de tropas e o dano em área em confrontos iniciais.",
             iconUrl = "file:///android_asset/offline_images/statikk_shiv.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "echoes_of_helia",
             name = "Ecos de Helia",
             nameEn = "Echoes of Helia",
@@ -2367,7 +1815,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Excelente para suportes encantadores que buscam maximizar o sustento do time em confrontos prolongados.",
             iconUrl = "file:///android_asset/offline_images/echoes_of_helia.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "hextech_mirror",
             name = "Óptica hextech C44",
             nameEn = "Hextech Mirror",
@@ -2385,7 +1833,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Maximiza o impacto explosivo imediatamente após ativar sua Ultimate (H4).",
             iconUrl = "file:///android_asset/offline_images/hexoptics.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "whispering_headband",
             name = "Diadema susurrante",
             nameEn = "Whispering Headband",
@@ -2403,7 +1851,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipPt = "Ideal para suportes que consomem muito mana e dependem de escudos e curas constantes.",
             iconUrl = "file:///android_asset/offline_images/whispering_headband.webp"
         ),
-        WildRiftItem(
+WildRiftItem(
             id = "diadem_of_songs",
             name = "Diadema melodiosa",
             nameEn = "Melodious Diadem",
@@ -2420,18 +1868,8 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             coachTipEn = "Upgraded form upon reaching 700 Mana Charge. Heals the lowest-health ally in combat for 0.8% max Mana per second.",
             coachTipPt = "Forma evoluída após completar 700 de Mana. Cura o aliado com menos vida a cada segundo com base em 0,8% do Mana máximo.",
             iconUrl = "file:///android_asset/offline_images/whispering_headband.webp"
-        ),
+        )
     )
-
-    fun getItemsByCategory(category: String): List<WildRiftItem> =
-        list.filter { it.category.equals(category, ignoreCase = true) }
-        
-    fun searchItems(query: String): List<WildRiftItem> {
-        val q = query.lowercase().trim()
-        return list.filter {
-            it.name.lowercase().contains(q) || it.nameEn.lowercase().contains(q)
-        }
-    }
 
     private val itemAliases: Map<String, String> = mapOf(
         "black cleaver" to "black_cleaver",
@@ -2583,9 +2021,9 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
         "horizon focus" to "horizon_focus",
         "enfoque del horizonte" to "horizon_focus",
         "el enfoque del horizonte" to "horizon_focus",
-        "banshee's veil" to "banshee_s_veil",
-        "velo de alma en pena" to "banshee_s_veil",
-        "el velo de alma en pena" to "banshee_s_veil",
+        "banshee's veil" to "banshees_veil",
+        "velo de alma en pena" to "banshees_veil",
+        "el velo de alma en pena" to "banshees_veil",
         "mikael's blessing" to "mikael_s_blessing",
         "la bendicion de michael" to "mikael_s_blessing",
         "la bendición de michael" to "mikael_s_blessing",
@@ -2891,7 +2329,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             cleaned.contains("arcangel") || cleaned.contains("archangel") -> return list.find { it.id == "archangel_s_staff" }
             cleaned.contains("serafin") || cleaned.contains("seraph") -> return list.find { it.id == "seraph_s_embrace" }
             cleaned.contains("hacedor") || cleaned.contains("riftmaker") -> return list.find { it.id == "riftmaker" }
-            cleaned.contains("banshee") || cleaned.contains("alma en pena") -> return list.find { it.id == "banshee_s_veil" }
+            cleaned.contains("banshee") || cleaned.contains("alma en pena") -> return list.find { it.id == "banshees_veil" }
             cleaned.contains("trinidad") || cleaned.contains("trinity") -> return list.find { it.id == "trinity_force" }
             cleaned.contains("arruinado") || cleaned.contains("botrk") -> return list.find { it.id == "blade_of_the_ruined_king" }
             cleaned.contains("sanguinario") || cleaned.contains("sanguinaria") || cleaned.contains("bloodthirster") -> return list.find { it.id == "bloodthirster" }
@@ -2957,16 +2395,16 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
         "Luchador" to listOf(
             "chempunk_chainsword", "manamune", "muramana", "eclipse", "sundered_sky",
             "experimental_hexplate", "maw_of_malmortius", "black_cleaver",
-            "titanic_hydra", "stridebreaker", "goredrinker", "mercurial_scimitar", "quicksilver_sash",
+            "titanic_hydra", "stridebreaker", "goredrinker", "mercurial_scimitar",
             "blade_of_the_ruined_king", "serylda_s_grudge", "spear_of_shojin",
-            "hullbreaker", "wild_rift__overlord_s_bloodmail", "overlord_s_bloodmail", "guardian_angel", "bloodthirster",
+            "hullbreaker", "overlord_s_bloodmail", "guardian_angel", "bloodthirster",
             "sterak_s_gage", "death_s_dance", "trinity_force", "divine_sunderer"
         ),
         "Asesino" to listOf(
             "serpent_s_fang", "manamune", "muramana", "youmuu_s_ghostblade",
             "duskblade_of_draktharr", "maw_of_malmortius", "edge_of_night",
             "the_collector", "mercurial_scimitar", "serylda_s_grudge", "guardian_angel",
-            "axiom_arc", "opportunity"
+            "axiom_arc"
         ),
         "Tirador" to listOf(
             "fiendhunter_bolts", "rapid_firecannon", "runaan_s_hurricane",
@@ -2999,9 +2437,7 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             "nashor_s_tooth",
             "statikk_shiv",
             "banshees_veil",
-            "banshee_s_veil",
             "crown_of_the_shattered_queen",
-            "seeker_s_armguard",
             "cryptbloom",
             "void_staff",
             "guinsoo_s_rageblade",
@@ -3012,7 +2448,6 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             "dusk_and_dawn",
             "infinity_orb",
             "riftmaker",
-            "soul_transfer",
             "zhonya_s_hourglass",
             "rabadon_s_deathcap"
         ),
@@ -3023,9 +2458,9 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             "thornmail", "dawnshroud", "hollow_radiance", "randuin_s_omen",
             "dead_man_s_plate", "force_of_nature", "heartsteel",
             "kaenic_rookern", "warmog_s_armor", "gargoyle_stoneplate",
-            "sunfire_aegis", "banshees_veil", "banshee_s_veil", "unending_despair", "wild_rift__unending_despair",
-            "iceborn_gauntlet", "titanic_hydra", "wild_rift__overlord_s_bloodmail", "overlord_s_bloodmail",
-            "guardian_angel", "sterak_s_gage", "amaranth_twinguard", "amaranth_s_twinguard",
+            "sunfire_aegis", "banshees_veil", "unending_despair",
+            "iceborn_gauntlet", "titanic_hydra", "overlord_s_bloodmail",
+            "guardian_angel", "sterak_s_gage", "amaranth_twinguard",
             "mantle_of_the_twelfth_hour", "searing_crown",
             "death_s_dance", "zhonya_s_hourglass"
         ),
