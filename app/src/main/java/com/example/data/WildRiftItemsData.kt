@@ -318,8 +318,8 @@ WildRiftItem(
             statsEn = "+50 Attack Damage • +35% Armor Penetration • +15 Ability Haste",
             passive = "Gélido: Las habilidades activas que infligen daño y los ataques potenciados ralentizan a los enemigos con menos del 60% de vida un 30% durante 1 s.",
             passiveEn = "Bitter Cold: Damaging abilities and empowered attacks slow enemies below 60% Health by 30% for 1s.",
-            coachTip = "Este objeto combina una fuerte penetración de armadura con control de masas: tus habilidades activas y tus golpes potenciados ralentizan a los objetivos, y las ralentizaciones repetidas desencadenan un sangrado que también aplica heridas graves. Perfecto para campeones que necesitan hacer kite, ejecutar objetivos prioritarios y frenar su curación.",
-            coachTipEn = "This item blends heavy armor penetration with crowd control: your active abilities and empowered hits slow targets, and repeated slows trigger a bleed that also applies grievous wounds. Perfect for champions who need to kite, execute priority targets, and curb their healing.",
+            coachTip = "Priorízalo cuando necesites penetración de armadura y control para mantener a distancia o perseguir objetivos. Sus habilidades dañinas y ataques potenciados ralentizan un 30% durante 1 s a enemigos con menos del 60% de vida. No aplica Heridas Graves; para reducir curación necesitas un objeto del catálogo que sí tenga ese efecto.",
+            coachTipEn = "Prioritize it when you need armor penetration and control to kite or chase targets. Damaging abilities and empowered attacks slow enemies below 60% Health by 30% for 1s. It does not apply Grievous Wounds; use a catalog item that explicitly has that effect when anti-heal is needed.",
             iconUrl = "file:///android_asset/offline_images/672c2f3191c28c8f729dd0b4a67d17b8.webp"
         ),
 WildRiftItem(
@@ -945,7 +945,7 @@ WildRiftItem(
             statsEn = "+400 Max Health • +75 Armor",
             passive = "Contracorriente: Al recibir un impacto crítico de daño físico, obtienes 1 acumulación(es) de Contracorriente. Cada acumulación otorga un 5% de velocidad de movimiento y un 5% de resistencia a las ralentizaciones. Acumulaciones máximas: 4.\nAdaptabilidad: Los impactos críticos te infligen un 30% menos de daño físico.",
             passiveEn = "Resilience: Critically Struck deal 30% less damage to you.\nCountercurrent: Gain 1 stacks of Countercurrent when Critically Struck by physical damage. Each stuck grants 5% Movement Speed and 5% slow resist. Max 4 stacks.",
-            coachTip = "Este objeto está diseñado para contrarrestar construcciones con muchos críticos. Proporciona una gran reserva de salud y armadura al mismo tiempo que reduce el daño de los golpes críticos, lo que te hace mucho más resistente en enfrentamientos frontales. Cuando recibes un golpe crítico, obtienes acumulaciones que aumentan tu movimiento y reducen la resistencia, lo que te ayuda a mantener la posición y controlar el espacio de las peleas. — Perfecto para tanques y matones que necesitan enfrentarse a autoatacantes de alto crítico y sobrevivir a peleas en equipo prolongadas.",
+            coachTip = "Este objeto está diseñado para contrarrestar construcciones con muchos críticos. Proporciona una gran reserva de salud y armadura al mismo tiempo que reduce el daño de los golpes críticos, lo que te hace mucho más resistente en enfrentamientos frontales. Cuando recibes un golpe crítico, obtienes acumulaciones que aumentan tu velocidad de movimiento y tu resistencia a ralentizaciones, lo que te ayuda a mantener la posición y controlar el espacio de las peleas. — Perfecto para tanques y matones que necesitan enfrentarse a autoatacantes de alto crítico y sobrevivir a peleas en equipo prolongadas.",
             coachTipEn = "This item is built to counter crit-heavy builds. It provides a large health pool and armor while reducing damage from critical strikes, making you much tougher in head-on engagements. When you are critically struck, you gain stacks that boost your movement and slow resistance, helping you hold position and control fight spacing. — Perfect for tanks and bruisers who need to stand up to high-crit auto-attackers and survive extended teamfights.",
             iconUrl = "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp"
         ),
@@ -1546,8 +1546,8 @@ WildRiftItem(
             statsEn = "+35% Attack Speed • +45 Move Speed",
             passive = "Hoja bendita: Los ataques restauran 10 de vida al impactar.",
             passiveEn = "Blessed Blade: Attacks restore 10 Health on hit.",
-            coachTip = "Estas botas otorgan un aumento significativo en la velocidad de ataque y de movimiento, al mismo tiempo que potencian tus ataques básicos con robo de vida al golpear. — Una excelente elección para tiradores y matones de ataque automático que necesitan movilidad, cadencia de ataque rápida y sustentabilidad constante en las peleas.",
-            coachTipEn = "These boots grant a significant boost to attack speed and movement speed, while empowering your basic attacks with on‑hit life steal. — A great pick for marksmen and auto‑attack bruisers who need mobility, rapid attack cadence, and constant sustain in fights.",
+            coachTip = "Elígelas en tiradores y duelistas que escalan con velocidad de ataque. Hoja bendita restaura 10 de vida por cada ataque que impacta; es curación plana al golpear, no robo de vida porcentual.",
+            coachTipEn = "Choose them on marksmen and duelists that scale with attack speed. Blessed Blade restores 10 Health whenever an attack hits; this is flat on-hit healing, not percentage life steal.",
             iconUrl = "file:///android_asset/offline_images/8556456bfeb2b62e7a7b055721646ad8.webp"
         ),
 WildRiftItem(

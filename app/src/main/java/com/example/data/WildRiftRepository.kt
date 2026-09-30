@@ -207,10 +207,12 @@ object WildRiftRepository {
                 hasRegionalStats = isCn,
                 tier = category,
                 cnTier = finalCnTier,
-                winrate = if (isCn) finalWr else 0.0,
-                pickRate = if (isCn) finalPr else 0.0,
-                banRate = if (isCn) finalBr else 0.0,
-                winrateDelta = if (isCn) finalDelta else 0.0
+                // GLOBAL también conserva las estadísticas reales incluidas en el catálogo.
+                // Antes se ponían en 0.0 al fusionar tiers, provocando ▲ +0.00% en toda la Tier List.
+                winrate = finalWr,
+                pickRate = finalPr,
+                banRate = finalBr,
+                winrateDelta = finalDelta
             )
         }
         regionalChampions[normalized] = updated

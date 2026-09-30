@@ -157,6 +157,19 @@ class ChampionBuildsCatalogValidationTest {
         }
     }
 
+    @Test
+    fun `catalog advice and boot pairs avoid known regressions`() {
+        val serylda = WildRiftItemsData.list.first { it.name == "Rencor de Serylda" }
+        assertTrue("Serylda passive must describe its slow", serylda.passive.contains("ralentizan", ignoreCase = true))
+        assertFalse("Serylda advice must not claim a bleed", serylda.coachTip.contains("sangrado", ignoreCase = true))
+        assertFalse("Serylda advice must not claim repeated slows apply Grievous Wounds", serylda.coachTip.contains("también aplica heridas graves", ignoreCase = true))
+        assertTrue("Serylda advice must explicitly clarify anti-heal", serylda.coachTip.contains("No aplica Heridas Graves", ignoreCase = true))
+
+        val berserkers = WildRiftItemsData.list.first { it.name == "Grebas de berserker" }
+        assertTrue("Berserker passive is flat on-hit healing", berserkers.passive.contains("restauran 10 de vida", ignoreCase = true))
+        assertFalse("Berserker advice must not describe the passive as life steal", berserkers.coachTip.contains("robo de vida al golpear", ignoreCase = true))
+    }
+
     private fun <T : Any> assertNotNullAndGet(message: String, value: T?): T {
         assertNotNull(message, value)
         return requireNotNull(value)
