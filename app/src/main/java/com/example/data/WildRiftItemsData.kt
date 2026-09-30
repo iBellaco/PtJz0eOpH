@@ -179,26 +179,30 @@ WildRiftItem(
             stats = "+40 Daño de ataque • +500 Maná máximo • +15 Velocidad de habilidades",
             statsEn = "+40 Attack Damage • +500 Max Mana • +15 Ability Haste",
             statsPt = "+40 de Dano de Ataque • +500 de Mana máximo • +15 de Aceleração de Habilidade",
-            passive = "Carga de maná: Otorga daño de ataque equivalente al 1.5% del maná máximo. Transforma en Muramaná al alcanzar 700 de maná adicional.",
-            passiveEn = "Mana Charge: Grants AD equal to 1.5% max Mana. Transforms into Muramana upon reaching 700 bonus Mana.",
-            passivePt = "Carga de Mana: Concede Dano de Ataque equivalente a 1,5% da Mana máxima. Transforma-se em Muramana ao atingir 700 de Mana adicional.",
-            coachTip = "Indispensable para tiradores de spam de habilidades (como Ezreal o Varus) para solucionar problemas de maná y obtener un gran escalado.",
-            coachTipEn = "Indispensable for mana-hungry caster marksmen (like Ezreal or Varus) for endless mana and late-game scaling.",
-            coachTipPt = "Indispensável para atiradores focados em spam de habilidades (como Ezreal ou Varus) para solucionar problemas de mana e obter um ótimo escalonamento.",
+            passive = "Asombro: Otorga una cantidad de daño de ataque equivalente a un 2% del maná máximo y restaura un 15% de todo el maná gastado.\nCarga de maná: Otorga 14 de maná máximo por cada ataque o gasto de maná (puede suceder hasta 3 veces cada 10 s). Otorga un máximo de 700 de maná. Este objeto se transforma en Muramana.",
+            passiveEn = "Awe: Grants bonus Attack Damage equal to 2% max Mana and refunds 15% of all Mana spent.\nMana Charge: Grants 14 max Mana on attack or Mana spend (up to 700 to transform into Muramana).",
+            passivePt = "Assombro: Concede Dano de Ataque equivalente a 2% da Mana máxima e restaura 15% da Mana gasta.\nCarga de Mana: Concede 14 de Mana máxima a cada ataque ou gasto de Mana (até 700 para transformar em Muramana).",
+            coachTip = "Indispensable para campeones de hostigamiento y daño físico que consumen mucho maná. Convierte el maná en daño y escala hacia Muramana.",
+            coachTipEn = "Indispensable for mana-hungry AD champions. Converts mana to attack damage and scales into Muramana.",
+            coachTipPt = "Indispensável para campeões de Dano Físico focados em spam de habilidades para solucionar problemas de mana e obter Muramana.",
             iconUrl = "file:///android_asset/offline_images/aba4fb973b550edadd3be632fb355f74.webp"
         ),
 WildRiftItem(
             id = "muramana",
             name = "Muramana",
             nameEn = "Muramana",
+            namePt = "Muramana",
             category = "Objetos con Daños Físicos",
-            goldCost = 2700,
-            stats = "+25 Daño de ataque • +1000 Maná máximo • +20 Velocidad de habilidad",
-            statsEn = "+25 Attack Damage • +1000 Max Mana • +20 Ability Haste",
-            passive = "Pavor: Otorga Daño de ataque equivalente al 2% del Maná máximo y reembolsa el 15% de todo el Maná gastado.\nChoque: Al golpear a un campeón enemigo con un ataque básico, consume el 2.5% del Maná actual e inflige daño físico adicional igual a la cantidad consumida. Al infligir daño con habilidades a un campeón enemigo, consume el 4% del Maná actual e inflige daño físico adicional igual a la cantidad consumida + 6%. Este efecto solo se activa cuando el Maná restante es superior al 20%.",
-            passiveEn = "Awe: Grants Attack Damage equal to 2% of max Mana and refunds 15% of all Mana spent.\nShock: When you hit an enemy champion with auto attack, it drains 2.5% of current Mana and deals bonus physical damage equal to the amount consumed. When dealing ability damage to enemy champion drains 4% of current mana and deals an additional physical damage equal to the amount consumed + 6%. This effect only triggers when remaining mana is above 20%. A single attack or ability will only trigger this effect once on the same champion.",
-            coachTip = "Objeto de pico de poder masivo para tiradores y luchadores de daño físico que consumen maná. Al completarse, convierte tu reserva de maná en un impacto adicional en cada ataque básico y habilidad, otorgando un daño sostenido devastador.",
-            coachTipEn = "This item is perfect for AD champions who rely on mana to activate their abilities and auto-attacks. It provides bonuses to attack damage, maximum mana, and ability haste, significantly enhancing your attacks and abilities. The",
+            goldCost = 2900,
+            stats = "+40 Daño de ataque • +1200 Maná máximo • +15 Velocidad de habilidades",
+            statsEn = "+40 Attack Damage • +1200 Max Mana • +15 Ability Haste",
+            statsPt = "+40 de Dano de Ataque • +1200 de Mana máximo • +15 de Aceleração de Habilidade",
+            passive = "Asombro: Otorga una cantidad de daño de ataque equivalente a un 2% del maná máximo y restaura un 15% de todo el maná gastado.\nImpacto: Los ataques contra campeones infligen un 1,5% del maná máximo como daño físico adicional, y el daño de habilidades contra campeones inflige un 3,5% del maná máximo (3% para campeones a distancia) como daño físico adicional. Este efecto solo se puede activar una vez por ataque o lanzamiento de habilidad contra el mismo campeón.",
+            passiveEn = "Awe: Grants Attack Damage equal to 2% of max Mana and refunds 15% of all Mana spent.\nShock: Attacks against champions deal 1.5% max Mana bonus physical damage, and abilities deal 3.5% max Mana (3% for ranged) bonus physical damage. Triggers once per attack or ability on the same champion.",
+            passivePt = "Assombro: Concede Dano de Ataque equivalente a 2% do Mana máximo e restaura 15% do Mana gasto.\nChoque: Ataques contra campeões causam 1,5% do Mana máximo como dano físico adicional, e habilidades causam 3,5% (3% para ataque à distância) como dano físico adicional.",
+            coachTip = "Forma evolucionada tras completar la carga de maná de Manamune. Transforma tu reserva de maná (+1200) en daño de ataque adicional y añade daño de impacto en ataques y habilidades.",
+            coachTipEn = "Upgraded form upon completing Manamune's Mana Charge. Adds massive on-hit and ability physical damage scaling with max Mana (+1200).",
+            coachTipPt = "Forma evoluída do Manamune. Converte a reserva massiva de Mana (+1200) em dano de ataque adicional e dano de impacto em ataques e habilidades.",
             iconUrl = "file:///android_asset/offline_images/08f2da37400fbff1179c90b251358dac.webp"
         ),
 WildRiftItem(
@@ -1017,28 +1021,36 @@ WildRiftItem(
             id = "winter_s_approach",
             name = "Llegada del invierno",
             nameEn = "Winter's Approach",
+            namePt = "Aproximação Invernal",
             category = "Objetos Defensivos",
             goldCost = 2600,
             stats = "+500 Vida máxima • +500 Maná máximo • +15 Velocidad de habilidades",
-            statsEn = "+350 Max Health • +500 Max Mana • +15 Ability Haste",
-            passive = "Asombro: Otorga una cantidad de vida adicional equivalente a un 15% del maná máximo y restaura un 15% de todo el maná gastado.\nCarga de maná: Otorga 14 de maná máximo por cada ataque, gasto de maná o cada vez que se recibe daño de campeones, estructuras o monstruos épicos. Otorga 700 de maná máximo, momento en el que este objeto se transforma en El gran invierno. Ocurre hasta 3 veces cada 10 s. Solo se puede tener un objeto de Lágrima de la diosa.",
-            passiveEn = "Awe: Grants bonus health equal to 8% of max Mana and refunds 15% of all Mana spent.\nMana Charge: Increases max Mana by 12 every attack, when Mana is spent or when taking damage from champions, epic monsters, or towers. Caps at 700 bonus Mana, transforming Winter's Approach into Fimbulwinter. Triggers up to 3 times every 10 seconds. You may only carry one Tear of the Goddess item at a time.",
-            coachTip = "Excelente objeto defensivo para tanques y colosos que gastan mucho maná y quieren acumular reservas para obtener el escudo pasivo de Fimbulinvierno.",
-            coachTipEn = "Perfect defensive item for tanks needing mana scaling and massive shielding upon transforming.",
+            statsEn = "+500 Max Health • +500 Max Mana • +15 Ability Haste",
+            statsPt = "+500 de Vida Máxima • +500 de Mana Máximo • +15 de Aceleração de Habilidade",
+            passive = "Asombro: Otorga una cantidad de vida adicional equivalente a un 15% del maná máximo y restaura un 15% de todo el maná gastado.\nCarga de maná: Otorga 14 de maná máximo por cada ataque, gasto de maná o cada vez que se recibe daño de campeones, estructuras o monstruos épicos (hasta 3 veces cada 10 s). Otorga un máximo de 700 de maná. Este objeto se transforma en El gran invierno.",
+            passiveEn = "Awe: Grants bonus health equal to 15% of max Mana and refunds 15% of all Mana spent.\nMana Charge: Increases max Mana by 14 every attack, Mana spend or taking champion/tower damage (up to 700 bonus Mana to transform into Fimbulwinter).",
+            passivePt = "Assombro: Concede Vida adicional equivalente a 15% do Mana máximo e restaura 15% do Mana gasto.\nCarga de Mana: Concede 14 de Mana máximo por ataque, gasto de Mana ou dano sofrido (até 700 para transformar em Fimbulwinter).",
+            coachTip = "Excelente objeto defensivo para tanques y colosos que gastan mucho maná y quieren acumular reservas para obtener el escudo pasivo de El gran invierno.",
+            coachTipEn = "Perfect defensive item for tanks needing mana scaling and massive shielding upon transforming into Fimbulwinter.",
+            coachTipPt = "Excelente item defensivo para tanques e colossos que consomem muito mana e buscam o escudo passivo de Fimbulwinter.",
             iconUrl = "file:///android_asset/offline_images/ed3f1fac19870153dfdc6bed7a071edd.webp"
         ),
 WildRiftItem(
             id = "fimbulwinter",
-            name = "Fimbulinvierno",
+            name = "El gran invierno",
             nameEn = "Fimbulwinter",
+            namePt = "Fimbulwinter",
             category = "Objetos Defensivos",
             goldCost = 2600,
-            stats = "+350 salud máxima • +1200 maná máximo • +15 celeridad de habilidad",
-            statsEn = "+350 Max Health • +1200 Max Mana • +15 Ability Haste",
-            passive = "Asombro: Otorga salud adicional equivalente al 10 % del maná máximo y reembolsa el 15 % de todo el maná gastado.\nColoso congelado: inmovilizar o ralentizar a un campeón enemigo consume un 3% de maná actual y otorga un escudo durante 3 segundos, absorbiendo 90-180 +4,5% de maná actual, aumentado en un 80% si hay más de 1 campeón enemigo cerca. Solo se activa cuando está por encima del 20% de maná máximo. (8s de enfriamiento). El escudo tiene una efectividad del 50% para campeones a distancia.",
-            passiveEn = "Awe: Grants bonus health equal to 10% of max Mana and refunds 15% of all Mana spent.\nFrozen Colossus: Immobilizing or slowing an enemy champion consumes 3% current mana and grants a shield for 3 seconds, absorbing 90-180 +4.5% current Mana, increased by 80% if there is more than 1 enemy champion nearby.Only triggers when above 20% max Mana. (8s cooldown).Shield is 50% effective for ranged champions.",
-            coachTip = "Este elemento proporciona maná, salud y aceleración de habilidades masivas, y su pasivo",
-            coachTipEn = "This item provides massive mana, health, and ability haste, and its “Frozen Colossus” passive consumes mana when you slow or immobilize an enemy to grant a strong shield that scales with your mana pool and increases near multiple enemies. Perfect for spell-weaving tanks needing extra protection from their mana reserves.",
+            stats = "+500 Vida máxima • +1200 Maná máximo • +15 Velocidad de habilidades",
+            statsEn = "+500 Max Health • +1200 Max Mana • +15 Ability Haste",
+            statsPt = "+500 de Vida Máxima • +1200 de Mana Máximo • +15 de Aceleração de Habilidade",
+            passive = "Asombro: Otorga una cantidad de vida adicional equivalente a un 15% del maná máximo y restaura un 15% de todo el maná gastado.\nColoso helado: Al obstaculizar el movimiento de un campeón enemigo, otorga un escudo que absorbe una cantidad de daño equivalente a 120 + 4,5% del maná máximo durante 3 s. El escudo aumenta un 80% si hay más de un campeón enemigo cerca (8 s de enfriamiento). El escudo tiene un 50% de efectividad para campeones a distancia.",
+            passiveEn = "Awe: Grants bonus health equal to 15% of max Mana and refunds 15% of all Mana spent.\nFrozen Colossus: Immobilizing or slowing an enemy champion grants a shield absorbing 120 + 4.5% max Mana for 3s, increased by 80% near multiple enemies (8s Cooldown, 50% effective for ranged).",
+            passivePt = "Assombro: Concede Vida adicional equivalente a 15% do Mana máximo e restaura 15% do Mana gasto.\nColosso Congelado: Ao imobilizar ou reduzir a velocidade de um campeão inimigo, concede um escudo que absorve 120 + 4,5% do Mana máximo por 3s (aumentado em 80% com múltiplos inimigos).",
+            coachTip = "Forma evolucionada tras completar la carga de maná de Llegada del invierno. Otorga +500 de vida, +1200 de maná y un escudo masivo (Coloso helado) al ralentizar o inmovilizar a un rival.",
+            coachTipEn = "Upgraded form upon completing Winter's Approach. Grants +500 Health, +1200 Mana and massive shield upon slowing/immobilizing enemies.",
+            coachTipPt = "Forma evoluída da Aproximação Invernal. Concede +500 de Vida, +1200 de Mana e um escudo massivo ao aplicar controle de grupo.",
             iconUrl = "file:///android_asset/offline_images/ae7584f101f22466aaeaca45438a8371.webp"
         ),
 WildRiftItem(
@@ -1315,7 +1327,25 @@ WildRiftItem(
             coachTipPt = "Item inicial essencial para suportes tanques e protetores.",
             iconUrl = "file:///android_asset/offline_images/relic_shield.webp"
         ),
-WildRiftItem(
+        WildRiftItem(
+            id = "ancient_coin",
+            name = "Moneda antigua",
+            nameEn = "Ancient Coin",
+            namePt = "Moeda Antiga",
+            category = "Objetos de Apoyo",
+            goldCost = 500,
+            stats = "+100 Vida máxima • +5 Velocidad de habilidades • +5% Velocidad de movimiento",
+            statsEn = "+100 Max Health • +5 Ability Haste • +5% Move Speed",
+            statsPt = "+100 Vida Máxima • +5 Aceleração de Habilidade • +5% Vel. de Movimento",
+            passive = "Tributo: Las tropas enemigas abatidas cerca de ti tienen probabilidad de soltar monedas de oro (55 de oro) o monedas de maná (restauran 20-80 de maná o vida). Misión: Al reunir 750 de oro se transforma en Talismán de la ascensión.",
+            passiveEn = "Tribute: Nearby dying enemy minions drop gold coins (55 gold) or mana coins (restore 20-80 mana/health). Quest: Transform at 750 gold.",
+            passivePt = "Tributo: Tropas inimigas abatidas próximas podem soltar moedas de ouro ou mana. Missão: Transforma ao acumular 750 de ouro.",
+            coachTip = "Objeto inicial clásico de apoyo para campeones con estilo pasivo o de escalado seguro que priorizan el sustento de maná y economía protegida.",
+            coachTipEn = "Classic starting item for passive/scaling supports focusing on mana sustain and safe gold generation.",
+            coachTipPt = "Item inicial clássico para suportes de utilidade focados em sustentação de mana e ouro seguro.",
+            iconUrl = ""
+        ),
+        WildRiftItem(
             id = "bulwark_of_the_mountain",
             name = "Baluarte de la montaña",
             nameEn = "Bulwark of the Mountain",
@@ -2238,6 +2268,9 @@ WildRiftItem(
         "la guadaña de la niebla negra" to "black_mist_scythe",
         "guadana de la niebla negra" to "black_mist_scythe",
         "la guadana de la niebla negra" to "black_mist_scythe",
+        "ancient coin" to "ancient_coin",
+        "moneda antigua" to "ancient_coin",
+        "la moneda antigua" to "ancient_coin",
         "bulwark of the mountain" to "bulwark_of_the_mountain",
         "baluarte de la montaña" to "bulwark_of_the_mountain",
         "el baluarte de la montaña" to "bulwark_of_the_mountain",
@@ -2385,10 +2418,9 @@ WildRiftItem(
         "Mágico",
         "Defensa",
         "Apoyo",
+        "Apoyo (Básicos)",
         "Botas Nivel 2",
-        "Botas Nivel 3",
-        
-        
+        "Botas Nivel 3"
     )
 
     val categoryItemIds: Map<String, List<String>> = mapOf(
@@ -2470,6 +2502,9 @@ WildRiftItem(
             "oceanid_s_trident", "morellonomicon", "radiant_virtue_wild_rift", "thornmail",
             "dawnshroud", "cryptbloom"
         ),
+        "Apoyo (Básicos)" to listOf(
+            "spectral_sickle", "relic_shield", "ancient_coin"
+        ),
         "Botas Nivel 2" to listOf(
             "gluttonous_greaves", "berserker_s_greaves", "mercury_s_treads", "plated_steelcaps", "ionian_boots_of_lucidity", "boots_of_mana", "boots_of_dynamism"
         ),
@@ -2479,15 +2514,19 @@ WildRiftItem(
     )
 
     fun getItemsForCategory(category: String): List<WildRiftItem> {
-        val mappedIds = categoryItemIds[category]
+        val mappedIds = categoryItemIds[category] 
+            ?: categoryItemIds.entries.firstOrNull { it.key.equals(category, ignoreCase = true) }?.value
+            ?: categoryItemIds.entries.firstOrNull { 
+                normalizeString(it.key) == normalizeString(category) 
+            }?.value
         if (mappedIds != null) {
             val fromMap = mappedIds.mapNotNull { getItemById(it) }
             if (fromMap.isNotEmpty()) return fromMap
         }
         
-        val norm = category.lowercase().trim()
+        val norm = normalizeString(category)
         val directMatches = list.filter { item ->
-            val ic = item.category.lowercase().trim()
+            val ic = normalizeString(item.category)
             ic == norm || ic.contains(norm) || norm.contains(ic) || (norm.contains("bota") && ic.contains("bota"))
         }
         return if (directMatches.isNotEmpty()) directMatches else list.filter { it.category.equals(category, ignoreCase = true) }

@@ -276,6 +276,42 @@ object SituationalItemAdvisor {
             keyEffect = "Salvavidas: Escudo vitalicio del 16% de maná máximo al recibir daño letal. Asombro: +2% AP por maná.",
             recommendationTip = "El mejor objeto de seguridad y escalado para magos de control en peleas tardías."
         ),
+        "El gran invierno" to SituationalItemInfo(
+            name = "El gran invierno",
+            iconUrl = "file:///android_asset/offline_images/ae7584f101f22466aaeaca45438a8371.webp",
+            categoryName = "Tanque Escudo & Maná (Parche 7.3a)",
+            purpose = "Forma evolucionada de Llegada del invierno (+500 vida, +1200 maná). Otorga un escudo masivo (Coloso helado) al inmovilizar o ralentizar a un enemigo.",
+            bestAgainst = listOf("Tanques y colosos con alto gasto de maná (Nautilus, Sion, Gragas, Malphite, Alistar, Shen)"),
+            keyEffect = "Coloso helado: Escudo de 120 + 4.5% del maná al obstaculizar movimiento (+80% si hay varios enemigos).",
+            recommendationTip = "Otorga una durabilidad colosal en peleas de equipo a campeones con habilidades de control de masas."
+        ),
+        "Llegada del invierno" to SituationalItemInfo(
+            name = "Llegada del invierno",
+            iconUrl = "file:///android_asset/offline_images/ed3f1fac19870153dfdc6bed7a071edd.webp",
+            categoryName = "Tanque Escudo & Maná (Parche 7.3a)",
+            purpose = "Objeto inicial de maná y vida (+500 vida, +500 maná). Acumula 700 de maná para transformarse en El gran invierno.",
+            bestAgainst = listOf("Tanques con alto gasto de maná en fase de líneas"),
+            keyEffect = "Asombro: +15% de vida por maná gastado. Carga de maná: Transforma en El gran invierno.",
+            recommendationTip = "Primera compra indispensable para tanques que necesitan resolver sus problemas de maná desde el inicio."
+        ),
+        "Muramana" to SituationalItemInfo(
+            name = "Muramana",
+            iconUrl = "file:///android_asset/offline_images/08f2da37400fbff1179c90b251358dac.webp",
+            categoryName = "Daño Físico & Escalado de Maná (Parche 7.3a)",
+            purpose = "Forma evolucionada de Manamune (+40 DA, +1200 maná). Aplica daño físico de impacto adicional en ataques básicos y habilidades.",
+            bestAgainst = listOf("Tiradores y asesinos de daño físico dependientes de habilidades (Ezreal, Varus, Jayce, Senna, Corki)"),
+            keyEffect = "Impacto: +1.5% maná como daño en ataques y +3.5% maná en habilidades. Asombro: +2% DA por maná.",
+            recommendationTip = "Pico de poder letal en juego medio que maximiza el daño continuo y de ráfaga."
+        ),
+        "Manamune" to SituationalItemInfo(
+            name = "Manamune",
+            iconUrl = "file:///android_asset/offline_images/aba4fb973b550edadd3be632fb355f74.webp",
+            categoryName = "Daño Físico & Escalado de Maná (Parche 7.3a)",
+            purpose = "Objeto inicial de AD y maná (+40 DA, +500 maná). Acumula 700 de maná para evolucionar en Muramana.",
+            bestAgainst = listOf("Tiradores y duelistas de spam de habilidades"),
+            keyEffect = "Asombro: +2% DA según el maná. Carga de maná: Transforma en Muramana.",
+            recommendationTip = "Permite a tiradores basados en habilidades hostigar sin preocuparse por la falta de maná."
+        ),
         "Flechas de los Yun Tal" to SituationalItemInfo(
             name = "Flechas de los Yun Tal",
             iconUrl = "file:///android_asset/offline_images/yun_tal_wildarrows.webp",

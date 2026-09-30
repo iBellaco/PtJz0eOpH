@@ -28,6 +28,25 @@ class WildRiftItemsCatalogTest {
     }
 
     @Test
+    fun `basic support category contains spectral sickle, relic shield, and ancient coin`() {
+        val basicSupportItems = WildRiftItemsData.getItemsForCategory("Apoyo (Básicos)")
+        val basicIds = basicSupportItems.map { it.id }
+
+        assertEquals(3, basicSupportItems.size)
+        assertEquals("spectral_sickle", basicIds[0])
+        assertEquals("relic_shield", basicIds[1])
+        assertEquals("ancient_coin", basicIds[2])
+
+        val sickle = basicSupportItems[0]
+        val shield = basicSupportItems[1]
+        val coin = basicSupportItems[2]
+
+        assertEquals("file:///android_asset/offline_images/spectral_sickle.webp", sickle.iconUrl)
+        assertEquals("file:///android_asset/offline_images/relic_shield.webp", shield.iconUrl)
+        assertEquals("", coin.iconUrl)
+    }
+
+    @Test
     fun `all updated categories have exact counts and order`() {
         val asesino = WildRiftItemsData.getItemsForCategory("Asesino")
         assertEquals(11, asesino.size)
@@ -95,6 +114,20 @@ class WildRiftItemsCatalogTest {
         assertTrue(seraph!!.stats.contains("+1200 Maná máximo"))
         assertTrue(seraph.stats.contains("+25 Velocidad de habilidades"))
         assertTrue(seraph.passive.contains("16%"))
+
+        val granInvierno = WildRiftItemsData.getItemByName("El gran invierno")
+        assertNotNull(granInvierno)
+        assertEquals("fimbulwinter", granInvierno!!.id)
+        assertTrue(granInvierno.stats.contains("+500 Vida máxima"))
+        assertTrue(granInvierno.stats.contains("+1200 Maná máximo"))
+        assertTrue(granInvierno.passive.contains("Coloso helado"))
+
+        val muramana = WildRiftItemsData.getItemByName("Muramana")
+        assertNotNull(muramana)
+        assertEquals("muramana", muramana!!.id)
+        assertTrue(muramana.stats.contains("+40 Daño de ataque"))
+        assertTrue(muramana.stats.contains("+1200 Maná máximo"))
+        assertTrue(muramana.passive.contains("Impacto"))
     }
 
     @Test
