@@ -269,7 +269,10 @@ object ChampionNameResolver {
         // OCR de nombres de dos letras puede confundir la "i" minúscula con "l" o "1".
         // El alias queda limitado a estas dos lecturas para no convertir ruido corto en campeón.
         if (compact == "vl" || compact == "v1" || compactStripped == "vl" || compactStripped == "v1") {
-            safeChamps.find { it.id.equals("vi", ignoreCase = true) }?.let { return it }
+            val vi = safeChamps.find { it.id.equals("vi", ignoreCase = true) }
+                ?: WildRiftRepository.getChampionById("vi")
+                ?: Champion(id = "vi", name = "Vi", primaryRole = LaneRole.JUNGLE, tier = "A", winrate = 50.0, pickRate = 5.0, banRate = 1.0, damageType = com.example.model.DamageType.PHYSICAL, summary = "Vi", advantageAgainst = emptyList(), counteredBy = emptyList(), synergies = emptyList(), tacticalAdvice = "", recommendedRunes = "", isFrontline = false, isRanged = false, winrateDelta = 0.0, pickRateDelta = 0.0, banRateDelta = 0.0)
+            return vi
         }
 
         // 1. Coincidencia directa por mapa de nombres canónicos oficiales (Cadena completa o con icono limpio)
@@ -277,7 +280,9 @@ object ChampionNameResolver {
             if (c.isNotBlank()) {
                 KNOWN_CHAMPIONS_MAP[c]?.let { id ->
                     val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
-                    if (found != null) return found
+                        ?: WildRiftRepository.getChampionById(id)
+                        ?: Champion(id = id, name = id.replaceFirstChar { it.uppercase() }, primaryRole = LaneRole.MID, tier = "A", winrate = 50.0, pickRate = 5.0, banRate = 1.0, damageType = com.example.model.DamageType.PHYSICAL, summary = id, advantageAgainst = emptyList(), counteredBy = emptyList(), synergies = emptyList(), tacticalAdvice = "", recommendedRunes = "", isFrontline = false, isRanged = false, winrateDelta = 0.0, pickRateDelta = 0.0, banRateDelta = 0.0)
+                    return found
                 }
             }
         }

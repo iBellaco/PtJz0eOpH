@@ -50,7 +50,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.example.data.SupportMessageEntry
 import com.example.data.SupportReplyManager
-import com.example.data.supabase.FeedbackRepository
+import com.example.data.FeedbackRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

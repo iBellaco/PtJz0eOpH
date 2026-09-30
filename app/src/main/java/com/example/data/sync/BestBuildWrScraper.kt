@@ -18,12 +18,24 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 data class ScraperSourceStatus(val name: String, val url: String, val isHealthy: Boolean,
-    val lastChecked: Long, val responseTimeMs: Long, val errorMessage: String?, val region: String = "CN")
+    val lastChecked: Long, val responseTimeMs: Long, val errorMessage: String?, val region: String = "GLOBAL")
 
 object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
-    const val GLOBAL_URL = "https://www.wildriftfire.com/tier-list"
-    private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).readTimeout(15, TimeUnit.SECONDS).build()
+    
+    // 3 sitios web oficiales / meta para el scraping del servidor global
+    val GLOBAL_SCRAPING_URLS = listOf(
+        "https://www.wildriftfire.com/tier-list",
+        "https://rankedwr.com/tier-list",
+        "https://www.wildriftstats.com/tier-list"
+    )
+
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .followRedirects(true)
+        .build()
+        
     private val syncMutex = Mutex()
     private var initialized = false
     private var selectedRegion = MetaRegion.DEFAULT
@@ -100,29 +112,59 @@ object BestBuildWrScraper {
             var success = false
             var message: String
             var cache: JSONObject? = null
-            val source = when (requested) { "CN" -> "Servidor chino"; "NA" -> "América (NA)"; else -> "WildRiftFire" }
-            val url = when (requested) { "CN" -> "https://lolm.qq.com/"; "NA" -> "https://www.wildriftstats.org/champions"; else -> GLOBAL_URL }
-            if (requested == "NA") {
-                message = "NA sin fuente disponible • Consulta la lista Global"
-            } else if (!_isOnline.value) {
+            val source = when (requested) { "CN" -> "Servidor chino"; else -> "Scraping" }
+            val url = when (requested) { "CN" -> "https://lolm.qq.com/"; else -> GLOBAL_SCRAPING_URLS.first() }
+
+            if (!_isOnline.value) {
                 message = "Sin conexión; conservando datos guardados."
             } else {
-                success = if (requested == "CN") com.example.service.MetaScrapingWorker.fetchChineseStats() else {
-                    val req = Request.Builder().url(GLOBAL_URL).header("User-Agent", "Coach/1.1 Android").build()
-                    val html = client.newCall(req).execute().use { response -> if (response.isSuccessful) response.body?.string() else null }
-                    val tiers = html?.let(RegionalTierParser::parse).orEmpty()
+                success = if (requested == "CN") {
+                    com.example.service.MetaScrapingWorker.fetchChineseStats()
+                } else {
+                    // Scraping del servidor global usando 3 sitios web
+                    val aggregatedTiers = mutableMapOf<String, String>()
+                    val tierPriority = listOf("S+", "S", "A+", "A", "B", "C", "D")
+
+                    for (scrapingUrl in GLOBAL_SCRAPING_URLS) {
+                        try {
+                            val req = Request.Builder()
+                                .url(scrapingUrl)
+                                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                                .build()
+                            val html = client.newCall(req).execute().use { response ->
+                                if (response.isSuccessful) response.body?.string() else null
+                            }
+                            if (!html.isNullOrBlank()) {
+                                val parsed = RegionalTierParser.parse(html)
+                                parsed.forEach { (champId, tier) ->
+                                    val currentTier = aggregatedTiers[champId]
+                                    if (currentTier == null || tierPriority.indexOf(tier) < tierPriority.indexOf(currentTier)) {
+                                        aggregatedTiers[champId] = tier
+                                    }
+                                }
+                            }
+                        } catch (_: Exception) {
+                            // Continuar con los otros sitios de scraping
+                        }
+                    }
+
                     val matched = WildRiftRepository.regionalSnapshot("GLOBAL").count {
-                        RegionalTierParser.canonical(it.id) in tiers || RegionalTierParser.canonical(it.name) in tiers }
-                    if (matched >= 30) {
-                        WildRiftRepository.applyRegionalTierList("GLOBAL", tiers)
-                        cache = JSONObject(tiers)
+                        RegionalTierParser.canonical(it.id) in aggregatedTiers || RegionalTierParser.canonical(it.name) in aggregatedTiers
+                    }
+
+                    if (matched >= 20 || aggregatedTiers.isNotEmpty()) {
+                        WildRiftRepository.applyRegionalTierList("GLOBAL", aggregatedTiers)
+                        cache = JSONObject(aggregatedTiers)
                         true
                     } else false
                 }
+
                 message = if (success) {
-                    if (requested == "CN") "Estadísticas del servidor chino actualizadas." else "WildRiftFire • Categorías actualizadas • Sin porcentajes regionales"
+                    if (requested == "CN") "Estadísticas del servidor chino actualizadas." else "Scraping • Categorías actualizadas"
                 } else "Sin actualizar; conservando últimos datos guardados."
             }
+
             if (success) {
                 if (requested == "CN") cache = JSONObject().apply {
                     WildRiftRepository.chineseStatsSnapshot().forEach { champ -> put(champ.id, JSONObject()
@@ -148,3 +190,4 @@ object BestBuildWrScraper {
     }
     suspend fun syncAllChampionBuilds(context: Context, region: String = MetaRegion.DEFAULT) = syncGlobalTierList(context, region, force = true)
 }
+

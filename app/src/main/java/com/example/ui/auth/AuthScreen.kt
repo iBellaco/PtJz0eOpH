@@ -230,7 +230,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     LaunchedEffect(user.uid) {
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             try {
-                com.example.data.supabase.FeedbackRepository.syncAndPurgeOrphansForUser(
+                com.example.data.FeedbackRepository.syncAndPurgeOrphansForUser(
                     context,
                     user.uid,
                     user.email ?: ""

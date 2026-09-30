@@ -84,15 +84,6 @@ jobs:
               echo "Created fallback .env"
             fi
           fi
-          # Ensure Supabase keys are present and never blank to prevent secrets-gradle-plugin from generating invalid Java syntax
-          if ! grep -q "SUPABASE_URL=" .env || grep -q "SUPABASE_URL=$" .env || grep -q 'SUPABASE_URL=""$' .env; then
-            sed -i '/SUPABASE_URL/d' .env 2>/dev/null || true
-            echo "SUPABASE_URL=https://yreknglctxujpetgqhnw.supabase.co" >> .env
-          fi
-          if ! grep -q "SUPABASE_ANON_KEY=" .env || grep -q "SUPABASE_ANON_KEY=$" .env || grep -q 'SUPABASE_ANON_KEY=""$' .env; then
-            sed -i '/SUPABASE_ANON_KEY/d' .env 2>/dev/null || true
-            echo "SUPABASE_ANON_KEY=sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr" >> .env
-          fi
           cp .env app/.env 2>/dev/null || true
 
       - name: Set up Gradle 9.3.1
@@ -178,8 +169,6 @@ jobs:
 
       - name: Build Debug APK
         env:
-          SUPABASE_URL: "https://yreknglctxujpetgqhnw.supabase.co"
-          SUPABASE_ANON_KEY: "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr"
           CI: "true"
         run: |
           rm -rf app/build/outputs/apk/ || true

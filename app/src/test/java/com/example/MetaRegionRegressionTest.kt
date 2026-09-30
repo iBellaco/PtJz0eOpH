@@ -29,12 +29,11 @@ class MetaRegionRegressionTest {
     @Test fun `selector order and initial choice match the restored lists`() {
         context.getSharedPreferences("app_prefs", 0).edit().clear().commit()
         ChineseMetaSyncService.loadRegion(context)
-        assertEquals(listOf("CN", "GLOBAL", "NA"), MetaRegion.available)
+        assertEquals(listOf("GLOBAL", "CN"), MetaRegion.available)
         assertEquals("GLOBAL", ChineseMetaSyncService.currentRegion.value)
         assertEquals("GLOBAL", MetaRegion.normalize("auto"))
         assertTrue(MetaRegion.label("CN").startsWith("🇨🇳"))
         assertTrue(MetaRegion.label("GLOBAL").startsWith("🌐"))
-        assertTrue(MetaRegion.label("NA").startsWith("🇺🇸"))
     }
     @Test fun `explicit selection persists after reload`() {
         for (region in MetaRegion.available) {

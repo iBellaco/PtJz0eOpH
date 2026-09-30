@@ -20,18 +20,12 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 817
-    versionName = "1.1.10.101"
+    versionCode = 820
+    versionName = "1.1.10.104"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    val rawSupabaseUrl = (project.findProperty("SUPABASE_URL") as? String ?: System.getenv("SUPABASE_URL") ?: "").trim('\"', '\'')
-    val supabaseUrl = if (rawSupabaseUrl.isNotBlank()) rawSupabaseUrl else "https://yreknglctxujpetgqhnw.supabase.co"
-    val rawSupabaseKey = (project.findProperty("SUPABASE_ANON_KEY") as? String ?: System.getenv("SUPABASE_ANON_KEY") ?: "").trim('\"', '\'')
-    val supabaseKey = if (rawSupabaseKey.isNotBlank()) rawSupabaseKey else "sb_publishable_bQJGpyYVR-uxtBmN03F5yA_ZuibUcAr"
-    buildConfigField("String", "SUPABASE_URL", "\"${supabaseUrl}\"")
-    buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseKey}\"")
   }
 
   signingConfigs {
@@ -115,8 +109,6 @@ secrets {
   propertiesFileName = ".env"
   defaultPropertiesFileName = ".env.example"
   ignoreList.add("FIREBASE_APPCHECK_DEBUG_TOKEN")
-  ignoreList.add("SUPABASE_URL")
-  ignoreList.add("SUPABASE_ANON_KEY")
 }
 
 // Some unused dependencies are commented out below instead of being removed.
@@ -150,8 +142,6 @@ dependencies {
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.kotlinx.coroutines.play.services)
   implementation(libs.okhttp)
-  implementation(libs.supabase.postgrest)
-  implementation(libs.ktor.client.okhttp)
 
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)

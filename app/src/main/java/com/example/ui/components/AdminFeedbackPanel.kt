@@ -154,7 +154,7 @@ import com.example.model.Champion
 import com.example.model.RuneItem
 import com.example.model.SummonerSpellItem
 import com.example.data.remote.model.FeedbackReport
-import com.example.data.supabase.FeedbackRepository
+import com.example.data.FeedbackRepository
 import com.example.data.WildRiftItemsData
 import com.example.data.WildRiftSpellsAndRunes
 import com.example.data.WildRiftRepository
@@ -282,7 +282,7 @@ fun AdminFeedbackBottomSheet(
 
     LaunchedEffect(Unit) {
         loadReports()
-        // Polling periódico silencioso en segundo plano para sincronizar cambios de Supabase
+        // Polling periódico silencioso en segundo plano para sincronizar cambios en la nube
         while (isActive) {
             delay(10000)
             loadReports(silent = true)
@@ -895,8 +895,7 @@ fun AdminFeedbackBottomSheet(
                                             newStatus = newStatus,
                                             userId = null,
                                             userEmail = report.parsedEmail,
-                                            reportTitle = report.title,
-                                            supabaseId = report.id
+                                            reportTitle = report.title
                                         )
                                     }
                                     val msg = when (newStatus) {

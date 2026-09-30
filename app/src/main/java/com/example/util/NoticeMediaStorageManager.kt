@@ -485,61 +485,6 @@ object NoticeMediaStorageManager {
     }
 
     /**
-     * Intenta subir un archivo de video a Supabase Storage con timeout y manejo robusto de red.
-     */
-    suspend fun tryUploadVideoToSupabase(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) {
-        withTimeoutOrNull(15000L) {
-            try {
-                val supabaseUrl = com.example.data.supabase.SupabaseClientManager.getActiveUrl()
-                val supabaseKey = com.example.data.supabase.SupabaseClientManager.getActiveKey()
-                if (supabaseUrl.isBlank() || supabaseKey.isBlank()) return@withTimeoutOrNull null
-
-                val filename = "vid_${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(6)}.mp4"
-                val bucket = "notice_media"
-                val uploadUrl = "${supabaseUrl.removeSuffix("/")}/storage/v1/object/$bucket/$filename"
-
-                val inputStream = context.contentResolver.openInputStream(uri) ?: return@withTimeoutOrNull null
-                val bytes = inputStream.use { it.readBytes() }
-                if (bytes.isEmpty()) return@withTimeoutOrNull null
-
-                val mediaType = "video/mp4".toMediaTypeOrNull()
-                val requestBody = bytes.toRequestBody(mediaType)
-
-                val request = Request.Builder()
-                    .url(uploadUrl)
-                    .addHeader("apikey", supabaseKey)
-                    .addHeader("Authorization", "Bearer $supabaseKey")
-                    .addHeader("x-upsert", "true")
-                    .post(requestBody)
-                    .build()
-
-                val response = okHttpClient.newCall(request).execute()
-                if (response.isSuccessful || response.code in 200..204) {
-                    val publicUrl = "${supabaseUrl.removeSuffix("/")}/storage/v1/object/public/$bucket/$filename"
-                    Log.d(TAG, "Video subido exitosamente a Supabase Storage: $publicUrl")
-
-                    // Guardar copia local inmediata en caché
-                    try {
-                        val dir = File(context.cacheDir, VIDEO_CACHE_DIR)
-                        if (!dir.exists()) dir.mkdirs()
-                        val key = "vid_" + publicUrl.hashCode().toString().replace("-", "n") + ".mp4"
-                        val file = File(dir, key)
-                        FileOutputStream(file).use { it.write(bytes) }
-                    } catch (_: Exception) {}
-
-                    publicUrl
-                } else {
-                    Log.w(TAG, "Fallo al subir video a Supabase Storage: HTTP ${response.code}")
-                    null
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error subiendo video a Supabase Storage: ${e.message}")
-                null
-            }
-        }
-    }
-
-    /**
      * Convierte videos ultra-ligeros (< 100 KB) a Data URL Base64 para sincronización ligera.
      * Para videos mayores, se almacena en disco local permanente o en almacenamiento remoto
      * evitando saturar el límite de tamaño de documento de 1MB.
@@ -566,9 +511,8 @@ object NoticeMediaStorageManager {
      * 2. Intenta subirlo a Firebase Storage con metadatos video/mp4 (prioritario para sincronización global).
      * 3. Si no está disponible, intenta Catbox Cloud (enlace HTTPS mp4 público permanente multidispositivo).
      * 4. Si no está disponible, intenta Tmpfiles Cloud.
-     * 5. Si no está disponible, intenta Supabase Storage si estuviera configurado.
-     * 6. Si es ligero (< 500KB), genera Data URL Base64 para que se replique en Firestore en todos los dispositivos.
-     * 7. Si todo lo anterior falla, retorna la ruta local permanente file://.
+     * 5. Si es ligero (< 500KB), genera Data URL Base64 para que se replique en Firestore en todos los dispositivos.
+     * 6. Si todo lo anterior falla, retorna la ruta local permanente file://.
      */
     suspend fun uploadOrSaveVideo(context: Context, uri: Uri): String = withContext(Dispatchers.IO) {
         // 1. Guardar siempre copia permanente en almacenamiento local privado
@@ -592,19 +536,13 @@ object NoticeMediaStorageManager {
             return@withContext tmpfilesUrl
         }
 
-        // 5. Intentar subir a Supabase Storage como almacenamiento secundario si está disponible
-        val supabaseUrl = tryUploadVideoToSupabase(context, uri)
-        if (!supabaseUrl.isNullOrBlank()) {
-            return@withContext supabaseUrl
-        }
-
-        // 6. Si es video compacto (< 500KB), generar Data URL Base64 para sincronización instantánea en la nube
+        // 5. Si es video compacto (< 500KB), generar Data URL Base64 para sincronización instantánea en la nube
         val dataUrl = convertVideoToDataUrl(context, uri, maxBytes = 500_000)
         if (!dataUrl.isNullOrBlank()) {
             return@withContext dataUrl
         }
 
-        // 7. Retornar la ruta local permanente file://
+        // 6. Retornar la ruta local permanente file://
         localPath
     }
 

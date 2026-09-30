@@ -28,16 +28,10 @@ fun AdminDatabaseConsumptionDialog(
 ) {
     val context = LocalContext.current
 
-    // Firebase y Supabase cuotas y consumos
-    val firebaseCapacityMb = 1000.0 // 1 GB Cuota Gratuita Firebase
-    val firebaseConsumedMb = 4.25
-    val firebaseRemainingMb = (firebaseCapacityMb - firebaseConsumedMb).coerceAtLeast(0.0)
-    val firebasePercentage = (firebaseConsumedMb / firebaseCapacityMb).toFloat().coerceIn(0f, 1f)
-
-    val supabaseCapacityMb = 500.0 // 500 MB Cuota Gratuita Supabase
-    val supabaseConsumedMb = 1.15
-    val supabaseRemainingMb = (supabaseCapacityMb - supabaseConsumedMb).coerceAtLeast(0.0)
-    val supabasePercentage = (supabaseConsumedMb / supabaseCapacityMb).toFloat().coerceIn(0f, 1f)
+    val cloudCapacityMb = 1000.0 // 1 GB Cuota Almacenamiento Cloud
+    val cloudConsumedMb = 4.25
+    val cloudRemainingMb = (cloudCapacityMb - cloudConsumedMb).coerceAtLeast(0.0)
+    val cloudPercentage = (cloudConsumedMb / cloudCapacityMb).toFloat().coerceIn(0f, 1f)
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -68,7 +62,7 @@ fun AdminDatabaseConsumptionDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(tr("Consumo de Base de Datos"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                            Text(tr("Firebase y Supabase (Almacenamiento Cloud)"), color = TextSecondary, fontSize = 11.sp)
+                            Text(tr("Almacenamiento Cloud y Sincronización"), color = TextSecondary, fontSize = 11.sp)
                         }
                     }
                     IconButton(onClick = onDismiss) {
@@ -78,26 +72,15 @@ fun AdminDatabaseConsumptionDialog(
 
                 Divider(color = HextechSurfaceVariant)
 
-                // Firebase Card
+                // Cloud Storage Card
                 CloudServiceConsumptionCard(
-                    title = "Firebase (Firestore / Cloud)",
+                    title = "Almacenamiento Cloud en Tiempo Real",
                     color = HextechGold,
-                    capacityMb = firebaseCapacityMb,
-                    consumedMb = firebaseConsumedMb,
-                    remainingMb = firebaseRemainingMb,
-                    percentage = firebasePercentage,
+                    capacityMb = cloudCapacityMb,
+                    consumedMb = cloudConsumedMb,
+                    remainingMb = cloudRemainingMb,
+                    percentage = cloudPercentage,
                     description = "Perfiles, reportes, sugerencias y sincronización en tiempo real."
-                )
-
-                // Supabase Card
-                CloudServiceConsumptionCard(
-                    title = "Supabase (PostgreSQL / Storage)",
-                    color = Color(0xFF3ECF8E),
-                    capacityMb = supabaseCapacityMb,
-                    consumedMb = supabaseConsumedMb,
-                    remainingMb = supabaseRemainingMb,
-                    percentage = supabasePercentage,
-                    description = "Autenticación, almacenamiento de archivos y tablas SQL."
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

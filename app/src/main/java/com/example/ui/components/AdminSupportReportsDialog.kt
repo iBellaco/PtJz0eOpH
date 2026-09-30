@@ -97,7 +97,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.data.SupportReplyManager
 import com.example.data.remote.model.FeedbackReport
-import com.example.data.supabase.FeedbackRepository
+import com.example.data.FeedbackRepository
 import com.example.ui.theme.DangerRed
 import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
@@ -135,10 +135,10 @@ data class UnifiedSupportReport(
     val appVersion: String = "",
     val device: String = "",
     val createdAtMillis: Long = System.currentTimeMillis(),
-    val rawSupabaseReport: FeedbackReport? = null,
+    val rawFeedbackReport: FeedbackReport? = null,
     val isFirestoreDoc: Boolean = false,
     val firestoreDocId: String? = null,
-    val supabaseId: String? = null,
+    val remoteReportId: String? = null,
     val adminReply: String = "",
     val repliedAtMillis: Long = 0L,
     val repliedBy: String = "",
@@ -177,11 +177,11 @@ fun AdminSupportReportsDialog(
 
             val combined = mutableListOf<UnifiedSupportReport>()
 
-            // 1. Cargar desde Supabase (FeedbackRepository) - Fuente de datos primaria
+            // 1. Cargar desde repositorio en la nube (FeedbackRepository)
             try {
-                val supabaseResult = FeedbackRepository.getAllFeedbacks()
-                if (supabaseResult.isSuccess) {
-                    val supaList = supabaseResult.getOrDefault(emptyList())
+                val cloudResult = FeedbackRepository.getAllFeedbacks()
+                if (cloudResult.isSuccess) {
+                    val supaList = cloudResult.getOrDefault(emptyList())
                     for (fb in supaList) {
                         val rawType = fb.type.trim().uppercase()
                         val isSupport = rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA") ||
@@ -232,10 +232,10 @@ fun AdminSupportReportsDialog(
                                 appVersion = fb.appVersion,
                                 device = cleanDev,
                                 createdAtMillis = createdMillis,
-                                rawSupabaseReport = fb,
+                                rawFeedbackReport = fb,
                                 isFirestoreDoc = false,
                                 firestoreDocId = null,
-                                supabaseId = fb.id,
+                                remoteReportId = fb.id,
                                 adminReply = finalReply,
                                 repliedAtMillis = repliedAt,
                                 repliedBy = repliedBy,
@@ -245,7 +245,7 @@ fun AdminSupportReportsDialog(
                     }
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Error cargando feedbacks de Supabase: ${e.message}")
+                Log.w(TAG, "Error cargando feedbacks: ${e.message}")
             }
 
             // 2. Intentar leer también desde Firestore silenciosamente
@@ -319,9 +319,9 @@ fun AdminSupportReportsDialog(
                                             appVersion = appVer,
                                             device = dev,
                                             createdAtMillis = ts,
-                                            rawSupabaseReport = null,
+                                            rawFeedbackReport = null,
                                             isFirestoreDoc = true,
-                                            supabaseId = null,
+                                            remoteReportId = null,
                                             adminReply = finalReply,
                                             repliedAtMillis = finalRepliedAt,
                                             repliedBy = finalRepliedBy,
@@ -353,13 +353,13 @@ fun AdminSupportReportsDialog(
         while (true) {
             kotlinx.coroutines.delay(10000L)
             try {
-                val supabaseResult = FeedbackRepository.getAllFeedbacks()
-                if (supabaseResult.isSuccess) {
-                    val supaList = supabaseResult.getOrDefault(emptyList())
+                val cloudResult = FeedbackRepository.getAllFeedbacks()
+                if (cloudResult.isSuccess) {
+                    val supaList = cloudResult.getOrDefault(emptyList())
                     for (fb in supaList) {
                         val id = fb.id ?: "${fb.title}_${fb.createdAt}"
                         val status = FeedbackRepository.getReportStatus(context, fb)
-                        val existingIdx = reportsList.indexOfFirst { it.id == id || it.supabaseId == id || (fb.title.isNotBlank() && it.title == fb.title) }
+                        val existingIdx = reportsList.indexOfFirst { it.id == id || it.remoteReportId == id || (fb.title.isNotBlank() && it.title == fb.title) }
                         if (existingIdx != -1) {
                             val cur = reportsList[existingIdx]
                             // Jamás degradar un estado resuelto o leído a pendiente por sondeo pasivo
@@ -451,9 +451,9 @@ fun AdminSupportReportsDialog(
                                     appVersion = appVer,
                                     device = dev,
                                     createdAtMillis = ts,
-                                    rawSupabaseReport = null,
+                                    rawFeedbackReport = null,
                                     isFirestoreDoc = true,
-                                    supabaseId = null,
+                                    remoteReportId = null,
                                     adminReply = docReply,
                                     repliedAtMillis = docRepliedAt,
                                     repliedBy = docRepliedBy,
@@ -523,22 +523,17 @@ fun AdminSupportReportsDialog(
             reportsList[idx] = reportsList[idx].copy(status = newStatus)
         }
 
-        // 1. Guardar en SharedPreferences y sincronizar en Supabase
-        if (report.rawSupabaseReport != null) {
-            FeedbackRepository.setFeedbackStatus(context, report.rawSupabaseReport, newStatus)
+        // 1. Guardar en SharedPreferences y sincronizar en la nube
+        val fakeReport = FeedbackReport(id = report.id, title = report.title, type = report.type)
+        FeedbackRepository.setFeedbackStatus(context, fakeReport, newStatus)
+        if (report.id.isNotBlank()) {
             coroutineScope.launch {
-                report.rawSupabaseReport.id?.let { sid ->
-                    FeedbackRepository.updateFeedbackStatusInCloud(sid, newStatus)
-                }
+                FeedbackRepository.updateFeedbackStatusInCloud(report.id, newStatus)
             }
-        } else {
-            val fakeReport = FeedbackReport(id = report.id, title = report.title, type = report.type)
-            FeedbackRepository.setFeedbackStatus(context, fakeReport, newStatus)
         }
 
-        // 2. Sincronizar multidispositivo en Firestore, Supabase en la nube y almacenamiento local
+        // 2. Sincronizar multidispositivo en Firestore y almacenamiento local
         val effectiveFirestoreId = report.firestoreDocId ?: report.id
-        val effectiveSupabaseId = report.supabaseId ?: report.rawSupabaseReport?.id
         coroutineScope.launch {
             SupportReplyManager.updateReportStatus(
                 context = context,
@@ -546,8 +541,7 @@ fun AdminSupportReportsDialog(
                 newStatus = newStatus,
                 userId = report.userId.takeIf { it.isNotBlank() },
                 userEmail = report.userEmail.takeIf { it.isNotBlank() },
-                reportTitle = report.title,
-                supabaseId = effectiveSupabaseId
+                reportTitle = report.title
             )
         }
 
@@ -1039,9 +1033,9 @@ fun AdminSupportReportsDialog(
                         reportToDelete = null
                         reportsList.removeAll { it.id == idToDelete }
                         coroutineScope.launch {
-                            // Eliminar de Supabase y purgar completamente de Firestore
+                            // Eliminar y purgar completamente de Firestore y bandejas
                             try {
-                                val fbReport = target.rawSupabaseReport ?: com.example.data.remote.model.FeedbackReport(
+                                val fbReport = target.rawFeedbackReport ?: com.example.data.remote.model.FeedbackReport(
                                     id = target.firestoreDocId ?: idToDelete,
                                     title = target.title,
                                     description = if (target.userEmail.isNotBlank()) "Correo de contacto: ${target.userEmail}\n\n" else ""

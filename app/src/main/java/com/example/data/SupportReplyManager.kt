@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import com.example.data.supabase.FeedbackRepository
+import com.example.data.FeedbackRepository
 import com.example.data.remote.model.FeedbackReport
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -446,7 +446,7 @@ object SupportReplyManager {
                 Log.w(TAG, "No se pudo actualizar respuesta en Firestore: ${e.message}")
             }
 
-            // Sincronizar en la nube en Supabase
+            // Sincronizar en la nube
             try {
                 val effectiveStatus = if (markAsRead) FeedbackRepository.STATUS_READ else FeedbackRepository.STATUS_PENDING
                 FeedbackRepository.updateFeedbackStatusInCloud(reportId, effectiveStatus)
@@ -657,8 +657,7 @@ object SupportReplyManager {
         newStatus: String,
         userId: String? = null,
         userEmail: String? = null,
-        reportTitle: String? = null,
-        supabaseId: String? = null
+        reportTitle: String? = null
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             val normalizedCloudStatus = when (newStatus.uppercase()) {
@@ -730,7 +729,7 @@ object SupportReplyManager {
                 } catch (_: Exception) {}
             }
 
-            // 4. Sincronizar en Supabase en la nube
+            // 4. Sincronizar en la nube y repositorio local
             val localStatus = when (normalizedCloudStatus) {
                 "SOLUCIONADO" -> FeedbackRepository.STATUS_SOLVED
                 "LEIDO" -> FeedbackRepository.STATUS_READ
@@ -738,12 +737,10 @@ object SupportReplyManager {
                 "RECHAZADO" -> FeedbackRepository.STATUS_REJECTED
                 else -> FeedbackRepository.STATUS_PENDING
             }
-            val supaTargetId = supabaseId?.takeIf { it.isNotBlank() } ?: reportId
             try {
-                FeedbackRepository.updateFeedbackStatusInCloud(supaTargetId, localStatus)
+                FeedbackRepository.updateFeedbackStatusInCloud(reportId, localStatus)
             } catch (_: Exception) {}
 
-            // 5. Actualizar repositorio local
             FeedbackRepository.setFeedbackStatus(
                 context,
                 FeedbackReport(id = reportId, title = reportTitle ?: ""),
@@ -798,7 +795,7 @@ object SupportReplyManager {
             Log.w(TAG, "Error en purga de reportes en Firestore: ${e.message}")
         }
 
-        // 2. Purga en Supabase / Local Feedback
+        // 2. Purga en Local Feedback
         try {
             val fbPurged = FeedbackRepository.autoPurgeExpiredReports(context)
             totalPurged += fbPurged

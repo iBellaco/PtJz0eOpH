@@ -93,6 +93,12 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
         }
 
         try {
+            ChineseMetaSyncService.loadRegion(this)
+        } catch (e: Exception) {
+            AppLogger.e("WildRiftApp", "Error inicializando región de meta", e)
+        }
+
+        try {
             DynamicTranslations.loadSync(this)
         } catch (e: Exception) {
             AppLogger.e("WildRiftApp", "Error cargando traducciones dinámicas", e)

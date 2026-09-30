@@ -1,4 +1,4 @@
-package com.example.data.supabase
+package com.example.data
 
 import android.content.Context
 import android.os.Build
@@ -6,9 +6,6 @@ import android.util.Log
 import com.example.BuildConfig
 import com.example.data.WildRiftRepository
 import com.example.data.remote.model.FeedbackReport
-import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.postgrest.query.Order
 import com.example.data.SupportReplyManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,23 +18,10 @@ import java.util.TimeZone
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.DocumentReference
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-
-@Serializable
-private data class InsertFeedbackReport(
-    val id: String? = null,
-    val type: String,
-    val title: String,
-    val description: String,
-    @SerialName("app_version") val appVersion: String,
-    @SerialName("device_info") val deviceInfo: String
-)
 
 object FeedbackRepository {
 
     private const val TAG = "FeedbackRepository"
-    private const val TABLE_NAME = "feedbacks"
     private const val PREFS_NAME = "feedback_admin_prefs"
     private const val KEY_COMPLETED_IDS = "completed_feedback_ids"
     private const val PREF_STATUS_PREFIX = "status_"
@@ -51,7 +35,7 @@ object FeedbackRepository {
     const val STATUS_COMPLETED = "COMPLETED"   // Compatibilidad
 
     /**
-     * Envía un reporte o sugerencia a Supabase y purga automáticamente
+     * Envía un reporte o sugerencia y purga automáticamente
      * los reportes con más de [retentionDays] días de antigüedad.
      */
     suspend fun submitFeedback(
@@ -65,9 +49,6 @@ object FeedbackRepository {
         id: String? = null
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val client = SupabaseClientManager.client
-            val postgrest = client.postgrest
-
             // 1. Purgar reportes que exceden el ciclo de retención (60 días máximo)
             try {
                 purgeOldReports(60)
@@ -99,77 +80,31 @@ object FeedbackRepository {
             }
 
             val reportId = if (!id.isNullOrBlank()) id else java.util.UUID.randomUUID().toString()
-            val mapWithId = mapOf(
+
+            // 3. Guardar en almacenamiento en la nube (support_reports) para garantizar sincronización multidispositivo
+            val db = FirebaseFirestore.getInstance()
+            val firestoreMap = hashMapOf<String, Any>(
                 "id" to reportId,
+                "reportId" to reportId,
                 "type" to type,
+                "tag" to type,
                 "title" to title.trim(),
                 "description" to finalDescription,
-                "app_version" to appVersion,
-                "device_info" to deviceInfo
+                "content" to finalDescription,
+                "userName" to (userName ?: "Usuario"),
+                "userEmail" to (email ?: ""),
+                "appVersion" to appVersion,
+                "deviceInfo" to deviceInfo,
+                "photos" to imagesBase64,
+                "status" to STATUS_PENDING,
+                "timestamp" to System.currentTimeMillis(),
+                "createdAt" to com.google.firebase.Timestamp.now()
             )
-
-            var supabaseSuccess = false
-            var supabaseError: Throwable? = null
-
-            // 3. Insertar en la tabla feedbacks de Supabase (probar con ID y sin ID como fallback)
-            try {
-                postgrest.from(TABLE_NAME).insert(mapWithId)
-                supabaseSuccess = true
-                Log.d(TAG, "Feedback enviado exitosamente a Supabase con ID")
-            } catch (e1: Exception) {
-                Log.w(TAG, "Fallo insercion con ID en Supabase: ${e1.message}. Reintentando sin ID como fallback.")
-                try {
-                    val mapWithoutId = mapOf(
-                        "type" to type,
-                        "title" to title.trim(),
-                        "description" to finalDescription,
-                        "app_version" to appVersion,
-                        "device_info" to deviceInfo
-                    )
-                    postgrest.from(TABLE_NAME).insert(mapWithoutId)
-                    supabaseSuccess = true
-                    Log.d(TAG, "Feedback enviado exitosamente a Supabase sin ID")
-                } catch (e2: Exception) {
-                    supabaseError = e2
-                    Log.e(TAG, "Error enviando a Supabase sin ID: ${e2.message}", e2)
-                }
-            }
-
-            // 4. Guardar respaldo en Firebase Firestore (support_reports) para garantizar entrega multidispositivo
-            var firestoreSuccess = false
-            try {
-                val db = FirebaseFirestore.getInstance()
-                val firestoreMap = hashMapOf<String, Any>(
-                    "id" to reportId,
-                    "reportId" to reportId,
-                    "type" to type,
-                    "tag" to type,
-                    "title" to title.trim(),
-                    "description" to finalDescription,
-                    "content" to finalDescription,
-                    "userName" to (userName ?: "Usuario"),
-                    "userEmail" to (email ?: ""),
-                    "appVersion" to appVersion,
-                    "deviceInfo" to deviceInfo,
-                    "photos" to imagesBase64,
-                    "status" to STATUS_PENDING,
-                    "timestamp" to System.currentTimeMillis(),
-                    "createdAt" to com.google.firebase.Timestamp.now()
-                )
-                db.collection("support_reports").document(reportId).set(firestoreMap).await()
-                firestoreSuccess = true
-                Log.d(TAG, "Feedback guardado exitosamente en Firestore support_reports")
-            } catch (fe: Exception) {
-                Log.w(TAG, "Error guardando en Firestore support_reports: ${fe.message}")
-            }
-
-            if (supabaseSuccess || firestoreSuccess) {
-                Result.success(Unit)
-            } else {
-                Result.failure(supabaseError ?: Exception("Error guardando reporte"))
-            }
+            db.collection("support_reports").document(reportId).set(firestoreMap).await()
+            Log.d(TAG, "Feedback guardado exitosamente en la nube")
+            Result.success(Unit)
         } catch (e: Exception) {
-            Log.e(TAG, "Error enviando feedback a Supabase: ${e.message}", e)
+            Log.e(TAG, "Error enviando feedback: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -182,7 +117,7 @@ object FeedbackRepository {
         val id = report.id
         val compositeKey = if (report.createdAt != null) "${report.title}_${report.createdAt}" else null
 
-        // 1. Revisar campo status de Supabase/Firestore (Cloud-First Multi-Device Sync)
+        // 1. Revisar campo status remoto
         val remoteStatus = report.status?.trim()?.uppercase(Locale.US)
         if (!remoteStatus.isNullOrBlank()) {
             val normalized = when (remoteStatus) {
@@ -216,7 +151,7 @@ object FeedbackRepository {
             return if (report.type.equals("SUGGESTION", ignoreCase = true)) STATUS_ACCEPTED else STATUS_SOLVED
         }
 
-        // 4. Si el mensaje ya ha sido respondido por un moderador/soporte, no debe salir en espera/pendiente
+        // 4. Si el mensaje ya ha sido respondido por soporte, no debe salir en espera/pendiente
         if (!report.adminReply.isNullOrBlank()) {
             return STATUS_READ
         }
@@ -276,8 +211,7 @@ object FeedbackRepository {
     }
 
     /**
-     * Marca o desmarca un reporte como completado de forma persistente en SharedPreferences y
-     * sincroniza el estado en la base de datos de Supabase si está disponible.
+     * Marca o desmarca un reporte como completado de forma persistente en SharedPreferences.
      */
     fun setFeedbackCompleted(
         context: Context,
@@ -293,7 +227,7 @@ object FeedbackRepository {
     }
 
     /**
-     * Comprueba si un reporte está completado (ya sea por dato remoto de Supabase o guardado local permanente).
+     * Comprueba si un reporte está completado.
      */
     fun isReportCompleted(report: FeedbackReport, completedIds: Set<String>): Boolean {
         if (report.status.equals("COMPLETED", ignoreCase = true) ||
@@ -314,37 +248,18 @@ object FeedbackRepository {
     }
 
     /**
-     * Sincroniza el cambio de estado en la nube de Supabase.
+     * Sincroniza el cambio de estado en la nube.
      */
     suspend fun updateFeedbackStatusInCloud(id: String, status: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val client = SupabaseClientManager.client
-            val postgrest = client.postgrest
             val isCompleted = (status == STATUS_SOLVED || status == STATUS_ACCEPTED || status == STATUS_COMPLETED)
-
-            // Intentar actualizar status e is_completed en Supabase
-            try {
-                postgrest.from(TABLE_NAME).update(
-                    mapOf(
-                        "status" to status,
-                        "is_completed" to isCompleted
-                    )
-                ) {
-                    filter {
-                        eq("id", id)
-                    }
-                }
-            } catch (ignored: Exception) {
-                // Fallback por si la columna is_completed no existe
-                postgrest.from(TABLE_NAME).update(
-                    mapOf("status" to status)
-                ) {
-                    filter {
-                        eq("id", id)
-                    }
-                }
-            }
-
+            val db = FirebaseFirestore.getInstance()
+            val updateData = mapOf(
+                "status" to status,
+                "isCompleted" to isCompleted,
+                "updatedAt" to com.google.firebase.Timestamp.now()
+            )
+            db.collection("support_reports").document(id).set(updateData, com.google.firebase.firestore.SetOptions.merge()).await()
             Log.d(TAG, "Estado de reporte $id actualizado en nube a $status")
             Result.success(Unit)
         } catch (e: Exception) {
@@ -381,70 +296,32 @@ object FeedbackRepository {
 
     /**
      * Obtiene el conjunto de IDs y títulos de tickets de soporte y DMs actualmente activos en el sistema.
-     * Combina tanto Supabase como Firestore para garantizar sincronización multidispositivo sin pérdida de mensajes.
      */
     suspend fun getActiveSupportReportIds(): Set<String> = withContext(Dispatchers.IO) {
         val activeIds = mutableSetOf<String>()
         try {
-            // 1. Supabase (Panel de soporte en la nube)
-            try {
-                val client = SupabaseClientManager.client
-                val postgrest = client.postgrest
-                val list = postgrest.from(TABLE_NAME)
-                    .select {
-                        order("created_at", Order.DESCENDING)
-                    }
-                    .decodeList<FeedbackReport>()
-                    .filter { !it.type.equals("SPONSOR_AD", ignoreCase = true) }
-
-                for (fb in list) {
-                    val rawType = fb.type.trim().uppercase(Locale.US)
-                    val isSupport = rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA", "PATROCINADOR", "SPONSOR") ||
-                            fb.title.contains("Soporte", ignoreCase = true) ||
-                            fb.title.contains("Ticket", ignoreCase = true) ||
-                            fb.title.contains("Patrocinio", ignoreCase = true)
-                    if (isSupport) {
-                        fb.id?.let { activeIds.add(it) }
-                        if (fb.title.isNotBlank()) {
-                            val cleanT = fb.title.trim()
-                            activeIds.add(cleanT)
-                            activeIds.add("Soporte: $cleanT")
-                            activeIds.add("Reporte: $cleanT")
-                            activeIds.add("Patrocinio: $cleanT")
+            val db = FirebaseFirestore.getInstance()
+            val fireSnap = db.collection("support_reports").get().await()
+            for (doc in fireSnap.documents) {
+                val isDeleted = doc.getBoolean("isDeleted") == true ||
+                        doc.getBoolean("deleted") == true ||
+                        (doc.getString("status") ?: "").uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
+                if (!isDeleted) {
+                    activeIds.add(doc.id)
+                    doc.getString("id")?.let { if (it.isNotBlank()) activeIds.add(it) }
+                    doc.getString("reportId")?.let { if (it.isNotBlank()) activeIds.add(it) }
+                    val t = (doc.getString("title") ?: "").trim()
+                    if (t.isNotBlank()) {
+                        activeIds.add(t)
+                        activeIds.add("Soporte: $t")
+                        activeIds.add("Reporte: $t")
+                        activeIds.add("Patrocinio: $t")
+                        val cleanNoPrefix = t.removePrefix("Soporte: ").removePrefix("Reporte: ").removePrefix("Patrocinio: ").trim()
+                        if (cleanNoPrefix.isNotBlank()) {
+                            activeIds.add(cleanNoPrefix)
                         }
                     }
                 }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error consultando Supabase para activeIds: ${e.message}")
-            }
-
-            // 2. Firestore support_reports (Sincronización en tiempo real multidispositivo)
-            try {
-                val db = FirebaseFirestore.getInstance()
-                val fireSnap = db.collection("support_reports").get().await()
-                for (doc in fireSnap.documents) {
-                    val isDeleted = doc.getBoolean("isDeleted") == true ||
-                            doc.getBoolean("deleted") == true ||
-                            (doc.getString("status") ?: "").uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
-                    if (!isDeleted) {
-                        activeIds.add(doc.id)
-                        doc.getString("id")?.let { if (it.isNotBlank()) activeIds.add(it) }
-                        doc.getString("reportId")?.let { if (it.isNotBlank()) activeIds.add(it) }
-                        val t = (doc.getString("title") ?: "").trim()
-                        if (t.isNotBlank()) {
-                            activeIds.add(t)
-                            activeIds.add("Soporte: $t")
-                            activeIds.add("Reporte: $t")
-                            activeIds.add("Patrocinio: $t")
-                            val cleanNoPrefix = t.removePrefix("Soporte: ").removePrefix("Reporte: ").removePrefix("Patrocinio: ").trim()
-                            if (cleanNoPrefix.isNotBlank()) {
-                                activeIds.add(cleanNoPrefix)
-                            }
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error consultando Firestore para activeIds: ${e.message}")
             }
         } catch (_: Exception) {}
         activeIds
@@ -452,7 +329,6 @@ object FeedbackRepository {
 
     /**
      * Sincroniza y purga de la bandeja del usuario cualquier mensaje de soporte huérfano.
-     * Si no existe ningún mensaje de soporte en el sistema, purga todos los mensajes de soporte del usuario.
      */
     suspend fun syncAndPurgeOrphansForUser(
         context: Context,
@@ -587,7 +463,6 @@ object FeedbackRepository {
 
     /**
      * Obtiene todos los reportes ordenados de más reciente a más antiguo para el Panel de Soporte y Administrador.
-     * Sincroniza tanto Supabase como Firestore para garantizar visibilidad total y unificada.
      */
     suspend fun getAllFeedbacks(): Result<List<FeedbackReport>> = withContext(Dispatchers.IO) {
         val combinedList = mutableListOf<FeedbackReport>()
@@ -595,112 +470,66 @@ object FeedbackRepository {
         val seenTitles = mutableSetOf<String>()
 
         try {
-            // 1. Supabase
-            try {
-                val client = SupabaseClientManager.client
-                val postgrest = client.postgrest
-                val list = postgrest.from(TABLE_NAME)
-                    .select {
-                        order("created_at", Order.DESCENDING)
-                    }
-                    .decodeList<FeedbackReport>()
-                    .filter { !it.type.equals("SPONSOR_AD", ignoreCase = true) }
+            val db = FirebaseFirestore.getInstance()
+            val fireSnap = db.collection("support_reports")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(100)
+                .get()
+                .await()
 
-                for (item in list) {
-                    item.id?.let { seenIds.add(it) }
-                    if (item.title.isNotBlank()) seenTitles.add(item.title.trim())
-                    combinedList.add(item)
+            for (doc in fireSnap.documents) {
+                val docId = doc.id
+                val title = doc.getString("title") ?: ""
+                val isDeleted = doc.getBoolean("isDeleted") == true ||
+                        doc.getBoolean("deleted") == true ||
+                        (doc.getString("status") ?: "").uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
+                if (isDeleted) continue
+
+                val rawStatus = doc.getString("status") ?: "PENDIENTE"
+                val normalizedStatus = when (rawStatus.uppercase(Locale.US)) {
+                    "SOLVED", "SOLUCIONADO", "RESUELTO" -> STATUS_SOLVED
+                    "READ", "LEIDO", "LEÍDO" -> STATUS_READ
+                    "ACCEPTED", "ACEPTADA", "ACEPTADO" -> STATUS_ACCEPTED
+                    "REJECTED", "RECHAZADA", "RECHAZADO" -> STATUS_REJECTED
+                    else -> STATUS_PENDING
                 }
-                Log.d(TAG, "Se obtuvieron ${list.size} reportes de Supabase")
-            } catch (e: Exception) {
-                Log.w(TAG, "Error al obtener feedbacks de Supabase: ${e.message}")
+                val adminReply = doc.getString("adminReply")
+                val repliedBy = doc.getString("repliedBy")
+                val repliedEmail = doc.getString("repliedEmail")
+
+                if (seenIds.contains(docId) || (title.isNotBlank() && seenTitles.contains(title.trim()))) {
+                    continue
+                }
+
+                val desc = doc.getString("description") ?: ""
+                val userEmail = doc.getString("userEmail") ?: ""
+                val userName = doc.getString("userName") ?: ""
+                val appVer = doc.getString("appVersion") ?: ""
+                val dev = doc.getString("device") ?: ""
+                val ts = doc.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis()
+                val isoDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }.format(Date(ts))
+
+                val converted = FeedbackReport(
+                    id = docId,
+                    type = doc.getString("type") ?: "SOPORTE",
+                    title = title.ifBlank { "Ticket de soporte" },
+                    description = if (userEmail.isNotBlank()) "Correo de contacto: $userEmail\n$desc" else desc,
+                    appVersion = appVer,
+                    deviceInfo = dev,
+                    createdAt = isoDate,
+                    status = normalizedStatus,
+                    adminReply = adminReply,
+                    repliedBy = repliedBy,
+                    repliedEmail = repliedEmail
+                )
+                seenIds.add(docId)
+                if (title.isNotBlank()) seenTitles.add(title.trim())
+                combinedList.add(converted)
             }
 
-            // 2. Firestore support_reports
-            try {
-                val db = FirebaseFirestore.getInstance()
-                val fireSnap = db.collection("support_reports")
-                    .orderBy("createdAt", Query.Direction.DESCENDING)
-                    .limit(100)
-                    .get()
-                    .await()
-
-                for (doc in fireSnap.documents) {
-                    val docId = doc.id
-                    val title = doc.getString("title") ?: ""
-                    val isDeleted = doc.getBoolean("isDeleted") == true ||
-                            doc.getBoolean("deleted") == true ||
-                            (doc.getString("status") ?: "").uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
-                    if (isDeleted) continue
-
-                    val rawStatus = doc.getString("status") ?: "PENDIENTE"
-                    val normalizedStatus = when (rawStatus.uppercase(Locale.US)) {
-                        "SOLVED", "SOLUCIONADO", "RESUELTO" -> STATUS_SOLVED
-                        "READ", "LEIDO", "LEÍDO" -> STATUS_READ
-                        "ACCEPTED", "ACEPTADA", "ACEPTADO" -> STATUS_ACCEPTED
-                        "REJECTED", "RECHAZADA", "RECHAZADO" -> STATUS_REJECTED
-                        else -> STATUS_PENDING
-                    }
-                    val adminReply = doc.getString("adminReply")
-                    val repliedBy = doc.getString("repliedBy")
-                    val repliedEmail = doc.getString("repliedEmail")
-
-                    // Si ya existe en combinedList (desde Supabase), sincronizar su estado y respuesta más recientes de Firestore
-                    val existingIdx = combinedList.indexOfFirst {
-                        it.id == docId || (title.isNotBlank() && it.title.trim().equals(title.trim(), ignoreCase = true))
-                    }
-                    if (existingIdx != -1) {
-                        val existing = combinedList[existingIdx]
-                        val finalReply = if (!adminReply.isNullOrBlank()) adminReply else existing.adminReply
-                        val finalRepliedBy = if (!repliedBy.isNullOrBlank()) repliedBy else existing.repliedBy
-                        val finalRepliedEmail = if (!repliedEmail.isNullOrBlank()) repliedEmail else existing.repliedEmail
-                        combinedList[existingIdx] = existing.copy(
-                            status = normalizedStatus,
-                            adminReply = finalReply,
-                            repliedBy = finalRepliedBy,
-                            repliedEmail = finalRepliedEmail
-                        )
-                        continue
-                    }
-
-                    if (seenIds.contains(docId) || (title.isNotBlank() && seenTitles.contains(title.trim()))) {
-                        continue
-                    }
-
-                    val desc = doc.getString("description") ?: ""
-                    val userEmail = doc.getString("userEmail") ?: ""
-                    val userName = doc.getString("userName") ?: ""
-                    val appVer = doc.getString("appVersion") ?: ""
-                    val dev = doc.getString("device") ?: ""
-                    val ts = doc.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis()
-                    val isoDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
-                        timeZone = TimeZone.getTimeZone("UTC")
-                    }.format(Date(ts))
-
-                    val converted = FeedbackReport(
-                        id = docId,
-                        type = "SOPORTE",
-                        title = title.ifBlank { "Ticket de soporte" },
-                        description = if (userEmail.isNotBlank()) "Correo de contacto: $userEmail\n$desc" else desc,
-                        appVersion = appVer,
-                        deviceInfo = dev,
-                        createdAt = isoDate,
-                        status = normalizedStatus,
-                        adminReply = adminReply,
-                        repliedBy = repliedBy,
-                        repliedEmail = repliedEmail
-                    )
-                    seenIds.add(docId)
-                    if (title.isNotBlank()) seenTitles.add(title.trim())
-                    combinedList.add(converted)
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error al obtener soporte de Firestore: ${e.message}")
-            }
-
-            // Ordenar por fecha descendente
             combinedList.sortByDescending { it.createdAt }
-
             Result.success(combinedList)
         } catch (e: Exception) {
             Log.e(TAG, "Error general en getAllFeedbacks: ${e.message}", e)
@@ -712,158 +541,131 @@ object FeedbackRepository {
      * Elimina un reporte específico por su ID UUID.
      */
     suspend fun deleteFeedback(id: String): Result<Unit> = withContext(Dispatchers.IO) {
-        deleteFeedback(com.example.data.remote.model.FeedbackReport(id = id, title = ""))
+        deleteFeedback(FeedbackReport(id = id, title = ""))
     }
 
     /**
-     * Elimina un reporte específico de forma definitiva:
-     * 1. Elimina de Supabase.
-     * 2. Elimina de Firestore support_reports.
-     * 3. Purga de la bandeja de entrada de los usuarios mediante collectionGroup("messages").
-     * 4. Limpia el array privateMessages del documento de usuario.
+     * Elimina un reporte específico de forma definitiva.
      */
-    suspend fun deleteFeedback(report: com.example.data.remote.model.FeedbackReport): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun deleteFeedback(report: FeedbackReport): Result<Unit> = withContext(Dispatchers.IO) {
         val id = report.id ?: return@withContext Result.failure(Exception("ID nulo"))
         try {
-            val client = SupabaseClientManager.client
-            val postgrest = client.postgrest
+            val db = FirebaseFirestore.getInstance()
+            val docsToDelete = mutableSetOf<String>()
+            docsToDelete.add(id)
 
-            // 1. Eliminar de Supabase
-            try {
-                postgrest.from(TABLE_NAME).delete {
-                    filter {
-                        eq("id", id)
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error eliminando de Supabase: ${e.message}")
+            val directDoc = db.collection("support_reports").document(id).get().await()
+            if (directDoc.exists()) {
+                docsToDelete.add(directDoc.id)
             }
 
-            // 2. Eliminar de Firestore (support_reports, collectionGroup messages y usuarios)
             try {
-                val db = FirebaseFirestore.getInstance()
-                val docsToDelete = mutableSetOf<String>()
-                docsToDelete.add(id)
+                val snap1 = db.collection("support_reports").whereEqualTo("id", id).get().await()
+                for (d in snap1.documents) docsToDelete.add(d.id)
+                val snap2 = db.collection("support_reports").whereEqualTo("reportId", id).get().await()
+                for (d in snap2.documents) docsToDelete.add(d.id)
+            } catch (_: Exception) {}
 
-                // Buscar documentos en support_reports por ID directo
-                val directDoc = db.collection("support_reports").document(id).get().await()
-                if (directDoc.exists()) {
-                    docsToDelete.add(directDoc.id)
+            if (report.title.isNotBlank()) {
+                try {
+                    val snap3 = db.collection("support_reports").whereEqualTo("title", report.title.trim()).get().await()
+                    for (d in snap3.documents) docsToDelete.add(d.id)
+                } catch (_: Exception) {}
+            }
+
+            // Purgar documentos de la colección support_reports
+            for (fId in docsToDelete) {
+                val docSnap = db.collection("support_reports").document(fId).get().await()
+                val uid = if (docSnap.exists()) docSnap.getString("userId") else null
+                val email = if (docSnap.exists()) docSnap.getString("userEmail") else null
+
+                try { db.collection("support_reports").document(fId).delete().await() } catch (_: Exception) {}
+
+                if (!uid.isNullOrBlank() && uid != "anonimo") {
+                    try { db.collection("users").document(uid).collection("messages").document(fId).delete().await() } catch (_: Exception) {}
+                    try { db.collection("users").document(uid).collection("messages").document(id).delete().await() } catch (_: Exception) {}
+
+                    try {
+                        val uRef = db.collection("users").document(uid)
+                        val uSnap = uRef.get().await()
+                        if (uSnap.exists()) {
+                            @Suppress("UNCHECKED_CAST")
+                            val pMsgs = uSnap.get("privateMessages") as? List<Map<String, Any>>
+                            if (pMsgs != null) {
+                                val updated = pMsgs.filterNot { m ->
+                                    val mId = m["id"] as? String ?: ""
+                                    val rId = m["reportId"] as? String ?: ""
+                                    mId == fId || mId == id || rId == fId || rId == id
+                                }
+                                uRef.update("privateMessages", updated).await()
+                            }
+                        }
+                    } catch (_: Exception) {}
                 }
 
-                // Buscar por campos id, reportId o título en support_reports
+                if (!email.isNullOrBlank()) {
+                    try {
+                        val usersByEmail = db.collection("users").whereEqualTo("email", email).get().await()
+                        for (uDoc in usersByEmail.documents) {
+                            try { db.collection("users").document(uDoc.id).collection("messages").document(fId).delete().await() } catch (_: Exception) {}
+                            try { db.collection("users").document(uDoc.id).collection("messages").document(id).delete().await() } catch (_: Exception) {}
+                            @Suppress("UNCHECKED_CAST")
+                            val pMsgs = uDoc.get("privateMessages") as? List<Map<String, Any>>
+                            if (pMsgs != null) {
+                                val updated = pMsgs.filterNot { m ->
+                                    val mId = m["id"] as? String ?: ""
+                                    val rId = m["reportId"] as? String ?: ""
+                                    mId == fId || mId == id || rId == fId || rId == id
+                                }
+                                db.collection("users").document(uDoc.id).update("privateMessages", updated).await()
+                            }
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+
+            // Purga en collectionGroup("messages")
+            try {
+                val groupRefsToDelete = mutableSetOf<DocumentReference>()
                 try {
-                    val snap1 = db.collection("support_reports").whereEqualTo("id", id).get().await()
-                    for (d in snap1.documents) docsToDelete.add(d.id)
-                    val snap2 = db.collection("support_reports").whereEqualTo("reportId", id).get().await()
-                    for (d in snap2.documents) docsToDelete.add(d.id)
+                    val r1 = db.collectionGroup("messages").whereEqualTo("reportId", id).get().await()
+                    for (d in r1.documents) groupRefsToDelete.add(d.reference)
+                } catch (_: Exception) {}
+                try {
+                    val r2 = db.collectionGroup("messages").whereEqualTo("id", id).get().await()
+                    for (d in r2.documents) groupRefsToDelete.add(d.reference)
                 } catch (_: Exception) {}
 
-                if (report.title.isNotBlank()) {
-                    try {
-                        val snap3 = db.collection("support_reports").whereEqualTo("title", report.title.trim()).get().await()
-                        for (d in snap3.documents) docsToDelete.add(d.id)
-                    } catch (_: Exception) {}
-                }
-
-                // Purgar documentos de la colección support_reports
                 for (fId in docsToDelete) {
-                    val docSnap = db.collection("support_reports").document(fId).get().await()
-                    val uid = if (docSnap.exists()) docSnap.getString("userId") else null
-                    val email = if (docSnap.exists()) docSnap.getString("userEmail") else null
-
-                    // Eliminar de support_reports
-                    try { db.collection("support_reports").document(fId).delete().await() } catch (_: Exception) {}
-
-                    // Eliminar de la bandeja del usuario directamente si tenemos el uid
-                    if (!uid.isNullOrBlank() && uid != "anonimo") {
-                        try { db.collection("users").document(uid).collection("messages").document(fId).delete().await() } catch (_: Exception) {}
-                        try { db.collection("users").document(uid).collection("messages").document(id).delete().await() } catch (_: Exception) {}
-
+                    if (fId != id) {
                         try {
-                            val uRef = db.collection("users").document(uid)
-                            val uSnap = uRef.get().await()
-                            if (uSnap.exists()) {
-                                @Suppress("UNCHECKED_CAST")
-                                val pMsgs = uSnap.get("privateMessages") as? List<Map<String, Any>>
-                                if (pMsgs != null) {
-                                    val updated = pMsgs.filterNot { m ->
-                                        val mId = m["id"] as? String ?: ""
-                                        val rId = m["reportId"] as? String ?: ""
-                                        mId == fId || mId == id || rId == fId || rId == id
-                                    }
-                                    uRef.update("privateMessages", updated).await()
-                                }
-                            }
+                            val rf1 = db.collectionGroup("messages").whereEqualTo("reportId", fId).get().await()
+                            for (d in rf1.documents) groupRefsToDelete.add(d.reference)
                         } catch (_: Exception) {}
-                    }
-
-                    if (!email.isNullOrBlank()) {
                         try {
-                            val usersByEmail = db.collection("users").whereEqualTo("email", email).get().await()
-                            for (uDoc in usersByEmail.documents) {
-                                try { db.collection("users").document(uDoc.id).collection("messages").document(fId).delete().await() } catch (_: Exception) {}
-                                try { db.collection("users").document(uDoc.id).collection("messages").document(id).delete().await() } catch (_: Exception) {}
-                                @Suppress("UNCHECKED_CAST")
-                                val pMsgs = uDoc.get("privateMessages") as? List<Map<String, Any>>
-                                if (pMsgs != null) {
-                                    val updated = pMsgs.filterNot { m ->
-                                        val mId = m["id"] as? String ?: ""
-                                        val rId = m["reportId"] as? String ?: ""
-                                        mId == fId || mId == id || rId == fId || rId == id
-                                    }
-                                    db.collection("users").document(uDoc.id).update("privateMessages", updated).await()
-                                }
-                            }
+                            val rf2 = db.collectionGroup("messages").whereEqualTo("id", fId).get().await()
+                            for (d in rf2.documents) groupRefsToDelete.add(d.reference)
                         } catch (_: Exception) {}
                     }
                 }
 
-                // 3. Purga en collectionGroup("messages") para asegurar eliminación en bandejas de entrada
-                try {
-                    val groupRefsToDelete = mutableSetOf<DocumentReference>()
+                if (report.title.isNotBlank()) {
+                    val cleanTitle = report.title.trim()
                     try {
-                        val r1 = db.collectionGroup("messages").whereEqualTo("reportId", id).get().await()
-                        for (d in r1.documents) groupRefsToDelete.add(d.reference)
+                        val rt1 = db.collectionGroup("messages").whereEqualTo("title", "Soporte: $cleanTitle").get().await()
+                        for (d in rt1.documents) groupRefsToDelete.add(d.reference)
                     } catch (_: Exception) {}
                     try {
-                        val r2 = db.collectionGroup("messages").whereEqualTo("id", id).get().await()
-                        for (d in r2.documents) groupRefsToDelete.add(d.reference)
+                        val rt2 = db.collectionGroup("messages").whereEqualTo("title", "Reporte: $cleanTitle").get().await()
+                        for (d in rt2.documents) groupRefsToDelete.add(d.reference)
                     } catch (_: Exception) {}
+                }
 
-                    for (fId in docsToDelete) {
-                        if (fId != id) {
-                            try {
-                                val rf1 = db.collectionGroup("messages").whereEqualTo("reportId", fId).get().await()
-                                for (d in rf1.documents) groupRefsToDelete.add(d.reference)
-                            } catch (_: Exception) {}
-                            try {
-                                val rf2 = db.collectionGroup("messages").whereEqualTo("id", fId).get().await()
-                                for (d in rf2.documents) groupRefsToDelete.add(d.reference)
-                            } catch (_: Exception) {}
-                        }
-                    }
-
-                    if (report.title.isNotBlank()) {
-                        val cleanTitle = report.title.trim()
-                        try {
-                            val rt1 = db.collectionGroup("messages").whereEqualTo("title", "Soporte: $cleanTitle").get().await()
-                            for (d in rt1.documents) groupRefsToDelete.add(d.reference)
-                        } catch (_: Exception) {}
-                        try {
-                            val rt2 = db.collectionGroup("messages").whereEqualTo("title", "Reporte: $cleanTitle").get().await()
-                            for (d in rt2.documents) groupRefsToDelete.add(d.reference)
-                        } catch (_: Exception) {}
-                    }
-
-                    for (ref in groupRefsToDelete) {
-                        try { ref.delete().await() } catch (_: Exception) {}
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Error en purga de collectionGroup messages: ${e.message}")
+                for (ref in groupRefsToDelete) {
+                    try { ref.delete().await() } catch (_: Exception) {}
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Error eliminando reporte de Firestore: ${e.message}")
+                Log.w(TAG, "Error en purga de collectionGroup messages: ${e.message}")
             }
 
             Log.d(TAG, "Reporte $id eliminado exitosamente de todas las fuentes")
@@ -875,13 +677,12 @@ object FeedbackRepository {
     }
 
     /**
-     * Purga absolutamente todos los mensajes y tickets de soporte en todo el sistema (Firestore y bandejas).
+     * Purga absolutamente todos los mensajes y tickets de soporte en todo el sistema.
      */
     suspend fun purgeAllSupportMessagesAcrossSystem(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val db = FirebaseFirestore.getInstance()
 
-            // 1. Eliminar todos los documentos de support_reports
             try {
                 val allReports = db.collection("support_reports").get().await()
                 for (doc in allReports.documents) {
@@ -892,7 +693,6 @@ object FeedbackRepository {
                 Log.w(TAG, "Error eliminando support_reports: ${e.message}")
             }
 
-            // 2. Eliminar mensajes de soporte en collectionGroup("messages")
             try {
                 val tags = listOf("SUPPORT", "SOPORTE", "REPORTE", "TICKET")
                 val refsToDelete = mutableSetOf<DocumentReference>()
@@ -918,12 +718,10 @@ object FeedbackRepository {
                 for (ref in refsToDelete) {
                     try { ref.delete().await() } catch (_: Exception) {}
                 }
-                Log.d(TAG, "Se eliminaron ${refsToDelete.size} mensajes de soporte en bandejas de entrada")
             } catch (e: Exception) {
                 Log.w(TAG, "Error purgando collectionGroup messages: ${e.message}")
             }
 
-            // 3. Limpiar arrays privateMessages en la colección de usuarios
             try {
                 val usersSnap = db.collection("users").get().await()
                 for (uDoc in usersSnap.documents) {
@@ -959,26 +757,11 @@ object FeedbackRepository {
     }
 
     /**
-     * Elimina todos los reportes de la tabla de Supabase y purga completamente Firestore y las bandejas.
+     * Elimina todos los reportes y purga completamente las bandejas.
      */
     suspend fun clearAllFeedbacks(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val client = SupabaseClientManager.client
-            val postgrest = client.postgrest
-
-            try {
-                postgrest.from(TABLE_NAME).delete {
-                    filter {
-                        neq("type", "___DUMMY_NEVER_MATCH___")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error limpiando tabla Supabase: ${e.message}")
-            }
-
-            // Purgar todo soporte en Firestore y bandejas de usuario
             purgeAllSupportMessagesAcrossSystem()
-
             Log.d(TAG, "Todos los reportes han sido eliminados de forma global")
             Result.success(Unit)
         } catch (e: Exception) {
@@ -992,22 +775,15 @@ object FeedbackRepository {
      */
     suspend fun purgeOldReports(days: Int = 7): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val client = SupabaseClientManager.client
-            val postgrest = client.postgrest
-
-            // Calcular fecha límite ISO-8601 (hace N días)
+            val db = FirebaseFirestore.getInstance()
             val cutoffMillis = System.currentTimeMillis() - (days.toLong() * 24 * 60 * 60 * 1000L)
-            val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-                timeZone = TimeZone.getTimeZone("UTC")
-            }
-            val cutoffIso = sdf.format(Date(cutoffMillis))
-
-            postgrest.from(TABLE_NAME).delete {
-                filter {
-                    lt("created_at", cutoffIso)
+            val snapshot = db.collection("support_reports").get().await()
+            for (doc in snapshot.documents) {
+                val ts = doc.getTimestamp("createdAt")?.toDate()?.time ?: continue
+                if (ts < cutoffMillis) {
+                    try { doc.reference.delete().await() } catch (_: Exception) {}
                 }
             }
-            Log.d(TAG, "Purga completada: eliminados reportes anteriores a $cutoffIso")
             Result.success(Unit)
         } catch (e: Exception) {
             Log.w(TAG, "Fallo al purgar reportes antiguos: ${e.message}")

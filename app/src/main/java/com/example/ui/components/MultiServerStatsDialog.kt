@@ -51,10 +51,7 @@ fun MultiServerStatsDialog(
         com.example.data.WildRiftRepository.getTopChampionsForServer("CN", count = 3, tencentTier = currentTier)
     }
     val topGlobal = remember(currentRegion, currentTier, com.example.data.WildRiftRepository.regionRevision) {
-        com.example.data.WildRiftRepository.getTopChampionsForServer("Global", count = 3)
-    }
-    val topNa = remember(currentRegion, currentTier, com.example.data.WildRiftRepository.regionRevision) {
-        com.example.data.WildRiftRepository.getTopChampionsForServer("NA", count = 3)
+        com.example.data.WildRiftRepository.getTopChampionsForServer("GLOBAL", count = 3)
     }
 
     Dialog(
@@ -174,7 +171,7 @@ fun MultiServerStatsDialog(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tr("China: estadísticas oficiales. Global: categorías de WildRiftFire. NA: sin fuente disponible."),
+                                text = tr("China: estadísticas oficiales. Global: Scraping multi-sitio."),
                                 color = TextSecondary,
                                 fontSize = 11.5.sp,
                                 lineHeight = 16.sp
@@ -203,20 +200,7 @@ fun MultiServerStatsDialog(
                         matchesText = tr("Clasificación publicada"),
                         topChampions = topGlobal,
                         borderColor = HextechCyan,
-                        dataSource = "WildRiftFire",
-                        isLocal = true
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Server 3: Norteamérica NA
-                    ServerStatCard(
-                        flag = "🇺🇸",
-                        serverName = tr("🇺🇸 América (NA)"),
-                        matchesText = tr("Sin fuente disponible"),
-                        topChampions = emptyList(),
-                        borderColor = Color(0xFF4A90E2),
-                        dataSource = tr("No hay estadísticas regionales disponibles"),
+                        dataSource = tr("Scraping"),
                         isLocal = true
                     )
 
