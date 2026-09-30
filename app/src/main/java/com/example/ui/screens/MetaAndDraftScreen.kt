@@ -5699,9 +5699,9 @@ fun TierSelectionPanel(
                         horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
                     ) {
                         val regionItems = listOf(
-                            Triple("GLOBAL", tr("Global"), tr("Referencia local")),
-                            Triple("NA", tr("América (NA)"), tr("Referencia local")),
-                            Triple("CN", tr("Servidor Chino"), tr("Meta CN"))
+                            Triple("CN", tr("🇨🇳 China"), tr("Meta CN")),
+                            Triple("GLOBAL", tr("🌐 Global"), tr("Meta Global")),
+                            Triple("NA", tr("🇺🇸 NA"), tr("Meta NA"))
                         )
                         regionItems.forEach { (regionId, label, sub) ->
                             val isSelected = currentRegion == regionId
@@ -5826,8 +5826,10 @@ fun TierSelectionPanel(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = com.example.util.tr(if (currentRegion != "CN") {
-                                        tr("Referencia local • Sin estadísticas regionales en vivo")
+                                    text = com.example.util.tr(if (currentRegion == "GLOBAL") {
+                                        tr("Tier List Global activa")
+                                    } else if (currentRegion == "NA") {
+                                        tr("Tier List NA activa")
                                     } else if (isSyncing) {
                                         tr("Sincronizando datos de la Tier List...")
                                     } else if (isAutoSyncActive) {
