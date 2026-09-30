@@ -946,10 +946,13 @@ WildRiftItem(
             goldCost = 2800,
             stats = "+400 Vida máxima • +75 Armadura",
             statsEn = "+400 Max Health • +75 Armor",
+            statsPt = "+400 Vida Máxima • +75 Armadura",
             passive = "Contracorriente: Al recibir un impacto crítico de daño físico, obtienes 1 acumulación(es) de Contracorriente. Cada acumulación otorga un 5% de velocidad de movimiento y un 5% de resistencia a las ralentizaciones. Acumulaciones máximas: 4.\nAdaptabilidad: Los impactos críticos te infligen un 30% menos de daño físico.",
             passiveEn = "Resilience: Critically Struck deal 30% less damage to you.\nCountercurrent: Gain 1 stacks of Countercurrent when Critically Struck by physical damage. Each stuck grants 5% Movement Speed and 5% slow resist. Max 4 stacks.",
+            passivePt = "Contracorrente: Ao receber um acerto crítico de dano físico, você ganha 1 acúmulo de Contracorrente. Cada acúmulo concede 5% de Velocidade de Movimento e 5% de resistência a lentidão. Máximo de 4 acúmulos.\nAdaptabilidade: Acertos críticos causam 30% menos dano físico a você.",
             coachTip = "Este objeto está diseñado para contrarrestar construcciones con muchos críticos. Proporciona una gran reserva de salud y armadura al mismo tiempo que reduce el daño de los golpes críticos, lo que te hace mucho más resistente en enfrentamientos frontales. Cuando recibes un golpe crítico, obtienes acumulaciones que aumentan tu velocidad de movimiento y tu resistencia a ralentizaciones, lo que te ayuda a mantener la posición y controlar el espacio de las peleas. — Perfecto para tanques y matones que necesitan enfrentarse a autoatacantes de alto crítico y sobrevivir a peleas en equipo prolongadas.",
             coachTipEn = "This item is built to counter crit-heavy builds. It provides a large health pool and armor while reducing damage from critical strikes, making you much tougher in head-on engagements. When you are critically struck, you gain stacks that boost your movement and slow resistance, helping you hold position and control fight spacing. — Perfect for tanks and bruisers who need to stand up to high-crit auto-attackers and survive extended teamfights.",
+            coachTipPt = "Use contra composições com muito dano crítico. O item oferece Vida e Armadura, reduz o dano recebido de acertos críticos e concede acúmulos de Velocidade de Movimento e resistência a lentidão quando você sofre um crítico. É especialmente útil para tanques e lutadores que precisam permanecer na linha de frente contra atacantes de alta taxa crítica.",
             iconUrl = "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp"
         ),
 WildRiftItem(
