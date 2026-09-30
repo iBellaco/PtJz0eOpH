@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.data.WildRiftRepository
 import com.example.data.sync.ChineseMetaSyncService
 import com.example.data.sync.MetaRegion
+import com.example.data.sync.RegionalTierParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,47 +22,60 @@ import org.robolectric.annotation.Config
 @Config(sdk = [34], application = Application::class)
 class MetaRegionRegressionTest {
     private val context get() = RuntimeEnvironment.getApplication()
-    private val scope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
-    @Before fun prepare() {
-        WildRiftRepository.initChampions(context, forceReload = true)
-        WildRiftRepository.selectMetaRegion("GLOBAL")
-        context.getSharedPreferences("app_prefs", 0).edit().remove("selected_meta_region").commit()
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
+    @After fun finish() { scope.cancel() }
+
+    @Test fun `selector order and initial choice match the restored lists`() {
+        context.getSharedPreferences("app_prefs", 0).edit().clear().commit()
         ChineseMetaSyncService.loadRegion(context)
-        assertEquals("GLOBAL", ChineseMetaSyncService.currentRegion.value)
-    }
-    @After fun finish() {
-        scope.cancel()
-        WildRiftRepository.selectMetaRegion("GLOBAL")
-    }
-    @Test fun `all three lists are selectable and selection is persisted`() {
         assertEquals(listOf("CN", "GLOBAL", "NA"), MetaRegion.available)
-        for (region in listOf("GLOBAL", "NA")) {
+        assertEquals("GLOBAL", ChineseMetaSyncService.currentRegion.value)
+        assertEquals("GLOBAL", MetaRegion.normalize("auto"))
+        assertTrue(MetaRegion.label("CN").startsWith("🇨🇳"))
+        assertTrue(MetaRegion.label("GLOBAL").startsWith("🌐"))
+        assertTrue(MetaRegion.label("NA").startsWith("🇺🇸"))
+    }
+    @Test fun `explicit selection persists after reload`() {
+        for (region in MetaRegion.available) {
             ChineseMetaSyncService.setRegion(context, region, scope)
-            assertEquals(region, ChineseMetaSyncService.currentRegion.value)
-            assertEquals(region, WildRiftRepository.activeRegionName)
-            assertEquals(region, context.getSharedPreferences("app_prefs", 0).getString("selected_meta_region", ""))
             ChineseMetaSyncService.loadRegion(context)
             assertEquals(region, ChineseMetaSyncService.currentRegion.value)
+            assertEquals(region, WildRiftRepository.activeRegionName)
         }
     }
-    @Test fun `Chinese refresh cannot overwrite the visible local list`() {
+    @Test fun `region switching restores distinct published snapshots`() {
         val baseline = WildRiftRepository.champions.toList()
+        val id = baseline.first().id
+        WildRiftRepository.applyRegionalTierList("GLOBAL", mapOf(RegionalTierParser.canonical(id) to "S+"))
+        val china = baseline.map { it.copy(tier = "C", cnTier = "T4", hasRegionalStats = true, winrate = 55.5) }
+        WildRiftRepository.applyChineseStats(china)
         WildRiftRepository.selectMetaRegion("GLOBAL")
-        val refreshed = baseline.map { it.copy(winrate = 55.5, pickRate = 12.0, banRate = 7.0) }
-        WildRiftRepository.applyChineseStats(refreshed)
-        assertEquals(baseline, WildRiftRepository.champions.toList())
+        assertEquals("S+", WildRiftRepository.champions.first().tier)
+        assertFalse(WildRiftRepository.champions.first().hasRegionalStats)
         WildRiftRepository.selectMetaRegion("CN")
-        assertEquals(refreshed, WildRiftRepository.champions.toList())
-        WildRiftRepository.selectMetaRegion("NA")
-        assertEquals(baseline, WildRiftRepository.champions.toList())
+        assertEquals(china, WildRiftRepository.champions.toList())
+        WildRiftRepository.selectMetaRegion("GLOBAL")
+        assertEquals("S+", WildRiftRepository.champions.first().tier)
+        assertEquals(0.0, WildRiftRepository.champions.first().winrate, 0.0)
     }
-    @Test fun `local reference numbers are stable across switches`() {
+    @Test fun `late Chinese response cannot replace a selected Global list`() {
         val baseline = WildRiftRepository.champions.toList()
-        repeat(3) {
-            WildRiftRepository.selectMetaRegion("NA")
-            assertEquals(baseline, WildRiftRepository.champions.toList())
-            WildRiftRepository.selectMetaRegion("GLOBAL")
-            assertEquals(baseline, WildRiftRepository.champions.toList())
-        }
+        WildRiftRepository.applyRegionalTierList("GLOBAL", mapOf(RegionalTierParser.canonical(baseline.first().id) to "A"))
+        WildRiftRepository.selectMetaRegion("GLOBAL")
+        val visible = WildRiftRepository.champions.toList()
+        WildRiftRepository.applyChineseStats(baseline.map { it.copy(winrate = 59.0, tier = "S+") })
+        assertEquals(visible, WildRiftRepository.champions.toList())
+    }
+    @Test fun `page parser extracts categories rather than inventing match statistics`() {
+        val html = """<div class="tier splus"><a href="/guide/syndra" class="ico-holder" data-role="Mid">Syndra</a>
+            <div class="tier s"><a href="/guide/garen" class="ico-holder">Garen</a>
+            <div class="tier b"><a href="/guide/syndra" class="ico-holder">Syndra</a>"""
+        assertEquals(mapOf("syndra" to "S+", "garen" to "S"), RegionalTierParser.parse(html))
+        assertTrue(RegionalTierParser.parse("<html>Service unavailable</html>").isEmpty())
+    }
+    @Test fun `missing NA source cannot produce a fabricated regional top list`() {
+        assertTrue(WildRiftRepository.getTopChampionsForServer("NA").isEmpty())
+        assertEquals("—", com.example.util.regionalPercent(WildRiftRepository.champions.first().copy(hasRegionalStats = false), 50.0))
     }
 }

@@ -13,7 +13,11 @@ import java.util.concurrent.TimeUnit
 
 class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result {
-        BestBuildWrScraper.syncGlobalTierList(applicationContext, "CN")
+        val region = com.example.data.sync.MetaRegion.normalize(applicationContext.getSharedPreferences("app_prefs", 0)
+            .getString("selected_meta_region", com.example.data.sync.MetaRegion.DEFAULT) ?: com.example.data.sync.MetaRegion.DEFAULT)
+        BestBuildWrScraper.selectRegion(region)
+        BestBuildWrScraper.syncGlobalTierList(applicationContext, region)
+        if (region == "NA") return Result.success()
         return if (BestBuildWrScraper.isLastSyncSuccess.value) Result.success() else Result.retry()
     }
 
@@ -62,7 +66,12 @@ class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : Cor
                     }
 
                     if (!rankJsonStr.isNullOrBlank()) {
-                        val rankData = JSONObject(rankJsonStr).optJSONObject("data")?.optJSONObject("0")
+                        val rankKey = when (com.example.data.sync.ChineseMetaSyncService.currentTier.value) {
+                            com.example.data.sync.TencentRankTier.MASTER_PLUS -> "1"
+                            com.example.data.sync.TencentRankTier.CHALLENGER -> "2"
+                            else -> "0"
+                        }
+                        val rankData = JSONObject(rankJsonStr).optJSONObject("data")?.optJSONObject(rankKey)
                         if (rankData != null) {
                             var updatedCount = 0
                             val allChamps = WildRiftRepository.chineseStatsSnapshot().toMutableList()
@@ -91,9 +100,12 @@ class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : Cor
                                     if (index != -1) {
                                         val oldChamp = allChamps[index]
                                         val newChamp = oldChamp.copy(
+                                            hasRegionalStats = true,
                                             winrate = winRate,
                                             pickRate = pickRate,
-                                            banRate = banRate
+                                            banRate = banRate,
+                                            cnTier = "T" + stats.optInt("strength_level", 4),
+                                            tier = when (stats.optInt("strength_level", 4)) { 0 -> "S+"; 1 -> "S"; 2 -> "A"; 3 -> "B"; else -> "C" }
                                         )
                                         allChamps[index] = newChamp
                                         updatedCount++
@@ -103,7 +115,6 @@ class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : Cor
                             if (updatedCount > 0) {
                                 WildRiftRepository.applyChineseStats(allChamps)
                                 return true
-                                AppLogger.d("MetaScrapingWorker", "Direct sync completed for $updatedCount champions.")
                             }
                         }
                     }

@@ -61,13 +61,13 @@ data class ChampionSkill(
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
-        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
+        "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedDescription(lang: String): String = when (lang) {
         "en" -> descriptionEn.ifBlank { description }
-        "pt" -> descriptionPt.ifBlank { com.example.util.trStr("pt", description) }
+        "pt" -> com.example.util.trStr("pt", descriptionPt.ifBlank { description })
         else -> description
     }
 }
@@ -113,6 +113,7 @@ data class Champion(
     val primaryRole: LaneRole = LaneRole.MID,
     val secondaryRoles: List<LaneRole> = emptyList(),
     val tier: String = "B", // "S+", "S", "A+", "A", "B"
+    val hasRegionalStats: Boolean = false,
     val winrate: Double = 50.0, // e.g. 53.8
     val pickRate: Double = 0.0,
     val banRate: Double = 0.0,
@@ -152,13 +153,13 @@ data class Champion(
 
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
-        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
+        "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedTitle(lang: String): String = when (lang) {
         "en" -> titleEn.ifBlank { title }
-        "pt" -> titlePt.ifBlank { com.example.util.trStr("pt", title) }
+        "pt" -> com.example.util.trStr("pt", titlePt.ifBlank { title })
         else -> title
     }
 
@@ -191,25 +192,25 @@ data class WildRiftItem(
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
-        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
+        "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedStats(lang: String): String = when (lang) {
         "en" -> statsEn.ifBlank { stats }
-        "pt" -> statsPt.ifBlank { com.example.util.trStr("pt", stats) }
+        "pt" -> com.example.util.trStr("pt", statsPt.ifBlank { stats })
         else -> stats
     }
 
     fun getLocalizedPassive(lang: String): String = when (lang) {
         "en" -> passiveEn.ifBlank { passive }
-        "pt" -> passivePt.ifBlank { com.example.util.trStr("pt", passive) }
+        "pt" -> com.example.util.trStr("pt", passivePt.ifBlank { passive })
         else -> passive
     }
 
     fun getLocalizedCoachTip(lang: String): String = when (lang) {
         "en" -> coachTipEn.ifBlank { coachTip }
-        "pt" -> coachTipPt.ifBlank { com.example.util.trStr("pt", coachTip) }
+        "pt" -> com.example.util.trStr("pt", coachTipPt.ifBlank { coachTip })
         else -> coachTip
     }
 
@@ -247,13 +248,13 @@ data class SummonerSpellItem(
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
-        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
+        "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedDescription(lang: String): String = when (lang) {
         "en" -> descriptionEn.ifBlank { description }
-        "pt" -> descriptionPt.ifBlank { com.example.util.trStr("pt", description) }
+        "pt" -> com.example.util.trStr("pt", descriptionPt.ifBlank { description })
         else -> description
     }
 }
@@ -272,13 +273,13 @@ data class RuneItem(
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
         "en" -> nameEn.ifBlank { name }
-        "pt" -> namePt.ifBlank { com.example.util.trStr("pt", name) }
+        "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedDescription(lang: String): String = when (lang) {
         "en" -> descriptionEn.ifBlank { description }
-        "pt" -> descriptionPt.ifBlank { com.example.util.trStr("pt", description) }
+        "pt" -> com.example.util.trStr("pt", descriptionPt.ifBlank { description })
         else -> description
     }
 }

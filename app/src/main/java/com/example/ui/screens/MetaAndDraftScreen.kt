@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.selection.selectable
+
 import com.example.data.WildRiftItemsData
 import com.example.utils.parseHtmlColorToAnnotatedString
 
@@ -1351,14 +1353,14 @@ fun ChampionsCatalogTab(
                                         fontSize = 10.5.sp,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    val formattedWr = String.format(java.util.Locale.US, "%.2f", champion.winrate)
+                                    val formattedWr = com.example.util.regionalPercent(champion, champion.winrate)
                                     val regionTag = when (currentRegion) {
                                         "CN" -> "🇨🇳 CN"
                                         "NA" -> "🌎 NA"
                                         else -> "🌍 Global"
                                     }
                                     Text(
-                                        text = com.example.util.tr("$regionTag WR: $formattedWr%"),
+                                        text = com.example.util.tr("$regionTag WR: $formattedWr"),
                                         color = HextechGold,
                                         fontSize = 12.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -1752,7 +1754,7 @@ fun TierListTab(
                 }
             }
 
-            item {
+            if (championsToDisplay.any { it.hasRegionalStats }) item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
@@ -2031,20 +2033,20 @@ fun TierListTab(
                                                             fontWeight = FontWeight.Bold
                                                         )
                                                     }
-                                                    Text(com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                    Text(com.example.util.tr("WR: ${com.example.util.regionalPercent(champ, champ.winrate)}"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text(com.example.util.tr("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("Pick: ${com.example.util.regionalPercent(champ, champ.pickRate)} • Ban: ${com.example.util.regionalPercent(champ, champ.banRate)}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             TierSortOption.PICK_RATE -> {
-                                                Text(com.example.util.tr("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(com.example.util.tr("Pick: ${com.example.util.regionalPercent(champ, champ.pickRate)}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text(com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("WR: ${com.example.util.regionalPercent(champ, champ.winrate)} • Ban: ${com.example.util.regionalPercent(champ, champ.banRate)}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             TierSortOption.BAN_RATE -> {
-                                                Text(com.example.util.tr("Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(com.example.util.tr("Ban: ${com.example.util.regionalPercent(champ, champ.banRate)}"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text(com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% • Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}%"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
+                                                Text(com.example.util.tr("WR: ${com.example.util.regionalPercent(champ, champ.winrate)} • Pick: ${com.example.util.regionalPercent(champ, champ.pickRate)}"), color = TextMuted, fontSize = 10.sp, maxLines = 1)
                                             }
                                             else -> {}
                                         }
@@ -2058,8 +2060,8 @@ fun TierListTab(
                                 }
                             }
 
-                            // Fila Secundaria: Gráfica de Tendencia (24h vs Actual) con espacio amplio
-                            if (!isOverlay) {
+                            // A source without match percentages cannot supply a trend graph.
+                            if (!isOverlay && champ.hasRegionalStats) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     modifier = Modifier
@@ -2200,7 +2202,7 @@ fun TierSectionCard(
                                                 )
                                             }
                                             Text(
-                                                text = com.example.util.tr(tr("WR") + ": ${String.format(java.util.Locale.US, "%.2f", champ.winrate)}%"),
+                                                text = com.example.util.tr(tr("WR") + ": ${com.example.util.regionalPercent(champ, champ.winrate)}"),
                                                 color = HextechGold,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.5.sp
@@ -2209,7 +2211,7 @@ fun TierSectionCard(
                                         if (!isOverlay) {
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Text(
-                                                text = com.example.util.tr("Pick: ${String.format(java.util.Locale.US, "%.2f", champ.pickRate)}% • Ban: ${String.format(java.util.Locale.US, "%.2f", champ.banRate)}%"),
+                                                text = com.example.util.tr("Pick: ${com.example.util.regionalPercent(champ, champ.pickRate)} • Ban: ${com.example.util.regionalPercent(champ, champ.banRate)}"),
                                                 color = TextMuted,
                                                 fontSize = 10.sp,
                                                 maxLines = 1
@@ -2225,8 +2227,8 @@ fun TierSectionCard(
                                 }
                             }
 
-                            // Fila Inferior: Gráfica de Tendencia (24h vs Actual) con espacio holgado y estético
-                            if (!isOverlay) {
+                            // A source without match percentages cannot supply a trend graph.
+                            if (!isOverlay && champ.hasRegionalStats) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     modifier = Modifier
@@ -5448,7 +5450,7 @@ private fun ChampionGridCard(
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = com.example.util.tr("WR: ${String.format(java.util.Locale.US, "%.2f", champion.winrate)}%"),
+                    text = com.example.util.tr("WR: ${com.example.util.regionalPercent(champion, champion.winrate)}"),
                     color = HextechGold,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
@@ -5585,7 +5587,8 @@ fun TierSelectionPanel(
     var showMultiServerStats by remember { mutableStateOf(false) }
     var isPanelMinimized by rememberSaveable { mutableStateOf(false) }
 
-    val isAutoSyncActive = currentRegion == "CN" && isOnline && isLastSyncSuccess
+    val isAutoSyncActive = isOnline && isLastSyncSuccess
+    val regionalStatus by BestBuildWrScraper.globalSyncStatus.collectAsStateWithLifecycle()
 
     if (showMultiServerStats) {
         com.example.ui.components.MultiServerStatsDialog(
@@ -5621,7 +5624,7 @@ fun TierSelectionPanel(
                     )
                     if (isPanelMinimized) {
                         val activeLabel = when (currentRegion) {
-                            "CN" -> tr("🇨🇳 Servidor Chino")
+                            "CN" -> tr("🇨🇳 China")
                             "NA" -> tr("🇺🇸 América (NA)")
                             else -> tr("🌐 Global")
                         }
@@ -5700,8 +5703,8 @@ fun TierSelectionPanel(
                     ) {
                         val regionItems = listOf(
                             Triple("CN", tr("🇨🇳 China"), tr("Meta CN")),
-                            Triple("GLOBAL", tr("🌐 Global"), tr("Meta Global")),
-                            Triple("NA", tr("🇺🇸 NA"), tr("Meta NA"))
+                            Triple("GLOBAL", tr("🌐 Global"), "WildRiftFire"),
+                            Triple("NA", tr("🇺🇸 América (NA)"), tr("Sin fuente disponible"))
                         )
                         regionItems.forEach { (regionId, label, sub) ->
                             val isSelected = currentRegion == regionId
@@ -5721,7 +5724,8 @@ fun TierSelectionPanel(
                                         color = if (isSelected) HextechGold else HextechCardBorder.copy(alpha = 0.6f),
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .clickable {
+                                    .testTag("meta_region_$regionId")
+                                    .selectable(selected = isSelected, role = androidx.compose.ui.semantics.Role.Tab) {
                                         ChineseMetaSyncService.setRegion(context, regionId, coroutineScope)
                                     }
                                     .padding(horizontal = 4.dp, vertical = if (isOverlay) 6.dp else 8.dp),
@@ -5826,16 +5830,12 @@ fun TierSelectionPanel(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = com.example.util.tr(if (currentRegion == "GLOBAL") {
-                                        tr("Tier List Global activa")
-                                    } else if (currentRegion == "NA") {
-                                        tr("Tier List NA activa")
-                                    } else if (isSyncing) {
+                                    text = com.example.util.tr(if (isSyncing) {
                                         tr("Sincronizando datos de la Tier List...")
                                     } else if (isAutoSyncActive) {
-                                        tr("Actualización automática activa • En vivo")
+                                        tr(regionalStatus)
                                     } else {
-                                        tr("Sin actualizar • Últimos datos:") + if (lastSyncFormattedTime.isNotBlank()) " $lastSyncFormattedTime" else " " + tr("Caché guardada")
+                                        tr(regionalStatus)
                                     }),
                                     color = if (isAutoSyncActive) (if (isSyncing) HextechCyan else Color(0xFF81C784)) else Color(0xFFFFB74D),
                                     fontSize = if (isOverlay) 8.sp else 9.5.sp,
@@ -5849,7 +5849,7 @@ fun TierSelectionPanel(
                                 color = if (isAutoSyncActive) HextechGold.copy(alpha = 0.15f) else Color(0xFFFF5252).copy(alpha = 0.15f)
                             ) {
                                 Text(
-                                    text = com.example.util.tr(if (isAutoSyncActive) tr("Auto-Sync 24/7") else tr("Caché Local")),
+                                    text = com.example.util.tr(if (isAutoSyncActive) tr("Actualizado") else tr("Caché Local")),
                                     color = if (isAutoSyncActive) HextechGold else Color(0xFFFF8A80),
                                     fontSize = if (isOverlay) 7.5.sp else 8.5.sp,
                                     fontWeight = FontWeight.Bold,

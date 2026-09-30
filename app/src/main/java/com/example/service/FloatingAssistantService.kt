@@ -278,12 +278,15 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                         setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
                         setContent {
+                            val overlayLanguage by com.example.util.AppLanguage.current.collectAsStateWithLifecycle()
+                            androidx.compose.runtime.CompositionLocalProvider(com.example.util.LocalLanguage provides overlayLanguage) {
                             val showBoxes by com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
                             if (showBoxes) {
                                 com.example.ui.components.ScannerDebugOverlay(
                                     config = com.example.service.screen.DraftVisionScanner.calibrationConfig,
                                     overlayRect = com.example.service.screen.DraftVisionScanner.overlayRect
                                 )
+                            }
                             }
                         }
                     }
@@ -600,10 +603,13 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
+                val overlayLanguage by com.example.util.AppLanguage.current.collectAsStateWithLifecycle()
+                androidx.compose.runtime.CompositionLocalProvider(com.example.util.LocalLanguage provides overlayLanguage) {
                 FloatingCloseTarget(
                     isVisible = isCloseTargetVisible,
                     isTargeted = isCloseTargetHovered
                 )
+                }
             }
         }
 

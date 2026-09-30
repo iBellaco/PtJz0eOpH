@@ -260,11 +260,12 @@ fun FAQScreen(
         )
     }
 
-    val filteredFaqs = remember(faqSearchQuery) {
+    val faqLanguage = com.example.util.LocalLanguage.current
+    val filteredFaqs = remember(faqSearchQuery, faqLanguage) {
         if (faqSearchQuery.isBlank()) faqs
         else faqs.filter {
-            it.first.contains(faqSearchQuery, ignoreCase = true) ||
-            it.second.contains(faqSearchQuery, ignoreCase = true)
+            com.example.util.trStr(faqLanguage, it.first).contains(faqSearchQuery, ignoreCase = true) ||
+            com.example.util.trStr(faqLanguage, it.second).contains(faqSearchQuery, ignoreCase = true)
         }
     }
 

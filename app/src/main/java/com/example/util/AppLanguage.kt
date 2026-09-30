@@ -33,7 +33,8 @@ object AppLanguage {
         }
     }
     fun initialize(context: Context) {
-        if (preferences != null) return
+        if (preferences != null && applicationContext === context.applicationContext) return
+        preferences?.unregisterOnSharedPreferenceChangeListener(listener)
         val prefs = context.applicationContext.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         preferences = prefs
         applicationContext = context.applicationContext
