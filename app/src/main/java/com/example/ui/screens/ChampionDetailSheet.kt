@@ -643,17 +643,20 @@ fun ChampionDetailSheet(
             }
 
             // ==========================================
-            // BUILDS TÁCTICAS (4 OPCIONES SEGÚN META Y CRITERIO COACH)
+            // BUILD TÁCTICA OFICIAL: UNA ÚNICA BUILD POR CAMPEÓN Y LÍNEA
             // ==========================================
             val customBuilds by com.example.data.local.CustomChampionBuildsManager.customBuilds.collectAsStateWithLifecycle()
-            val championCustomBuilds = remember(customBuilds, champion.id, selectedRole) {
-                val byChamp = customBuilds.filter { it.championId.equals(champion.id, ignoreCase = true) }
-                val byRole = byChamp.filter { rec ->
-                    rec.role.contains(selectedRole.displayName, ignoreCase = true) ||
-                    rec.role.contains(selectedRole.shortName, ignoreCase = true) ||
-                    (selectedRole != champion.primaryRole && rec.role.contains("Flex", ignoreCase = true))
+            val championCustomBuilds = remember(customBuilds, champion.id, selectedRole, champion.primaryRole) {
+                val expectedRole = if (selectedRole == champion.primaryRole) {
+                    selectedRole.displayName
+                } else {
+                    "${selectedRole.displayName} (Flex)"
                 }
-                if (byRole.isNotEmpty()) byRole else byChamp
+
+                customBuilds.filter { record ->
+                    record.championId.equals(champion.id, ignoreCase = true) &&
+                        record.role.equals(expectedRole, ignoreCase = true)
+                }
             }
 
             val baseBuildOptions = roleProfile.buildOptions.ifEmpty {
