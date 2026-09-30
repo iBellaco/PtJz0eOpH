@@ -24,14 +24,17 @@ class MetaRegionRegressionTest {
     private val scope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
     @Before fun prepare() {
         WildRiftRepository.initChampions(context, forceReload = true)
-        WildRiftRepository.selectMetaRegion("CN")
+        WildRiftRepository.selectMetaRegion("GLOBAL")
+        context.getSharedPreferences("app_prefs", 0).edit().remove("selected_meta_region").commit()
+        ChineseMetaSyncService.loadRegion(context)
+        assertEquals("GLOBAL", ChineseMetaSyncService.currentRegion.value)
     }
     @After fun finish() {
         scope.cancel()
-        WildRiftRepository.selectMetaRegion("CN")
+        WildRiftRepository.selectMetaRegion("GLOBAL")
     }
     @Test fun `all three lists are selectable and selection is persisted`() {
-        assertEquals(listOf("GLOBAL", "NA", "CN"), MetaRegion.available)
+        assertEquals(listOf("CN", "GLOBAL", "NA"), MetaRegion.available)
         for (region in listOf("GLOBAL", "NA")) {
             ChineseMetaSyncService.setRegion(context, region, scope)
             assertEquals(region, ChineseMetaSyncService.currentRegion.value)
