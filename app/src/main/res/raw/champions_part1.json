@@ -125,30 +125,30 @@
     "builds": [
       {
         "id": "aatrox_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Fuerza de trinidad",
+          "Baile de la muerte"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Fuerza de trinidad",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Calibrador de Sterak",
+          "Rencor de Serylda",
+          "Ángel de la guarda",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -156,33 +156,33 @@
       },
       {
         "id": "aatrox_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Fuerza de trinidad",
+          "Baile de la muerte"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Fuerza de trinidad",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Calibrador de Sterak",
+          "Rencor de Serylda",
+          "Ángel de la guarda",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
@@ -312,7 +312,7 @@
     "builds": [
       {
         "id": "ahri_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -343,30 +343,30 @@
       },
       {
         "id": "ahri_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Eco de Luden",
+          "Orbe infinito"
         ],
         "items": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Eco de Luden",
+          "Orbe infinito"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Morellonomicón",
+          "Impulso Cósmico"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -499,7 +499,7 @@
     "builds": [
       {
         "id": "akali_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
@@ -512,17 +512,17 @@
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Perdición del liche",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -530,30 +530,30 @@
       },
       {
         "id": "akali_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
           "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Perdición del liche",
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -687,7 +687,7 @@
     "builds": [
       {
         "id": "akshan_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -705,10 +705,10 @@
           "Ángel de la guarda",
           "Fauces de Malmortius"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
         "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
@@ -718,30 +718,30 @@
       },
       {
         "id": "akshan_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Eclipse",
-          "Fuerza de trinidad",
-          "Baile de la muerte"
+          "Hoja del rey arruinado",
+          "Filo Infinito",
+          "Recaudadora"
         ],
         "items": [
-          "Eclipse",
-          "Fuerza de trinidad",
-          "Baile de la muerte"
+          "Hoja del rey arruinado",
+          "Filo Infinito",
+          "Recaudadora"
         ],
         "situationalItems": [
-          "Calibrador de Sterak",
-          "Rencor de Serylda",
+          "Recuerdos de Lord Dominik",
+          "Sanguinaria",
           "Ángel de la guarda",
           "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -749,29 +749,30 @@
       },
       {
         "id": "akshan_adc",
-        "title": "Build Línea de Dragón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón (Línea Flex) • Criterio Coach",
         "role": "adc",
         "coreItems": [
+          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
-          "Recuerdos de Lord Dominik"
+          "Recaudadora"
         ],
         "items": [
+          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
-          "Recuerdos de Lord Dominik"
+          "Recaudadora"
         ],
         "situationalItems": [
+          "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Fauces de Malmortius"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Barrera"
@@ -904,7 +905,7 @@
     "builds": [
       {
         "id": "alistar_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -919,7 +920,7 @@
         "situationalItems": [
           "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Velo del amanecer",
+          "Corazón de hielo",
           "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas blindadas",
@@ -927,7 +928,7 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
+        "runes": "Irrupción de Fase, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -935,7 +936,7 @@
       },
       {
         "id": "alistar_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -950,15 +951,15 @@
         "situationalItems": [
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Armadura de Warmog",
+          "Corazón de hielo"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Irrupción de Fase, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -1091,30 +1092,30 @@
     "builds": [
       {
         "id": "ambessa_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Cuchilla negra",
+          "Baile de la muerte"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Cuchilla negra",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Calibrador de Sterak",
+          "Rencor de Serylda",
+          "Ángel de la guarda",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -1122,33 +1123,33 @@
       },
       {
         "id": "ambessa_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Cuchilla negra",
+          "Baile de la muerte"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Cuchilla negra",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Calibrador de Sterak",
+          "Rencor de Serylda",
+          "Ángel de la guarda",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
@@ -1278,38 +1279,38 @@
     "builds": [
       {
         "id": "amumu_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
+          "Corazón de acero",
           "Égida de fuego solar",
           "Malla de espinas"
         ],
         "items": [
-          "Coraza del muerto",
+          "Corazón de acero",
           "Égida de fuego solar",
           "Malla de espinas"
         ],
         "situationalItems": [
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Coraza dual purpúrea",
+          "Corona abrasadora",
+          "Máscara abisal"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "amumu_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -1332,10 +1333,10 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Extenuación"
         ]
       }
     ],
@@ -1465,7 +1466,7 @@
     "builds": [
       {
         "id": "annie_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -1480,8 +1481,8 @@
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -1496,30 +1497,30 @@
       },
       {
         "id": "annie_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
           "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Orbe infinito"
         ],
         "items": [
           "Hoz espectral",
           "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Orbe infinito"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -1652,29 +1653,30 @@
     "builds": [
       {
         "id": "ashe_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo Infinito",
-          "Cañón de Fuego Rápido",
-          "Recuerdos de Lord Dominik"
+          "Hoja del rey arruinado",
+          "Huracán de Runaan",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Cañón de Fuego Rápido",
-          "Recuerdos de Lord Dominik"
+          "Hoja del rey arruinado",
+          "Huracán de Runaan",
+          "Filo Infinito"
         ],
         "situationalItems": [
+          "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Fauces de Malmortius"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Barrera"
@@ -1682,30 +1684,30 @@
       },
       {
         "id": "ashe_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Hoja del rey arruinado",
+          "Huracán de Runaan"
         ],
         "items": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Hoja del rey arruinado",
+          "Huracán de Runaan"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Recuerdos de Lord Dominik",
+          "Sanguinaria",
+          "Ángel de la guarda",
+          "Fauces de Malmortius"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -1838,64 +1840,64 @@
     "builds": [
       {
         "id": "aurelion_sol_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Se Avecina Tormenta, Sobrecrecimiento",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       },
       {
         "id": "aurelion_sol_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
           "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Cetro de cristal de Rylai",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
           "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Cetro de cristal de Rylai",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Se Avecina Tormenta, Sobrecrecimiento",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       }
     ],
@@ -2025,7 +2027,7 @@
     "builds": [
       {
         "id": "aurora_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -2040,8 +2042,8 @@
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -2056,30 +2058,30 @@
       },
       {
         "id": "aurora_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -2212,30 +2214,30 @@
     "builds": [
       {
         "id": "bard_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
-          "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Escudo reliquia",
+          "Canción de batalla de Shurelya",
+          "Corazón de hielo"
         ],
         "items": [
-          "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Escudo reliquia",
+          "Canción de batalla de Shurelya",
+          "Corazón de hielo"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Fuerza de la naturaleza",
+          "Malla de espinas",
+          "Medallón de los Solari de Hierro",
+          "Mandato imperial"
         ],
-        "bootBase": "Botas jonias de la lucidez",
-        "bootUpgrade": "Lucidez carmesí",
+        "bootBase": "Botas blindadas",
+        "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Soberano Gélido, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -2243,30 +2245,30 @@
       },
       {
         "id": "bard_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Corazón de hielo",
+          "Fuerza de la naturaleza",
+          "Malla de espinas"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Corazón de hielo",
+          "Fuerza de la naturaleza",
+          "Malla de espinas"
         ],
         "situationalItems": [
-          "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Soberano Gélido, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -2399,7 +2401,7 @@
     "builds": [
       {
         "id": "blitzcrank_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -2414,7 +2416,7 @@
         "situationalItems": [
           "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Velo del amanecer",
+          "Corazón de hielo",
           "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas blindadas",
@@ -2422,7 +2424,7 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
+        "runes": "Soberano Gélido, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Hextello",
         "spells": [
           "Destello",
           "Prender"
@@ -2430,7 +2432,7 @@
       },
       {
         "id": "blitzcrank_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -2445,15 +2447,15 @@
         "situationalItems": [
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Armadura de Warmog",
+          "Corazón de hielo"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Soberano Gélido, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Hextello",
         "spells": [
           "Destello",
           "Prender"
@@ -2587,30 +2589,30 @@
     "builds": [
       {
         "id": "brand_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
-          "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai"
         ],
         "items": [
           "Hoz espectral",
-          "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Morellonomicón",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon",
+          "Bastón del Vacío"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -2618,30 +2620,30 @@
       },
       {
         "id": "brand_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
+          "Morellonomicón"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
+          "Morellonomicón"
         ],
         "situationalItems": [
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon",
           "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Eco de Luden"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -2649,33 +2651,33 @@
       },
       {
         "id": "brand_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
+          "Morellonomicón"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
+          "Morellonomicón"
         ],
         "situationalItems": [
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon",
           "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Eco de Luden"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
@@ -2805,7 +2807,7 @@
     "builds": [
       {
         "id": "braum_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -2820,7 +2822,7 @@
         "situationalItems": [
           "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Velo del amanecer",
+          "Corazón de hielo",
           "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas blindadas",
@@ -2828,15 +2830,15 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
+        "runes": "Guardián, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
-          "Prender"
+          "Extenuación"
         ]
       },
       {
         "id": "braum_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -2851,18 +2853,18 @@
         "situationalItems": [
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Armadura de Warmog",
+          "Corazón de hielo"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Guardián, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       }
     ],
@@ -2992,19 +2994,20 @@
     "builds": [
       {
         "id": "caitlyn_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
+          "Recaudadora",
           "Recuerdos de Lord Dominik"
         ],
         "items": [
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
+          "Recaudadora",
           "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
+          "Cañón de Fuego Rápido",
           "Sanguinaria",
           "Ángel de la guarda",
           "Arcoescudo Inmortal"
@@ -3012,9 +3015,9 @@
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Brutal",
         "spells": [
           "Destello",
           "Barrera"
@@ -3022,33 +3025,33 @@
       },
       {
         "id": "caitlyn_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Recaudadora"
+          "Recaudadora",
+          "Recuerdos de Lord Dominik"
         ],
         "items": [
-          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Recaudadora"
+          "Recaudadora",
+          "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
+          "Cañón de Fuego Rápido",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Arcoescudo Inmortal"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Botas dinámicas",
+        "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Brutal",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       }
     ],
@@ -3178,30 +3181,30 @@
     "builds": [
       {
         "id": "camille_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Rompecascos",
+          "Ángel de la guarda",
+          "Malla de espinas",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -3209,33 +3212,33 @@
       },
       {
         "id": "camille_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Rompecascos",
+          "Ángel de la guarda",
+          "Malla de espinas",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
@@ -3365,7 +3368,7 @@
     "builds": [
       {
         "id": "cho_gath_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -3380,15 +3383,15 @@
         "situationalItems": [
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Armadura de Warmog",
+          "Coraza dual purpúrea"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -3396,30 +3399,30 @@
       },
       {
         "id": "cho_gath_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Corazón de acero",
+          "Égida de fuego solar",
+          "Malla de espinas"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Corazón de acero",
+          "Égida de fuego solar",
+          "Malla de espinas"
         ],
         "situationalItems": [
-          "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Fuerza de la naturaleza",
+          "Presagio de Randuin",
+          "Armadura de Warmog",
+          "Coraza dual purpúrea"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Botas blindadas",
+        "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -3552,61 +3555,61 @@
     "builds": [
       {
         "id": "corki_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Manamune",
+          "Fuerza de trinidad",
+          "Filo Infinito"
         ],
         "items": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Manamune",
+          "Fuerza de trinidad",
+          "Filo Infinito"
         ],
         "situationalItems": [
+          "Recaudadora",
           "Recuerdos de Lord Dominik",
-          "Sanguinaria",
+          "Ángel de la guarda",
+          "Fauces de Malmortius"
+        ],
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
+        "situationalBoots": [
+          "Botas de mercurio"
+        ],
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "spells": [
+          "Destello",
+          "Barrera"
+        ]
+      },
+      {
+        "id": "corki_adc",
+        "title": "Build Línea de Dragón (Línea Flex) • Criterio Coach",
+        "role": "adc",
+        "coreItems": [
+          "Manamune",
+          "Fuerza de trinidad",
+          "Filo Infinito"
+        ],
+        "items": [
+          "Manamune",
+          "Fuerza de trinidad",
+          "Filo Infinito"
+        ],
+        "situationalItems": [
+          "Recaudadora",
+          "Recuerdos de Lord Dominik",
           "Ángel de la guarda",
           "Fauces de Malmortius"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
-        "spells": [
-          "Destello",
-          "Prender"
-        ]
-      },
-      {
-        "id": "corki_adc",
-        "title": "Build Línea de Dragón (Línea Flex • Cálculo IA & Estadísticas)",
-        "role": "adc",
-        "coreItems": [
-          "Fuerza de trinidad",
-          "Manamune",
-          "Rencor de Serylda"
-        ],
-        "items": [
-          "Fuerza de trinidad",
-          "Manamune",
-          "Rencor de Serylda"
-        ],
-        "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
-          "Ángel de la guarda",
-          "Arcoescudo Inmortal"
-        ],
-        "bootBase": "Grebas de berserker",
-        "bootUpgrade": "Grebas de metal",
-        "situationalBoots": [
-          "Botas blindadas"
-        ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Barrera"
@@ -3739,64 +3742,64 @@
     "builds": [
       {
         "id": "darius_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
+          "Coraza del muerto",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Malla de espinas",
+          "Ángel de la guarda"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       },
       {
         "id": "darius_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
+          "Coraza del muerto",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Malla de espinas",
+          "Ángel de la guarda"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Fantasmal"
         ]
       }
     ],
@@ -3926,61 +3929,61 @@
     "builds": [
       {
         "id": "diana_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
-        ],
-        "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
-        ],
-        "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
-        ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
-        "situationalBoots": [
-          "Botas de mercurio"
-        ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
-        "spells": [
-          "Destello",
-          "Aplastar"
-        ]
-      },
-      {
-        "id": "diana_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
-        "role": "mid",
-        "coreItems": [
-          "Creagrietas",
+          "Diente de Nashor",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
+          "Diente de Nashor",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Tormento de Liandry",
+          "Morellonomicón"
+        ],
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
+        "situationalBoots": [
+          "Botas de mercurio"
+        ],
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
+        "spells": [
+          "Aplastar",
+          "Destello"
+        ]
+      },
+      {
+        "id": "diana_mid",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
+        "role": "mid",
+        "coreItems": [
+          "Diente de Nashor",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
+        ],
+        "items": [
+          "Diente de Nashor",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
+        ],
+        "situationalItems": [
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
         "spells": [
           "Destello",
           "Prender"
@@ -4113,7 +4116,7 @@
     "builds": [
       {
         "id": "dr_mundo_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -4127,50 +4130,50 @@
         ],
         "situationalItems": [
           "Fuerza de la naturaleza",
+          "Armadura de Warmog",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Hidra titánica"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       },
       {
         "id": "dr_mundo_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
+          "Corazón de acero",
           "Égida de fuego solar",
           "Malla de espinas"
         ],
         "items": [
-          "Coraza del muerto",
+          "Corazón de acero",
           "Égida de fuego solar",
           "Malla de espinas"
         ],
         "situationalItems": [
           "Fuerza de la naturaleza",
+          "Armadura de Warmog",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Hidra titánica"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Fantasmal"
         ]
       }
     ],
@@ -4300,29 +4303,30 @@
     "builds": [
       {
         "id": "draven_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
+          "Sanguinaria",
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
-          "Recuerdos de Lord Dominik"
+          "Recaudadora"
         ],
         "items": [
+          "Sanguinaria",
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
-          "Recuerdos de Lord Dominik"
+          "Recaudadora"
         ],
         "situationalItems": [
-          "Sanguinaria",
+          "Recuerdos de Lord Dominik",
+          "Cañón de Fuego Rápido",
           "Ángel de la guarda",
           "Arcoescudo Inmortal"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Barrera"
@@ -4330,33 +4334,33 @@
       },
       {
         "id": "draven_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
+          "Sanguinaria",
           "Filo Infinito",
           "Recaudadora"
         ],
         "items": [
-          "Hoja del rey arruinado",
+          "Sanguinaria",
           "Filo Infinito",
           "Recaudadora"
         ],
         "situationalItems": [
           "Recuerdos de Lord Dominik",
-          "Sanguinaria",
+          "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Arcoescudo Inmortal"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Botas dinámicas",
+        "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       }
     ],
@@ -4486,61 +4490,61 @@
     "builds": [
       {
         "id": "ekko_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eco de Luden",
+          "Diente de Nashor",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
+          "Diente de Nashor",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
+          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Morellonomicón"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "ekko_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Creagrietas",
+          "Diente de Nashor",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
+          "Diente de Nashor",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
+          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -4673,7 +4677,7 @@
     "builds": [
       {
         "id": "evelynn_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
           "Eco de Luden",
@@ -4687,24 +4691,24 @@
         ],
         "situationalItems": [
           "Bastón del Vacío",
+          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
           "Impulso Cósmico"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "evelynn_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -4718,8 +4722,8 @@
         ],
         "situationalItems": [
           "Bastón del Vacío",
+          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
           "Impulso Cósmico"
         ],
         "bootBase": "Botas de maná",
@@ -4727,7 +4731,7 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -4860,61 +4864,61 @@
     "builds": [
       {
         "id": "ezreal_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Fuerza de trinidad",
           "Manamune",
+          "Fuerza de trinidad",
           "Rencor de Serylda"
         ],
         "items": [
-          "Fuerza de trinidad",
           "Manamune",
+          "Fuerza de trinidad",
           "Rencor de Serylda"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
-          "Ángel de la guarda",
-          "Arcoescudo Inmortal"
-        ],
-        "bootBase": "Grebas de berserker",
-        "bootUpgrade": "Grebas de metal",
-        "situationalBoots": [
-          "Botas blindadas"
-        ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
-        "spells": [
-          "Destello",
-          "Barrera"
-        ]
-      },
-      {
-        "id": "ezreal_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
-        "role": "mid",
-        "coreItems": [
           "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
-        ],
-        "items": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
-        ],
-        "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Corona de la Reina Fragmentada"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Banda de Maná",
+        "spells": [
+          "Destello",
+          "Curar"
+        ]
+      },
+      {
+        "id": "ezreal_mid",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
+        "role": "mid",
+        "coreItems": [
+          "Manamune",
+          "Fuerza de trinidad",
+          "Rencor de Serylda"
+        ],
+        "items": [
+          "Manamune",
+          "Fuerza de trinidad",
+          "Rencor de Serylda"
+        ],
+        "situationalItems": [
+          "Hoja del rey arruinado",
+          "Ángel de la guarda",
+          "Fauces de Malmortius",
+          "Corona de la Reina Fragmentada"
+        ],
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
+        "situationalBoots": [
+          "Botas de mercurio"
+        ],
+        "runes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -5047,61 +5051,61 @@
     "builds": [
       {
         "id": "fiddlesticks_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eco de Luden",
+          "Tormento de Liandry",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
+          "Tormento de Liandry",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Cetro de cristal de Rylai",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "fiddlesticks_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Tormento de Liandry",
+          "Orbe infinito"
         ],
         "items": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Tormento de Liandry",
+          "Orbe infinito"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Cetro de cristal de Rylai",
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Morellonomicón"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -5234,30 +5238,30 @@
     "builds": [
       {
         "id": "fiora_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Rompecascos"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Rompecascos"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Calibrador de Sterak",
+          "Ángel de la guarda",
+          "Malla de espinas",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Linaje, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -5265,30 +5269,30 @@
       },
       {
         "id": "fiora_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Rompecascos"
         ],
         "items": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Rompecascos"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
+          "Calibrador de Sterak",
           "Ángel de la guarda",
+          "Malla de espinas",
           "Fauces de Malmortius"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Conquistador, Triunfo, Leyenda: Linaje, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -5421,30 +5425,30 @@
     "builds": [
       {
         "id": "fizz_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Creagrietas",
-          "Orbe infinito",
+          "Eco de Luden",
+          "Perdición del liche",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
-          "Orbe infinito",
+          "Eco de Luden",
+          "Perdición del liche",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Orbe infinito",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -5452,30 +5456,30 @@
       },
       {
         "id": "fizz_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Eco de Luden",
+          "Perdición del liche",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Eco de Luden",
+          "Perdición del liche",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Orbe infinito",
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -5608,7 +5612,7 @@
     "builds": [
       {
         "id": "galio_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -5621,17 +5625,17 @@
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
+          "Bastón del Vacío",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Tormento de Liandry"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -5639,7 +5643,7 @@
       },
       {
         "id": "galio_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -5662,10 +5666,10 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Extenuación"
         ]
       }
     ],
@@ -5795,30 +5799,30 @@
     "builds": [
       {
         "id": "garen_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
+          "Coraza del muerto",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Malla de espinas",
+          "Ángel de la guarda"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -5826,33 +5830,33 @@
       },
       {
         "id": "garen_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
+          "Coraza del muerto",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Malla de espinas",
+          "Ángel de la guarda"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
@@ -5982,30 +5986,30 @@
     "builds": [
       {
         "id": "gnar_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Calibrador de Sterak",
+          "Baile de la muerte"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Calibrador de Sterak",
+          "Baile de la muerte"
         ],
         "situationalItems": [
+          "Cuchilla negra",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Malla de espinas",
+          "Ángel de la guarda"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -6013,30 +6017,30 @@
       },
       {
         "id": "gnar_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Fuerza de trinidad",
+          "Calibrador de Sterak",
+          "Baile de la muerte"
         ],
         "items": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Fuerza de trinidad",
+          "Calibrador de Sterak",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
-          "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Cuchilla negra",
+          "Fuerza de la naturaleza",
+          "Malla de espinas",
+          "Ángel de la guarda"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -6170,69 +6174,69 @@
     "builds": [
       {
         "id": "gragas_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Bastón del Vacío",
+          "Perdición del liche",
+          "Corona de la Reina Fragmentada",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "gragas_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Bastón del Vacío",
+          "Perdición del liche",
+          "Corona de la Reina Fragmentada",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       },
       {
         "id": "gragas_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -6246,16 +6250,16 @@
         ],
         "situationalItems": [
           "Bastón del Vacío",
+          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -6388,61 +6392,61 @@
     "builds": [
       {
         "id": "graves_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eclipse",
-          "Cuchilla negra",
-          "Baile de la muerte"
+          "Filo fantasmal de Youmuu",
+          "Recaudadora",
+          "Filo Infinito"
         ],
         "items": [
-          "Eclipse",
-          "Cuchilla negra",
-          "Baile de la muerte"
+          "Filo fantasmal de Youmuu",
+          "Recaudadora",
+          "Filo Infinito"
         ],
         "situationalItems": [
-          "Calibrador de Sterak",
-          "Rencor de Serylda",
+          "Recuerdos de Lord Dominik",
+          "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Baile de la muerte"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Botas dinámicas",
+        "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "graves_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Eclipse",
-          "Fuerza de trinidad",
-          "Baile de la muerte"
+          "Filo fantasmal de Youmuu",
+          "Recaudadora",
+          "Filo Infinito"
         ],
         "items": [
-          "Eclipse",
-          "Fuerza de trinidad",
-          "Baile de la muerte"
+          "Filo fantasmal de Youmuu",
+          "Recaudadora",
+          "Filo Infinito"
         ],
         "situationalItems": [
-          "Calibrador de Sterak",
-          "Rencor de Serylda",
+          "Recuerdos de Lord Dominik",
+          "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Baile de la muerte"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
         "spells": [
           "Destello",
           "Prender"
@@ -6575,30 +6579,30 @@
     "builds": [
       {
         "id": "gwen_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Diente de Nashor",
+          "Creagrietas",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Diente de Nashor",
+          "Creagrietas",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -6606,33 +6610,33 @@
       },
       {
         "id": "gwen_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Diente de Nashor",
+          "Creagrietas",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Diente de Nashor",
+          "Creagrietas",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
@@ -6762,64 +6766,64 @@
     "builds": [
       {
         "id": "hecarim_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
+          "Cuchilla negra",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Malla de espinas",
+          "Ángel de la guarda"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Celeridad",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Fantasmal"
         ]
       },
       {
         "id": "hecarim_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
+          "Cuchilla negra",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Malla de espinas",
+          "Ángel de la guarda"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Celeridad",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       }
     ],
@@ -6950,16 +6954,16 @@
     "builds": [
       {
         "id": "heimerdinger_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
@@ -6973,7 +6977,7 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -6981,30 +6985,30 @@
       },
       {
         "id": "heimerdinger_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
           "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Cetro de cristal de Rylai",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
           "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Cetro de cristal de Rylai",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
+          "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Impulso Cósmico"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -7012,30 +7016,30 @@
       },
       {
         "id": "heimerdinger_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai"
         ],
         "items": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Morellonomicón",
+          "Impulso Cósmico"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -7189,7 +7193,7 @@
     "builds": [
       {
         "id": "hwei_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -7204,46 +7208,46 @@
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       },
       {
         "id": "hwei_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Eco de Luden",
+          "Orbe infinito"
         ],
         "items": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Eco de Luden",
+          "Orbe infinito"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -7372,30 +7376,30 @@
     "builds": [
       {
         "id": "irelia_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Hoja del rey arruinado",
+          "Fuerza de trinidad",
+          "Baile de la muerte"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Hoja del rey arruinado",
+          "Fuerza de trinidad",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Calibrador de Sterak",
+          "Final del ingenio",
+          "Ángel de la guarda",
+          "Malla de espinas"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Brutal, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -7403,30 +7407,30 @@
       },
       {
         "id": "irelia_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Fuerza de trinidad",
+          "Baile de la muerte"
         ],
         "items": [
           "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Fuerza de trinidad",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
+          "Calibrador de Sterak",
+          "Final del ingenio",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Malla de espinas"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Conquistador, Brutal, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -7559,7 +7563,7 @@
     "builds": [
       {
         "id": "janna_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -7585,12 +7589,12 @@
         "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
-          "Prender"
+          "Curar"
         ]
       },
       {
         "id": "janna_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -7604,16 +7608,16 @@
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
+          "Impulso Cósmico",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Creagrietas"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
           "Prender"
@@ -7746,64 +7750,64 @@
     "builds": [
       {
         "id": "jarvan_iv_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Cuchilla negra",
+          "Calibrador de Sterak",
+          "Baile de la muerte"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Cuchilla negra",
+          "Calibrador de Sterak",
+          "Baile de la muerte"
         ],
         "situationalItems": [
+          "Ángel de la guarda",
+          "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Colmillo de serpiente"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "jarvan_iv_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Cuchilla negra",
+          "Calibrador de Sterak",
+          "Baile de la muerte"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Cuchilla negra",
+          "Calibrador de Sterak",
+          "Baile de la muerte"
         ],
         "situationalItems": [
+          "Ángel de la guarda",
+          "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Colmillo de serpiente"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       }
     ],
@@ -7933,30 +7937,30 @@
     "builds": [
       {
         "id": "jax_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Hoja del rey arruinado",
+          "Rompecascos",
+          "Ángel de la guarda",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Compás Letal, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Prender"
@@ -7964,33 +7968,33 @@
       },
       {
         "id": "jax_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Fuerza de trinidad",
+          "Baile de la muerte",
+          "Calibrador de Sterak"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Hoja del rey arruinado",
+          "Rompecascos",
+          "Ángel de la guarda",
+          "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Compás Letal, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
@@ -8120,30 +8124,30 @@
     "builds": [
       {
         "id": "jayce_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
+          "Manamune",
           "Eclipse",
-          "Fuerza de trinidad",
-          "Baile de la muerte"
+          "Rencor de Serylda"
         ],
         "items": [
+          "Manamune",
           "Eclipse",
-          "Fuerza de trinidad",
-          "Baile de la muerte"
+          "Rencor de Serylda"
         ],
         "situationalItems": [
-          "Calibrador de Sterak",
-          "Rencor de Serylda",
+          "Filo de la noche",
           "Ángel de la guarda",
+          "Baile de la muerte",
           "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -8151,30 +8155,30 @@
       },
       {
         "id": "jayce_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Filo fantasmal de Youmuu",
-          "Filoscuro de Draktharr",
-          "Recaudadora"
+          "Manamune",
+          "Eclipse",
+          "Rencor de Serylda"
         ],
         "items": [
-          "Filo fantasmal de Youmuu",
-          "Filoscuro de Draktharr",
-          "Recaudadora"
+          "Manamune",
+          "Eclipse",
+          "Rencor de Serylda"
         ],
         "situationalItems": [
-          "Colmillo de serpiente",
-          "Fauces de Malmortius",
+          "Filo de la noche",
           "Ángel de la guarda",
-          "Rencor de Serylda"
+          "Baile de la muerte",
+          "Fauces de Malmortius"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -8307,29 +8311,30 @@
     "builds": [
       {
         "id": "jhin_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
+          "Recaudadora",
           "Recuerdos de Lord Dominik"
         ],
         "items": [
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
+          "Recaudadora",
           "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
+          "Cañón de Fuego Rápido",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Filo fantasmal de Youmuu"
         ],
-        "bootBase": "Grebas de berserker",
-        "bootUpgrade": "Grebas de metal",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Pies Veloces, Brutal, Leyenda: Linaje, Golpe de Gracia, Celeridad",
         "spells": [
           "Destello",
           "Barrera"
@@ -8337,33 +8342,33 @@
       },
       {
         "id": "jhin_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Recaudadora"
+          "Recaudadora",
+          "Recuerdos de Lord Dominik"
         ],
         "items": [
-          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Recaudadora"
+          "Recaudadora",
+          "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
+          "Cañón de Fuego Rápido",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Filo fantasmal de Youmuu"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Botas dinámicas",
+        "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Pies Veloces, Brutal, Leyenda: Linaje, Golpe de Gracia, Celeridad",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       }
     ],
@@ -8493,27 +8498,28 @@
     "builds": [
       {
         "id": "jinx_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
+          "Huracán de Runaan",
           "Recuerdos de Lord Dominik"
         ],
         "items": [
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
+          "Huracán de Runaan",
           "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
           "Sanguinaria",
+          "Cañón de Fuego Rápido",
           "Ángel de la guarda",
           "Arcoescudo Inmortal"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
         "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
@@ -8523,33 +8529,33 @@
       },
       {
         "id": "jinx_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Recaudadora"
+          "Huracán de Runaan",
+          "Recuerdos de Lord Dominik"
         ],
         "items": [
-          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Recaudadora"
+          "Huracán de Runaan",
+          "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
           "Sanguinaria",
+          "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Arcoescudo Inmortal"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       }
     ],
@@ -8679,7 +8685,7 @@
     "builds": [
       {
         "id": "k_sante_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -8692,51 +8698,51 @@
           "Malla de espinas"
         ],
         "situationalItems": [
+          "Guantelete de hielo",
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Coraza dual purpúrea"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       },
       {
         "id": "k_sante_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Corazón de acero",
+          "Égida de fuego solar",
+          "Malla de espinas"
         ],
         "items": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Corazón de acero",
+          "Égida de fuego solar",
+          "Malla de espinas"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
-          "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Guantelete de hielo",
+          "Fuerza de la naturaleza",
+          "Presagio de Randuin",
+          "Coraza dual purpúrea"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Botas blindadas",
+        "bootUpgrade": "Avance blindado",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Garras del Inmortal, Demoler, Fuerzas Renovadas, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       }
     ],
@@ -8866,27 +8872,28 @@
     "builds": [
       {
         "id": "kai_sa_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Hoja del rey arruinado",
-          "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Manamune",
+          "Diente de Nashor",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Hoja del rey arruinado",
-          "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Manamune",
+          "Diente de Nashor",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Sanguinaria",
+          "Corona de la Reina Fragmentada",
+          "Huracán de Runaan",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Bastón del Vacío"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
         "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
@@ -8896,33 +8903,33 @@
       },
       {
         "id": "kai_sa_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Manamune",
+          "Diente de Nashor",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Manamune",
+          "Diente de Nashor",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
+          "Corona de la Reina Fragmentada",
+          "Huracán de Runaan",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Bastón del Vacío"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       }
     ],
@@ -9052,19 +9059,20 @@
     "builds": [
       {
         "id": "kalista_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
           "Hoja del rey arruinado",
           "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Filo Infinito"
         ],
         "items": [
           "Hoja del rey arruinado",
           "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Filo Infinito"
         ],
         "situationalItems": [
+          "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
           "Arcoescudo Inmortal"
@@ -9072,9 +9080,9 @@
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Barrera"
@@ -9082,33 +9090,33 @@
       },
       {
         "id": "kalista_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Eclipse",
-          "Fuerza de trinidad",
-          "Baile de la muerte"
+          "Hoja del rey arruinado",
+          "Huracán de Runaan",
+          "Filo Infinito"
         ],
         "items": [
-          "Eclipse",
-          "Fuerza de trinidad",
-          "Baile de la muerte"
+          "Hoja del rey arruinado",
+          "Huracán de Runaan",
+          "Filo Infinito"
         ],
         "situationalItems": [
-          "Calibrador de Sterak",
-          "Rencor de Serylda",
+          "Recuerdos de Lord Dominik",
+          "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Arcoescudo Inmortal"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       }
     ],
@@ -9238,23 +9246,23 @@
     "builds": [
       {
         "id": "karma_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
           "Eco armónico",
-          "Incensario ardiente"
+          "Mandato imperial"
         ],
         "items": [
           "Hoz espectral",
           "Eco armónico",
-          "Incensario ardiente"
+          "Mandato imperial"
         ],
         "situationalItems": [
+          "Incensario ardiente",
           "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Corona de la Reina Fragmentada",
+          "Redención"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
@@ -9269,30 +9277,30 @@
       },
       {
         "id": "karma_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
+          "Corona de la Reina Fragmentada",
           "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Orbe infinito"
         ],
         "items": [
+          "Corona de la Reina Fragmentada",
           "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Orbe infinito"
         ],
         "situationalItems": [
+          "Sombrero mortal de Rabadon",
           "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
           "Prender"
@@ -9425,23 +9433,23 @@
     "builds": [
       {
         "id": "kassadin_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Creagrietas",
-          "Orbe infinito",
+          "Vara de las edades",
+          "Abrazo del serafín",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
-          "Orbe infinito",
+          "Vara de las edades",
+          "Abrazo del serafín",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Orbe infinito",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -9456,30 +9464,30 @@
       },
       {
         "id": "kassadin_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Vara de las edades",
+          "Abrazo del serafín",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Vara de las edades",
+          "Abrazo del serafín",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Orbe infinito",
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -9612,30 +9620,30 @@
     "builds": [
       {
         "id": "katarina_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Creagrietas",
           "Orbe infinito",
+          "Diente de Nashor",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
           "Orbe infinito",
+          "Diente de Nashor",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Creagrietas",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Conquistador, Triunfo, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
         "spells": [
           "Destello",
           "Prender"
@@ -9643,30 +9651,30 @@
       },
       {
         "id": "katarina_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Orbe infinito",
+          "Diente de Nashor",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Orbe infinito",
+          "Diente de Nashor",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Creagrietas",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Conquistador, Triunfo, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
         "spells": [
           "Destello",
           "Prender"
@@ -9799,64 +9807,64 @@
     "builds": [
       {
         "id": "kayle_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
+          "Diente de Nashor",
           "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
+          "Diente de Nashor",
           "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Orbe infinito",
+          "Morellonomicón"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Sobrecrecimiento",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       },
       {
         "id": "kayle_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Diente de Nashor",
+          "Creagrietas",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Diente de Nashor",
+          "Creagrietas",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
-          "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Orbe infinito",
+          "Morellonomicón"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Sobrecrecimiento",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       }
     ],
@@ -9986,64 +9994,64 @@
     "builds": [
       {
         "id": "kayn_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Filo fantasmal de Youmuu",
+          "Filoscuro de Draktharr",
+          "Rencor de Serylda"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Filo fantasmal de Youmuu",
+          "Filoscuro de Draktharr",
+          "Rencor de Serylda"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Eclipse",
+          "Filo de la noche",
+          "Ángel de la guarda",
+          "Baile de la muerte"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "kayn_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Filo fantasmal de Youmuu",
+          "Filoscuro de Draktharr",
+          "Rencor de Serylda"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Filo fantasmal de Youmuu",
+          "Filoscuro de Draktharr",
+          "Rencor de Serylda"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Eclipse",
+          "Filo de la noche",
+          "Ángel de la guarda",
+          "Baile de la muerte"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       }
     ],
@@ -10173,30 +10181,30 @@
     "builds": [
       {
         "id": "kennen_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
           "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -10204,30 +10212,30 @@
       },
       {
         "id": "kennen_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
-          "Cetro de cristal de Rylai",
+          "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
           "Creagrietas",
-          "Cetro de cristal de Rylai",
+          "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -10360,7 +10368,7 @@
     "builds": [
       {
         "id": "kha_zix_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
           "Filo fantasmal de Youmuu",
@@ -10373,48 +10381,48 @@
           "Rencor de Serylda"
         ],
         "situationalItems": [
-          "Colmillo de serpiente",
-          "Fauces de Malmortius",
+          "Filo de la noche",
+          "Eclipse",
           "Ángel de la guarda",
-          "Filo de la noche"
+          "Colmillo de serpiente"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "kha_zix_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Filo fantasmal de Youmuu",
+          "Filoscuro de Draktharr",
+          "Rencor de Serylda"
         ],
         "items": [
-          "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Filo fantasmal de Youmuu",
+          "Filoscuro de Draktharr",
+          "Rencor de Serylda"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
-          "Sanguinaria",
+          "Filo de la noche",
+          "Eclipse",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Colmillo de serpiente"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Botas dinámicas",
+        "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -10547,60 +10555,61 @@
     "builds": [
       {
         "id": "kindred_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eclipse",
-          "Cuchilla negra",
-          "Baile de la muerte"
+          "Fuerza de trinidad",
+          "Filo Infinito",
+          "Recuerdos de Lord Dominik"
         ],
         "items": [
-          "Eclipse",
-          "Cuchilla negra",
-          "Baile de la muerte"
+          "Fuerza de trinidad",
+          "Filo Infinito",
+          "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
-          "Calibrador de Sterak",
-          "Rencor de Serylda",
+          "Hoja del rey arruinado",
+          "Sanguinaria",
           "Ángel de la guarda",
           "Fauces de Malmortius"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Botas dinámicas",
+        "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "kindred_adc",
-        "title": "Build Línea de Dragón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón (Línea Flex) • Criterio Coach",
         "role": "adc",
         "coreItems": [
+          "Fuerza de trinidad",
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
           "Recuerdos de Lord Dominik"
         ],
         "items": [
+          "Fuerza de trinidad",
           "Filo Infinito",
-          "Cañón de Fuego Rápido",
           "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
+          "Hoja del rey arruinado",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Fauces de Malmortius"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Conquistador, Brutal, Leyenda: Linaje, Golpe de Gracia, Impacto Repentino",
         "spells": [
           "Destello",
           "Barrera"
@@ -10733,29 +10742,30 @@
     "builds": [
       {
         "id": "kog_maw_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
           "Hoja del rey arruinado",
           "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Final del ingenio"
         ],
         "items": [
           "Hoja del rey arruinado",
           "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Final del ingenio"
         ],
         "situationalItems": [
-          "Sanguinaria",
+          "Filo Infinito",
+          "Recuerdos de Lord Dominik",
           "Ángel de la guarda",
           "Arcoescudo Inmortal"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
           "Barrera"
@@ -10763,33 +10773,33 @@
       },
       {
         "id": "kog_maw_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Huracán de Runaan",
+          "Final del ingenio"
         ],
         "items": [
           "Hoja del rey arruinado",
-          "Filo Infinito",
-          "Recaudadora"
+          "Huracán de Runaan",
+          "Final del ingenio"
         ],
         "situationalItems": [
+          "Filo Infinito",
           "Recuerdos de Lord Dominik",
-          "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Arcoescudo Inmortal"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Grebas de berserker",
+        "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       }
     ],
@@ -10919,64 +10929,64 @@
     "builds": [
       {
         "id": "lee_sin_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Cuchilla negra",
+          "Baile de la muerte"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Cuchilla negra",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Calibrador de Sterak",
+          "Ángel de la guarda",
+          "Fauces de Malmortius",
+          "Colmillo de serpiente"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "lee_sin_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Cuchilla negra",
+          "Baile de la muerte"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Eclipse",
+          "Cuchilla negra",
+          "Baile de la muerte"
         ],
         "situationalItems": [
-          "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Calibrador de Sterak",
+          "Ángel de la guarda",
+          "Fauces de Malmortius",
+          "Colmillo de serpiente"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Impacto Repentino",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       }
     ],
@@ -11106,7 +11116,7 @@
     "builds": [
       {
         "id": "leona_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -11121,7 +11131,7 @@
         "situationalItems": [
           "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Velo del amanecer",
+          "Corazón de hielo",
           "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas blindadas",
@@ -11129,7 +11139,7 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
+        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -11137,7 +11147,7 @@
       },
       {
         "id": "leona_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -11152,15 +11162,15 @@
         "situationalItems": [
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Armadura de Warmog",
+          "Corazón de hielo"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -11293,61 +11303,61 @@
     "builds": [
       {
         "id": "lillia_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
+          "Tormento de Liandry",
+          "Cetro de cristal de Rylai",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Creagrietas",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Coraza dual purpúrea"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Celeridad",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "lillia_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
           "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Cetro de cristal de Rylai",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
           "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Cetro de cristal de Rylai",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
+          "Creagrietas",
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
-          "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Corona de la Reina Fragmentada",
+          "Coraza dual purpúrea"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Golpe de Gracia, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -11480,7 +11490,7 @@
     "builds": [
       {
         "id": "lissandra_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -11496,7 +11506,7 @@
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Tormento de Liandry"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -11511,30 +11521,30 @@
       },
       {
         "id": "lissandra_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
-          "Tormento de Liandry",
-          "Cetro de cristal de Rylai"
+          "Eco de Luden",
+          "Orbe infinito",
+          "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Sombrero mortal de Rabadon",
+          "Corona de la Reina Fragmentada",
           "Morellonomicón",
-          "Corona de la Reina Fragmentada"
+          "Tormento de Liandry"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -11667,29 +11677,30 @@
     "builds": [
       {
         "id": "lucian_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Recaudadora",
           "Filo Infinito",
+          "Recaudadora",
           "Recuerdos de Lord Dominik"
         ],
         "items": [
-          "Recaudadora",
           "Filo Infinito",
+          "Recaudadora",
           "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
           "Sanguinaria",
+          "Cañón de Fuego Rápido",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Fauces de Malmortius"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Brutal",
         "spells": [
           "Destello",
           "Barrera"
@@ -11697,33 +11708,33 @@
       },
       {
         "id": "lucian_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Recaudadora"
+          "Recaudadora",
+          "Recuerdos de Lord Dominik"
         ],
         "items": [
-          "Hoja del rey arruinado",
           "Filo Infinito",
-          "Recaudadora"
+          "Recaudadora",
+          "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
-          "Recuerdos de Lord Dominik",
           "Sanguinaria",
+          "Cañón de Fuego Rápido",
           "Ángel de la guarda",
           "Fauces de Malmortius"
         ],
-        "bootBase": "Grebas codiciosas",
-        "bootUpgrade": "Botas inmortales",
+        "bootBase": "Botas dinámicas",
+        "bootUpgrade": "Botas quebrantarmaduras",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Fortalecimiento, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Brutal",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       }
     ],
@@ -11853,7 +11864,7 @@
     "builds": [
       {
         "id": "lulu_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -11879,12 +11890,12 @@
         "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
-          "Prender"
+          "Extenuación"
         ]
       },
       {
         "id": "lulu_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -11898,16 +11909,16 @@
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
+          "Impulso Cósmico",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Creagrietas"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
           "Prender"
@@ -12040,7 +12051,7 @@
     "builds": [
       {
         "id": "lux_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -12055,46 +12066,46 @@
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Precisión infalible",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Golpe Bajo",
         "spells": [
           "Destello",
-          "Prender"
+          "Barrera"
         ]
       },
       {
         "id": "lux_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
           "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Orbe infinito"
         ],
         "items": [
           "Hoz espectral",
           "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Orbe infinito"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Precisión infalible",
+          "Morellonomicón"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Golpe Bajo",
         "spells": [
           "Destello",
           "Prender"
@@ -12228,7 +12239,7 @@
     "builds": [
       {
         "id": "malphite_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -12241,17 +12252,17 @@
           "Malla de espinas"
         ],
         "situationalItems": [
+          "Guantelete de hielo",
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Coraza dual purpúrea"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -12259,30 +12270,30 @@
       },
       {
         "id": "malphite_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Corazón de acero",
+          "Égida de fuego solar",
+          "Malla de espinas"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Corazón de acero",
+          "Égida de fuego solar",
+          "Malla de espinas"
         ],
         "situationalItems": [
-          "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Guantelete de hielo",
+          "Fuerza de la naturaleza",
+          "Presagio de Randuin",
+          "Coraza dual purpúrea"
         ],
-        "bootBase": "Botas de maná",
-        "bootUpgrade": "Botas del lanzahechizos",
+        "bootBase": "Botas blindadas",
+        "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
           "Prender"
@@ -12290,7 +12301,7 @@
       },
       {
         "id": "malphite_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -12313,10 +12324,10 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
+        "runes": "Garras del Inmortal, Demoler, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
         "spells": [
           "Destello",
-          "Prender"
+          "Extenuación"
         ]
       }
     ],
@@ -12447,7 +12458,7 @@
     "builds": [
       {
         "id": "maokai_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -12462,7 +12473,7 @@
         "situationalItems": [
           "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Velo del amanecer",
+          "Corazón de hielo",
           "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas blindadas",
@@ -12470,7 +12481,7 @@
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Triunfo",
+        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -12478,7 +12489,7 @@
       },
       {
         "id": "maokai_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -12493,15 +12504,15 @@
         "situationalItems": [
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Armadura de Warmog",
+          "Corazón de hielo"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
           "Destello",
           "Prender"
@@ -12509,33 +12520,33 @@
       },
       {
         "id": "maokai_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
+          "Corazón de acero",
           "Égida de fuego solar",
           "Malla de espinas"
         ],
         "items": [
-          "Coraza del muerto",
+          "Corazón de acero",
           "Égida de fuego solar",
           "Malla de espinas"
         ],
         "situationalItems": [
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Armadura de Warmog",
+          "Corazón de hielo"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Garras del Inmortal, Fuente de Vida, Revestimiento de Huesos, Sobrecrecimiento, Celeridad",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
@@ -12665,61 +12676,61 @@
     "builds": [
       {
         "id": "master_yi_jungle",
-        "title": "Build Jungla (Cálculo IA & Estadísticas)",
+        "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eclipse",
-          "Cuchilla negra",
+          "Hoja del rey arruinado",
+          "Final del ingenio",
           "Baile de la muerte"
         ],
         "items": [
-          "Eclipse",
-          "Cuchilla negra",
+          "Hoja del rey arruinado",
+          "Final del ingenio",
           "Baile de la muerte"
         ],
         "situationalItems": [
           "Calibrador de Sterak",
-          "Rencor de Serylda",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Filo Infinito",
+          "Recuerdos de Lord Dominik"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Impacto Repentino",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       },
       {
         "id": "master_yi_top",
-        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Eclipse",
-          "Fuerza de trinidad",
+          "Hoja del rey arruinado",
+          "Final del ingenio",
           "Baile de la muerte"
         ],
         "items": [
-          "Eclipse",
-          "Fuerza de trinidad",
+          "Hoja del rey arruinado",
+          "Final del ingenio",
           "Baile de la muerte"
         ],
         "situationalItems": [
           "Calibrador de Sterak",
-          "Rencor de Serylda",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Filo Infinito",
+          "Recuerdos de Lord Dominik"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Conquistador, Triunfo, Leyenda: Velocidad, Último Esfuerzo, Revestimiento de Huesos",
+        "runes": "Compás Letal, Brutal, Leyenda: Presteza, Golpe de Gracia, Impacto Repentino",
         "spells": [
           "Destello",
           "Prender"
@@ -12852,7 +12863,7 @@
     "builds": [
       {
         "id": "mel_mid",
-        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -12867,8 +12878,8 @@
         "situationalItems": [
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -12883,30 +12894,30 @@
       },
       {
         "id": "mel_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
           "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Orbe infinito"
         ],
         "items": [
           "Hoz espectral",
           "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Orbe infinito"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Bastón del Vacío",
+          "Corona de la Reina Fragmentada",
+          "Impulso Cósmico",
+          "Morellonomicón"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
         "spells": [
           "Destello",
           "Prender"
@@ -13039,7 +13050,7 @@
     "builds": [
       {
         "id": "milio_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -13065,12 +13076,12 @@
         "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
-          "Prender"
+          "Curar"
         ]
       },
       {
         "id": "milio_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -13084,16 +13095,16 @@
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Corona de la Reina Fragmentada",
+          "Impulso Cósmico",
           "Morellonomicón",
-          "Impulso Cósmico"
+          "Creagrietas"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
           "Prender"
@@ -13226,29 +13237,30 @@
     "builds": [
       {
         "id": "miss_fortune_adc",
-        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo Infinito",
-          "Cañón de Fuego Rápido",
-          "Recuerdos de Lord Dominik"
+          "Filo fantasmal de Youmuu",
+          "Recaudadora",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Cañón de Fuego Rápido",
-          "Recuerdos de Lord Dominik"
+          "Filo fantasmal de Youmuu",
+          "Recaudadora",
+          "Filo Infinito"
         ],
         "situationalItems": [
+          "Recuerdos de Lord Dominik",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Filo de la noche"
         ],
-        "bootBase": "Grebas de berserker",
-        "bootUpgrade": "Grebas de metal",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
-          "Botas blindadas"
+          "Botas de mercurio"
         ],
-        "runes": "Compás Letal, Brutal, Leyenda: Linaje, Golpe de Gracia, Revestimiento de Huesos",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Brutal",
         "spells": [
           "Destello",
           "Barrera"
@@ -13256,30 +13268,30 @@
       },
       {
         "id": "miss_fortune_support",
-        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Soporte (Línea Flex) • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Filo fantasmal de Youmuu",
+          "Recaudadora"
         ],
         "items": [
           "Hoz espectral",
-          "Eco armónico",
-          "Incensario ardiente"
+          "Filo fantasmal de Youmuu",
+          "Recaudadora"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Recuerdos de Lord Dominik",
+          "Sanguinaria",
+          "Ángel de la guarda",
+          "Filo de la noche"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Primer Golpe, Impacto Repentino, Colección de Globos Oculares, Tirano, Brutal",
         "spells": [
           "Destello",
           "Prender"
@@ -13412,64 +13424,64 @@
     "builds": [
       {
         "id": "mordekaiser_top",
-        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
+        "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Cetro de cristal de Rylai",
+          "Creagrietas",
+          "Tormento de Liandry"
         ],
         "items": [
-          "Corazón de acero",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Cetro de cristal de Rylai",
+          "Creagrietas",
+          "Tormento de Liandry"
         ],
         "situationalItems": [
+          "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Sombrero mortal de Rabadon",
+          "Coraza dual purpúrea"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
           "Destello",
-          "Prender"
+          "Fantasmal"
         ]
       },
       {
         "id": "mordekaiser_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Cetro de cristal de Rylai",
+          "Creagrietas",
+          "Tormento de Liandry"
         ],
         "items": [
-          "Coraza del muerto",
-          "Égida de fuego solar",
-          "Malla de espinas"
+          "Cetro de cristal de Rylai",
+          "Creagrietas",
+          "Tormento de Liandry"
         ],
         "situationalItems": [
+          "Malla de espinas",
           "Fuerza de la naturaleza",
-          "Presagio de Randuin",
-          "Rookern kaénico",
-          "Armadura de Warmog"
+          "Sombrero mortal de Rabadon",
+          "Coraza dual purpúrea"
         ],
-        "bootBase": "Botas blindadas",
-        "bootUpgrade": "Avance blindado",
+        "bootBase": "Grebas codiciosas",
+        "bootUpgrade": "Botas inmortales",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Garras del Inmortal, Revestimiento de Huesos, Sobrecrecimiento, Demoler, Triunfo",
+        "runes": "Conquistador, Triunfo, Leyenda: Presteza, Último Esfuerzo, Revestimiento de Huesos",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Fantasmal"
         ]
       }
     ],
@@ -13600,30 +13612,30 @@
     "builds": [
       {
         "id": "morgana_support",
-        "title": "Build Soporte (Cálculo IA & Estadísticas)",
+        "title": "Build Soporte • Criterio Coach",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
-          "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Cetro de cristal de Rylai",
+          "Tormento de Liandry"
         ],
         "items": [
           "Hoz espectral",
-          "Eco de Luden",
-          "Sombrero mortal de Rabadon"
+          "Cetro de cristal de Rylai",
+          "Tormento de Liandry"
         ],
         "situationalItems": [
-          "Bastón de aguas fluidas",
-          "Mandato imperial",
-          "Redención",
-          "Bendición de Mikael"
+          "Morellonomicón",
+          "Corona de la Reina Fragmentada",
+          "Sombrero mortal de Rabadon",
+          "Medallón de los Solari de Hierro"
         ],
         "bootBase": "Botas jonias de la lucidez",
         "bootUpgrade": "Lucidez carmesí",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Aery, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
           "Prender"
@@ -13631,30 +13643,30 @@
       },
       {
         "id": "morgana_mid",
-        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Cetro de cristal de Rylai",
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Cetro de cristal de Rylai",
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "situationalItems": [
-          "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Sombrero mortal de Rabadon",
+          "Eco de Luden",
+          "Orbe infinito"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
           "Destello",
           "Prender"
@@ -13662,33 +13674,33 @@
       },
       {
         "id": "morgana_jungle",
-        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
+        "title": "Build Jungla (Línea Flex) • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Cetro de cristal de Rylai",
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "items": [
-          "Eco de Luden",
-          "Orbe infinito",
-          "Sombrero mortal de Rabadon"
+          "Cetro de cristal de Rylai",
+          "Tormento de Liandry",
+          "Morellonomicón"
         ],
         "situationalItems": [
-          "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón",
-          "Impulso Cósmico"
+          "Sombrero mortal de Rabadon",
+          "Eco de Luden",
+          "Orbe infinito"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
         "situationalBoots": [
           "Botas de mercurio"
         ],
-        "runes": "Electrocutar, Impacto Repentino, Colección de Globos Oculares, Tirano, Banda de Maná",
+        "runes": "Cometa Arcano, Banda de Maná, Trascendencia, Piroláser, Revitalizar",
         "spells": [
-          "Destello",
-          "Aplastar"
+          "Aplastar",
+          "Destello"
         ]
       }
     ],
