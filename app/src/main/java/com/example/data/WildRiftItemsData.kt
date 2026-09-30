@@ -2403,8 +2403,7 @@ WildRiftItem(
         "Asesino" to listOf(
             "serpent_s_fang", "manamune", "muramana", "youmuu_s_ghostblade",
             "duskblade_of_draktharr", "maw_of_malmortius", "edge_of_night",
-            "the_collector", "mercurial_scimitar", "serylda_s_grudge", "guardian_angel",
-            "axiom_arc"
+            "the_collector", "mercurial_scimitar", "serylda_s_grudge", "guardian_angel"
         ),
         "Tirador" to listOf(
             "fiendhunter_bolts", "rapid_firecannon", "runaan_s_hurricane",
@@ -2437,9 +2436,7 @@ WildRiftItem(
             "nashor_s_tooth",
             "statikk_shiv",
             "banshees_veil",
-            "crown_of_the_shattered_queen",
             "cryptbloom",
-            "void_staff",
             "guinsoo_s_rageblade",
             "liandry_s_torment",
             "archangel_s_staff",
@@ -2461,12 +2458,11 @@ WildRiftItem(
             "sunfire_aegis", "banshees_veil", "unending_despair",
             "iceborn_gauntlet", "titanic_hydra", "overlord_s_bloodmail",
             "guardian_angel", "sterak_s_gage", "amaranth_twinguard",
-            "mantle_of_the_twelfth_hour", "searing_crown",
             "death_s_dance", "zhonya_s_hourglass"
         ),
         "Apoyo" to listOf(
-            "spectral_sickle", "relic_shield", "black_mist_scythe", "bulwark_of_the_mountain",
-            "whispering_headband", "diadem_of_songs", "echoes_of_helia", "abyssal_mask", "ardent_censer",
+            "black_mist_scythe", "bulwark_of_the_mountain", "echoes_of_helia",
+            "whispering_headband", "diadem_of_songs", "abyssal_mask", "ardent_censer",
             "staff_of_flowing_water", "zeke_s_convergence", "yordle_trap",
             "redemption", "knight_s_vow", "mikael_s_blessing",
             "shurelya_s_battlesong", "harmonic_echo", "frozen_heart",
@@ -2484,21 +2480,16 @@ WildRiftItem(
 
     fun getItemsForCategory(category: String): List<WildRiftItem> {
         val mappedIds = categoryItemIds[category]
-        val fromMap = if (mappedIds != null) mappedIds.mapNotNull { getItemById(it) } else emptyList()
+        if (mappedIds != null) {
+            val fromMap = mappedIds.mapNotNull { getItemById(it) }
+            if (fromMap.isNotEmpty()) return fromMap
+        }
         
         val norm = category.lowercase().trim()
         val directMatches = list.filter { item ->
             val ic = item.category.lowercase().trim()
-            ic == norm || ic.contains(norm) || norm.contains(ic) || (norm.contains("bota") && ic.contains("bota")) ||
-            (norm.contains("apoyo") && (item.category.contains("Apoyo", ignoreCase = true) || item.id in listOf("spectral_sickle", "relic_shield", "black_mist_scythe", "bulwark_of_the_mountain", "whispering_headband", "diadem_of_songs"))) ||
-            (norm.contains("mag") && (item.category.contains("Mágico", ignoreCase = true) || item.category.contains("Magico", ignoreCase = true) || item.id in listOf("seraph_s_embrace", "archangel_s_staff", "whispering_headband", "diadem_of_songs"))) ||
-            (norm.contains("defensa") && (item.category.contains("Tanque", ignoreCase = true) || item.category.contains("Defensa", ignoreCase = true))) ||
-            (norm.contains("luchador") && (item.category.contains("Físico", ignoreCase = true) || item.category.contains("Fisico", ignoreCase = true) || item.category.contains("Luchador", ignoreCase = true))) ||
-            (norm.contains("asesino") && (item.category.contains("Asesino", ignoreCase = true) || item.category.contains("Físico", ignoreCase = true))) ||
-            (norm.contains("tirador") && (item.category.contains("Tirador", ignoreCase = true) || item.category.contains("Físico", ignoreCase = true)))
+            ic == norm || ic.contains(norm) || norm.contains(ic) || (norm.contains("bota") && ic.contains("bota"))
         }
-        
-        val combined = (fromMap + directMatches).distinctBy { it.id }
-        return if (combined.isNotEmpty()) combined else list.filter { it.category.equals(category, ignoreCase = true) }
+        return if (directMatches.isNotEmpty()) directMatches else list.filter { it.category.equals(category, ignoreCase = true) }
     }
 }
