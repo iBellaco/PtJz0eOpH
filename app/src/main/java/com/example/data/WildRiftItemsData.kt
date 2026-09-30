@@ -1867,7 +1867,7 @@ WildRiftItem(
             coachTip = "Forma evolucionada tras completar la carga de maná de Diadema susurrante. Otorga una inmensa reserva de maná (+1200) y cura automáticamente al aliado con menos vida en combate por un 0.8% de tu maná máximo por segundo.",
             coachTipEn = "Upgraded form upon reaching 700 Mana Charge. Heals the lowest-health ally in combat for 0.8% max Mana per second.",
             coachTipPt = "Forma evoluída após completar 700 de Mana. Cura o aliado com menos vida a cada segundo com base em 0,8% do Mana máximo.",
-            iconUrl = "file:///android_asset/offline_images/whispering_headband.webp"
+            iconUrl = "file:///android_asset/offline_images/diadem_of_songs.webp"
         )
     )
 

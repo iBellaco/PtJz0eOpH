@@ -215,7 +215,7 @@ object SituationalItemAdvisor {
         ),
         "Diadema melodiosa" to SituationalItemInfo(
             name = "Diadema melodiosa",
-            iconUrl = "file:///android_asset/offline_images/whispering_headband.webp",
+            iconUrl = "file:///android_asset/offline_images/diadem_of_songs.webp",
             categoryName = "Soporte Encantador Evolucionado (Parche 7.3a)",
             purpose = "Forma final tras acumular 700 de maná. Concede Armonía al 0.25% y sana al aliado con menor vida en combate durante peleas de equipo.",
             bestAgainst = listOf("Peleas de equipo prolongadas 5v5", "Composiciones de asedio y desgaste"),
@@ -224,7 +224,7 @@ object SituationalItemAdvisor {
         ),
         "Diadema de canciones" to SituationalItemInfo(
             name = "Diadema melodiosa",
-            iconUrl = "file:///android_asset/offline_images/whispering_headband.webp",
+            iconUrl = "file:///android_asset/offline_images/diadem_of_songs.webp",
             categoryName = "Soporte Encantador Evolucionado (Parche 7.3a)",
             purpose = "Forma final tras acumular 700 de maná. Concede Armonía al 0.25% y sana al aliado con menor vida en combate durante peleas de equipo.",
             bestAgainst = listOf("Peleas de equipo prolongadas 5v5", "Composiciones de asedio y desgaste"),
