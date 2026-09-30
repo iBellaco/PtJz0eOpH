@@ -683,10 +683,11 @@ fun ChampionDetailSheet(
                 val customOptions = championCustomBuilds.mapIndexed { idx, rec ->
                     val t2 = rec.bootsT2Item?.itemName?.ifBlank { null } ?: "Botas blindadas"
                     val t3 = rec.bootsT3Item?.itemName?.ifBlank { null } ?: com.example.util.ChampionRoleAdapter.getTier3BootUpgrade(t2)
+                    // Solo las botas de Nivel 2 son opciones seleccionables.
+                    // La evolución de Nivel 3 se deriva automáticamente del par T2 -> T3.
                     val sitBoots = listOfNotNull(
-                        rec.situationalBootsT2Item?.itemName?.ifBlank { null },
-                        rec.situationalBootsT3Item?.itemName?.ifBlank { null }
-                    ).filter { !it.equals(t2, ignoreCase = true) && !it.equals(t3, ignoreCase = true) }
+                        rec.situationalBootsT2Item?.itemName?.ifBlank { null }
+                    ).filter { !it.equals(t2, ignoreCase = true) }
 
                     com.example.util.ChampionBuildOption(
                         optionNumber = 1,
@@ -1161,8 +1162,16 @@ fun ChampionDetailSheet(
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
+                                    val buildAdvice = activeOption.situationalItemsWithDesc
+                                        .firstOrNull { it.itemName.equals(sitItemName, ignoreCase = true) }
+                                        ?.description
+                                        ?.takeIf { it.isNotBlank() }
+                                    val catalogAdvice = com.example.data.WildRiftItemsData.list
+                                        .firstOrNull { it.name.equals(sitItemName, ignoreCase = true) }
+                                        ?.coachTip
+                                        ?.takeIf { it.isNotBlank() }
                                     Text(
-                                        text = tr(getSituationalItemExplanation(sitItemName)),
+                                        text = tr(buildAdvice ?: catalogAdvice ?: getSituationalItemExplanation(sitItemName)),
                                         color = TextSecondary,
                                         fontSize = 9.5.sp,
                                         lineHeight = 13.sp
@@ -1268,8 +1277,12 @@ fun ChampionDetailSheet(
                             }
                         }
 
-                        val allBootCandidates = (listOf(activeOption.bootBase) + activeOption.situationalBoots).filter { it.isNotBlank() }.distinct()
-                        if (allBootCandidates.size > 1) {
+                        val situationalBootCandidates = activeOption.situationalBoots
+                            .filter { it.isNotBlank() }
+                            .filterNot { it.equals(activeOption.bootBase, ignoreCase = true) }
+                            .distinct()
+
+                        if (situationalBootCandidates.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(6.dp))
                             Box(
                                 modifier = Modifier
@@ -1279,7 +1292,7 @@ fun ChampionDetailSheet(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tr("Opciones Situacionales:"),
+                                text = tr("Botas Situacionales (Nivel 2):"),
                                 color = TextSecondary,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Medium
@@ -1290,10 +1303,13 @@ fun ChampionDetailSheet(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                allBootCandidates.forEach { sitBootName ->
+                                situationalBootCandidates.forEach { sitBootName ->
                                     val isSelected = currentBootBase.equals(sitBootName, ignoreCase = true)
-                                    val dbSitBoot = com.example.data.WildRiftRepository.items.find { it.name.equals(sitBootName, ignoreCase = true) || sitBootName.contains(it.name, ignoreCase = true) }
-                                    val sitIcon = dbSitBoot?.iconUrl ?: com.example.data.WildRiftItemsData.getItemIconByName(sitBootName)
+                                    val dbSitBoot = com.example.data.WildRiftRepository.items.find {
+                                        it.name.equals(sitBootName, ignoreCase = true)
+                                    }
+                                    val sitIcon = dbSitBoot?.iconUrl
+                                        ?: com.example.data.WildRiftItemsData.getItemIconByName(sitBootName)
 
                                     Box(
                                         modifier = Modifier
@@ -1305,9 +1321,7 @@ fun ChampionDetailSheet(
                                                 color = if (isSelected) HextechCyan else HextechCardBorder,
                                                 shape = RoundedCornerShape(6.dp)
                                             )
-                                            .clickable {
-                                                selectedBootBaseOverride = sitBootName
-                                            }
+                                            .clickable { selectedBootBaseOverride = sitBootName }
                                     ) {
                                         AppAssetImage(
                                             url = sitIcon,
@@ -1319,18 +1333,27 @@ fun ChampionDetailSheet(
                                     }
                                 }
                             }
-                        }
 
-                        if (allBootCandidates.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = tr("Situaciones recomendadas para botas situacionales:"),
+                                text = tr("Cuándo cambiar el par de botas:"),
                                 color = HextechCyan,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            allBootCandidates.forEach { sitBootName ->
+
+                            situationalBootCandidates.forEach { sitBootName ->
+                                val sitBootUpgrade = ChampionRoleAdapter.getTier3BootUpgrade(sitBootName)
+                                val t2Advice = com.example.data.WildRiftItemsData.list
+                                    .firstOrNull { it.name.equals(sitBootName, ignoreCase = true) }
+                                    ?.coachTip
+                                    .orEmpty()
+                                val t3Advice = com.example.data.WildRiftItemsData.list
+                                    .firstOrNull { it.name.equals(sitBootUpgrade, ignoreCase = true) }
+                                    ?.coachTip
+                                    .orEmpty()
+
                                 Spacer(modifier = Modifier.height(3.dp))
                                 Box(
                                     modifier = Modifier
@@ -1340,18 +1363,29 @@ fun ChampionDetailSheet(
                                 ) {
                                     Column(modifier = Modifier.padding(6.dp)) {
                                         Text(
-                                            text = com.example.util.tr("• ${tr(sitBootName)}:"),
+                                            text = com.example.util.tr("• ${tr(sitBootName)} → ${tr(sitBootUpgrade)}"),
                                             color = HextechCyan,
                                             fontSize = 9.5.sp,
                                             fontWeight = FontWeight.Bold
                                         )
-                                        Spacer(modifier = Modifier.height(1.dp))
-                                        Text(
-                                            text = tr(getSituationalItemExplanation(sitBootName)),
-                                            color = TextSecondary,
-                                            fontSize = 9.sp,
-                                            lineHeight = 12.sp
-                                        )
+                                        if (t2Advice.isNotBlank()) {
+                                            Spacer(modifier = Modifier.height(1.dp))
+                                            Text(
+                                                text = tr(t2Advice),
+                                                color = TextSecondary,
+                                                fontSize = 9.sp,
+                                                lineHeight = 12.sp
+                                            )
+                                        }
+                                        if (t3Advice.isNotBlank() && !t3Advice.equals(t2Advice, ignoreCase = true)) {
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = com.example.util.tr("${tr(sitBootUpgrade)}: ${tr(t3Advice)}"),
+                                                color = TextSecondary,
+                                                fontSize = 9.sp,
+                                                lineHeight = 12.sp
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -2559,7 +2593,7 @@ private fun getSituationalItemExplanation(itemName: String): String {
     return when {
         clean.contains("malmortius") || clean.contains("fauces") -> "Usar contra composiciones con daño mágico pesado o asesinos AP de ráfaga (ej. Akali, Lux, Veigar) para activar un escudo protector salvavidas."
         clean.contains("ángel") || clean.contains("angel") || clean.contains("guardian") -> "Usar en el juego tardío o frente a composiciones con alto daño de dive para garantizar una segunda oportunidad en peleas de equipo decisivas."
-        clean.contains("corta") || clean.contains("morellonomicón") || clean.contains("morellonomicon") || clean.contains("recordatorio") || clean.contains("mortal") -> "Usar contra campeones con alta regeneración de salud, robo de vida o sanación continua (ej. Dr. Mundo, Soraka, Aatrox, Yuumi) para aplicar heridas graves."
+        clean.contains("corta") || clean.contains("morellonomicón") || clean.contains("morellonomicon") || clean.contains("recordatorio letal") || clean.contains("recordatorio mortal") -> "Usar contra campeones con alta regeneración de salud, robo de vida o sanación continua (ej. Dr. Mundo, Soraka, Aatrox, Yuumi) para aplicar heridas graves."
         clean.contains("espinas") || clean.contains("thornmail") -> "Usar frente a atacantes físicos constantes y duelistas con curaciones en línea para devolver daño y frenar su sostenimiento."
         clean.contains("mercurio") || clean.contains("trituradoras") || clean.contains("treads") -> "Usar frente a equipos con múltiples habilidades de control de masas pesado (aturdimientos, ralentizaciones, provocaciones) y magos de control (ej. Morgana, Lux, Ashe)."
         clean.contains("blindada") || clean.contains("avance") || clean.contains("steelcaps") -> "Usar contra tiradores enemigos (ADCs) y duelistas con alto daño físico constante basado en ataques básicos directos."
