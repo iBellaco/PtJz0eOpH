@@ -192,21 +192,21 @@ object ChampionRoleAdapter {
         val fallbackLegendaries = when (role) {
             LaneRole.SUPPORT -> when {
                 isAssassinsOrAdcSupport -> listOf(
-                    "Guadaña de la Niebla Negra", "Filo fantasmal de Youmuu", "Filoscuro de Draktharr",
+                    "Hoz espectral", "Filo fantasmal de Youmuu", "Filoscuro de Draktharr",
                     "Colmillo de serpiente", "Fauces de Malmortius", "Ángel de la guarda"
                 )
                 isTank -> listOf(
-                    "Escudo de reliquia", "Promesa de caballero", "Convergencia de Zeke",
+                    "Escudo reliquia", "Promesa de caballero", "Convergencia de Zeke",
                     "Velo del amanecer", "Malla de espinas", "Fuerza de la naturaleza", "Medallón de los Solari de Hierro"
                 )
                 else -> listOf(
-                    "Guadaña de la Niebla Negra", "Eco armónico", "Bastón de aguas fluidas",
+                    "Hoz espectral", "Eco armónico", "Bastón de aguas fluidas",
                     "Incensario ardiente", "Mandato imperial", "Bendición de Mikael", "Redención"
                 )
             }
             LaneRole.ADC -> listOf(
-                "Borde infinito", "Blaster magnético", "Saludos de Dominik",
-                "Sanguinario", "Recaudadora", "Bailarina fantasma", "Cañón de fuego rápido"
+                "Borde infinito", "Blaster magnético", "Recuerdos de Lord Dominik",
+                "Sanguinaria", "Recaudadora", "Bailarina fantasma", "Cañón de fuego rápido"
             )
             LaneRole.JUNGLE -> if (damageType == DamageType.MAGIC) {
                 listOf("Eco de Luden", "Diente de Nashor", "Orbe infinito", "Sombrero mortal de Rabadon", "Bastón del Vacío", "Creagrietas")
@@ -400,12 +400,12 @@ object ChampionRoleAdapter {
                 listOf("Fuerza de trinidad", "Recaudadora", "Borde infinito", "Saludos de Dominik", "La danza de la muerte", "Ángel de la guarda")
             }
             LaneRole.SUPPORT -> if (isAp) {
-                listOf("Guadaña de la Niebla Negra", "Eco armónico", "Incensario ardiente", "Bastón de aguas fluidas", "Mandato imperial", "Bendición de Mikael")
+                listOf("Hoz espectral", "Eco armónico", "Incensario ardiente", "Bastón de aguas fluidas", "Mandato imperial", "Bendición de Mikael")
             } else {
-                listOf("Escudo de reliquia", "Convergencia de Zeke", "Promesa de caballero", "Malla de espinas", "Fuerza de la naturaleza", "Medallón de los Solari de Hierro")
+                listOf("Escudo reliquia", "Convergencia de Zeke", "Promesa de caballero", "Malla de espinas", "Fuerza de la naturaleza", "Medallón de los Solari de Hierro")
             }
             LaneRole.ADC -> listOf(
-                "Borde infinito", "Blaster magnético", "Saludos de Dominik", "Sanguinario", "Recaudadora", "Ángel de la guarda"
+                "Filo Infinito", "Cañón de Fuego Rápido", "Recuerdos de Lord Dominik", "Sanguinaria", "Recaudadora", "Ángel de la guarda"
             )
             LaneRole.TOP -> if (isAp) {
                 listOf("Creagrietas", "Cetro de cristal de Rylai", "Tormento de Liandry", "Sombrero mortal de Rabadon", "Bastón del Vacío", "Morellonomicón")

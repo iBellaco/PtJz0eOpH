@@ -646,8 +646,14 @@ fun ChampionDetailSheet(
             // BUILDS TÁCTICAS (4 OPCIONES SEGÚN META Y CRITERIO COACH)
             // ==========================================
             val customBuilds by com.example.data.local.CustomChampionBuildsManager.customBuilds.collectAsStateWithLifecycle()
-            val championCustomBuilds = remember(customBuilds, champion.id) {
-                customBuilds.filter { it.championId.equals(champion.id, ignoreCase = true) }
+            val championCustomBuilds = remember(customBuilds, champion.id, selectedRole) {
+                val byChamp = customBuilds.filter { it.championId.equals(champion.id, ignoreCase = true) }
+                val byRole = byChamp.filter { rec ->
+                    rec.role.contains(selectedRole.displayName, ignoreCase = true) ||
+                    rec.role.contains(selectedRole.shortName, ignoreCase = true) ||
+                    (selectedRole != champion.primaryRole && rec.role.contains("Flex", ignoreCase = true))
+                }
+                if (byRole.isNotEmpty()) byRole else byChamp
             }
 
             val baseBuildOptions = roleProfile.buildOptions.ifEmpty {
@@ -672,17 +678,24 @@ fun ChampionDetailSheet(
 
             val buildOptionsList = remember(baseBuildOptions, championCustomBuilds) {
                 val customOptions = championCustomBuilds.mapIndexed { idx, rec ->
+                    val t2 = rec.bootsT2Item?.itemName?.ifBlank { null } ?: "Botas blindadas"
+                    val t3 = rec.bootsT3Item?.itemName?.ifBlank { null } ?: com.example.util.ChampionRoleAdapter.getTier3BootUpgrade(t2)
+                    val sitBoots = listOfNotNull(
+                        rec.situationalBootsT2Item?.itemName?.ifBlank { null },
+                        rec.situationalBootsT3Item?.itemName?.ifBlank { null }
+                    ).filter { !it.equals(t2, ignoreCase = true) && !it.equals(t3, ignoreCase = true) }
+
                     com.example.util.ChampionBuildOption(
                         optionNumber = 100 + idx,
                         title = rec.buildTitle,
-                        subtitle = "Creador: ${rec.creatorName}",
-                        source = "Catálogo Creador • ${rec.creatorName}",
-                        badge = "CREADOR",
-                        tacticalReason = "Build personalizada creada y verificada por el creador oficial ${rec.creatorName}." +
-                            if (rec.coreItemsWithDesc.isNotEmpty()) "\n\nObjetos Core:\n" + rec.coreItemsWithDesc.joinToString("\n") { "• ${it.itemName}: ${it.description}" } else "",
+                        subtitle = "Línea: ${rec.role} • Meta Soberano",
+                        source = "Coach Soberano • ${rec.creatorName}",
+                        badge = if (rec.role.contains("Flex", ignoreCase = true)) "FLEX PRO" else "META SOBERANO",
+                        tacticalReason = rec.coreItemsWithDesc.firstOrNull()?.description ?: "Build oficial optimizada para el meta actual de Wild Rift.",
                         items = rec.coreItemsWithDesc.map { it.itemName }.ifEmpty { rec.coreItems },
-                        bootBase = "Botas estándar",
-                        bootUpgrade = "Encantamiento adaptativo",
+                        bootBase = t2,
+                        bootUpgrade = t3,
+                        situationalBoots = sitBoots,
                         situationalItems = rec.situationalItemsWithDesc.map { it.itemName }.ifEmpty { rec.situationalItems },
                         runes = rec.coreRunes.map { it.runeName }.ifEmpty { listOf(rec.runes) },
                         spells = rec.coreSpells.map { it.spellName }.ifEmpty { rec.spells },
@@ -944,7 +957,7 @@ fun ChampionDetailSheet(
                                 }
                             val iconUrl = dbItem?.iconUrl ?: WildRiftItemsData.getItemIconByName(rawName)
                             val itemName = dbItem?.name?.let { tr(it) } ?: tr(rawName)
-                            val isResolved = iconUrl.isNotBlank() && iconUrl.startsWith("http")
+                            val isResolved = iconUrl.isNotBlank() && (iconUrl.startsWith("http") || iconUrl.startsWith("file:") || iconUrl.startsWith("android.resource:"))
                             val finalBorderColor = if (!isResolved) com.example.ui.theme.DangerRed else HextechGold
 
                             Column(
@@ -978,6 +991,51 @@ fun ChampionDetailSheet(
                                         modifier = Modifier.size(itemImageSize),
                                         shape = RoundedCornerShape(6.dp)
                                     )
+                                }
+                            }
+                        }
+                    }
+
+                    if (activeOption.coreItemsWithDesc.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                            border = androidx.compose.foundation.BorderStroke(0.8.dp, HextechCardBorder)
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Text(
+                                    text = tr("Picos de poder y consejos de Core Items:"),
+                                    color = HextechGold,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                activeOption.coreItemsWithDesc.forEach { entry ->
+                                    Spacer(modifier = Modifier.height(3.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                                            .border(0.5.dp, HextechGoldLight.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                    ) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text(
+                                                text = com.example.util.tr("• ${tr(entry.itemName)}:"),
+                                                color = HextechGold,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = tr(entry.description),
+                                                color = TextSecondary,
+                                                fontSize = 9.5.sp,
+                                                lineHeight = 13.sp
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1343,6 +1401,36 @@ fun ChampionDetailSheet(
                                 if (idx == 0) Spacer(modifier = Modifier.width(12.dp))
                             }
                         }
+
+                        val nonFlashWithDesc = activeOption.coreSpells.filter { !it.spellName.equals("Destello", ignoreCase = true) && it.description.isNotBlank() }
+                        if (nonFlashWithDesc.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            nonFlashWithDesc.forEach { sp ->
+                                Text(
+                                    text = com.example.util.tr("• ${tr(sp.spellName)}: ${tr(sp.description)}"),
+                                    color = TextSecondary,
+                                    fontSize = 8.5.sp,
+                                    lineHeight = 11.sp
+                                )
+                            }
+                        }
+                        if (activeOption.situationalSpells.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = tr("Situacionales:"),
+                                color = HextechCyan,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            activeOption.situationalSpells.forEach { sitSp ->
+                                Text(
+                                    text = com.example.util.tr("• ${tr(sitSp.spellName)}: ${tr(sitSp.description)}"),
+                                    color = TextSecondary,
+                                    fontSize = 8.5.sp,
+                                    lineHeight = 11.sp
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -1402,7 +1490,7 @@ fun ChampionDetailSheet(
                             val foundRune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(rName)
                                 ?: com.example.data.WildRiftRepository.runes.find { r -> r.name.equals(rName, ignoreCase = true) || rName.contains(r.name, ignoreCase = true) || r.name.contains(rName, ignoreCase = true) }
                             val iconUrl = foundRune?.iconUrl ?: com.example.data.WildRiftSpellsAndRunes.getRuneIconByName(rName)
-                            val isResolved = iconUrl.isNotBlank() && iconUrl.startsWith("http")
+                            val isResolved = iconUrl.isNotBlank() && (iconUrl.startsWith("http") || iconUrl.startsWith("file:") || iconUrl.startsWith("android.resource:"))
                             val finalRuneBorderColor = if (!isResolved) com.example.ui.theme.DangerRed else if (isKeystone) HextechGold else HextechCyan.copy(alpha = 0.6f)
 
                             Box(
