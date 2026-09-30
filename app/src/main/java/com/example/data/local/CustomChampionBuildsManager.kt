@@ -118,25 +118,50 @@ object CustomChampionBuildsManager {
         ensureAuthAndSync(appContext)
     }
 
+    private fun isBundledOfficialBuild(record: CustomChampionBuildRecord): Boolean {
+        return record.creatorName.contains("Coach IA", ignoreCase = true)
+    }
+
+    private fun officialBuildKey(record: CustomChampionBuildRecord): String {
+        return "${record.championId.trim().lowercase()}|${record.role.trim().lowercase()}"
+    }
+
+    /**
+     * Las builds oficiales incluidas en la app son la fuente canónica.
+     * Al cargar cachés anteriores, sustituimos cualquier versión oficial antigua por la
+     * versión actual y conservamos intactas las builds creadas por usuarios.
+     */
+    private fun reconcileWithOfficialDefaults(
+        context: Context,
+        incoming: List<CustomChampionBuildRecord>
+    ): List<CustomChampionBuildRecord> {
+        val defaults = getDefaultBuilds(context)
+            .distinctBy { officialBuildKey(it) }
+
+        val userCreated = incoming
+            .filterNot { isBundledOfficialBuild(it) }
+            .distinctBy { it.id }
+
+        return defaults + userCreated
+    }
+
     private fun loadFromLocalStorage(context: Context) {
         val defaults = getDefaultBuilds(context)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val rawJson = prefs.getString(KEY_BUILDS_JSON, null)
+
         if (!rawJson.isNullOrBlank()) {
             try {
-                val list = json.decodeFromString<List<CustomChampionBuildRecord>>(rawJson)
-                if (list.size >= defaults.size && list.any { it.creatorName.contains("Coach", ignoreCase = true) }) {
-                    _customBuilds.value = list
-                    return
-                } else if (list.isNotEmpty()) {
-                    val userCreated = list.filter { !it.creatorName.contains("Coach", ignoreCase = true) && !it.creatorIsAdmin }
-                    val merged = defaults + userCreated
-                    _customBuilds.value = merged
-                    saveToLocalStorage(context, merged)
+                val cached = json.decodeFromString<List<CustomChampionBuildRecord>>(rawJson)
+                if (cached.isNotEmpty()) {
+                    val reconciled = reconcileWithOfficialDefaults(context, cached)
+                    _customBuilds.value = reconciled
+                    saveToLocalStorage(context, reconciled)
                     return
                 }
             } catch (_: Exception) {}
         }
+
         _customBuilds.value = defaults
         saveToLocalStorage(context, defaults)
     }
@@ -256,8 +281,9 @@ object CustomChampionBuildsManager {
             if (!rawJson.isNullOrBlank()) {
                 val parsedList = json.decodeFromString<List<CustomChampionBuildRecord>>(rawJson)
                 if (parsedList.isNotEmpty()) {
-                    _customBuilds.value = parsedList
-                    saveToLocalStorage(context, parsedList)
+                    val reconciled = reconcileWithOfficialDefaults(context, parsedList)
+                    _customBuilds.value = reconciled
+                    saveToLocalStorage(context, reconciled)
                     return
                 }
             }
@@ -275,8 +301,9 @@ object CustomChampionBuildsManager {
                     } catch (_: Exception) {}
                 }
                 if (parsedList.isNotEmpty()) {
-                    _customBuilds.value = parsedList
-                    saveToLocalStorage(context, parsedList)
+                    val reconciled = reconcileWithOfficialDefaults(context, parsedList)
+                    _customBuilds.value = reconciled
+                    saveToLocalStorage(context, reconciled)
                 }
             }
         } catch (e: Exception) {
