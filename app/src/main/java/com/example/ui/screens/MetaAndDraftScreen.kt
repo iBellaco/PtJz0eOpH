@@ -5733,8 +5733,9 @@ fun TierSelectionPanel(
                         horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
                     ) {
                         val regionItems = listOf(
+                            Triple("CN", tr("🇨🇳 China"), tr("Meta CN")),
                             Triple("GLOBAL", tr("🌐 Global"), tr("Scraping")),
-                            Triple("CN", tr("🇨🇳 China"), tr("Meta CN"))
+                            Triple("NA", tr("🇺🇸 NA"), tr("Meta NA"))
                         )
                         regionItems.forEach { (regionId, label, sub) ->
                             val isSelected = currentRegion == regionId
