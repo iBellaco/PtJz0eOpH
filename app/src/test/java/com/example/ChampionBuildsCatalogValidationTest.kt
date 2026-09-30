@@ -97,14 +97,26 @@ class ChampionBuildsCatalogValidationTest {
             assertTrue("$prefix Tier 2 boots need advice", t2.description.isNotBlank())
             assertTrue("$prefix Tier 3 boots need advice", t3.description.isNotBlank())
 
-            val situationalT2 = assertNotNullAndGet("$prefix must have situational Tier 2 boots", build.situationalBootsT2Item)
-            val situationalT3 = assertNotNullAndGet("$prefix must have situational Tier 3 boots", build.situationalBootsT3Item)
-            assertTrue("$prefix situational Tier 2 boots must exist in catalog", situationalT2.itemName in validItemNames)
-            assertTrue("$prefix situational Tier 3 boots must exist in catalog", situationalT3.itemName in validItemNames)
-            assertEquals("$prefix situational Tier 3 boots must be the exact evolution", bootPairs[situationalT2.itemName], situationalT3.itemName)
-            assertFalse("$prefix situational boots must differ from primary boots", situationalT2.itemName.equals(t2.itemName, ignoreCase = true))
-            assertTrue("$prefix situational Tier 2 boots need advice", situationalT2.description.isNotBlank())
-            assertTrue("$prefix situational Tier 3 boots need advice", situationalT3.description.isNotBlank())
+            val champion = champions.first { it.id == build.championId }
+            val role = com.example.model.LaneRole.entries.first { it.displayName == build.role.substringBefore(" (") }
+            val expectedBoots = com.example.util.BuildChoiceRules.boots(t2.itemName, champion.damageType,
+                champion.isFrontline, champion.isRanged, role, champion.id)
+            assertEquals("$prefix must follow conditional boot recommendations", expectedBoots.singleOrNull()?.name,
+                build.situationalBootsT2Item?.itemName)
+            assertEquals("$prefix must explain when to change boots", expectedBoots.singleOrNull()?.reason,
+                build.situationalBootsT2Item?.description)
+
+            val situationalT2 = build.situationalBootsT2Item
+            val situationalT3 = build.situationalBootsT3Item
+            assertEquals("$prefix optional boots must form a complete pair", situationalT2 == null, situationalT3 == null)
+            if (situationalT2 != null && situationalT3 != null) {
+                assertTrue("$prefix situational Tier 2 boots must exist in catalog", situationalT2.itemName in validItemNames)
+                assertTrue("$prefix situational Tier 3 boots must exist in catalog", situationalT3.itemName in validItemNames)
+                assertEquals("$prefix situational Tier 3 boots must be the exact evolution", bootPairs[situationalT2.itemName], situationalT3.itemName)
+                assertFalse("$prefix situational boots must differ from primary boots", situationalT2.itemName.equals(t2.itemName, ignoreCase = true))
+                assertTrue("$prefix situational Tier 2 boots need advice", situationalT2.description.isNotBlank())
+                assertTrue("$prefix situational Tier 3 boots need advice", situationalT3.description.isNotBlank())
+            }
 
             assertEquals("$prefix must have exactly 2 summoner spells", 2, build.spells.size)
             assertEquals("$prefix spells must be distinct", 2, build.spells.map { it.lowercase() }.distinct().size)
@@ -127,6 +139,16 @@ class ChampionBuildsCatalogValidationTest {
             val runeNames = build.coreRunes.map { it.runeName }
             assertEquals("$prefix rune names must be unique", 5, runeNames.distinct().size)
             assertEquals("$prefix runes string must mirror detailed runes", runeNames, build.runes.split(",").map { it.trim() })
+
+            val runePage = runeNames.map { name ->
+                com.example.util.BuildChoiceRules.RuneChoice(name, validRunesMap[name]?.category.orEmpty())
+            }
+            assertTrue("$prefix must keep the first three secondaries in one branch", com.example.util.BuildChoiceRules.validRunePage(runePage))
+            val alternativeChoices = build.situationalRunes.map { entry ->
+                com.example.util.BuildChoiceRules.RuneChoice(entry.runeName, validRunesMap[entry.runeName]?.category.orEmpty())
+            }
+            assertEquals("$prefix alternatives must have valid substitution groups", alternativeChoices.size,
+                com.example.util.BuildChoiceRules.runeAlternatives(runePage, alternativeChoices).size)
 
             val keystone = validRunesMap[runeNames[0]]
             assertNotNull("$prefix keystone must exist in local catalog", keystone)

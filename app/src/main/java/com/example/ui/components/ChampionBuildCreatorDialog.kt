@@ -1299,6 +1299,20 @@ fun ChampionBuildCreatorDialog(
                             }
 
                             val allCoreRunes = listOfNotNull(coreKeystone) + coreSecondaryRunes
+                            fun runeChoice(name: String): com.example.util.BuildChoiceRules.RuneChoice {
+                                val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(name)
+                                return com.example.util.BuildChoiceRules.RuneChoice(rune?.name ?: name, rune?.category.orEmpty())
+                            }
+                            val runePage = allCoreRunes.map { runeChoice(it.name) }
+                            if (!com.example.util.BuildChoiceRules.validRunePage(runePage)) {
+                                Toast.makeText(context, com.example.util.appTr("Las tres primeras secundarias deben ser de la misma rama y la cuarta de otra rama"), Toast.LENGTH_LONG).show()
+                                return@Button
+                            }
+                            val validAlternatives = com.example.util.BuildChoiceRules.runeAlternatives(runePage, situationalRunes.map { runeChoice(it.name) })
+                            if (validAlternatives.size != situationalRunes.size) {
+                                Toast.makeText(context, com.example.util.appTr("Las runas situacionales deben sustituir secundarias y no repetir runas principales"), Toast.LENGTH_LONG).show()
+                                return@Button
+                            }
                             val record = CustomChampionBuildRecord(
                                 id = existingRecord?.id ?: java.util.UUID.randomUUID().toString(),
                                 championId = champ.id,
@@ -1591,7 +1605,17 @@ fun ChampionBuildCreatorDialog(
                              val alreadyKeystone = coreKeystone?.name?.equals(rune.name, ignoreCase = true) == true
                              val alreadySecondary = coreSecondaryRunes.any { it.name.equals(rune.name, ignoreCase = true) }
                              val alreadySituational = situationalRunes.any { it.name.equals(rune.name, ignoreCase = true) }
-                             !alreadyKeystone && !alreadySecondary && !alreadySituational
+                             val primaryBranch = coreSecondaryRunes.firstOrNull()?.let {
+                                 com.example.data.WildRiftSpellsAndRunes.getRuneByName(it.name)?.category
+                             }
+                             val allowedBranch = when {
+                                 showRunePickerForKeystone -> rune.category == "Clave"
+                                 rune.category == "Clave" -> false
+                                 showRunePickerForSecondary && coreSecondaryRunes.size in 1..2 -> rune.category == primaryBranch
+                                 showRunePickerForSecondary && coreSecondaryRunes.size == 3 -> rune.category != primaryBranch
+                                 else -> true
+                             }
+                             allowedBranch && !alreadyKeystone && !alreadySecondary && !alreadySituational
                          }
                          pool.sortedWith(compareBy<com.example.model.RuneItem> { it.category }.thenBy { it.name })
                      }

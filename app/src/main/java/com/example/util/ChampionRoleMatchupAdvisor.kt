@@ -179,10 +179,11 @@ object ChampionRoleMatchupAdvisor {
             counters = listOf("Zed", "Yasuo", "Akali", "Ahri", "Akshan", "Annie", "Aurelion Sol", "Aurora", "Bardo", "Brand"),
             synergies = listOf("Jarvan IV", "Vi", "Amumu", "Lee Sin", "Orianna", "Galio", "Yasuo", "Malphite", "Nautilus", "Leona")
         ),
+        // References: WildRiftFire 7.3a, WildRiftCounter and WildPick (see docs/build-choices.md).
         MatchupKey("darius", LaneRole.TOP) to MatchupRoleResult(
-            advantages = listOf("Sion", "Garen", "Sett", "Yone", "Yasuo", "Xin Zhao", "Wukong", "Warwick", "Volibear", "Vladimir"),
-            counters = listOf("Vayne", "Teemo", "Fiora", "Aatrox", "Akali", "Akshan", "Alistar", "Ambessa", "Aurelion Sol", "Aurora"),
-            synergies = listOf("Jarvan IV", "Vi", "Lee Sin", "Orianna", "Galio", "Yasuo", "Malphite", "Nautilus", "Leona", "Thresh")
+            advantages = listOf("Garen", "Renekton", "Yasuo", "Akali", "Sion", "Fiora"),
+            counters = listOf("Dr. Mundo", "Malphite", "Ornn", "Vayne", "Kayle", "Jayce", "Urgot", "Teemo"),
+            synergies = listOf("Lillia", "Twisted Fate", "Thresh", "Lee Sin", "Jarvan IV", "Orianna", "Galio", "Yasuo", "Nautilus", "Leona")
         ),
         MatchupKey("diana", LaneRole.JUNGLE) to MatchupRoleResult(
             advantages = listOf("Amumu", "Shyvana", "Maestro Yi", "Zyra", "Zed", "Xin Zhao", "Wukong", "Warwick", "Volibear", "Viego"),
@@ -1216,6 +1217,27 @@ object ChampionRoleMatchupAdvisor {
         ),
     )
 
+    private fun extendKnownMatchups(champion: Champion, role: LaneRole, known: MatchupRoleResult): MatchupRoleResult {
+        val catalog = com.example.data.WildRiftRepository.baseChampionsList
+        if (catalog.isEmpty()) return known
+        fun matchesSelf(name: String) = name.equals(champion.name, true) || name.equals(champion.id, true)
+        fun resolve(name: String) = catalog.firstOrNull { it.name.equals(name, true) || it.id.equals(name, true) }
+        fun sameLane(candidate: Champion) = candidate.primaryRole == role || role in candidate.secondaryRoles
+        fun clean(names: List<String>, rivals: Boolean) = names.mapNotNull { resolve(it) }
+            .filterNot { it.id.equals(champion.id, true) }
+            .filter { !rivals || sameLane(it) }.map { it.name }.distinct().take(12)
+        val primaryRole = role == champion.primaryRole
+        val advantages = clean(known.advantages +
+            (if (primaryRole) champion.advantageAgainst else emptyList()) +
+            catalog.filter { it.primaryRole == role && it.counteredBy.any(::matchesSelf) }.map { it.name }, true)
+        val counters = clean(known.counters +
+            (if (primaryRole) champion.counteredBy else emptyList()) +
+            catalog.filter { it.primaryRole == role && it.advantageAgainst.any(::matchesSelf) }.map { it.name }, true)
+        val synergies = clean(known.synergies + champion.synergies +
+            catalog.filter { it.synergies.any(::matchesSelf) }.map { it.name }, false)
+        return MatchupRoleResult(advantages.filterNot { it in counters }, counters, synergies)
+    }
+
     fun getMatchups(champion: Champion, role: LaneRole): MatchupRoleResult {
         val cleanId = champion.id.lowercase().replace("-", "_").replace(" ", "_").replace("'", "")
         val nameId = champion.name.lowercase().replace("-", "_").replace(" ", "_").replace("'", "")
@@ -1226,7 +1248,7 @@ object ChampionRoleMatchupAdvisor {
             ?: matchupDatabase[MatchupKey(nameId, role)]
             ?: matchupDatabase[MatchupKey(ddragon, role)]
         if (found != null) {
-            return found
+            return extendKnownMatchups(champion, role, found)
         }
 
         // Try primary role if role is same as primary
@@ -1235,12 +1257,12 @@ object ChampionRoleMatchupAdvisor {
                 ?: matchupDatabase[MatchupKey(champion.id.lowercase().trim(), champion.primaryRole)]
                 ?: matchupDatabase[MatchupKey(nameId, champion.primaryRole)]
             if (primaryMatch != null) {
-                return primaryMatch
+                return extendKnownMatchups(champion, role, primaryMatch)
             }
         }
 
-                // Dynamic Role-Strict Fallback (10 curated champions for Pro/Premium tier)
-        return when (role) {
+                // Role-specific local references; never pad a list just to reach the subscription limit.
+        val fallback = when (role) {
             LaneRole.TOP -> MatchupRoleResult(
                 advantages = listOf("Sion", "Dr. Mundo", "Shen", "Cho'Gath", "Malphite", "Nasus", "Garen", "Teemo", "Kayle", "Urgot"),
                 counters = listOf("Fiora", "Irelia", "Camille", "Jax", "Riven", "Renekton", "Kled", "Vayne", "Olaf", "Warwick"),
@@ -1267,5 +1289,6 @@ object ChampionRoleMatchupAdvisor {
                 synergies = listOf("Samira", "Jinx", "Kai'Sa", "Draven", "Lucian", "Vayne", "Varus", "Tristana", "Miss Fortune", "Kalista")
             )
         }
+        return extendKnownMatchups(champion, role, fallback)
     }
 }

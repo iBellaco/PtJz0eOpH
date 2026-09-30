@@ -1,5 +1,9 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.platform.testTag
+import com.example.util.BuildChoiceRules
+
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
 import com.example.utils.parseHtmlColorToAnnotatedString
@@ -701,7 +705,7 @@ fun ChampionDetailSheet(
                         bootUpgrade = t3,
                         situationalBoots = sitBoots,
                         situationalItems = rec.situationalItemsWithDesc.map { it.itemName }.ifEmpty { rec.situationalItems },
-                        runes = rec.coreRunes.map { it.runeName }.ifEmpty { listOf(rec.runes) },
+                        runes = rec.coreRunes.map { it.runeName }.ifEmpty { rec.runes.split(",").map { it.trim() }.filter { it.isNotBlank() } },
                         spells = rec.coreSpells.map { it.spellName }.ifEmpty { rec.spells },
                         spellsIcons = rec.coreSpells.map { it.iconUrl },
                         coreItemsWithDesc = rec.coreItemsWithDesc,
@@ -710,7 +714,9 @@ fun ChampionDetailSheet(
                         situationalRunes = rec.situationalRunes,
                         coreSpells = rec.coreSpells,
                         situationalSpells = rec.situationalSpells,
-                        gameplayVideoUri = rec.gameplayVideoUri
+                        gameplayVideoUri = rec.gameplayVideoUri,
+                        situationalBootReasons = listOfNotNull(rec.situationalBootsT2Item)
+                            .associate { it.itemName to it.description }
                     )
                 }
                 listOf(customOptions.firstOrNull() ?: baseBuildOptions.first())
@@ -1189,7 +1195,8 @@ fun ChampionDetailSheet(
             // BOTAS Y MEJORAS + HECHIZOS (DOS COLUMNAS)
             // ==========================================
             var selectedBootBaseOverride by remember(activeOption) { mutableStateOf<String?>(null) }
-            val currentBootBase = selectedBootBaseOverride ?: activeOption.bootBase.ifBlank { "Botas blindadas" }
+            val primaryBootBase = activeOption.bootBase.ifBlank { "Botas blindadas" }
+            val currentBootBase = selectedBootBaseOverride ?: primaryBootBase
             val currentBootUpgrade = if (selectedBootBaseOverride != null) {
                 ChampionRoleAdapter.getTier3BootUpgrade(currentBootBase)
             } else if (activeOption.bootUpgrade.isNotBlank() && activeOption.bootUpgrade.equals(ChampionRoleAdapter.getTier3BootUpgrade(activeOption.bootBase), ignoreCase = true)) {
@@ -1239,7 +1246,10 @@ fun ChampionDetailSheet(
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(HextechSurfaceVariant)
                                     .border(1.dp, HextechGold, RoundedCornerShape(8.dp))
-                                    .clickable { if (dbBoot1 != null) itemForDetail = dbBoot1 }
+                                    .clickable {
+                                        if (selectedBootBaseOverride != null) selectedBootBaseOverride = null
+                                        else if (dbBoot1 != null) itemForDetail = dbBoot1
+                                    }
                             ) {
                                 AppAssetImage(
                                     url = boot1Icon,
@@ -1292,7 +1302,7 @@ fun ChampionDetailSheet(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tr("Botas Situacionales (Nivel 2):"),
+                                text = tr("Seleccionar botas (Nivel 2):"),
                                 color = TextSecondary,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Medium
@@ -1303,7 +1313,7 @@ fun ChampionDetailSheet(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                situationalBootCandidates.forEach { sitBootName ->
+                                (listOf(primaryBootBase) + situationalBootCandidates).forEach { sitBootName ->
                                     val isSelected = currentBootBase.equals(sitBootName, ignoreCase = true)
                                     val dbSitBoot = com.example.data.WildRiftRepository.items.find {
                                         it.name.equals(sitBootName, ignoreCase = true)
@@ -1321,7 +1331,10 @@ fun ChampionDetailSheet(
                                                 color = if (isSelected) HextechCyan else HextechCardBorder,
                                                 shape = RoundedCornerShape(6.dp)
                                             )
-                                            .clickable { selectedBootBaseOverride = sitBootName }
+                                            .testTag("build_boot_${sitBootName}")
+                                            .selectable(selected = isSelected, onClick = {
+                                                selectedBootBaseOverride = sitBootName.takeUnless { it.equals(primaryBootBase, true) }
+                                            })
                                     ) {
                                         AppAssetImage(
                                             url = sitIcon,
@@ -1345,7 +1358,10 @@ fun ChampionDetailSheet(
 
                             situationalBootCandidates.forEach { sitBootName ->
                                 val sitBootUpgrade = ChampionRoleAdapter.getTier3BootUpgrade(sitBootName)
-                                val t2Advice = com.example.data.WildRiftItemsData.list
+                                val t2Advice = activeOption.situationalBootReasons[sitBootName]?.takeIf { it.isNotBlank() }
+                                    ?: BuildChoiceRules.boots(primaryBootBase, champion.damageType, champion.isFrontline,
+                                        champion.isRanged, selectedRole, champion.id).firstOrNull { it.name.equals(sitBootName, true) }?.reason
+                                    ?: com.example.data.WildRiftItemsData.list
                                     .firstOrNull { it.name.equals(sitBootName, ignoreCase = true) }
                                     ?.coachTip
                                     .orEmpty()
@@ -1439,35 +1455,7 @@ fun ChampionDetailSheet(
                             }
                         }
 
-                        val nonFlashWithDesc = activeOption.coreSpells.filter { !it.spellName.equals("Destello", ignoreCase = true) && it.description.isNotBlank() }
-                        if (nonFlashWithDesc.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(6.dp))
-                            nonFlashWithDesc.forEach { sp ->
-                                Text(
-                                    text = com.example.util.tr("• ${tr(sp.spellName)}: ${tr(sp.description)}"),
-                                    color = TextSecondary,
-                                    fontSize = 8.5.sp,
-                                    lineHeight = 11.sp
-                                )
-                            }
-                        }
-                        if (activeOption.situationalSpells.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = tr("Situacionales:"),
-                                color = HextechCyan,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            activeOption.situationalSpells.forEach { sitSp ->
-                                Text(
-                                    text = com.example.util.tr("• ${tr(sitSp.spellName)}: ${tr(sitSp.description)}"),
-                                    color = TextSecondary,
-                                    fontSize = 8.5.sp,
-                                    lineHeight = 11.sp
-                                )
-                            }
-                        }
+
                     }
                 }
             }
@@ -1562,9 +1550,20 @@ fun ChampionDetailSheet(
                         }
                     }
 
-                    val nonDuplicateSitRunes = activeOption.situationalRunes.filter { sr ->
-                        !runesForActiveOption.any { mr -> mr.equals(sr.runeName, ignoreCase = true) }
-                    }
+                    val validSitRunes = BuildChoiceRules.runeAlternatives(
+                        runesForActiveOption.map { name ->
+                            val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(name)
+                            BuildChoiceRules.RuneChoice(rune?.name ?: name, rune?.category.orEmpty())
+                        },
+                        activeOption.situationalRunes.map { entry ->
+                            val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(entry.runeName)
+                            BuildChoiceRules.RuneChoice(rune?.name ?: entry.runeName, rune?.category.orEmpty())
+                        }
+                    )
+                    val nonDuplicateSitRunes = activeOption.situationalRunes.filter { entry ->
+                        val canonical = com.example.data.WildRiftSpellsAndRunes.getRuneByName(entry.runeName)?.name ?: entry.runeName
+                        validSitRunes.any { it.rune.name.equals(canonical, true) }
+                    }.distinctBy { it.runeName.lowercase() }
                     if (nonDuplicateSitRunes.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Box(
@@ -1643,6 +1642,13 @@ fun ChampionDetailSheet(
                                             fontSize = 10.5.sp,
                                             fontWeight = FontWeight.Bold
                                         )
+                                        val canonical = foundRune?.name ?: rName
+                                        val alternative = validSitRunes.firstOrNull { it.rune.name.equals(canonical, true) }
+                                        Text(
+                                            text = tr(if (alternative?.secondarySlot == 4) "Alternativa para la cuarta secundaria" else "Alternativa de la misma rama para las tres secundarias"),
+                                            color = HextechGold,
+                                            fontSize = 9.sp
+                                        )
                                         if (sRune.description.isNotBlank()) {
                                             Text(
                                                 text = tr(sRune.description),
@@ -1666,7 +1672,7 @@ fun ChampionDetailSheet(
             // ==========================================
             val isUserPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
             val isPremium = isUserPremium || com.example.util.SubscriptionManager.isPremium.value || com.example.util.SubscriptionManager.userRole.value == "admin"
-            val maxMatchupCount = 3
+            val maxMatchupCount = BuildChoiceRules.matchupLimit(isPremium)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1701,7 +1707,7 @@ fun ChampionDetailSheet(
                             )
                             if (!isPremium) {
                                 Text(
-                                    text = "PRO 10",
+                                    text = "PRO 12",
                                     color = HextechGold,
                                     fontSize = 7.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -1799,7 +1805,7 @@ fun ChampionDetailSheet(
                             )
                             if (!isPremium) {
                                 Text(
-                                    text = "PRO 10",
+                                    text = "PRO 12",
                                     color = HextechGold,
                                     fontSize = 7.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -1906,7 +1912,7 @@ fun ChampionDetailSheet(
                             )
                             if (!isPremium) {
                                 Text(
-                                    text = "PRO 10",
+                                    text = "PRO 12",
                                     color = HextechGold,
                                     fontSize = 7.5.sp,
                                     fontWeight = FontWeight.Bold
