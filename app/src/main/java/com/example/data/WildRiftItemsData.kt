@@ -320,6 +320,7 @@ WildRiftItem(
             passiveEn = "Bitter Cold: Damaging abilities and empowered attacks slow enemies below 60% Health by 30% for 1s.",
             coachTip = "Priorízalo cuando necesites penetración de armadura y control para mantener a distancia o perseguir objetivos. Sus habilidades dañinas y ataques potenciados ralentizan un 30% durante 1 s a enemigos con menos del 60% de vida. No aplica Heridas Graves; para reducir curación necesitas un objeto del catálogo que sí tenga ese efecto.",
             coachTipEn = "Prioritize it when you need armor penetration and control to kite or chase targets. Damaging abilities and empowered attacks slow enemies below 60% Health by 30% for 1s. It does not apply Grievous Wounds; use a catalog item that explicitly has that effect when anti-heal is needed.",
+            coachTipPt = "Priorize quando precisar de penetração de armadura e controle para manter distância ou perseguir alvos. Habilidades que causam dano e ataques fortalecidos reduzem em 30% a velocidade de inimigos com menos de 60% de Vida durante 1 s. Não aplica Feridas Dolorosas; para reduzir cura, use um item do catálogo que tenha esse efeito explicitamente.",
             iconUrl = "file:///android_asset/offline_images/672c2f3191c28c8f729dd0b4a67d17b8.webp"
         ),
 WildRiftItem(
@@ -1548,6 +1549,7 @@ WildRiftItem(
             passiveEn = "Blessed Blade: Attacks restore 10 Health on hit.",
             coachTip = "Elígelas en tiradores y duelistas que escalan con velocidad de ataque. Hoja bendita restaura 10 de vida por cada ataque que impacta; es curación plana al golpear, no robo de vida porcentual.",
             coachTipEn = "Choose them on marksmen and duelists that scale with attack speed. Blessed Blade restores 10 Health whenever an attack hits; this is flat on-hit healing, not percentage life steal.",
+            coachTipPt = "Escolha para atiradores e duelistas que escalam com Velocidade de Ataque. Lâmina Abençoada restaura 10 de Vida a cada ataque que acerta; é cura fixa ao atingir, não roubo de vida percentual.",
             iconUrl = "file:///android_asset/offline_images/8556456bfeb2b62e7a7b055721646ad8.webp"
         ),
 WildRiftItem(

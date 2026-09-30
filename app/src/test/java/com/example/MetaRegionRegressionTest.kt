@@ -56,7 +56,8 @@ class MetaRegionRegressionTest {
         assertEquals(china, WildRiftRepository.champions.toList())
         WildRiftRepository.selectMetaRegion("GLOBAL")
         assertEquals("S+", WildRiftRepository.champions.first().tier)
-        assertEquals(0.0, WildRiftRepository.champions.first().winrate, 0.0)
+        assertEquals(baseline.first().winrate, WildRiftRepository.champions.first().winrate, 0.0)
+        assertEquals(baseline.first().winrateDelta, WildRiftRepository.champions.first().winrateDelta, 0.0)
     }
     @Test fun `late Chinese response cannot replace a selected Global list`() {
         val baseline = WildRiftRepository.champions.toList()
