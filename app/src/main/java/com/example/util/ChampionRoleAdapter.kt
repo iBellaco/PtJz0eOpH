@@ -29,7 +29,8 @@ data class ChampionBuildOption(
     val situationalRunes: List<com.example.data.local.RuneBuildEntry> = emptyList(),
     val coreSpells: List<com.example.data.local.SpellBuildEntry> = emptyList(),
     val situationalSpells: List<com.example.data.local.SpellBuildEntry> = emptyList(),
-    val gameplayVideoUri: String? = null
+    val gameplayVideoUri: String? = null,
+    val situationalBootReasons: Map<String, String> = emptyMap()
 )
 
 data class ChampionRoleProfile(
@@ -153,17 +154,10 @@ object ChampionRoleAdapter {
         damageType: DamageType,
         isTank: Boolean,
         isRanged: Boolean,
-        role: LaneRole
+        role: LaneRole,
+        championId: String = ""
     ): List<String> {
-        val pool = when {
-            role == LaneRole.SUPPORT -> if (isTank) listOf("Botas de mercurio", "Botas jonias de la lucidez", "Botas blindadas") else listOf("Botas blindadas", "Botas de mercurio", "Botas jonias de la lucidez")
-            role == LaneRole.ADC -> listOf("Grebas codiciosas", "Botas blindadas", "Botas de mercurio", "Grebas de berserker")
-            role == LaneRole.JUNGLE && damageType == DamageType.PHYSICAL -> listOf("Grebas codiciosas", "Botas blindadas", "Botas de mercurio", "Botas dinámicas")
-            damageType == DamageType.PHYSICAL -> listOf("Grebas codiciosas", "Botas blindadas", "Botas de mercurio", "Botas dinámicas")
-            damageType == DamageType.MAGIC -> listOf("Botas de maná", "Botas jonias de la lucidez", "Botas de mercurio", "Botas blindadas")
-            else -> listOf("Botas de mercurio", "Botas blindadas", "Grebas codiciosas")
-        }
-        return pool.filter { !it.equals(primaryBoot, ignoreCase = true) }.distinct()
+        return BuildChoiceRules.boots(primaryBoot, damageType, isTank, isRanged, role, championId).map { it.name }
     }
 
     fun generate8ItemBuild(
@@ -651,7 +645,8 @@ object ChampionRoleAdapter {
 
             val bBootBase = if (b.bootBase.isNotBlank()) b.bootBase else defaultBootBase
             val bBootUpgrade = if (b.bootUpgrade.isNotBlank()) b.bootUpgrade else getTier3BootUpgrade(bBootBase)
-            val bSituationalBoots = (if (b.situationalBoots.isNotEmpty()) b.situationalBoots else getSituationalBoots(bBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role)).filter { !it.equals(bBootBase, ignoreCase = true) }.distinct()
+            val bSituationalBoots = if (b.situationalBoots.isEmpty()) emptyList() else
+                getSituationalBoots(bBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role, champ.id)
 
             val rawSitRunes = if (opt2Runes.isNotEmpty() && opt2Runes != resolvedRunes) {
                 opt2Runes
@@ -696,7 +691,7 @@ object ChampionRoleAdapter {
 
         val resolvedSpells1 = ensureUniqueSpells(defaultSpells, role)
         val resolvedSpellsIcons1 = resolvedSpells1.map { WildRiftSpellsAndRunes.getSpellIconByName(it) }
-        val defaultSituationalBoots = getSituationalBoots(defaultBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role)
+        val defaultSituationalBoots = getSituationalBoots(defaultBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role, champ.id)
         val fallbackRunes = opt1Runes.ifEmpty { champ.recommendedRunes.split(",").map { it.trim() }.filter { it.isNotBlank() } }
         val rawFallbackSitRunes = if (opt2Runes.isNotEmpty() && opt2Runes != fallbackRunes) opt2Runes else emptyList()
         val fallbackSitRunes: List<com.example.data.local.RuneBuildEntry> = rawFallbackSitRunes

@@ -8878,5 +8878,15 @@
   "TIER D / OTROS ({0})": "TIER D / OUTROS ({0})",
   "Copiar estadísticas": "Copiar estatísticas",
   "Estadísticas copiadas al portapapeles": "Estatísticas copiadas para a área de transferência",
-  "Slot rival esperando selección (Jugador {0})": "Slot adversário aguardando seleção (Jogador {0})"
+  "Slot rival esperando selección (Jugador {0})": "Slot adversário aguardando seleção (Jogador {0})",
+  "Seleccionar botas (Nivel 2):": "Selecionar botas (Nível 2):",
+  "Alternativa para la cuarta secundaria": "Alternativa para a quarta runa secundária",
+  "Alternativa de la misma rama para las tres secundarias": "Alternativa da mesma árvore para as três runas secundárias",
+  "Las tres primeras secundarias deben ser de la misma rama y la cuarta de otra rama": "As três primeiras runas secundárias devem ser da mesma árvore e a quarta de outra árvore",
+  "Las runas situacionales deben sustituir secundarias y no repetir runas principales": "As runas situacionais devem substituir runas secundárias sem repetir as runas principais",
+  "Contra daño mágico y controles de masas que te impiden mantenerte en la primera línea.": "Contra dano mágico e controles de grupo que impedem você de permanecer na linha de frente.",
+  "Contra tiradores y duelistas cuyo daño depende de ataques básicos.": "Contra atiradores e duelistas cujo dano depende de ataques básicos.",
+  "Si necesitas lanzar escudos, curaciones y controles con más frecuencia.": "Se você precisa usar escudos, curas e controles com mais frequência.",
+  "Si el rival de línea depende de ataques básicos y necesitas sobrevivir a sus intercambios.": "Se o adversário de rota depende de ataques básicos e você precisa sobreviver às trocas.",
+  "Si priorizas más rotaciones de habilidades y hechizos sobre el daño de una sola ráfaga.": "Se você prioriza mais rotações de habilidades e feitiços em vez do dano de uma única explosão."
 }
