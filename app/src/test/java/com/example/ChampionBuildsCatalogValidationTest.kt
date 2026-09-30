@@ -3,6 +3,7 @@ package com.example
 import com.example.data.WildRiftItemsData
 import com.example.data.WildRiftSpellsAndRunes
 import com.example.data.local.CustomChampionBuildRecord
+import com.example.model.Champion
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -16,104 +17,148 @@ class ChampionBuildsCatalogValidationTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
-    fun `validate all 142 champions have official builds conforming to rules`() {
-        val file = File("src/main/assets/champions_creator_builds.json")
-        assertTrue("champions_creator_builds.json file must exist", file.exists())
+    fun `validate every champion lane build one by one against the local catalog`() {
+        val buildsFile = File("src/main/assets/champions_creator_builds.json")
+        assertTrue("champions_creator_builds.json file must exist", buildsFile.exists())
 
-        val raw = file.readText()
-        val builds = json.decodeFromString<List<CustomChampionBuildRecord>>(raw)
+        val builds = json.decodeFromString<List<CustomChampionBuildRecord>>(buildsFile.readText())
+        val champions = listOf(
+            File("src/main/res/raw/champions_part1.json"),
+            File("src/main/res/raw/champions_part2.json")
+        ).flatMap { file ->
+            assertTrue("Champion catalog file must exist: ${file.path}", file.exists())
+            json.decodeFromString<List<Champion>>(file.readText())
+        }
 
-        assertTrue("Must have at least 142 builds", builds.size >= 142)
+        assertEquals("Champion catalog must contain exactly 142 champions", 142, champions.size)
+        assertEquals("Official build catalog must contain exactly 300 lane builds", 300, builds.size)
+        assertEquals("All 142 champions must have official builds", 142, builds.map { it.championId }.distinct().size)
 
-        val uniqueChampions = builds.map { it.championId }.distinct()
-        assertEquals("Total champions with builds must be exactly 142", 142, uniqueChampions.size)
+        val expectedBuildKeys = champions.flatMap { champion ->
+            val primary = "${champion.id.lowercase()}|${champion.primaryRole.displayName.lowercase()}"
+            val flex = champion.secondaryRoles.map { role ->
+                "${champion.id.lowercase()}|${role.displayName.lowercase()} (flex)"
+            }
+            listOf(primary) + flex
+        }.toSet()
+
+        val actualBuildKeys = builds.map { build ->
+            "${build.championId.lowercase()}|${build.role.lowercase()}"
+        }
+
+        assertEquals("Every champion/lane combination must have exactly one build", builds.size, actualBuildKeys.toSet().size)
+        assertEquals("Official builds must match primary + Flex roles exactly", expectedBuildKeys, actualBuildKeys.toSet())
 
         val validItemNames = WildRiftItemsData.list.map { it.name }.toSet()
         val validSpellNames = WildRiftSpellsAndRunes.summonerSpells.map { it.name }.toSet()
         val validRunesMap = WildRiftSpellsAndRunes.runes.associateBy { it.name }
 
+        val bootPairs = mapOf(
+            "Botas blindadas" to "Avance blindado",
+            "Botas de mercurio" to "Trituradoras encadenadas",
+            "Botas de maná" to "Botas del lanzahechizos",
+            "Grebas de berserker" to "Grebas de metal",
+            "Grebas codiciosas" to "Botas inmortales",
+            "Botas jonias de la lucidez" to "Lucidez carmesí",
+            "Botas dinámicas" to "Botas quebrantarmaduras"
+        )
+
         val supportBuilds = builds.filter { it.role.contains("Soporte", ignoreCase = true) }
-        assertTrue("Must have support builds", supportBuilds.isNotEmpty())
+        assertEquals("Expected 50 support primary/Flex builds", 50, supportBuilds.size)
 
-        for (b in builds) {
-            // Rule 1: 3 core items
-            assertEquals("Build ${b.id} must have exactly 3 core items", 3, b.coreItems.size)
-            assertEquals("Build ${b.id} coreItemsWithDesc must be 3", 3, b.coreItemsWithDesc.size)
-            for (coreEntry in b.coreItemsWithDesc) {
-                assertTrue("Item ${coreEntry.itemName} must exist in catalog", validItemNames.contains(coreEntry.itemName))
-                assertTrue("Item ${coreEntry.itemName} must have coach tip description", coreEntry.description.isNotBlank())
+        for (build in builds) {
+            val prefix = "Build ${build.id} (${build.championName} / ${build.role})"
+
+            assertEquals("$prefix must have exactly 3 core items", 3, build.coreItems.size)
+            assertEquals("$prefix must have 3 distinct core items", 3, build.coreItems.distinct().size)
+            assertEquals("$prefix core descriptions must mirror core items", build.coreItems, build.coreItemsWithDesc.map { it.itemName })
+            assertTrue("$prefix must have at least 2 optional items", build.situationalItems.size >= 2)
+            assertEquals("$prefix optional items must not repeat", build.situationalItems.size, build.situationalItems.distinct().size)
+            assertEquals("$prefix optional descriptions must mirror optional items", build.situationalItems, build.situationalItemsWithDesc.map { it.itemName })
+            assertTrue("$prefix core and optional items cannot overlap", build.coreItems.intersect(build.situationalItems.toSet()).isEmpty())
+
+            for (entry in build.coreItemsWithDesc + build.situationalItemsWithDesc) {
+                assertTrue("$prefix item ${entry.itemName} must exist in local catalog", entry.itemName in validItemNames)
+                assertTrue("$prefix item ${entry.itemName} must include Coach advice", entry.description.isNotBlank())
             }
 
-            // Rule 2: Minimum 2 optional items
-            assertTrue("Build ${b.id} must have at least 2 situational items", b.situationalItems.size >= 2)
-            assertTrue("Build ${b.id} situationalItemsWithDesc must have at least 2 items", b.situationalItemsWithDesc.size >= 2)
-            for (sitEntry in b.situationalItemsWithDesc) {
-                assertTrue("Item ${sitEntry.itemName} must exist in catalog", validItemNames.contains(sitEntry.itemName))
-                assertTrue("Item ${sitEntry.itemName} must have coach tip description", sitEntry.description.isNotBlank())
+            if (build.role.contains("Soporte", ignoreCase = true)) {
+                val requiredSupportItems = build.coreItems.filter {
+                    it == "Hoz espectral" || it == "Escudo reliquia"
+                }
+                assertEquals("$prefix support must use exactly one required support item", 1, requiredSupportItems.size)
             }
 
-            // Rule 3: Support builds must have exactly ONE of Hoz espectral or Escudo reliquia
-            if (b.role.contains("Soporte", ignoreCase = true)) {
-                val hasHoz = b.coreItems.contains("Hoz espectral")
-                val hasEscudo = b.coreItems.contains("Escudo reliquia")
-                assertTrue("Support build ${b.id} must have Hoz espectral or Escudo reliquia", hasHoz || hasEscudo)
-                assertFalse("Support build ${b.id} cannot have both Hoz espectral and Escudo reliquia", hasHoz && hasEscudo)
+            val t2 = assertNotNullAndGet("$prefix must have Tier 2 boots", build.bootsT2Item)
+            val t3 = assertNotNullAndGet("$prefix must have Tier 3 boots", build.bootsT3Item)
+            assertTrue("$prefix Tier 2 boots must exist in catalog", t2.itemName in validItemNames)
+            assertTrue("$prefix Tier 3 boots must exist in catalog", t3.itemName in validItemNames)
+            assertEquals("$prefix Tier 3 boots must be the exact evolution", bootPairs[t2.itemName], t3.itemName)
+            assertTrue("$prefix Tier 2 boots need advice", t2.description.isNotBlank())
+            assertTrue("$prefix Tier 3 boots need advice", t3.description.isNotBlank())
+
+            val situationalT2 = assertNotNullAndGet("$prefix must have situational Tier 2 boots", build.situationalBootsT2Item)
+            val situationalT3 = assertNotNullAndGet("$prefix must have situational Tier 3 boots", build.situationalBootsT3Item)
+            assertTrue("$prefix situational Tier 2 boots must exist in catalog", situationalT2.itemName in validItemNames)
+            assertTrue("$prefix situational Tier 3 boots must exist in catalog", situationalT3.itemName in validItemNames)
+            assertEquals("$prefix situational Tier 3 boots must be the exact evolution", bootPairs[situationalT2.itemName], situationalT3.itemName)
+            assertFalse("$prefix situational boots must differ from primary boots", situationalT2.itemName.equals(t2.itemName, ignoreCase = true))
+            assertTrue("$prefix situational Tier 2 boots need advice", situationalT2.description.isNotBlank())
+            assertTrue("$prefix situational Tier 3 boots need advice", situationalT3.description.isNotBlank())
+
+            assertEquals("$prefix must have exactly 2 summoner spells", 2, build.spells.size)
+            assertEquals("$prefix spells must be distinct", 2, build.spells.map { it.lowercase() }.distinct().size)
+            assertEquals("$prefix spell detail list must match", build.spells, build.coreSpells.map { it.spellName })
+            for (spell in build.coreSpells) {
+                assertTrue("$prefix spell ${spell.spellName} must exist in local catalog", spell.spellName in validSpellNames)
+                if (!spell.spellName.equals("Destello", ignoreCase = true)) {
+                    assertTrue("$prefix non-Flash spell ${spell.spellName} needs advice", spell.description.isNotBlank())
+                }
             }
-
-            // Rule 4: Boots Nivel 2 + Nivel 3 and situational boots
-            assertNotNull("Build ${b.id} must have bootsT2Item", b.bootsT2Item)
-            assertNotNull("Build ${b.id} must have bootsT3Item", b.bootsT3Item)
-            assertTrue("Boot T2 ${b.bootsT2Item?.itemName} must exist in catalog", validItemNames.contains(b.bootsT2Item?.itemName))
-            assertTrue("Boot T3 ${b.bootsT3Item?.itemName} must exist in catalog", validItemNames.contains(b.bootsT3Item?.itemName))
-            assertTrue("Boot T2 must have coach description", b.bootsT2Item?.description?.isNotBlank() == true)
-            assertTrue("Boot T3 must have coach description", b.bootsT3Item?.description?.isNotBlank() == true)
-
-            assertNotNull("Build ${b.id} must have situationalBootsT2Item", b.situationalBootsT2Item)
-            assertNotNull("Build ${b.id} must have situationalBootsT3Item", b.situationalBootsT3Item)
-            assertTrue("Boot T2 Sit must have description", b.situationalBootsT2Item?.description?.isNotBlank() == true)
-            assertTrue("Boot T3 Sit must have description", b.situationalBootsT3Item?.description?.isNotBlank() == true)
-
-            // Rule 5: Exactly 2 summoner spells without duplicate
-            assertEquals("Build ${b.id} must have exactly 2 spells", 2, b.spells.size)
-            assertFalse("Build ${b.id} spells must not duplicate", b.spells[0].equals(b.spells[1], ignoreCase = true))
-            for (s in b.coreSpells) {
-                assertTrue("Spell ${s.spellName} must exist in catalog", validSpellNames.contains(s.spellName))
-                if (!s.spellName.equals("Destello", ignoreCase = true)) {
-                    assertTrue("Non-flash spell ${s.spellName} must have coach tip", s.description.isNotBlank())
+            for (spell in build.situationalSpells) {
+                assertTrue("$prefix situational spell ${spell.spellName} must exist in local catalog", spell.spellName in validSpellNames)
+                assertFalse("$prefix situational spell cannot duplicate a main spell", build.spells.any { it.equals(spell.spellName, ignoreCase = true) })
+                if (!spell.spellName.equals("Destello", ignoreCase = true)) {
+                    assertTrue("$prefix situational spell ${spell.spellName} needs advice", spell.description.isNotBlank())
                 }
             }
 
-            // Rule 6: Runes: 1 Keystone + 4 Secondaries (3 same branch + 1 other branch)
-            assertEquals("Build ${b.id} must have 5 runes in coreRunes", 5, b.coreRunes.size)
-            val keystone = b.coreRunes[0]
-            val keystoneRuneItem = validRunesMap[keystone.runeName]
-            assertNotNull("Keystone ${keystone.runeName} must exist in catalog", keystoneRuneItem)
-            assertEquals("Rune 0 must be Clave category", "Clave", keystoneRuneItem?.category)
+            assertEquals("$prefix must have 1 keystone + 4 secondaries", 5, build.coreRunes.size)
+            val runeNames = build.coreRunes.map { it.runeName }
+            assertEquals("$prefix rune names must be unique", 5, runeNames.distinct().size)
+            assertEquals("$prefix runes string must mirror detailed runes", runeNames, build.runes.split(",").map { it.trim() })
 
-            val sec1 = validRunesMap[b.coreRunes[1].runeName]
-            val sec2 = validRunesMap[b.coreRunes[2].runeName]
-            val sec3 = validRunesMap[b.coreRunes[3].runeName]
-            val sec4 = validRunesMap[b.coreRunes[4].runeName]
+            val keystone = validRunesMap[runeNames[0]]
+            assertNotNull("$prefix keystone must exist in local catalog", keystone)
+            assertEquals("$prefix first rune must be Clave", "Clave", keystone?.category)
 
-            assertNotNull(sec1)
-            assertNotNull(sec2)
-            assertNotNull(sec3)
-            assertNotNull(sec4)
+            val secondaryRunes = runeNames.drop(1).map { name ->
+                assertNotNullAndGet("$prefix secondary rune $name must exist in local catalog", validRunesMap[name])
+            }
+            val branchCounts = secondaryRunes.groupingBy { it.category }.eachCount().values.sorted()
+            assertEquals("$prefix secondaries must be 3 from one branch + 1 from another", listOf(1, 3), branchCounts)
+            assertTrue(
+                "$prefix secondary rune categories must be valid",
+                secondaryRunes.all { it.category in setOf("Dominación", "Precisión", "Valor", "Brujería") }
+            )
+            build.coreRunes.forEach { rune ->
+                assertTrue("$prefix rune ${rune.runeName} needs advice", rune.description.isNotBlank())
+            }
 
-            // 3 of same branch
-            val branchPrimary = sec1!!.category
-            assertTrue("Branch must be one of secondary categories", branchPrimary in listOf("Dominación", "Precisión", "Valor", "Brujería"))
-            assertEquals("Sec 2 must match primary branch", branchPrimary, sec2!!.category)
-            assertEquals("Sec 3 must match primary branch", branchPrimary, sec3!!.category)
-
-            // all 3 distinct
-            val distinctPrimary = setOf(sec1.name, sec2.name, sec3.name)
-            assertEquals("Primary secondary runes must be 3 distinct runes", 3, distinctPrimary.size)
-
-            // 1 of other branch
-            val branchOther = sec4!!.category
-            assertTrue("Branch other must be one of secondary categories", branchOther in listOf("Dominación", "Precisión", "Valor", "Brujería"))
-            assertFalse("Fourth secondary rune must be from a different branch", branchOther == branchPrimary)
+            for (rune in build.situationalRunes) {
+                val catalogRune = assertNotNullAndGet(
+                    "$prefix situational rune ${rune.runeName} must exist in local catalog",
+                    validRunesMap[rune.runeName]
+                )
+                assertFalse("$prefix situational rune cannot be another keystone", catalogRune.category == "Clave")
+                assertFalse("$prefix situational rune cannot duplicate a main rune", rune.runeName in runeNames)
+                assertTrue("$prefix situational rune ${rune.runeName} needs advice", rune.description.isNotBlank())
+            }
         }
+    }
+
+    private fun <T : Any> assertNotNullAndGet(message: String, value: T?): T {
+        assertNotNull(message, value)
+        return requireNotNull(value)
     }
 }
