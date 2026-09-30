@@ -688,10 +688,10 @@ fun ChampionDetailSheet(
                     com.example.util.ChampionBuildOption(
                         optionNumber = 100 + idx,
                         title = rec.buildTitle,
-                        subtitle = "Línea: ${rec.role} • Meta Soberano",
-                        source = "Coach Soberano • ${rec.creatorName}",
-                        badge = if (rec.role.contains("Flex", ignoreCase = true)) "FLEX PRO" else "META SOBERANO",
-                        tacticalReason = rec.coreItemsWithDesc.firstOrNull()?.description ?: "Build oficial optimizada para el meta actual de Wild Rift.",
+                        subtitle = "Línea: ${rec.role} • Análisis Estadístico & IA",
+                        source = "Cálculo IA & Estadísticas • ${rec.creatorName}",
+                        badge = if (rec.role.contains("Flex", ignoreCase = true)) "FLEX PRO" else "ESTADÍSTICA & IA",
+                        tacticalReason = rec.coreItemsWithDesc.firstOrNull()?.description ?: "Build calculada estadísticamente y con IA para el meta actual de Wild Rift.",
                         items = rec.coreItemsWithDesc.map { it.itemName }.ifEmpty { rec.coreItems },
                         bootBase = t2,
                         bootUpgrade = t3,
@@ -1524,17 +1524,113 @@ fun ChampionDetailSheet(
                             }
                         }
                     }
+
+                    val nonDuplicateSitRunes = activeOption.situationalRunes.filter { sr ->
+                        !runesForActiveOption.any { mr -> mr.equals(sr.runeName, ignoreCase = true) }
+                    }
+                    if (nonDuplicateSitRunes.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(0.5.dp)
+                                .background(HextechCardBorder.copy(alpha = 0.5f))
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = tr("Runas Situacionales (Alternativas):"),
+                                color = HextechGold,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = tr("Adaptar según partida"),
+                                color = HextechCyan,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            nonDuplicateSitRunes.forEach { sRune ->
+                                val rName = sRune.runeName
+                                val foundRune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(rName)
+                                    ?: com.example.data.WildRiftRepository.runes.find { r -> r.name.equals(rName, ignoreCase = true) }
+                                val iconUrl = sRune.iconUrl.ifBlank { foundRune?.iconUrl ?: com.example.data.WildRiftSpellsAndRunes.getRuneIconByName(rName) }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                                        .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            runeForDetail = foundRune ?: com.example.model.RuneItem(
+                                                id = rName.lowercase().replace(" ", "_"),
+                                                name = rName,
+                                                category = "Situacional",
+                                                iconUrl = iconUrl,
+                                                description = sRune.description
+                                            )
+                                        }
+                                        .padding(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(runeSecSize)
+                                            .clip(CircleShape)
+                                            .background(HextechSurfaceVariant)
+                                            .border(1.dp, HextechCyan, CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        AppAssetImage(
+                                            url = iconUrl,
+                                            contentDescription = tr(rName),
+                                            fallbackText = tr(rName),
+                                            modifier = Modifier.fillMaxSize(),
+                                            shape = CircleShape
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = tr(rName),
+                                            color = HextechCyan,
+                                            fontSize = 10.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        if (sRune.description.isNotBlank()) {
+                                            Text(
+                                                text = tr(sRune.description),
+                                                color = TextSecondary,
+                                                fontSize = 9.sp,
+                                                lineHeight = 12.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
 
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             // ==========================================
             // COUNTERS Y SINERGIAS (ADAPTADOS AL ROL)
             // ==========================================
+            val isUserPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
+            val isPremium = isUserPremium || com.example.util.SubscriptionManager.isPremium.value || com.example.util.SubscriptionManager.userRole.value == "admin"
+            val maxMatchupCount = if (isPremium) 10 else 3
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -1552,22 +1648,38 @@ fun ChampionDetailSheet(
                             .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = tr("Ventaja Contra:"),
-                            color = AllyBlue,
-                            fontSize = if (isCompact) 10.sp else 11.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        val advantageList = roleProfile.advantageAgainst.distinct().take(maxMatchupCount)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = com.example.util.tr("${tr("Ventaja")} (${advantageList.size})"),
+                                color = AllyBlue,
+                                fontSize = if (isCompact) 9.5.sp else 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (!isPremium) {
+                                Text(
+                                    text = "PRO 10",
+                                    color = HextechGold,
+                                    fontSize = 7.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(6.dp))
-                        val advantageList = roleProfile.advantageAgainst.take(3)
                         if (advantageList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = if (isPremium && advantageList.size > 3) Arrangement.spacedBy(6.dp) else Arrangement.SpaceEvenly,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 advantageList.forEach { target ->
@@ -1622,22 +1734,38 @@ fun ChampionDetailSheet(
                             .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = tr("Débil Contra:"),
-                            color = DangerRed,
-                            fontSize = if (isCompact) 10.sp else 11.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        val counteredList = roleProfile.counteredBy.distinct().take(maxMatchupCount)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = com.example.util.tr("${tr("Débil")} (${counteredList.size})"),
+                                color = DangerRed,
+                                fontSize = if (isCompact) 9.5.sp else 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (!isPremium) {
+                                Text(
+                                    text = "PRO 10",
+                                    color = HextechGold,
+                                    fontSize = 7.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(6.dp))
-                        val counteredList = roleProfile.counteredBy.take(3)
                         if (counteredList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = if (isPremium && counteredList.size > 3) Arrangement.spacedBy(6.dp) else Arrangement.SpaceEvenly,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 counteredList.forEach { counter ->
@@ -1694,15 +1822,6 @@ fun ChampionDetailSheet(
                             .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = tr("Sinergias:"),
-                            color = HextechGold,
-                            fontSize = if (isCompact) 10.sp else 11.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
                         val rawSynergies = if (roleProfile.synergies.isNotEmpty()) {
                             roleProfile.synergies
                         } else if (champion.synergies.isNotEmpty()) {
@@ -1710,13 +1829,38 @@ fun ChampionDetailSheet(
                         } else {
                             synergyProfile.bestTeammates.map { it.championName }
                         }
-                        val synergyList = rawSynergies.distinct().take(3)
+                        val synergyList = rawSynergies.distinct().take(maxMatchupCount)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = com.example.util.tr("${tr("Sinergia")} (${synergyList.size})"),
+                                color = HextechGold,
+                                fontSize = if (isCompact) 9.5.sp else 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (!isPremium) {
+                                Text(
+                                    text = "PRO 10",
+                                    color = HextechGold,
+                                    fontSize = 7.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
                         if (synergyList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = if (isPremium && synergyList.size > 3) Arrangement.spacedBy(6.dp) else Arrangement.SpaceEvenly,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 synergyList.forEach { partner ->

@@ -125,7 +125,7 @@
     "builds": [
       {
         "id": "aatrox_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -156,7 +156,7 @@
       },
       {
         "id": "aatrox_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -185,7 +185,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T3",
+    "winrateDelta": -0.13,
+    "pickRateDelta": 0.05,
+    "banRateDelta": -0.05
   },
   {
     "id": "ahri",
@@ -307,7 +312,7 @@
     "builds": [
       {
         "id": "ahri_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -338,7 +343,7 @@
       },
       {
         "id": "ahri_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -367,7 +372,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T4",
+    "winrateDelta": -0.04,
+    "pickRateDelta": -0.12,
+    "banRateDelta": -0.15
   },
   {
     "id": "akali",
@@ -489,7 +499,7 @@
     "builds": [
       {
         "id": "akali_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
@@ -520,7 +530,7 @@
       },
       {
         "id": "akali_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -549,7 +559,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.35,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "akshan",
@@ -672,7 +687,7 @@
     "builds": [
       {
         "id": "akshan_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -703,7 +718,7 @@
       },
       {
         "id": "akshan_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Eclipse",
@@ -734,7 +749,7 @@
       },
       {
         "id": "akshan_adc",
-        "title": "Build Línea de Dragón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Dragón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
@@ -762,7 +777,12 @@
           "Barrera"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T3",
+    "winrateDelta": 0.01,
+    "pickRateDelta": 0.05,
+    "banRateDelta": -0.05
   },
   {
     "id": "alistar",
@@ -884,7 +904,7 @@
     "builds": [
       {
         "id": "alistar_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -915,7 +935,7 @@
       },
       {
         "id": "alistar_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -944,7 +964,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.12,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "ambessa",
@@ -1066,7 +1091,7 @@
     "builds": [
       {
         "id": "ambessa_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -1097,7 +1122,7 @@
       },
       {
         "id": "ambessa_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -1126,7 +1151,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.03,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "amumu",
@@ -1248,7 +1278,7 @@
     "builds": [
       {
         "id": "amumu_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -1279,7 +1309,7 @@
       },
       {
         "id": "amumu_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -1308,7 +1338,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.5,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "annie",
@@ -1430,7 +1465,7 @@
     "builds": [
       {
         "id": "annie_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -1461,7 +1496,7 @@
       },
       {
         "id": "annie_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -1490,7 +1525,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.3,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "ashe",
@@ -1612,7 +1652,7 @@
     "builds": [
       {
         "id": "ashe_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
@@ -1642,7 +1682,7 @@
       },
       {
         "id": "ashe_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -1671,7 +1711,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T4",
+    "winrateDelta": 0.08,
+    "pickRateDelta": -0.12,
+    "banRateDelta": -0.15
   },
   {
     "id": "aurelion_sol",
@@ -1793,7 +1838,7 @@
     "builds": [
       {
         "id": "aurelion_sol_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -1824,7 +1869,7 @@
       },
       {
         "id": "aurelion_sol_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -1853,7 +1898,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T1",
+    "winrateDelta": 0.18,
+    "pickRateDelta": 0.18,
+    "banRateDelta": 0.35
   },
   {
     "id": "aurora",
@@ -1975,7 +2025,7 @@
     "builds": [
       {
         "id": "aurora_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -2006,7 +2056,7 @@
       },
       {
         "id": "aurora_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -2035,7 +2085,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.06,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "bard",
@@ -2157,7 +2212,7 @@
     "builds": [
       {
         "id": "bard_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -2188,7 +2243,7 @@
       },
       {
         "id": "bard_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -2217,7 +2272,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.26,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "blitzcrank",
@@ -2339,7 +2399,7 @@
     "builds": [
       {
         "id": "blitzcrank_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -2370,7 +2430,7 @@
       },
       {
         "id": "blitzcrank_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -2399,7 +2459,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T4",
+    "winrateDelta": -0.01,
+    "pickRateDelta": -0.12,
+    "banRateDelta": -0.15
   },
   {
     "id": "brand",
@@ -2522,7 +2587,7 @@
     "builds": [
       {
         "id": "brand_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -2553,7 +2618,7 @@
       },
       {
         "id": "brand_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -2584,7 +2649,7 @@
       },
       {
         "id": "brand_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eco de Luden",
@@ -2613,7 +2678,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T1",
+    "winrateDelta": 0.18,
+    "pickRateDelta": 0.18,
+    "banRateDelta": 0.35
   },
   {
     "id": "braum",
@@ -2735,7 +2805,7 @@
     "builds": [
       {
         "id": "braum_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -2766,7 +2836,7 @@
       },
       {
         "id": "braum_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -2795,7 +2865,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.17,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "caitlyn",
@@ -2917,7 +2992,7 @@
     "builds": [
       {
         "id": "caitlyn_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
@@ -2947,7 +3022,7 @@
       },
       {
         "id": "caitlyn_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -2976,7 +3051,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": -0.14,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "camille",
@@ -3098,7 +3178,7 @@
     "builds": [
       {
         "id": "camille_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -3129,7 +3209,7 @@
       },
       {
         "id": "camille_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -3158,7 +3238,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.04,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "cho_gath",
@@ -3280,7 +3365,7 @@
     "builds": [
       {
         "id": "cho_gath_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -3311,7 +3396,7 @@
       },
       {
         "id": "cho_gath_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -3340,7 +3425,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.35,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "corki",
@@ -3462,7 +3552,7 @@
     "builds": [
       {
         "id": "corki_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -3493,7 +3583,7 @@
       },
       {
         "id": "corki_adc",
-        "title": "Build Línea de Dragón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Dragón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Fuerza de trinidad",
@@ -3522,7 +3612,12 @@
           "Barrera"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.25,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "darius",
@@ -3644,7 +3739,7 @@
     "builds": [
       {
         "id": "darius_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -3675,7 +3770,7 @@
       },
       {
         "id": "darius_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -3704,7 +3799,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.04,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "diana",
@@ -3826,7 +3926,7 @@
     "builds": [
       {
         "id": "diana_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -3857,7 +3957,7 @@
       },
       {
         "id": "diana_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
@@ -3886,7 +3986,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.27,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "dr_mundo",
@@ -4008,7 +4113,7 @@
     "builds": [
       {
         "id": "dr_mundo_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -4039,7 +4144,7 @@
       },
       {
         "id": "dr_mundo_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -4068,7 +4173,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T2",
+    "winrateDelta": 0.14,
+    "pickRateDelta": 0.1,
+    "banRateDelta": 0.15
   },
   {
     "id": "draven",
@@ -4190,7 +4300,7 @@
     "builds": [
       {
         "id": "draven_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
@@ -4220,7 +4330,7 @@
       },
       {
         "id": "draven_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -4249,7 +4359,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T1",
+    "winrateDelta": -0.23,
+    "pickRateDelta": 0.18,
+    "banRateDelta": 0.35
   },
   {
     "id": "ekko",
@@ -4371,7 +4486,7 @@
     "builds": [
       {
         "id": "ekko_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eco de Luden",
@@ -4402,7 +4517,7 @@
       },
       {
         "id": "ekko_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
@@ -4431,7 +4546,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T4",
+    "winrateDelta": 0.01,
+    "pickRateDelta": -0.12,
+    "banRateDelta": -0.15
   },
   {
     "id": "evelynn",
@@ -4553,7 +4673,7 @@
     "builds": [
       {
         "id": "evelynn_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eco de Luden",
@@ -4584,7 +4704,7 @@
       },
       {
         "id": "evelynn_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -4613,7 +4733,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.07,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "ezreal",
@@ -4735,7 +4860,7 @@
     "builds": [
       {
         "id": "ezreal_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Fuerza de trinidad",
@@ -4766,7 +4891,7 @@
       },
       {
         "id": "ezreal_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -4795,7 +4920,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T3",
+    "winrateDelta": 0.18,
+    "pickRateDelta": 0.05,
+    "banRateDelta": -0.05
   },
   {
     "id": "fiddlesticks",
@@ -4917,7 +5047,7 @@
     "builds": [
       {
         "id": "fiddlesticks_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eco de Luden",
@@ -4948,7 +5078,7 @@
       },
       {
         "id": "fiddlesticks_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -4977,7 +5107,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.05,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "fiora",
@@ -5099,7 +5234,7 @@
     "builds": [
       {
         "id": "fiora_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -5130,7 +5265,7 @@
       },
       {
         "id": "fiora_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -5159,7 +5294,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.45,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "fizz",
@@ -5281,7 +5421,7 @@
     "builds": [
       {
         "id": "fizz_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
@@ -5312,7 +5452,7 @@
       },
       {
         "id": "fizz_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -5341,7 +5481,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.04,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "galio",
@@ -5463,7 +5608,7 @@
     "builds": [
       {
         "id": "galio_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -5494,7 +5639,7 @@
       },
       {
         "id": "galio_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -5523,7 +5668,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T3",
+    "winrateDelta": 0.22,
+    "pickRateDelta": 0.05,
+    "banRateDelta": -0.05
   },
   {
     "id": "garen",
@@ -5645,7 +5795,7 @@
     "builds": [
       {
         "id": "garen_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -5676,7 +5826,7 @@
       },
       {
         "id": "garen_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -5705,7 +5855,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T3",
+    "winrateDelta": 0.09,
+    "pickRateDelta": 0.05,
+    "banRateDelta": -0.05
   },
   {
     "id": "gnar",
@@ -5827,7 +5982,7 @@
     "builds": [
       {
         "id": "gnar_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -5858,7 +6013,7 @@
       },
       {
         "id": "gnar_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -5887,7 +6042,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.32,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "gragas",
@@ -6010,7 +6170,7 @@
     "builds": [
       {
         "id": "gragas_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -6041,7 +6201,7 @@
       },
       {
         "id": "gragas_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -6072,7 +6232,7 @@
       },
       {
         "id": "gragas_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -6101,7 +6261,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.33,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "graves",
@@ -6223,7 +6388,7 @@
     "builds": [
       {
         "id": "graves_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eclipse",
@@ -6254,7 +6419,7 @@
       },
       {
         "id": "graves_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Eclipse",
@@ -6283,7 +6448,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T1",
+    "winrateDelta": 0.03,
+    "pickRateDelta": 0.18,
+    "banRateDelta": 0.35
   },
   {
     "id": "gwen",
@@ -6405,7 +6575,7 @@
     "builds": [
       {
         "id": "gwen_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -6436,7 +6606,7 @@
       },
       {
         "id": "gwen_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -6465,7 +6635,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.03,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "hecarim",
@@ -6587,7 +6762,7 @@
     "builds": [
       {
         "id": "hecarim_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -6618,7 +6793,7 @@
       },
       {
         "id": "hecarim_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -6647,7 +6822,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.39,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "heimerdinger",
@@ -6770,7 +6950,7 @@
     "builds": [
       {
         "id": "heimerdinger_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -6801,7 +6981,7 @@
       },
       {
         "id": "heimerdinger_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -6832,7 +7012,7 @@
       },
       {
         "id": "heimerdinger_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -6861,7 +7041,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.07,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "hwei",
@@ -7004,7 +7189,7 @@
     "builds": [
       {
         "id": "hwei_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -7035,7 +7220,7 @@
       },
       {
         "id": "hwei_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -7064,7 +7249,8 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true
   },
   {
     "id": "irelia",
@@ -7186,7 +7372,7 @@
     "builds": [
       {
         "id": "irelia_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -7217,7 +7403,7 @@
       },
       {
         "id": "irelia_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -7246,7 +7432,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.03,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "janna",
@@ -7368,7 +7559,7 @@
     "builds": [
       {
         "id": "janna_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -7399,7 +7590,7 @@
       },
       {
         "id": "janna_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -7428,7 +7619,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.28,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "jarvan_iv",
@@ -7550,7 +7746,7 @@
     "builds": [
       {
         "id": "jarvan_iv_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -7581,7 +7777,7 @@
       },
       {
         "id": "jarvan_iv_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -7610,7 +7806,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.27,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "jax",
@@ -7732,7 +7933,7 @@
     "builds": [
       {
         "id": "jax_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -7763,7 +7964,7 @@
       },
       {
         "id": "jax_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -7792,7 +7993,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.34,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "jayce",
@@ -7914,7 +8120,7 @@
     "builds": [
       {
         "id": "jayce_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Eclipse",
@@ -7945,7 +8151,7 @@
       },
       {
         "id": "jayce_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Filo fantasmal de Youmuu",
@@ -7974,7 +8180,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.09,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "jhin",
@@ -8096,7 +8307,7 @@
     "builds": [
       {
         "id": "jhin_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
@@ -8126,7 +8337,7 @@
       },
       {
         "id": "jhin_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -8155,7 +8366,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T4",
+    "winrateDelta": 0.15,
+    "pickRateDelta": -0.12,
+    "banRateDelta": -0.15
   },
   {
     "id": "jinx",
@@ -8277,7 +8493,7 @@
     "builds": [
       {
         "id": "jinx_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
@@ -8307,7 +8523,7 @@
       },
       {
         "id": "jinx_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -8336,7 +8552,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T3",
+    "winrateDelta": -0.09,
+    "pickRateDelta": 0.05,
+    "banRateDelta": -0.05
   },
   {
     "id": "k_sante",
@@ -8458,7 +8679,7 @@
     "builds": [
       {
         "id": "k_sante_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -8489,7 +8710,7 @@
       },
       {
         "id": "k_sante_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -8518,7 +8739,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.26,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "kai_sa",
@@ -8640,7 +8866,7 @@
     "builds": [
       {
         "id": "kai_sa_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -8670,7 +8896,7 @@
       },
       {
         "id": "kai_sa_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -8699,7 +8925,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.33,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "kalista",
@@ -8821,7 +9052,7 @@
     "builds": [
       {
         "id": "kalista_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -8851,7 +9082,7 @@
       },
       {
         "id": "kalista_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Eclipse",
@@ -8880,7 +9111,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T3",
+    "winrateDelta": 0.14,
+    "pickRateDelta": 0.05,
+    "banRateDelta": -0.05
   },
   {
     "id": "karma",
@@ -9002,7 +9238,7 @@
     "builds": [
       {
         "id": "karma_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -9033,7 +9269,7 @@
       },
       {
         "id": "karma_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -9062,7 +9298,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.11,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "kassadin",
@@ -9184,7 +9425,7 @@
     "builds": [
       {
         "id": "kassadin_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
@@ -9215,7 +9456,7 @@
       },
       {
         "id": "kassadin_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -9244,7 +9485,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.11,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "katarina",
@@ -9366,7 +9612,7 @@
     "builds": [
       {
         "id": "katarina_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
@@ -9397,7 +9643,7 @@
       },
       {
         "id": "katarina_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -9426,7 +9672,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.09,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "kayle",
@@ -9548,7 +9799,7 @@
     "builds": [
       {
         "id": "kayle_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -9579,7 +9830,7 @@
       },
       {
         "id": "kayle_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -9608,7 +9859,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.32,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "kayn",
@@ -9730,7 +9986,7 @@
     "builds": [
       {
         "id": "kayn_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -9761,7 +10017,7 @@
       },
       {
         "id": "kayn_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -9790,7 +10046,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T4",
+    "winrateDelta": 0.05,
+    "pickRateDelta": -0.12,
+    "banRateDelta": -0.15
   },
   {
     "id": "kennen",
@@ -9912,7 +10173,7 @@
     "builds": [
       {
         "id": "kennen_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -9943,7 +10204,7 @@
       },
       {
         "id": "kennen_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Creagrietas",
@@ -9972,7 +10233,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.2,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "kha_zix",
@@ -10094,7 +10360,7 @@
     "builds": [
       {
         "id": "kha_zix_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Filo fantasmal de Youmuu",
@@ -10125,7 +10391,7 @@
       },
       {
         "id": "kha_zix_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -10154,7 +10420,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.3,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "kindred",
@@ -10276,7 +10547,7 @@
     "builds": [
       {
         "id": "kindred_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eclipse",
@@ -10307,7 +10578,7 @@
       },
       {
         "id": "kindred_adc",
-        "title": "Build Línea de Dragón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Dragón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
@@ -10335,7 +10606,12 @@
           "Barrera"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.26,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "kog_maw",
@@ -10457,7 +10733,7 @@
     "builds": [
       {
         "id": "kog_maw_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -10487,7 +10763,7 @@
       },
       {
         "id": "kog_maw_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -10516,7 +10792,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T2",
+    "winrateDelta": 0.11,
+    "pickRateDelta": 0.1,
+    "banRateDelta": 0.15
   },
   {
     "id": "lee_sin",
@@ -10638,7 +10919,7 @@
     "builds": [
       {
         "id": "lee_sin_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -10669,7 +10950,7 @@
       },
       {
         "id": "lee_sin_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -10698,7 +10979,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.36,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "leona",
@@ -10820,7 +11106,7 @@
     "builds": [
       {
         "id": "leona_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -10851,7 +11137,7 @@
       },
       {
         "id": "leona_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -10880,7 +11166,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T3",
+    "winrateDelta": 0.11,
+    "pickRateDelta": 0.05,
+    "banRateDelta": -0.05
   },
   {
     "id": "lillia",
@@ -11002,7 +11293,7 @@
     "builds": [
       {
         "id": "lillia_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eco de Luden",
@@ -11033,7 +11324,7 @@
       },
       {
         "id": "lillia_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -11062,7 +11353,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T4",
+    "winrateDelta": 0.34,
+    "pickRateDelta": -0.12,
+    "banRateDelta": -0.15
   },
   {
     "id": "lissandra",
@@ -11184,7 +11480,7 @@
     "builds": [
       {
         "id": "lissandra_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -11215,7 +11511,7 @@
       },
       {
         "id": "lissandra_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Creagrietas",
@@ -11244,7 +11540,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": 0.19,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "lucian",
@@ -11366,7 +11667,7 @@
     "builds": [
       {
         "id": "lucian_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Recaudadora",
@@ -11396,7 +11697,7 @@
       },
       {
         "id": "lucian_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Hoja del rey arruinado",
@@ -11425,7 +11726,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T4",
+    "winrateDelta": -0.15,
+    "pickRateDelta": -0.12,
+    "banRateDelta": -0.15
   },
   {
     "id": "lulu",
@@ -11547,7 +11853,7 @@
     "builds": [
       {
         "id": "lulu_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -11578,7 +11884,7 @@
       },
       {
         "id": "lulu_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -11607,7 +11913,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.11,
+    "pickRateDelta": -0.22,
+    "banRateDelta": -0.3
   },
   {
     "id": "lux",
@@ -11729,7 +12040,7 @@
     "builds": [
       {
         "id": "lux_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -11760,7 +12071,7 @@
       },
       {
         "id": "lux_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -11789,7 +12100,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.04,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "malphite",
@@ -11912,7 +12228,7 @@
     "builds": [
       {
         "id": "malphite_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -11943,7 +12259,7 @@
       },
       {
         "id": "malphite_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -11974,7 +12290,7 @@
       },
       {
         "id": "malphite_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -12003,7 +12319,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.1,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "maokai",
@@ -12126,7 +12447,7 @@
     "builds": [
       {
         "id": "maokai_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Escudo reliquia",
@@ -12157,7 +12478,7 @@
       },
       {
         "id": "maokai_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -12188,7 +12509,7 @@
       },
       {
         "id": "maokai_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -12217,7 +12538,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T5",
+    "winrateDelta": -0.42,
+    "pickRateDelta": -0.18,
+    "banRateDelta": -0.25
   },
   {
     "id": "master_yi",
@@ -12339,7 +12665,7 @@
     "builds": [
       {
         "id": "master_yi_jungle",
-        "title": "Build Jungla (Meta Soberano)",
+        "title": "Build Jungla (Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eclipse",
@@ -12370,7 +12696,7 @@
       },
       {
         "id": "master_yi_top",
-        "title": "Build Línea de Barón (Línea Flex • Meta Soberano)",
+        "title": "Build Línea de Barón (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Eclipse",
@@ -12399,7 +12725,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T2",
+    "winrateDelta": 0.1,
+    "pickRateDelta": 0.1,
+    "banRateDelta": 0.15
   },
   {
     "id": "mel",
@@ -12521,7 +12852,7 @@
     "builds": [
       {
         "id": "mel_mid",
-        "title": "Build Línea Central (Meta Soberano)",
+        "title": "Build Línea Central (Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -12552,7 +12883,7 @@
       },
       {
         "id": "mel_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -12581,7 +12912,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": -0.21,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "milio",
@@ -12703,7 +13039,7 @@
     "builds": [
       {
         "id": "milio_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -12734,7 +13070,7 @@
       },
       {
         "id": "milio_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -12763,7 +13099,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T1",
+    "winrateDelta": 0.2,
+    "pickRateDelta": 0.18,
+    "banRateDelta": 0.35
   },
   {
     "id": "miss_fortune",
@@ -12885,7 +13226,7 @@
     "builds": [
       {
         "id": "miss_fortune_adc",
-        "title": "Build Línea de Dragón (Meta Soberano)",
+        "title": "Build Línea de Dragón (Cálculo IA & Estadísticas)",
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
@@ -12915,7 +13256,7 @@
       },
       {
         "id": "miss_fortune_support",
-        "title": "Build Soporte (Línea Flex • Meta Soberano)",
+        "title": "Build Soporte (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -12944,7 +13285,12 @@
           "Prender"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T0",
+    "winrateDelta": 0.33,
+    "pickRateDelta": 0.25,
+    "banRateDelta": 0.55
   },
   {
     "id": "mordekaiser",
@@ -13066,7 +13412,7 @@
     "builds": [
       {
         "id": "mordekaiser_top",
-        "title": "Build Línea de Barón (Meta Soberano)",
+        "title": "Build Línea de Barón (Cálculo IA & Estadísticas)",
         "role": "top",
         "coreItems": [
           "Corazón de acero",
@@ -13097,7 +13443,7 @@
       },
       {
         "id": "mordekaiser_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Coraza del muerto",
@@ -13126,7 +13472,12 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T1",
+    "winrateDelta": -0.16,
+    "pickRateDelta": 0.18,
+    "banRateDelta": 0.35
   },
   {
     "id": "morgana",
@@ -13249,7 +13600,7 @@
     "builds": [
       {
         "id": "morgana_support",
-        "title": "Build Soporte (Meta Soberano)",
+        "title": "Build Soporte (Cálculo IA & Estadísticas)",
         "role": "support",
         "coreItems": [
           "Hoz espectral",
@@ -13280,7 +13631,7 @@
       },
       {
         "id": "morgana_mid",
-        "title": "Build Línea Central (Línea Flex • Meta Soberano)",
+        "title": "Build Línea Central (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "mid",
         "coreItems": [
           "Eco de Luden",
@@ -13311,7 +13662,7 @@
       },
       {
         "id": "morgana_jungle",
-        "title": "Build Jungla (Línea Flex • Meta Soberano)",
+        "title": "Build Jungla (Línea Flex • Cálculo IA & Estadísticas)",
         "role": "jungle",
         "coreItems": [
           "Eco de Luden",
@@ -13340,6 +13691,11 @@
           "Aplastar"
         ]
       }
-    ]
+    ],
+    "hasRegionalStats": true,
+    "cnTier": "T1",
+    "winrateDelta": 0.21,
+    "pickRateDelta": 0.18,
+    "banRateDelta": 0.35
   }
 ]

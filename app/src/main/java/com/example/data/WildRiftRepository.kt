@@ -187,16 +187,24 @@ object WildRiftRepository {
                 "C+", "C" -> RegionalStatsTuple(48.1, 3.2, 0.8, -0.35)
                 else -> RegionalStatsTuple(46.8, 1.8, 0.4, -0.52)
             }
+            val finalWr = if (champion.winrate > 0.0) champion.winrate else baseWr
+            val finalPr = if (champion.pickRate > 0.0) champion.pickRate else basePr
+            val finalBr = if (champion.banRate > 0.0) champion.banRate else baseBr
+            val finalDelta = if (champion.winrateDelta != 0.0) champion.winrateDelta else delta
             val isCn = normalized == "CN"
-            val finalWr = if (isCn) (if (champion.winrate > 0.0) champion.winrate else baseWr) else 0.0
-            val finalPr = if (isCn) (if (champion.pickRate > 0.0) champion.pickRate else basePr) else 0.0
-            val finalBr = if (isCn) (if (champion.banRate > 0.0) champion.banRate else baseBr) else 0.0
-            val finalDelta = if (isCn) (if (champion.winrateDelta != 0.0) champion.winrateDelta else delta) else 0.0
+            val finalCnTier = if (champion.cnTier.isNotBlank()) champion.cnTier else when (category) {
+                "S+" -> "T0"
+                "S" -> "T1"
+                "A+", "A" -> "T2"
+                "B+", "B" -> "T3"
+                "C+", "C" -> "T4"
+                else -> "T5"
+            }
 
             champion.copy(
-                hasRegionalStats = isCn,
+                hasRegionalStats = true,
                 tier = category,
-                cnTier = if (isCn) champion.cnTier else "",
+                cnTier = finalCnTier,
                 winrate = finalWr,
                 pickRate = finalPr,
                 banRate = finalBr,
@@ -244,17 +252,25 @@ object WildRiftRepository {
             val parsed1 = context.resources.openRawResource(com.example.R.raw.champions_part1).bufferedReader().use { reader ->
                 format.decodeFromString<List<Champion>>(reader.readText()).map {
                     val updated = it
-                    if (updated.avatarUrl.isBlank() || updated.avatarUrl.startsWith("http")) {
-                        updated.copy(avatarUrl = "file:///android_asset/champions/${updated.id}.png")
-                    } else updated
+                    val resolvedAvatar = if (updated.avatarUrl.isBlank() || updated.avatarUrl.startsWith("http")) {
+                        "file:///android_asset/champions/${updated.id}.png"
+                    } else updated.avatarUrl
+                    updated.copy(
+                        avatarUrl = resolvedAvatar,
+                        hasRegionalStats = true
+                    )
                 }
             }
             val parsed2 = context.resources.openRawResource(com.example.R.raw.champions_part2).bufferedReader().use { reader ->
                 format.decodeFromString<List<Champion>>(reader.readText()).map {
                     val updated = it
-                    if (updated.avatarUrl.isBlank() || updated.avatarUrl.startsWith("http")) {
-                        updated.copy(avatarUrl = "file:///android_asset/champions/${updated.id}.png")
-                    } else updated
+                    val resolvedAvatar = if (updated.avatarUrl.isBlank() || updated.avatarUrl.startsWith("http")) {
+                        "file:///android_asset/champions/${updated.id}.png"
+                    } else updated.avatarUrl
+                    updated.copy(
+                        avatarUrl = resolvedAvatar,
+                        hasRegionalStats = true
+                    )
                 }
             }
             baseChampions.clear()
@@ -333,9 +349,7 @@ object WildRiftRepository {
         val normalized = com.example.data.sync.MetaRegion.normalize(regionId)
         val snapshot = regionalSnapshot(normalized)
         val categories = mapOf("S+" to 6, "S" to 5, "A+" to 4, "A" to 3, "B" to 2, "C" to 1)
-        return if (normalized == "CN")
-            snapshot.filter { it.hasRegionalStats }.sortedByDescending { it.winrate }.take(count)
-        else snapshot.sortedWith(compareByDescending<Champion> { categories[it.tier] ?: 0 }.thenBy { it.name }).take(count)
+        return snapshot.filter { it.hasRegionalStats && it.winrate > 0.0 }.sortedByDescending { it.winrate }.take(count)
 
     }
 

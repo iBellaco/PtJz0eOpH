@@ -1537,11 +1537,11 @@ fun TierListTab(
     }
 
     val isCn = currentRegion == "CN"
-    val tierSPlus = championsToDisplay.filter { it.tier == "S+" || (isCn && it.cnTier == "T0") }
-    val tierS = championsToDisplay.filter { (it.tier == "S" || (isCn && it.cnTier == "T1")) && it !in tierSPlus }
-    val tierA = championsToDisplay.filter { (it.tier == "A+" || it.tier == "A" || (isCn && (it.cnTier == "T2" || it.cnTier == "T3"))) && it !in tierSPlus && it !in tierS }
-    val tierB = championsToDisplay.filter { (it.tier == "B" || it.tier == "B+" || (isCn && it.cnTier == "T4")) && it !in tierSPlus && it !in tierS && it !in tierA }
-    val tierC = championsToDisplay.filter { (it.tier == "C" || it.tier == "C+" || (isCn && it.cnTier == "T5")) && it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB }
+    val tierSPlus = championsToDisplay.filter { if (isCn) it.cnTier == "T0" else it.tier == "S+" }
+    val tierS = championsToDisplay.filter { (if (isCn) it.cnTier == "T1" else it.tier == "S") && it !in tierSPlus }
+    val tierA = championsToDisplay.filter { (if (isCn) it.cnTier == "T2" || it.cnTier == "T3" else it.tier == "A+" || it.tier == "A") && it !in tierSPlus && it !in tierS }
+    val tierB = championsToDisplay.filter { (if (isCn) it.cnTier == "T4" else it.tier == "B" || it.tier == "B+") && it !in tierSPlus && it !in tierS && it !in tierA }
+    val tierC = championsToDisplay.filter { (if (isCn) it.cnTier == "T5" else it.tier == "C" || it.tier == "C+") && it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB }
     val tierD = championsToDisplay.filter { it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB && it !in tierC }
 
     LazyColumn(

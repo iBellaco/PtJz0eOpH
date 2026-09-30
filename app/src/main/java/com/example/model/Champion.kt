@@ -113,7 +113,7 @@ data class Champion(
     val primaryRole: LaneRole = LaneRole.MID,
     val secondaryRoles: List<LaneRole> = emptyList(),
     val tier: String = "B", // "S+", "S", "A+", "A", "B"
-    val hasRegionalStats: Boolean = false,
+    val hasRegionalStats: Boolean = true,
     val winrate: Double = 50.0, // e.g. 53.8
     val pickRate: Double = 0.0,
     val banRate: Double = 0.0,

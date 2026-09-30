@@ -155,9 +155,19 @@ object BestBuildWrScraper {
                 } else {
                     val restored = WildRiftRepository.chineseStatsSnapshot().map { champ ->
                         val stats = data.optJSONObject(champ.id) ?: return@map champ
-                        champ.copy(hasRegionalStats = stats.optBoolean("hasRegionalStats", true), winrate = stats.optDouble("winrate", champ.winrate),
-                            pickRate = stats.optDouble("pickRate", champ.pickRate), banRate = stats.optDouble("banRate", champ.banRate),
-                            tier = stats.optString("tier", champ.tier), cnTier = stats.optString("cnTier", champ.cnTier))
+                        val wr = stats.optDouble("winrate", champ.winrate)
+                        val pr = stats.optDouble("pickRate", champ.pickRate)
+                        val br = stats.optDouble("banRate", champ.banRate)
+                        val t = stats.optString("tier", champ.tier).ifBlank { champ.tier }
+                        val ct = stats.optString("cnTier", champ.cnTier).ifBlank { champ.cnTier }
+                        champ.copy(
+                            hasRegionalStats = true,
+                            winrate = if (wr > 0.0) wr else champ.winrate,
+                            pickRate = if (pr > 0.0) pr else champ.pickRate,
+                            banRate = if (br > 0.0) br else champ.banRate,
+                            tier = t,
+                            cnTier = ct
+                        )
                     }
                     WildRiftRepository.applyChineseStats(restored)
                 }

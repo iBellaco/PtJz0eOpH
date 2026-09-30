@@ -103,12 +103,17 @@ class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : Cor
                                 val tId = stats.optString("hero_id", "")
                                 if (tId.isBlank()) continue
 
-                                val winRate = stats.optString("win_rate_percent").toDoubleOrNull()
+                                val rawWr = stats.optString("win_rate_percent").toDoubleOrNull()
                                     ?: stats.optDouble("win_rate", 50.0)
-                                val pickRate = stats.optString("appear_rate_percent").toDoubleOrNull()
+                                val winRate = if (rawWr in 0.001..1.0) Math.round(rawWr * 10000.0) / 100.0 else rawWr
+
+                                val rawPr = stats.optString("appear_rate_percent").toDoubleOrNull()
                                     ?: stats.optDouble("appear_rate", 8.0)
-                                val banRate = stats.optString("forbid_rate_percent").toDoubleOrNull()
+                                val pickRate = if (rawPr in 0.001..1.0) Math.round(rawPr * 10000.0) / 100.0 else rawPr
+
+                                val rawBr = stats.optString("forbid_rate_percent").toDoubleOrNull()
                                     ?: stats.optDouble("forbid_rate", 3.0)
+                                val banRate = if (rawBr in 0.001..1.0) Math.round(rawBr * 10000.0) / 100.0 else rawBr
 
                                 val tencentInfo = tencentIdToData[tId]
                                 val tencentAlias = tencentInfo?.second?.lowercase().orEmpty()
@@ -178,8 +183,26 @@ class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : Cor
         }
     private fun matchAlias(ourId: String, ourName: String, tencentAlias: String, englishName: String): Boolean {
         fun canonical(value: String) = value.lowercase().filter { it.isLetterOrDigit() }
-        val english = canonical(englishName).let { when (it) { "monkeyking" -> "wukong"; "nunu" -> "nunuwillump"; else -> it } }
-        if (english.isNotBlank() && (english == canonical(ourId) || english == canonical(ourName))) return true
+        val english = canonical(englishName).let {
+            when (it) {
+                "monkeyking" -> "wukong"
+                "nunu" -> "nunuwillump"
+                "drmundo" -> "drmundo"
+                "masteryi" -> "masteryi"
+                "bard" -> "bardo"
+                else -> it
+            }
+        }
+        val ourCanonicalId = canonical(ourId).let { when (it) { "nunu" -> "nunuwillump"; "bard" -> "bardo"; else -> it } }
+        val ourCanonicalName = canonical(ourName).let {
+            when (it) {
+                "maestroyi" -> "masteryi"
+                "bardo" -> "bardo"
+                "nunoywillump", "nunuywillump" -> "nunuwillump"
+                else -> it
+            }
+        }
+        if (english.isNotBlank() && (english == ourCanonicalId || english == ourCanonicalName)) return true
         if (tencentAlias.isBlank()) return false
         val normId = ourId.lowercase().replace("_", "").replace(" ", "")
         val normName = ourName.lowercase().replace(" ", "").replace("'", "")
@@ -216,10 +239,14 @@ class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : Cor
             "katuosi" to "karthus",
             "tamu" to "tahmkench",
             "kalisita" to "kalista",
-            "zeli" to "zeri"
+            "zeli" to "zeri",
+            "bade" to "bardo",
+            "yi" to "masteryi",
+            "mengduoyisheng" to "drmundo",
+            "nunuheweilangpu" to "nunuwillump"
         )
 
-        if (hardcodedMap[normTencent] == normId || hardcodedMap[normTencent] == normName) return true
+        if (hardcodedMap[normTencent] == normId || hardcodedMap[normTencent] == normName || hardcodedMap[normTencent] == ourCanonicalId || hardcodedMap[normTencent] == ourCanonicalName) return true
 
         return normId.contains(normTencent) || normTencent.contains(normId) ||
                normName.contains(normTencent) || normTencent.contains(normName)
