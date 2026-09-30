@@ -66,49 +66,49 @@ fun formatWildRiftDescription(text: String, defaultColor: Color = TextPrimary): 
 
             // 1. Daño Verdadero (Mayor prioridad para evitar que "daño" genérico lo solape)
             highlightMatches(
-                Regex("(?i)\\b(daño verdadero( adicional)?|true damage)\\b"),
+                Regex("(?i)\\b(daño verdadero( adicional)?|dano verdadeiro( adicional)?|true damage)\\b"),
                 WildRiftDamageColors.TrueDamage
             )
 
             // 2. Daño Adaptable / Fuerza Adaptable
             highlightMatches(
-                Regex("(?i)\\b(daño adaptable( adicional)?|fuerza adaptable|adaptable|adaptive force|adaptive damage)\\b"),
+                Regex("(?i)\\b(daño adaptable( adicional)?|fuerza adaptable|adaptable|força adaptativa|dano adaptativo( adicional)?|adaptive force|adaptive damage)\\b"),
                 WildRiftDamageColors.AdaptiveDamage
             )
 
             // 3. Daño Mágico / Poder de Habilidad / PH / AP
             highlightMatches(
-                Regex("(?i)\\b(daño mágico( adicional)?|daño magico( adicional)?|poder de habilidad|PH|magic damage|AP|resistencia mágica|resistencia magica|penetración mágica|penetracion magica)\\b"),
+                Regex("(?i)\\b(daño mágico( adicional)?|daño magico( adicional)?|poder de habilidad|PH|dano mágico( adicional)?|poder de habilidade|resistência mágica|penetração mágica|magic damage|AP|resistencia mágica|resistencia magica|penetración mágica|penetracion magica)\\b"),
                 WildRiftDamageColors.MagicDamage
             )
 
             // 4. Daño Físico / Daño de Ataque / DA / AD
             highlightMatches(
-                Regex("(?i)\\b(daño físico( adicional)?|daño fisico( adicional)?|daño de ataque|DA|physical damage|AD|letalidad|armadura|penetración de armadura|penetracion de armadura)\\b"),
+                Regex("(?i)\\b(daño físico( adicional)?|daño fisico( adicional)?|daño de ataque|DA|dano físico( adicional)?|dano de ataque|letalidade|penetração de armadura|physical damage|AD|letalidad|armadura|penetración de armadura|penetracion de armadura)\\b"),
                 WildRiftDamageColors.PhysicalDamage
             )
 
             // 5. Curación, Vida, Escudo
             highlightMatches(
-                Regex("(?i)\\b(curación|curacion|vida restaurada|vida adicional|vida máxima|vida maxima|salud máxima|salud maxima|escudo(s)?|salud|omnisucción|omnisuccion|robo de vida|succión física|succion fisica|vampiro( físico| mágico)?|vampirismo)\\b"),
+                Regex("(?i)\\b(cura|curação|curación|curacion|vida restaurada|vida adicional|vida máxima|vida maxima|salud máxima|salud maxima|escudo(s)?|roubo de vida|onivampirismo|salud|omnisucción|omnisuccion|robo de vida|succión física|succion fisica|vampiro( físico| mágico)?|vampirismo)\\b"),
                 WildRiftDamageColors.HealingAndLife
             )
 
             // 5.5. Críticos
             highlightMatches(
-                Regex("(?i)\\b(tasa crítica|tasa critica|daño crítico|daño critico|golpe(s)? crítico(s)?|probabilidad de golpe crítico)\\b"),
+                Regex("(?i)\\b(acerto(s)? crítico(s)?|dano crítico|chance de acerto crítico|tasa crítica|tasa critica|daño crítico|daño critico|golpe(s)? crítico(s)?|probabilidad de golpe crítico)\\b"),
                 WildRiftDamageColors.CriticalColor
             )
 
             // 6. Velocidades y Aceleración
             highlightMatches(
-                Regex("(?i)\\b(velocidad de ataque|velocidad de movimiento|velocidad de habilidades( básicas)?|aceleración de habilidad(es)?|enfriamiento)\\b"),
+                Regex("(?i)\\b(velocidade de ataque|velocidade de movimento|aceleração de habilidade(s)?|tempo de recarga|velocidad de ataque|velocidad de movimiento|velocidad de habilidades( básicas)?|aceleración de habilidad(es)?|enfriamiento)\\b"),
                 WildRiftDamageColors.AttackSpeed
             )
 
             // 7. Maná / Energía
             highlightMatches(
-                Regex("(?i)\\b(maná( máximo)?|mana|energía|energia|regeneración de maná|regeneracion de mana)\\b"),
+                Regex("(?i)\\b(maná( máximo)?|mana|regeneração de mana|energía|energia|regeneración de maná|regeneracion de mana)\\b"),
                 WildRiftDamageColors.ManaColor
             )
 
@@ -143,7 +143,7 @@ fun FormattedWildRiftText(
     overflow: TextOverflow = TextOverflow.Clip
 ) {
     Text(
-        text = com.example.util.tr(formatWildRiftDescription(text, color)),
+        text = formatWildRiftDescription(com.example.util.tr(text), color),
         modifier = modifier,
         color = color,
         fontSize = fontSize,

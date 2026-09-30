@@ -739,6 +739,7 @@ fun DraftingApp() {
         // Inicializar listado maestro de campeones desde assets JSON
         com.example.data.WildRiftRepository.initChampions(context)
         com.example.data.sync.ChineseMetaSyncService.loadRegion(context)
+        launch { com.example.data.sync.ChineseMetaSyncService.syncChineseMeta(context) }
 
         // Ejecuta la sincronización en segundo plano al arrancar la app para traer los datos desde la nube
         com.example.data.sync.MetaCrawlerSyncService.syncPatchData(context)

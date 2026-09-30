@@ -1,8 +1,15 @@
 package com.example.util
 
 /** Offline exact phrases and full sentence templates. Never performs network translation. */
-class TranslationCatalog(private val portuguese: Map<String, String>, private val spanish: Map<String, String> = emptyMap()) {
+class TranslationCatalog(private val portuguese: Map<String, String>, private val spanish: Map<String, String> = emptyMap(), private val portugueseAliases: Map<String, String> = emptyMap()) {
     private val reverse = portuguese.entries.filter { it.key != it.value }.associate { it.value to it.key }
+    private fun folded(map: Map<String, String>) = map.entries.associate {
+        it.key.trim().replace(Regex("\\s+"), " ").lowercase(java.util.Locale.ROOT) to it.value
+    }
+    private val ptFolded by lazy { folded(portuguese) }
+    private val esFolded by lazy { folded(reverse) }
+    private fun preserveCase(source: String, translated: String): String =
+        if (source.any { it.isLetter() } && source.filter { it.isLetter() }.all { it.isUpperCase() }) translated.uppercase(java.util.Locale.ROOT) else translated
     private data class Template(val pattern: Regex, val output: String, val slots: List<Int>, val weight: Int, val anchor: String)
     private val tokens = Regex("\\{(\\d+)\\}|%(?:\\d+\\$)?[-+0#]*\\d*(?:\\.\\d+)?[dsf](?![\\p{L}])")
     private fun buildTemplates(map: Map<String, String>): List<Template> = map.mapNotNull { (source, target) ->
@@ -20,7 +27,7 @@ class TranslationCatalog(private val portuguese: Map<String, String>, private va
         regex.append(Regex.escape(source.substring(offset))).append("$")
         val literalLength = source.length - matches.sumOf { it.value.length }
         // Avoid matching arbitrary user messages with generic patterns such as "{0}".
-        if (literalLength < 4) null else Template(Regex(regex.toString()), target, slots, literalLength, tokens.split(source).maxByOrNull { it.length }.orEmpty())
+        if (literalLength < 4) null else Template(Regex(regex.toString(), RegexOption.IGNORE_CASE), target, slots, literalLength, tokens.split(source).maxByOrNull { it.length }.orEmpty())
     }.sortedByDescending { it.weight }
     private val ptTemplates by lazy { buildTemplates(portuguese) }
     private val esTemplates by lazy { buildTemplates(reverse) }
@@ -41,23 +48,40 @@ class TranslationCatalog(private val portuguese: Map<String, String>, private va
     private fun translate(language: String, text: String, depth: Int): String {
         if (text.isEmpty()) return text
         val isPt = language.trim().lowercase(java.util.Locale.ROOT).startsWith("pt")
+        if (isPt) portugueseAliases[text]?.let { return it }
         val map = if (isPt) portuguese else reverse
-        if (!isPt) spanish[text]?.let { return it }
+        if (!isPt) {
+            spanish[text]?.let { return it }
+            // Canonical Spanish must not be mistaken for an ambiguous reverse alias.
+            if (text in portuguese) return text
+        }
         map[text]?.let { return it }
         if (isPt && text in translatedPhrases) return text
         val trimmed = text.trim()
         map[trimmed]?.let { return text.takeWhile { c -> c.isWhitespace() } + it + text.takeLastWhile { c -> c.isWhitespace() } }
-        if (depth < 3) {
+        val foldedKey = trimmed.replace(Regex("\\s+"), " ").lowercase(java.util.Locale.ROOT)
+        (if (isPt) ptFolded else esFolded)[foldedKey]?.let {
+            return text.takeWhile { c -> c.isWhitespace() } + preserveCase(trimmed, it) + text.takeLastWhile { c -> c.isWhitespace() }
+        }
+        if (depth < 5) {
             val templates = if (isPt) ptTemplates else esTemplates
             for (template in templates) {
-                if (!text.contains(template.anchor)) continue
+                if (!text.contains(template.anchor, ignoreCase = true)) continue
                 val match = template.pattern.matchEntire(text) ?: continue
                 val values = template.slots.mapIndexed { i, slot -> slot to translate(language, match.groupValues[i + 1], depth + 1) }.toMap()
                 var formatIndex = 0
-                return tokens.replace(template.output) { token ->
+                val translated = tokens.replace(template.output) { token ->
                     val slot = token.groups[1]?.value?.toIntOrNull() ?: formatIndex++
                     values[slot] ?: token.value
                 }
+                return preserveCase(text, translated)
+            }
+            // Decorative prefixes and styled wrappers must not block a complete phrase.
+            val envelope = Regex("^([^\\p{L}\\p{N}]*)([\\s\\S]*?)([^\\p{L}\\p{N}]*)$").matchEntire(text)
+            if (envelope != null && envelope.groupValues[2].isNotEmpty() && envelope.groupValues[2] != text) {
+                val center = envelope.groupValues[2]
+                val translated = translate(language, center, depth + 1)
+                if (translated != center) return envelope.groupValues[1] + translated + envelope.groupValues[3]
             }
             // Independently assembled list rows retain complete phrase translations.
             for (separator in listOf("\n", " • ", " | ", ": ")) {

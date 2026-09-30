@@ -59,6 +59,16 @@ class LocalizationRegressionTest {
         assertFalse(trStr("pt", "Referencia local • Sin estadísticas regionales en vivo").contains("Sin estadísticas"))
     }
 
+    @Test fun `decorations casing and copied Portuguese fields cannot leak Spanish`() {
+        assertEquals("⚔️ FEITIÇOS:", trStr("pt", "⚔️ HECHIZOS:"))
+        assertEquals("PERGUNTAS FREQUENTES", trStr("pt", "PREGUNTAS FRECUENTES"))
+        assertEquals("🔥 Perguntas Frequentes", trStr("pt", "🔥 Preguntas Frecuentes"))
+        assertEquals("Perguntas Frequentes", trStr("pt", "Preguntas  Frecuentes"))
+        assertEquals("Preguntas Frecuentes", trStr("es", "Preguntas Frecuentes"))
+        assertFalse(trStr("pt", "Aplica 40% de Heridas Graves al recibir ataques de los rivales e inmovilizarlos.").contains("Heridas Graves"))
+        assertEquals("NA sem fonte disponível • Consulte a lista Global", trStr("pt", "NA sin fuente disponible • Consulta la lista Global"))
+    }
+
     @Test fun `known UI labels never leak Spanish panel wording into Portuguese`() {
         assertEquals("Expandir painel", trStr("pt", "Expandir panel"))
         assertEquals("Minimizar painel", trStr("pt", "Minimizar panel"))
@@ -71,5 +81,22 @@ class LocalizationRegressionTest {
         val message = "Diego_42: GG Volibear!"
         assertEquals(message, trStr("pt", message))
         assertEquals("https://example.com/es/guardar", trStr("pt", "https://example.com/es/guardar"))
+    }
+
+    @Test fun `bundled champion and equipment descriptions contain no Spanish UI wording in Portuguese`() {
+        val repository = com.example.data.WildRiftRepository
+        repository.initChampions(context, forceReload = true)
+        assertTrue(repository.champions.size > 100)
+        val descriptions = repository.champions.flatMap { champion ->
+            listOf(champion.getLocalizedTitle("pt"), champion.getLocalizedSummary("pt")) +
+                champion.skills.flatMap { listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt")) }
+        } + repository.items.flatMap {
+            listOf(it.getLocalizedName("pt"), it.getLocalizedStats("pt"), it.getLocalizedPassive("pt"), it.getLocalizedCoachTip("pt"))
+        } + repository.runes.flatMap { listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt")) } +
+            repository.summonerSpells.flatMap { listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt")) }
+        val spanish = Regex("(?<![\\p{L}\\p{N}_-])(?:daño|enemigos|campeones|hechizos|seleccionar|pantalla|guardar|cerrar|sin|del|los|las)(?![\\p{L}\\p{N}_])|[¿¡ñ]", RegexOption.IGNORE_CASE)
+        descriptions.forEach { text ->
+            assertFalse("Portuguese description contains Spanish: $text", spanish.containsMatchIn(text.replace("Lee Sin", "LeeSin")))
+        }
     }
 }

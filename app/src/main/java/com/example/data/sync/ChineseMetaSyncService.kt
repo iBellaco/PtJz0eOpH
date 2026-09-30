@@ -17,15 +17,16 @@ object ChineseMetaSyncService {
     private val _currentTier = MutableStateFlow(TencentRankTier.DIAMOND_PLUS)
     val currentTier: StateFlow<TencentRankTier> = _currentTier.asStateFlow()
 
-    private val _currentRegion = MutableStateFlow("GLOBAL")
+    private val _currentRegion = MutableStateFlow(MetaRegion.DEFAULT)
     val currentRegion: StateFlow<String> = _currentRegion.asStateFlow()
 
     fun loadRegion(context: Context) {
         BestBuildWrScraper.initialize(context)
-        val saved = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            .getString("selected_meta_region", "GLOBAL") ?: "GLOBAL"
+        val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val saved = prefs.getString("selected_meta_region", MetaRegion.DEFAULT) ?: MetaRegion.DEFAULT
         _currentRegion.value = MetaRegion.normalize(saved)
         WildRiftRepository.selectMetaRegion(_currentRegion.value)
+        BestBuildWrScraper.selectRegion(_currentRegion.value)
     }
 
     fun setRegion(context: Context, regionId: String, scope: CoroutineScope) {
@@ -34,17 +35,16 @@ object ChineseMetaSyncService {
         context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit()
             .putString("selected_meta_region", region).apply()
         WildRiftRepository.selectMetaRegion(region)
-        if (region == "CN") {
-            scope.launch { syncChineseMeta(context, _currentTier.value, forceRefresh = true) }
-        } else {
-            _syncState.value = ChineseSyncState.Idle
-        }
+        BestBuildWrScraper.selectRegion(region)
+        scope.launch { syncChineseMeta(context, _currentTier.value, forceRefresh = true) }
     }
 
     suspend fun syncChineseMeta(context: Context, tier: TencentRankTier = TencentRankTier.DIAMOND_PLUS, forceRefresh: Boolean = false) {
         _syncState.value = ChineseSyncState.Syncing
         _currentTier.value = tier
-        BestBuildWrScraper.syncGlobalTierList(context, _currentRegion.value, force = forceRefresh)
+        val requestedRegion = _currentRegion.value
+        BestBuildWrScraper.syncGlobalTierList(context, requestedRegion, force = forceRefresh)
+        if (requestedRegion != _currentRegion.value) return
         _syncState.value = if (BestBuildWrScraper.isLastSyncSuccess.value)
             ChineseSyncState.Success(BestBuildWrScraper.lastSyncFormattedTime.value, tier)
         else ChineseSyncState.Error("No se pudo actualizar; usando los últimos datos guardados.")

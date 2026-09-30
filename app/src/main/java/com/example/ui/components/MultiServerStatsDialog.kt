@@ -47,13 +47,13 @@ fun MultiServerStatsDialog(
     val currentRegion by com.example.data.sync.ChineseMetaSyncService.currentRegion.collectAsState()
     val currentTier by com.example.data.sync.ChineseMetaSyncService.currentTier.collectAsState()
 
-    val topCn = remember(currentRegion, currentTier) {
+    val topCn = remember(currentRegion, currentTier, com.example.data.WildRiftRepository.regionRevision) {
         com.example.data.WildRiftRepository.getTopChampionsForServer("CN", count = 3, tencentTier = currentTier)
     }
-    val topGlobal = remember(currentRegion, currentTier) {
+    val topGlobal = remember(currentRegion, currentTier, com.example.data.WildRiftRepository.regionRevision) {
         com.example.data.WildRiftRepository.getTopChampionsForServer("Global", count = 3)
     }
-    val topNa = remember(currentRegion, currentTier) {
+    val topNa = remember(currentRegion, currentTier, com.example.data.WildRiftRepository.regionRevision) {
         com.example.data.WildRiftRepository.getTopChampionsForServer("NA", count = 3)
     }
 
@@ -108,7 +108,7 @@ fun MultiServerStatsDialog(
                                     fontWeight = FontWeight.Black
                                 )
                                 Text(
-                                    text = tr("China en línea • Global y NA locales"),
+                                    text = tr("China y Global • Fuentes independientes"),
                                     color = HextechCyan,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -162,19 +162,19 @@ fun MultiServerStatsDialog(
                                             .clip(CircleShape)
                                             .background(HextechCyan.copy(alpha = alpha))
                                     )
-                                    Text(text = tr("China / Local"), color = HextechCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    Text(text = tr("China / Global"), color = HextechCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "3",
+                                text = "2",
                                 color = TextPrimary,
                                 fontSize = 28.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tr("China: estadísticas en línea. Global y NA: referencias locales."),
+                                text = tr("China: estadísticas oficiales. Global: categorías de WildRiftFire. NA: sin fuente disponible."),
                                 color = TextSecondary,
                                 fontSize = 11.5.sp,
                                 lineHeight = 16.sp
@@ -199,11 +199,11 @@ fun MultiServerStatsDialog(
                     // Server 2: Global
                     ServerStatCard(
                         flag = "🌍",
-                        serverName = tr("Global (referencia local)"),
-                        matchesText = tr("Referencia local"),
+                        serverName = tr("🌐 Global"),
+                        matchesText = tr("Clasificación publicada"),
                         topChampions = topGlobal,
                         borderColor = HextechCyan,
-                        dataSource = tr("Referencia local"),
+                        dataSource = "WildRiftFire",
                         isLocal = true
                     )
 
@@ -212,11 +212,11 @@ fun MultiServerStatsDialog(
                     // Server 3: Norteamérica NA
                     ServerStatCard(
                         flag = "🇺🇸",
-                        serverName = tr("América (NA, referencia local)"),
-                        matchesText = tr("Referencia local"),
-                        topChampions = topNa,
+                        serverName = tr("🇺🇸 América (NA)"),
+                        matchesText = tr("Sin fuente disponible"),
+                        topChampions = emptyList(),
                         borderColor = Color(0xFF4A90E2),
-                        dataSource = tr("Referencia local"),
+                        dataSource = tr("No hay estadísticas regionales disponibles"),
                         isLocal = true
                     )
 
@@ -326,7 +326,7 @@ fun ServerStatCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     if (topChampions.isEmpty()) {
                         Text(
-                            text = tr("Cargando datos..."),
+                            text = tr("Sin datos regionales disponibles"),
                             color = HextechCyan,
                             fontSize = 11.5.sp
                         )
@@ -339,7 +339,7 @@ fun ServerStatCard(
                                 else -> TextPrimary.copy(alpha = 0.85f)
                             }
                             Text(
-                                text = com.example.util.tr("Meta #$rankNumber: ${champ.name} (${String.format(java.util.Locale.US, "%.2f", champ.winrate)}% WR)"),
+                                text = com.example.util.tr("Meta #$rankNumber: ${champ.name} (${if (champ.hasRegionalStats) com.example.util.regionalPercent(champ, champ.winrate) + " WR" else champ.tier})"),
                                 color = rankColor,
                                 fontSize = 11.5.sp,
                                 fontWeight = if (rankNumber == 1) FontWeight.Bold else FontWeight.Medium
@@ -376,7 +376,7 @@ fun ServerStatCard(
                     )
                 }
                 Text(
-                    text = if (isLocal) tr("Sin conexión") else tr("Servidor chino"),
+                    text = com.example.util.tr(dataSource),
                     color = TextSecondary,
                     fontSize = 10.sp
                 )
