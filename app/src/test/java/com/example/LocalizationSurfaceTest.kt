@@ -73,12 +73,10 @@ class LocalizationSurfaceTest {
         compose.onNodeWithTag("meta_region_GLOBAL").assertIsSelected()
         val cnLeft = compose.onNodeWithTag("meta_region_CN").fetchSemanticsNode().boundsInRoot.left
         val globalLeft = compose.onNodeWithTag("meta_region_GLOBAL").fetchSemanticsNode().boundsInRoot.left
-        val naLeft = compose.onNodeWithTag("meta_region_NA").fetchSemanticsNode().boundsInRoot.left
-        assertTrue(cnLeft < globalLeft && globalLeft < naLeft)
+        assertTrue(cnLeft < globalLeft)
+        compose.onNodeWithTag("meta_region_NA").assertDoesNotExist()
         compose.onNodeWithTag("meta_region_CN").performClick().assertIsSelected()
         assertEquals("CN", WildRiftRepository.activeRegionName)
-        compose.onNodeWithTag("meta_region_NA").performClick().assertIsSelected()
-        assertEquals("NA", WildRiftRepository.activeRegionName)
         compose.onNodeWithTag("meta_region_GLOBAL").performClick().assertIsSelected()
         assertEquals("GLOBAL", WildRiftRepository.activeRegionName)
     }

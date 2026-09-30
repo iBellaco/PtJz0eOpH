@@ -330,10 +330,10 @@ object WildRiftRepository {
         count: Int = 3,
         tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS
     ): List<Champion> {
-        if (regionId.equals("NA", ignoreCase = true) || com.example.data.sync.MetaRegion.normalize(regionId) == "NA") return emptyList()
-        val snapshot = regionalSnapshot(regionId)
+        val normalized = com.example.data.sync.MetaRegion.normalize(regionId)
+        val snapshot = regionalSnapshot(normalized)
         val categories = mapOf("S+" to 6, "S" to 5, "A+" to 4, "A" to 3, "B" to 2, "C" to 1)
-        return if (com.example.data.sync.MetaRegion.normalize(regionId) == "CN")
+        return if (normalized == "CN")
             snapshot.filter { it.hasRegionalStats }.sortedByDescending { it.winrate }.take(count)
         else snapshot.sortedWith(compareByDescending<Champion> { categories[it.tier] ?: 0 }.thenBy { it.name }).take(count)
 

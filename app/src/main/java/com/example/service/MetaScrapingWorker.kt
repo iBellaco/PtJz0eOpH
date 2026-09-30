@@ -17,7 +17,6 @@ class MetaScrapingWorker(context: Context, workerParams: WorkerParameters) : Cor
             .getString("selected_meta_region", com.example.data.sync.MetaRegion.DEFAULT) ?: com.example.data.sync.MetaRegion.DEFAULT)
         BestBuildWrScraper.selectRegion(region)
         BestBuildWrScraper.syncGlobalTierList(applicationContext, region)
-        if (region == "NA") return Result.success()
         return if (BestBuildWrScraper.isLastSyncSuccess.value) Result.success() else Result.retry()
     }
 

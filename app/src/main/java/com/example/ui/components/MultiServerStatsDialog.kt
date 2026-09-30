@@ -171,7 +171,7 @@ fun MultiServerStatsDialog(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tr("China: estadísticas oficiales. Global: Scraping multi-sitio."),
+                                text = tr("China: estadísticas oficiales Tencent. Global: Fusión matemática automática de BestBuildWR, WildRiftFire y WildRiftCore."),
                                 color = TextSecondary,
                                 fontSize = 11.5.sp,
                                 lineHeight = 16.sp
@@ -196,11 +196,11 @@ fun MultiServerStatsDialog(
                     // Server 2: Global
                     ServerStatCard(
                         flag = "🌍",
-                        serverName = tr("🌐 Global"),
-                        matchesText = tr("Clasificación publicada"),
+                        serverName = tr("🌐 Global (Tri-Source)"),
+                        matchesText = tr("Clasificación fusionada"),
                         topChampions = topGlobal,
                         borderColor = HextechCyan,
-                        dataSource = tr("Scraping"),
+                        dataSource = tr("Fusión: BestBuildWR, WildRiftFire, WildRiftCore"),
                         isLocal = true
                     )
 

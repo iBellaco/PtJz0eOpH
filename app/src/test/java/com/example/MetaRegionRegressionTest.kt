@@ -73,8 +73,9 @@ class MetaRegionRegressionTest {
         assertEquals(mapOf("syndra" to "S+", "garen" to "S"), RegionalTierParser.parse(html))
         assertTrue(RegionalTierParser.parse("<html>Service unavailable</html>").isEmpty())
     }
-    @Test fun `missing NA source cannot produce a fabricated regional top list`() {
-        assertTrue(WildRiftRepository.getTopChampionsForServer("NA").isEmpty())
+    @Test fun `unsupported server regions cannot produce a fabricated regional top list`() {
+        assertEquals("GLOBAL", MetaRegion.normalize("NA"))
+        assertEquals("GLOBAL", MetaRegion.normalize("EU"))
         assertEquals("—", com.example.util.regionalPercent(WildRiftRepository.champions.first().copy(hasRegionalStats = false), 50.0))
     }
 }

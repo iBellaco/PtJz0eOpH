@@ -5734,8 +5734,7 @@ fun TierSelectionPanel(
                     ) {
                         val regionItems = listOf(
                             Triple("CN", tr("🇨🇳 China"), tr("Meta CN")),
-                            Triple("GLOBAL", tr("🌐 Global"), tr("Scraping")),
-                            Triple("NA", tr("🇺🇸 NA"), tr("Meta NA"))
+                            Triple("GLOBAL", tr("🌐 Global"), tr("Tri-Source Meta"))
                         )
                         regionItems.forEach { (regionId, label, sub) ->
                             val isSelected = currentRegion == regionId

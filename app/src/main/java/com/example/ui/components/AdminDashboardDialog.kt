@@ -5442,7 +5442,7 @@ private fun ServerScraperHealthCard() {
                     Icon(Icons.Default.CloudSync, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = tr("Monitoreo Multi-Servidor (CN, NA, Global)"),
+                        text = tr("Monitoreo de Fuentes de Meta (CN & Global Tri-Source)"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -5484,7 +5484,6 @@ private fun ServerScraperHealthCard() {
             allSources.forEach { status ->
                 val regionPrefix = when (status.region) {
                     "CN" -> "🇨🇳 [CN]"
-                    "NA" -> "🌎 [NA]"
                     else -> "🌍 [Global]"
                 }
                 Row(
