@@ -641,6 +641,73 @@ fun CustomBuildDetailDialog(
                     }
                 }
 
+                // Runas situacionales: siempre debajo de las runas principales y dentro de la misma build.
+                val visibleSituationalRunes = record.situationalRunes.filter { situational ->
+                    record.coreRunes.none { core ->
+                        core.runeName.equals(situational.runeName, ignoreCase = true)
+                    }
+                }
+                if (visibleSituationalRunes.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            tr("Runas Situacionales (Opcional)"),
+                            color = HextechGold,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            visibleSituationalRunes.forEach { rune ->
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.55f)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(HextechSurfaceVariant)
+                                                .border(1.dp, HextechCyan, CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AppAssetImage(
+                                                url = rune.iconUrl,
+                                                contentDescription = rune.runeName,
+                                                fallbackText = rune.runeName,
+                                                modifier = Modifier.size(26.dp),
+                                                shape = CircleShape
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = com.example.util.tr("[Situacional] " + rune.runeName),
+                                                color = HextechCyan,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp
+                                            )
+                                            if (rune.description.isNotBlank()) {
+                                                Text(
+                                                    com.example.util.tr(rune.description),
+                                                    color = TextSecondary,
+                                                    fontSize = 11.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Spells
                 if (record.coreSpells.isNotEmpty()) {
                     item {
