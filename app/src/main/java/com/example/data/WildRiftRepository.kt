@@ -202,13 +202,13 @@ object WildRiftRepository {
             }
 
             champion.copy(
-                hasRegionalStats = true,
+                hasRegionalStats = isCn,
                 tier = category,
                 cnTier = finalCnTier,
-                winrate = finalWr,
-                pickRate = finalPr,
-                banRate = finalBr,
-                winrateDelta = finalDelta
+                winrate = if (isCn) finalWr else 0.0,
+                pickRate = if (isCn) finalPr else 0.0,
+                banRate = if (isCn) finalBr else 0.0,
+                winrateDelta = if (isCn) finalDelta else 0.0
             )
         }
         regionalChampions[normalized] = updated
@@ -257,7 +257,7 @@ object WildRiftRepository {
                     } else updated.avatarUrl
                     updated.copy(
                         avatarUrl = resolvedAvatar,
-                        hasRegionalStats = true
+                        hasRegionalStats = false
                     )
                 }
             }
@@ -269,7 +269,7 @@ object WildRiftRepository {
                     } else updated.avatarUrl
                     updated.copy(
                         avatarUrl = resolvedAvatar,
-                        hasRegionalStats = true
+                        hasRegionalStats = false
                     )
                 }
             }
