@@ -208,19 +208,73 @@ object SituationalItemAdvisor {
             name = "Diadema susurrante",
             iconUrl = "file:///android_asset/offline_images/whispering_headband.webp",
             categoryName = "Soporte Encantador & Maná (Parche 7.3a)",
-            purpose = "Otorga vida, maná y poder de curaciones y escudos con Armonía (+0.25% por maná). Al alcanzar 700 de maná evoluciona a Diadema de canciones.",
+            purpose = "Otorga vida, maná y poder de curaciones y escudos con Armonía (+0.25% por maná). Al alcanzar 700 de maná evoluciona a Diadema melodiosa.",
             bestAgainst = listOf("Composiciones de desgaste", "Soportes encantadores (Lulu, Janna, Nami, Karma, Sona, Seraphine)"),
             keyEffect = "Armonía (7.3a): Concede un 0.25% de poder de curaciones y escudos adicional según el maná. Carga de maná evoluciona el objeto.",
             recommendationTip = "Excelente compra para soportes encantadores que requieren regeneración y escalado de sanación en fase de líneas."
         ),
-        "Diadema de canciones" to SituationalItemInfo(
-            name = "Diadema de canciones",
+        "Diadema melodiosa" to SituationalItemInfo(
+            name = "Diadema melodiosa",
             iconUrl = "file:///android_asset/offline_images/whispering_headband.webp",
             categoryName = "Soporte Encantador Evolucionado (Parche 7.3a)",
             purpose = "Forma final tras acumular 700 de maná. Concede Armonía al 0.25% y sana al aliado con menor vida en combate durante peleas de equipo.",
             bestAgainst = listOf("Peleas de equipo prolongadas 5v5", "Composiciones de asedio y desgaste"),
             keyEffect = "Cántico Sagrado: Cura al aliado con menor vida en combate al usar habilidades o curar/escudar. Armonía: +0.25% curación y escudos.",
             recommendationTip = "Maximiza radicalmente la supervivencia de todo el equipo en peleas por Dragón y Barón Nashor."
+        ),
+        "Diadema de canciones" to SituationalItemInfo(
+            name = "Diadema melodiosa",
+            iconUrl = "file:///android_asset/offline_images/whispering_headband.webp",
+            categoryName = "Soporte Encantador Evolucionado (Parche 7.3a)",
+            purpose = "Forma final tras acumular 700 de maná. Concede Armonía al 0.25% y sana al aliado con menor vida en combate durante peleas de equipo.",
+            bestAgainst = listOf("Peleas de equipo prolongadas 5v5", "Composiciones de asedio y desgaste"),
+            keyEffect = "Cántico Sagrado: Cura al aliado con menor vida en combate al usar habilidades o curar/escudar. Armonía: +0.25% curación y escudos.",
+            recommendationTip = "Maximiza radicalmente la supervivencia de todo el equipo en peleas por Dragón y Barón Nashor."
+        ),
+        "Hoz espectral" to SituationalItemInfo(
+            name = "Hoz espectral",
+            iconUrl = "file:///android_asset/offline_images/spectral_sickle.webp",
+            categoryName = "Soporte Ofensivo / Hostigamiento",
+            purpose = "Objeto inicial para soportes que hostigan con daño a distancia. Genera 65 de oro por intercambio cerca de aliados y evoluciona en Guadaña de la Niebla Negra.",
+            bestAgainst = listOf("Líneas de rango agresivas (Lux, Senna, Karma, Nami, Pyke, Ashe)"),
+            keyEffect = "Tributo: 1 orbe cada 30s que otorga 65 oro y cura al golpear rivales. Misión 750 oro.",
+            recommendationTip = "Indispensable para soportes de hostigamiento para no perder economía frente a la muerte de súbditos."
+        ),
+        "Guadaña de la Niebla Negra" to SituationalItemInfo(
+            name = "Guadaña de la Niebla Negra",
+            iconUrl = "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+            categoryName = "Soporte Ofensivo Evolucionado",
+            purpose = "Evolución completa de Hoz espectral. Otorga daño adaptable, velocidad de rotación hacia el carry aliado y daño aumentado contra guardianes de visión.",
+            bestAgainst = listOf("Composiciones de asedio, visión y rotaciones rápidas"),
+            keyEffect = "Estallido de alma: Otorga estadísticas crecientes periódicamente y +30% velocidad hacia el compañero ideal.",
+            recommendationTip = "Acelera las rotaciones y el control de mapa en juego medio y tardío."
+        ),
+        "Escudo reliquia" to SituationalItemInfo(
+            name = "Escudo reliquia",
+            iconUrl = "file:///android_asset/offline_images/relic_shield.webp",
+            categoryName = "Soporte Tanque / Ejecución",
+            purpose = "Objeto inicial para soportes cuerpo a cuerpo o de iniciación. Permite ejecutar súbditos bajo 65% de vida para compartir oro y vida con el tirador.",
+            bestAgainst = listOf("Líneas de combate cuerpo a cuerpo y tanques (Nautilus, Leona, Braum, Thresh, Alistar)"),
+            keyEffect = "Tributo: Ejecuta súbditos compartiendo botín y otorgando orbes de energía.",
+            recommendationTip = "Fundamental en tanques de apoyo para asegurar el empuje de oleadas y la economía del carry."
+        ),
+        "Baluarte de la montaña" to SituationalItemInfo(
+            name = "Baluarte de la montaña",
+            iconUrl = "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+            categoryName = "Soporte Tanque Evolucionado",
+            purpose = "Evolución de Escudo reliquia. Concede vida progresiva, celeridad y velocidad extrema para auxiliar al tirador vinculado.",
+            bestAgainst = listOf("Peleas de equipo de primera línea y protección del carry"),
+            keyEffect = "Estallido de alma: Proporciona hasta 250 de vida y rotación veloz hacia el compañero ideal.",
+            recommendationTip = "Garantiza presencia constante en el mapa junto al tirador prioritario."
+        ),
+        "Abrazo del serafín" to SituationalItemInfo(
+            name = "Abrazo del serafín",
+            iconUrl = "file:///android_asset/offline_images/0bfb36d8b1370271319b5895293c4056.webp",
+            categoryName = "Escalado AP & Escudo Salvavidas",
+            purpose = "Evolución final del Báculo del arcángel al completar 700 de maná. Otorga AP proporcional al maná y un escudo salvavidas crítico del 16% del maná al bajar del 35% de vida.",
+            bestAgainst = listOf("Magos dependientes de maná frente a asesinos de ráfaga (Kassadin, Orianna, Ryze, Ziggs, Anivia)"),
+            keyEffect = "Salvavidas: Escudo vitalicio del 16% de maná máximo al recibir daño letal. Asombro: +2% AP por maná.",
+            recommendationTip = "El mejor objeto de seguridad y escalado para magos de control en peleas tardías."
         ),
         "Flechas de los Yun Tal" to SituationalItemInfo(
             name = "Flechas de los Yun Tal",

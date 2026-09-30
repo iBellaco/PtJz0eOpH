@@ -2320,57 +2320,56 @@ private fun ItemsCatalogTab() {
     }
 
     val lang = LocalLanguage.current
+
+    fun normalizeSearch(text: String): String {
+        return java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
+            .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+            .lowercase()
+            .trim()
+    }
+
+    fun itemMatchesQuery(item: WildRiftItem, query: String): Boolean {
+        if (query.isBlank()) return true
+        val qNorm = normalizeSearch(query)
+        return normalizeSearch(item.getLocalizedName(lang)).contains(qNorm) ||
+               normalizeSearch(item.name).contains(qNorm) ||
+               normalizeSearch(item.nameEn).contains(qNorm) ||
+               normalizeSearch(item.namePt).contains(qNorm) ||
+               normalizeSearch(item.id).contains(qNorm) ||
+               normalizeSearch(item.category).contains(qNorm) ||
+               normalizeSearch(item.getLocalizedStats(lang)).contains(qNorm) ||
+               normalizeSearch(item.getLocalizedPassive(lang)).contains(qNorm) ||
+               normalizeSearch(item.getLocalizedCoachTip(lang)).contains(qNorm)
+    }
+
     val filteredItems = remember(selectedCategory, searchQuery, lang) {
         if (selectedCategory != null) {
             val catItems = com.example.data.WildRiftItemsData.getItemsForCategory(selectedCategory!!)
-            if (searchQuery.isBlank()) {
-                catItems
-            } else {
-                catItems.filter { item ->
-                    item.getLocalizedName(lang).contains(searchQuery, ignoreCase = true) ||
-                    item.name.contains(searchQuery, ignoreCase = true) ||
-                    item.nameEn.contains(searchQuery, ignoreCase = true) ||
-                    item.namePt.contains(searchQuery, ignoreCase = true) ||
-                    item.getLocalizedStats(lang).contains(searchQuery, ignoreCase = true) ||
-                    item.getLocalizedPassive(lang).contains(searchQuery, ignoreCase = true)
-                }
-            }
+            catItems.filter { itemMatchesQuery(it, searchQuery) }
         } else {
             val allCatItems = com.example.data.WildRiftItemsData.list.distinctBy { it.id }
-            if (searchQuery.isBlank()) {
-                allCatItems
-            } else {
-                allCatItems.filter { item ->
-                    item.getLocalizedName(lang).contains(searchQuery, ignoreCase = true) ||
-                    item.name.contains(searchQuery, ignoreCase = true) ||
-                    item.nameEn.contains(searchQuery, ignoreCase = true) ||
-                    item.namePt.contains(searchQuery, ignoreCase = true) ||
-                    item.getLocalizedStats(lang).contains(searchQuery, ignoreCase = true) ||
-                    item.getLocalizedPassive(lang).contains(searchQuery, ignoreCase = true)
-                }
-            }
+            allCatItems.filter { itemMatchesQuery(it, searchQuery) }
         }
     }
 
     val treeCategories = remember(selectedCategory, searchQuery, lang) {
         val result = mutableListOf<Pair<String, List<WildRiftItem>>>()
         val catsToProcess = if (selectedCategory != null) listOf(selectedCategory!!) else allCategories
+        val processedItemIds = mutableSetOf<String>()
         catsToProcess.forEach { cat ->
             val catItems = com.example.data.WildRiftItemsData.getItemsForCategory(cat)
-            val filteredCatItems = if (searchQuery.isBlank()) {
-                catItems
-            } else {
-                catItems.filter { item ->
-                    item.getLocalizedName(lang).contains(searchQuery, ignoreCase = true) ||
-                    item.name.contains(searchQuery, ignoreCase = true) ||
-                    item.nameEn.contains(searchQuery, ignoreCase = true) ||
-                    item.namePt.contains(searchQuery, ignoreCase = true) ||
-                    item.getLocalizedStats(lang).contains(searchQuery, ignoreCase = true) ||
-                    item.getLocalizedPassive(lang).contains(searchQuery, ignoreCase = true)
-                }
-            }
+            val filteredCatItems = catItems.filter { itemMatchesQuery(it, searchQuery) }
             if (filteredCatItems.isNotEmpty()) {
                 result.add(cat to filteredCatItems)
+                processedItemIds.addAll(filteredCatItems.map { it.id })
+            }
+        }
+        // If searching with TODOS selected, ensure any item matching the query that wasn't in the mapped categories is also visible
+        if (selectedCategory == null && searchQuery.isNotBlank()) {
+            val remainingMatches = com.example.data.WildRiftItemsData.list
+                .filter { it.id !in processedItemIds && itemMatchesQuery(it, searchQuery) }
+            if (remainingMatches.isNotEmpty()) {
+                result.add("Otros Objetos" to remainingMatches)
             }
         }
         result

@@ -1441,7 +1441,17 @@ fun ChampionBuildCreatorDialog(
                          showItemPickerForSituationalBootsT2, showItemPickerForSituationalBootsT3,
                          coreItems, situationalItems
                      ) {
-                         val base = if (searchFilterQuery.isBlank()) items else items.filter { it.name.contains(searchFilterQuery, ignoreCase = true) }
+                         fun normalizeQuery(s: String) = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
+                             .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+                             .lowercase().trim()
+                         val qNorm = normalizeQuery(searchFilterQuery)
+
+                         val base = if (qNorm.isBlank()) items else items.filter { item ->
+                             normalizeQuery(item.name).contains(qNorm) ||
+                             normalizeQuery(item.nameEn).contains(qNorm) ||
+                             normalizeQuery(item.namePt).contains(qNorm) ||
+                             normalizeQuery(item.category).contains(qNorm)
+                         }
                          val pool = when {
                              showItemPickerForBootsT2 || showItemPickerForSituationalBootsT2 -> {
                                  base.filter { it.category == "Botas Nivel 2" }

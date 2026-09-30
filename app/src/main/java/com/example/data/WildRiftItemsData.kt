@@ -2955,22 +2955,23 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
 
     val categoryItemIds: Map<String, List<String>> = mapOf(
         "Luchador" to listOf(
-            "chempunk_chainsword", "manamune", "eclipse", "sundered_sky",
+            "chempunk_chainsword", "manamune", "muramana", "eclipse", "sundered_sky",
             "experimental_hexplate", "maw_of_malmortius", "black_cleaver",
-            "titanic_hydra", "stridebreaker", "goredrinker", "mercurial_scimitar",
+            "titanic_hydra", "stridebreaker", "goredrinker", "mercurial_scimitar", "quicksilver_sash",
             "blade_of_the_ruined_king", "serylda_s_grudge", "spear_of_shojin",
-            "hullbreaker", "wild_rift__overlord_s_bloodmail", "guardian_angel", "bloodthirster",
+            "hullbreaker", "wild_rift__overlord_s_bloodmail", "overlord_s_bloodmail", "guardian_angel", "bloodthirster",
             "sterak_s_gage", "death_s_dance", "trinity_force", "divine_sunderer"
         ),
         "Asesino" to listOf(
-            "serpent_s_fang", "manamune", "youmuu_s_ghostblade",
+            "serpent_s_fang", "manamune", "muramana", "youmuu_s_ghostblade",
             "duskblade_of_draktharr", "maw_of_malmortius", "edge_of_night",
-            "the_collector", "mercurial_scimitar", "serylda_s_grudge", "guardian_angel"
+            "the_collector", "mercurial_scimitar", "serylda_s_grudge", "guardian_angel",
+            "axiom_arc", "opportunity"
         ),
         "Tirador" to listOf(
             "fiendhunter_bolts", "rapid_firecannon", "runaan_s_hurricane",
             "phantom_dancer", "navori_quickblades", "wit_s_end",
-            "hextech_mirror", "kraken_slayer", "nashor_s_tooth", "manamune",
+            "hextech_mirror", "kraken_slayer", "nashor_s_tooth", "manamune", "muramana",
             "statikk_shiv", "guinsoo_s_rageblade", "mortal_reminder",
             "maw_of_malmortius", "essence_reaver", "immortal_shieldbow",
             "the_collector", "terminus", "stormrazor", "yun_tal_wildarrows",
@@ -2998,31 +2999,38 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
             "nashor_s_tooth",
             "statikk_shiv",
             "banshees_veil",
+            "banshee_s_veil",
+            "crown_of_the_shattered_queen",
+            "seeker_s_armguard",
             "cryptbloom",
             "void_staff",
             "guinsoo_s_rageblade",
             "liandry_s_torment",
             "archangel_s_staff",
+            "seraph_s_embrace",
             "cosmic_drive",
             "dusk_and_dawn",
             "infinity_orb",
             "riftmaker",
+            "soul_transfer",
             "zhonya_s_hourglass",
             "rabadon_s_deathcap"
         ),
         "Defensa" to listOf(
             "abyssal_mask", "zeke_s_convergence", "yordle_trap",
             "knight_s_vow", "frozen_heart", "midday_tunic",
-            "locket_of_the_iron_solari", "winter_s_approach", "radiant_virtue_wild_rift",
+            "locket_of_the_iron_solari", "winter_s_approach", "fimbulwinter", "radiant_virtue_wild_rift",
             "thornmail", "dawnshroud", "hollow_radiance", "randuin_s_omen",
             "dead_man_s_plate", "force_of_nature", "heartsteel",
             "kaenic_rookern", "warmog_s_armor", "gargoyle_stoneplate",
-            "sunfire_aegis", "banshees_veil", "unending_despair",
-            "iceborn_gauntlet", "titanic_hydra", "wild_rift__overlord_s_bloodmail",
-            "guardian_angel", "sterak_s_gage", "amaranth_twinguard",
+            "sunfire_aegis", "banshees_veil", "banshee_s_veil", "unending_despair", "wild_rift__unending_despair",
+            "iceborn_gauntlet", "titanic_hydra", "wild_rift__overlord_s_bloodmail", "overlord_s_bloodmail",
+            "guardian_angel", "sterak_s_gage", "amaranth_twinguard", "amaranth_s_twinguard",
+            "mantle_of_the_twelfth_hour", "searing_crown",
             "death_s_dance", "zhonya_s_hourglass"
         ),
         "Apoyo" to listOf(
+            "spectral_sickle", "relic_shield", "black_mist_scythe", "bulwark_of_the_mountain",
             "whispering_headband", "diadem_of_songs", "echoes_of_helia", "abyssal_mask", "ardent_censer",
             "staff_of_flowing_water", "zeke_s_convergence", "yordle_trap",
             "redemption", "knight_s_vow", "mikael_s_blessing",
@@ -3041,18 +3049,21 @@ Rage: Grants 20 Move Speed on dealing physical damage and 40 Move Speed towards 
 
     fun getItemsForCategory(category: String): List<WildRiftItem> {
         val mappedIds = categoryItemIds[category]
-        if (mappedIds != null) {
-            val mapped = mappedIds.mapNotNull { getItemById(it) }
-            if (mapped.isNotEmpty()) return mapped.distinctBy { it.id }
-        }
+        val fromMap = if (mappedIds != null) mappedIds.mapNotNull { getItemById(it) } else emptyList()
         
         val norm = category.lowercase().trim()
         val directMatches = list.filter { item ->
             val ic = item.category.lowercase().trim()
-            ic == norm || (norm.contains("bota") && ic.contains("bota"))
+            ic == norm || ic.contains(norm) || norm.contains(ic) || (norm.contains("bota") && ic.contains("bota")) ||
+            (norm.contains("apoyo") && (item.category.contains("Apoyo", ignoreCase = true) || item.id in listOf("spectral_sickle", "relic_shield", "black_mist_scythe", "bulwark_of_the_mountain", "whispering_headband", "diadem_of_songs"))) ||
+            (norm.contains("mag") && (item.category.contains("Mágico", ignoreCase = true) || item.category.contains("Magico", ignoreCase = true) || item.id in listOf("seraph_s_embrace", "archangel_s_staff", "whispering_headband", "diadem_of_songs"))) ||
+            (norm.contains("defensa") && (item.category.contains("Tanque", ignoreCase = true) || item.category.contains("Defensa", ignoreCase = true))) ||
+            (norm.contains("luchador") && (item.category.contains("Físico", ignoreCase = true) || item.category.contains("Fisico", ignoreCase = true) || item.category.contains("Luchador", ignoreCase = true))) ||
+            (norm.contains("asesino") && (item.category.contains("Asesino", ignoreCase = true) || item.category.contains("Físico", ignoreCase = true))) ||
+            (norm.contains("tirador") && (item.category.contains("Tirador", ignoreCase = true) || item.category.contains("Físico", ignoreCase = true)))
         }
-        if (directMatches.isNotEmpty()) return directMatches.distinctBy { it.id }
-
-        return emptyList()
+        
+        val combined = (fromMap + directMatches).distinctBy { it.id }
+        return if (combined.isNotEmpty()) combined else list.filter { it.category.equals(category, ignoreCase = true) }
     }
 }

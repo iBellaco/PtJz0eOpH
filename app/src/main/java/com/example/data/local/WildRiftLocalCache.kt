@@ -91,17 +91,12 @@ object WildRiftLocalCache {
                         val isSpell = item.id.endsWith("_basic") && item.id.replace("_basic", "") in spellIds.map { it.replace("spell_", "") }
                         !isSpell && !item.id.startsWith("spell_")
                     }
-                    val canonicalMap = com.example.data.WildRiftItemsData.list.associateBy { it.id }
-                    val nameMap = com.example.data.WildRiftItemsData.list.associateBy { it.name.lowercase().trim() }
-                    val sanitizedItems = filteredItems.map { item ->
-                        val canonical = canonicalMap[item.id] ?: nameMap[item.name.lowercase().trim()]
-                        if (canonical != null && (item.iconUrl.isBlank() || !item.iconUrl.startsWith("http") || item.iconUrl.contains("placeholder"))) {
-                            item.copy(iconUrl = canonical.iconUrl)
-                        } else {
-                            item
-                        }
+                    val canonicalList = com.example.data.WildRiftItemsData.list
+                    val canonicalMap = canonicalList.associateBy { it.id }
+                    val mergedItems = canonicalList.map { canonical ->
+                        canonical
                     }
-                    WildRiftRepository.items = if (sanitizedItems.isNotEmpty()) sanitizedItems else com.example.data.WildRiftItemsData.list
+                    WildRiftRepository.items = mergedItems.distinctBy { it.id }
                     hasLoadedAny = true
                 }
 
