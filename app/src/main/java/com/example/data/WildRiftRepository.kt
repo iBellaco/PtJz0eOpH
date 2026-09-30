@@ -163,6 +163,8 @@ object WildRiftRepository {
 
 
     private val baseChampions = mutableListOf<Champion>()
+    val baseChampionsList: List<Champion> get() = baseChampions.toList()
+    fun getBaseChampion(idOrName: String): Champion? = baseChampions.find { it.id.equals(idOrName, ignoreCase = true) || it.name.equals(idOrName, ignoreCase = true) }
     var activeRegionName by mutableStateOf(com.example.data.sync.MetaRegion.DEFAULT)
     private var chineseChampions: List<Champion> = emptyList()
     private val regionalChampions = mutableMapOf<String, List<Champion>>()

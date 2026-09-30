@@ -686,7 +686,7 @@ fun ChampionDetailSheet(
                     ).filter { !it.equals(t2, ignoreCase = true) && !it.equals(t3, ignoreCase = true) }
 
                     com.example.util.ChampionBuildOption(
-                        optionNumber = 100 + idx,
+                        optionNumber = 1,
                         title = rec.buildTitle,
                         subtitle = "Línea: ${rec.role} • Análisis Estadístico & IA",
                         source = "Cálculo IA & Estadísticas • ${rec.creatorName}",
@@ -709,7 +709,7 @@ fun ChampionDetailSheet(
                         gameplayVideoUri = rec.gameplayVideoUri
                     )
                 }
-                customOptions + baseBuildOptions
+                listOf(customOptions.firstOrNull() ?: baseBuildOptions.first())
             }
 
             val activeOption = buildOptionsList.getOrNull(selectedBuildOptionIndex.coerceIn(0, buildOptionsList.size - 1))
@@ -1672,46 +1672,58 @@ fun ChampionDetailSheet(
                             }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
+                        val advantageChunks = advantageList.chunked(3)
                         if (advantageList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = if (isPremium && advantageList.size > 3) Arrangement.spacedBy(6.dp) else Arrangement.SpaceEvenly,
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(5.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                advantageList.forEach { target ->
-                                    val targetChamp = resolveTargetChampion(target)
-                                    Box(
-                                        modifier = Modifier.clickable {
-                                            matchupExplanationTarget = target
-                                            matchupExplanationType = "Ventaja"
-                                        }
+                                advantageChunks.forEach { rowChampions ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceEvenly,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        if (targetChamp != null) {
-                                            ChampionAvatar(
-                                                champion = targetChamp,
-                                                size = if (isCompact) 28.dp else 34.dp,
-                                                showTierBadge = false,
-                                                borderColor = AllyBlue
-                                            )
-                                        } else {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(if (isCompact) 28.dp else 34.dp)
-                                                    .clip(CircleShape)
-                                                    .background(HextechDarkBg)
-                                                    .border(1.2.dp, AllyBlue, CircleShape),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = com.example.util.tr(target.take(2).uppercase()),
-                                                    color = TextPrimary,
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
+                                        for (col in 0 until 3) {
+                                            val target = rowChampions.getOrNull(col)
+                                            if (target != null) {
+                                                val targetChamp = resolveTargetChampion(target)
+                                                Box(
+                                                    modifier = Modifier.clickable {
+                                                        matchupExplanationTarget = target
+                                                        matchupExplanationType = "Ventaja"
+                                                    }
+                                                ) {
+                                                    if (targetChamp != null) {
+                                                        ChampionAvatar(
+                                                            champion = targetChamp,
+                                                            size = if (isCompact) 26.dp else 30.dp,
+                                                            showTierBadge = false,
+                                                            borderColor = AllyBlue
+                                                        )
+                                                    } else {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .size(if (isCompact) 26.dp else 30.dp)
+                                                                .clip(CircleShape)
+                                                                .background(HextechDarkBg)
+                                                                .border(1.2.dp, AllyBlue, CircleShape),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            Text(
+                                                                text = com.example.util.tr(target.take(2).uppercase()),
+                                                                color = TextPrimary,
+                                                                fontSize = 10.sp,
+                                                                fontWeight = FontWeight.Bold
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                Spacer(modifier = Modifier.size(if (isCompact) 26.dp else 30.dp))
                                             }
                                         }
                                     }
@@ -1758,46 +1770,58 @@ fun ChampionDetailSheet(
                             }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
+                        val counteredChunks = counteredList.chunked(3)
                         if (counteredList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = if (isPremium && counteredList.size > 3) Arrangement.spacedBy(6.dp) else Arrangement.SpaceEvenly,
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(5.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                counteredList.forEach { counter ->
-                                    val targetChamp = resolveTargetChampion(counter)
-                                    Box(
-                                        modifier = Modifier.clickable {
-                                            matchupExplanationTarget = counter
-                                            matchupExplanationType = "Debilidad"
-                                        }
+                                counteredChunks.forEach { rowChampions ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceEvenly,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        if (targetChamp != null) {
-                                            ChampionAvatar(
-                                                champion = targetChamp,
-                                                size = if (isCompact) 28.dp else 34.dp,
-                                                showTierBadge = false,
-                                                borderColor = DangerRed
-                                            )
-                                        } else {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(if (isCompact) 28.dp else 34.dp)
-                                                    .clip(CircleShape)
-                                                    .background(HextechDarkBg)
-                                                    .border(1.2.dp, DangerRed, CircleShape),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = com.example.util.tr(counter.take(2).uppercase()),
-                                                    color = TextPrimary,
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
+                                        for (col in 0 until 3) {
+                                            val counter = rowChampions.getOrNull(col)
+                                            if (counter != null) {
+                                                val targetChamp = resolveTargetChampion(counter)
+                                                Box(
+                                                    modifier = Modifier.clickable {
+                                                        matchupExplanationTarget = counter
+                                                        matchupExplanationType = "Debilidad"
+                                                    }
+                                                ) {
+                                                    if (targetChamp != null) {
+                                                        ChampionAvatar(
+                                                            champion = targetChamp,
+                                                            size = if (isCompact) 26.dp else 30.dp,
+                                                            showTierBadge = false,
+                                                            borderColor = DangerRed
+                                                        )
+                                                    } else {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .size(if (isCompact) 26.dp else 30.dp)
+                                                                .clip(CircleShape)
+                                                                .background(HextechDarkBg)
+                                                                .border(1.2.dp, DangerRed, CircleShape),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            Text(
+                                                                text = com.example.util.tr(counter.take(2).uppercase()),
+                                                                color = TextPrimary,
+                                                                fontSize = 10.sp,
+                                                                fontWeight = FontWeight.Bold
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                Spacer(modifier = Modifier.size(if (isCompact) 26.dp else 30.dp))
                                             }
                                         }
                                     }
@@ -1853,46 +1877,58 @@ fun ChampionDetailSheet(
                             }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
+                        val synergyChunks = synergyList.chunked(3)
                         if (synergyList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = if (isPremium && synergyList.size > 3) Arrangement.spacedBy(6.dp) else Arrangement.SpaceEvenly,
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(5.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                synergyList.forEach { partner ->
-                                    val targetChamp = resolveTargetChampion(partner)
-                                    Box(
-                                        modifier = Modifier.clickable {
-                                            matchupExplanationTarget = partner
-                                            matchupExplanationType = "Sinergia"
-                                        }
+                                synergyChunks.forEach { rowChampions ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceEvenly,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        if (targetChamp != null) {
-                                            ChampionAvatar(
-                                                champion = targetChamp,
-                                                size = if (isCompact) 28.dp else 34.dp,
-                                                showTierBadge = false,
-                                                borderColor = HextechGold
-                                            )
-                                        } else {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(if (isCompact) 28.dp else 34.dp)
-                                                    .clip(CircleShape)
-                                                    .background(HextechDarkBg)
-                                                    .border(1.2.dp, HextechGold, CircleShape),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = com.example.util.tr(partner.take(2).uppercase()),
-                                                    color = TextPrimary,
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
+                                        for (col in 0 until 3) {
+                                            val partner = rowChampions.getOrNull(col)
+                                            if (partner != null) {
+                                                val targetChamp = resolveTargetChampion(partner)
+                                                Box(
+                                                    modifier = Modifier.clickable {
+                                                        matchupExplanationTarget = partner
+                                                        matchupExplanationType = "Sinergia"
+                                                    }
+                                                ) {
+                                                    if (targetChamp != null) {
+                                                        ChampionAvatar(
+                                                            champion = targetChamp,
+                                                            size = if (isCompact) 26.dp else 30.dp,
+                                                            showTierBadge = false,
+                                                            borderColor = HextechGold
+                                                        )
+                                                    } else {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .size(if (isCompact) 26.dp else 30.dp)
+                                                                .clip(CircleShape)
+                                                                .background(HextechDarkBg)
+                                                                .border(1.2.dp, HextechGold, CircleShape),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            Text(
+                                                                text = com.example.util.tr(partner.take(2).uppercase()),
+                                                                color = TextPrimary,
+                                                                fontSize = 10.sp,
+                                                                fontWeight = FontWeight.Bold
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                Spacer(modifier = Modifier.size(if (isCompact) 26.dp else 30.dp))
                                             }
                                         }
                                     }
