@@ -41,12 +41,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -98,6 +99,11 @@ fun LiteRTEngineViewerDialog(
     val isLiveVisionActive by DraftVisionScanner.showCalibrationBoxes.collectAsStateWithLifecycle()
 
     var inspectingFrame by remember { mutableStateOf<TenthPickDiagnosticManager.DiagnosticCropInfo?>(null) }
+    if (LocalOnBackPressedDispatcherOwner.current != null) {
+        BackHandler {
+            if (inspectingFrame != null) inspectingFrame = null else onDismissRequest()
+        }
+    }
     var selectedTarget by remember { mutableStateOf(CircleTarget.ALLY_0) }
     var calibrationStep by remember { mutableStateOf(0.005f) } // 0.5% por defecto
 
@@ -213,18 +219,14 @@ fun LiteRTEngineViewerDialog(
             tonalElevation = 8.dp,
             border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF334155))
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
+            Column(Modifier.fillMaxSize().padding(12.dp)) {
                 // Cabecera
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.weight(1f).padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = com.example.util.trNullable("LiteRT Motor"),
@@ -232,7 +234,7 @@ fun LiteRTEngineViewerDialog(
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Column {
+                        Column(Modifier.weight(1f)) {
                             Text(
                                 text = tr("Visor Reconocimiento visual local"),
                                 color = Color.White,
@@ -247,20 +249,23 @@ fun LiteRTEngineViewerDialog(
                         }
                     }
 
-                    IconButton(
+                    TextButton(
                         onClick = onDismissRequest,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("vision_viewer_back")
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = com.example.util.trNullable("Cerrar"),
-                            tint = Color.White
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
+                        Spacer(Modifier.width(4.dp))
+                        Text(tr("Volver al hub"), color = Color.White, fontSize = 12.sp)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                Column(
+                    Modifier.weight(1f).fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .testTag("vision_viewer_content")
+                ) {
                 // Estado del Motor
                 val (badgeBg, badgeBorder, badgeText, statusIcon) = when (report.status) {
                     LiteRTVisionClassifier.EngineStatus.WAITING_FOR_PICKS_1_TO_9,
@@ -367,7 +372,7 @@ fun LiteRTEngineViewerDialog(
                                     if (report.cropBitmap != null && !report.cropBitmap!!.isRecycled) {
                                         Image(
                                             bitmap = report.cropBitmap!!.asImageBitmap(),
-                                            contentDescription = "Recorte 10º Pick",
+                                            contentDescription = com.example.util.tr("Recorte 10º Pick"),
                                             modifier = Modifier.size(60.dp)
                                         )
                                     } else {
@@ -492,104 +497,6 @@ fun LiteRTEngineViewerDialog(
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
-
-                // Control de Calibración de Umbral de Similitud
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
-                    border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.35f))
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Tune,
-                                    contentDescription = null,
-                                    tint = Color(0xFF38BDF8),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = tr("CALIBRACIÓN DE UMBRAL DE SIMILITUD"),
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 11.sp,
-                                    letterSpacing = 0.5.sp
-                                )
-                            }
-                            Text(
-                                text = com.example.util.tr("${(report.minConfidenceThreshold * 100).toInt()}%"),
-                                color = Color(0xFF00E5FF),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                fontFamily = FontFamily.Monospace
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = tr("Aumenta el umbral (80%-90%) para evitar falsos positivos con campeones no parecidos, o disminúyelo (70%-75%) si las condiciones de luz son bajas."),
-                            color = Color(0xFF94A3B8),
-                            fontSize = 10.sp,
-                            lineHeight = 14.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    val nextVal = (report.minConfidenceThreshold - 0.05f).coerceIn(0.50f, 0.95f)
-                                    LiteRTVisionClassifier.setThreshold(nextVal, context)
-                                },
-                                modifier = Modifier.height(30.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                border = BorderStroke(1.dp, Color(0xFF475569)),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                            ) {
-                                Text(com.example.util.tr("-5%"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
-
-                            Slider(
-                                value = report.minConfidenceThreshold,
-                                onValueChange = { newVal ->
-                                    LiteRTVisionClassifier.setThreshold(newVal, context)
-                                },
-                                valueRange = 0.50f..0.95f,
-                                steps = 8,
-                                modifier = Modifier.weight(1f),
-                                colors = SliderDefaults.colors(
-                                    thumbColor = Color(0xFF00E5FF),
-                                    activeTrackColor = Color(0xFF00E5FF),
-                                    inactiveTrackColor = Color(0xFF334155)
-                                )
-                            )
-
-                            OutlinedButton(
-                                onClick = {
-                                    val nextVal = (report.minConfidenceThreshold + 0.05f).coerceIn(0.50f, 0.95f)
-                                    LiteRTVisionClassifier.setThreshold(nextVal, context)
-                                },
-                                modifier = Modifier.height(30.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                border = BorderStroke(1.dp, Color(0xFF475569)),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                            ) {
-                                Text(com.example.util.tr("+5%"), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -1049,6 +956,7 @@ fun LiteRTEngineViewerDialog(
                         Toast.makeText(context, com.example.util.appTr("Ruta copiada al portapapeles"), Toast.LENGTH_SHORT).show()
                     }
                 )
+                } // Contenido desplazable; la navegación permanece fija.
             }
         }
     }
@@ -1398,7 +1306,7 @@ private fun DiagnosticFrameInspectorDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.weight(1f).padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.ZoomIn,
                             contentDescription = null,
@@ -1416,7 +1324,7 @@ private fun DiagnosticFrameInspectorDialog(
 
                     IconButton(
                         onClick = onDismiss,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(48.dp).testTag("vision_frame_close")
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,

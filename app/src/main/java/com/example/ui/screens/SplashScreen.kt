@@ -58,7 +58,7 @@ fun AnimatedSplashScreen(onSplashFinished: () -> Unit) {
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_app_logo),
-            contentDescription = "App Logo",
+            contentDescription = com.example.util.tr("App Logo"),
             modifier = Modifier
                 .size(110.dp)
                 .scale(scaleAnim)

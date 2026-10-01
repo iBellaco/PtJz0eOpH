@@ -1313,7 +1313,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     }
                                     AsyncImage(
                                         model = decodedBytes ?: videoUrl,
-                                        contentDescription = "Vista previa multimedia horizontal",
+                                        contentDescription = com.example.util.tr("Vista previa multimedia horizontal"),
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
                                     )
@@ -1502,7 +1502,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                         }
                                         AsyncImage(
                                             model = decodedVerticalBytes ?: expandedImageUrl,
-                                            contentDescription = "Vista previa vertical",
+                                            contentDescription = com.example.util.tr("Vista previa vertical"),
                                             modifier = Modifier.fillMaxSize(),
                                             contentScale = ContentScale.Crop
                                         )

@@ -1121,7 +1121,7 @@ fun AdminFeedbackBottomSheet(
                 // Imagen con zoom
                 Image(
                     bitmap = previewImageBitmap!!.asImageBitmap(),
-                    contentDescription = "Vista previa ampliable",
+                    contentDescription = com.example.util.tr("Vista previa ampliable"),
                     modifier = Modifier
                         .fillMaxSize()
                         .pointerInput(previewImageBitmap) {

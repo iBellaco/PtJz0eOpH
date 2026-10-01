@@ -270,7 +270,7 @@ fun UserAvatarView(
             if (adminFrameResId != 0) {
                 Image(
                     painter = painterResource(id = adminFrameResId),
-                    contentDescription = "Marco de Administrador",
+                    contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .requiredSize(size * 1.15f)
@@ -284,7 +284,7 @@ fun UserAvatarView(
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .memoryCachePolicy(CachePolicy.ENABLED)
                         .build(),
-                    contentDescription = "Marco de Administrador",
+                    contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .requiredSize(size * 1.15f)

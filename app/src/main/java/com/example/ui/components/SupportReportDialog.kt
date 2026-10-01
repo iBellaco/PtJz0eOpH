@@ -489,7 +489,7 @@ fun SupportReportDialog(
                                     if (bitmap != null) {
                                         Image(
                                             bitmap = bitmap.asImageBitmap(),
-                                            contentDescription = "Foto adjunta $index",
+                                            contentDescription = com.example.util.tr("Foto adjunta $index"),
                                             contentScale = ContentScale.Crop,
                                             modifier = Modifier
                                                 .fillMaxSize()
@@ -773,7 +773,7 @@ fun SupportReportDialog(
                 ) {
                     Image(
                         bitmap = previewZoomBitmap!!.asImageBitmap(),
-                        contentDescription = "Vista previa foto",
+                        contentDescription = com.example.util.tr("Vista previa foto"),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))

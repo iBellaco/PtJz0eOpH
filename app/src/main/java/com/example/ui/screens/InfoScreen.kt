@@ -147,7 +147,7 @@ fun InfoScreen(
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_app_logo),
-                            contentDescription = "Coach Icon",
+                            contentDescription = com.example.util.tr("Coach Icon"),
                             modifier = Modifier.fillMaxSize()
                         )
                     }

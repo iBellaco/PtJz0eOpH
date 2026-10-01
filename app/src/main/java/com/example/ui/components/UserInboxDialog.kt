@@ -1302,14 +1302,14 @@ fun ImageViewerDialog(
                     if (bitmap != null) {
                         androidx.compose.foundation.Image(
                             bitmap = bitmap.asImageBitmap(),
-                            contentDescription = "Imagen adjunta",
+                            contentDescription = com.example.util.tr("Imagen adjunta"),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Fit
                         )
                     } else {
                         coil.compose.AsyncImage(
                             model = photoBase64,
-                            contentDescription = "Imagen adjunta",
+                            contentDescription = com.example.util.tr("Imagen adjunta"),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Fit
                         )
@@ -1576,7 +1576,7 @@ fun UserSupportThreadCard(
                         if (thumbBitmap != null) {
                             androidx.compose.foundation.Image(
                                 bitmap = thumbBitmap.asImageBitmap(),
-                                contentDescription = "Imagen adjunta",
+                                contentDescription = com.example.util.tr("Imagen adjunta"),
                                 modifier = Modifier.fillMaxSize().padding(2.dp),
                                 contentScale = androidx.compose.ui.layout.ContentScale.Crop
                             )
