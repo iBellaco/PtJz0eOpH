@@ -202,7 +202,7 @@ fun getFeedbackCategory(report: FeedbackReport): String {
     val title = report.title
 
     return when {
-        rawType in listOf("PATROCINADOR", "PATROCINIO", "SPONSOR") -> "PATROCINADOR"
+        com.example.data.SupportConversationPolicy.isSponsor(rawType) -> "PATROCINADOR"
         rawType in listOf("BUG", "ERROR", "BUG_REPORT", "BUG / ERROR") -> "BUG"
         rawType in listOf("BUILD_SUGGESTION", "BUILD", "SUGERIR BUILD", "SUGERENCIA DE BUILD") || parseBuildSuggestionFromText(desc, title) != null -> "BUILD"
         rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA") -> "SUPPORT"
@@ -216,9 +216,10 @@ fun AdminFeedbackBottomSheet(
     onDismiss: () -> Unit
 ) {
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
+    val secondaryRole by com.example.util.SubscriptionManager.secondaryRole.collectAsState()
 
     // Explicit UI navigation logic verification: permitido para admin y moderador
-    if (userRole != "admin" && userRole != "moderador" && !com.example.util.AuthManager.isCurrentUserAdmin()) {
+    if (userRole != "admin" && userRole != "moderador" && secondaryRole != "moderador" && !com.example.util.AuthManager.isCurrentUserAdmin()) {
         LaunchedEffect(Unit) {
             onDismiss()
         }
@@ -280,67 +281,27 @@ fun AdminFeedbackBottomSheet(
         }
     }
 
-    LaunchedEffect(Unit) {
-        loadReports()
-        // Polling periódico silencioso en segundo plano para sincronizar cambios en la nube
-        while (isActive) {
-            delay(10000)
-            loadReports(silent = true)
-        }
-    }
-
-    // Escucha en tiempo real de Firestore para sincronización instantánea multidispositivo de estados y respuestas
-    DisposableEffect(Unit) {
-        val listenerReg = com.example.data.SupportTicketAccess.staffQuery()
-            .addSnapshotListener { snapshot, error ->
-                if (error == null && snapshot != null) {
-                    loadReports(silent = true)
-                    for (doc in snapshot.documents) {
-                        val docId = doc.id
-                        val docTitle = doc.getString("title") ?: ""
-                        val rawStatus = doc.getString("status") ?: "PENDIENTE"
-                        val normalizedStatus = when (rawStatus.uppercase()) {
-                            "SOLVED", "SOLUCIONADO", "RESUELTO" -> FeedbackRepository.STATUS_SOLVED
-                            "READ", "LEIDO", "LEÍDO" -> FeedbackRepository.STATUS_READ
-                            "ACCEPTED", "ACEPTADA", "ACEPTADO" -> FeedbackRepository.STATUS_ACCEPTED
-                            "REJECTED", "RECHAZADA", "RECHAZADO" -> FeedbackRepository.STATUS_REJECTED
-                            else -> FeedbackRepository.STATUS_PENDING
-                        }
-                        val docReply = doc.getString("adminReply") ?: ""
-                        val docRepliedBy = doc.getString("repliedBy") ?: ""
-                        val docRepliedEmail = doc.getString("repliedEmail") ?: ""
-
-                        // Actualizar en statusMap inmediatamente
-                        statusMap[docId] = normalizedStatus
-                        if (docTitle.isNotBlank()) {
-                            statusMap[docTitle] = normalizedStatus
-                        }
-
-                        // Actualizar en la lista de reportes en memoria
-                        val existingIdx = reports.indexOfFirst {
-                            it.id == docId
-                        }
-                        if (existingIdx != -1) {
-                            val cur = reports[existingIdx]
-                            val key = cur.id ?: "${cur.title}_${cur.createdAt}"
-                            statusMap[key] = normalizedStatus
-                            if (cur.status != normalizedStatus || cur.adminReply != docReply) {
-                                val updatedList = reports.toMutableList()
-                                updatedList[existingIdx] = cur.copy(
-                                    status = normalizedStatus,
-                                    adminReply = if (docReply.isNotBlank()) docReply else cur.adminReply,
-                                    repliedBy = if (docRepliedBy.isNotBlank()) docRepliedBy else cur.repliedBy,
-                                    repliedEmail = if (docRepliedEmail.isNotBlank()) docRepliedEmail else cur.repliedEmail
-                                )
-                                reports = updatedList
-                            }
-                        }
+    DisposableEffect(userRole, secondaryRole) {
+        var registration: com.google.firebase.firestore.ListenerRegistration? = null
+        val job = scope.launch {
+            try {
+                com.example.data.SupportTicketAccess.migrateLegacyVisibility()
+                registration = com.example.data.SupportTicketAccess.staffQuery().addSnapshotListener { snapshot, error ->
+                    isLoading = false
+                    if (error != null) {
+                        errorMessage = com.example.util.appTr("No se pudieron cargar los mensajes. Comprueba los permisos y vuelve a intentarlo.")
+                    } else if (snapshot != null) {
+                        errorMessage = null
+                        reports = FeedbackRepository.feedbacksFromSnapshot(snapshot)
+                        refreshStatusMap(reports)
                     }
                 }
+            } catch (error: Exception) {
+                isLoading = false
+                errorMessage = com.example.util.appTr("No se pudieron cargar los mensajes. Comprueba los permisos y vuelve a intentarlo.")
             }
-        onDispose {
-            listenerReg.remove()
         }
+        onDispose { job.cancel(); registration?.remove() }
     }
 
     val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
@@ -753,8 +714,8 @@ fun AdminFeedbackBottomSheet(
                     )
                 )
 
-                // Purga rápida > 7 días
-                OutlinedButton(
+                // Solo el administrador puede eliminar mensajes.
+                if (isAdmin) OutlinedButton(
                     onClick = {
                         if (!isPurging) {
                             isPurging = true
@@ -785,7 +746,7 @@ fun AdminFeedbackBottomSheet(
                 }
 
                 // Borrar todos
-                OutlinedButton(
+                if (isAdmin) OutlinedButton(
                     onClick = { showClearAllConfirm = true },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.outlinedButtonColors(containerColor = HextechSurface),
@@ -887,7 +848,7 @@ fun AdminFeedbackBottomSheet(
                                     }
                                 },
                                 onReply = { reportToReply = report },
-                                onDelete = { reportToDelete = report },
+                                onDelete = if (isAdmin) ({ reportToDelete = report }) else null,
                                 onCopy = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     val textToCopy = """
@@ -941,7 +902,7 @@ fun AdminFeedbackBottomSheet(
     }
 
     // Diálogo de Confirmación de Eliminación Individual
-    if (reportToDelete != null) {
+    if (isAdmin && reportToDelete != null) {
         val rep = reportToDelete!!
         AlertDialog(
             onDismissRequest = { if (!isDeleting) reportToDelete = null },
@@ -1010,7 +971,7 @@ fun AdminFeedbackBottomSheet(
     }
 
     // Diálogo de Confirmación Borrar Todo
-    if (showClearAllConfirm) {
+    if (isAdmin && showClearAllConfirm) {
         AlertDialog(
             onDismissRequest = { if (!isDeleting) showClearAllConfirm = false },
             containerColor = HextechDarkBg,
@@ -1304,7 +1265,7 @@ private fun ComprehensiveFeedbackCard(
     currentStatus: String,
     onSelectStatus: (String) -> Unit,
     onReply: (() -> Unit)? = null,
-    onDelete: () -> Unit,
+    onDelete: (() -> Unit)?,
     onCopy: () -> Unit,
     onOpenImage: (Bitmap) -> Unit,
     onItemClick: (WildRiftItem) -> Unit
@@ -1461,7 +1422,7 @@ private fun ComprehensiveFeedbackCard(
                     IconButton(onClick = onCopy, modifier = Modifier.size(26.dp)) {
                         Icon(Icons.Default.ContentCopy, contentDescription = tr("Copiar"), tint = TextMuted, modifier = Modifier.size(15.dp))
                     }
-                    IconButton(onClick = onDelete, modifier = Modifier.size(26.dp)) {
+                    if (onDelete != null) IconButton(onClick = onDelete, modifier = Modifier.size(26.dp)) {
                         Icon(Icons.Default.Delete, contentDescription = tr("Eliminar"), tint = DangerRed.copy(alpha = 0.8f), modifier = Modifier.size(15.dp))
                     }
                     IconButton(onClick = { expanded = !expanded }, modifier = Modifier.size(26.dp)) {
@@ -1662,7 +1623,7 @@ private fun ComprehensiveFeedbackCard(
                                 onClick = { onSelectStatus(FeedbackRepository.STATUS_READ) }
                             )
                             StatusActionButton(
-                                label = tr("Solucionado"),
+                                label = com.example.util.localizedString(com.example.R.string.support_close_conversation),
                                 icon = Icons.Default.CheckCircle,
                                 isSelected = currentStatus == FeedbackRepository.STATUS_SOLVED || currentStatus == FeedbackRepository.STATUS_COMPLETED,
                                 activeColor = HextechGreen,

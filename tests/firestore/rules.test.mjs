@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, getDocs, collection, query, where, runTransaction, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, query, where, runTransaction, writeBatch } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8080, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
 const db = uid => env.authenticatedContext(uid, { email: `${uid}@test.invalid` }).firestore();
 const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
 const greeting = 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.';
 const initial = id => [{ id: `${id}_initial`, senderRole: 'USER', senderUid: 'user', text: 'Ayuda', timestampMillis: 100 }, { id: `${id}_system`, senderRole: 'SYSTEM', senderUid: '', text: greeting, timestampMillis: 101 }];
-const ticket = (id, tag = 'SOPORTE') => ({ userId: 'user', userEmail: 'user@test.invalid', tag, type: tag, staffVisible: tag !== 'PATROCINADOR', status: 'PENDING', conversation: initial(id), userRead: true, isRead: true, hasNewAdminReply: false });
+const ticket = (id, tag = 'SOPORTE') => ({ userId: 'user', userEmail: 'user@test.invalid', tag, type: tag, staffVisible: tag !== 'PATROCINADOR', userCanReply:false, status: 'PENDING', conversation: initial(id), userRead: true, isRead: true, hasNewAdminReply: false });
 let count = 0;
 async function test(name, action) { await action(); count++; console.log(`PASS ${name}`); }
 try {
@@ -37,7 +37,7 @@ try {
     for (let i = 0; i < 2; i++) await assertSucceeds(runTransaction(moderator, async transaction => {
       const ref = doc(moderator, 'support_reports', 'ticket'), snap = await transaction.get(ref);
       const history = [...snap.data().conversation, { id: `reply${i}`, senderRole: 'SUPPORT', senderUid: 'mod', text: `Respuesta ${i}`, timestampMillis: 200+i }];
-      const data = { conversation: history, status: 'READ', userRead: false, isRead: false, hasNewAdminReply: true, staffRead: true };
+      const data = { conversation: history, status: 'READ', userCanReply:true, userRead: false, isRead: false, hasNewAdminReply: true, staffRead: true };
       transaction.update(ref, data); transaction.set(doc(moderator, 'users/user/messages/ticket'), data, { merge: true });
     }));
     assert.equal((await getDoc(doc(user, 'support_reports', 'ticket'))).data().conversation.length, 4);
@@ -53,11 +53,25 @@ try {
     const secondDevice = db('user'); assert.equal((await getDoc(doc(secondDevice, 'support_reports', 'ticket'))).data().userRead, true);
     await assertFails(updateDoc(doc(user, 'support_reports', 'ticket'), { adminReply: 'Respuesta falsa' })); await assertFails(updateDoc(doc(user, 'support_reports', 'ticket'), { status: 'SOLVED' }));
   });
-  await test('user may append information before staff replies but cannot alter history', async () => {
+  await test('user must wait for real staff reply and cannot bypass the waiting state', async () => {
     await assertSucceeds(setDoc(doc(user, 'support_reports', 'new'), ticket('new')));
     const history = [...initial('new'), { id:'followup', senderRole:'USER', senderUid:'user', text:'Más detalles', timestampMillis:300 }];
-    await assertSucceeds(updateDoc(doc(user, 'support_reports', 'new'), { conversation:history, status:'PENDING', isCompleted:false, staffRead:false, lastUserMessage:'Más detalles' }));
+    await assertFails(updateDoc(doc(user, 'support_reports', 'new'), { conversation:history, status:'PENDING', isCompleted:false, staffRead:false, lastUserMessage:'Más detalles' }));
+    await assertFails(updateDoc(doc(user, 'support_reports', 'new'), { userCanReply:true }));
+    await assertFails(updateDoc(doc(moderator, 'support_reports', 'new'), { userCanReply:true }));
+    await assertFails(setDoc(doc(user, 'support_reports', 'fake-unlock'), { ...ticket('fake-unlock'), userCanReply:true }));
+    const staffHistory = [...initial('new'), {id:'staff-first', senderRole:'SUPPORT', senderUid:'mod', text:'Respuesta real', timestampMillis:250}];
+    await assertSucceeds(updateDoc(doc(moderator, 'support_reports', 'new'), { conversation:staffHistory, userCanReply:true, status:'READ' }));
+    await assertSucceeds(updateDoc(doc(user, 'support_reports', 'new'), { conversation:[...staffHistory,history.at(-1)], status:'PENDING', isCompleted:false, staffRead:false, lastUserMessage:'Más detalles' }));
     await assertFails(updateDoc(doc(user, 'support_reports', 'new'), { conversation:[...history.slice(1),{ id:'evil',senderRole:'SUPPORT',senderUid:'user',text:'Falso' }] }));
+  });
+  await test('only administrator deletes tickets and inbox messages', async () => {
+    await assertFails(deleteDoc(doc(user,'support_reports','ticket')));
+    await assertFails(deleteDoc(doc(moderator,'support_reports','ticket')));
+    await assertFails(deleteDoc(doc(user,'users/user/messages/ticket')));
+    await assertFails(deleteDoc(doc(moderator,'users/user/messages/ticket')));
+    await assertSucceeds(deleteDoc(doc(admin,'support_reports','ticket')));
+    await assertSucceeds(deleteDoc(doc(admin,'users/user/messages/ticket')));
   });
   await test('resolved status is shared and prevents user replies', async () => {
     await assertSucceeds(updateDoc(doc(moderator, 'support_reports', 'new'), { status:'SOLVED', isCompleted:true, staffRead:true }));

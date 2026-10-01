@@ -146,11 +146,10 @@ fun UserInboxDialog(
         for (m in supportReportMessages) {
             val id = m["id"] as? String ?: continue
             val reportId = m["reportId"] as? String ?: id
-            if (deletedIds.contains(id) || (reportId.isNotBlank() && deletedIds.contains(reportId))) continue
 
             val isDeleted = (m["isDeleted"] as? Boolean) == true ||
                             (m["deleted"] as? Boolean) == true ||
-                            (m["status"] as? String)?.uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
+                            (m["status"] as? String)?.uppercase(Locale.US) in listOf("ELIMINADO", "DELETED")
             if (isDeleted) continue
 
             if (currActive != null) {
@@ -166,16 +165,17 @@ fun UserInboxDialog(
         fun processMessage(m: Map<String, Any>) {
             val id = m["id"] as? String ?: return
             val reportId = m["reportId"] as? String ?: id
-            if (deletedIds.contains(id) || (reportId.isNotBlank() && deletedIds.contains(reportId))) return
+            if (!FeedbackRepository.isSupportMessage(m) && deletedIds.contains(id)) return
 
             val isDeleted = (m["isDeleted"] as? Boolean) == true ||
                             (m["deleted"] as? Boolean) == true ||
-                            (m["status"] as? String)?.uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
+                            (m["status"] as? String)?.uppercase(Locale.US) in listOf("ELIMINADO", "DELETED")
             if (isDeleted) return
 
             val isSupport = FeedbackRepository.isSupportMessage(m)
             val isRead = resolveIsRead(m, id, reportId)
-            if (!all.containsKey(id)) all[id] = m.toMutableMap().apply { put("isRead", isRead) }
+            val canonicalId = if (isSupport) reportId else id
+            if (!all.containsKey(canonicalId)) all[canonicalId] = m.toMutableMap().apply { put("id", canonicalId); put("isRead", isRead) }
         }
 
         for (m in arrayMessages) {
@@ -317,6 +317,7 @@ fun UserInboxDialog(
     }
 
     fun deleteMessage(id: String) {
+        if (!com.example.data.SupportTicketAccess.isAdmin()) return
         val targetMsg = messages.find { (it["id"] as? String) == id }
         val reportId = targetMsg?.get("reportId") as? String ?: ""
         val title = (targetMsg?.get("title") as? String ?: "").trim()
@@ -418,7 +419,7 @@ fun UserInboxDialog(
         val msg = selectedSupportMessage!!
         val id = msg["id"] as String
         val title = msg["title"] as? String ?: "Soporte"
-        val content = msg["content"] as? String ?: ""
+        val content = com.example.data.SupportTicketPresentation.cleanBody(msg["content"] as? String ?: "")
         val timestamp = msg["timestamp"] as? Long ?: 0L
         val adminReply = msg["adminReply"] as? String ?: ""
         val repliedBy = msg["repliedBy"] as? String ?: ""
@@ -634,7 +635,7 @@ fun UserInboxDialog(
                         items(messages, key = { it["id"] as String }) { msg ->
                             val id = msg["id"] as String
                             val title = msg["title"] as? String ?: "Sin título"
-                            val content = msg["content"] as? String ?: ""
+                            val content = com.example.data.SupportTicketPresentation.cleanBody(msg["content"] as? String ?: "")
                             val rawTag = msg["tag"] as? String
                             val messageTag = MessageTag.fromId(rawTag)
                             val timestamp = msg["timestamp"] as? Long ?: 0L
@@ -792,7 +793,7 @@ fun UserInboxDialog(
                                                 Spacer(modifier = Modifier.width(4.dp))
                                             }
                                             // Los reportes de soporte solo pueden ser eliminados por el administrador
-                                            if (!isSupportTicket) {
+                                            if (com.example.data.SupportTicketAccess.isAdmin() && !isSupportTicket) {
                                                 HextechAnimatedIconButton(
                                                     onClick = { deleteMessage(id) },
                                                     size = 30.dp,
@@ -1027,6 +1028,10 @@ fun UserSupportThreadCard(
         val db = FirebaseFirestore.getInstance()
         val listener = db.collection("support_reports").document(reportId)
             .addSnapshotListener { snap, err ->
+                if (err == null && snap != null && !snap.exists()) {
+                    liveStatus = "CLOSED"
+                    conversation = emptyList()
+                }
                 if (err == null && snap != null && snap.exists()) {
                     val rawSt = snap.getString("status") ?: "PENDIENTE"
                     liveStatus = when (rawSt.uppercase()) {
@@ -1038,7 +1043,7 @@ fun UserSupportThreadCard(
                     if (remotePhotos != null) {
                         livePhotos = remotePhotos.mapNotNull { it?.toString() }
                     }
-                    val desc = snap.getString("description") ?: snap.getString("content") ?: originalContent
+                    val desc = com.example.data.SupportTicketPresentation.cleanBody(snap.getString("description") ?: snap.getString("content") ?: originalContent)
                     val remoteConv = snap.get("conversation") as? List<Map<String, Any>>
                     if (!remoteConv.isNullOrEmpty()) {
                         val parsed = remoteConv.mapNotNull { m ->
@@ -1110,28 +1115,7 @@ fun UserSupportThreadCard(
                 }
             }
 
-        // Listener secundario sobre la bandeja del usuario para sincronización cruzada
-        var userListener: com.google.firebase.firestore.ListenerRegistration? = null
-        if (userUid.isNotBlank() && userUid != "anonimo") {
-            userListener = db.collection("users").document(userUid).collection("messages").document(reportId)
-                .addSnapshotListener { uSnap, uErr ->
-                    if (uErr == null && uSnap != null && uSnap.exists()) {
-                        val rawSt = uSnap.getString("status")
-                        if (!rawSt.isNullOrBlank()) {
-                            liveStatus = when (rawSt.uppercase()) {
-                                "SOLVED", "SOLUCIONADO", "RESUELTO" -> "SOLUCIONADO"
-                                "READ", "LEIDO", "LEÍDO" -> "LEÍDO"
-                                else -> "PENDIENTE"
-                            }
-                        }
-                    }
-                }
-        }
-
-        onDispose {
-            listener.remove()
-            userListener?.remove()
-        }
+        onDispose { listener.remove() }
     }
 
     var userReplyText by remember { mutableStateOf("") }
@@ -1139,7 +1123,7 @@ fun UserSupportThreadCard(
 
     val canReply = remember(conversation, liveStatus) { SupportReplyManager.canUserReply(conversation, liveStatus) }
     val isOnlyGreeting = remember(conversation) { SupportReplyManager.isOnlyGreeting(conversation) }
-    val isClosed = liveStatus.uppercase() == "SOLUCIONADO" || liveStatus.uppercase() == "CERRADO" || liveStatus.uppercase() == "CLOSED" || liveStatus.uppercase() == "RESUELTO"
+    val isClosed = com.example.data.SupportConversationPolicy.isClosed(liveStatus)
     val timeFormatter = remember { SimpleDateFormat("HH:mm - dd/MM", Locale.getDefault()) }
 
     Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
@@ -1176,7 +1160,7 @@ fun UserSupportThreadCard(
         Spacer(modifier = Modifier.height(4.dp))
 
         // Mensaje original (Descripción)
-        if (originalContent.isNotBlank()) {
+        if (originalContent.isNotBlank() && conversation.none { it.senderRole.equals("USER", ignoreCase = true) }) {
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = Color(0xFF0F172A).copy(alpha = 0.6f),
@@ -1186,7 +1170,7 @@ fun UserSupportThreadCard(
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text(tr("Descripción:"), color = Color(0xFF94A3B8), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(com.example.util.tr(originalContent), color = Color.LightGray, fontSize = 12.sp)
+                    Text(com.example.util.tr(com.example.data.SupportTicketPresentation.cleanBody(originalContent)), color = Color.LightGray, fontSize = 12.sp)
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))
@@ -1309,7 +1293,7 @@ fun UserSupportThreadCard(
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_greeting) else com.example.util.tr(msg.text), color = Color.White, fontSize = 12.sp)
+                                Text(if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_greeting) else com.example.util.tr(if (msg.senderRole == "USER" && msg.id.endsWith("_initial")) com.example.data.SupportTicketPresentation.cleanBody(msg.text) else msg.text), color = Color.White, fontSize = 12.sp)
                             }
                         }
                     }
@@ -1443,5 +1427,3 @@ fun UserSupportThreadCard(
     }
 }
 }
-
-

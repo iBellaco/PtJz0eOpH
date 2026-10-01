@@ -165,300 +165,63 @@ fun AdminSupportReportsDialog(
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
 
+    var loadError by remember { mutableStateOf(false) }
+
+    fun replaceReports(list: List<FeedbackReport>) {
+        val next = list.mapNotNull { fb ->
+            val id = fb.id ?: return@mapNotNull null
+            UnifiedSupportReport(
+                id = id, firestoreDocId = id, isFirestoreDoc = true, rawFeedbackReport = fb,
+                type = fb.type, title = fb.title, description = fb.cleanDescription.substringBefore("[IMAGE_BASE64]").trim(),
+                userId = fb.userId, userEmail = fb.parsedEmail.orEmpty(), userName = fb.parsedUserName.orEmpty(),
+                photosBase64 = fb.photosBase64, status = fb.status ?: FeedbackRepository.STATUS_PENDING,
+                appVersion = fb.appVersion, device = fb.deviceInfo.substringBefore("[IMAGE_BASE64]").trim(),
+                createdAtMillis = parseIsoDateToMillis(fb.createdAt), adminReply = fb.adminReply.orEmpty(),
+                repliedAtMillis = parseIsoDateToMillis(fb.repliedAt), repliedBy = fb.repliedBy.orEmpty(),
+                repliedEmail = fb.repliedEmail.orEmpty()
+            )
+        }
+        // Replace, don't append: removed documents must disappear on every device.
+        reportsList.clear()
+        reportsList.addAll(next)
+        isLoading = false
+        loadError = false
+    }
+
     fun loadAllReports() {
         isLoading = true
         coroutineScope.launch {
-            // Ejecutar purga automática de reportes expirados (30 días leídos, 60 días sin leer)
-            try {
-                SupportReplyManager.autoPurgeAllExpired(context)
-            } catch (e: Exception) {
-                Log.w(TAG, "Error durante auto-purga: ${e.message}")
-            }
-
-            val combined = mutableListOf<UnifiedSupportReport>()
-
-            // 1. Cargar desde repositorio en la nube (FeedbackRepository)
-            try {
-                val cloudResult = FeedbackRepository.getAllFeedbacks()
-                if (cloudResult.isSuccess) {
-                    val supaList = cloudResult.getOrDefault(emptyList())
-                    for (fb in supaList) {
-                        val rawType = fb.type.trim().uppercase()
-                        val isSupport = rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA") ||
-                                fb.title.contains("Soporte", ignoreCase = true) ||
-                                fb.title.contains("Ticket", ignoreCase = true)
-
-                        if (!isSupport) continue
-
-                        val id = fb.id ?: "${fb.title}_${fb.createdAt}"
-                        val status = FeedbackRepository.getReportStatus(context, fb)
-                        val email = fb.parsedEmail ?: ""
-                        val cleanDesc = fb.cleanDescription.substringBefore("[IMAGE_BASE64]").trim()
-                        val cleanDev = fb.deviceInfo.substringBefore("[IMAGE_BASE64]").trim()
-
-                        // Extraer fotos base64
-                        val photos = mutableListOf<String>()
-                        val fullRaw = "${fb.description}\n${fb.deviceInfo}"
-                        if (fullRaw.contains("[IMAGE_BASE64]")) {
-                            val parts = fullRaw.split("[IMAGE_BASE64]")
-                            for (i in 1 until parts.size) {
-                                val segment = parts[i].trim().substringBefore("\n\n").substringBefore("[IMAGE_BASE64]").trim()
-                                if (segment.isNotBlank()) {
-                                    photos.add(segment)
-                                }
-                            }
-                        }
-
-                        val createdMillis = parseIsoDateToMillis(fb.createdAt)
-                        val localReply = SupportReplyManager.getLocalReply(context, id)
-                        val finalReply = if (!fb.adminReply.isNullOrBlank()) fb.adminReply else (localReply?.text ?: "")
-                        val repliedAt = if (!fb.repliedAt.isNullOrBlank()) parseIsoDateToMillis(fb.repliedAt) else (localReply?.timestampMillis ?: 0L)
-                        val repliedBy = if (!fb.repliedBy.isNullOrBlank()) fb.repliedBy else (localReply?.author ?: "Equipo Coach")
-                        val repliedEmail = if (!fb.repliedEmail.isNullOrBlank()) fb.repliedEmail else (localReply?.authorEmail ?: "")
-
-                        val rawFbTag = fb.type.trim().uppercase(Locale.US)
-                        val fbType = if (rawFbTag in listOf("PATROCINADOR", "PATROCINIO", "SPONSOR")) "PATROCINADOR" else fb.type
-                        combined.add(
-                            UnifiedSupportReport(
-                                id = id,
-                                type = fbType,
-                                title = fb.title.ifBlank { "Reporte sin título" },
-                                description = cleanDesc,
-                                userId = fb.userId,
-                                userEmail = email,
-                                userName = fb.parsedUserName ?: "",
-                                photosBase64 = photos,
-                                status = status,
-                                appVersion = fb.appVersion,
-                                device = cleanDev,
-                                createdAtMillis = createdMillis,
-                                rawFeedbackReport = fb,
-                                isFirestoreDoc = false,
-                                firestoreDocId = null,
-                                remoteReportId = fb.id,
-                                adminReply = finalReply,
-                                repliedAtMillis = repliedAt,
-                                repliedBy = repliedBy,
-                                repliedEmail = repliedEmail
-                            )
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error cargando feedbacks: ${e.message}")
-            }
-
-            // 2. Intentar leer también desde Firestore silenciosamente
-            try {
-                com.example.data.SupportTicketAccess.staffQuery()
-                    .get()
-                    .addOnSuccessListener { snapshot ->
-                        if (snapshot != null && !snapshot.isEmpty) {
-                            for (doc in snapshot.documents) {
-                                val docId = doc.id
-                                val docTitle = doc.getString("title") ?: ""
-                                val existing = combined.find { it.id == docId || it.firestoreDocId == docId }
-                                val docReply = doc.getString("adminReply") ?: ""
-                                val docRepliedAt = doc.getTimestamp("repliedAt")?.toDate()?.time ?: 0L
-                                val docRepliedBy = doc.getString("repliedBy") ?: ""
-                                val docRepliedEmail = doc.getString("repliedEmail") ?: ""
-                                val localReply = SupportReplyManager.getLocalReply(context, docId)
-                                val finalReply = if (docReply.isNotBlank()) docReply else (localReply?.text ?: "")
-                                val finalRepliedAt = if (docRepliedAt > 0L) docRepliedAt else (localReply?.timestampMillis ?: 0L)
-                                val finalRepliedBy = if (docRepliedBy.isNotBlank()) docRepliedBy else (localReply?.author ?: "Equipo Coach")
-                                val finalRepliedEmail = if (docRepliedEmail.isNotBlank()) docRepliedEmail else (localReply?.authorEmail ?: "")
-
-                                val rawStatus = doc.getString("status") ?: "PENDIENTE"
-                                val normalizedStatus = when (rawStatus.uppercase()) {
-                                    "SOLVED", "SOLUCIONADO", "RESUELTO" -> FeedbackRepository.STATUS_SOLVED
-                                    "READ", "LEIDO", "LEÍDO" -> FeedbackRepository.STATUS_READ
-                                    "ACCEPTED", "ACEPTADA", "ACEPTADO" -> FeedbackRepository.STATUS_ACCEPTED
-                                    "REJECTED", "RECHAZADA", "RECHAZADO" -> FeedbackRepository.STATUS_REJECTED
-                                    else -> FeedbackRepository.STATUS_PENDING
-                                }
-
-                                if (existing != null) {
-                                    val idx = combined.indexOf(existing)
-                                    combined[idx] = existing.copy(
-                                        firestoreDocId = docId,
-                                        isFirestoreDoc = true,
-                                        status = if (normalizedStatus != FeedbackRepository.STATUS_PENDING) normalizedStatus else existing.status,
-                                        adminReply = if (finalReply.isNotBlank()) finalReply else existing.adminReply,
-                                        repliedAtMillis = if (finalRepliedAt > 0L) finalRepliedAt else existing.repliedAtMillis,
-                                        repliedBy = if (finalRepliedBy.isNotBlank()) finalRepliedBy else existing.repliedBy,
-                                        repliedEmail = if (finalRepliedEmail.isNotBlank()) finalRepliedEmail else existing.repliedEmail
-                                    )
-                                } else {
-                                    val desc = doc.getString("description") ?: ""
-                                    val userId = doc.getString("userId") ?: ""
-                                    val userEmail = doc.getString("userEmail") ?: ""
-                                    val userName = doc.getString("userName") ?: ""
-                                    @Suppress("UNCHECKED_CAST")
-                                    val photos = (doc.get("photos") as? List<String>) ?: emptyList()
-                                    val appVer = doc.getString("appVersion") ?: ""
-                                    val dev = doc.getString("device") ?: ""
-                                    val ts = doc.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis()
-
-                                    val docTag = doc.getString("tag") ?: doc.getString("type") ?: "SOPORTE"
-                                    val finalDocType = if (docTag.equals("PATROCINADOR", ignoreCase = true)) "PATROCINADOR" else "SOPORTE"
-                                    combined.add(
-                                        UnifiedSupportReport(
-                                            id = docId,
-                                            firestoreDocId = docId,
-                                            type = finalDocType,
-                                            title = docTitle.ifBlank { "Ticket de soporte" },
-                                            description = desc,
-                                            userId = userId,
-                                            userEmail = userEmail,
-                                            userName = userName,
-                                            photosBase64 = photos,
-                                            status = normalizedStatus,
-                                            appVersion = appVer,
-                                            device = dev,
-                                            createdAtMillis = ts,
-                                            rawFeedbackReport = null,
-                                            isFirestoreDoc = true,
-                                            remoteReportId = null,
-                                            adminReply = finalReply,
-                                            repliedAtMillis = finalRepliedAt,
-                                            repliedBy = finalRepliedBy,
-                                            repliedEmail = finalRepliedEmail
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                        reportsList.clear()
-                        reportsList.addAll(combined.sortedByDescending { it.createdAtMillis })
-                        isLoading = false
-                    }
-                    .addOnFailureListener {
-                        reportsList.clear()
-                        reportsList.addAll(combined.sortedByDescending { it.createdAtMillis })
-                        isLoading = false
-                    }
-            } catch (e: Exception) {
-                reportsList.clear()
-                reportsList.addAll(combined.sortedByDescending { it.createdAtMillis })
+            val result = FeedbackRepository.getAllFeedbacks()
+            result.onSuccess { replaceReports(it) }.onFailure {
                 isLoading = false
+                loadError = true
             }
         }
     }
 
-    LaunchedEffect(Unit) {
-        loadAllReports()
-        while (true) {
-            kotlinx.coroutines.delay(10000L)
+    DisposableEffect(isAdmin) {
+        var registration: com.google.firebase.firestore.ListenerRegistration? = null
+        val job = coroutineScope.launch {
             try {
-                val cloudResult = FeedbackRepository.getAllFeedbacks()
-                if (cloudResult.isSuccess) {
-                    val supaList = cloudResult.getOrDefault(emptyList())
-                    for (fb in supaList) {
-                        val id = fb.id ?: "${fb.title}_${fb.createdAt}"
-                        val status = FeedbackRepository.getReportStatus(context, fb)
-                        val existingIdx = reportsList.indexOfFirst { it.id == id || it.remoteReportId == id }
-                        if (existingIdx != -1) {
-                            val cur = reportsList[existingIdx]
-                            // Jamás degradar un estado resuelto o leído a pendiente por sondeo pasivo
-                            val shouldUpdateStatus = cur.status != status
-                            val shouldUpdateReply = !fb.adminReply.isNullOrBlank() && cur.adminReply.isBlank()
-                            if (shouldUpdateStatus || shouldUpdateReply) {
-                                reportsList[existingIdx] = cur.copy(
-                                    status = if (shouldUpdateStatus) status else cur.status,
-                                    adminReply = if (!fb.adminReply.isNullOrBlank()) fb.adminReply else cur.adminReply
-                                )
-                            }
-                        }
-                    }
+                com.example.data.SupportTicketAccess.migrateLegacyVisibility()
+                registration = com.example.data.SupportTicketAccess.staffQuery().addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        isLoading = false
+                        loadError = true
+                    } else if (snapshot != null) replaceReports(FeedbackRepository.feedbacksFromSnapshot(snapshot))
                 }
-            } catch (_: Exception) {}
+            } catch (error: Exception) {
+                isLoading = false
+                loadError = true
+            }
         }
+        onDispose { job.cancel(); registration?.remove() }
     }
 
-    // Escucha en tiempo real para sincronización multidispositivo de estados y respuestas
-    DisposableEffect(Unit) {
-        val listenerReg = com.example.data.SupportTicketAccess.staffQuery()
-            .addSnapshotListener { snapshot, error ->
-                if (error == null && snapshot != null) {
-                    for (doc in snapshot.documents) {
-                        val docId = doc.id
-                        val docTitle = doc.getString("title") ?: ""
-                        val rawStatus = doc.getString("status") ?: "PENDIENTE"
-                        val normalizedStatus = when (rawStatus.uppercase()) {
-                            "SOLVED", "SOLUCIONADO", "RESUELTO" -> FeedbackRepository.STATUS_SOLVED
-                            "READ", "LEIDO", "LEÍDO" -> FeedbackRepository.STATUS_READ
-                            "ACCEPTED", "ACEPTADA", "ACEPTADO" -> FeedbackRepository.STATUS_ACCEPTED
-                            "REJECTED", "RECHAZADA", "RECHAZADO" -> FeedbackRepository.STATUS_REJECTED
-                            else -> FeedbackRepository.STATUS_PENDING
-                        }
-                        val docReply = doc.getString("adminReply") ?: ""
-                        val docRepliedAt = doc.getTimestamp("repliedAt")?.toDate()?.time ?: 0L
-                        val docRepliedBy = doc.getString("repliedBy") ?: ""
-                        val docRepliedEmail = doc.getString("repliedEmail") ?: ""
-
-                        val existingIdx = reportsList.indexOfFirst { it.id == docId || it.firestoreDocId == docId }
-                        if (existingIdx != -1) {
-                            val cur = reportsList[existingIdx]
-                            val finalReply = if (docReply.isNotBlank()) docReply else cur.adminReply
-                            val finalRepliedAt = if (docRepliedAt > 0L) docRepliedAt else cur.repliedAtMillis
-                            val finalRepliedBy = if (docRepliedBy.isNotBlank()) docRepliedBy else cur.repliedBy
-                            val finalRepliedEmail = if (docRepliedEmail.isNotBlank()) docRepliedEmail else cur.repliedEmail
-
-                            if (cur.status != normalizedStatus || cur.adminReply != finalReply || cur.firestoreDocId == null || cur.repliedBy != finalRepliedBy || cur.repliedEmail != finalRepliedEmail) {
-                                reportsList[existingIdx] = cur.copy(
-                                    status = normalizedStatus,
-                                    adminReply = finalReply,
-                                    repliedAtMillis = finalRepliedAt,
-                                    repliedBy = finalRepliedBy,
-                                    repliedEmail = finalRepliedEmail,
-                                    firestoreDocId = docId
-                                )
-                            }
-                        } else {
-                            // Agregar nuevo reporte en tiempo real
-                            val desc = doc.getString("description") ?: ""
-                            val userId = doc.getString("userId") ?: ""
-                            val userEmail = doc.getString("userEmail") ?: ""
-                            val userName = doc.getString("userName") ?: ""
-                            @Suppress("UNCHECKED_CAST")
-                            val photos = (doc.get("photos") as? List<String>) ?: emptyList()
-                            val appVer = doc.getString("appVersion") ?: ""
-                            val dev = doc.getString("device") ?: ""
-                            val ts = doc.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis()
-                            val docTag = doc.getString("tag") ?: doc.getString("type") ?: "SOPORTE"
-                            val finalDocType = if (docTag.equals("PATROCINADOR", ignoreCase = true)) "PATROCINADOR" else "SOPORTE"
-                            reportsList.add(
-                                0,
-                                UnifiedSupportReport(
-                                    id = docId,
-                                    firestoreDocId = docId,
-                                    type = finalDocType,
-                                    title = docTitle.ifBlank { "Ticket de soporte" },
-                                    description = desc,
-                                    userId = userId,
-                                    userEmail = userEmail,
-                                    userName = userName,
-                                    photosBase64 = photos,
-                                    status = normalizedStatus,
-                                    appVersion = appVer,
-                                    device = dev,
-                                    createdAtMillis = ts,
-                                    rawFeedbackReport = null,
-                                    isFirestoreDoc = true,
-                                    remoteReportId = null,
-                                    adminReply = docReply,
-                                    repliedAtMillis = docRepliedAt,
-                                    repliedBy = docRepliedBy,
-                                    repliedEmail = docRepliedEmail
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-        onDispose {
-            listenerReg.remove()
-        }
+    LaunchedEffect(loadError) {
+        if (loadError) Toast.makeText(context,
+            com.example.util.appTr("No se pudieron cargar los mensajes. Comprueba los permisos y vuelve a intentarlo."),
+            Toast.LENGTH_LONG).show()
     }
 
     // Reportes visibles según rol de administrador
@@ -959,7 +722,7 @@ fun AdminSupportReportsDialog(
     }
 
     // Modal de confirmación para eliminar reporte
-    if (reportToDelete != null) {
+    if (isAdmin && reportToDelete != null) {
         val target = reportToDelete!!
         AlertDialog(
             onDismissRequest = { reportToDelete = null },
@@ -996,31 +759,13 @@ fun AdminSupportReportsDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        val idToDelete = target.id
                         reportToDelete = null
-                        reportsList.removeAll { it.id == idToDelete }
                         coroutineScope.launch {
-                            // Eliminar y purgar completamente de Firestore y bandejas
-                            try {
-                                val fbReport = target.rawFeedbackReport ?: com.example.data.remote.model.FeedbackReport(
-                                    id = target.firestoreDocId ?: idToDelete,
-                                    title = target.title,
-                                    description = if (target.userEmail.isNotBlank()) "Correo de contacto: ${target.userEmail}\n\n" else ""
-                                )
-                                FeedbackRepository.deleteFeedback(fbReport)
-                                if (target.id.isNotBlank() && target.id != fbReport.id) {
-                                    FeedbackRepository.deleteFeedback(target.id)
-                                }
-                                if (!target.firestoreDocId.isNullOrBlank() && target.firestoreDocId != target.id && target.firestoreDocId != fbReport.id) {
-                                    FeedbackRepository.deleteFeedback(target.firestoreDocId!!)
-                                }
-                            } catch (e: Exception) {
-                                Log.w(TAG, "Error eliminando reporte: ${e.message}")
-                            }
-
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(context, com.example.util.appTr("Reporte eliminado permanentemente"), Toast.LENGTH_SHORT).show()
-                            }
+                            val result = FeedbackRepository.deleteFeedback(target.firestoreDocId ?: target.id)
+                            if (result.isSuccess) reportsList.removeAll { it.id == target.id }
+                            Toast.makeText(context, com.example.util.appTr(if (result.isSuccess)
+                                "Reporte eliminado permanentemente" else "No se pudo eliminar el mensaje. Inténtalo de nuevo."),
+                                Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
@@ -1623,7 +1368,7 @@ private fun UnifiedReportAdminCard(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = tr("Solucionado"),
+                            text = com.example.util.localizedString(com.example.R.string.support_close_conversation),
                             color = if (isSolved) HextechGreen else TextSecondary,
                             fontSize = 10.sp,
                             fontWeight = if (isSolved) FontWeight.Bold else FontWeight.Normal

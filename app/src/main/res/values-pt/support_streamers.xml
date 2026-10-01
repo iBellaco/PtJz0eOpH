@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="support_close_conversation">Encerrar conversa</string>
+    <string name="support_close_explanation">Após o encerramento, o usuário não poderá responder. O histórico será preservado.</string>
     <string name="support_system_greeting">Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá aqui.</string>
     <string name="support_system_name">Sistema Coach</string>
     <string name="streamer_panel">Painel de streamer</string>

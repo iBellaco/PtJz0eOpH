@@ -7,6 +7,12 @@ object SupportConversationPolicy {
     fun isSponsor(tag: String): Boolean = tag.trim().uppercase(Locale.ROOT) in setOf("PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD")
     fun isClosed(status: String): Boolean = status.trim().uppercase(Locale.ROOT) in setOf("SOLVED", "SOLUCIONADO", "RESUELTO", "CLOSED", "CERRADO", "COMPLETED", "COMPLETADO")
     fun canView(role: String, tag: String): Boolean = role == "admin" || (role == "moderador" && !isSponsor(tag))
+    fun hasStaffAnswer(messages: List<SupportMessageEntry>): Boolean = messages.any {
+        it.senderRole.uppercase(Locale.ROOT) in setOf("SUPPORT", "ADMIN", "MODERATOR", "MODERADOR") &&
+            !it.isGreeting && it.text.isNotBlank() && !SupportReplyManager.isDefaultGreeting(it.text)
+    }
+    fun canUserReply(messages: List<SupportMessageEntry>, status: String): Boolean =
+        !isClosed(status) && hasStaffAnswer(messages)
     fun userHasRead(data: Map<String, Any>): Boolean {
         if (data["userRead"] is Boolean) return data["userRead"] == true && data["hasNewAdminReply"] != true
         return data["isRead"] == true && data["hasNewAdminReply"] != true

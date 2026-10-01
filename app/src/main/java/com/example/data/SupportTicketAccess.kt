@@ -24,12 +24,13 @@ object SupportTicketAccess {
         val db = FirebaseFirestore.getInstance()
         val documents = db.collection("support_reports").get().await().documents
         documents.forEach { doc ->
+            if (!SupportTicketPresentation.isUserTicket(doc.data.orEmpty())) return@forEach
             val visible = !SupportConversationPolicy.isSponsor(doc.getString("tag") ?: doc.getString("type").orEmpty())
             var owner = doc.getString("userId").orEmpty()
             if (owner.isBlank() && !doc.getString("userEmail").isNullOrBlank()) {
                 owner = db.collection("users").whereEqualTo("email", doc.getString("userEmail")).limit(1).get().await().documents.firstOrNull()?.id.orEmpty()
             }
-            if (doc.getBoolean("staffVisible") != visible || (doc.getString("userId").isNullOrBlank() && owner.isNotBlank()) || SupportConversationPolicy.decode(doc.get("conversation")).isEmpty()) {
+            if (doc.getBoolean("userCanReply") == null || doc.getBoolean("staffVisible") != visible || (doc.getString("userId").isNullOrBlank() && owner.isNotBlank()) || SupportConversationPolicy.decode(doc.get("conversation")).isEmpty()) {
                 db.runTransaction { transaction ->
                     val latest = transaction.get(doc.reference)
                     if (latest.exists()) {
@@ -45,6 +46,8 @@ object SupportTicketAccess {
                                 latest.getTimestamp("repliedAt")?.toDate()?.time ?: 0L)
                             patch["conversation"] = history.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") latestOwner else "") }
                         }
+                        val history = SupportConversationPolicy.decode(patch["conversation"] ?: latest.get("conversation"))
+                        if (latest.getBoolean("userCanReply") == null) patch["userCanReply"] = SupportConversationPolicy.hasStaffAnswer(history)
                         if (patch.isNotEmpty()) transaction.update(doc.reference, patch)
                     }
                 }.await()

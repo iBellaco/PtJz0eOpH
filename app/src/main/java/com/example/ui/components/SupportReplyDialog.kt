@@ -600,6 +600,25 @@ fun SupportReplyDialog(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    OutlinedButton(
+                        onClick = {
+                            isSending = true
+                            coroutineScope.launch {
+                                val ok = SupportReplyManager.updateReportStatus(context, reportId, "SOLVED")
+                                isSending = false
+                                if (ok) onDismiss()
+                                else Toast.makeText(context, com.example.util.appTr("No se pudo sincronizar el estado. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        enabled = !isSending,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(com.example.util.localizedString(com.example.R.string.support_close_conversation), color = HextechCyan)
+                    }
+                    Text(com.example.util.localizedString(com.example.R.string.support_close_explanation),
+                        color = TextMuted, fontSize = 10.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     // Botones de acción
                     Row(
                         modifier = Modifier.fillMaxWidth(),

@@ -73,11 +73,10 @@ object SupportReplyManager {
 
     /**
      * Determina si el usuario tiene permiso para responder.
-     * Al enviar un reporte de soporte se inicia una conversación activa,
-     * permitiendo al usuario aportar más información o responder en cualquier momento.
+     * El saludo del sistema no habilita respuestas; se requiere una respuesta real del equipo.
      */
     fun canUserReply(messages: List<SupportMessageEntry>, ticketStatus: String = "PENDIENTE"): Boolean {
-        return !SupportConversationPolicy.isClosed(ticketStatus)
+        return SupportConversationPolicy.canUserReply(messages, ticketStatus)
     }
 
     /**
@@ -276,7 +275,7 @@ object SupportReplyManager {
                     "lastMessageAt" to Timestamp.now(), "lastReplyRole" to "SUPPORT", "lastReplySenderRole" to "SUPPORT",
                     "status" to status, "isCompleted" to SupportConversationPolicy.isClosed(status),
                     "isRead" to false, "userRead" to false, "hasNewAdminReply" to true, "hasNewReply" to true,
-                    "staffRead" to markAsRead, "tag" to actualTag, "type" to (snapshot.getString("type") ?: actualTag),
+                    "staffRead" to markAsRead, "userCanReply" to true, "tag" to actualTag, "type" to (snapshot.getString("type") ?: actualTag),
                     "staffVisible" to !SupportConversationPolicy.isSponsor(actualTag))
                 if (!snapshot.exists()) data["createdAt"] = Timestamp.now()
                 transaction.set(ref, data, com.google.firebase.firestore.SetOptions.merge())
@@ -313,6 +312,7 @@ object SupportReplyManager {
                         snapshot.getString("adminReply").orEmpty(), snapshot.getString("repliedBy") ?: "Soporte Coach",
                         snapshot.getTimestamp("repliedAt")?.toDate()?.time ?: entry.timestampMillis)
                 }
+                check(canUserReply(previous, snapshot.getString("status").orEmpty())) { "Espera la primera respuesta del equipo" }
                 val messages = previous + entry
                 val data = mapOf<String, Any>("conversation" to ((snapshot.get("conversation") as? List<*>)?.takeIf { it.isNotEmpty() }.orEmpty().ifEmpty { previous.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") auth.uid else "") } } + SupportConversationPolicy.encode(entry, auth.uid)),
                     "status" to "PENDING", "isCompleted" to false, "lastUserMessage" to userReplyText.trim(),
@@ -388,43 +388,6 @@ object SupportReplyManager {
         return if (clean.length > maxLength) clean.substring(0, maxLength) else clean
     }
 
-    suspend fun autoPurgeAllExpired(context: Context): Int = withContext(Dispatchers.IO) {
-        if (!SupportTicketAccess.isAdmin()) return@withContext 0
-        var totalPurged = 0
-        val now = System.currentTimeMillis()
-
-        // 1. Purga en Firestore de support_reports
-        try {
-            val db = FirebaseFirestore.getInstance()
-            val snapshot = db.collection("support_reports").get().await()
-            for (doc in snapshot.documents) {
-                val status = doc.getString("status") ?: "PENDIENTE"
-                val isRead = status.equals("LEIDO", ignoreCase = true) ||
-                             status.equals("LEÍDO", ignoreCase = true) ||
-                             status.equals("SOLUCIONADO", ignoreCase = true) ||
-                             status.equals("SOLVED", ignoreCase = true) ||
-                             status.equals("READ", ignoreCase = true)
-                val maxDays = if (isRead) DAYS_RETENTION_READ else DAYS_RETENTION_UNREAD
-                val maxLifespan = maxDays * 24L * 60 * 60 * 1000L
-                val ts = doc.getTimestamp("createdAt")?.toDate()?.time ?: continue
-                if (now - ts >= maxLifespan) {
-                    try {
-                        db.collection("support_reports").document(doc.id).delete().await()
-                        totalPurged++
-                        Log.d(TAG, "Reporte expirado eliminado de Firestore: ${doc.id}")
-                    } catch (_: Exception) {}
-                }
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Error en purga de reportes en Firestore: ${e.message}")
-        }
-
-        // 2. Purga en Local Feedback
-        try {
-            val fbPurged = FeedbackRepository.autoPurgeExpiredReports(context)
-            totalPurged += fbPurged
-        } catch (_: Exception) {}
-
-        totalPurged
-    }
+    suspend fun autoPurgeAllExpired(context: Context): Int =
+        if (SupportTicketAccess.isAdmin()) FeedbackRepository.autoPurgeExpiredReports(context) else 0
 }
