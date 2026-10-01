@@ -205,6 +205,8 @@ fun AppAssetImage(
 ) {
     val context = LocalContext.current
     val parsedUrl = url.trim()
+    val localizedFallback = com.example.util.tr(fallbackText)
+    val localizedDescription = com.example.util.trNullable(contentDescription) ?: localizedFallback
 
     // Animación fluida de selección / carga para imágenes de assets
     val scaleAnim = remember(url) { Animatable(0.72f) }
@@ -260,7 +262,7 @@ fun AppAssetImage(
     ) {
         // Fallback initials underneath
         Text(
-            text = com.example.util.tr(fallbackText.take(2).uppercase()),
+            text = localizedFallback.take(2).uppercase(),
             color = borderColor.copy(alpha = 0.7f),
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold
@@ -283,7 +285,7 @@ fun AppAssetImage(
                     )
                     .build(),
                 imageLoader = context.imageLoader,
-                contentDescription = contentDescription ?: fallbackText,
+                contentDescription = localizedDescription,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize().clip(shape)
             )

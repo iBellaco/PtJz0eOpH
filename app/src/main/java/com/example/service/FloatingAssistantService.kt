@@ -2511,6 +2511,7 @@ private fun FloatingSaveMatchDialog(
     onSaved: () -> Unit
 ) {
     val context = LocalContext.current
+    val currentLang = com.example.util.currentAppLanguage()
     val coroutineScope = rememberCoroutineScope()
     var selectedResult by remember { mutableStateOf("PENDING") }
     var selectedMatchMode by remember(isLegendary) { mutableStateOf(if (isLegendary) "LEGENDARY" else "RANKED") }
@@ -2584,7 +2585,7 @@ private fun FloatingSaveMatchDialog(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = com.example.util.tr("${myChampion?.name ?: "Mi Pick"} (${activeRole.shortName})"),
+                                text = "${myChampion?.getLocalizedName(currentLang) ?: com.example.util.tr("Mi Pick")} (${activeRole.shortName})",
                                 color = AllyBlue,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp

@@ -579,8 +579,8 @@ private fun copyToClipboard(context: Context, text: String, label: String) {
 private fun downloadQr(context: Context, url: String) {
     try {
         val request = android.app.DownloadManager.Request(Uri.parse(url))
-        request.setTitle("Pix QR Code")
-        request.setDescription("Descargando código QR Pix")
+        request.setTitle(com.example.util.appTr("Pix QR Code"))
+        request.setDescription(com.example.util.appTr("Descargando código QR Pix"))
         request.setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         request.setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS, "Pix_QR.png")
 

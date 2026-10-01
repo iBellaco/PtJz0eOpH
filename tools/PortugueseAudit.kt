@@ -7,9 +7,10 @@ import java.io.File
 import org.json.JSONObject
 import org.json.JSONArray
 import com.example.util.TranslationCatalog
+import com.example.util.TranslationAssets
 fun main(args: Array<String>) {
  val root=File(args[0]); fun map(path:String): Map<String,String> { val j=JSONObject(File(root,path).readText()); return j.keys().asSequence().associateWith{j.getString(it)} }
- val catalog=TranslationCatalog(map("app/src/main/assets/translations_pt.json"),portugueseAliases=map("app/src/main/assets/translations_pt_aliases.json"))
+ val catalog=TranslationAssets.load { map("app/src/main/assets/$it") }
  val d=Disposer.newDisposable(); val env=KotlinCoreEnvironment.createForProduction(d,CompilerConfiguration(),EnvironmentConfigFiles.JVM_CONFIG_FILES);val factory=KtPsiFactory(env.project,false)
  val phrases=linkedMapOf<String,MutableSet<String>>()
  fun add(text:String,path:String){ if(text.any {it.isLetter()} && text.length>3) phrases.getOrPut(text){linkedSetOf()}.add(path) }
