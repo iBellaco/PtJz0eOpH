@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="support_system_greeting">Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.</string>
+    <string name="support_system_name">Sistema Coach</string>
+    <string name="streamer_panel">Panel de streamer</string>
+    <string name="streamer_name">Nombre del canal</string>
+    <string name="streamer_url">URL del canal (https://)</string>
+    <string name="streamer_requirement">Para aprobar tu solicitud debes estar usando Coach durante la transmisión. Si no se puede verificar, se rechazará.</string>
+    <string name="streamer_max">Ya se visualiza el máximo de cinco streamers. No se pueden enviar más solicitudes por ahora.</string>
+    <string name="streamer_submit">Solicitar publicación en vivo</string>
+    <string name="streamer_pending">Solicitud pendiente de aprobación.</string>
+    <string name="streamer_approved">Tu canal está publicado en vivo. Finaliza la publicación cuando termines de transmitir.</string>
+    <string name="streamer_rejected">Solicitud rechazada. Comprueba que estás usando Coach en la transmisión antes de volver a solicitar.</string>
+    <string name="streamer_end">Finalizar publicación</string>
+    <string name="streamer_error">No se pudo sincronizar la operación. Inténtalo de nuevo.</string>
+    <string name="streamer_name_error">El nombre del canal debe tener entre 2 y 60 caracteres.</string>
+    <string name="streamer_url_error">Introduce un enlace HTTPS válido de un canal de TikTok, YouTube, Twitch o Kick.</string>
+    <string name="streamer_role_error">Se necesita el rol streamer para publicar un canal.</string>
+    <string name="streamer_live">EN VIVO • %1$s</string>
+    <string name="streamer_reviews">Streamers</string>
+    <string name="streamer_roles">Verificación y roles</string>
+    <string name="streamer_open">Abrir canal</string>
+    <string name="streamer_verify">He comprobado que está usando Coach en la transmisión.</string>
+    <string name="streamer_approve">Aprobar</string>
+    <string name="streamer_reject">Rechazar</string>
+    <string name="streamer_empty">No hay solicitudes pendientes.</string>
+    <string name="streamer_loading">Cargando…</string>
+    <string name="streamer_count">Canales publicados: %1$d de 5</string>
+    <string name="streamer_close">Cerrar</string>
+    <string name="streamer_review_title">Solicitudes de verificación, roles y streamers</string>
+</resources>

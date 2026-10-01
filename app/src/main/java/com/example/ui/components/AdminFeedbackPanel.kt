@@ -291,12 +291,10 @@ fun AdminFeedbackBottomSheet(
 
     // Escucha en tiempo real de Firestore para sincronización instantánea multidispositivo de estados y respuestas
     DisposableEffect(Unit) {
-        val listenerReg = FirebaseFirestore.getInstance()
-            .collection("support_reports")
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit(100)
+        val listenerReg = com.example.data.SupportTicketAccess.staffQuery()
             .addSnapshotListener { snapshot, error ->
                 if (error == null && snapshot != null) {
+                    loadReports(silent = true)
                     for (doc in snapshot.documents) {
                         val docId = doc.id
                         val docTitle = doc.getString("title") ?: ""
@@ -320,7 +318,7 @@ fun AdminFeedbackBottomSheet(
 
                         // Actualizar en la lista de reportes en memoria
                         val existingIdx = reports.indexOfFirst {
-                            it.id == docId || (docTitle.isNotBlank() && it.title.trim().equals(docTitle.trim(), ignoreCase = true))
+                            it.id == docId
                         }
                         if (existingIdx != -1) {
                             val cur = reports[existingIdx]
@@ -882,30 +880,11 @@ fun AdminFeedbackBottomSheet(
                                 report = report,
                                 currentStatus = currentStatus,
                                 onSelectStatus = { newStatus ->
-                                    statusMap[key] = newStatus
-                                    FeedbackRepository.setFeedbackStatus(context, report, newStatus)
-                                    val effectiveId = report.id ?: key
                                     scope.launch {
-                                        if (!report.id.isNullOrBlank()) {
-                                            FeedbackRepository.updateFeedbackStatusInCloud(report.id, newStatus)
-                                        }
-                                        SupportReplyManager.updateReportStatus(
-                                            context = context,
-                                            reportId = effectiveId,
-                                            newStatus = newStatus,
-                                            userId = null,
-                                            userEmail = report.parsedEmail,
-                                            reportTitle = report.title
-                                        )
+                                        val ok = SupportReplyManager.updateReportStatus(context, report.id ?: key, newStatus)
+                                        if (ok) statusMap[key] = newStatus
+                                        Toast.makeText(context, com.example.util.appTr(if (ok) "Estado actualizado" else "No se pudo sincronizar el estado. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
                                     }
-                                    val msg = when (newStatus) {
-                                        FeedbackRepository.STATUS_SOLVED -> "Marcado como Solucionado"
-                                        FeedbackRepository.STATUS_READ -> "Marcado como Leído"
-                                        FeedbackRepository.STATUS_ACCEPTED -> "Sugerencia Aceptada"
-                                        FeedbackRepository.STATUS_REJECTED -> "Sugerencia Rechazada"
-                                        else -> "Marcado como Pendiente"
-                                    }
-                                    Toast.makeText(context, com.example.util.appTr(msg), Toast.LENGTH_SHORT).show()
                                 },
                                 onReply = { reportToReply = report },
                                 onDelete = { reportToDelete = report },
@@ -946,14 +925,15 @@ fun AdminFeedbackBottomSheet(
             reportDescription = rep.cleanDescription.ifEmpty { rep.description },
             userEmail = rep.parsedEmail ?: "",
             userName = rep.parsedUserName ?: "",
-            initialReply = curReply,
+            userId = rep.userId,
+            initialReply = "",
             tag = if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
             isFirestoreDoc = false,
             onDismiss = { reportToReply = null },
             onReplySent = { newReply, markedAsRead ->
                 if (markedAsRead) {
                     statusMap[repId] = FeedbackRepository.STATUS_READ
-                    FeedbackRepository.setFeedbackStatus(context, rep, FeedbackRepository.STATUS_READ)
+                    // The committed conversation and live listener supply the shared status.
                 }
                 loadReports()
             }
@@ -1752,7 +1732,7 @@ private fun ComprehensiveFeedbackCard(
                             }
                             if (onReply != null && (itemCategory == "SUPPORT" || itemCategory == "PATROCINADOR" || itemCategory == "BUG")) {
                                 Text(
-                                    text = tr("Editar"),
+                                    text = tr("Responder de nuevo"),
                                     color = HextechCyan,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,

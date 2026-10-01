@@ -147,7 +147,7 @@ fun SupportReplyDialog(
                         }
                     } else emptyList()
 
-                    val hasUserInitial = parsed.any { it.senderRole.equals("USER", ignoreCase = true) && it.text.trim() == desc.trim() }
+                    val hasUserInitial = parsed.any { it.senderRole.equals("USER", ignoreCase = true) }
                     val fullList = if (!hasUserInitial && desc.isNotBlank()) {
                         listOf(
                             com.example.data.SupportMessageEntry(
@@ -195,13 +195,8 @@ fun SupportReplyDialog(
 
     val displayUserName = resolvedUserName.ifBlank { "Invocador" }
 
-    val greetingIntro = remember(senderCleanName, responderRoleLabel) {
-        if (senderCleanName.isNotBlank()) "soy $senderCleanName ($responderRoleLabel)" else "soy $responderRoleLabel"
-    }
-
-    val quickTemplates = remember(displayUserName, greetingIntro) {
+    val quickTemplates = remember(displayUserName) {
         listOf(
-            "👋 Hola $displayUserName, $greetingIntro del equipo de soporte de Coach. Gracias por escribirnos, hemos recibido tu mensaje y estamos para ayudarte a la brevedad.",
             "✅ ¡Problema solucionado! Esta incidencia fue corregida en la última actualización de Coach. Te sugerimos actualizar tu app.",
             "🔄 Te sugerimos cerrar sesión, reiniciar la app y volver a ingresar para sincronizar tus configuraciones de forma óptima.",
             "🛡️ Hemos verificado la configuración de tu cuenta y optimizado tus datos. Por favor confirma si el problema persiste.",
@@ -209,13 +204,12 @@ fun SupportReplyDialog(
             "💡 Recuerda que puedes consultar la sección de guías y optimización en el menú principal para aprovechar al máximo las funciones de Coach."
         )
     }
-
     val hasPriorSupportReply = remember(conversationMessages) {
         conversationMessages.any { it.senderRole.equals("SUPPORT", ignoreCase = true) }
     }
 
     var replyText by remember {
-        mutableStateOf(initialReply)
+        mutableStateOf("")
     }
 
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
@@ -398,7 +392,7 @@ fun SupportReplyDialog(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             conversationMessages.forEach { msg ->
-                                val isFromSupport = msg.senderRole == "SUPPORT"
+                                val isFromSupport = msg.senderRole != "USER"
                                 val bubbleBorderColor = if (isFromSupport) HextechCyan.copy(alpha = 0.6f) else HextechGold.copy(alpha = 0.6f)
                                 val bubbleBg = if (isFromSupport) HextechDarkBg else HextechSurface
                                 val roleColor = if (isFromSupport) HextechCyan else HextechGold
@@ -421,7 +415,7 @@ fun SupportReplyDialog(
                                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                                 ) {
                                                     Text(
-                                                        text = com.example.util.tr(if (isFromSupport) "🛡️ Soporte Coach (${msg.senderName})" else "👤 $displayUserName"),
+                                                        text = if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_name) else com.example.util.tr(if (isFromSupport) "🛡️ Soporte Coach (${msg.senderName})" else "👤 $displayUserName"),
                                                         color = roleColor,
                                                         fontSize = 11.sp,
                                                         fontWeight = FontWeight.Bold,
@@ -466,7 +460,7 @@ fun SupportReplyDialog(
                                         }
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            text = com.example.util.tr(msg.text),
+                                            text = if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_greeting) else com.example.util.tr(msg.text),
                                             color = Color.White,
                                             fontSize = 12.sp,
                                             lineHeight = 16.sp
@@ -509,12 +503,11 @@ fun SupportReplyDialog(
                     ) {
                         quickTemplates.forEachIndexed { index, tpl ->
                             val label = when (index) {
-                                0 -> "👋 Saludo"
-                                1 -> "✅ Solucionado"
-                                2 -> "🔄 Reinicio"
-                                3 -> "🛡️ Cuenta"
-                                4 -> "🔍 Revisión"
-                                5 -> "💡 Guía"
+                                0 -> "✅ Solucionado"
+                                1 -> "🔄 Reinicio"
+                                2 -> "🛡️ Cuenta"
+                                3 -> "🔍 Revisión"
+                                4 -> "💡 Guía"
                                 else -> "Mensaje"
                             }
                             Box(
@@ -523,7 +516,7 @@ fun SupportReplyDialog(
                                     .background(HextechSurfaceVariant)
                                     .border(0.8.dp, HextechCardBorder, RoundedCornerShape(8.dp))
                                     .clickable {
-                                        replyText = SupportReplyManager.sanitizePlainText(tpl, 500)
+                                        replyText = SupportReplyManager.sanitizePlainText(com.example.util.appTr(tpl), 500)
                                     }
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
@@ -683,6 +676,10 @@ fun SupportReplyDialog(
                                         markAsRead = markAsRead
                                     )
                                     isSending = false
+                                    if (!ok) {
+                                        Toast.makeText(context, com.example.util.appTr("No se pudo enviar el mensaje. Inténtalo de nuevo."), Toast.LENGTH_LONG).show()
+                                        return@launch
+                                    }
                                     // Actualizar el historial local mostrado en pantalla
                                     val updatedConv = SupportReplyManager.getConversation(context, reportId)
                                     conversationMessages = updatedConv

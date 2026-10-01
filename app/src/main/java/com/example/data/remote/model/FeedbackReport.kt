@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class FeedbackReport(
     val id: String? = null,
+    val userId: String = "",
     val type: String = "BUG",
     val title: String = "",
     val description: String = "",

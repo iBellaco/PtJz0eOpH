@@ -187,6 +187,7 @@ fun AdminDashboardDialog(
         DisposableEffect(Unit) {
             val pendingSet1 = mutableSetOf<String>()
             val pendingSet2 = mutableSetOf<String>()
+            var pendingStreamers = 0
 
             val listener1 = FirebaseFirestore.getInstance().collection("support_reports")
                 .whereEqualTo("category", "MODERATOR_REQUEST")
@@ -195,7 +196,7 @@ fun AdminDashboardDialog(
                     if (snapshot != null) {
                         pendingSet1.clear()
                         snapshot.documents.forEach { pendingSet1.add(it.id) }
-                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size
+                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers
                     }
                 }
             val listener2 = FirebaseFirestore.getInstance().collection("moderator_requests")
@@ -204,10 +205,14 @@ fun AdminDashboardDialog(
                     if (snapshot != null) {
                         pendingSet2.clear()
                         snapshot.documents.forEach { pendingSet2.add(it.id) }
-                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size
+                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers
                     }
                 }
+            val streamerListener = com.example.data.StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, _ ->
+                if (snapshot != null) { pendingStreamers = snapshot.size(); pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers }
+            }
             onDispose {
+                streamerListener.remove()
                 listener1.remove()
                 listener2.remove()
             }
@@ -5605,6 +5610,7 @@ fun AdminModeratorRequestsDialog(
     val db = FirebaseFirestore.getInstance()
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var showStreamers by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
 
     fun loadRequests() {
@@ -5699,7 +5705,7 @@ fun AdminModeratorRequestsDialog(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = tr("Solicitudes de Moderadores"),
+                            text = com.example.util.localizedString(com.example.R.string.streamer_review_title),
                             color = HextechGold,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -5712,6 +5718,13 @@ fun AdminModeratorRequestsDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = { showStreamers = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers) HextechGold else TextSecondary) }
+                    TextButton(onClick = { showStreamers = true }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
+                }
+                if (showStreamers) {
+                    StreamerReviewPanel(Modifier.weight(1f).fillMaxWidth())
+                } else {
                 // Toggle history
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -5959,6 +5972,7 @@ fun AdminModeratorRequestsDialog(
                             }
                         }
                     }
+                }
                 }
             }
         }

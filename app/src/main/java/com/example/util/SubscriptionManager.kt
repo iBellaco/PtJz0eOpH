@@ -279,9 +279,9 @@ object SubscriptionManager {
 
             fun isReportUnreadForUser(doc: com.google.firebase.firestore.DocumentSnapshot): Boolean {
                 val status = doc.getString("status") ?: ""
-                val isClosed = status.equals("SOLUCIONADO", true) || 
-                               status.equals("CERRADO", true) || 
-                               status.equals("CLOSED", true) || 
+                val isClosed = status.equals("SOLUCIONADO", true) ||
+                               status.equals("CERRADO", true) ||
+                               status.equals("CLOSED", true) ||
                                status.equals("RESUELTO", true) ||
                                status.equals("ELIMINADO", true) ||
                                status.equals("DELETED", true)
@@ -426,7 +426,7 @@ object SubscriptionManager {
 
         if (currentRole.equals("moderador", ignoreCase = true) || currentRole.equals("admin", ignoreCase = true) || AuthManager.isCurrentUserAdmin()) {
             if (moderatorSupportReportsListener == null) {
-                moderatorSupportReportsListener = db.collection("support_reports")
+                moderatorSupportReportsListener = com.example.data.SupportTicketAccess.staffQuery()
                     .addSnapshotListener { snapshot, error ->
                         if (error == null && snapshot != null) {
                             val activeRole = _userRole.value
@@ -437,10 +437,10 @@ object SubscriptionManager {
                                     return@filter false
                                 }
                                 val status = doc.getString("status") ?: "PENDIENTE"
-                                val isRead = doc.getBoolean("isRead") ?: false
+                                val isRead = doc.getBoolean("staffRead") ?: (doc.getString("status").orEmpty().uppercase() in listOf("READ", "LEIDO", "LEÍDO"))
                                 val hasNewUserReply = doc.getBoolean("hasNewUserReply") ?: false
-                                val isResolved = status.equals("SOLUCIONADO", true) || 
-                                                 status.equals("CERRADO", true) || 
+                                val isResolved = com.example.data.SupportConversationPolicy.isClosed(status) || status.equals("SOLUCIONADO", true) ||
+                                                 status.equals("CERRADO", true) ||
                                                  status.equals("CLOSED", true) ||
                                                  status.equals("RESUELTO", true)
                                 !isResolved && (status.equals("PENDIENTE", true) || status.equals("UNREAD", true) || !isRead || hasNewUserReply)
