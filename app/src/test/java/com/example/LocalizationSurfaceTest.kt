@@ -115,7 +115,7 @@ class LocalizationSurfaceTest {
                 }
             }
         }
-        compose.onNodeWithText("Português").performClick()
+        compose.onNodeWithText("Portugués").performClick()
         compose.onNodeWithText("Continuar em Português").performClick()
         compose.onNodeWithText("Informação").assertIsDisplayed()
         compose.onNodeWithText("Información").assertDoesNotExist()
