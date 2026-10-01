@@ -173,6 +173,21 @@ jobs:
       - name: Audit Portuguese text sinks
         run: bash tools/audit-portuguese.sh
 
+      - name: Inspect rendered Portuguese screens
+        env:
+          CI: "true"
+        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --stacktrace --no-daemon
+
+      - name: Upload Portuguese screenshots and rendered texts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portuguese-rendered-audit
+          path: |
+            app/build/reports/portuguese-rendered/
+            app/build/test-results/testDebugUnitTest/
+          retention-days: 14
+
       - name: Build Debug APK
         env:
           CI: "true"
