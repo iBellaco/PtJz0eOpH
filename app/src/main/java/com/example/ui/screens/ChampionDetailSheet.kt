@@ -899,8 +899,15 @@ fun ChampionDetailSheet(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    TextButton(onClick = { buildAdvice = "Consejo de la build" to activeOption.tacticalReason }) {
-                        Text(tr("Ver consejo de la build"), color = HextechGold)
+                    if (activeOption.tacticalReason.isNotBlank()) {
+                        Text(tr("Consejo del coach"), color = HextechGold, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(4.dp))
+                        FormattedWildRiftText(
+                            text = tr(activeOption.tacticalReason),
+                            color = TextPrimary,
+                            fontSize = 12.sp
+                        )
+                        Spacer(Modifier.height(10.dp))
                     }
 
                     // Items List - 3 Core Items
@@ -1444,7 +1451,8 @@ fun ChampionDetailSheet(
             // COUNTERS Y SINERGIAS (ADAPTADOS AL ROL)
             // ==========================================
             val isUserPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
-            val isPremium = isUserPremium || com.example.util.SubscriptionManager.isPremium.value || com.example.util.SubscriptionManager.userRole.value == "admin"
+            val matchupUserRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
+            val isPremium = isUserPremium || matchupUserRole == "admin"
             val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
             val maxMatchupCount = BuildChoiceRules.matchupLimit(isPremium, isSignedIn)
 

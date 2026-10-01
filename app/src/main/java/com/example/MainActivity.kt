@@ -741,8 +741,7 @@ fun DraftingApp() {
         com.example.data.sync.ChineseMetaSyncService.loadRegion(context)
         launch { com.example.data.sync.ChineseMetaSyncService.syncChineseMeta(context) }
 
-        // Ejecuta la sincronización en segundo plano al arrancar la app para traer los datos desde la nube
-        com.example.data.sync.MetaCrawlerSyncService.syncPatchData(context)
+        // La consulta del meta ya se lanzó arriba; no duplicar las tres peticiones al arrancar.
         com.example.data.GlobalAnnouncementManager.init(context)
         com.example.data.GlobalAnnouncementManager.refreshFromCloud(context)
         // AppUpdateManager.checkForUpdates disabled

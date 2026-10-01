@@ -78,8 +78,8 @@ class MetaRegionRegressionTest {
     }
     @Test fun `page parser extracts categories rather than inventing match statistics`() {
         val html = """<div class="tier splus"><a href="/guide/syndra" class="ico-holder" data-role="Mid">Syndra</a>
-            <div class="tier s"><a href="/guide/garen" class="ico-holder">Garen</a>
-            <div class="tier b"><a href="/guide/syndra" class="ico-holder">Syndra</a>"""
+            </div><div class="tier s"><a href="/guide/garen" class="ico-holder">Garen</a>
+            </div><div class="tier b"><a href="/guide/syndra" class="ico-holder">Syndra</a></div>"""
         assertEquals(mapOf("syndra" to "S+", "garen" to "S"), RegionalTierParser.parse(html))
         assertTrue(RegionalTierParser.parse("<html>Service unavailable</html>").isEmpty())
     }
