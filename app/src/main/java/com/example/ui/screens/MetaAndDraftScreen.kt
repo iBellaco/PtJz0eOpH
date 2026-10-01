@@ -180,7 +180,6 @@ import com.example.ui.theme.TierAColor
 import com.example.ui.theme.TierSColor
 import com.example.ui.theme.TierSPlusColor
 
-import com.example.util.LocalLanguage
 
 enum class MetaScreenMode {
     DRAFTING,
@@ -235,7 +234,7 @@ fun MetaAndDraftScreen(
     val screenContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val isPremium by SubscriptionManager.isPremium.collectAsState()
-    val lang = LocalLanguage.current
+    val lang = com.example.util.currentAppLanguage()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     val sharedPrefs = remember { screenContext.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
@@ -1402,7 +1401,7 @@ fun ChampionsCatalogTab(
                                                 .border(0.5.dp, HextechCyan.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
                                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                                         ) {
-                                            val lang = com.example.util.LocalLanguage.current
+                                            val lang = com.example.util.currentAppLanguage()
                                             Text(
                                                 text = com.example.util.tr(tr("Flex: ") + champion.secondaryRoles.joinToString("/") { com.example.util.trStr(lang, it.shortName) }),
                                                 color = HextechCyan,
@@ -2274,7 +2273,7 @@ private fun ItemsCatalogTab() {
         options
     }
 
-    val lang = LocalLanguage.current
+    val lang = com.example.util.currentAppLanguage()
 
     fun normalizeSearch(text: String): String {
         return java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
@@ -2681,7 +2680,7 @@ private fun selectedRuneItemModal(
     onDismiss: () -> Unit
 ) {
     item?.let { itm ->
-        val lang = LocalLanguage.current
+        val lang = com.example.util.currentAppLanguage()
         val localizedName = itm.getLocalizedName(lang)
         val statsList = itm.getStatsList(lang)
         val localizedPassive = itm.getLocalizedPassive(lang)
@@ -2736,21 +2735,7 @@ private fun selectedRuneItemModal(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        if (itm.isEvolution || itm.goldCost <= 0) {
-                            Box(
-                                modifier = Modifier
-                                    .background(HextechCyan.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
-                                    .border(0.5.dp, HextechCyan.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
-                                    .padding(horizontal = 8.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    text = if (itm.evolvesFrom.isNotBlank()) "${tr("Evolución de:")} ${itm.evolvesFrom}" else tr("Evolución (Sin coste de oro)"),
-                                    color = HextechCyan,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        } else {
+                        if (!itm.isEvolution && itm.goldCost > 0) {
                             Box(
                                 modifier = Modifier
                                     .background(HextechGold.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
@@ -2764,6 +2749,11 @@ private fun selectedRuneItemModal(
                                 )
                             }
                         }
+                    }
+
+                    if (itm.isEvolution) {
+                        Spacer(Modifier.height(6.dp))
+                        ItemEvolutionLabel(itm)
                     }
 
                     if (statsList.isNotEmpty()) {
@@ -2877,7 +2867,7 @@ private fun ItemGridCard(
     modifier: Modifier = Modifier,
     borderColor: Color = item.getThemeColor()
 ) {
-    val lang = LocalLanguage.current
+    val lang = com.example.util.currentAppLanguage()
     val localizedName = item.getLocalizedName(lang)
 
     Column(
@@ -2933,7 +2923,7 @@ private fun ItemListCard(
     onClick: () -> Unit,
     borderColor: Color = item.getThemeColor()
 ) {
-    val lang = LocalLanguage.current
+    val lang = com.example.util.currentAppLanguage()
     val localizedName = item.getLocalizedName(lang)
     val statsList = item.getStatsList(lang)
     val localizedPassive = item.getLocalizedPassive(lang)
@@ -2966,24 +2956,14 @@ private fun ItemListCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(com.example.util.tr(localizedName), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
-                    if (item.isEvolution || item.goldCost <= 0) {
-                        Surface(
-                            color = HextechCyan.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(4.dp),
-                            border = BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.5f))
-                        ) {
-                            Text(
-                                text = if (item.evolvesFrom.isNotBlank()) "${tr("Evolución de")} ${item.evolvesFrom}" else tr("Evolución"),
-                                color = HextechCyan,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp,
-                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.5.dp)
-                            )
-                        }
-                    } else {
+                    Text(com.example.util.tr(localizedName), modifier = Modifier.weight(1f).padding(end = 6.dp), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
+                    if (!item.isEvolution && item.goldCost > 0) {
                         Text(com.example.util.tr(" ${item.goldCost} G"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
+                }
+                if (item.isEvolution) {
+                    Spacer(Modifier.height(4.dp))
+                    ItemEvolutionLabel(item)
                 }
                 Text(tr(item.category), color = HextechCyan, fontSize = 10.5.sp)
                 if (statsList.isNotEmpty()) {
@@ -3049,6 +3029,7 @@ private fun ItemListCard(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RunesTab() {
+    val lang = com.example.util.currentAppLanguage()
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("TODOS") }
     var isGridView by remember { mutableStateOf(true) }
@@ -3068,13 +3049,13 @@ private fun RunesTab() {
         options
     }
 
-    val filteredRunes = remember(searchQuery, selectedFilter, com.example.data.WildRiftRepository.runes) {
+    val filteredRunes = remember(searchQuery, selectedFilter, lang, com.example.data.WildRiftRepository.runes) {
         WildRiftRepository.runes.filter { rune ->
             val matchesCategory = selectedFilter == "TODOS" || rune.category.equals(selectedFilter, ignoreCase = true)
             val matchesSearch = searchQuery.isBlank() ||
-                    rune.name.contains(searchQuery, ignoreCase = true) ||
-                    rune.description.contains(searchQuery, ignoreCase = true) ||
-                    rune.category.contains(searchQuery, ignoreCase = true)
+                    rune.getLocalizedName(lang).contains(searchQuery, ignoreCase = true) ||
+                    rune.getLocalizedDescription(lang).contains(searchQuery, ignoreCase = true) ||
+                    com.example.util.trStr(lang, rune.category).contains(searchQuery, ignoreCase = true)
             matchesCategory && matchesSearch
         }
     }
@@ -3546,6 +3527,7 @@ private fun RunesTab() {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SpellsTab() {
+    val lang = com.example.util.currentAppLanguage()
     var searchQuery by remember { mutableStateOf("") }
     var isGridView by remember { mutableStateOf(true) }
     var selectedFilter by remember { mutableStateOf("TODOS") }
@@ -3563,13 +3545,13 @@ private fun SpellsTab() {
         options
     }
 
-    val filteredSpells = remember(searchQuery, selectedFilter, com.example.data.WildRiftRepository.summonerSpells) {
+    val filteredSpells = remember(searchQuery, selectedFilter, lang, com.example.data.WildRiftRepository.summonerSpells) {
         WildRiftRepository.summonerSpells.filter { spell ->
             val matchesFilter = selectedFilter == "TODOS" || spell.category.equals(selectedFilter, ignoreCase = true)
             val matchesSearch = searchQuery.isBlank() ||
-                    spell.name.contains(searchQuery, ignoreCase = true) ||
-                    spell.description.contains(searchQuery, ignoreCase = true) ||
-                    spell.category.contains(searchQuery, ignoreCase = true)
+                    spell.getLocalizedName(lang).contains(searchQuery, ignoreCase = true) ||
+                    spell.getLocalizedDescription(lang).contains(searchQuery, ignoreCase = true) ||
+                    com.example.util.trStr(lang, spell.category).contains(searchQuery, ignoreCase = true)
             matchesFilter && matchesSearch
         }
     }
@@ -5664,6 +5646,33 @@ private fun SpellGridCard(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 )
+            }
+        }
+    }
+}
+
+/** Long translated source names wrap naturally without squeezing the object title. */
+@Composable
+private fun ItemEvolutionLabel(item: WildRiftItem) {
+    val language = com.example.util.currentAppLanguage()
+    val sourceName = WildRiftItemsData.getItemByName(item.evolvesFrom)?.getLocalizedName(language)
+        ?: tr(item.evolvesFrom)
+    Surface(
+        color = HextechCyan.copy(alpha = 0.15f),
+        shape = RoundedCornerShape(6.dp),
+        border = BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) {
+            Text(
+                text = if (sourceName.isBlank()) tr("Evolución (Sin coste de oro)") else tr("Evolución de"),
+                color = HextechCyan,
+                fontWeight = FontWeight.Bold,
+                fontSize = 10.sp,
+                lineHeight = 14.sp
+            )
+            if (sourceName.isNotBlank()) {
+                Text(sourceName, color = TextPrimary, fontSize = 11.sp, lineHeight = 15.sp)
             }
         }
     }

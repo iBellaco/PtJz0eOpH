@@ -82,11 +82,9 @@ import com.example.util.SubscriptionManager
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.example.model.LaneRole
-import com.example.util.LocalLanguage
 import com.example.ui.components.AppAssetImage
 import com.example.ui.components.ChampionAvatar
 import com.example.ui.components.FormattedWildRiftText
-import com.example.ui.components.SparklineTrendGraph
 import com.example.ui.components.DetailedTrendGraphCard
 import com.example.ui.theme.AllyBlue
 import com.example.ui.theme.DangerRed
@@ -142,7 +140,7 @@ fun ChampionDetailSheet(
     var spellForDetail by remember { mutableStateOf<com.example.model.SummonerSpellItem?>(null) }
     var selectedBuildOptionIndex by remember(champion.id, selectedRole) { mutableStateOf(0) }
 
-    val currentLang = LocalLanguage.current
+    val currentLang = com.example.util.currentAppLanguage()
 
 
 
@@ -447,7 +445,7 @@ fun ChampionDetailSheet(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(modifier = Modifier.weight(1f).padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Filled.TrendingUp, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
@@ -461,13 +459,6 @@ fun ChampionDetailSheet(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            SparklineTrendGraph(
-                                winrate = roleProfile.winrate,
-                                delta = roleProfile.winrateDelta,
-                                modifier = Modifier.width(92.dp),
-                                showTimeLabels = true,
-                                showFullText = true
-                            )
                             Text(
                                 text = tr("Tendencia en Vivo"),
                                 color = HextechCyan,
@@ -558,7 +549,7 @@ fun ChampionDetailSheet(
                         Text(tr("Análisis Táctico en Wild Rift"), color = HextechGold, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(6.dp))
-                    val currentLang = com.example.util.LocalLanguage.current
+                    val currentLang = com.example.util.currentAppLanguage()
                     val fullAnalysis = remember(champion.id, currentLang, selectedRole) {
                         CoachingGenerator.generateTacticalAnalysis(champion, selectedRole, currentLang)
                     }
@@ -606,8 +597,8 @@ fun ChampionDetailSheet(
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    val localizedSkillName = skill.getLocalizedName(com.example.util.LocalLanguage.current)
-                                    val localizedSkillDesc = skill.getLocalizedDescription(com.example.util.LocalLanguage.current)
+                                    val localizedSkillName = skill.getLocalizedName(com.example.util.currentAppLanguage())
+                                    val localizedSkillDesc = skill.getLocalizedDescription(com.example.util.currentAppLanguage())
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -839,7 +830,7 @@ fun ChampionDetailSheet(
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             val context = androidx.compose.ui.platform.LocalContext.current
-                            val currentLang = com.example.util.LocalLanguage.current
+                            val currentLang = com.example.util.currentAppLanguage()
                             val shareTitle = tr("Compartir Build")
                             val shareDesc = tr("Compartir")
                             val shareBuild = {
@@ -1904,7 +1895,7 @@ fun AdaptiveDetailAlertDialog(
     // ==========================================
     if (selectedSituationalItem != null) {
         val itemName = selectedSituationalItem!!
-        val currentLang = com.example.util.LocalLanguage.current
+        val currentLang = com.example.util.currentAppLanguage()
         val advice = SituationalItemAdvisor.getAdvice(itemName, currentLang)
 
         AdaptiveDetailAlertDialog(
@@ -2047,7 +2038,7 @@ fun AdaptiveDetailAlertDialog(
         val type = matchupExplanationType!!
         val target = matchupExplanationTarget!!
 
-        val currentLang = com.example.util.LocalLanguage.current
+        val currentLang = com.example.util.currentAppLanguage()
         val localizedTarget = if (currentLang == "pt") com.example.util.trStr("pt", target) else target
         val titleText = when (currentLang) {
             "pt" -> {
@@ -2076,7 +2067,7 @@ fun AdaptiveDetailAlertDialog(
             }
         }
 
-        val descText = CoachingGenerator.generateMatchupReason(champion, selectedRole, target, type, com.example.util.LocalLanguage.current)
+        val descText = CoachingGenerator.generateMatchupReason(champion, selectedRole, target, type, com.example.util.currentAppLanguage())
 
         AdaptiveDetailAlertDialog(
             isOverlay = isOverlay,
@@ -2133,7 +2124,7 @@ fun AdaptiveDetailAlertDialog(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val lang = LocalLanguage.current
+                    val lang = com.example.util.currentAppLanguage()
                     val localizedName = item.getLocalizedName(lang)
                     val statsList = item.getStatsList(lang)
                     val localizedPassive = item.getLocalizedPassive(lang)
@@ -2237,7 +2228,7 @@ fun AdaptiveDetailAlertDialog(
                         )
                     }
 
-                    BuildElementCoachAdvice(selectedElementAdvice.ifBlank { item.getLocalizedCoachTip(LocalLanguage.current) })
+                    BuildElementCoachAdvice(selectedElementAdvice.ifBlank { item.getLocalizedCoachTip(com.example.util.currentAppLanguage()) })
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
                         modifier = Modifier
@@ -2284,8 +2275,8 @@ fun AdaptiveDetailAlertDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     com.example.ui.components.AppAssetImage(
                         url = rune.iconUrl,
-                        contentDescription = rune.getLocalizedName(LocalLanguage.current),
-                        fallbackText = rune.getLocalizedName(LocalLanguage.current),
+                        contentDescription = rune.getLocalizedName(com.example.util.currentAppLanguage()),
+                        fallbackText = rune.getLocalizedName(com.example.util.currentAppLanguage()),
                         modifier = Modifier.size(48.dp),
                         borderColor = com.example.ui.theme.HextechGold,
                         shape = androidx.compose.foundation.shape.CircleShape
@@ -2293,7 +2284,7 @@ fun AdaptiveDetailAlertDialog(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = rune.getLocalizedName(LocalLanguage.current),
+                            text = rune.getLocalizedName(com.example.util.currentAppLanguage()),
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -2310,7 +2301,7 @@ fun AdaptiveDetailAlertDialog(
             text = {
                 Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
                     FormattedWildRiftText(
-                        text = rune.getLocalizedDescription(LocalLanguage.current),
+                        text = rune.getLocalizedDescription(com.example.util.currentAppLanguage()),
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
                     BuildElementCoachAdvice(selectedElementAdvice)
@@ -2332,15 +2323,15 @@ fun AdaptiveDetailAlertDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     com.example.ui.components.AppAssetImage(
                         url = spell.iconUrl,
-                        contentDescription = spell.getLocalizedName(LocalLanguage.current),
-                        fallbackText = spell.getLocalizedName(LocalLanguage.current),
+                        contentDescription = spell.getLocalizedName(com.example.util.currentAppLanguage()),
+                        fallbackText = spell.getLocalizedName(com.example.util.currentAppLanguage()),
                         modifier = Modifier.size(48.dp),
                         borderColor = com.example.ui.theme.HextechGold,
                         shape = androidx.compose.foundation.shape.CircleShape
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = spell.getLocalizedName(LocalLanguage.current),
+                        text = spell.getLocalizedName(com.example.util.currentAppLanguage()),
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -2350,7 +2341,7 @@ fun AdaptiveDetailAlertDialog(
             text = {
                 Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
                     FormattedWildRiftText(
-                        text = spell.getLocalizedDescription(LocalLanguage.current),
+                        text = spell.getLocalizedDescription(com.example.util.currentAppLanguage()),
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
                     BuildElementCoachAdvice(selectedElementAdvice)

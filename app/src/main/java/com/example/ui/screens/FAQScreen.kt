@@ -260,7 +260,7 @@ fun FAQScreen(
         )
     }
 
-    val faqLanguage = com.example.util.LocalLanguage.current
+    val faqLanguage = com.example.util.currentAppLanguage()
     val filteredFaqs = remember(faqSearchQuery, faqLanguage) {
         if (faqSearchQuery.isBlank()) faqs
         else faqs.filter {

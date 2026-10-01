@@ -84,16 +84,16 @@ object CoachingGenerator {
     fun generateTacticalAnalysis(champion: Champion, activeRole: LaneRole, lang: String): String {
         val cleanLang = lang.lowercase().trim()
         val isPt = cleanLang.startsWith("pt")
-        val roleStr = activeRole.displayName
+        val roleStr = activeRole.getLocalizedName(if (isPt) "pt" else "es")
         
-        val qSkill = champion.skills.find { it.slot == "1" }?.let { "su H1 (${it.name})" } ?: if (isPt) "sua Habilidade 1 (H1)" else "su Habilidad 1 (H1)"
-        val ultSkill = champion.skills.find { it.slot == "4" }?.let { "su Definitiva (${it.name})" } ?: if (isPt) "sua Definitiva (H4)" else "su Definitiva (H4)"
+        val qSkill = champion.skills.find { it.slot == "1" }?.let { if (isPt) "sua H1 (${it.getLocalizedName("pt")})" else "su H1 (${it.name})" } ?: if (isPt) "sua Habilidade 1 (H1)" else "su Habilidad 1 (H1)"
+        val ultSkill = champion.skills.find { it.slot == "4" }?.let { if (isPt) "sua Definitiva (${it.getLocalizedName("pt")})" else "su Definitiva (${it.name})" } ?: if (isPt) "sua Definitiva (H4)" else "su Definitiva (H4)"
         
         val base = if (isPt) {
             when (activeRole) {
                 LaneRole.TOP -> if (champion.isRanged) "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, ${champion.name} deve abusar do seu alcance usando $qSkill para desgastar oponentes corpo a corpo e controlar a onda." else "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, ${champion.name} deve jogar em torno dos tempos de recarga de $qSkill, buscando trocas curtas e garantindo a visão do rio."
                 LaneRole.JUNGLE -> "**Fase de Limpeza:** Na ${roleStr}, ${champion.name} deve priorizar o farm eficiente e buscar emboscadas (ganks) apoiando-se em $qSkill para garantir vantagens iniciais."
-                LaneRole.MID -> "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, a prioridade de ${champion.name} é conseguir o empurre (prio) usando $qSkill para poder rotacionar para os objetivos do rio ou ajudar o caçador."
+                LaneRole.MID -> "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, a prioridade de ${champion.name} é conseguir prioridade na rota (prio) usando $qSkill para poder rotacionar para os objetivos do rio ou ajudar o caçador."
                 LaneRole.ADC -> "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, ${champion.name} depende de um posicionamento seguro. Use $qSkill para garantir tropas e punir erros de posicionamento da dupla rival."
                 LaneRole.SUPPORT -> "**Fase Inicial (Rotas de Wild Rift):** Como ${roleStr}, ${champion.name} dita o ritmo das trocas. Use $qSkill para pressionar os rivais, ganhar prioridade de nível 2 e proteger seu atirador."
             }
@@ -110,10 +110,10 @@ object CoachingGenerator {
         val mid = if (isPt) {
             when (activeRole) {
                 LaneRole.TOP -> if (champion.isFrontline) "**Meio/Fim de Jogo (Macro Wild Rift):** Nas lutas de equipe, ${champion.name} funciona como a principal linha de frente. Absorva o dano e busque usar $ultSkill em momentos críticos." else "**Meio/Fim de Jogo (Macro Wild Rift):** Empurre sua rota para pressão dividida, mas lembre-se que o mapa é curto. Agrupe rapidamente para os objetivos e flanqueie com $ultSkill."
-                LaneRole.JUNGLE -> "**Meio/Fim de Jogo (Macro Wild Rift):** O mapa é pequeno e as rotações são rápidas. Priorize garantir o Dragão ou Arauto cedo, e use seu $ultSkill para conseguir emboscadas decisivas."
+                LaneRole.JUNGLE -> "**Meio/Fim de Jogo (Macro Wild Rift):** O mapa é pequeno e as rotações são rápidas. Priorize garantir o Dragão ou Arauto cedo, e use $ultSkill para conseguir emboscadas decisivas."
                 LaneRole.MID -> "**Meio/Fim de Jogo (Macro Wild Rift):** Neste jogo de ritmo acelerado, uma emboscada no late game é fatal. Mova-se com sua equipe e use $ultSkill de forma explosiva em espaços fechados da selva."
                 LaneRole.ADC -> "**Meio/Fim de Jogo (Macro Wild Rift):** Agrupe-se com seu suporte. Os cercos às torres de inibidor em Wild Rift são muito rápidos; posicione-se atrás da linha de frente e cause dano com $ultSkill."
-                LaneRole.SUPPORT -> "**Meio/Fim de Jogo (Macro Wild Rift):** Negue a visão inimiga com a Lente Detectora no rio. Use o baixo tempo de recarga das botas encantadas e seu $ultSkill para virar lutas a seu favor."
+                LaneRole.SUPPORT -> "**Meio/Fim de Jogo (Macro Wild Rift):** Negue a visão inimiga com a Lente Detectora no rio. Use o baixo tempo de recarga das botas encantadas e $ultSkill para virar lutas a seu favor."
             }
         } else {
             when (activeRole) {
