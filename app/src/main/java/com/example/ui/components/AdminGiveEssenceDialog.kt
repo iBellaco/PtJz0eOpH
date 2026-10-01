@@ -90,7 +90,7 @@ fun AdminGiveEssenceDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(id = if (selectedCurrency == "BLUE") R.drawable.ic_blue_essence else R.drawable.ic_orange_essence),
-                        contentDescription = "Esencia",
+                        contentDescription = com.example.util.tr("Esencia"),
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))

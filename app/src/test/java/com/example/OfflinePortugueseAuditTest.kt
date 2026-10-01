@@ -49,7 +49,7 @@ class OfflinePortugueseAuditTest {
     }
 
     @Test fun `Portuguese catalogs do not retain partially translated Spanish sentences`() {
-        val fragments = Regex("(?<![-\\p{L}])(?:el|del|al|los|las|un|una|unos|unas|tus|puedes|añadir|añade|enemigos|daño|hechizos|velocidad|consejo|campeones|cerrar|guardar|jugador|jugadores|debes|deberás|vuelve|pantalla|línea|sesión|contraseña|después|todavía|aunque|hasta|otorgar|obligatoria|composiciones|cargadas|cómpralo|elige|tienes|tiene|tienen|cuando|más|rápidamente|inmovilizaciones|ganar|bajar|mejor|entrer)\\b|[¿¡ñ]", RegexOption.IGNORE_CASE)
+        val fragments = Regex("(?<![-\\p{L}])(?:el|del|al|los|las|un|una|unos|unas|tus|puedes|añadir|añade|enemigos|daño|hechizos|velocidad|consejo|campeones|cerrar|guardar|jugador|jugadores|debes|deberás|vuelve|pantalla|línea|sesión|contraseña|después|todavía|aunque|hasta|otorgar|obligatoria|composiciones|cargadas|revocación|reproducir|esencia|naranja|procesando|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|inmediato|cantidad|amarillo|legendario|revocado|agotado|actualizando|desfavorable|prueba|mensaje|cerrado|resuelto|borrar|reciente|archivo|resolución|cómpralo|elige|tienes|tiene|tienen|cuando|más|rápidamente|inmovilizaciones|ganar|bajar|mejor|entrer)\\b|[¿¡ñ]", RegexOption.IGNORE_CASE)
         for (file in listOf("translations_pt.json", "translations_pt_aliases.json")) {
             phrases(file).forEach { (source, translated) ->
                 assertFalse("Mixed Portuguese: $source => $translated", fragments.containsMatchIn(translated))
@@ -67,5 +67,32 @@ class OfflinePortugueseAuditTest {
         assertEquals("3. Itens principais (2/3) *Descrição obrigatória", catalog.translate("pt", "3. Objetos Core (2/3) *Desc. Obligatoria"))
         assertEquals("Erro ao abrir link: teste", catalog.translate("pt", "Error al abrir enlace: teste"))
         assertEquals("Diego_42: GG Volibear!", catalog.translate("pt", "Diego_42: GG Volibear!"))
+    }
+
+    @Test fun `hub media profile and runtime status labels use Portuguese`() {
+        val examples = mapOf(
+            "Volver al hub" to "Voltar ao hub",
+            "IMAGEN" to "IMAGEM",
+            "Reproducir" to "Reproduzir",
+            "Perfil de Invocador" to "Perfil do Invocador",
+            "Descripción" to "Descrição",
+            "Revocación" to "Revogação",
+            "Cantidad" to "Quantidade",
+            "Disponible" to "Disponível",
+            "EN COLA" to "NA FILA",
+            "PROCESANDO" to "PROCESSANDO",
+            "Arriba" to "Acima",
+            "Izquierda" to "Esquerda",
+            "Back" to "Voltar",
+            "Close" to "Fechar"
+        )
+        examples.forEach { (source, expected) -> assertEquals(source, expected, catalog.translate("pt", source)) }
+        assertEquals("Estado: EXCLUÍDO", catalog.translate("pt", "Estado: ELIMINADO"))
+        assertEquals("Estado: APROVADA", catalog.translate("pt", "Estado: APROBADA"))
+        assertEquals("Estado: RESOLVIDO", catalog.translate("pt", "Estado: RESUELTO"))
+        assertEquals("Estado: ELIMINADO", catalog.translate("es", "Estado: ELIMINADO"))
+        val subscription = catalog.translate("pt", "Necesitas al menos 15 de Esencia Naranja para suscribirte.")
+        assertTrue(subscription, subscription.contains("15 de Essência Laranja"))
+        assertFalse(subscription, subscription.contains("Esencia Naranja"))
     }
 }

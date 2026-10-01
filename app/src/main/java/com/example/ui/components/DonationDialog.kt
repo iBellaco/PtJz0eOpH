@@ -498,7 +498,7 @@ private fun DonationPixCard(
 .placeholder(com.example.R.drawable.ic_placeholder_loading)
 
                                 .build(),
-                            contentDescription = "Pix QR Ampliado",
+                            contentDescription = com.example.util.tr("Pix QR Ampliado"),
                             modifier = androidx.compose.ui.Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Fit
                         )
