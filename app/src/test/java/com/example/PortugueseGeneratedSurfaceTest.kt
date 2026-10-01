@@ -5,6 +5,9 @@ import com.example.data.SituationalItemAdvisor
 import com.example.data.WildRiftRepository
 import com.example.data.local.CustomChampionBuildsManager
 import com.example.util.*
+import java.io.File
+import org.json.JSONArray
+import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -30,11 +33,14 @@ class PortugueseGeneratedSurfaceTest {
             texts.forEach { source -> values.putIfAbsent(trStr("pt", source), origin) }
         }
         for (item in WildRiftRepository.items) {
+            inspect("item-details/${item.id}", listOf(item.getLocalizedName("pt"), item.getLocalizedStats("pt"), item.getLocalizedPassive("pt"), item.getLocalizedCoachTip("pt")))
             val advice = SituationalItemAdvisor.getAdvice(item.name, "pt")
             inspect("item/${item.name}", listOf(advice.name, advice.categoryName, advice.purpose,
                 advice.keyEffect, advice.recommendationTip) + advice.bestAgainst)
         }
         var profiles = 0
+        WildRiftRepository.runes.forEach { inspect("rune/${it.id}", listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt"))) }
+        WildRiftRepository.summonerSpells.forEach { inspect("spell/${it.id}", listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt"))) }
         for (champion in WildRiftRepository.champions) {
             champion.skills.forEach { inspect("skill/${champion.id}/${it.slot}", listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt"))) }
             for (role in (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()) {
@@ -49,6 +55,8 @@ class PortugueseGeneratedSurfaceTest {
             }
         }
         assertTrue(profiles > 100)
+        File("build/reports/portuguese-rendered").apply { mkdirs() }.resolve("generated-texts.json")
+            .writeText(JSONArray(values.map { (text, origin) -> JSONObject().put("origin", origin).put("text", text) }).toString(2))
         val failures = values.filterKeys { SpanishUiResidue.pattern.containsMatchIn(it.replace("Lee Sin", "LeeSin")) }
         failures.forEach { (value, origin) -> println("PORTUGUESE_GENERATED_RESIDUE: $origin: $value") }
         assertTrue("Generated Spanish remains:\n${failures.entries.joinToString("\n") { "${it.value}: ${it.key}" }}", failures.isEmpty())

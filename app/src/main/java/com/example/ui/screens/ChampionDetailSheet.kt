@@ -1259,7 +1259,7 @@ fun ChampionDetailSheet(
             // SECCIÓN RUNAS ASOCIADAS A ESTA OPCIÓN
             // ==========================================
             Text(
-                text = com.example.util.tr("${tr("Runas")} • ${activeOption.title}"),
+                text = "${tr("Runas")} • ${tr(activeOption.title)}",
                 color = HextechGold,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold

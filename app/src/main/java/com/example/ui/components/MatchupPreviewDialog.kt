@@ -344,7 +344,7 @@ fun MatchupPreviewDialog(
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tr("Consejo del rival: %s").format(enemyOpponent.tacticalAdvice.ifBlank { tr("Castiga cuando falle sus habilidades principales o use recursos en la oleada.") }),
+                                text = tr("Consejo del rival: %s").format(tr(enemyOpponent.tacticalAdvice.ifBlank { "Castiga cuando falle sus habilidades principales o use recursos en la oleada." })),
                                 color = TextPrimary,
                                 fontSize = 11.sp,
                                 lineHeight = 14.sp

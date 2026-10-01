@@ -37,7 +37,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("information", "faq", "onboarding", "tutorial", "home", "catalog", "tier-list",
-            "draft", "champion", "personal-tier", "login", "register", "recover", "legal", "donation", "exit")
+            "draft", "champion", "matchup", "personal-tier", "login", "register", "recover", "legal", "donation", "exit")
             .map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
@@ -66,6 +66,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             "tier-list" -> MetaAndDraftScreen(MetaScreenMode.TIER_LIST, LaneRole.MID, onNavigateBack = {})
             "draft" -> MetaAndDraftScreen(MetaScreenMode.DRAFTING, LaneRole.MID, onNavigateBack = {})
             "champion" -> ChampionDetailSheet(champion = WildRiftRepository.champions.first { it.id == "hwei" }, onDismiss = {})
+            "matchup" -> MatchupPreviewDialog(myChampion = WildRiftRepository.champions.first { it.id == "hwei" }, enemyOpponent = WildRiftRepository.champions.first { it.id == "yasuo" }, activeRole = LaneRole.MID, onDismiss = {})
             "personal-tier" -> PersonalTierListView(emptyList(), {})
             "login" -> LoginScreen(AuthViewModel(), {}, {}, {})
             "register" -> RegisterScreen(AuthViewModel(), {}, {})
@@ -105,13 +106,32 @@ class PortugueseRenderedAuditTest(private val screen: String) {
                 inspect(tab)
             }
         }
+        if (screen == "faq") {
+            val questions = compose.onAllNodes(SemanticsMatcher("question") { node ->
+                node.config.getOrNull(SemanticsProperties.Text).orEmpty().any { it.text.endsWith("?") }
+            }, useUnmergedTree = true).fetchSemanticsNodes().flatMap {
+                it.config.getOrNull(SemanticsProperties.Text).orEmpty().map { text -> text.text }
+            }.distinct()
+            Assert.assertTrue("FAQ questions were not rendered", questions.size > 50)
+            questions.forEachIndexed { index, question ->
+                compose.onNodeWithText(question).performScrollTo().performClick()
+                inspect("answer-${index + 1}")
+                compose.onNodeWithText("Entendido").performClick()
+            }
+        }
+        if (screen == "legal") {
+            for (tab in listOf("Termos", "Terceiros")) {
+                compose.onNodeWithText(tab).performClick()
+                inspect(tab)
+            }
+        }
         Assert.assertTrue("Rendered Spanish remains:\n${findings.joinToString("\n")}", findings.isEmpty())
     }
 }
 
 internal object SpanishUiResidue {
     val pattern = Regex(
-        "(?<![\\p{L}\\p{N}_-])(?:el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|objetos|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
+        "(?<![\\p{L}\\p{N}_-])(?:el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
         RegexOption.IGNORE_CASE
     )
 }
