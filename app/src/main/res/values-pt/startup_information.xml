@@ -1,122 +1,20 @@
-package com.example.ui.screens
-
-import com.example.R
-import androidx.compose.animation.*
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.data.WildRiftRepository
-import com.example.ui.theme.*
-import com.example.util.tr
-import com.example.util.localizedString
-import kotlinx.coroutines.launch
-
-data class OnboardingPage(
-    val title: String,
-    val subtitle: String,
-    val description: String,
-    val icon: ImageVector,
-    val accentColor: Color,
-    val highlights: List<String>,
-    val badge: String = WildRiftRepository.CURRENT_PATCH_VERSION
-)
-
-@Composable
-fun OnboardingScreen(onFinish: () -> Unit) {
-    val pages = listOf(
-        OnboardingPage(
-            title = localizedString(R.string.onboarding_coach_de_elite_draft),
-            subtitle = localizedString(R.string.onboarding_analisis_tactico_en_tiempo_real),
-            description = localizedString(R.string.onboarding_selecciona_composiciones_optimas_con_evaluacion_para_los_5_roles),
-            icon = Icons.Default.SportsEsports,
-            accentColor = HextechGold,
-            highlights = listOf(
-                localizedString(R.string.onboarding_recomendador_de_3_mejores_picks),
-                localizedString(R.string.onboarding_wombo_combos_y_balance_de_dano),
-                localizedString(R.string.onboarding_condicion_de_victoria_del_equipo)
-            )
-        ),
-        OnboardingPage(
-            title = localizedString(R.string.onboarding_asistente_flotante_en_juego),
-            subtitle = localizedString(R.string.onboarding_burbuja_flotante_vision_ocr),
-            description = localizedString(R.string.onboarding_activa_la_burbuja_flotante_para_recibir_coaching_en_directo_sobre),
-            icon = Icons.Default.Layers,
-            accentColor = HextechCyan,
-            highlights = listOf(
-                localizedString(R.string.onboarding_burbuja_flotante_movible),
-                localizedString(R.string.onboarding_escaner_visual_de_seleccion),
-                localizedString(R.string.onboarding_consejos_tacticos_sin_cambiar_de_app)
-            )
-        ),
-        OnboardingPage(
-            title = localizedString(R.string.onboarding_tier_list_oficial),
-            subtitle = localizedString(R.string.onboarding_meta_global_y_counters),
-            description = localizedString(R.string.onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc),
-            icon = Icons.Default.Leaderboard,
-            accentColor = TierSPlusColor,
-            highlights = listOf(
-                localizedString(R.string.onboarding_tier_list_global_y_de_servidores_asiaticos),
-                localizedString(R.string.onboarding_identificacion_de_mejores_picks_del_meta),
-                localizedString(R.string.onboarding_analisis_de_enfrentamientos_directos)
-            )
-        ),
-        OnboardingPage(
-            title = localizedString(R.string.onboarding_ventajas_suscripcion_premium),
-            subtitle = localizedString(R.string.onboarding_acceso_total_de_elite_personalizacion),
-            description = localizedString(R.string.onboarding_desbloquea_todas_las_ventajas_exclusivas_historial_estadistico_de),
-            icon = Icons.Default.WorkspacePremium,
-            accentColor = Color(0xFFFFB300),
-            highlights = listOf(
-                localizedString(R.string.onboarding_escaner_automatico_del_draft),
-                localizedString(R.string.onboarding_historial_del_draft),
-                localizedString(R.string.onboarding_win_rate_personal),
-                localizedString(R.string.onboarding_campeones_favoritos),
-                localizedString(R.string.onboarding_temas_exclusivos),
-                localizedString(R.string.onboarding_avatares_exclusivos)
-            )
-        )
-    )
-
-    val pagerState = rememberPagerState(pageCount = { pages.size })
-    val coroutineScope = rememberCoroutineScope()
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(HextechDarkBg)
-    ) {
-        // Decorative background glow
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            pages[pagerState.currentPage].accentColor.copy(alpha = 0.08f),
-                            Color.Transp…3447 tokens truncated…d_16_api_24_a_36_con_sopor" formatted="false">Compatível com Android 8.0 até Android 16 (API 24 a 36) com suporte nativo a modo multijanela, notch e orientação de tela horizontal.</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="info_informacion" formatted="false">Informação</string>
+    <string name="info_back" formatted="false">Voltar</string>
+    <string name="info_coach_icon" formatted="false">Ícone do Coach</string>
+    <string name="info_coach" formatted="false">Coach</string>
+    <string name="info_asistente_tactico_oficial_de_drafting" formatted="false">Assistente Tático Oficial de Drafting</string>
+    <string name="info_1_compatibilidad_y_parche_oficial" formatted="false">1. Compatibilidade e Patch Oficial</string>
+    <string name="info_compatibilidad_de_juego_exclusiva" formatted="false">🎮 Compatibilidade de Jogo Exclusiva:</string>
+    <string name="info_desarrollado_100_para_league_of_legends_wild_rift_en_dispositivos" formatted="false">Desenvolvido 100% para League of Legends: Wild Rift em dispositivos móveis. Todos os campeões, estatísticas base, escalonamentos, itens e runas correspondem exatamente às versões do Wild Rift.</string>
+    <string name="info_sincronizacion_de_parche_en_tiempo_real" formatted="false">🔄 Sincronização de Patch em Tempo Real:</string>
+    <string name="info_nomenclatura_oficial_movil" formatted="false">⚡ Nomenclatura Oficial Móvel:</string>
+    <string name="info_utiliza_exclusivamente_el_esquema_oficial_de_wild_rift_habilidad" formatted="false">Utiliza exclusivamente o esquema oficial do Wild Rift: Habilidade 1 (H1), Habilidade 2 (H2), Habilidade 3 (H3) e Ultimate (H4), além de feitiços e runas adaptadas ao ritmo móvel.</string>
+    <string name="info_asistente_flotante_y_alto_rendimiento" formatted="false">🛡️ Assistente Flutuante e Alto Desempenho:</string>
+    <string name="info_overlay_interactivo_con_permiso_de_superposicion_system_alert_win" formatted="false">Overlay interativo com permissão de sobreposição (SYSTEM_ALERT_WINDOW) projetado com aceleração de hardware. Consumo ultra-baixo de bateria (&lt;2% por hora) e fluidez garantida a 60, 90 e 120 FPS sem travamentos ou input lag dentro da partida.</string>
+    <string name="info_compatibilidad_de_sistema_operativo" formatted="false">📱 Compatibilidade do Sistema Operacional:</string>
+    <string name="info_compatible_con_android_8_0_hasta_android_16_api_24_a_36_con_sopor" formatted="false">Compatível com Android 8.0 até Android 16 (API 24 a 36) com suporte nativo a modo multijanela, notch e orientação de tela horizontal.</string>
     <string name="info_2_modo_de_uso_de_la_aplicacion" formatted="false">2. Modo de Uso do Aplicativo</string>
     <string name="info_paso_1_configura_tus_lineas_de_juego" formatted="false">Passo 1: Configure suas Rotas de Jogo</string>
     <string name="info_en_la_pantalla_principal_selecciona_tu_linea_main_segunda_linea_y" formatted="false">Na tela principal, selecione sua \'Rota Principal\', \'Segunda Rota\' e \'Função Autofill\' tocando em cada cartão.</string>

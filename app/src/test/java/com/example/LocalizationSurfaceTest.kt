@@ -14,6 +14,9 @@ import com.example.data.WildRiftRepository
 import com.example.data.sync.*
 import com.example.ui.components.FormattedWildRiftText
 import com.example.ui.screens.FAQScreen
+import com.example.ui.screens.InfoScreen
+import com.example.ui.screens.LanguageSelectionScreen
+import com.example.ui.components.PrivacyPolicyDialog
 import org.junit.*
 import org.junit.Assert.*
 import org.junit.runner.RunWith
@@ -98,6 +101,51 @@ class LocalizationSurfaceTest {
         }
         compose.onNodeWithText("Rota do Meio").assertExists()
         compose.onNodeWithText("Línea Central").assertDoesNotExist()
+    }
+
+    @Test fun `initial Portuguese selection opens the complete information panel in Portuguese`() {
+        compose.setContent {
+            var selected by remember { mutableStateOf(false) }
+            if (selected) {
+                InfoScreen(onNavigateBack = {}, onNavigateToFAQ = {})
+            } else {
+                LanguageSelectionScreen { language ->
+                    AppLanguage.select(context, language)
+                    selected = true
+                }
+            }
+        }
+        compose.onNodeWithText("Português").performClick()
+        compose.onNodeWithText("Continuar em Português").performClick()
+        compose.onNodeWithText("Informação").assertIsDisplayed()
+        compose.onNodeWithText("Información").assertDoesNotExist()
+        compose.onNodeWithText("1. Compatibilidade e Patch Oficial").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Passo 4: Consulta de Builds e Runas").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Informações Legais e Privacidade").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Todos os direitos reservados.", substring = true).performScrollTo().assertIsDisplayed()
+        compose.onAllNodesWithText("Compilação", substring = true).assertCountEquals(2)
+
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onNodeWithText("Información").assertIsDisplayed()
+        compose.onNodeWithText("Paso 1: Configura tus Líneas de Juego").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").assertIsDisplayed()
+        compose.onNodeWithText("Paso 1: Configura tus Líneas de Juego").assertDoesNotExist()
+    }
+
+    @Test fun `mandatory legal information starts in Portuguese on every tab`() {
+        AppLanguage.select(context, "pt")
+        compose.setContent { PrivacyPolicyDialog(isMandatoryAcceptance = true, onDismiss = {}) }
+        compose.onNodeWithText("Informações Legais").assertIsDisplayed()
+        compose.onNodeWithText("1. Quais dados coletamos e por quê").assertExists()
+        compose.onNodeWithText("Termos").performClick()
+        compose.onNodeWithText("1. Aceitação dos Termos").assertExists()
+        compose.onNodeWithText("Terceiros").performClick()
+        compose.onNodeWithText("1. Isenção de Responsabilidade Oficial da Riot Games").assertExists()
+        compose.onNodeWithText("Aceitar e Entrar").assertIsDisplayed()
+        compose.onNodeWithText("Aceptar y Entrar").assertDoesNotExist()
     }
 
 }

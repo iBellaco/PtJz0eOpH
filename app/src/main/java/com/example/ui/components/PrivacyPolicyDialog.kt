@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import com.example.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,11 +27,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.*
 import com.example.util.tr
+import com.example.util.localizedString
 
-enum class LegalTab(val titleRes: String) {
-    PRIVACY("Privacidad"),
-    TERMS("Términos"),
-    THIRD_PARTY("Terceros")
+enum class LegalTab(@androidx.annotation.StringRes val titleRes: Int) {
+    PRIVACY(R.string.legal_privacy),
+    TERMS(R.string.legal_terms),
+    THIRD_PARTY(R.string.legal_third_party)
 }
 
 @Composable
@@ -83,7 +85,7 @@ fun PrivacyPolicyDialog(
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
-                            text = tr("Información Legal"),
+                            text = localizedString(R.string.legal_informacion_legal),
                             color = TextPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -114,7 +116,7 @@ fun PrivacyPolicyDialog(
                             onClick = { selectedTab = tab },
                             text = {
                                 Text(
-                                    text = tr(tab.titleRes),
+                                    text = localizedString(tab.titleRes),
                                     fontSize = 12.5.sp,
                                     fontWeight = if (selectedTab == tab) FontWeight.Bold else FontWeight.Normal,
                                     color = if (selectedTab == tab) HextechGold else TextSecondary
@@ -144,7 +146,7 @@ fun PrivacyPolicyDialog(
 
                 if (isMandatoryAcceptance) {
                     Text(
-                        text = tr("Debes aceptar los Términos de Servicio y la Política de Privacidad para poder ingresar a la aplicación. Si cierras esta ventana, la aplicación se cerrará."),
+                        text = localizedString(R.string.legal_debes_aceptar_los_terminos_de_servicio_y_la_politica_de_privacida),
                         color = HextechCyan.copy(alpha = 0.9f),
                         fontSize = 11.5.sp,
                         lineHeight = 15.sp,
@@ -171,7 +173,7 @@ fun PrivacyPolicyDialog(
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = HextechCyan)
                             ) {
                                 Text(
-                                    text = tr("Cambiar Idioma"),
+                                    text = localizedString(R.string.legal_cambiar_idioma),
                                     fontSize = 10.5.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     maxLines = 1
@@ -188,7 +190,7 @@ fun PrivacyPolicyDialog(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF6666))
                         ) {
                             Text(
-                                text = tr("Rechazar y Salir"),
+                                text = localizedString(R.string.legal_rechazar_y_salir),
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 maxLines = 1
@@ -203,7 +205,7 @@ fun PrivacyPolicyDialog(
                             colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
                         ) {
                             Text(
-                                text = tr("Aceptar y Entrar"),
+                                text = localizedString(R.string.legal_aceptar_y_entrar),
                                 color = HextechDarkBg,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp,
@@ -219,7 +221,7 @@ fun PrivacyPolicyDialog(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = tr("Cerrar"),
+                            text = localizedString(R.string.legal_cerrar),
                             color = HextechDarkBg,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp
@@ -234,79 +236,79 @@ fun PrivacyPolicyDialog(
 @Composable
 private fun PrivacyPolicyContent() {
     PolicySection(
-        title = tr("1. Qué datos recopilamos y por qué"),
-        body = tr("Queremos ser 100% transparentes: Coach está diseñada exclusivamente para el análisis táctico de partidas y drafting en League of Legends: Wild Rift (Parche 7.3). Si decides autenticarte en la aplicación, almacenamos únicamente tu correo electrónico y tu nombre de perfil para gestionar tu sesión, tu nivel de suscripción y tus configuraciones sincronizadas en la nube. No vendemos, no comercializamos ni compartimos tu información personal con ninguna entidad externa.")
+        title = localizedString(R.string.legal_1_que_datos_recopilamos_y_por_que),
+        body = localizedString(R.string.legal_queremos_ser_100_transparentes_coach_esta_disenada_exclusivamente)
     )
 
     PolicySection(
-        title = tr("2. Permisos del Asistente Flotante y Captura en Vivo"),
-        body = tr("Para brindar asistencia en tiempo real durante la selección de campeones, la app solicita permiso de superposición (Overlay - SYSTEM_ALERT_WINDOW) y proyección de pantalla. Dichas capturas se procesan de forma 100% local y autónoma en la memoria RAM de tu dispositivo mediante algoritmos de visión en tiempo real y OCR. Las imágenes no se envían a servidores externos, no se almacenan permanentemente en el disco y se descartan inmediatamente tras su lectura. Ninguna grabación de video ni audio se almacena ni se transmite.")
+        title = localizedString(R.string.legal_2_permisos_del_asistente_flotante_y_captura_en_vivo),
+        body = localizedString(R.string.legal_para_brindar_asistencia_en_tiempo_real_durante_la_seleccion_de_ca)
     )
 
     PolicySection(
-        title = tr("3. Almacenamiento Local y Recursos Offline"),
-        body = tr("Tus listas de nivel personales (Tier Lists), historial de borradores de draft, notas y preferencias se guardan de forma segura en la base de datos local SQLite (Room) y almacenamiento interno de tu teléfono. Puedes restablecer o eliminar completamente estos datos borrando el almacenamiento de la app desde los ajustes del sistema operativo Android.")
+        title = localizedString(R.string.legal_3_almacenamiento_local_y_recursos_offline),
+        body = localizedString(R.string.legal_tus_listas_de_nivel_personales_tier_lists_historial_de_borradores)
     )
 
     PolicySection(
-        title = tr("4. Cero Publicidad y Rastreo Comercial"),
-        body = tr("La aplicación no incluye anuncios publicitarios, banners intrusivos ni kits de desarrollo (SDKs) de publicidad o rastreo de terceros. Ofrecemos una experiencia completamente limpia, privada y enfocada en el rendimiento competitivo.")
+        title = localizedString(R.string.legal_4_cero_publicidad_y_rastreo_comercial),
+        body = localizedString(R.string.legal_la_aplicacion_no_incluye_anuncios_publicitarios_banners_intrusivo)
     )
 
     PolicySection(
-        title = tr("5. Seguridad y Cifrado de Conexión"),
-        body = tr("Todas las comunicaciones entre la aplicación y los servicios de base de datos en tiempo real utilizan protocolos seguros con cifrado HTTPS/TLS v1.3 para garantizar la integridad y confidencialidad absoluta de tu cuenta.")
+        title = localizedString(R.string.legal_5_seguridad_y_cifrado_de_conexion),
+        body = localizedString(R.string.legal_todas_las_comunicaciones_entre_la_aplicacion_y_los_servicios_de_b)
     )
 }
 
 @Composable
 private fun TermsOfServiceContent() {
     PolicySection(
-        title = tr("1. Aceptación de los Términos"),
-        body = tr("Al descargar, instalar o utilizar la aplicación Coach, aceptas cumplir estos Términos de Servicio. Si no estás de acuerdo con alguna disposición, te solicitamos abstenerte de utilizar la aplicación.")
+        title = localizedString(R.string.legal_1_aceptacion_de_los_terminos),
+        body = localizedString(R.string.legal_al_descargar_instalar_o_utilizar_la_aplicacion_coach_aceptas_cump)
     )
 
     PolicySection(
-        title = tr("2. Propósito y Uso Permitido"),
-        body = tr("Esta aplicación es una herramienta de asistencia táctica, aprendizaje y análisis estratégico para League of Legends: Wild Rift. No modifica archivos del juego, no interactúa con la memoria del proceso del juego ni vulnera las políticas de juego limpio de Riot Games. Opera exclusivamente mediante captura de pantalla externa, análisis estadístico y recomendaciones tácticas adaptadas al Parche 7.3.")
+        title = localizedString(R.string.legal_2_proposito_y_uso_permitido),
+        body = localizedString(R.string.legal_esta_aplicacion_es_una_herramienta_de_asistencia_tactica_aprendiz)
     )
 
     PolicySection(
-        title = tr("3. Cuentas y Suscripciones"),
-        body = tr("El acceso a funciones avanzadas (como análisis con IA, historial de partidas guardadas y herramientas personalizadas) se gestiona mediante tu cuenta de usuario. Eres responsable de mantener la confidencialidad de tus credenciales. Nos reservamos el derecho de suspender accesos en caso de uso abusivo o vulneración de seguridad.")
+        title = localizedString(R.string.legal_3_cuentas_y_suscripciones),
+        body = localizedString(R.string.legal_el_acceso_a_funciones_avanzadas_como_analisis_con_ia_historial_de)
     )
 
     PolicySection(
-        title = tr("4. Disponibilidad del Servicio y Metagame"),
-        body = tr("Nos esforzamos por mantener la información de campeones, runas, objetos y parches actualizada constantemente con cada versión oficial de Wild Rift; sin embargo, no garantizamos disponibilidad ininterrumpida ante mantenimientos o cambios imprevistos en los servidores del juego.")
+        title = localizedString(R.string.legal_4_disponibilidad_del_servicio_y_metagame),
+        body = localizedString(R.string.legal_nos_esforzamos_por_mantener_la_informacion_de_campeones_runas_obj)
     )
 
     PolicySection(
-        title = tr("5. Limitación de Responsabilidad"),
-        body = tr("La aplicación se proporciona 'tal cual' para propósitos informativos y de entretenimiento. No nos hacemos responsables por pérdidas de partidas clasificatorias, sanciones de cuentas de terceros ni por el mal uso de las herramientas proporcionadas.")
+        title = localizedString(R.string.legal_5_limitacion_de_responsabilidad),
+        body = localizedString(R.string.legal_la_aplicacion_se_proporciona_tal_cual_para_propositos_informativo)
     )
 }
 
 @Composable
 private fun ThirdPartyAgreementsContent() {
     PolicySection(
-        title = tr("1. Descargo Oficial de Riot Games"),
-        body = tr("Coach no cuenta con el respaldo de Riot Games y no refleja las opiniones ni los puntos de vista de Riot Games ni de ninguna persona involucrada oficialmente en la producción o administración de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas comerciales registradas de Riot Games, Inc.")
+        title = localizedString(R.string.legal_1_descargo_oficial_de_riot_games),
+        body = localizedString(R.string.legal_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op)
     )
 
     PolicySection(
-        title = tr("2. Política de Propiedad Intelectual 'Legal Jibber Jabber'"),
-        body = tr("Esta aplicación cumple rigurosamente con la política de Riot Games 'Legal Jibber Jabber' para proyectos comunitarios sin fines de usurpación de marca. Todos los nombres de campeones, habilidades, objetos, runas y activos visuales de League of Legends: Wild Rift pertenecen en su totalidad a Riot Games, Inc.")
+        title = localizedString(R.string.legal_2_politica_de_propiedad_intelectual_legal_jibber_jabber),
+        body = localizedString(R.string.legal_esta_aplicacion_cumple_rigurosamente_con_la_politica_de_riot_game)
     )
 
     PolicySection(
-        title = tr("3. Infraestructura Segura en la Nube"),
-        body = tr("Utilizamos infraestructura en la nube con servidores seguros y bases de datos cifradas para la sincronización de perfiles, autenticación y almacenamiento de estados de suscripción, operando bajo estrictas normas de seguridad y privacidad.")
+        title = localizedString(R.string.legal_3_infraestructura_segura_en_la_nube),
+        body = localizedString(R.string.legal_utilizamos_infraestructura_en_la_nube_con_servidores_seguros_y_ba)
     )
 
     PolicySection(
-        title = tr("4. Bibliotecas de Código Abierto (Open Source)"),
-        body = tr("Esta aplicación utiliza componentes de software libre licenciados bajo Apache 2.0 y MIT, incluyendo Jetpack Compose, Kotlinx Coroutines, AndroidX Room, Coil Image Loader, Material 3 y ML Kit Text Recognition.")
+        title = localizedString(R.string.legal_4_bibliotecas_de_codigo_abierto_open_source),
+        body = localizedString(R.string.legal_esta_aplicacion_utiliza_componentes_de_software_libre_licenciados)
     )
 }
 
@@ -314,13 +316,13 @@ private fun ThirdPartyAgreementsContent() {
 fun PolicySection(title: String, body: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            text = com.example.util.tr(title),
+            text = title,
             color = HextechGoldLight,
             fontSize = 14.5.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = com.example.util.tr(body),
+            text = body,
             color = TextSecondary,
             fontSize = 12.5.sp,
             lineHeight = 17.5.sp

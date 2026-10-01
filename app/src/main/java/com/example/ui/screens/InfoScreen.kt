@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.WildRiftRepository
 import com.example.ui.components.AdminFeedbackBottomSheet
 import com.example.ui.theme.*
-import com.example.util.tr
+import com.example.util.localizedString
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +56,8 @@ fun InfoScreen(
     val scope = rememberCoroutineScope()
     var isPurging by remember { mutableStateOf(false) }
     var purgeStatus by remember { mutableStateOf("") }
+    val patchVersion = WildRiftRepository.CURRENT_PATCH_VERSION.removePrefix("Parche ").removePrefix("Patch ")
+    val patchLabel = localizedString(R.string.info_patch, patchVersion)
     var showDonationDialog by remember { mutableStateOf(false) }
     var showLegalDialog by remember { mutableStateOf(false) }
 
@@ -79,7 +81,7 @@ fun InfoScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
-                            text = tr("Información"),
+                            text = localizedString(R.string.info_informacion),
                             color = TextPrimary,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
@@ -92,7 +94,7 @@ fun InfoScreen(
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = tr(WildRiftRepository.CURRENT_PATCH_VERSION),
+                                text = patchLabel,
                                 color = HextechCyan,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -102,7 +104,7 @@ fun InfoScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = com.example.util.trNullable("Back"), tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = localizedString(R.string.info_back), tint = TextPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -147,7 +149,7 @@ fun InfoScreen(
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_app_logo),
-                            contentDescription = com.example.util.tr("Coach Icon"),
+                            contentDescription = localizedString(R.string.info_coach_icon),
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -155,26 +157,19 @@ fun InfoScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = com.example.util.tr("Coach"),
+                            text = localizedString(R.string.info_coach),
                             color = HextechGoldLight,
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = tr("Asistente Táctico Oficial de Drafting"),
+                            text = localizedString(R.string.info_asistente_tactico_oficial_de_drafting),
                             color = HextechCyan,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
-                        val patchLabel = WildRiftRepository.CURRENT_PATCH_VERSION.let { raw ->
-                            if (raw.startsWith("Parche", ignoreCase = true) || raw.startsWith("Patch", ignoreCase = true)) {
-                                tr(raw)
-                            } else {
-                                "${tr("Parche")} $raw"
-                            }
-                        }
                         Text(
-                            text = com.example.util.tr("v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • $patchLabel"),
+                            text = localizedString(R.string.info_version, com.example.BuildConfig.VERSION_NAME, com.example.BuildConfig.VERSION_CODE, patchLabel),
                             color = TextMuted,
                             fontSize = 11.sp
                         )
@@ -184,53 +179,53 @@ fun InfoScreen(
 
             // Section 1: Compatibilidad y Parche Oficial (Mejorado)
             InfoCard(
-                title = tr("1. Compatibilidad y Parche Oficial"),
+                title = localizedString(R.string.info_1_compatibilidad_y_parche_oficial),
                 icon = Icons.Default.Info
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     InfoStep(
-                        title = tr("🎮 Compatibilidad de Juego Exclusiva:"),
-                        description = tr("Desarrollado 100% para League of Legends: Wild Rift en dispositivos móviles. Todos los campeones, estadísticas base, escalados, objetos y runas corresponden exactamente a las versiones de Wild Rift.")
+                        title = localizedString(R.string.info_compatibilidad_de_juego_exclusiva),
+                        description = localizedString(R.string.info_desarrollado_100_para_league_of_legends_wild_rift_en_dispositivos)
                     )
                     InfoStep(
-                        title = tr("🔄 Sincronización de Parche en Tiempo Real:"),
-                        description = tr("Totalmente sincronizado con el meta oficial de Wild Rift ") + "${tr(WildRiftRepository.CURRENT_PATCH_VERSION)}." + " " + tr("Incluye los últimos bufos, nerfeos, ajustes de objetos y rotaciones de tier list.")
+                        title = localizedString(R.string.info_sincronizacion_de_parche_en_tiempo_real),
+                        description = localizedString(R.string.info_patch_description, patchLabel)
                     )
                     InfoStep(
-                        title = tr("⚡ Nomenclatura Oficial Móvil:"),
-                        description = tr("Utiliza exclusivamente el esquema oficial de Wild Rift: Habilidad 1 (H1), Habilidad 2 (H2), Habilidad 3 (H3) y Definitiva (H4), además de hechizos y runas adaptadas al ritmo móvil.")
+                        title = localizedString(R.string.info_nomenclatura_oficial_movil),
+                        description = localizedString(R.string.info_utiliza_exclusivamente_el_esquema_oficial_de_wild_rift_habilidad)
                     )
                     InfoStep(
-                        title = tr("🛡️ Asistente Flotante y Alto Rendimiento:"),
-                        description = tr("Overlay interactivo con permiso de superposición (SYSTEM_ALERT_WINDOW) diseñado con aceleración por hardware. Consumo ultra-bajo de batería (<2% por hora) y fluidez garantizada a 60, 90 y 120 FPS sin generar tirones ni input lag dentro de la partida.")
+                        title = localizedString(R.string.info_asistente_flotante_y_alto_rendimiento),
+                        description = localizedString(R.string.info_overlay_interactivo_con_permiso_de_superposicion_system_alert_win)
                     )
                     InfoStep(
-                        title = tr("📱 Compatibilidad de Sistema Operativo:"),
-                        description = tr("Compatible con Android 8.0 hasta Android 16 (API 24 a 36) con soporte nativo de modo multiventana, notch y orientación de pantalla horizontal.")
+                        title = localizedString(R.string.info_compatibilidad_de_sistema_operativo),
+                        description = localizedString(R.string.info_compatible_con_android_8_0_hasta_android_16_api_24_a_36_con_sopor)
                     )
                 }
             }
 
             // Section 2: Modo de Uso
             InfoCard(
-                title = tr("2. Modo de Uso de la Aplicación"),
+                title = localizedString(R.string.info_2_modo_de_uso_de_la_aplicacion),
                 icon = Icons.Default.Settings
             ) {
                 InfoStep(
-                    title = tr("Paso 1: Configura tus Líneas de Juego"),
-                    description = tr("En la pantalla principal, selecciona tu 'Línea Main', 'Segunda Línea' y 'Rol Autofill' tocando cada tarjeta.")
+                    title = localizedString(R.string.info_paso_1_configura_tus_lineas_de_juego),
+                    description = localizedString(R.string.info_en_la_pantalla_principal_selecciona_tu_linea_main_segunda_linea_y)
                 )
                 InfoStep(
-                    title = tr("Paso 2: Activa el Asistente Flotante"),
-                    description = tr("Pulsa el botón central 'ACTIVAR'. Se desplegará la burbuja flotante en pantalla para acompañarte en tu partida.")
+                    title = localizedString(R.string.info_paso_2_activa_el_asistente_flotante),
+                    description = localizedString(R.string.info_pulsa_el_boton_central_activar_se_desplegara_la_burbuja_flotante)
                 )
                 InfoStep(
-                    title = tr("Paso 3: Selección de Campeones"),
-                    description = tr("Abre Wild Rift y entra a la fase de selección. Toca el botón flotante en cualquier momento para ver recomendaciones, counters y sinergias tácticas en directo.")
+                    title = localizedString(R.string.info_paso_3_seleccion_de_campeones),
+                    description = localizedString(R.string.info_abre_wild_rift_y_entra_a_la_fase_de_seleccion_toca_el_boton_flota)
                 )
                 InfoStep(
-                    title = tr("Paso 4: Consulta de Builds y Runas"),
-                    description = tr("Revisa los consejos tácticos, orden de habilidades móviles (Pasiva, 1, 2, 3, Definitiva) y armado de objetos recomendado para tu línea.")
+                    title = localizedString(R.string.info_paso_4_consulta_de_builds_y_runas),
+                    description = localizedString(R.string.info_revisa_los_consejos_tacticos_orden_de_habilidades_moviles_pasiva)
                 )
             }
 
@@ -238,7 +233,7 @@ fun InfoScreen(
 
             // Section 3: Donaciones, Preguntas Frecuentes e Información Legal
             InfoCard(
-                title = tr("3. Donaciones, Preguntas Frecuentes y Legal"),
+                title = localizedString(R.string.info_3_donaciones_preguntas_frecuentes_y_legal),
                 icon = Icons.Default.Star
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -252,7 +247,7 @@ fun InfoScreen(
                     ) {
                         Icon(Icons.Default.Star, contentDescription = null, tint = HextechDarkBg, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(tr("Apoyar el Proyecto (Donaciones)"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(localizedString(R.string.info_apoyar_el_proyecto_donaciones), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
 
                     OutlinedButton(
@@ -266,7 +261,7 @@ fun InfoScreen(
                     ) {
                         Icon(Icons.Default.Info, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(tr("Preguntas Frecuentes (FAQ)"), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(localizedString(R.string.info_preguntas_frecuentes_faq), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
 
                     OutlinedButton(
@@ -280,7 +275,7 @@ fun InfoScreen(
                     ) {
                         Icon(Icons.Default.Lock, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(tr("Información Legal y Privacidad"), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(localizedString(R.string.info_informacion_legal_y_privacidad), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
                 }
             }
@@ -288,39 +283,39 @@ fun InfoScreen(
             // Section 4: Desarrollador & Derechos de Autor
             val context = LocalContext.current
             InfoCard(
-                title = tr("4. Desarrollador, Derechos y Legal"),
+                title = localizedString(R.string.info_4_desarrollador_derechos_y_legal),
                 icon = Icons.Default.Person
             ) {
                 Text(
-                    text = tr("Aplicación creada y desarrollada por Diego Barba Chavez."),
+                    text = localizedString(R.string.info_aplicacion_creada_y_desarrollada_por_diego_barba_chavez),
                     color = TextPrimary,
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = com.example.util.tr("© 2026 Diego Barba Chavez. " + tr("Todos los derechos reservados.")),
+                    text = "© 2026 Diego Barba Chavez. " + localizedString(R.string.info_todos_los_derechos_reservados),
                     color = HextechGoldLight,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = tr("Diseñado para la comunidad competitiva de League of Legends: Wild Rift."),
+                    text = localizedString(R.string.info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild),
                     color = TextSecondary,
                     fontSize = 11.5.sp,
                     lineHeight = 16.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = tr("Coach no cuenta con el respaldo de Riot Games y no refleja las opiniones ni los puntos de vista de Riot Games ni de ninguna persona involucrada oficialmente en la producción o administración de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas comerciales registradas de Riot Games, Inc."),
+                    text = localizedString(R.string.info_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op),
                     color = TextMuted,
                     fontSize = 10.5.sp,
                     lineHeight = 14.5.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = com.example.util.tr("v${com.example.BuildConfig.VERSION_NAME} (Build ${com.example.BuildConfig.VERSION_CODE}) • ${tr(WildRiftRepository.CURRENT_PATCH_VERSION)}"),
+                    text = localizedString(R.string.info_version, com.example.BuildConfig.VERSION_NAME, com.example.BuildConfig.VERSION_CODE, patchLabel),
                     color = HextechCyan.copy(alpha = 0.9f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold
@@ -365,7 +360,7 @@ fun InfoCard(
             ) {
                 Icon(icon, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                 Text(
-                    text = com.example.util.tr(title),
+                    text = title,
                     color = TextPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -380,8 +375,8 @@ fun InfoCard(
 @Composable
 fun InfoStep(title: String, description: String) {
     Column(modifier = Modifier.padding(bottom = 12.dp)) {
-        Text(text = com.example.util.tr(title), color = HextechCyan, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(text = title, color = HextechCyan, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(text = com.example.util.tr(description), color = TextSecondary, fontSize = 13.sp, lineHeight = 18.sp)
+        Text(text = description, color = TextSecondary, fontSize = 13.sp, lineHeight = 18.sp)
     }
 }
