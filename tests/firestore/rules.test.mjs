@@ -74,8 +74,13 @@ try {
     await assertSucceeds(deleteDoc(doc(admin,'users/user/messages/ticket')));
   });
   await test('resolved status is shared and prevents user replies', async () => {
-    await assertSucceeds(updateDoc(doc(moderator, 'support_reports', 'new'), { status:'SOLVED', isCompleted:true, staffRead:true }));
+    const batch = writeBatch(moderator);
+    const close = { status:'SOLVED', isCompleted:true, staffRead:true };
+    batch.update(doc(moderator, 'support_reports', 'new'), close);
+    batch.set(doc(moderator, 'users/user/messages/new'), close, { merge:true });
+    await assertSucceeds(batch.commit());
     assert.equal((await getDoc(doc(user,'support_reports','new'))).data().status,'SOLVED');
+    assert.equal((await getDoc(doc(db('user'),'users/user/messages/new'))).data().status,'SOLVED');
     const history = (await getDoc(doc(user,'support_reports','new'))).data().conversation;
     await assertFails(updateDoc(doc(user,'support_reports','new'), { conversation:[...history,{ id:'closedreply', senderRole:'USER',senderUid:'user',text:'No',timestampMillis:400 }], status:'PENDING',isCompleted:false,staffRead:false }));
   });
