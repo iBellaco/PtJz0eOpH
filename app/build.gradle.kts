@@ -93,6 +93,8 @@ android {
       isIncludeAndroidResources = true
       all {
         it.systemProperty("robolectric.sqliteMode", "LEGACY")
+        // Robolectric's Compose idler can retain a pending frame between test classes.
+        it.forkEvery = 1L
         it.testLogging {
           events("failed", "standard_out", "standard_error")
           exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
