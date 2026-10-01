@@ -2800,7 +2800,7 @@ fun EnhancedUserAdminCard(
                         ) {
                             Image(
                                 painter = painterResource(id = com.example.R.drawable.ic_blue_essence),
-                                contentDescription = "Esencia Azul",
+                                contentDescription = com.example.util.tr("Esencia Azul"),
                                 modifier = Modifier.size(11.dp)
                             )
                             Spacer(modifier = Modifier.width(3.dp))
@@ -5442,7 +5442,7 @@ private fun ServerScraperHealthCard() {
                     Icon(Icons.Default.CloudSync, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = tr("Monitoreo de Fuentes de Meta (CN & Global Tri-Source)"),
+                        text = tr("Fuentes del meta Global"),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -5483,7 +5483,7 @@ private fun ServerScraperHealthCard() {
             val allSources = sourceStatuses.values.toList()
             allSources.forEach { status ->
                 val regionPrefix = when (status.region) {
-                    "CN" -> "🇨🇳 [CN]"
+                    "GLOBAL" -> "🌐 [GLOBAL]"
                     else -> "🌍 [Global]"
                 }
                 Row(

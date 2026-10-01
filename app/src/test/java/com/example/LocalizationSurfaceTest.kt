@@ -14,7 +14,6 @@ import com.example.data.WildRiftRepository
 import com.example.data.sync.*
 import com.example.ui.components.FormattedWildRiftText
 import com.example.ui.screens.FAQScreen
-import com.example.ui.screens.TierSelectionPanel
 import org.junit.*
 import org.junit.Assert.*
 import org.junit.runner.RunWith
@@ -61,23 +60,9 @@ class LocalizationSurfaceTest {
         compose.onNodeWithText("Preguntas Frecuentes").assertExists()
         compose.onNodeWithText("Perguntas Frequentes").assertDoesNotExist()
     }
-    @Test fun `real tier selector has ordered tabs and changes the displayed region`() {
-        WildRiftRepository.initChampions(context, forceReload = true)
-        context.getSharedPreferences("app_prefs", 0).edit().clear().commit()
-        ChineseMetaSyncService.loadRegion(context)
-        compose.setContent {
-            val region by ChineseMetaSyncService.currentRegion.collectAsState()
-            val scope = rememberCoroutineScope()
-            TierSelectionPanel(TencentRankTier.DIAMOND_PLUS, ChineseSyncState.Idle, region, context, scope)
-        }
-        compose.onNodeWithTag("meta_region_GLOBAL").assertIsSelected()
-        val cnLeft = compose.onNodeWithTag("meta_region_CN").fetchSemanticsNode().boundsInRoot.left
-        val globalLeft = compose.onNodeWithTag("meta_region_GLOBAL").fetchSemanticsNode().boundsInRoot.left
-        assertTrue(cnLeft < globalLeft)
-        compose.onNodeWithTag("meta_region_NA").assertDoesNotExist()
-        compose.onNodeWithTag("meta_region_CN").performClick().assertIsSelected()
-        assertEquals("CN", WildRiftRepository.activeRegionName)
-        compose.onNodeWithTag("meta_region_GLOBAL").performClick().assertIsSelected()
-        assertEquals("GLOBAL", WildRiftRepository.activeRegionName)
+    @Test fun `legacy region resolves to Global without a selector`() {
+        assertEquals("GLOBAL", com.example.data.sync.MetaRegion.normalize("CN"))
+        assertEquals(listOf("GLOBAL"), com.example.data.sync.MetaRegion.available)
     }
+
 }

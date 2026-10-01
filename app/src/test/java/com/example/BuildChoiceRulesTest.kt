@@ -17,10 +17,19 @@ class BuildChoiceRulesTest {
             RuneChoice("Brutal", "Precisión"), RuneChoice("Fuerzas Renovadas", "Valor"),
             RuneChoice("Capa del Nimbo", "Brujería"), RuneChoice("Electrocutar", "Clave"), core[1]))
         assertEquals(3, alternatives.size)
-        assertNull(alternatives[0].secondarySlot)
+        assertEquals(1, alternatives[0].secondarySlot)
         assertEquals(4, alternatives[1].secondarySlot)
         assertEquals(4, alternatives[2].secondarySlot)
     }
+    @Test fun `visual swaps point to the actual secondary instead of its position in the branch`() {
+        val page = listOf(RuneChoice("Conquistador", "Clave"), RuneChoice("Orbe Anulador", "Valor"),
+            RuneChoice("Sobrecrecimiento", "Valor"), RuneChoice("Revestimiento de Huesos", "Valor"),
+            RuneChoice("Trascendencia", "Brujería"))
+        val alternatives = BuildChoiceRules.runeAlternatives(page, listOf(
+            RuneChoice("Revitalizar", "Valor"), RuneChoice("Fuerzas Renovadas", "Valor"), RuneChoice("Inquebrantable", "Valor")))
+        assertEquals(listOf(2, 3, 1), alternatives.map { it.secondarySlot })
+    }
+
     @Test fun `mixed first three branches cannot produce a valid page or alternatives`() {
         val invalid = core.toMutableList().apply { this[2] = RuneChoice("Orbe Anulador", "Valor") }
         assertFalse(BuildChoiceRules.validRunePage(invalid))
@@ -38,6 +47,8 @@ class BuildChoiceRulesTest {
         assertTrue(BuildChoiceRules.boots("Botas blindadas", DamageType.PHYSICAL, true, false, LaneRole.TOP, "olaf").isEmpty())
     }
     @Test fun `subscription limits apply to all three matchup categories`() {
+        assertEquals(3, BuildChoiceRules.matchupLimit(false, signedIn = false))
+        assertEquals(3, BuildChoiceRules.matchupLimit(true, signedIn = false))
         assertEquals(6, BuildChoiceRules.matchupLimit(false))
         assertEquals(12, BuildChoiceRules.matchupLimit(true))
     }

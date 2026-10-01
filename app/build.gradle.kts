@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 847
-    versionName = "1.1.10.131"
+    versionCode = 848
+    versionName = "1.1.10.132"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -147,6 +147,7 @@ dependencies {
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)
   testImplementation(libs.junit)
+  testImplementation("org.json:json:20240303")
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.robolectric)
   testImplementation(libs.roborazzi)

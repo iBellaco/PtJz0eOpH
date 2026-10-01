@@ -1395,7 +1395,7 @@ fun DraftHistoryScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             androidx.compose.foundation.Image(
                                 painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_blue_essence),
-                                contentDescription = "Esencia Azul",
+                                contentDescription = com.example.util.tr("Esencia Azul"),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))

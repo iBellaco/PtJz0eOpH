@@ -25,6 +25,7 @@ object ChineseMetaSyncService {
         val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val saved = prefs.getString("selected_meta_region", MetaRegion.DEFAULT) ?: MetaRegion.DEFAULT
         _currentRegion.value = MetaRegion.normalize(saved)
+        if (saved != MetaRegion.DEFAULT) prefs.edit().putString("selected_meta_region", MetaRegion.DEFAULT).apply()
         WildRiftRepository.selectMetaRegion(_currentRegion.value)
         BestBuildWrScraper.selectRegion(_currentRegion.value)
     }

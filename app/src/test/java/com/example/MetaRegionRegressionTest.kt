@@ -29,12 +29,20 @@ class MetaRegionRegressionTest {
     @Test fun `selector order and initial choice match the restored lists`() {
         context.getSharedPreferences("app_prefs", 0).edit().clear().commit()
         ChineseMetaSyncService.loadRegion(context)
-        assertEquals(listOf("GLOBAL", "CN"), MetaRegion.available)
+        assertEquals(listOf("GLOBAL"), MetaRegion.available)
         assertEquals("GLOBAL", ChineseMetaSyncService.currentRegion.value)
         assertEquals("GLOBAL", MetaRegion.normalize("auto"))
-        assertTrue(MetaRegion.label("CN").startsWith("🇨🇳"))
+        assertEquals("GLOBAL", MetaRegion.normalize("CN"))
         assertTrue(MetaRegion.label("GLOBAL").startsWith("🌐"))
     }
+    @Test fun `saved Chinese preference migrates persistently to Global`() {
+        val prefs = context.getSharedPreferences("app_prefs", 0)
+        prefs.edit().putString("selected_meta_region", "CN").commit()
+        ChineseMetaSyncService.loadRegion(context)
+        assertEquals("GLOBAL", prefs.getString("selected_meta_region", ""))
+        assertEquals("GLOBAL", WildRiftRepository.activeRegionName)
+    }
+
     @Test fun `explicit selection persists after reload`() {
         for (region in MetaRegion.available) {
             ChineseMetaSyncService.setRegion(context, region, scope)
@@ -43,7 +51,7 @@ class MetaRegionRegressionTest {
             assertEquals(region, WildRiftRepository.activeRegionName)
         }
     }
-    @Test fun `region switching restores distinct published snapshots`() {
+    @Test fun `legacy Chinese selection keeps the Global snapshot`() {
         val baseline = WildRiftRepository.champions.toList()
         val id = baseline.first().id
         WildRiftRepository.applyRegionalTierList("GLOBAL", mapOf(RegionalTierParser.canonical(id) to "S+"))
@@ -53,7 +61,8 @@ class MetaRegionRegressionTest {
         assertEquals("S+", WildRiftRepository.champions.first().tier)
         assertFalse(WildRiftRepository.champions.first().hasRegionalStats)
         WildRiftRepository.selectMetaRegion("CN")
-        assertEquals(china, WildRiftRepository.champions.toList())
+        assertEquals("GLOBAL", WildRiftRepository.activeRegionName)
+        assertEquals("S+", WildRiftRepository.champions.first().tier)
         WildRiftRepository.selectMetaRegion("GLOBAL")
         assertEquals("S+", WildRiftRepository.champions.first().tier)
         assertEquals(baseline.first().winrate, WildRiftRepository.champions.first().winrate, 0.0)

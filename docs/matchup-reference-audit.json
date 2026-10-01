@@ -1,0 +1,2144 @@
+{
+  "reviewedAt": "2026-09-30",
+  "champions": 142,
+  "method": "WildRiftFire editorial counters and synergies. Hwei uses WildRiftCore matchup verdicts because its WildRiftFire sections are empty. Advantages may also be inferred by reversing explicit counter relationships. Secondary-role seeds are retained only for their first three individual choices. No head-to-head win rates are claimed; no roster-order padding.",
+  "references": [
+    {
+      "id": "aatrox",
+      "name": "Aatrox",
+      "counters": [
+        "Fiora",
+        "Malphite",
+        "Ambessa"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Syndra",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/aatrox"
+    },
+    {
+      "id": "ahri",
+      "name": "Ahri",
+      "counters": [
+        "Annie",
+        "Syndra",
+        "Aurelion Sol"
+      ],
+      "synergies": [
+        "Ornn",
+        "Rengar",
+        "Thresh"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ahri"
+    },
+    {
+      "id": "akali",
+      "name": "Akali",
+      "counters": [
+        "Galio",
+        "Lissandra",
+        "Twisted Fate"
+      ],
+      "synergies": [
+        "Shen",
+        "Amumu",
+        "Rakan"
+      ],
+      "url": "https://www.wildriftfire.com/guide/akali"
+    },
+    {
+      "id": "akshan",
+      "name": "Akshan",
+      "counters": [
+        "Yasuo",
+        "Orianna",
+        "Lissandra"
+      ],
+      "synergies": [
+        "Shen",
+        "Nunu y Willump",
+        "Rakan"
+      ],
+      "url": "https://www.wildriftfire.com/guide/akshan"
+    },
+    {
+      "id": "alistar",
+      "name": "Alistar",
+      "counters": [
+        "Janna",
+        "Morgana",
+        "Soraka"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Samira",
+        "Corki"
+      ],
+      "url": "https://www.wildriftfire.com/guide/alistar"
+    },
+    {
+      "id": "ambessa",
+      "name": "Ambessa",
+      "counters": [
+        "Jayce",
+        "Malphite",
+        "Renekton"
+      ],
+      "synergies": [
+        "Cho'Gath",
+        "Syndra",
+        "Thresh"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ambessa"
+    },
+    {
+      "id": "amumu",
+      "name": "Amumu",
+      "counters": [
+        "Gwen",
+        "Nunu y Willump",
+        "Olaf"
+      ],
+      "synergies": [
+        "Akali",
+        "Galio",
+        "Miss Fortune"
+      ],
+      "url": "https://www.wildriftfire.com/guide/amumu"
+    },
+    {
+      "id": "annie",
+      "name": "Annie",
+      "counters": [
+        "Syndra",
+        "Irelia",
+        "Lissandra"
+      ],
+      "synergies": [
+        "Rumble",
+        "Viego",
+        "Thresh"
+      ],
+      "url": "https://www.wildriftfire.com/guide/annie"
+    },
+    {
+      "id": "ashe",
+      "name": "Ashe",
+      "counters": [
+        "Caitlyn",
+        "Draven",
+        "Lucian"
+      ],
+      "synergies": [
+        "Leona",
+        "Nautilus",
+        "Braum"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ashe"
+    },
+    {
+      "id": "aurelion_sol",
+      "name": "Aurelion Sol",
+      "counters": [
+        "Yone",
+        "Kassadin",
+        "Akshan"
+      ],
+      "synergies": [
+        "Camille",
+        "Vi",
+        "Bardo"
+      ],
+      "url": "https://www.wildriftfire.com/guide/aurelion-sol"
+    },
+    {
+      "id": "aurora",
+      "name": "Aurora",
+      "counters": [
+        "Vex",
+        "Zed",
+        "Irelia"
+      ],
+      "synergies": [
+        "Shen",
+        "Amumu",
+        "Rell"
+      ],
+      "url": "https://www.wildriftfire.com/guide/aurora"
+    },
+    {
+      "id": "bard",
+      "name": "Bardo",
+      "counters": [
+        "Blitzcrank",
+        "Senna",
+        "Thresh"
+      ],
+      "synergies": [
+        "Ashe",
+        "Caitlyn",
+        "Xayah"
+      ],
+      "url": "https://www.wildriftfire.com/guide/bard"
+    },
+    {
+      "id": "blitzcrank",
+      "name": "Blitzcrank",
+      "counters": [
+        "Nautilus",
+        "Braum",
+        "Alistar"
+      ],
+      "synergies": [
+        "Xayah",
+        "Draven",
+        "Tristana"
+      ],
+      "url": "https://www.wildriftfire.com/guide/blitzcrank"
+    },
+    {
+      "id": "brand",
+      "name": "Brand",
+      "counters": [
+        "Syndra",
+        "Zyra",
+        "Hwei"
+      ],
+      "synergies": [
+        "Camille",
+        "Lee Sin",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/brand"
+    },
+    {
+      "id": "braum",
+      "name": "Braum",
+      "counters": [
+        "Senna",
+        "Rakan",
+        "Zilean"
+      ],
+      "synergies": [
+        "Tristana",
+        "Lucian",
+        "Yunara"
+      ],
+      "url": "https://www.wildriftfire.com/guide/braum"
+    },
+    {
+      "id": "caitlyn",
+      "name": "Caitlyn",
+      "counters": [
+        "Sivir",
+        "Ezreal",
+        "Miss Fortune"
+      ],
+      "synergies": [
+        "Nami",
+        "Milio",
+        "Bardo"
+      ],
+      "url": "https://www.wildriftfire.com/guide/caitlyn"
+    },
+    {
+      "id": "camille",
+      "name": "Camille",
+      "counters": [
+        "Malphite",
+        "Fiora",
+        "Mordekaiser"
+      ],
+      "synergies": [
+        "Vi",
+        "Jarvan IV",
+        "Galio"
+      ],
+      "url": "https://www.wildriftfire.com/guide/camille"
+    },
+    {
+      "id": "cho_gath",
+      "name": "Cho'Gath",
+      "counters": [
+        "Teemo",
+        "Gwen",
+        "Fiora"
+      ],
+      "synergies": [
+        "Nocturne",
+        "Yasuo",
+        "Amumu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/chogath"
+    },
+    {
+      "id": "corki",
+      "name": "Corki",
+      "counters": [
+        "Kog'Maw",
+        "Miss Fortune",
+        "Caitlyn"
+      ],
+      "synergies": [
+        "Nautilus",
+        "Alistar",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/corki"
+    },
+    {
+      "id": "darius",
+      "name": "Darius",
+      "counters": [
+        "Dr. Mundo",
+        "Malphite",
+        "Ornn"
+      ],
+      "synergies": [
+        "Lillia",
+        "Twisted Fate",
+        "Thresh"
+      ],
+      "url": "https://www.wildriftfire.com/guide/darius"
+    },
+    {
+      "id": "diana",
+      "name": "Diana",
+      "counters": [
+        "Vex",
+        "Galio",
+        "Irelia"
+      ],
+      "synergies": [
+        "Lee Sin",
+        "Rakan",
+        "Galio"
+      ],
+      "url": "https://www.wildriftfire.com/guide/diana"
+    },
+    {
+      "id": "dr_mundo",
+      "name": "Dr. Mundo",
+      "counters": [
+        "Riven",
+        "Gwen",
+        "Fiora"
+      ],
+      "synergies": [
+        "Ryze",
+        "Olaf",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/dr-mundo"
+    },
+    {
+      "id": "draven",
+      "name": "Draven",
+      "counters": [
+        "Caitlyn",
+        "Samira",
+        "Kog'Maw"
+      ],
+      "synergies": [
+        "Nautilus",
+        "Pyke",
+        "Thresh"
+      ],
+      "url": "https://www.wildriftfire.com/guide/draven"
+    },
+    {
+      "id": "ekko",
+      "name": "Ekko",
+      "counters": [
+        "Vex",
+        "Irelia",
+        "Lissandra"
+      ],
+      "synergies": [
+        "Amumu",
+        "Nami",
+        "Shen"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ekko"
+    },
+    {
+      "id": "evelynn",
+      "name": "Evelynn",
+      "counters": [
+        "Rengar",
+        "Twisted Fate",
+        "Lee Sin"
+      ],
+      "synergies": [
+        "Shen",
+        "Ahri",
+        "Veigar"
+      ],
+      "url": "https://www.wildriftfire.com/guide/evelynn"
+    },
+    {
+      "id": "ezreal",
+      "name": "Ezreal",
+      "counters": [
+        "Draven",
+        "Miss Fortune",
+        "Samira"
+      ],
+      "synergies": [
+        "Yuumi",
+        "Braum",
+        "Bardo"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ezreal"
+    },
+    {
+      "id": "fiddlesticks",
+      "name": "Fiddlesticks",
+      "counters": [
+        "Nocturne",
+        "Aatrox",
+        "Alistar"
+      ],
+      "synergies": [
+        "Galio",
+        "Alistar",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/fiddlesticks"
+    },
+    {
+      "id": "fiora",
+      "name": "Fiora",
+      "counters": [
+        "Rumble",
+        "Malphite",
+        "Poppy"
+      ],
+      "synergies": [
+        "Soraka",
+        "Lulu",
+        "Zilean"
+      ],
+      "url": "https://www.wildriftfire.com/guide/fiora"
+    },
+    {
+      "id": "fizz",
+      "name": "Fizz",
+      "counters": [
+        "Galio",
+        "Lissandra",
+        "Vex"
+      ],
+      "synergies": [
+        "Nautilus",
+        "Leona",
+        "Jarvan IV"
+      ],
+      "url": "https://www.wildriftfire.com/guide/fizz"
+    },
+    {
+      "id": "galio",
+      "name": "Galio",
+      "counters": [
+        "Morgana",
+        "Ahri",
+        "Swain"
+      ],
+      "synergies": [
+        "Amumu",
+        "Jarvan IV",
+        "Camille"
+      ],
+      "url": "https://www.wildriftfire.com/guide/galio"
+    },
+    {
+      "id": "garen",
+      "name": "Garen",
+      "counters": [
+        "Vayne",
+        "Rumble",
+        "Camille"
+      ],
+      "synergies": [
+        "Zilean",
+        "Nocturne",
+        "Wukong"
+      ],
+      "url": "https://www.wildriftfire.com/guide/garen"
+    },
+    {
+      "id": "gnar",
+      "name": "Gnar",
+      "counters": [
+        "Irelia",
+        "Malphite",
+        "Ornn"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Nocturne",
+        "Vi"
+      ],
+      "url": "https://www.wildriftfire.com/guide/gnar"
+    },
+    {
+      "id": "gragas",
+      "name": "Gragas",
+      "counters": [
+        "Amumu",
+        "Nocturne",
+        "Lillia"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Bardo",
+        "Ryze"
+      ],
+      "url": "https://www.wildriftfire.com/guide/gragas"
+    },
+    {
+      "id": "graves",
+      "name": "Graves",
+      "counters": [
+        "Rammus",
+        "Amumu",
+        "Aatrox"
+      ],
+      "synergies": [
+        "Janna",
+        "Nami",
+        "Nautilus"
+      ],
+      "url": "https://www.wildriftfire.com/guide/graves"
+    },
+    {
+      "id": "gwen",
+      "name": "Gwen",
+      "counters": [
+        "Fiora",
+        "Tryndamere",
+        "Riven"
+      ],
+      "synergies": [
+        "Rell",
+        "Rakan",
+        "Nautilus"
+      ],
+      "url": "https://www.wildriftfire.com/guide/gwen"
+    },
+    {
+      "id": "hecarim",
+      "name": "Hecarim",
+      "counters": [
+        "Maestro Yi",
+        "Kindred",
+        "Graves"
+      ],
+      "synergies": [
+        "Karma",
+        "Zilean",
+        "Nautilus"
+      ],
+      "url": "https://www.wildriftfire.com/guide/hecarim"
+    },
+    {
+      "id": "heimerdinger",
+      "name": "Heimerdinger",
+      "counters": [
+        "Zed",
+        "Yasuo",
+        "Irelia"
+      ],
+      "synergies": [
+        "Amumu",
+        "Jarvan IV",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/heimerdinger"
+    },
+    {
+      "id": "hwei",
+      "name": "Hwei",
+      "counters": [
+        "Kassadin",
+        "Zed",
+        "Fizz",
+        "Yone",
+        "Yasuo",
+        "Morgana"
+      ],
+      "advantages": [
+        "Kennen",
+        "Brand",
+        "Aurelion Sol",
+        "Annie",
+        "Orianna",
+        "Lissandra"
+      ],
+      "synergies": [],
+      "url": "https://wildriftcore.com/en/champions/hwei/counters/"
+    },
+    {
+      "id": "irelia",
+      "name": "Irelia",
+      "counters": [
+        "Malphite",
+        "Wukong",
+        "Poppy"
+      ],
+      "synergies": [
+        "Xin Zhao",
+        "Jarvan IV",
+        "Nautilus"
+      ],
+      "url": "https://www.wildriftfire.com/guide/irelia"
+    },
+    {
+      "id": "janna",
+      "name": "Janna",
+      "counters": [
+        "Blitzcrank",
+        "Senna",
+        "Sona"
+      ],
+      "synergies": [
+        "Draven",
+        "Jhin",
+        "Lucian"
+      ],
+      "url": "https://www.wildriftfire.com/guide/janna"
+    },
+    {
+      "id": "jarvan_iv",
+      "name": "Jarvan IV",
+      "counters": [
+        "Rammus",
+        "Maestro Yi",
+        "Amumu"
+      ],
+      "synergies": [
+        "Orianna",
+        "Lissandra",
+        "Miss Fortune"
+      ],
+      "url": "https://www.wildriftfire.com/guide/jarvan-iv"
+    },
+    {
+      "id": "jax",
+      "name": "Jax",
+      "counters": [
+        "Poppy",
+        "Teemo",
+        "Rumble"
+      ],
+      "synergies": [
+        "Lulu",
+        "Janna",
+        "Zilean"
+      ],
+      "url": "https://www.wildriftfire.com/guide/jax"
+    },
+    {
+      "id": "jayce",
+      "name": "Jayce",
+      "counters": [
+        "Syndra",
+        "Galio",
+        "Irelia"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Vi",
+        "Lee Sin"
+      ],
+      "url": "https://www.wildriftfire.com/guide/jayce"
+    },
+    {
+      "id": "jhin",
+      "name": "Jhin",
+      "counters": [
+        "Draven",
+        "Ashe",
+        "Lucian"
+      ],
+      "synergies": [
+        "Zyra",
+        "Karma",
+        "Rakan"
+      ],
+      "url": "https://www.wildriftfire.com/guide/jhin"
+    },
+    {
+      "id": "jinx",
+      "name": "Jinx",
+      "counters": [
+        "Jhin",
+        "Miss Fortune",
+        "Kog'Maw"
+      ],
+      "synergies": [
+        "Lulu",
+        "Janna",
+        "Milio"
+      ],
+      "url": "https://www.wildriftfire.com/guide/jinx"
+    },
+    {
+      "id": "k_sante",
+      "name": "K'Sante",
+      "counters": [
+        "Ambessa",
+        "Vayne",
+        "Garen"
+      ],
+      "synergies": [
+        "Shyvana",
+        "Maestro Yi",
+        "Warwick"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ksante"
+    },
+    {
+      "id": "kai_sa",
+      "name": "Kai'Sa",
+      "counters": [
+        "Caitlyn",
+        "Draven",
+        "Kog'Maw"
+      ],
+      "synergies": [
+        "Lulu",
+        "Nautilus",
+        "Alistar"
+      ],
+      "url": "https://www.wildriftfire.com/guide/kaisa"
+    },
+    {
+      "id": "kalista",
+      "name": "Kalista",
+      "counters": [
+        "Ashe",
+        "Kog'Maw",
+        "Caitlyn"
+      ],
+      "synergies": [
+        "Alistar",
+        "Nautilus",
+        "Thresh"
+      ],
+      "url": "https://www.wildriftfire.com/guide/kalista"
+    },
+    {
+      "id": "karma",
+      "name": "Karma",
+      "counters": [
+        "Pyke",
+        "Nami",
+        "Bardo"
+      ],
+      "synergies": [
+        "Lucian",
+        "Ezreal",
+        "Draven"
+      ],
+      "url": "https://www.wildriftfire.com/guide/karma"
+    },
+    {
+      "id": "kassadin",
+      "name": "Kassadin",
+      "counters": [
+        "Zed",
+        "Yasuo",
+        "Jayce"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Nocturne",
+        "Vi"
+      ],
+      "url": "https://www.wildriftfire.com/guide/kassadin"
+    },
+    {
+      "id": "katarina",
+      "name": "Katarina",
+      "counters": [
+        "Vex",
+        "Zed",
+        "Lissandra"
+      ],
+      "synergies": [
+        "Amumu",
+        "Jarvan IV",
+        "Alistar"
+      ],
+      "url": "https://www.wildriftfire.com/guide/katarina"
+    },
+    {
+      "id": "kayle",
+      "name": "Kayle",
+      "counters": [
+        "Syndra",
+        "Viktor",
+        "Ryze"
+      ],
+      "synergies": [
+        "Lulu",
+        "Zilean",
+        "Soraka"
+      ],
+      "url": "https://www.wildriftfire.com/guide/kayle"
+    },
+    {
+      "id": "kayn",
+      "name": "Kayn",
+      "counters": [
+        "Maestro Yi",
+        "Kindred",
+        "Rammus"
+      ],
+      "synergies": [
+        "Zilean",
+        "Shen",
+        "Malphite"
+      ],
+      "url": "https://www.wildriftfire.com/guide/kayn"
+    },
+    {
+      "id": "kennen",
+      "name": "Kennen",
+      "counters": [
+        "Gnar",
+        "Nasus",
+        "Wukong"
+      ],
+      "synergies": [
+        "Orianna",
+        "Jarvan IV",
+        "Amumu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/kennen"
+    },
+    {
+      "id": "kha_zix",
+      "name": "Kha'Zix",
+      "counters": [
+        "Rammus",
+        "Kindred",
+        "Maestro Yi"
+      ],
+      "synergies": [
+        "Shen",
+        "Annie",
+        "Zilean"
+      ],
+      "url": "https://www.wildriftfire.com/guide/khazix"
+    },
+    {
+      "id": "kindred",
+      "name": "Kindred",
+      "counters": [
+        "Rammus",
+        "Xin Zhao",
+        "Lillia"
+      ],
+      "synergies": [
+        "Galio",
+        "Malphite",
+        "Lulu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/kindred"
+    },
+    {
+      "id": "kog_maw",
+      "name": "Kog'Maw",
+      "counters": [
+        "Ashe",
+        "Caitlyn",
+        "Vayne"
+      ],
+      "synergies": [
+        "Lulu",
+        "Milio",
+        "Nami"
+      ],
+      "url": "https://www.wildriftfire.com/guide/kogmaw"
+    },
+    {
+      "id": "lee_sin",
+      "name": "Lee Sin",
+      "counters": [
+        "Rammus",
+        "Lillia",
+        "Nocturne"
+      ],
+      "synergies": [
+        "Nautilus",
+        "Yasuo",
+        "Ahri"
+      ],
+      "url": "https://www.wildriftfire.com/guide/lee-sin"
+    },
+    {
+      "id": "leona",
+      "name": "Leona",
+      "counters": [
+        "Galio",
+        "Morgana",
+        "Janna"
+      ],
+      "synergies": [
+        "Ashe",
+        "Lucian",
+        "Samira"
+      ],
+      "url": "https://www.wildriftfire.com/guide/leona"
+    },
+    {
+      "id": "lillia",
+      "name": "Lillia",
+      "counters": [
+        "Evelynn",
+        "Vi",
+        "Maestro Yi"
+      ],
+      "synergies": [
+        "Seraphine",
+        "Rakan",
+        "Karma"
+      ],
+      "url": "https://www.wildriftfire.com/guide/lillia"
+    },
+    {
+      "id": "lissandra",
+      "name": "Lissandra",
+      "counters": [
+        "Morgana",
+        "Kassadin",
+        "Galio"
+      ],
+      "synergies": [
+        "Vi",
+        "Viego",
+        "Galio"
+      ],
+      "url": "https://www.wildriftfire.com/guide/lissandra"
+    },
+    {
+      "id": "lucian",
+      "name": "Lucian",
+      "counters": [
+        "Caitlyn",
+        "Kog'Maw",
+        "Ashe"
+      ],
+      "synergies": [
+        "Nami",
+        "Braum",
+        "Rakan"
+      ],
+      "url": "https://www.wildriftfire.com/guide/lucian"
+    },
+    {
+      "id": "lulu",
+      "name": "Lulu",
+      "counters": [
+        "Blitzcrank",
+        "Senna",
+        "Bardo"
+      ],
+      "synergies": [
+        "Jinx",
+        "Vayne",
+        "Kog'Maw"
+      ],
+      "url": "https://www.wildriftfire.com/guide/lulu"
+    },
+    {
+      "id": "lux",
+      "name": "Lux",
+      "counters": [
+        "Pyke",
+        "Nami",
+        "Karma"
+      ],
+      "synergies": [
+        "Jhin",
+        "Caitlyn",
+        "Varus"
+      ],
+      "url": "https://www.wildriftfire.com/guide/lux"
+    },
+    {
+      "id": "malphite",
+      "name": "Malphite",
+      "counters": [
+        "Rumble",
+        "Mordekaiser",
+        "Gwen"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Orianna",
+        "Annie"
+      ],
+      "url": "https://www.wildriftfire.com/guide/malphite"
+    },
+    {
+      "id": "maokai",
+      "name": "Maokai",
+      "counters": [
+        "Galio",
+        "Braum",
+        "Leona"
+      ],
+      "synergies": [
+        "Draven",
+        "Vayne",
+        "Caitlyn"
+      ],
+      "url": "https://www.wildriftfire.com/guide/maokai"
+    },
+    {
+      "id": "master_yi",
+      "name": "Maestro Yi",
+      "counters": [
+        "Rammus",
+        "Viego",
+        "Evelynn"
+      ],
+      "synergies": [
+        "Zilean",
+        "Lulu",
+        "Karma"
+      ],
+      "url": "https://www.wildriftfire.com/guide/master-yi"
+    },
+    {
+      "id": "mel",
+      "name": "Mel",
+      "counters": [
+        "Irelia",
+        "Yone",
+        "Syndra"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Leona",
+        "Ornn"
+      ],
+      "url": "https://www.wildriftfire.com/guide/mel"
+    },
+    {
+      "id": "milio",
+      "name": "Milio",
+      "counters": [
+        "Blitzcrank",
+        "Sona",
+        "Bardo"
+      ],
+      "synergies": [
+        "Kog'Maw",
+        "Caitlyn",
+        "Vayne"
+      ],
+      "url": "https://www.wildriftfire.com/guide/milio"
+    },
+    {
+      "id": "miss_fortune",
+      "name": "Miss Fortune",
+      "counters": [
+        "Smolder",
+        "Jhin",
+        "Caitlyn"
+      ],
+      "synergies": [
+        "Leona",
+        "Nautilus",
+        "Rakan"
+      ],
+      "url": "https://www.wildriftfire.com/guide/miss-fortune"
+    },
+    {
+      "id": "mordekaiser",
+      "name": "Mordekaiser",
+      "counters": [
+        "Fiora",
+        "Irelia",
+        "Rumble"
+      ],
+      "synergies": [
+        "Amumu",
+        "Rammus",
+        "Zilean"
+      ],
+      "url": "https://www.wildriftfire.com/guide/mordekaiser"
+    },
+    {
+      "id": "morgana",
+      "name": "Morgana",
+      "counters": [
+        "Soraka",
+        "Karma",
+        "Zyra"
+      ],
+      "synergies": [
+        "Draven",
+        "Caitlyn",
+        "Ashe"
+      ],
+      "url": "https://www.wildriftfire.com/guide/morgana"
+    },
+    {
+      "id": "nami",
+      "name": "Nami",
+      "counters": [
+        "Pyke",
+        "Blitzcrank",
+        "Braum"
+      ],
+      "synergies": [
+        "Lucian",
+        "Caitlyn",
+        "Ezreal"
+      ],
+      "url": "https://www.wildriftfire.com/guide/nami"
+    },
+    {
+      "id": "nasus",
+      "name": "Nasus",
+      "counters": [
+        "Garen",
+        "Camille",
+        "Wukong"
+      ],
+      "synergies": [
+        "Zilean",
+        "Karma",
+        "Lulu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/nasus"
+    },
+    {
+      "id": "nautilus",
+      "name": "Nautilus",
+      "counters": [
+        "Bardo",
+        "Janna",
+        "Morgana"
+      ],
+      "synergies": [
+        "Draven",
+        "Samira",
+        "Miss Fortune"
+      ],
+      "url": "https://www.wildriftfire.com/guide/nautilus"
+    },
+    {
+      "id": "nidalee",
+      "name": "Nidalee",
+      "counters": [
+        "Maestro Yi",
+        "Rengar",
+        "Galio"
+      ],
+      "synergies": [
+        "Nautilus",
+        "Leona",
+        "Renekton"
+      ],
+      "url": "https://www.wildriftfire.com/guide/nidalee"
+    },
+    {
+      "id": "nilah",
+      "name": "Nilah",
+      "counters": [
+        "Rammus",
+        "Amumu",
+        "Kha'Zix"
+      ],
+      "synergies": [
+        "Soraka",
+        "Lulu",
+        "Zilean"
+      ],
+      "url": "https://www.wildriftfire.com/guide/nilah"
+    },
+    {
+      "id": "nocturne",
+      "name": "Nocturne",
+      "counters": [
+        "Rammus",
+        "Maestro Yi",
+        "Viego"
+      ],
+      "synergies": [
+        "Orianna",
+        "Ornn",
+        "Shen"
+      ],
+      "url": "https://www.wildriftfire.com/guide/nocturne"
+    },
+    {
+      "id": "norra",
+      "name": "Norra",
+      "counters": [
+        "Kassadin",
+        "Zed",
+        "Yasuo"
+      ],
+      "synergies": [
+        "Amumu",
+        "Jarvan IV",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/norra"
+    },
+    {
+      "id": "nunu_willump",
+      "name": "Nunu y Willump",
+      "counters": [
+        "Lillia",
+        "Evelynn",
+        "Morgana"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Camille",
+        "Rakan"
+      ],
+      "url": "https://www.wildriftfire.com/guide/nunu-amp-willump"
+    },
+    {
+      "id": "olaf",
+      "name": "Olaf",
+      "counters": [
+        "Kindred",
+        "Lillia",
+        "Maestro Yi"
+      ],
+      "synergies": [
+        "Lulu",
+        "Soraka",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/olaf"
+    },
+    {
+      "id": "orianna",
+      "name": "Orianna",
+      "counters": [
+        "Irelia",
+        "Yasuo",
+        "Syndra"
+      ],
+      "synergies": [
+        "Nocturne",
+        "Amumu",
+        "Alistar"
+      ],
+      "url": "https://www.wildriftfire.com/guide/orianna"
+    },
+    {
+      "id": "ornn",
+      "name": "Ornn",
+      "counters": [
+        "Fiora",
+        "Camille",
+        "Shen"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Viego",
+        "Nocturne"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ornn"
+    },
+    {
+      "id": "pantheon",
+      "name": "Pantheon",
+      "counters": [
+        "Tryndamere",
+        "Rammus",
+        "Amumu"
+      ],
+      "synergies": [
+        "Shen",
+        "Twisted Fate",
+        "Galio"
+      ],
+      "url": "https://www.wildriftfire.com/guide/pantheon"
+    },
+    {
+      "id": "poppy",
+      "name": "Poppy",
+      "counters": [
+        "Ambessa",
+        "Teemo",
+        "Mordekaiser"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Orianna",
+        "Ashe"
+      ],
+      "url": "https://www.wildriftfire.com/guide/poppy"
+    },
+    {
+      "id": "pyke",
+      "name": "Pyke",
+      "counters": [
+        "Braum",
+        "Maokai",
+        "Soraka"
+      ],
+      "synergies": [
+        "Samira",
+        "Lucian",
+        "Kai'Sa"
+      ],
+      "url": "https://www.wildriftfire.com/guide/pyke"
+    },
+    {
+      "id": "rakan",
+      "name": "Rakan",
+      "counters": [
+        "Galio",
+        "Rell",
+        "Nautilus"
+      ],
+      "synergies": [
+        "Xayah",
+        "Samira",
+        "Kai'Sa"
+      ],
+      "url": "https://www.wildriftfire.com/guide/rakan"
+    },
+    {
+      "id": "rammus",
+      "name": "Rammus",
+      "counters": [
+        "Amumu",
+        "Lillia",
+        "Nunu y Willump"
+      ],
+      "synergies": [
+        "Annie",
+        "Sivir",
+        "Camille"
+      ],
+      "url": "https://www.wildriftfire.com/guide/rammus"
+    },
+    {
+      "id": "rell",
+      "name": "Rell",
+      "counters": [
+        "Janna",
+        "Alistar",
+        "Braum"
+      ],
+      "synergies": [
+        "Samira",
+        "Kai'Sa",
+        "Lucian"
+      ],
+      "url": "https://www.wildriftfire.com/guide/rell"
+    },
+    {
+      "id": "renekton",
+      "name": "Renekton",
+      "counters": [
+        "Gnar",
+        "Teemo",
+        "Mordekaiser"
+      ],
+      "synergies": [
+        "Vi",
+        "Rammus",
+        "Hecarim"
+      ],
+      "url": "https://www.wildriftfire.com/guide/renekton"
+    },
+    {
+      "id": "rengar",
+      "name": "Rengar",
+      "counters": [
+        "Kindred",
+        "Rammus",
+        "Maestro Yi"
+      ],
+      "synergies": [
+        "Shen",
+        "Orianna",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/rengar"
+    },
+    {
+      "id": "riven",
+      "name": "Riven",
+      "counters": [
+        "Renekton",
+        "Darius",
+        "Wukong"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Nidalee",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/riven"
+    },
+    {
+      "id": "rumble",
+      "name": "Rumble",
+      "counters": [
+        "Renekton",
+        "Ornn",
+        "Ambessa"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Amumu",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/rumble"
+    },
+    {
+      "id": "ryze",
+      "name": "Ryze",
+      "counters": [
+        "Kassadin",
+        "Viktor",
+        "Syndra"
+      ],
+      "synergies": [
+        "Rakan",
+        "Viego",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ryze"
+    },
+    {
+      "id": "samira",
+      "name": "Samira",
+      "counters": [
+        "Kog'Maw",
+        "Miss Fortune",
+        "Caitlyn"
+      ],
+      "synergies": [
+        "Nautilus",
+        "Rell",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/samira"
+    },
+    {
+      "id": "senna",
+      "name": "Senna",
+      "counters": [
+        "Blitzcrank",
+        "Pyke",
+        "Nautilus"
+      ],
+      "synergies": [
+        "Jhin",
+        "Miss Fortune",
+        "Ashe"
+      ],
+      "url": "https://www.wildriftfire.com/guide/senna"
+    },
+    {
+      "id": "seraphine",
+      "name": "Seraphine",
+      "counters": [
+        "Pyke",
+        "Braum",
+        "Blitzcrank"
+      ],
+      "synergies": [
+        "Ashe",
+        "Miss Fortune",
+        "Ezreal"
+      ],
+      "url": "https://www.wildriftfire.com/guide/seraphine"
+    },
+    {
+      "id": "sett",
+      "name": "Sett",
+      "counters": [
+        "Renekton",
+        "Mordekaiser",
+        "Aatrox"
+      ],
+      "synergies": [
+        "Galio",
+        "Amumu",
+        "Vi"
+      ],
+      "url": "https://www.wildriftfire.com/guide/sett"
+    },
+    {
+      "id": "shen",
+      "name": "Shen",
+      "counters": [
+        "Fiora",
+        "Renekton",
+        "Gnar"
+      ],
+      "synergies": [
+        "Nocturne",
+        "Evelynn",
+        "Kha'Zix"
+      ],
+      "url": "https://www.wildriftfire.com/guide/shen"
+    },
+    {
+      "id": "shyvana",
+      "name": "Shyvana",
+      "counters": [
+        "Rammus",
+        "Lillia",
+        "Maestro Yi"
+      ],
+      "synergies": [
+        "Shen",
+        "Zilean",
+        "Lulu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/shyvana"
+    },
+    {
+      "id": "singed",
+      "name": "Singed",
+      "counters": [
+        "Ambessa",
+        "Fiora",
+        "Camille"
+      ],
+      "synergies": [
+        "Zilean",
+        "Shen",
+        "Alistar"
+      ],
+      "url": "https://www.wildriftfire.com/guide/singed"
+    },
+    {
+      "id": "sion",
+      "name": "Sion",
+      "counters": [
+        "Renekton",
+        "Fiora",
+        "Gwen"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Nocturne",
+        "Nautilus"
+      ],
+      "url": "https://www.wildriftfire.com/guide/sion"
+    },
+    {
+      "id": "sivir",
+      "name": "Sivir",
+      "counters": [
+        "Kog'Maw",
+        "Smolder",
+        "Vayne"
+      ],
+      "synergies": [
+        "Lulu",
+        "Milio",
+        "Karma"
+      ],
+      "url": "https://www.wildriftfire.com/guide/sivir"
+    },
+    {
+      "id": "skarner",
+      "name": "Skarner",
+      "counters": [
+        "Lillia",
+        "Olaf",
+        "Maestro Yi"
+      ],
+      "synergies": [
+        "Miss Fortune",
+        "Annie",
+        "Lissandra"
+      ],
+      "url": "https://www.wildriftfire.com/guide/skarner"
+    },
+    {
+      "id": "smolder",
+      "name": "Smolder",
+      "counters": [
+        "Draven",
+        "Lucian",
+        "Caitlyn"
+      ],
+      "synergies": [
+        "Braum",
+        "Milio",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/smolder"
+    },
+    {
+      "id": "sona",
+      "name": "Sona",
+      "counters": [
+        "Blitzcrank",
+        "Pyke",
+        "Bardo"
+      ],
+      "synergies": [
+        "Ashe",
+        "Jhin",
+        "Vayne"
+      ],
+      "url": "https://www.wildriftfire.com/guide/sona"
+    },
+    {
+      "id": "soraka",
+      "name": "Soraka",
+      "counters": [
+        "Blitzcrank",
+        "Nami",
+        "Bardo"
+      ],
+      "synergies": [
+        "Caitlyn",
+        "Jinx",
+        "Vayne"
+      ],
+      "url": "https://www.wildriftfire.com/guide/soraka"
+    },
+    {
+      "id": "swain",
+      "name": "Swain",
+      "counters": [
+        "Brand",
+        "Syndra",
+        "Orianna"
+      ],
+      "synergies": [
+        "Leona",
+        "Nautilus",
+        "Amumu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/swain"
+    },
+    {
+      "id": "syndra",
+      "name": "Syndra",
+      "counters": [
+        "Irelia",
+        "Yasuo",
+        "Kassadin"
+      ],
+      "synergies": [
+        "Vi",
+        "Viego",
+        "Nocturne"
+      ],
+      "url": "https://www.wildriftfire.com/guide/syndra"
+    },
+    {
+      "id": "taliyah",
+      "name": "Taliyah",
+      "counters": [
+        "Syndra",
+        "Zed",
+        "Orianna"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Vi",
+        "Xin Zhao"
+      ],
+      "url": "https://www.wildriftfire.com/guide/taliyah"
+    },
+    {
+      "id": "talon",
+      "name": "Talon",
+      "counters": [
+        "Rengar",
+        "Kindred",
+        "Lee Sin"
+      ],
+      "synergies": [
+        "Syndra",
+        "Annie",
+        "Lissandra"
+      ],
+      "url": "https://www.wildriftfire.com/guide/talon"
+    },
+    {
+      "id": "teemo",
+      "name": "Teemo",
+      "counters": [
+        "Ryze",
+        "Rumble",
+        "Wukong"
+      ],
+      "synergies": [
+        "Amumu",
+        "Warwick",
+        "Rammus"
+      ],
+      "url": "https://www.wildriftfire.com/guide/teemo"
+    },
+    {
+      "id": "thresh",
+      "name": "Thresh",
+      "counters": [
+        "Zyra",
+        "Nami",
+        "Lux"
+      ],
+      "synergies": [
+        "Samira",
+        "Jhin",
+        "Draven"
+      ],
+      "url": "https://www.wildriftfire.com/guide/thresh"
+    },
+    {
+      "id": "tristana",
+      "name": "Tristana",
+      "counters": [
+        "Kog'Maw",
+        "Caitlyn",
+        "Draven"
+      ],
+      "synergies": [
+        "Milio",
+        "Lulu",
+        "Nami"
+      ],
+      "url": "https://www.wildriftfire.com/guide/tristana"
+    },
+    {
+      "id": "tryndamere",
+      "name": "Tryndamere",
+      "counters": [
+        "Rammus",
+        "Maestro Yi",
+        "Amumu"
+      ],
+      "synergies": [
+        "Lulu",
+        "Rakan",
+        "Milio"
+      ],
+      "url": "https://www.wildriftfire.com/guide/tryndamere"
+    },
+    {
+      "id": "twisted_fate",
+      "name": "Twisted Fate",
+      "counters": [
+        "Syndra",
+        "Morgana",
+        "Mel"
+      ],
+      "synergies": [
+        "Camille",
+        "Shen",
+        "Nocturne"
+      ],
+      "url": "https://www.wildriftfire.com/guide/twisted-fate"
+    },
+    {
+      "id": "twitch",
+      "name": "Twitch",
+      "counters": [
+        "Ashe",
+        "Samira",
+        "Caitlyn"
+      ],
+      "synergies": [
+        "Lulu",
+        "Yuumi",
+        "Nami"
+      ],
+      "url": "https://www.wildriftfire.com/guide/twitch"
+    },
+    {
+      "id": "urgot",
+      "name": "Urgot",
+      "counters": [
+        "Mordekaiser",
+        "Fiora",
+        "Vayne"
+      ],
+      "synergies": [
+        "Rammus",
+        "Lissandra",
+        "Veigar"
+      ],
+      "url": "https://www.wildriftfire.com/guide/urgot"
+    },
+    {
+      "id": "varus",
+      "name": "Varus",
+      "counters": [
+        "Smolder",
+        "Miss Fortune",
+        "Vayne"
+      ],
+      "synergies": [
+        "Karma",
+        "Lulu",
+        "Milio"
+      ],
+      "url": "https://www.wildriftfire.com/guide/varus"
+    },
+    {
+      "id": "vayne",
+      "name": "Vayne",
+      "counters": [
+        "Caitlyn",
+        "Ashe",
+        "Draven"
+      ],
+      "synergies": [
+        "Lulu",
+        "Soraka",
+        "Karma"
+      ],
+      "url": "https://www.wildriftfire.com/guide/vayne"
+    },
+    {
+      "id": "veigar",
+      "name": "Veigar",
+      "counters": [
+        "Syndra",
+        "Viktor",
+        "Kassadin"
+      ],
+      "synergies": [
+        "Viego",
+        "Vi",
+        "Jarvan IV"
+      ],
+      "url": "https://www.wildriftfire.com/guide/veigar"
+    },
+    {
+      "id": "vel_koz",
+      "name": "Vel'Koz",
+      "counters": [
+        "Yone",
+        "Fizz",
+        "Kassadin"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Amumu",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/velkoz"
+    },
+    {
+      "id": "vex",
+      "name": "Vex",
+      "counters": [
+        "Lissandra",
+        "Galio",
+        "Veigar"
+      ],
+      "synergies": [
+        "Amumu",
+        "Viego",
+        "Blitzcrank"
+      ],
+      "url": "https://www.wildriftfire.com/guide/vex"
+    },
+    {
+      "id": "vi",
+      "name": "Vi",
+      "counters": [
+        "Kindred",
+        "Amumu",
+        "Warwick"
+      ],
+      "synergies": [
+        "Annie",
+        "Shen",
+        "Vel'Koz"
+      ],
+      "url": "https://www.wildriftfire.com/guide/vi"
+    },
+    {
+      "id": "viego",
+      "name": "Viego",
+      "counters": [
+        "Rammus",
+        "Amumu",
+        "Warwick"
+      ],
+      "synergies": [
+        "Nautilus",
+        "Leona",
+        "Shen"
+      ],
+      "url": "https://www.wildriftfire.com/guide/viego"
+    },
+    {
+      "id": "viktor",
+      "name": "Viktor",
+      "counters": [
+        "Zed",
+        "Yone",
+        "Kassadin"
+      ],
+      "synergies": [
+        "Jarvan IV",
+        "Amumu",
+        "Aatrox"
+      ],
+      "url": "https://www.wildriftfire.com/guide/viktor"
+    },
+    {
+      "id": "vladimir",
+      "name": "Vladimir",
+      "counters": [
+        "Orianna",
+        "Kassadin",
+        "Viktor"
+      ],
+      "synergies": [
+        "Zilean",
+        "Wukong",
+        "Amumu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/vladimir"
+    },
+    {
+      "id": "volibear",
+      "name": "Volibear",
+      "counters": [
+        "Lillia",
+        "Evelynn",
+        "Kindred"
+      ],
+      "synergies": [
+        "Lulu",
+        "Braum",
+        "Ornn"
+      ],
+      "url": "https://www.wildriftfire.com/guide/volibear"
+    },
+    {
+      "id": "warwick",
+      "name": "Warwick",
+      "counters": [
+        "Amumu",
+        "Olaf",
+        "Kindred"
+      ],
+      "synergies": [
+        "Shen",
+        "Lulu",
+        "Rakan"
+      ],
+      "url": "https://www.wildriftfire.com/guide/warwick"
+    },
+    {
+      "id": "wukong",
+      "name": "Wukong",
+      "counters": [
+        "Rammus",
+        "Lillia",
+        "Warwick"
+      ],
+      "synergies": [
+        "Yasuo",
+        "Volibear",
+        "Leona"
+      ],
+      "url": "https://www.wildriftfire.com/guide/wukong"
+    },
+    {
+      "id": "xayah",
+      "name": "Xayah",
+      "counters": [
+        "Caitlyn",
+        "Vayne",
+        "Kog'Maw"
+      ],
+      "synergies": [
+        "Rakan",
+        "Nautilus",
+        "Alistar"
+      ],
+      "url": "https://www.wildriftfire.com/guide/xayah"
+    },
+    {
+      "id": "xin_zhao",
+      "name": "Xin Zhao",
+      "counters": [
+        "Rammus",
+        "Shyvana",
+        "Maestro Yi"
+      ],
+      "synergies": [
+        "Lulu",
+        "Camille",
+        "Malphite"
+      ],
+      "url": "https://www.wildriftfire.com/guide/xin-zhao"
+    },
+    {
+      "id": "yasuo",
+      "name": "Yasuo",
+      "counters": [
+        "Teemo",
+        "Vex",
+        "Irelia"
+      ],
+      "synergies": [
+        "Malphite",
+        "Rakan",
+        "Gragas"
+      ],
+      "url": "https://www.wildriftfire.com/guide/yasuo"
+    },
+    {
+      "id": "yone",
+      "name": "Yone",
+      "counters": [
+        "Ahri",
+        "Vex",
+        "Zed"
+      ],
+      "synergies": [
+        "Lillia",
+        "Fiddlesticks",
+        "Nunu y Willump"
+      ],
+      "url": "https://www.wildriftfire.com/guide/yone"
+    },
+    {
+      "id": "yunara",
+      "name": "Yunara",
+      "counters": [
+        "Smolder",
+        "Miss Fortune",
+        "Caitlyn"
+      ],
+      "synergies": [
+        "Lulu",
+        "Milio",
+        "Braum"
+      ],
+      "url": "https://www.wildriftfire.com/guide/yunara"
+    },
+    {
+      "id": "yuumi",
+      "name": "Yuumi",
+      "counters": [
+        "Nautilus",
+        "Thresh",
+        "Alistar"
+      ],
+      "synergies": [
+        "Lucian",
+        "Zeri",
+        "Jinx"
+      ],
+      "url": "https://www.wildriftfire.com/guide/yuumi"
+    },
+    {
+      "id": "zed",
+      "name": "Zed",
+      "counters": [
+        "Lissandra",
+        "Yasuo",
+        "Vex"
+      ],
+      "synergies": [
+        "Shen",
+        "Nautilus",
+        "Amumu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/zed"
+    },
+    {
+      "id": "zeri",
+      "name": "Zeri",
+      "counters": [
+        "Kog'Maw",
+        "Caitlyn",
+        "Lucian"
+      ],
+      "synergies": [
+        "Yuumi",
+        "Milio",
+        "Lulu"
+      ],
+      "url": "https://www.wildriftfire.com/guide/zeri"
+    },
+    {
+      "id": "ziggs",
+      "name": "Ziggs",
+      "counters": [
+        "Yasuo",
+        "Zed",
+        "Yone"
+      ],
+      "synergies": [
+        "Amumu",
+        "Leona",
+        "Jarvan IV"
+      ],
+      "url": "https://www.wildriftfire.com/guide/ziggs"
+    },
+    {
+      "id": "zilean",
+      "name": "Zilean",
+      "counters": [
+        "Maokai",
+        "Rell",
+        "Pyke"
+      ],
+      "synergies": [
+        "Jhin",
+        "Vayne",
+        "Ashe"
+      ],
+      "url": "https://www.wildriftfire.com/guide/zilean"
+    },
+    {
+      "id": "zoe",
+      "name": "Zoe",
+      "counters": [
+        "Morgana",
+        "Yasuo",
+        "Irelia"
+      ],
+      "synergies": [
+        "Jayce",
+        "Jhin",
+        "Viego"
+      ],
+      "url": "https://www.wildriftfire.com/guide/zoe"
+    },
+    {
+      "id": "zyra",
+      "name": "Zyra",
+      "counters": [
+        "Karma",
+        "Rakan",
+        "Nami"
+      ],
+      "synergies": [
+        "Ezreal",
+        "Caitlyn",
+        "Ashe"
+      ],
+      "url": "https://www.wildriftfire.com/guide/zyra"
+    }
+  ]
+}

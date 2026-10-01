@@ -79,7 +79,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Cómo funcionan los servidores y regiones en la aplicación?",
-                "La aplicación te permite sincronizar y consultar datos adaptados al meta de diferentes regiones (como el servidor de China CN, metadatos Globales o servidores de América). Cada región prioriza estilos de juego y composiciones distintas, permitiéndote aplicar estrategias de vanguardia en tus partidas."
+                "La tier list utiliza únicamente el meta Global, con referencias de BestBuildWR, WildRiftFire y WildRiftCore. La última lista guardada permanece disponible sin conexión."
             ),
             Pair(
                 "¿Me pueden banear en Wild Rift por usar esta burbuja flotante?",
@@ -143,7 +143,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿De dónde sacan las combinaciones de runas que recomiendan?",
-                "El algoritmo cruza los datos de las builds más exitosas en partidas Soberano (principalmente del servidor de China, que es el más competitivo) y te muestra las que mejor porcentaje de victoria tienen frente a la composición actual."
+                "Las builds combinan referencias del meta Global con el rol y la composición de la partida. Los objetos, botas y runas situacionales se recomiendan según el daño, los controles y las amenazas rivales."
             ),
             Pair(
                 "¿El asistente recomienda objetos situacionales (como cortacuras)?",

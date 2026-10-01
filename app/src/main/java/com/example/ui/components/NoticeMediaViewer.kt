@@ -643,7 +643,7 @@ fun NoticeMediaViewer(
             ) {
                 AsyncImage(
                     model = imageModel,
-                    contentDescription = "Multimedia de Anuncio",
+                    contentDescription = com.example.util.tr("Multimedia de Anuncio"),
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(if (isFullscreen) 0.dp else 10.dp)),
@@ -1416,4 +1416,3 @@ fun NoticeMediaFullscreenDialog(
         }
     }
 }
-

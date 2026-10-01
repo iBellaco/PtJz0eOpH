@@ -44,7 +44,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -136,6 +135,7 @@ fun ChampionDetailSheet(
     var matchupExplanationTarget by remember { mutableStateOf<String?>(null) }
     var matchupExplanationType by remember { mutableStateOf<String?>(null) }
     var selectedSituationalItem by remember { mutableStateOf<String?>(null) }
+    var buildAdvice by remember { mutableStateOf<Pair<String, String>?>(null) }
     var itemForDetail by remember { mutableStateOf<com.example.model.WildRiftItem?>(null) }
     var runeForDetail by remember { mutableStateOf<com.example.model.RuneItem?>(null) }
     var spellForDetail by remember { mutableStateOf<com.example.model.SummonerSpellItem?>(null) }
@@ -143,8 +143,12 @@ fun ChampionDetailSheet(
 
     val currentLang = LocalLanguage.current
 
+
+
     androidx.activity.compose.BackHandler {
-        if (itemForDetail != null) {
+        if (buildAdvice != null) {
+            buildAdvice = null
+        } else if (itemForDetail != null) {
             itemForDetail = null
         } else if (runeForDetail != null) {
             runeForDetail = null
@@ -895,35 +899,9 @@ fun ChampionDetailSheet(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Tactical Reason ("¿Por qué y contra quién?")
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(HextechSurfaceVariant.copy(alpha = 0.7f))
-                            .border(1.dp, HextechCardBorder.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
-                            .padding(if (isCompact) 6.dp else 10.dp)
-                    ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = tr("🎯 OBJETIVO TÁCTICO & CUÁNDO USAR"),
-                                    color = HextechGold,
-                                    fontSize = if (isCompact) 9.5.sp else 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(if (isCompact) 2.dp else 4.dp))
-                            Text(
-                                text = tr(activeOption.tacticalReason),
-                                color = TextPrimary,
-                                fontSize = if (isCompact) 9.5.sp else 11.5.sp,
-                                lineHeight = if (isCompact) 13.sp else 16.sp
-                            )
-                        }
+                    TextButton(onClick = { buildAdvice = "Consejo de la build" to activeOption.tacticalReason }) {
+                        Text(tr("Ver consejo de la build"), color = HextechGold)
                     }
-
-                    Spacer(modifier = Modifier.height(if (isCompact) 6.dp else 12.dp))
 
                     // Items List - 3 Core Items
                     Row(
@@ -975,7 +953,10 @@ fun ChampionDetailSheet(
                                 modifier = Modifier
                                     .clickable {
                                         if (dbItem != null) {
-                                            itemForDetail = dbItem
+                                            itemForDetail = dbItem.copy(
+                                                coachTip = activeOption.coreItemsWithDesc.firstOrNull { it.itemName.equals(rawName, true) }?.description?.takeIf { it.isNotBlank() } ?: dbItem.coachTip,
+                                                coachTipPt = ""
+                                            )
                                         } else {
                                             selectedSituationalItem = rawName
                                         }
@@ -1006,132 +987,9 @@ fun ChampionDetailSheet(
                         }
                     }
 
-                    if (activeOption.coreItemsWithDesc.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                            border = androidx.compose.foundation.BorderStroke(0.8.dp, HextechCardBorder)
-                        ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                Text(
-                                    text = tr("Picos de poder y consejos de Core Items:"),
-                                    color = HextechGold,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                activeOption.coreItemsWithDesc.forEach { entry ->
-                                    Spacer(modifier = Modifier.height(3.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
-                                            .border(0.5.dp, HextechGoldLight.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
-                                    ) {
-                                        Column(modifier = Modifier.padding(8.dp)) {
-                                            Text(
-                                                text = com.example.util.tr("• ${tr(entry.itemName)}:"),
-                                                color = HextechGold,
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Spacer(modifier = Modifier.height(2.dp))
-                                            Text(
-                                                text = tr(entry.description),
-                                                color = TextSecondary,
-                                                fontSize = 9.5.sp,
-                                                lineHeight = 13.sp
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
 
-                    if (activeOption.situationalItems.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(0.5.dp)
-                                .background(HextechCardBorder.copy(alpha = 0.5f))
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = com.example.util.tr(tr("Objetos Situacionales") + " (${activeOption.situationalItems.size}):"),
-                                color = HextechGold,
-                                fontSize = if (isCompact) 10.sp else 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = com.example.util.tr("↔ " + tr("Desliza")),
-                                color = HextechCyan,
-                                fontSize = if (isCompact) 8.sp else 9.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        val sitBoxSize = if (isCompact) 26.dp else 38.dp
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            activeOption.situationalItems.forEach { sitItemName ->
-                                val dbSitItem = com.example.data.WildRiftRepository.items.find {
-                                    it.name.equals(sitItemName, ignoreCase = true) ||
-                                    sitItemName.contains(it.name, ignoreCase = true) ||
-                                    it.name.contains(sitItemName, ignoreCase = true)
-                                }
-                                val sitIcon = dbSitItem?.iconUrl ?: com.example.data.WildRiftItemsData.getItemIconByName(sitItemName)
-                                Box(
-                                    modifier = Modifier
-                                        .size(sitBoxSize)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(HextechSurfaceVariant)
-                                        .border(1.dp, HextechGoldLight.copy(alpha = 0.8f), RoundedCornerShape(8.dp))
-                                        .clickable {
-                                            if (dbSitItem != null) {
-                                                itemForDetail = dbSitItem
-                                            } else {
-                                                itemForDetail = com.example.model.WildRiftItem(
-                                                    id = sitItemName.lowercase().replace(" ", "_"),
-                                                    name = sitItemName,
-                                                    nameEn = sitItemName,
-                                                    category = "Objeto Situacional",
-                                                    goldCost = 3000,
-                                                    stats = "Objeto adaptativo para el meta actual.",
-                                                    statsEn = "Adaptive meta situational item.",
-                                                    passive = "Recomendado como reemplazo táctico según la composición rival.",
-                                                    passiveEn = "Recommended tactical swap depending on enemy composition.",
-                                                    coachTip = "Elige este objeto situacionalmente para contrarrestar curaciones, escudos o daño excesivo.",
-                                                    coachTipEn = "Pick this situational item to counter healing, shields or burst.",
-                                                    iconUrl = sitIcon
-                                                )
-                                            }
-                                        }
-                                ) {
-                                    AppAssetImage(
-                                        url = sitIcon,
-                                        contentDescription = tr(sitItemName),
-                                        fallbackText = tr(sitItemName),
-                                        modifier = Modifier.fillMaxSize(),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
+
+
                 }
             }
 
@@ -1334,6 +1192,11 @@ fun ChampionDetailSheet(
                                             .testTag("build_boot_${sitBootName}")
                                             .selectable(selected = isSelected, onClick = {
                                                 selectedBootBaseOverride = sitBootName.takeUnless { it.equals(primaryBootBase, true) }
+                                                val reason = activeOption.situationalBootReasons[sitBootName]
+                                                    ?: BuildChoiceRules.boots(primaryBootBase, champion.damageType, champion.isFrontline,
+                                                        champion.isRanged, selectedRole, champion.id).firstOrNull { it.name.equals(sitBootName, true) }?.reason
+                                                    ?: dbSitBoot?.coachTip.orEmpty()
+                                                if (reason.isNotBlank()) buildAdvice = sitBootName to reason
                                             })
                                     ) {
                                         AppAssetImage(
@@ -1347,64 +1210,7 @@ fun ChampionDetailSheet(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = tr("Cuándo cambiar el par de botas:"),
-                                color = HextechCyan,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
 
-                            situationalBootCandidates.forEach { sitBootName ->
-                                val sitBootUpgrade = ChampionRoleAdapter.getTier3BootUpgrade(sitBootName)
-                                val t2Advice = activeOption.situationalBootReasons[sitBootName]?.takeIf { it.isNotBlank() }
-                                    ?: BuildChoiceRules.boots(primaryBootBase, champion.damageType, champion.isFrontline,
-                                        champion.isRanged, selectedRole, champion.id).firstOrNull { it.name.equals(sitBootName, true) }?.reason
-                                    ?: com.example.data.WildRiftItemsData.list
-                                    .firstOrNull { it.name.equals(sitBootName, ignoreCase = true) }
-                                    ?.coachTip
-                                    .orEmpty()
-                                val t3Advice = com.example.data.WildRiftItemsData.list
-                                    .firstOrNull { it.name.equals(sitBootUpgrade, ignoreCase = true) }
-                                    ?.coachTip
-                                    .orEmpty()
-
-                                Spacer(modifier = Modifier.height(3.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(HextechDarkBg.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                                        .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
-                                ) {
-                                    Column(modifier = Modifier.padding(6.dp)) {
-                                        Text(
-                                            text = com.example.util.tr("• ${tr(sitBootName)} → ${tr(sitBootUpgrade)}"),
-                                            color = HextechCyan,
-                                            fontSize = 9.5.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        if (t2Advice.isNotBlank()) {
-                                            Spacer(modifier = Modifier.height(1.dp))
-                                            Text(
-                                                text = tr(t2Advice),
-                                                color = TextSecondary,
-                                                fontSize = 9.sp,
-                                                lineHeight = 12.sp
-                                            )
-                                        }
-                                        if (t3Advice.isNotBlank() && !t3Advice.equals(t2Advice, ignoreCase = true)) {
-                                            Spacer(modifier = Modifier.height(2.dp))
-                                            Text(
-                                                text = com.example.util.tr("${tr(sitBootUpgrade)}: ${tr(t3Advice)}"),
-                                                color = TextSecondary,
-                                                fontSize = 9.sp,
-                                                lineHeight = 12.sp
-                                            )
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 }
@@ -1441,7 +1247,7 @@ fun ChampionDetailSheet(
                                         .clip(CircleShape)
                                         .background(HextechSurfaceVariant)
                                         .border(1.5.dp, HextechCyan, CircleShape)
-                                        .clickable { if (dbSpell != null) spellForDetail = dbSpell }
+                                        .clickable { if (dbSpell != null) spellForDetail = dbSpell.copy(description = activeOption.coreSpells.firstOrNull { it.spellName.equals(rawSpellName, true) }?.description?.takeIf { it.isNotBlank() } ?: dbSpell.description, descriptionPt = "") }
                                 ) {
                                     AppAssetImage(
                                         url = iconUrl,
@@ -1530,7 +1336,7 @@ fun ChampionDetailSheet(
                                         shape = CircleShape
                                     )
                                     .clickable {
-                                        runeForDetail = foundRune ?: com.example.model.RuneItem(
+                                        runeForDetail = foundRune?.copy(description = activeOption.coreRunes.firstOrNull { it.runeName.equals(rName, true) }?.description?.takeIf { it.isNotBlank() } ?: foundRune.description, descriptionPt = "") ?: com.example.model.RuneItem(
                                             id = rName.lowercase().replace(" ", "_"),
                                             name = rName,
                                             category = if (isKeystone) "Clave" else "Secundaria",
@@ -1579,7 +1385,7 @@ fun ChampionDetailSheet(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = tr("Runas Situacionales (Alternativas):"),
+                                text = tr("Runas Situacionales"),
                                 color = HextechGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -1607,7 +1413,7 @@ fun ChampionDetailSheet(
                                         .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                                         .clickable {
-                                            runeForDetail = foundRune ?: com.example.model.RuneItem(
+                                            runeForDetail = foundRune?.copy(description = sRune.description.ifBlank { foundRune.description }, descriptionPt = "") ?: com.example.model.RuneItem(
                                                 id = rName.lowercase().replace(" ", "_"),
                                                 name = rName,
                                                 category = "Situacional",
@@ -1635,29 +1441,19 @@ fun ChampionDetailSheet(
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = tr(rName),
-                                            color = HextechCyan,
-                                            fontSize = 10.5.sp,
-                                            fontWeight = FontWeight.Bold
+                                    val canonical = foundRune?.name ?: rName
+                                    val alternative = validSitRunes.firstOrNull { it.rune.name.equals(canonical, true) }
+                                    Text("←", color = HextechGold, modifier = Modifier.padding(horizontal = 6.dp))
+                                    val sourceNames = alternative?.secondarySlot?.let { listOf(runesForActiveOption[it]) }
+                                        ?: runesForActiveOption.drop(1).take(3)
+                                    sourceNames.forEach { sourceName ->
+                                        AppAssetImage(
+                                            url = com.example.data.WildRiftSpellsAndRunes.getRuneIconByName(sourceName),
+                                            contentDescription = tr(sourceName), fallbackText = tr(sourceName),
+                                            modifier = Modifier.size(runeSecSize), shape = CircleShape
                                         )
-                                        val canonical = foundRune?.name ?: rName
-                                        val alternative = validSitRunes.firstOrNull { it.rune.name.equals(canonical, true) }
-                                        Text(
-                                            text = tr(if (alternative?.secondarySlot == 4) "Alternativa para la cuarta secundaria" else "Alternativa de la misma rama para las tres secundarias"),
-                                            color = HextechGold,
-                                            fontSize = 9.sp
-                                        )
-                                        if (sRune.description.isNotBlank()) {
-                                            Text(
-                                                text = tr(sRune.description),
-                                                color = TextSecondary,
-                                                fontSize = 9.sp,
-                                                lineHeight = 12.sp
-                                            )
-                                        }
                                     }
+
                                 }
                             }
                         }
@@ -1672,7 +1468,8 @@ fun ChampionDetailSheet(
             // ==========================================
             val isUserPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
             val isPremium = isUserPremium || com.example.util.SubscriptionManager.isPremium.value || com.example.util.SubscriptionManager.userRole.value == "admin"
-            val maxMatchupCount = BuildChoiceRules.matchupLimit(isPremium)
+            val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
+            val maxMatchupCount = BuildChoiceRules.matchupLimit(isPremium, isSignedIn)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1720,7 +1517,7 @@ fun ChampionDetailSheet(
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Column(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().heightIn(max = if (isCompact) 57.dp else 65.dp).verticalScroll(rememberScrollState()),
                                 verticalArrangement = Arrangement.spacedBy(5.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -1818,7 +1615,7 @@ fun ChampionDetailSheet(
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Column(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().heightIn(max = if (isCompact) 57.dp else 65.dp).verticalScroll(rememberScrollState()),
                                 verticalArrangement = Arrangement.spacedBy(5.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -1925,7 +1722,7 @@ fun ChampionDetailSheet(
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Column(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().heightIn(max = if (isCompact) 57.dp else 65.dp).verticalScroll(rememberScrollState()),
                                 verticalArrangement = Arrangement.spacedBy(5.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -2087,6 +1884,17 @@ fun AdaptiveDetailAlertDialog(
         )
     }
 }
+
+    buildAdvice?.let { (title, advice) ->
+        AdaptiveDetailAlertDialog(
+            isOverlay = isOverlay,
+            onDismissRequest = { buildAdvice = null },
+            title = { Text(tr(title), color = HextechGold) },
+            text = { Text(tr(advice), color = TextPrimary, modifier = Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) },
+            confirmButton = { TextButton(onClick = { buildAdvice = null }) { Text(tr("Cerrar")) } }
+        )
+    }
+
 
     // ==========================================
     // DIALOG DE DETALLE DE OBJETO SITUACIONAL

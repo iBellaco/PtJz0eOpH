@@ -36,7 +36,7 @@ data class GlobalScrapingSource(
 
 object BestBuildWrScraper {
     private const val PREFS_NAME = "wr_tier_list_cache"
-    
+
     // Los 3 sitios web exactos para la fusión del meta global
     val GLOBAL_SCRAPING_SOURCES = listOf(
         GlobalScrapingSource(
@@ -64,7 +64,7 @@ object BestBuildWrScraper {
         .readTimeout(15, TimeUnit.SECONDS)
         .followRedirects(true)
         .build()
-        
+
     private val syncMutex = Mutex()
     private var initialized = false
     private var selectedRegion = MetaRegion.DEFAULT
@@ -109,15 +109,6 @@ object BestBuildWrScraper {
             responseTimeMs = 1310L,
             errorMessage = null,
             region = "GLOBAL"
-        ),
-        "cn_tencent" to ScraperSourceStatus(
-            name = "Servidor chino (lolm.qq.com)",
-            url = "https://lolm.qq.com/",
-            isHealthy = true,
-            lastChecked = System.currentTimeMillis(),
-            responseTimeMs = 1850L,
-            errorMessage = null,
-            region = "CN"
         )
     )
 
@@ -145,32 +136,12 @@ object BestBuildWrScraper {
         if (initialized) return
         initialized = true
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        for (region in listOf("GLOBAL", "CN")) {
+        for (region in MetaRegion.available) {
             try {
                 val saved = prefs.getString("snapshot_$region", null) ?: continue
                 val data = JSONObject(saved)
-                if (region == "GLOBAL") {
-                    val tiers = data.keys().asSequence().associateWith { data.getString(it) }
-                    WildRiftRepository.applyRegionalTierList(region, tiers)
-                } else {
-                    val restored = WildRiftRepository.chineseStatsSnapshot().map { champ ->
-                        val stats = data.optJSONObject(champ.id) ?: return@map champ
-                        val wr = stats.optDouble("winrate", champ.winrate)
-                        val pr = stats.optDouble("pickRate", champ.pickRate)
-                        val br = stats.optDouble("banRate", champ.banRate)
-                        val t = stats.optString("tier", champ.tier).ifBlank { champ.tier }
-                        val ct = stats.optString("cnTier", champ.cnTier).ifBlank { champ.cnTier }
-                        champ.copy(
-                            hasRegionalStats = true,
-                            winrate = if (wr > 0.0) wr else champ.winrate,
-                            pickRate = if (pr > 0.0) pr else champ.pickRate,
-                            banRate = if (br > 0.0) br else champ.banRate,
-                            tier = t,
-                            cnTier = ct
-                        )
-                    }
-                    WildRiftRepository.applyChineseStats(restored)
-                }
+                val tiers = data.keys().asSequence().associateWith { data.getString(it) }
+                WildRiftRepository.applyRegionalTierList(region, tiers)
                 regions[region] = RegionState(prefs.getLong("timestamp_$region", 0), false, "Datos guardados • Pendiente de actualización")
             } catch (_: Exception) { /* Leave other region caches intact. */ }
         }
@@ -195,22 +166,6 @@ object BestBuildWrScraper {
             if (!_isOnline.value) {
                 message = "Sin conexión; conservando datos guardados."
             } else {
-                if (requested == "CN") {
-                    val cnStarted = System.currentTimeMillis()
-                    val cnOk = com.example.service.MetaScrapingWorker.fetchChineseStats()
-                    val cnLatency = System.currentTimeMillis() - cnStarted
-                    _sourceStatuses.value = _sourceStatuses.value + ("cn_tencent" to ScraperSourceStatus(
-                        name = "Servidor chino (lolm.qq.com)",
-                        url = "https://lolm.qq.com/",
-                        isHealthy = cnOk,
-                        lastChecked = System.currentTimeMillis(),
-                        responseTimeMs = if (cnLatency > 0) cnLatency else 1850L,
-                        errorMessage = if (cnOk) null else "Error de conexión",
-                        region = "CN"
-                    ))
-                    success = cnOk
-                    message = if (success) "Estadísticas del servidor chino actualizadas." else "Sin actualizar; conservando datos."
-                } else {
                     // Fusión automática de los 3 sitios web del Meta Global:
                     // 1. https://bestbuildwr.com/tierlist
                     // 2. https://www.wildriftfire.com/tier-list
@@ -246,7 +201,7 @@ object BestBuildWrScraper {
                         updatedStatuses[key] = ScraperSourceStatus(
                             name = "${src.name} (${src.displayUrl})",
                             url = src.url,
-                            isHealthy = srcOk || sourceTierMaps.isNotEmpty(),
+                            isHealthy = srcOk,
                             lastChecked = System.currentTimeMillis(),
                             responseTimeMs = if (latency > 0) latency else 1250L,
                             errorMessage = if (srcOk) null else errorMsg,
@@ -263,19 +218,14 @@ object BestBuildWrScraper {
                         cache = JSONObject(fusedTiers)
                         success = true
                     } else {
-                        // Conservar tiers anteriores o snapshot
-                        success = true
+                        // Keep the last verified snapshot and report an unsuccessful update.
+                        success = false
                     }
-                    message = "Scraping Tri-Source • Categorías fusionadas"
-                }
+                    message = if (success) "Categorías globales actualizadas" else "Sin actualizar; conservando datos."
             }
 
             if (success) {
-                if (requested == "CN") cache = JSONObject().apply {
-                    WildRiftRepository.chineseStatsSnapshot().forEach { champ -> put(champ.id, JSONObject()
-                        .put("winrate", champ.winrate).put("pickRate", champ.pickRate).put("banRate", champ.banRate)
-                        .put("tier", champ.tier).put("cnTier", champ.cnTier).put("hasRegionalStats", champ.hasRegionalStats)) }
-                }
+
                 if (cache != null) {
                     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
                         .putLong("timestamp_$requested", started).putString("snapshot_$requested", cache.toString()).apply()
@@ -340,5 +290,3 @@ object BestBuildWrScraper {
 
     suspend fun syncAllChampionBuilds(context: Context, region: String = MetaRegion.DEFAULT) = syncGlobalTierList(context, region, force = true)
 }
-
-

@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.asStateFlow
 
 object AuthManager {
 
+    private val _isSignedIn = MutableStateFlow(false)
+    val isSignedIn: StateFlow<Boolean> = _isSignedIn.asStateFlow()
+
     private val _isAdminClaim = MutableStateFlow(false)
     val isAdminClaim: StateFlow<Boolean> = _isAdminClaim.asStateFlow()
 
@@ -32,6 +35,7 @@ object AuthManager {
 
         auth.addIdTokenListener(FirebaseAuth.IdTokenListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
+            _isSignedIn.value = !isGuestOrUnauthenticated(user)
             if (user != null && !isGuestOrUnauthenticated(user)) {
                 user.getIdToken(false).addOnSuccessListener { result ->
                     val claims = result.claims
@@ -47,6 +51,7 @@ object AuthManager {
 
         auth.addAuthStateListener(FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
+            _isSignedIn.value = !isGuestOrUnauthenticated(user)
             if (user != null && !isGuestOrUnauthenticated(user)) {
                 user.getIdToken(false).addOnSuccessListener { result ->
                     val claims = result.claims
@@ -104,4 +109,3 @@ object AuthManager {
         return user.isEmailVerified
     }
 }
-

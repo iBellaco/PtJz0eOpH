@@ -36,14 +36,36 @@ object BuildChoiceRules {
         return true
     }
 
+    private val swapGroups = listOf(
+        setOf("Brutal", "Triunfo", "Fervor de Batalla"),
+        setOf("Último Esfuerzo", "Derribado", "Golpe de Gracia"),
+        setOf("Leyenda: Presteza", "Leyenda: Velocidad", "Leyenda: Linaje"),
+        setOf("Golpe Bajo", "Impacto Repentino", "Ataque Potenciado"),
+        setOf("Asalto Encadenado", "Tirano", "Soberbia"),
+        setOf("Colección de Globos Oculares", "Cazador Ingenioso", "Cazador Incesante", "Guardián Zombi"),
+        setOf("Fuente de Vida", "Coraje del Coloso", "Orbe Anulador", "Inquebrantable"),
+        setOf("Revestimiento de Huesos", "Fuerzas Renovadas"),
+        setOf("Sobrecrecimiento", "Revitalizar", "Perseverancia"),
+        setOf("Trascendencia", "Celeridad", "Concentración Absoluta"),
+        setOf("Capa del Nimbo", "Piroláser", "Se Avecina Tormenta")
+    )
+
     fun runeAlternatives(core: List<RuneChoice>, candidates: List<RuneChoice>): List<RuneAlternative> {
         if (!validRunePage(core)) return emptyList()
         val branch = core[1].branch
         return candidates.distinctBy { it.name.lowercase() }.mapNotNull { rune ->
             if (rune.branch.isBlank() || rune.branch == "Clave" || core.any { it.name.equals(rune.name, true) }) null
-            else RuneAlternative(rune, if (rune.branch == branch) null else 4)
+            else {
+                val group = swapGroups.firstOrNull { names -> names.any { it.equals(rune.name, true) } }
+                val sharedSlot = (1..3).firstOrNull { slot -> group?.any { it.equals(core[slot].name, true) } == true }
+                RuneAlternative(rune, if (rune.branch == branch) sharedSlot else 4)
+            }
         }
     }
 
-    fun matchupLimit(premium: Boolean): Int = if (premium) 12 else 6
+    fun matchupLimit(premium: Boolean, signedIn: Boolean = true): Int = when {
+        !signedIn -> 3
+        premium -> 12
+        else -> 6
+    }
 }

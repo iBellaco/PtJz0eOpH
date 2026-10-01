@@ -40,9 +40,12 @@ object WildRiftRepository {
     // FUENTES DE DATOS Y META ACTUAL
     // ==========================================
     val metaSources: List<MetaDataSource> = listOf(
-        MetaDataSource(id = "tencent_cn", name = "Servidor chino",
-            description = "Estadísticas de Wild Rift del servidor chino",
-            url = "https://lolm.qq.com/", focusArea = "Victorias, selecciones y bloqueos")
+        MetaDataSource(id = "global_bestbuildwr", name = "BestBuildWR", description = "Tier list Global",
+            url = "https://bestbuildwr.com/tierlist", focusArea = "Categorías de campeones"),
+        MetaDataSource(id = "global_wildriftfire", name = "WildRiftFire", description = "Guías y tier list Global",
+            url = "https://www.wildriftfire.com/tier-list", focusArea = "Categorías y builds"),
+        MetaDataSource(id = "global_wildriftcore", name = "WildRiftCore", description = "Tier list Global",
+            url = "https://wildriftcore.com/es/tierlist/", focusArea = "Categorías de campeones")
     )
 
     // CATÁLOGO DE HECHIZOS DE INVOCADOR (SUMMONER SPELLS)
@@ -180,7 +183,7 @@ object WildRiftRepository {
             val category = tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
                 ?: champion.tier.ifBlank { "A" }
-            
+
             val (baseWr, basePr, baseBr, delta) = when (category) {
                 "S+" -> RegionalStatsTuple(53.8, 14.5, 22.0, 0.48)
                 "S" -> RegionalStatsTuple(52.3, 11.2, 12.5, 0.32)
@@ -193,7 +196,7 @@ object WildRiftRepository {
             val finalPr = if (champion.pickRate > 0.0) champion.pickRate else basePr
             val finalBr = if (champion.banRate > 0.0) champion.banRate else baseBr
             val finalDelta = if (champion.winrateDelta != 0.0) champion.winrateDelta else delta
-            val isCn = normalized == "CN"
+            val isCn = false
             val finalCnTier = if (champion.cnTier.isNotBlank()) champion.cnTier else when (category) {
                 "S+" -> "T0"
                 "S" -> "T1"
@@ -223,15 +226,12 @@ object WildRiftRepository {
         }
     }
 
-    fun regionalSnapshot(region: String): List<Champion> = when (com.example.data.sync.MetaRegion.normalize(region)) {
-        "CN" -> chineseStatsSnapshot()
-        else -> regionalChampions[com.example.data.sync.MetaRegion.normalize(region)] ?: baseChampions.toList()
-    }
+    fun regionalSnapshot(region: String): List<Champion> =
+        regionalChampions[com.example.data.sync.MetaRegion.normalize(region)] ?: baseChampions.toList()
 
     @Synchronized
     fun selectMetaRegion(region: String) {
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
-        if (activeRegionName == "CN" && champions.isNotEmpty()) chineseChampions = champions.toList()
         val source = regionalSnapshot(normalized)
         activeRegionName = normalized
         if (source.isNotEmpty()) { champions.clear(); champions.addAll(source) }
@@ -645,11 +645,6 @@ object WildRiftRepository {
             LaneRole.SUPPORT to listOf("thresh", "nautilus", "lulu", "nami", "karma", "morgana", "leona", "rakan", "braum")
         )
 
-        // Server CN Priority Meta staples (High Elo Soberano Pick & Ban)
-        val cnMetaStaples = setOf(
-            "aatrox", "lee_sin", "camille", "yone", "syndra", "ahri", "varus", "ezreal", "vi", "nautilus", "thresh", "karma", "gwen", "jayce", "viego", "renekton", "rakan", "hwei"
-        )
-
         var directMatchupWarning: String? = null
         var directCounterBestPick: String? = null
 
@@ -717,11 +712,7 @@ object WildRiftRepository {
             availableChampions
         }
 
-        val serverLabel = when (serverRegion) {
-            "CN" -> "China ($rankTier)"
-            "Global", "GLOBAL" -> "Global Meta"
-            else -> "América"
-        }
+        val serverLabel = "Global Meta"
 
         val recommendations = candidates.map { champ ->
             var score = champ.winrate
@@ -747,9 +738,7 @@ object WildRiftRepository {
             }
 
             // Server-specific tuning
-            if (serverRegion == "CN" && cnMetaStaples.contains(champ.id)) {
-                score += 2.0 // Boost for CN High Elo staples
-            }
+
 
             var synergyText = ""
             var counterText = ""
