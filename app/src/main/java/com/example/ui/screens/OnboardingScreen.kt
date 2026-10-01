@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.R
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -29,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.WildRiftRepository
 import com.example.ui.theme.*
-import com.example.util.tr
+import com.example.util.localizedString
 import kotlinx.coroutines.launch
 
 data class OnboardingPage(
@@ -46,54 +47,54 @@ data class OnboardingPage(
 fun OnboardingScreen(onFinish: () -> Unit) {
     val pages = listOf(
         OnboardingPage(
-            title = tr("Coach de Élite & Draft"),
-            subtitle = tr("Análisis Táctico en Tiempo Real"),
-            description = tr("Selecciona composiciones óptimas con evaluación para los 5 roles de Wild Rift, sinergias de equipo, detección de counters y condición de victoria."),
+            title = localizedString(R.string.onboarding_coach_de_elite_draft),
+            subtitle = localizedString(R.string.onboarding_analisis_tactico_en_tiempo_real),
+            description = localizedString(R.string.onboarding_selecciona_composiciones_optimas_con_evaluacion_para_los_5_roles),
             icon = Icons.Default.SportsEsports,
             accentColor = HextechGold,
             highlights = listOf(
-                tr("Recomendador de 3 mejores picks"),
-                tr("Wombo combos y balance de daño"),
-                tr("Condición de victoria del equipo")
+                localizedString(R.string.onboarding_recomendador_de_3_mejores_picks),
+                localizedString(R.string.onboarding_wombo_combos_y_balance_de_dano),
+                localizedString(R.string.onboarding_condicion_de_victoria_del_equipo)
             )
         ),
         OnboardingPage(
-            title = tr("Asistente Flotante en Juego"),
-            subtitle = tr("Burbuja Flotante & Visión OCR"),
-            description = tr("Activa la burbuja flotante para recibir coaching en directo sobre la pantalla de Wild Rift y escanear el draft automáticamente sin salir del juego."),
+            title = localizedString(R.string.onboarding_asistente_flotante_en_juego),
+            subtitle = localizedString(R.string.onboarding_burbuja_flotante_vision_ocr),
+            description = localizedString(R.string.onboarding_activa_la_burbuja_flotante_para_recibir_coaching_en_directo_sobre),
             icon = Icons.Default.Layers,
             accentColor = HextechCyan,
             highlights = listOf(
-                tr("Burbuja flotante movible"),
-                tr("Escáner visual de selección"),
-                tr("Consejos tácticos sin cambiar de app")
+                localizedString(R.string.onboarding_burbuja_flotante_movible),
+                localizedString(R.string.onboarding_escaner_visual_de_seleccion),
+                localizedString(R.string.onboarding_consejos_tacticos_sin_cambiar_de_app)
             )
         ),
         OnboardingPage(
-            title = tr("Tier List Oficial"),
-            subtitle = tr("Meta Global y Counters"),
-            description = tr("Consulta la Tier List oficial actualizada al último parche y descubre los mejores picks para asegurar tu ventaja en cada partida."),
+            title = localizedString(R.string.onboarding_tier_list_oficial),
+            subtitle = localizedString(R.string.onboarding_meta_global_y_counters),
+            description = localizedString(R.string.onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc),
             icon = Icons.Default.Leaderboard,
             accentColor = TierSPlusColor,
             highlights = listOf(
-                tr("Tier List global y de servidores asiáticos"),
-                tr("Identificación de mejores picks del meta"),
-                tr("Análisis de enfrentamientos directos")
+                localizedString(R.string.onboarding_tier_list_global_y_de_servidores_asiaticos),
+                localizedString(R.string.onboarding_identificacion_de_mejores_picks_del_meta),
+                localizedString(R.string.onboarding_analisis_de_enfrentamientos_directos)
             )
         ),
         OnboardingPage(
-            title = tr("Ventajas & Suscripción Premium"),
-            subtitle = tr("Acceso Total de Élite & Personalización"),
-            description = tr("Desbloquea todas las ventajas exclusivas: historial estadístico detallado, sistema de campeones favoritos, y personalización avanzada con Temas y Avatares de Runaterra."),
+            title = localizedString(R.string.onboarding_ventajas_suscripcion_premium),
+            subtitle = localizedString(R.string.onboarding_acceso_total_de_elite_personalizacion),
+            description = localizedString(R.string.onboarding_desbloquea_todas_las_ventajas_exclusivas_historial_estadistico_de),
             icon = Icons.Default.WorkspacePremium,
             accentColor = Color(0xFFFFB300),
             highlights = listOf(
-                tr("Escáner Automático del draft"),
-                tr("Historial del draft"),
-                tr("Win Rate personal"),
-                tr("Campeones Favoritos"),
-                tr("Temas Exclusivos"),
-                tr("Avatares Exclusivos")
+                localizedString(R.string.onboarding_escaner_automatico_del_draft),
+                localizedString(R.string.onboarding_historial_del_draft),
+                localizedString(R.string.onboarding_win_rate_personal),
+                localizedString(R.string.onboarding_campeones_favoritos),
+                localizedString(R.string.onboarding_temas_exclusivos),
+                localizedString(R.string.onboarding_avatares_exclusivos)
             )
         )
     )
@@ -152,7 +153,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = tr(WildRiftRepository.CURRENT_PATCH_VERSION),
+                            text = localizedString(R.string.info_patch, WildRiftRepository.CURRENT_PATCH_VERSION.removePrefix("Parche ").removePrefix("Patch ")),
                             color = HextechGold,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
@@ -164,7 +165,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 if (pagerState.currentPage < pages.size - 1) {
                     TextButton(onClick = onFinish) {
                         Text(
-                            text = tr("Omitir"),
+                            text = localizedString(R.string.onboarding_omitir),
                             color = TextMuted,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium
@@ -243,7 +244,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = com.example.util.tr(if (isLastPage) tr("¡Comenzar ahora!") else tr("Siguiente")),
+                            text = if (isLastPage) localizedString(R.string.onboarding_comenzar_ahora) else localizedString(R.string.onboarding_siguiente),
                             color = HextechDarkBg,
                             fontWeight = FontWeight.Black,
                             fontSize = 15.sp
@@ -302,7 +303,7 @@ fun OnboardingPageContent(page: OnboardingPage) {
 
         // Subtitle badge
         Text(
-            text = com.example.util.tr(page.subtitle.uppercase()),
+            text = page.subtitle.uppercase(),
             color = page.accentColor,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
@@ -313,7 +314,7 @@ fun OnboardingPageContent(page: OnboardingPage) {
 
         // Title
         Text(
-            text = com.example.util.tr(page.title),
+            text = page.title,
             color = TextPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Black,
@@ -324,7 +325,7 @@ fun OnboardingPageContent(page: OnboardingPage) {
 
         // Description
         Text(
-            text = com.example.util.tr(page.description),
+            text = page.description,
             color = TextSecondary,
             fontSize = 13.5.sp,
             textAlign = TextAlign.Center,
@@ -366,7 +367,7 @@ fun OnboardingPageContent(page: OnboardingPage) {
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = com.example.util.tr(highlight),
+                            text = highlight,
                             color = TextPrimary,
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Medium

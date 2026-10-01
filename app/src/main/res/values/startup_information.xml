@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="info_informacion" formatted="false">Información</string>
+    <string name="info_back" formatted="false">Volver</string>
+    <string name="info_coach_icon" formatted="false">Icono de Coach</string>
+    <string name="info_coach" formatted="false">Coach</string>
+    <string name="info_asistente_tactico_oficial_de_drafting" formatted="false">Asistente Táctico Oficial de Drafting</string>
+    <string name="info_1_compatibilidad_y_parche_oficial" formatted="false">1. Compatibilidad y Parche Oficial</string>
+    <string name="info_compatibilidad_de_juego_exclusiva" formatted="false">🎮 Compatibilidad de Juego Exclusiva:</string>
+    <string name="info_desarrollado_100_para_league_of_legends_wild_rift_en_dispositivos" formatted="false">Desarrollado 100% para League of Legends: Wild Rift en dispositivos móviles. Todos los campeones, estadísticas base, escalados, objetos y runas corresponden exactamente a las versiones de Wild Rift.</string>
+    <string name="info_sincronizacion_de_parche_en_tiempo_real" formatted="false">🔄 Sincronización de Parche en Tiempo Real:</string>
+    <string name="info_nomenclatura_oficial_movil" formatted="false">⚡ Nomenclatura Oficial Móvil:</string>
+    <string name="info_utiliza_exclusivamente_el_esquema_oficial_de_wild_rift_habilidad" formatted="false">Utiliza exclusivamente el esquema oficial de Wild Rift: Habilidad 1 (H1), Habilidad 2 (H2), Habilidad 3 (H3) y Definitiva (H4), además de hechizos y runas adaptadas al ritmo móvil.</string>
+    <string name="info_asistente_flotante_y_alto_rendimiento" formatted="false">🛡️ Asistente Flotante y Alto Rendimiento:</string>
+    <string name="info_overlay_interactivo_con_permiso_de_superposicion_system_alert_win" formatted="false">Overlay interactivo con permiso de superposición (SYSTEM_ALERT_WINDOW) diseñado con aceleración por hardware. Consumo ultra-bajo de batería (&lt;2% por hora) y fluidez garantizada a 60, 90 y 120 FPS sin generar tirones ni input lag dentro de la partida.</string>
+    <string name="info_compatibilidad_de_sistema_operativo" formatted="false">📱 Compatibilidad de Sistema Operativo:</string>
+    <string name="info_compatible_con_android_8_0_hasta_android_16_api_24_a_36_con_sopor" formatted="false">Compatible con Android 8.0 hasta Android 16 (API 24 a 36) con soporte nativo de modo multiventana, notch y orientación de pantalla horizontal.</string>
+    <string name="info_2_modo_de_uso_de_la_aplicacion" formatted="false">2. Modo de Uso de la Aplicación</string>
+    <string name="info_paso_1_configura_tus_lineas_de_juego" formatted="false">Paso 1: Configura tus Líneas de Juego</string>
+    <string name="info_en_la_pantalla_principal_selecciona_tu_linea_main_segunda_linea_y" formatted="false">En la pantalla principal, selecciona tu \'Línea Main\', \'Segunda Línea\' y \'Rol Autofill\' tocando cada tarjeta.</string>
+    <string name="info_paso_2_activa_el_asistente_flotante" formatted="false">Paso 2: Activa el Asistente Flotante</string>
+    <string name="info_pulsa_el_boton_central_activar_se_desplegara_la_burbuja_flotante" formatted="false">Pulsa el botón central \'ACTIVAR\'. Se desplegará la burbuja flotante en pantalla para acompañarte en tu partida.</string>
+    <string name="info_paso_3_seleccion_de_campeones" formatted="false">Paso 3: Selección de Campeones</string>
+    <string name="info_abre_wild_rift_y_entra_a_la_fase_de_seleccion_toca_el_boton_flota" formatted="false">Abre Wild Rift y entra a la fase de selección. Toca el botón flotante en cualquier momento para ver recomendaciones, counters y sinergias tácticas en directo.</string>
+    <string name="info_paso_4_consulta_de_builds_y_runas" formatted="false">Paso 4: Consulta de Builds y Runas</string>
+    <string name="info_revisa_los_consejos_tacticos_orden_de_habilidades_moviles_pasiva" formatted="false">Revisa los consejos tácticos, orden de habilidades móviles (Pasiva, 1, 2, 3, Definitiva) y armado de objetos recomendado para tu línea.</string>
+    <string name="info_3_donaciones_preguntas_frecuentes_y_legal" formatted="false">3. Donaciones, Preguntas Frecuentes y Legal</string>
+    <string name="info_apoyar_el_proyecto_donaciones" formatted="false">Apoyar el Proyecto (Donaciones)</string>
+    <string name="info_preguntas_frecuentes_faq" formatted="false">Preguntas Frecuentes (FAQ)</string>
+    <string name="info_informacion_legal_y_privacidad" formatted="false">Información Legal y Privacidad</string>
+    <string name="info_4_desarrollador_derechos_y_legal" formatted="false">4. Desarrollador, Derechos y Legal</string>
+    <string name="info_aplicacion_creada_y_desarrollada_por_diego_barba_chavez" formatted="false">Aplicación creada y desarrollada por Diego Barba Chavez.</string>
+    <string name="info_todos_los_derechos_reservados" formatted="false">Todos los derechos reservados.</string>
+    <string name="info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild" formatted="false">Diseñado para la comunidad competitiva de League of Legends: Wild Rift.</string>
+    <string name="info_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op" formatted="false">Coach no cuenta con el respaldo de Riot Games y no refleja las opiniones ni los puntos de vista de Riot Games ni de ninguna persona involucrada oficialmente en la producción o administración de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas comerciales registradas de Riot Games, Inc.</string>
+    <string name="legal_informacion_legal" formatted="false">Información Legal</string>
+    <string name="legal_debes_aceptar_los_terminos_de_servicio_y_la_politica_de_privacida" formatted="false">Debes aceptar los Términos de Servicio y la Política de Privacidad para poder ingresar a la aplicación. Si cierras esta ventana, la aplicación se cerrará.</string>
+    <string name="legal_cambiar_idioma" formatted="false">Cambiar Idioma</string>
+    <string name="legal_rechazar_y_salir" formatted="false">Rechazar y Salir</string>
+    <string name="legal_aceptar_y_entrar" formatted="false">Aceptar y Entrar</string>
+    <string name="legal_cerrar" formatted="false">Cerrar</string>
+    <string name="legal_1_que_datos_recopilamos_y_por_que" formatted="false">1. Qué datos recopilamos y por qué</string>
+    <string name="legal_queremos_ser_100_transparentes_coach_esta_disenada_exclusivamente" formatted="false">Queremos ser 100% transparentes: Coach está diseñada exclusivamente para el análisis táctico de partidas y drafting en League of Legends: Wild Rift (Parche 7.3). Si decides autenticarte en la aplicación, almacenamos únicamente tu correo electrónico y tu nombre de perfil para gestionar tu sesión, tu nivel de suscripción y tus configuraciones sincronizadas en la nube. No vendemos, no comercializamos ni compartimos tu información personal con ninguna entidad externa.</string>
+    <string name="legal_2_permisos_del_asistente_flotante_y_captura_en_vivo" formatted="false">2. Permisos del Asistente Flotante y Captura en Vivo</string>
+    <string name="legal_para_brindar_asistencia_en_tiempo_real_durante_la_seleccion_de_ca" formatted="false">Para brindar asistencia en tiempo real durante la selección de campeones, la app solicita permiso de superposición (Overlay - SYSTEM_ALERT_WINDOW) y proyección de pantalla. Dichas capturas se procesan de forma 100% local y autónoma en la memoria RAM de tu dispositivo mediante algoritmos de visión en tiempo real y OCR. Las imágenes no se envían a servidores externos, no se almacenan permanentemente en el disco y se descartan inmediatamente tras su lectura. Ninguna grabación de video ni audio se almacena ni se transmite.</string>
+    <string name="legal_3_almacenamiento_local_y_recursos_offline" formatted="false">3. Almacenamiento Local y Recursos Offline</string>
+    <string name="legal_tus_listas_de_nivel_personales_tier_lists_historial_de_borradores" formatted="false">Tus listas de nivel personales (Tier Lists), historial de borradores de draft, notas y preferencias se guardan de forma segura en la base de datos local SQLite (Room) y almacenamiento interno de tu teléfono. Puedes restablecer o eliminar completamente estos datos borrando el almacenamiento de la app desde los ajustes del sistema operativo Android.</string>
+    <string name="legal_4_cero_publicidad_y_rastreo_comercial" formatted="false">4. Cero Publicidad y Rastreo Comercial</string>
+    <string name="legal_la_aplicacion_no_incluye_anuncios_publicitarios_banners_intrusivo" formatted="false">La aplicación no incluye anuncios publicitarios, banners intrusivos ni kits de desarrollo (SDKs) de publicidad o rastreo de terceros. Ofrecemos una experiencia completamente limpia, privada y enfocada en el rendimiento competitivo.</string>
+    <string name="legal_5_seguridad_y_cifrado_de_conexion" formatted="false">5. Seguridad y Cifrado de Conexión</string>
+    <string name="legal_todas_las_comunicaciones_entre_la_aplicacion_y_los_servicios_de_b" formatted="false">Todas las comunicaciones entre la aplicación y los servicios de base de datos en tiempo real utilizan protocolos seguros con cifrado HTTPS/TLS v1.3 para garantizar la integridad y confidencialidad absoluta de tu cuenta.</string>
+    <string name="legal_1_aceptacion_de_los_terminos" formatted="false">1. Aceptación de los Términos</string>
+    <string name="legal_al_descargar_instalar_o_utilizar_la_aplicacion_coach_aceptas_cump" formatted="false">Al descargar, instalar o utilizar la aplicación Coach, aceptas cumplir estos Términos de Servicio. Si no estás de acuerdo con alguna disposición, te solicitamos abstenerte de utilizar la aplicación.</string>
+    <string name="legal_2_proposito_y_uso_permitido" formatted="false">2. Propósito y Uso Permitido</string>
+    <string name="legal_esta_aplicacion_es_una_herramienta_de_asistencia_tactica_aprendiz" formatted="false">Esta aplicación es una herramienta de asistencia táctica, aprendizaje y análisis estratégico para League of Legends: Wild Rift. No modifica archivos del juego, no interactúa con la memoria del proceso del juego ni vulnera las políticas de juego limpio de Riot Games. Opera exclusivamente mediante captura de pantalla externa, análisis estadístico y recomendaciones tácticas adaptadas al Parche 7.3.</string>
+    <string name="legal_3_cuentas_y_suscripciones" formatted="false">3. Cuentas y Suscripciones</string>
+    <string name="legal_el_acceso_a_funciones_avanzadas_como_analisis_con_ia_historial_de" formatted="false">El acceso a funciones avanzadas (como análisis con IA, historial de partidas guardadas y herramientas personalizadas) se gestiona mediante tu cuenta de usuario. Eres responsable de mantener la confidencialidad de tus credenciales. Nos reservamos el derecho de suspender accesos en caso de uso abusivo o vulneración de seguridad.</string>
+    <string name="legal_4_disponibilidad_del_servicio_y_metagame" formatted="false">4. Disponibilidad del Servicio y Metagame</string>
+    <string name="legal_nos_esforzamos_por_mantener_la_informacion_de_campeones_runas_obj" formatted="false">Nos esforzamos por mantener la información de campeones, runas, objetos y parches actualizada constantemente con cada versión oficial de Wild Rift; sin embargo, no garantizamos disponibilidad ininterrumpida ante mantenimientos o cambios imprevistos en los servidores del juego.</string>
+    <string name="legal_5_limitacion_de_responsabilidad" formatted="false">5. Limitación de Responsabilidad</string>
+    <string name="legal_la_aplicacion_se_proporciona_tal_cual_para_propositos_informativo" formatted="false">La aplicación se proporciona \'tal cual\' para propósitos informativos y de entretenimiento. No nos hacemos responsables por pérdidas de partidas clasificatorias, sanciones de cuentas de terceros ni por el mal uso de las herramientas proporcionadas.</string>
+    <string name="legal_1_descargo_oficial_de_riot_games" formatted="false">1. Descargo Oficial de Riot Games</string>
+    <string name="legal_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op" formatted="false">Coach no cuenta con el respaldo de Riot Games y no refleja las opiniones ni los puntos de vista de Riot Games ni de ninguna persona involucrada oficialmente en la producción o administración de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas comerciales registradas de Riot Games, Inc.</string>
+    <string name="legal_2_politica_de_propiedad_intelectual_legal_jibber_jabber" formatted="false">2. Política de Propiedad Intelectual \'Legal Jibber Jabber\'</string>
+    <string name="legal_esta_aplicacion_cumple_rigurosamente_con_la_politica_de_riot_game" formatted="false">Esta aplicación cumple rigurosamente con la política de Riot Games \'Legal Jibber Jabber\' para proyectos comunitarios sin fines de usurpación de marca. Todos los nombres de campeones, habilidades, objetos, runas y activos visuales de League of Legends: Wild Rift pertenecen en su totalidad a Riot Games, Inc.</string>
+    <string name="legal_3_infraestructura_segura_en_la_nube" formatted="false">3. Infraestructura Segura en la Nube</string>
+    <string name="legal_utilizamos_infraestructura_en_la_nube_con_servidores_seguros_y_ba" formatted="false">Utilizamos infraestructura en la nube con servidores seguros y bases de datos cifradas para la sincronización de perfiles, autenticación y almacenamiento de estados de suscripción, operando bajo estrictas normas de seguridad y privacidad.</string>
+    <string name="legal_4_bibliotecas_de_codigo_abierto_open_source" formatted="false">4. Bibliotecas de Código Abierto (Open Source)</string>
+    <string name="legal_esta_aplicacion_utiliza_componentes_de_software_libre_licenciados" formatted="false">Esta aplicación utiliza componentes de software libre licenciados bajo Apache 2.0 y MIT, incluyendo Jetpack Compose, Kotlinx Coroutines, AndroidX Room, Coil Image Loader, Material 3 y ML Kit Text Recognition.</string>
+    <string name="onboarding_coach_de_elite_draft" formatted="false">Coach de Élite &amp; Draft</string>
+    <string name="onboarding_analisis_tactico_en_tiempo_real" formatted="false">Análisis Táctico en Tiempo Real</string>
+    <string name="onboarding_selecciona_composiciones_optimas_con_evaluacion_para_los_5_roles" formatted="false">Selecciona composiciones óptimas con evaluación para los 5 roles de Wild Rift, sinergias de equipo, detección de counters y condición de victoria.</string>
+    <string name="onboarding_recomendador_de_3_mejores_picks" formatted="false">Recomendador de 3 mejores picks</string>
+    <string name="onboarding_wombo_combos_y_balance_de_dano" formatted="false">Wombo combos y balance de daño</string>
+    <string name="onboarding_condicion_de_victoria_del_equipo" formatted="false">Condición de victoria del equipo</string>
+    <string name="onboarding_asistente_flotante_en_juego" formatted="false">Asistente Flotante en Juego</string>
+    <string name="onboarding_burbuja_flotante_vision_ocr" formatted="false">Burbuja Flotante &amp; Visión OCR</string>
+    <string name="onboarding_activa_la_burbuja_flotante_para_recibir_coaching_en_directo_sobre" formatted="false">Activa la burbuja flotante para recibir coaching en directo sobre la pantalla de Wild Rift y escanear el draft automáticamente sin salir del juego.</string>
+    <string name="onboarding_burbuja_flotante_movible" formatted="false">Burbuja flotante movible</string>
+    <string name="onboarding_escaner_visual_de_seleccion" formatted="false">Escáner visual de selección</string>
+    <string name="onboarding_consejos_tacticos_sin_cambiar_de_app" formatted="false">Consejos tácticos sin cambiar de app</string>
+    <string name="onboarding_tier_list_oficial" formatted="false">Tier List Oficial</string>
+    <string name="onboarding_meta_global_y_counters" formatted="false">Meta Global y Counters</string>
+    <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulta la Tier List oficial actualizada al último parche y descubre los mejores picks para asegurar tu ventaja en cada partida.</string>
+    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Tier List global y de servidores asiáticos</string>
+    <string name="onboarding_identificacion_de_mejores_picks_del_meta" formatted="false">Identificación de mejores picks del meta</string>
+    <string name="onboarding_analisis_de_enfrentamientos_directos" formatted="false">Análisis de enfrentamientos directos</string>
+    <string name="onboarding_ventajas_suscripcion_premium" formatted="false">Ventajas &amp; Suscripción Premium</string>
+    <string name="onboarding_acceso_total_de_elite_personalizacion" formatted="false">Acceso Total de Élite &amp; Personalización</string>
+    <string name="onboarding_desbloquea_todas_las_ventajas_exclusivas_historial_estadistico_de" formatted="false">Desbloquea todas las ventajas exclusivas: historial estadístico detallado, sistema de campeones favoritos, y personalización avanzada con Temas y Avatares de Runaterra.</string>
+    <string name="onboarding_escaner_automatico_del_draft" formatted="false">Escáner Automático del draft</string>
+    <string name="onboarding_historial_del_draft" formatted="false">Historial del draft</string>
+    <string name="onboarding_win_rate_personal" formatted="false">Win Rate personal</string>
+    <string name="onboarding_campeones_favoritos" formatted="false">Campeones Favoritos</string>
+    <string name="onboarding_temas_exclusivos" formatted="false">Temas Exclusivos</string>
+    <string name="onboarding_avatares_exclusivos" formatted="false">Avatares Exclusivos</string>
+    <string name="onboarding_omitir" formatted="false">Omitir</string>
+    <string name="onboarding_comenzar_ahora" formatted="false">¡Comenzar ahora!</string>
+    <string name="onboarding_siguiente" formatted="false">Siguiente</string>
+    <string name="legal_privacy" formatted="false">Privacidad</string>
+    <string name="legal_terms" formatted="false">Términos</string>
+    <string name="legal_third_party" formatted="false">Terceros</string>
+    <string name="info_patch">Parche %1$s</string>
+    <string name="info_version">v%1$s (Compilación %2$d) • %3$s</string>
+    <string name="info_patch_description">Totalmente sincronizado con el meta oficial de Wild Rift %1$s. Incluye los últimos bufos, nerfeos, ajustes de objetos y rotaciones de tier list.</string>
+</resources>
