@@ -32,7 +32,7 @@ class LiteRTViewerNavigationTest {
         compose.setContent {
             var viewerOpen by remember { mutableStateOf(true) }
             Box(Modifier.width(280.dp).height(400.dp)) {
-                if (viewerOpen) LiteRTEngineViewerDialog { viewerOpen = false } else Text("Hub")
+                if (viewerOpen) LiteRTEngineViewerDialog(initializeDiagnostics = false) { viewerOpen = false } else Text("Hub")
             }
         }
         compose.onNodeWithTag("vision_viewer_back").assertIsDisplayed()
@@ -47,7 +47,7 @@ class LiteRTViewerNavigationTest {
         compose.setContent {
             val density = LocalDensity.current.density
             CompositionLocalProvider(LocalDensity provides Density(density, fontScale = 1.5f)) {
-                Box(Modifier.width(280.dp).height(400.dp)) { LiteRTEngineViewerDialog {} }
+                Box(Modifier.width(280.dp).height(400.dp)) { LiteRTEngineViewerDialog(initializeDiagnostics = false) {} }
             }
         }
         compose.onNodeWithText("Voltar ao hub").assertIsDisplayed()
