@@ -42,6 +42,12 @@ try {
     }));
     assert.equal((await getDoc(doc(user, 'support_reports', 'ticket'))).data().conversation.length, 4);
   });
+  await test('moderators cannot replace history or send another system greeting', async () => {
+    const ref = doc(moderator, 'support_reports', 'ticket'), history = (await getDoc(doc(admin, 'support_reports', 'ticket'))).data().conversation;
+    await assertFails(updateDoc(ref, { conversation: [...history, { id:'fake-system',senderRole:'SYSTEM',senderUid:'mod',text:greeting }] }));
+    await assertFails(updateDoc(ref, { conversation: [...history, { id:'fake-greeting',senderRole:'SUPPORT',senderUid:'mod',text:greeting }] }));
+    await assertFails(updateDoc(ref, { conversation: [{ id:'replace',senderRole:'SUPPORT',senderUid:'mod',text:'Sobrescribir' }] }));
+  });
   await test('read status propagates to another device and ticket cannot be spoofed by user', async () => {
     await assertSucceeds(updateDoc(doc(user, 'support_reports', 'ticket'), { userRead: true, isRead: true, hasNewAdminReply: false, hasNewReply: false }));
     const secondDevice = db('user'); assert.equal((await getDoc(doc(secondDevice, 'support_reports', 'ticket'))).data().userRead, true);

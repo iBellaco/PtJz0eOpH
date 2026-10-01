@@ -292,7 +292,6 @@ fun AdminFeedbackBottomSheet(
     // Escucha en tiempo real de Firestore para sincronización instantánea multidispositivo de estados y respuestas
     DisposableEffect(Unit) {
         val listenerReg = com.example.data.SupportTicketAccess.staffQuery()
-            .limit(100)
             .addSnapshotListener { snapshot, error ->
                 if (error == null && snapshot != null) {
                     loadReports(silent = true)
@@ -926,6 +925,7 @@ fun AdminFeedbackBottomSheet(
             reportDescription = rep.cleanDescription.ifEmpty { rep.description },
             userEmail = rep.parsedEmail ?: "",
             userName = rep.parsedUserName ?: "",
+            userId = rep.userId,
             initialReply = "",
             tag = if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
             isFirestoreDoc = false,

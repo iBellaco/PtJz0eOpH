@@ -11,7 +11,7 @@ object StreamChannelUrl {
         val uri = URI(raw.trim())
         if (uri.scheme?.lowercase(Locale.ROOT) != "https" || uri.userInfo != null || uri.port != -1 || uri.fragment != null) return null
         val host = uri.host?.lowercase(Locale.ROOT) ?: return null
-        val path = uri.rawPath.orEmpty().trimEnd('/')
+        val path = uri.path.orEmpty().trimEnd('/')
         val platform = when (host) {
             "tiktok.com", "www.tiktok.com" -> if (path.matches(Regex("/@[A-Za-z0-9_.]{2,24}(/live)?"))) "TikTok" else return null
             "youtube.com", "www.youtube.com", "m.youtube.com" -> if (
@@ -25,7 +25,7 @@ object StreamChannelUrl {
                 path.lowercase(Locale.ROOT) !in setOf("/categories", "/browse", "/search", "/login", "/signup", "/settings", "/dashboard")) "Kick" else return null
             else -> return null
         }
-        StreamChannel("https://${host.removePrefix("m.").removePrefix("www.")}$path", platform)
+        StreamChannel(URI("https", null, host.removePrefix("m.").removePrefix("www."), -1, path, null, null).toASCIIString(), platform)
     }.getOrNull()
 }
 

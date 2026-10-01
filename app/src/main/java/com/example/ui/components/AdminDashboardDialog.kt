@@ -187,6 +187,7 @@ fun AdminDashboardDialog(
         DisposableEffect(Unit) {
             val pendingSet1 = mutableSetOf<String>()
             val pendingSet2 = mutableSetOf<String>()
+            var pendingStreamers = 0
 
             val listener1 = FirebaseFirestore.getInstance().collection("support_reports")
                 .whereEqualTo("category", "MODERATOR_REQUEST")
@@ -195,7 +196,7 @@ fun AdminDashboardDialog(
                     if (snapshot != null) {
                         pendingSet1.clear()
                         snapshot.documents.forEach { pendingSet1.add(it.id) }
-                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size
+                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers
                     }
                 }
             val listener2 = FirebaseFirestore.getInstance().collection("moderator_requests")
@@ -204,10 +205,14 @@ fun AdminDashboardDialog(
                     if (snapshot != null) {
                         pendingSet2.clear()
                         snapshot.documents.forEach { pendingSet2.add(it.id) }
-                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size
+                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers
                     }
                 }
+            val streamerListener = com.example.data.StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, _ ->
+                if (snapshot != null) { pendingStreamers = snapshot.size(); pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers }
+            }
             onDispose {
+                streamerListener.remove()
                 listener1.remove()
                 listener2.remove()
             }

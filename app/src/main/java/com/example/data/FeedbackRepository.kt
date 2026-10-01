@@ -257,7 +257,6 @@ object FeedbackRepository {
      */
     suspend fun updateFeedbackStatusInCloud(id: String, status: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val isCompleted = (status == STATUS_SOLVED || status == STATUS_ACCEPTED || status == STATUS_COMPLETED)
             val context = com.example.WildRiftApp.instance ?: error("Aplicación no disponible")
             check(SupportReplyManager.updateReportStatus(context, id, status)) { "No se pudo sincronizar el estado" }
             Log.d(TAG, "Estado de reporte $id actualizado en nube a $status")
@@ -294,171 +293,19 @@ object FeedbackRepository {
         return isSupportTag || isSupportTitle || isSupportSender || hasReportId || hasAdminReply || hasConversation
     }
 
-    /**
-     * Obtiene el conjunto de IDs y títulos de tickets de soporte y DMs actualmente activos en el sistema.
-     */
+    /** Reads only the current account's canonical tickets. Failures never trigger inbox deletion. */
     suspend fun getActiveSupportReportIds(): Set<String> = withContext(Dispatchers.IO) {
-        val activeIds = mutableSetOf<String>()
-        try {
-            val db = FirebaseFirestore.getInstance()
-            val fireSnap = db.collection("support_reports").get().await()
-            for (doc in fireSnap.documents) {
-                val isDeleted = doc.getBoolean("isDeleted") == true ||
-                        doc.getBoolean("deleted") == true ||
-                        (doc.getString("status") ?: "").uppercase(Locale.US) in listOf("ELIMINADO", "DELETED", "CERRADO")
-                if (!isDeleted) {
-                    activeIds.add(doc.id)
-                    doc.getString("id")?.let { if (it.isNotBlank()) activeIds.add(it) }
-                    doc.getString("reportId")?.let { if (it.isNotBlank()) activeIds.add(it) }
-                    val t = (doc.getString("title") ?: "").trim()
-                    if (t.isNotBlank()) {
-                        activeIds.add(t)
-                        activeIds.add("Soporte: $t")
-                        activeIds.add("Reporte: $t")
-                        activeIds.add("Patrocinio: $t")
-                        val cleanNoPrefix = t.removePrefix("Soporte: ").removePrefix("Reporte: ").removePrefix("Patrocinio: ").trim()
-                        if (cleanNoPrefix.isNotBlank()) {
-                            activeIds.add(cleanNoPrefix)
-                        }
-                    }
-                }
-            }
-        } catch (_: Exception) {}
-        activeIds
+        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser ?: return@withContext emptySet()
+        val reports = FirebaseFirestore.getInstance().collection("support_reports")
+        val byId = reports.whereEqualTo("userId", user.uid).get().await().documents
+        val byEmail = if (user.email.isNullOrBlank()) emptyList() else reports.whereEqualTo("userEmail", user.email).get().await().documents
+        (byId + byEmail).filterNot { it.getBoolean("deleted") == true || it.getBoolean("isDeleted") == true }.map { it.id }.toSet()
     }
 
-    /**
-     * Sincroniza y purga de la bandeja del usuario cualquier mensaje de soporte huérfano.
-     */
-    suspend fun syncAndPurgeOrphansForUser(
-        context: Context,
-        userUid: String,
-        userEmail: String
-    ): Set<String> = withContext(Dispatchers.IO) {
-        val activeIds = getActiveSupportReportIds()
-        if (userUid.isBlank() || userUid == "anonimo") return@withContext activeIds
-
-        try {
-            val db = FirebaseFirestore.getInstance()
-            val userRef = db.collection("users").document(userUid)
-
-            // 1. Mensajes en subcolección messages
-            try {
-                val msgsSnap = userRef.collection("messages").get().await()
-                var deletedCount = 0
-                for (doc in msgsSnap.documents) {
-                    val data = doc.data ?: continue
-                    if (isSupportMessage(data)) {
-                        val mId = doc.id
-                        val rId = doc.getString("reportId") ?: mId
-                        val title = (doc.getString("title") ?: "").trim()
-                        val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
-                        val shouldKeep = activeIds.isNotEmpty() && (
-                            activeIds.contains(mId) || 
-                            activeIds.contains(rId) || 
-                            activeIds.contains(title) || 
-                            activeIds.contains(cleanTitle)
-                        )
-                        if (!shouldKeep) {
-                            try { doc.reference.delete().await() } catch (_: Exception) {}
-                            deletedCount++
-                        }
-                    }
-                }
-                if (deletedCount > 0) {
-                    Log.d(TAG, "Se purgaron $deletedCount mensajes de soporte huérfanos de la subcolección messages para $userUid")
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error purgando subcolección messages: ${e.message}")
-            }
-
-            // 2. Limpiar array privateMessages del documento de usuario
-            try {
-                val userSnap = userRef.get().await()
-                if (userSnap.exists()) {
-                    @Suppress("UNCHECKED_CAST")
-                    val pMsgs = userSnap.get("privateMessages") as? List<Map<String, Any>>
-                    if (!pMsgs.isNullOrEmpty()) {
-                        val cleaned = pMsgs.filterNot { m ->
-                            if (isSupportMessage(m)) {
-                                val mId = m["id"] as? String ?: ""
-                                val rId = m["reportId"] as? String ?: mId
-                                val title = (m["title"] as? String ?: "").trim()
-                                val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
-                                val shouldKeep = activeIds.isNotEmpty() && (
-                                    activeIds.contains(mId) || 
-                                    activeIds.contains(rId) || 
-                                    activeIds.contains(title) || 
-                                    activeIds.contains(cleanTitle)
-                                )
-                                !shouldKeep
-                            } else {
-                                false
-                            }
-                        }
-                        userRef.update("privateMessages", cleaned).await()
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error purgando privateMessages: ${e.message}")
-            }
-
-            // 3. Purgar tickets huérfanos en support_reports de este usuario
-            try {
-                val myReports = db.collection("support_reports").whereEqualTo("userId", userUid).get().await()
-                for (doc in myReports.documents) {
-                    val mId = doc.id
-                    val rId = doc.getString("reportId") ?: mId
-                    val title = (doc.getString("title") ?: "").trim()
-                    val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
-                    val shouldKeep = activeIds.isNotEmpty() && (
-                        activeIds.contains(mId) || 
-                        activeIds.contains(rId) || 
-                        activeIds.contains(title) || 
-                        activeIds.contains(cleanTitle)
-                    )
-                    if (!shouldKeep) {
-                        try { doc.reference.delete().await() } catch (_: Exception) {}
-                    }
-                }
-            } catch (_: Exception) {}
-
-            if (userEmail.isNotBlank()) {
-                try {
-                    val myEmailReports = db.collection("support_reports").whereEqualTo("userEmail", userEmail).get().await()
-                    for (doc in myEmailReports.documents) {
-                        val mId = doc.id
-                        val rId = doc.getString("reportId") ?: mId
-                        val title = (doc.getString("title") ?: "").trim()
-                        val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
-                        val shouldKeep = activeIds.isNotEmpty() && (
-                            activeIds.contains(mId) || 
-                            activeIds.contains(rId) || 
-                            activeIds.contains(title) || 
-                            activeIds.contains(cleanTitle)
-                        )
-                        if (!shouldKeep) {
-                            try { doc.reference.delete().await() } catch (_: Exception) {}
-                        }
-                    }
-                } catch (_: Exception) {}
-            }
-
-            // Asegurar contadores limpios si activeIds está vacío
-            if (activeIds.isEmpty()) {
-                try {
-                    userRef.update(
-                        mapOf(
-                            "hasUnreadMessages" to false,
-                            "unreadMessagesCount" to 0
-                        )
-                    ).await()
-                } catch (_: Exception) {}
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Error en syncAndPurgeOrphansForUser: ${e.message}")
-        }
-        activeIds
+    /** Compatibility entry point: synchronize references without purging messages. */
+    suspend fun syncAndPurgeOrphansForUser(context: Context, userUid: String, userEmail: String): Set<String> {
+        check(com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid == userUid)
+        return getActiveSupportReportIds()
     }
 
     /**
@@ -467,13 +314,11 @@ object FeedbackRepository {
     suspend fun getAllFeedbacks(): Result<List<FeedbackReport>> = withContext(Dispatchers.IO) {
         val combinedList = mutableListOf<FeedbackReport>()
         val seenIds = mutableSetOf<String>()
-        val seenTitles = mutableSetOf<String>()
 
         try {
             val db = FirebaseFirestore.getInstance()
             SupportTicketAccess.migrateLegacyVisibility()
             val fireSnap = SupportTicketAccess.staffQuery()
-                .limit(100)
                 .get()
                 .await()
 

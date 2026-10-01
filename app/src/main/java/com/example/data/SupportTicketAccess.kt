@@ -5,16 +5,22 @@ import com.example.util.SubscriptionManager
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 object SupportTicketAccess {
+    private val migrationMutex = Mutex()
+    private var migratedForUid: String? = null
     fun isAdmin() = SubscriptionManager.userRole.value == "admin" || AuthManager.isCurrentUserAdmin()
     fun staffQuery(): Query {
         val collection = FirebaseFirestore.getInstance().collection("support_reports")
         return if (isAdmin()) collection else collection.whereEqualTo("staffVisible", true)
     }
     /** Admin backfill gives existing tickets the same visibility as new tickets. */
-    suspend fun migrateLegacyVisibility() {
-        if (!isAdmin()) return
+    suspend fun migrateLegacyVisibility() = migrationMutex.withLock {
+        if (!isAdmin()) return@withLock
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return@withLock
+        if (migratedForUid == uid) return@withLock
         val db = FirebaseFirestore.getInstance()
         val documents = db.collection("support_reports").get().await().documents
         var batch = db.batch()
@@ -40,5 +46,6 @@ object SupportTicketAccess {
             }
         }
         if (updates > 0) batch.commit().await()
+        migratedForUid = uid
     }
 }

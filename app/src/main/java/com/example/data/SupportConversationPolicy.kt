@@ -25,7 +25,7 @@ object SupportConversationPolicy {
         val text = row["text"] as? String ?: return@mapNotNull null
         SupportMessageEntry(id = row["id"] as? String ?: "legacy_${row["timestampMillis"]}_${text.hashCode()}",
             senderName = row["senderName"] as? String ?: "", senderRole = row["senderRole"] as? String ?: "SUPPORT",
-            senderEmail = row["senderEmail"] as? String, text = text,
+            senderEmail = (row["senderEmail"] as? String)?.takeIf { it.isNotBlank() }, text = text,
             timestampMillis = (row["timestampMillis"] as? Number)?.toLong() ?: 0L, isGreeting = row["isGreeting"] == true)
     }.orEmpty()
 }

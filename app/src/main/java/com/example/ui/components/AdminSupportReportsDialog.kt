@@ -251,7 +251,6 @@ fun AdminSupportReportsDialog(
             // 2. Intentar leer también desde Firestore silenciosamente
             try {
                 com.example.data.SupportTicketAccess.staffQuery()
-                    .limit(50)
                     .get()
                     .addOnSuccessListener { snapshot ->
                         if (snapshot != null && !snapshot.isEmpty) {
@@ -379,7 +378,6 @@ fun AdminSupportReportsDialog(
     // Escucha en tiempo real para sincronización multidispositivo de estados y respuestas
     DisposableEffect(Unit) {
         val listenerReg = com.example.data.SupportTicketAccess.staffQuery()
-            .limit(100)
             .addSnapshotListener { snapshot, error ->
                 if (error == null && snapshot != null) {
                     for (doc in snapshot.documents) {
