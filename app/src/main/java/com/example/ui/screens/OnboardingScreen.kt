@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.WildRiftRepository
 import com.example.ui.theme.*
-import com.example.util.tr
 import com.example.util.localizedString
 import kotlinx.coroutines.launch
 
@@ -154,7 +153,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = tr(WildRiftRepository.CURRENT_PATCH_VERSION),
+                            text = localizedString(R.string.info_patch, WildRiftRepository.CURRENT_PATCH_VERSION.removePrefix("Parche ").removePrefix("Patch ")),
                             color = HextechGold,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold

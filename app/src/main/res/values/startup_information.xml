@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="info_informacion" formatted="false">Información</string>
-    <string name="info_back" formatted="false">Back</string>
-    <string name="info_coach_icon" formatted="false">Coach Icon</string>
+    <string name="info_back" formatted="false">Volver</string>
+    <string name="info_coach_icon" formatted="false">Icono de Coach</string>
     <string name="info_coach" formatted="false">Coach</string>
     <string name="info_asistente_tactico_oficial_de_drafting" formatted="false">Asistente Táctico Oficial de Drafting</string>
     <string name="info_1_compatibilidad_y_parche_oficial" formatted="false">1. Compatibilidad y Parche Oficial</string>
