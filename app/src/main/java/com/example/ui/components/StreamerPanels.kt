@@ -20,10 +20,18 @@ import com.example.data.StreamerPublicationPolicy
 import com.example.data.StreamerRepository
 import com.example.util.localizedString
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.MetadataChanges
 import kotlinx.coroutines.launch
 
 private val StreamGold = Color(0xFFD4AF37)
 private val StreamBackground = Color(0xFF111827)
+
+@Composable
+private fun streamerFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = Color.White, unfocusedTextColor = Color.White, disabledTextColor = Color.LightGray,
+    focusedLabelColor = StreamGold, unfocusedLabelColor = Color.LightGray, disabledLabelColor = Color.Gray,
+    cursorColor = StreamGold, focusedBorderColor = StreamGold, unfocusedBorderColor = Color.Gray
+)
 
 @Composable
 private fun liveEntries(): Pair<List<Map<String, Any>>, Boolean> {
@@ -31,7 +39,7 @@ private fun liveEntries(): Pair<List<Map<String, Any>>, Boolean> {
     var available by remember { mutableStateOf(false) }
     val uid = FirebaseAuth.getInstance().currentUser?.uid
     DisposableEffect(uid) {
-        val listener = if (uid != null) StreamerRepository.registry.addSnapshotListener { snapshot, error ->
+        val listener = if (uid != null) StreamerRepository.registry.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             available = error == null && snapshot != null && !snapshot.metadata.isFromCache
             if (error == null && snapshot != null) entries = StreamerRepository.entries(snapshot.get("entries"))
         } else null
@@ -82,7 +90,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
     var result by remember { mutableStateOf<Result<Unit>?>(null) }
     val scope = rememberCoroutineScope()
     DisposableEffect(uid) {
-        val listener = StreamerRepository.requests.document(uid).addSnapshotListener { snapshot, error ->
+        val listener = StreamerRepository.requests.document(uid).addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             requestAvailable = error == null && snapshot != null && !snapshot.metadata.isFromCache
             if (error == null && snapshot != null) {
                 request = snapshot.data.orEmpty()
@@ -100,8 +108,8 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
             Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(localizedString(R.string.streamer_panel), color = StreamGold, style = MaterialTheme.typography.titleLarge)
                 Text(localizedString(R.string.streamer_requirement), color = Color.White)
-                OutlinedTextField(name, { name = it; result = null }, label = { Text(localizedString(R.string.streamer_name)) }, singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(url, { url = it; result = null }, label = { Text(localizedString(R.string.streamer_url)) }, singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(name, { name = it; result = null }, label = { Text(localizedString(R.string.streamer_name)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(url, { url = it; result = null }, label = { Text(localizedString(R.string.streamer_url)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
                 Text(localizedString(R.string.streamer_count, entries.size), color = Color.White)
                 if (maximum) Text(localizedString(R.string.streamer_max), color = StreamGold)
                 when {
@@ -132,7 +140,7 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     val uri = LocalUriHandler.current
     DisposableEffect(Unit) {
-        val listener = StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, error ->
+        val listener = StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             requestAvailable = error == null && snapshot != null && !snapshot.metadata.isFromCache
             if (error == null && snapshot != null) requests = snapshot.documents.mapNotNull { it.data?.plus("id" to it.id) }.sortedBy { (it["submittedAtMillis"] as? Number)?.toLong() ?: 0L }
         }

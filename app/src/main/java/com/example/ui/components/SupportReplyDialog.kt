@@ -503,12 +503,11 @@ fun SupportReplyDialog(
                     ) {
                         quickTemplates.forEachIndexed { index, tpl ->
                             val label = when (index) {
-                                0 -> "👋 Saludo"
-                                1 -> "✅ Solucionado"
-                                2 -> "🔄 Reinicio"
-                                3 -> "🛡️ Cuenta"
-                                4 -> "🔍 Revisión"
-                                5 -> "💡 Guía"
+                                0 -> "✅ Solucionado"
+                                1 -> "🔄 Reinicio"
+                                2 -> "🛡️ Cuenta"
+                                3 -> "🔍 Revisión"
+                                4 -> "💡 Guía"
                                 else -> "Mensaje"
                             }
                             Box(
@@ -517,7 +516,7 @@ fun SupportReplyDialog(
                                     .background(HextechSurfaceVariant)
                                     .border(0.8.dp, HextechCardBorder, RoundedCornerShape(8.dp))
                                     .clickable {
-                                        replyText = SupportReplyManager.sanitizePlainText(tpl, 500)
+                                        replyText = SupportReplyManager.sanitizePlainText(com.example.util.appTr(tpl), 500)
                                     }
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
