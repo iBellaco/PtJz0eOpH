@@ -86,13 +86,19 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         Assert.assertTrue("Empty rendered surface: $screen/$step", strings.isNotEmpty())
         File(output, "$screen-$step.json").writeText(JSONArray(strings).toString(2))
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = File(output, "$screen-$step.png").path)
-        strings.filter { SpanishUiResidue.pattern.containsMatchIn(it.replace("Lee Sin", "LeeSin")) }
+        strings.filter { it.length > 2 && SpanishUiResidue.pattern.containsMatchIn(it.replace("Lee Sin", "LeeSin")) }
             .forEach { findings.add("$screen/$step: $it") }
     }
 
     @Test fun `Portuguese rendered surfaces contain no Spanish wording`() {
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
         inspect("initial")
+        if (screen == "onboarding" || screen == "tutorial") {
+            repeat(3) { page ->
+                compose.onNodeWithText("Seguinte").performClick()
+                inspect("page-${page + 2}")
+            }
+        }
         if (screen == "catalog") {
             for (tab in listOf("Itens", "Runas", "Feitiços")) {
                 compose.onNodeWithText(tab).performClick()
@@ -105,7 +111,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
 
 internal object SpanishUiResidue {
     val pattern = Regex(
-        "(?<![\\p{L}\\p{N}_-])(?:el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|último|habilidades? especiales|principalmente defensivo)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
+        "(?<![\\p{L}\\p{N}_-])(?:el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|objetos|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
         RegexOption.IGNORE_CASE
     )
 }

@@ -190,6 +190,7 @@ fun AuthFlowContainer(
 @Composable
 fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSignOut: () -> Unit) {
     val context = LocalContext.current
+    val language = com.example.util.currentAppLanguage()
     val activeTheme = AppThemeManager.currentTheme
     val isPremium by SubscriptionManager.isPremium.collectAsState()
     val isVerified by SubscriptionManager.isVerified.collectAsState()
@@ -219,9 +220,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val isExpiringSoon = remember(premiumUntil, isPremium, userRole) {
         SubscriptionManager.isExpiringSoon()
     }
-    var remainingFormatted by remember { mutableStateOf(SubscriptionManager.getRemainingPremiumTimeFormatted()) }
+    var remainingFormatted by remember(language) { mutableStateOf(SubscriptionManager.getRemainingPremiumTimeFormatted()) }
 
-    LaunchedEffect(premiumUntil, isPremium, userRole) {
+    LaunchedEffect(premiumUntil, isPremium, userRole, language) {
         while (true) {
             remainingFormatted = SubscriptionManager.getRemainingPremiumTimeFormatted()
             kotlinx.coroutines.delay(1000)

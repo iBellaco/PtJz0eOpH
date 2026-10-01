@@ -36,6 +36,7 @@ class PortugueseGeneratedSurfaceTest {
         }
         var profiles = 0
         for (champion in WildRiftRepository.champions) {
+            champion.skills.forEach { inspect("skill/${champion.id}/${it.slot}", listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt"))) }
             for (role in (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()) {
                 val profile = ChampionRoleAdapter.getProfile(champion, role)
                 profiles++
