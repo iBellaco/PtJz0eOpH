@@ -48,6 +48,18 @@ class OfflinePortugueseAuditTest {
         assertFalse(Regex("\\b(?:daño|velocidad)\\b", RegexOption.IGNORE_CASE).containsMatchIn(translated))
     }
 
+    @Test fun `Portuguese catalogs do not retain partially translated Spanish sentences`() {
+        val fragments = Regex("(?<![-\\p{L}])(?:el|del|al|los|las|un|una|unos|unas|tus|puedes|añadir|añade|enemigos|daño|hechizos|velocidad|consejo|campeones|cerrar|guardar|jugador|jugadores|debes|deberás|vuelve|pantalla|línea|sesión|contraseña|después|todavía|aunque|hasta|otorgar|obligatoria|composiciones|cargadas|cómpralo|elige|tienes|tiene|tienen|cuando|más|rápidamente|inmovilizaciones|ganar|bajar|mejor|entrer)\\b|[¿¡ñ]", RegexOption.IGNORE_CASE)
+        for (file in listOf("translations_pt.json", "translations_pt_aliases.json")) {
+            phrases(file).forEach { (source, translated) ->
+                assertFalse("Mixed Portuguese: $source => $translated", fragments.containsMatchIn(translated))
+            }
+        }
+        assertEquals("Outros Itens", catalog.translate("pt", "Otros Objetos"))
+        assertEquals("Fimbulwinter", catalog.translate("pt", "El gran invierno"))
+        assertEquals("Conceder Status de Verificado", catalog.translate("pt", "Otorgar Estado de Verificado"))
+    }
+
     @Test fun `runtime amounts session messages and build controls use Portuguese`() {
         assertEquals("Conselho do coach", catalog.translate("pt", "Consejo del coach"))
         assertEquals("Categorias globais atualizadas (3/3 fontes)", catalog.translate("pt", "Categorías globales actualizadas (3/3 fuentes)"))

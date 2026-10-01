@@ -135,6 +135,7 @@ fun ChampionDetailSheet(
     var matchupExplanationTarget by remember { mutableStateOf<String?>(null) }
     var matchupExplanationType by remember { mutableStateOf<String?>(null) }
     var selectedSituationalItem by remember { mutableStateOf<String?>(null) }
+    var selectedElementAdvice by remember { mutableStateOf("") }
     var buildAdvice by remember { mutableStateOf<Pair<String, String>?>(null) }
     var itemForDetail by remember { mutableStateOf<com.example.model.WildRiftItem?>(null) }
     var runeForDetail by remember { mutableStateOf<com.example.model.RuneItem?>(null) }
@@ -703,7 +704,7 @@ fun ChampionDetailSheet(
                         subtitle = "Línea: ${rec.role} • Análisis Estadístico & IA",
                         source = "Cálculo IA & Estadísticas • ${rec.creatorName}",
                         badge = if (rec.role.contains("Flex", ignoreCase = true)) "FLEX PRO" else "ESTADÍSTICA & IA",
-                        tacticalReason = rec.coreItemsWithDesc.firstOrNull()?.description ?: "Build calculada estadísticamente y con IA para el meta actual de Wild Rift.",
+                        tacticalReason = rec.coreItemsWithDesc.firstOrNull()?.description ?: "Build recomendada por el coach para el meta actual de Wild Rift.",
                         items = rec.coreItemsWithDesc.map { it.itemName }.ifEmpty { rec.coreItems },
                         bootBase = t2,
                         bootUpgrade = t3,
@@ -960,6 +961,8 @@ fun ChampionDetailSheet(
                                 modifier = Modifier
                                     .clickable {
                                         if (dbItem != null) {
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawName,
+                                                activeOption.coreItemsWithDesc.map { it.itemName to it.description }, "")
                                             itemForDetail = dbItem
                                         } else {
                                             selectedSituationalItem = rawName
@@ -1018,6 +1021,8 @@ fun ChampionDetailSheet(
                                     url = item?.iconUrl ?: WildRiftItemsData.getItemIconByName(itemName),
                                     contentDescription = tr(itemName), fallbackText = tr(itemName),
                                     modifier = Modifier.size(if (isCompact) 32.dp else 42.dp).clickable {
+                                        selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(itemName,
+                                            activeOption.situationalItemsWithDesc.map { it.itemName to it.description }, "")
                                         if (item != null) itemForDetail = item else selectedSituationalItem = itemName
                                     }, shape = RoundedCornerShape(6.dp)
                                 )
@@ -1087,7 +1092,10 @@ fun ChampionDetailSheet(
                                     .border(1.dp, HextechGold, RoundedCornerShape(8.dp))
                                     .clickable {
                                         if (selectedBootBaseOverride != null) selectedBootBaseOverride = null
-                                        else if (dbBoot1 != null) itemForDetail = dbBoot1
+                                        else if (dbBoot1 != null) {
+                                            selectedElementAdvice = ""
+                                            itemForDetail = dbBoot1
+                                        }
                                     }
                             ) {
                                 AppAssetImage(
@@ -1114,7 +1122,10 @@ fun ChampionDetailSheet(
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(HextechSurfaceVariant)
                                     .border(1.dp, HextechCyan, RoundedCornerShape(8.dp))
-                                    .clickable { if (dbBoot2 != null) itemForDetail = dbBoot2 }
+                                    .clickable { if (dbBoot2 != null) {
+                                        selectedElementAdvice = ""
+                                        itemForDetail = dbBoot2
+                                    } }
                             ) {
                                 AppAssetImage(
                                     url = boot2Icon,
@@ -1177,7 +1188,7 @@ fun ChampionDetailSheet(
                                                     ?: BuildChoiceRules.boots(primaryBootBase, champion.damageType, champion.isFrontline,
                                                         champion.isRanged, selectedRole, champion.id).firstOrNull { it.name.equals(sitBootName, true) }?.reason
                                                     ?: dbSitBoot?.coachTip.orEmpty()
-                                                if (reason.isNotBlank()) buildAdvice = sitBootName to reason
+                                                if (reason.isNotBlank()) buildAdvice = "Consejo del coach" to reason
                                             })
                                     ) {
                                         AppAssetImage(
@@ -1228,7 +1239,11 @@ fun ChampionDetailSheet(
                                         .clip(CircleShape)
                                         .background(HextechSurfaceVariant)
                                         .border(1.5.dp, HextechCyan, CircleShape)
-                                        .clickable { if (dbSpell != null) spellForDetail = dbSpell }
+                                        .clickable { if (dbSpell != null) {
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawSpellName,
+                                                activeOption.coreSpells.map { it.spellName to it.description }, activeOption.tacticalReason)
+                                            spellForDetail = dbSpell
+                                        } }
                                 ) {
                                     AppAssetImage(
                                         url = iconUrl,
@@ -1317,6 +1332,8 @@ fun ChampionDetailSheet(
                                         shape = CircleShape
                                     )
                                     .clickable {
+                                        selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rName,
+                                            activeOption.coreRunes.map { it.runeName to it.description }, activeOption.tacticalReason)
                                         runeForDetail = foundRune ?: com.example.model.RuneItem(
                                             id = rName.lowercase().replace(" ", "_"),
                                             name = rName,
@@ -1397,6 +1414,7 @@ fun ChampionDetailSheet(
                                         .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                                         .clickable {
+                                            selectedElementAdvice = sRune.description
                                             runeForDetail = foundRune ?: com.example.model.RuneItem(
                                                 id = rName.lowercase().replace(" ", "_"),
                                                 name = rName,
@@ -2219,6 +2237,7 @@ fun AdaptiveDetailAlertDialog(
                         )
                     }
 
+                    BuildElementCoachAdvice(selectedElementAdvice.ifBlank { item.getLocalizedCoachTip(LocalLanguage.current) })
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
                         modifier = Modifier
@@ -2265,8 +2284,8 @@ fun AdaptiveDetailAlertDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     com.example.ui.components.AppAssetImage(
                         url = rune.iconUrl,
-                        contentDescription = rune.name,
-                        fallbackText = rune.name,
+                        contentDescription = rune.getLocalizedName(LocalLanguage.current),
+                        fallbackText = rune.getLocalizedName(LocalLanguage.current),
                         modifier = Modifier.size(48.dp),
                         borderColor = com.example.ui.theme.HextechGold,
                         shape = androidx.compose.foundation.shape.CircleShape
@@ -2274,7 +2293,7 @@ fun AdaptiveDetailAlertDialog(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = tr(rune.name),
+                            text = rune.getLocalizedName(LocalLanguage.current),
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -2289,12 +2308,13 @@ fun AdaptiveDetailAlertDialog(
                 }
             },
             text = {
-                Text(
-                    text = tr(rune.description),
-                    color = com.example.ui.theme.TextPrimary,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
+                Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
+                    FormattedWildRiftText(
+                        text = rune.getLocalizedDescription(LocalLanguage.current),
+                        color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
+                    )
+                    BuildElementCoachAdvice(selectedElementAdvice)
+                }
             },
             confirmButton = {
                 TextButton(onClick = { runeForDetail = null }) {
@@ -2312,15 +2332,15 @@ fun AdaptiveDetailAlertDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     com.example.ui.components.AppAssetImage(
                         url = spell.iconUrl,
-                        contentDescription = spell.name,
-                        fallbackText = spell.name,
+                        contentDescription = spell.getLocalizedName(LocalLanguage.current),
+                        fallbackText = spell.getLocalizedName(LocalLanguage.current),
                         modifier = Modifier.size(48.dp),
                         borderColor = com.example.ui.theme.HextechGold,
                         shape = androidx.compose.foundation.shape.CircleShape
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = tr(spell.name),
+                        text = spell.getLocalizedName(LocalLanguage.current),
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -2328,12 +2348,13 @@ fun AdaptiveDetailAlertDialog(
                 }
             },
             text = {
-                Text(
-                    text = tr(spell.description),
-                    color = com.example.ui.theme.TextPrimary,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
+                Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
+                    FormattedWildRiftText(
+                        text = spell.getLocalizedDescription(LocalLanguage.current),
+                        color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
+                    )
+                    BuildElementCoachAdvice(selectedElementAdvice)
+                }
             },
             confirmButton = {
                 TextButton(onClick = { spellForDetail = null }) {
@@ -2380,4 +2401,14 @@ private fun getSituationalItemExplanation(itemName: String): String {
         clean.contains("corona") || clean.contains("fragmentada") -> "Usar con magos contra asesinos o iniciadores para reducir drásticamente el daño recibido al iniciar un enfrentamiento."
         else -> "Usar como reemplazo táctico para contrarrestar las mayores amenazas del equipo rival según la composición de la partida."
     }
+}
+
+
+@Composable
+private fun BuildElementCoachAdvice(advice: String) {
+    if (advice.isBlank()) return
+    Spacer(Modifier.height(14.dp))
+    Text(tr("Consejo del coach"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+    Spacer(Modifier.height(4.dp))
+    FormattedWildRiftText(text = tr(advice), color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
 }

@@ -375,6 +375,7 @@ fun AdminCreatorBuildsDialog(
                 buildToEdit = null
             }
         )
+        return
     }
 
     if (selectedBuildForDetail != null) {
@@ -382,6 +383,7 @@ fun AdminCreatorBuildsDialog(
             record = selectedBuildForDetail!!,
             onDismiss = { selectedBuildForDetail = null }
         )
+        return
     }
 
     if (selectedCreatorForProfile != null) {
