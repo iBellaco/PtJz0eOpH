@@ -1,4 +1,6 @@
 {
+  "No se pudieron cargar los mensajes. Comprueba los permisos y vuelve a intentarlo.": "Não foi possível carregar as mensagens. Verifique as permissões e tente novamente.",
+  "No se pudo eliminar el mensaje. Inténtalo de nuevo.": "Não foi possível excluir a mensagem. Tente novamente.",
   "Responder de nuevo": "Responder novamente",
   "Estado actualizado": "Status atualizado",
   "No se pudo sincronizar el estado. Inténtalo de nuevo.": "Não foi possível sincronizar o status. Tente novamente.",

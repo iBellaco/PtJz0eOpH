@@ -5,6 +5,30 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class SupportAndStreamerPolicyTest {
+    @Test fun `user waits for a real staff answer and cannot reply after closure`() {
+        val initial = SupportConversationPolicy.initial("wait", "Diego", "Consulta", 100)
+        assertFalse(SupportConversationPolicy.canUserReply(initial, "PENDING"))
+        val greeting = initial + SupportMessageEntry(senderRole = "SUPPORT", text = SupportConversationPolicy.SYSTEM_GREETING)
+        assertFalse(SupportConversationPolicy.canUserReply(greeting, "READ"))
+        val answered = initial + SupportMessageEntry(senderRole = "SUPPORT", text = "Estamos revisando el problema")
+        assertTrue(SupportConversationPolicy.canUserReply(answered, "READ"))
+        assertTrue(SupportConversationPolicy.canUserReply(answered + SupportMessageEntry(senderRole = "USER", text = "Gracias"), "PENDING"))
+        listOf("SOLVED", "CLOSED", "CERRADO", "COMPLETED").forEach {
+            assertFalse(SupportConversationPolicy.canUserReply(answered, it))
+        }
+    }
+    @Test fun `internal requests and removed reports never become support tickets`() {
+        assertFalse(SupportTicketPresentation.isUserTicket(mapOf("category" to "MODERATOR_REQUEST")))
+        assertFalse(SupportTicketPresentation.isUserTicket(mapOf("deleted" to true)))
+        assertTrue(SupportTicketPresentation.isUserTicket(mapOf("type" to "BUG", "status" to "CERRADO")))
+        assertEquals("SOLVED", SupportTicketPresentation.status("CLOSED"))
+    }
+    @Test fun `legacy identity headers are removed without removing message content`() {
+        assertEquals("Mi mensaje", SupportTicketPresentation.cleanBody("Correo de contacto: a@test.invalid\nUsuario: Diego\nCorreo de contacto: a@test.invalid\n\nMi mensaje"))
+        assertEquals("Olá", SupportTicketPresentation.cleanBody("Usuário: Diego\r\n\r\nOlá"))
+        assertEquals("Mensaje\nUsuario: texto del usuario", SupportTicketPresentation.cleanBody("Mensaje\nUsuario: texto del usuario"))
+        assertEquals("", SupportTicketPresentation.cleanBody("Usuario: Diego"))
+    }
     @Test fun `system acknowledges a ticket once and never as a staff reply`() {
         val initial = SupportConversationPolicy.initial("ticket", "Diego", "Mi mensaje", 100L)
         assertEquals(listOf("USER", "SYSTEM"), initial.map { it.senderRole })
@@ -21,6 +45,10 @@ class SupportAndStreamerPolicyTest {
         assertEquals("Respuesta anterior", history.last().text)
         assertEquals("SUPPORT", history.last().senderRole)
         assertEquals("old_legacy_reply", history.last().id)
+        val accumulated = SupportConversationPolicy.initial("old", "Diego", "Consulta", 100,
+            SupportConversationPolicy.SYSTEM_GREETING + "\n\n---\n\nRespuesta uno\n\n---\n\nRespuesta dos")
+        assertEquals(listOf("USER", "SYSTEM", "SUPPORT", "SUPPORT"), accumulated.map { it.senderRole })
+        assertTrue(SupportConversationPolicy.canUserReply(accumulated, "READ"))
     }
     @Test fun `shared read flag takes precedence over stale device state`() {
         assertTrue(SupportConversationPolicy.userHasRead(mapOf("userRead" to true, "isRead" to false, "hasNewAdminReply" to false)))

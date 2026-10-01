@@ -21,7 +21,7 @@ service cloud.firestore {
       let old = resource.data.get('conversation', []);
       let next = request.resource.data.conversation;
       let last = next[next.size()-1];
-      return !closed(resource.data) && old.size() > 0 && next.size() == old.size()+1
+      return !closed(resource.data) && resource.data.get('userCanReply', false) == true && old.size() > 0 && next.size() == old.size()+1
         && next.removeAll([last]) == old && last.senderRole == 'USER' && last.senderUid == request.auth.uid
         && last.text is string && last.text.size() > 0 && last.text.size() <= 10000
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['conversation','status','isCompleted','lastUserMessage','lastUserMessageAt','lastMessageAt','updatedAt','lastReplyRole','staffRead','isRead','userRead','hasNewAdminReply','hasNewReply','userId'])
@@ -49,7 +49,8 @@ service cloud.firestore {
       match /messages/{messageId} {
         function source() { return getAfter(/databases/$(database)/documents/support_reports/$(messageId)).data; }
         allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
-        allow write: if isAdmin() || (signedIn() && request.auth.uid == userId) ||
+        allow delete: if isAdmin();
+        allow create, update: if isAdmin() || (signedIn() && request.auth.uid == userId) ||
           (isModerator() && source().userId == userId && source().get('staffVisible', false) == true && !sponsor(source())
             && request.resource.data.get('status', source().status) == source().status
             && request.resource.data.get('conversation', source().get('conversation', [])) == source().get('conversation', [])
@@ -60,11 +61,22 @@ service cloud.firestore {
         allow write: if false;
       }
     }
+    // Avisos públicos y notificaciones generales
+    match /app_notices/{noticeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /global_notifications/{notificationId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
     match /support_reports/{reportId} {
       allow create: if isAdmin() || (signedIn() && request.resource.data.get('category', '') == 'MODERATOR_REQUEST' && isModerator()) ||
         (signedIn() && request.resource.data.userId == request.auth.uid && request.resource.data.userEmail == request.auth.token.email
           && request.resource.data.staffVisible == !sponsor(request.resource.data)
           && request.resource.data.status == 'PENDING' && request.resource.data.get('adminReply', '') == ''
+          && request.resource.data.get('userCanReply', false) == false
           && request.resource.data.conversation.size() == 2
           && request.resource.data.conversation[0].senderRole == 'USER' && request.resource.data.conversation[0].senderUid == request.auth.uid
           && request.resource.data.conversation[1].senderRole == 'SYSTEM'
@@ -73,10 +85,17 @@ service cloud.firestore {
       allow read: if ownsTicket(resource.data) || staffTicket(resource.data);
       allow update: if isAdmin() || (staffTicket(resource.data)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId','userEmail','tag','type','staffVisible'])
-        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['conversation']) || staffReply())) ||
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['conversation']) || staffReply())
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userCanReply']) || (staffReply() && request.resource.data.userCanReply == true))) ||
         (ownsTicket(resource.data) && (userReadUpdate() || userReply()));
-      allow delete: if ownsTicket(resource.data) || staffTicket(resource.data);
+      allow delete: if isAdmin();
     }
+    match /feedbacks/{feedbackId} {
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, update: if signedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
     function validChannel(url) {
       return url is string && url.size() <= 300 && (
         url.matches('https://tiktok[.]com/@[A-Za-z0-9_.]{2,24}(/live)?') ||

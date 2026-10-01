@@ -7,6 +7,9 @@ import kotlinx.serialization.Serializable
 data class FeedbackReport(
     val id: String? = null,
     val userId: String = "",
+    val userName: String = "",
+    val userEmail: String = "",
+    val photosBase64: List<String> = emptyList(),
     val type: String = "BUG",
     val title: String = "",
     val description: String = "",
@@ -24,6 +27,7 @@ data class FeedbackReport(
         get() = !adminReply.isNullOrBlank()
     val parsedUserName: String?
         get() {
+            if (userName.isNotBlank()) return userName
             val match = Regex("Usuario: (.*?)\n").find(description)
                 ?: Regex("\\[Usuario: (.*?)\\]").find(description)
                 ?: Regex("Invocador: (.*?)\n").find(description)
@@ -32,17 +36,12 @@ data class FeedbackReport(
 
     val parsedEmail: String?
         get() {
+            if (userEmail.isNotBlank()) return userEmail
             val match = Regex("Correo de contacto: (.*?)\n\n").find(description)
                 ?: Regex("Correo de contacto: (.*?)\n").find(description)
             return match?.groupValues?.get(1)?.trim()
         }
 
     val cleanDescription: String
-        get() {
-            return description
-                .replaceFirst(Regex("^Usuario: .*?\n\n?"), "")
-                .replaceFirst(Regex("^Correo de contacto: .*?\n\n?"), "")
-                .trim()
-        }
+        get() = com.example.data.SupportTicketPresentation.cleanBody(description)
 }
-
