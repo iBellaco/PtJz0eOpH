@@ -9,10 +9,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Handshake
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.*
@@ -45,13 +43,7 @@ fun PrivacyPolicyDialog(
     var selectedTab by remember { mutableStateOf(LegalTab.PRIVACY) }
 
     Dialog(
-        onDismissRequest = {
-            if (onChangeLanguage != null) {
-                onChangeLanguage()
-            } else {
-                onDismiss()
-            }
-        },
+        onDismissRequest = onDismiss,
         properties = DialogProperties(
             dismissOnClickOutside = !isMandatoryAcceptance,
             dismissOnBackPress = true
@@ -97,24 +89,7 @@ fun PrivacyPolicyDialog(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (onChangeLanguage != null) {
-                            IconButton(onClick = onChangeLanguage) {
-                                Icon(
-                                    imageVector = Icons.Default.Language,
-                                    contentDescription = tr("Cambiar Idioma"),
-                                    tint = HextechCyan
-                                )
-                            }
-                        }
-                        IconButton(onClick = onDismiss) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = com.example.util.trNullable(if (isMandatoryAcceptance) tr("Cerrar y Salir") else tr("Cerrar")),
-                                tint = TextSecondary
-                            )
-                        }
-                    }
+
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

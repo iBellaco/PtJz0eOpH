@@ -1618,7 +1618,7 @@ private fun ComprehensiveFeedbackCard(
                         ) {
                             Image(
                                 bitmap = bmp.asImageBitmap(),
-                                contentDescription = "Captura adjunta",
+                                contentDescription = com.example.util.tr("Captura adjunta"),
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
@@ -2782,4 +2782,3 @@ private fun BuildItemSlot(
         }
     }
 }
-

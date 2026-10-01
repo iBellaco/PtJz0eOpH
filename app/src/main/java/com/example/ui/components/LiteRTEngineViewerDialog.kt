@@ -1439,7 +1439,7 @@ private fun DiagnosticFrameInspectorDialog(
                 ) {
                     AsyncImage(
                         model = frame.file,
-                        contentDescription = "Inspección de calidad del frame",
+                        contentDescription = com.example.util.tr("Inspección de calidad del frame"),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit
                     )

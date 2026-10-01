@@ -164,9 +164,8 @@ fun ChampionAvatar(
             }
         }
 
-        if (showTierBadge && (champion.tier.isNotBlank() || champion.cnTier.isNotBlank())) {
-            val isCnMode = com.example.data.WildRiftRepository.activeRegionName == "CN"
-            val displayTier = if (isCnMode && champion.cnTier.isNotBlank()) champion.cnTier else champion.tier
+        if (showTierBadge && champion.tier.isNotBlank()) {
+            val displayTier = champion.tier
             val tierColor = when (displayTier) {
                 "S+", "T0" -> TierSPlusColor
                 "S", "T1" -> TierSColor

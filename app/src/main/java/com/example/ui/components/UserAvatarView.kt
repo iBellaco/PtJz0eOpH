@@ -260,7 +260,7 @@ fun UserAvatarView(
                     .diskCachePolicy(CachePolicy.ENABLED)
                     .memoryCachePolicy(CachePolicy.ENABLED)
                     .build(),
-                contentDescription = "Marco de Perfil",
+                contentDescription = com.example.util.tr("Marco de Perfil"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .requiredSize(size * 1.15f)

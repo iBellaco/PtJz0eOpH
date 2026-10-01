@@ -146,7 +146,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.WildRiftRepository
 import com.example.data.sync.ChineseMetaSyncService
 import com.example.data.sync.ChineseSyncState
-import com.example.data.sync.TencentRankTier
 import kotlinx.coroutines.launch
 import com.example.model.Champion
 import com.example.util.SubscriptionManager
@@ -898,14 +897,13 @@ fun ChampionsCatalogTab(
 
     val filteredChampions = remember(searchQuery, selectedRoleFilter, selectedTierFilter, showOnlyFavorites, favorites, syncState, currentRegion, WildRiftRepository.activeRegionName, WildRiftRepository.champions.toList()) {
         val trimmedQuery = searchQuery.trim()
-        val isCn = currentRegion == "CN"
         val list = WildRiftRepository.champions.filter { champ ->
             val matchesQuery = trimmedQuery.isBlank() ||
                     champ.name.contains(trimmedQuery, ignoreCase = true)
             val matchesRole = selectedRoleFilter == null ||
                     champ.primaryRole == selectedRoleFilter ||
                     champ.secondaryRoles.contains(selectedRoleFilter)
-            val matchesTier = selectedTierFilter == null || champ.tier == selectedTierFilter || (isCn && champ.cnTier == selectedTierFilter)
+            val matchesTier = selectedTierFilter == null || champ.tier == selectedTierFilter
             val matchesFavorite = !showOnlyFavorites || favorites.contains(champ.id.lowercase())
             matchesQuery && matchesRole && matchesTier && matchesFavorite
         }
@@ -934,7 +932,7 @@ fun ChampionsCatalogTab(
     ) {
         if (isOverlay) Spacer(modifier = Modifier.height(4.dp)) else Spacer(modifier = Modifier.height(10.dp))
 
-        if (!isOverlay) { TierSelectionPanel(currentTier, syncState, currentRegion, context, coroutineScope) }
+
 
 
         // Search Bar (Proporcionado y compacto en overlay)
@@ -1354,10 +1352,7 @@ fun ChampionsCatalogTab(
                                         fontWeight = FontWeight.Bold
                                     )
                                     val formattedWr = com.example.util.championStatPercent(champion, champion.winrate, "wr")
-                                    val regionTag = when (currentRegion) {
-                                        "CN" -> "🇨🇳 CN"
-                                        else -> "🌍 Global"
-                                    }
+                                    val regionTag = "🌐 Global"
                                     Text(
                                         text = com.example.util.tr("$regionTag WR: $formattedWr"),
                                         color = HextechGold,
@@ -1536,12 +1531,11 @@ fun TierListTab(
         }
     }
 
-    val isCn = currentRegion == "CN"
-    val tierSPlus = championsToDisplay.filter { if (isCn) it.cnTier == "T0" else it.tier == "S+" }
-    val tierS = championsToDisplay.filter { (if (isCn) it.cnTier == "T1" else it.tier == "S") && it !in tierSPlus }
-    val tierA = championsToDisplay.filter { (if (isCn) it.cnTier == "T2" || it.cnTier == "T3" else it.tier == "A+" || it.tier == "A") && it !in tierSPlus && it !in tierS }
-    val tierB = championsToDisplay.filter { (if (isCn) it.cnTier == "T4" else it.tier == "B" || it.tier == "B+") && it !in tierSPlus && it !in tierS && it !in tierA }
-    val tierC = championsToDisplay.filter { (if (isCn) it.cnTier == "T5" else it.tier == "C" || it.tier == "C+") && it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB }
+    val tierSPlus = championsToDisplay.filter { it.tier == "S+" }
+    val tierS = championsToDisplay.filter { (it.tier == "S") && it !in tierSPlus }
+    val tierA = championsToDisplay.filter { (it.tier == "A+" || it.tier == "A") && it !in tierSPlus && it !in tierS }
+    val tierB = championsToDisplay.filter { (it.tier == "B" || it.tier == "B+") && it !in tierSPlus && it !in tierS && it !in tierA }
+    val tierC = championsToDisplay.filter { (it.tier == "C" || it.tier == "C+") && it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB }
     val tierD = championsToDisplay.filter { it !in tierSPlus && it !in tierS && it !in tierA && it !in tierB && it !in tierC }
 
     LazyColumn(
@@ -1552,7 +1546,7 @@ fun TierListTab(
     ) {
         item {
             Spacer(modifier = Modifier.height(4.dp))
-            TierSelectionPanel(currentTier, syncState, currentRegion, context, coroutineScope, isOverlay = isOverlay)
+
         }
 
         item {
@@ -1868,7 +1862,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        tierName = if (isCn) "TIER S+ / T0 (${tr("Dominantes en")} ${tr(currentTier.displayName)})" else "TIER S+ (${tr("Dominantes / Prioridad Pick & Ban")})",
+                        tierName = "TIER S+ (${tr("Dominantes / Prioridad Pick & Ban")})",
                         tierColor = TierSPlusColor,
                         champions = tierSPlus,
                         onSelectChampion = onSelectChampion
@@ -1881,7 +1875,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        tierName = if (isCn) "TIER S / T1 (${tr("Meta Muy Fuerte / Alta Prioridad")})" else "TIER S (${tr("Meta Muy Fuerte / Alta Prioridad")})",
+                        tierName = "TIER S (${tr("Meta Muy Fuerte / Alta Prioridad")})",
                         tierColor = TierSColor,
                         champions = tierS,
                         onSelectChampion = onSelectChampion
@@ -1894,7 +1888,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        tierName = if (isCn) "TIER A / T2-T3 (${tr("Opciones Sólidas y Balanceadas")})" else "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
+                        tierName = "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
                         tierColor = TierAColor,
                         champions = tierA,
                         onSelectChampion = onSelectChampion
@@ -1907,7 +1901,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        tierName = if (isCn) "TIER B / T4 (${tr("Opciones Viables")})" else "TIER B (${tr("Opciones Viables")})",
+                        tierName = "TIER B (${tr("Opciones Viables")})",
                         tierColor = com.example.ui.theme.TierBColor,
                         champions = tierB,
                         onSelectChampion = onSelectChampion
@@ -1920,7 +1914,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        tierName = if (isCn) "TIER C / T5 (${tr("Situacionales")})" else "TIER C (${tr("Situacionales")})",
+                        tierName = "TIER C (${tr("Situacionales")})",
                         tierColor = com.example.ui.theme.TierCColor,
                         champions = tierC,
                         onSelectChampion = onSelectChampion
@@ -1933,7 +1927,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
-                        tierName = if (isCn) "TIER D / OTROS (${tr("Fuera del Meta")})" else "TIER D / OTROS",
+                        tierName = "TIER D / OTROS",
                         tierColor = com.example.ui.theme.TierDColor,
                         champions = tierD,
                         onSelectChampion = onSelectChampion
@@ -2382,7 +2376,7 @@ private fun ItemsCatalogTab() {
     ) {
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Estado de estadísticas del servidor chino
+        // Estado de estadísticas del servidor global
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -5709,298 +5703,6 @@ private fun SpellGridCard(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun TierSelectionPanel(
-    currentTier: TencentRankTier,
-    syncState: ChineseSyncState,
-    currentRegion: String,
-    context: android.content.Context,
-    coroutineScope: kotlinx.coroutines.CoroutineScope,
-    isOverlay: Boolean = false
-) {
-    val isOnline by BestBuildWrScraper.isOnline.collectAsStateWithLifecycle()
-    val isSyncing by BestBuildWrScraper.isSyncing.collectAsStateWithLifecycle()
-    val isLastSyncSuccess by BestBuildWrScraper.isLastSyncSuccess.collectAsStateWithLifecycle()
-    val lastSyncFormattedTime by BestBuildWrScraper.lastSyncFormattedTime.collectAsStateWithLifecycle()
-    var showMultiServerStats by remember { mutableStateOf(false) }
-    var isPanelMinimized by rememberSaveable { mutableStateOf(false) }
-
-    val isAutoSyncActive = isOnline && isLastSyncSuccess
-    val regionalStatus by BestBuildWrScraper.globalSyncStatus.collectAsStateWithLifecycle()
-
-    if (showMultiServerStats) {
-        com.example.ui.components.MultiServerStatsDialog(
-            onDismiss = { showMultiServerStats = false }
-        )
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = HextechSurface),
-        shape = RoundedCornerShape(if (isOverlay) 10.dp else 14.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
-    ) {
-        Column(modifier = Modifier.padding(if (isOverlay) 8.dp else 12.dp)) {
-            // CABECERA: Servidor / Meta: | Botón Estadísticas + Botón Minimizar/Expandir
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Language,
-                        contentDescription = null,
-                        tint = HextechGold,
-                        modifier = Modifier.size(if (isOverlay) 14.dp else 16.dp)
-                    )
-                    Text(
-                        text = tr("Servidor / Meta:"),
-                        color = HextechGold,
-                        fontSize = if (isOverlay) 11.5.sp else 13.5.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                    if (isPanelMinimized) {
-                        val activeLabel = when (currentRegion) {
-                            "CN" -> tr("🇨🇳 China")
-                            else -> tr("🌐 Global")
-                        }
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = HextechGold.copy(alpha = 0.15f),
-                            border = BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.5f))
-                        ) {
-                            Text(
-                                text = com.example.util.tr(activeLabel),
-                                color = HextechGold,
-                                fontSize = if (isOverlay) 8.sp else 9.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Botón Estadísticas Multi-Servidor
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(HextechGold.copy(alpha = 0.2f))
-                            .border(0.8.dp, HextechGold, RoundedCornerShape(6.dp))
-                            .clickable { showMultiServerStats = true }
-                            .padding(horizontal = 8.dp, vertical = 3.5.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Icon(
-                                imageVector = Icons.Default.TrendingUp,
-                                contentDescription = null,
-                                tint = HextechGold,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = tr("Estadísticas"),
-                                color = HextechGold,
-                                fontSize = if (isOverlay) 8.5.sp else 9.5.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    // Botón Minimizar / Expandir Panel
-                    IconButton(
-                        onClick = { isPanelMinimized = !isPanelMinimized },
-                        modifier = Modifier.size(26.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isPanelMinimized) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
-                            contentDescription = com.example.util.trNullable(if (isPanelMinimized) tr("Expandir panel") else tr("Minimizar panel")),
-                            tint = HextechCyan,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-
-            AnimatedVisibility(
-                visible = !isPanelMinimized,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Spacer(modifier = Modifier.height(if (isOverlay) 8.dp else 10.dp))
-
-                    // Fuente de estadísticas del servidor chino y global
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(if (isOverlay) 4.dp else 8.dp)
-                    ) {
-                        val regionItems = listOf(
-                            Triple("CN", tr("🇨🇳 China"), tr("Meta CN")),
-                            Triple("GLOBAL", tr("🌐 Global"), tr("Tri-Source Meta"))
-                        )
-                        regionItems.forEach { (regionId, label, sub) ->
-                            val isSelected = currentRegion == regionId
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(
-                                        if (isSelected) Brush.verticalGradient(
-                                            listOf(HextechGold.copy(alpha = 0.22f), HextechGold.copy(alpha = 0.08f))
-                                        ) else Brush.verticalGradient(
-                                            listOf(HextechSurfaceVariant.copy(alpha = 0.35f), HextechSurfaceVariant.copy(alpha = 0.2f))
-                                        )
-                                    )
-                                    .border(
-                                        width = if (isSelected) 1.5.dp else 0.8.dp,
-                                        color = if (isSelected) HextechGold else HextechCardBorder.copy(alpha = 0.6f),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .testTag("meta_region_$regionId")
-                                    .selectable(selected = isSelected, role = androidx.compose.ui.semantics.Role.Tab) {
-                                        ChineseMetaSyncService.setRegion(context, regionId, coroutineScope)
-                                    }
-                                    .padding(horizontal = 4.dp, vertical = if (isOverlay) 6.dp else 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                                ) {
-                                    Text(
-                                        text = com.example.util.tr(label),
-                                        color = if (isSelected) HextechGold else TextMuted,
-                                        fontSize = if (isOverlay) 8.5.sp else 10.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        maxLines = 1
-                                    )
-                                    Text(
-                                        text = com.example.util.tr(sub),
-                                        color = if (isSelected) HextechCyan else TextMuted.copy(alpha = 0.7f),
-                                        fontSize = if (isOverlay) 7.5.sp else 8.5.sp,
-                                        fontWeight = FontWeight.Normal,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        maxLines = 1
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // RANGO DE ELO PARA SERVIDOR CHINO: Retador/Soberano | Maestro/Gran Maestro | Esmeralda/Diamante | General
-                    AnimatedVisibility(visible = currentRegion == "CN") {
-                        Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                TencentRankTier.entries.forEach { tier ->
-                                    val isSelected = currentTier == tier
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(
-                                                if (isSelected) Brush.verticalGradient(
-                                                    listOf(HextechCyan.copy(alpha = 0.30f), HextechSurfaceVariant.copy(alpha = 0.6f))
-                                                ) else Brush.verticalGradient(
-                                                    listOf(HextechSurfaceVariant.copy(alpha = 0.25f), HextechSurfaceVariant.copy(alpha = 0.15f))
-                                                )
-                                            )
-                                            .border(
-                                                width = if (isSelected) 1.5.dp else 0.6.dp,
-                                                color = if (isSelected) HextechCyan else HextechCardBorder.copy(alpha = 0.5f),
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .clickable {
-                                                coroutineScope.launch {
-                                                    ChineseMetaSyncService.syncChineseMeta(context, tier, forceRefresh = true)
-                                                }
-                                            }
-                                            .padding(horizontal = 2.dp, vertical = if (isOverlay) 5.dp else 7.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = tr(tier.displayName),
-                                            color = if (isSelected) HextechCyan else TextMuted,
-                                            fontSize = if (isOverlay) 7.5.sp else 8.5.sp,
-                                            lineHeight = 10.5.sp,
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                            maxLines = 1
-                                        )
-                                    }
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-
-                    // Barra de Estado de Conexión, Hora de Captura y Caché Persistente (sin emojis)
-                    Surface(
-                        color = if (isAutoSyncActive) Color(0xFF00E5FF).copy(alpha = 0.08f) else Color(0xFFE65100).copy(alpha = 0.12f),
-                        shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(0.5.dp, if (isAutoSyncActive) HextechCyan.copy(alpha = 0.4f) else Color(0xFFFF9800).copy(alpha = 0.5f)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 5.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.5.dp)
-                                        .clip(CircleShape)
-                                        .background(if (isAutoSyncActive) Color(0xFF00FF7F) else Color(0xFFFF5252))
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = com.example.util.tr(if (isSyncing) {
-                                        tr("Sincronizando datos de la Tier List...")
-                                    } else if (isAutoSyncActive) {
-                                        tr(regionalStatus)
-                                    } else {
-                                        tr(regionalStatus)
-                                    }),
-                                    color = if (isAutoSyncActive) (if (isSyncing) HextechCyan else Color(0xFF81C784)) else Color(0xFFFFB74D),
-                                    fontSize = if (isOverlay) 8.sp else 9.5.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    maxLines = 1
-                                )
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = if (isAutoSyncActive) HextechGold.copy(alpha = 0.15f) else Color(0xFFFF5252).copy(alpha = 0.15f)
-                            ) {
-                                Text(
-                                    text = com.example.util.tr(if (isAutoSyncActive) tr("Actualizado") else tr("Caché Local")),
-                                    color = if (isAutoSyncActive) HextechGold else Color(0xFFFF8A80),
-                                    fontSize = if (isOverlay) 7.5.sp else 8.5.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.5.dp)
-                                )
-                            }
-                        }
-                    }
-                }
             }
         }
     }

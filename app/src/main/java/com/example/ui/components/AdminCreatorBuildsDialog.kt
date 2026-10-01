@@ -1301,7 +1301,7 @@ fun CreatorProfileDialog(
                         ) {
                             androidx.compose.foundation.Image(
                                 painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_orange_essence),
-                                contentDescription = "Esencia Naranja",
+                                contentDescription = com.example.util.tr("Esencia Naranja"),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -1527,7 +1527,7 @@ fun CreatorProfileDialog(
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             androidx.compose.foundation.Image(
                                                 painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_orange_essence),
-                                                contentDescription = "Esencia Naranja",
+                                                contentDescription = com.example.util.tr("Esencia Naranja"),
                                                 modifier = Modifier.size(28.dp)
                                             )
                                             Spacer(modifier = Modifier.width(10.dp))

@@ -1,0 +1,2508 @@
+{
+  "reviewedAt": "2026-09-30",
+  "champions": 138,
+  "method": "Editorial weak/strong lists by lane from WildRiftCounter. Only opposing champions compatible with the selected lane are displayed. Conflicts resolve in favor of the counter category; values are not head-to-head statistics.",
+  "references": [
+    {
+      "id": "aatrox",
+      "url": "https://wildriftcounter.com/champions/aatrox/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "ahri",
+      "url": "https://wildriftcounter.com/champions/ahri/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "akali",
+      "url": "https://wildriftcounter.com/champions/akali/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "akshan",
+      "url": "https://wildriftcounter.com/champions/akshan/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "alistar",
+      "url": "https://wildriftcounter.com/champions/alistar/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "ambessa",
+      "url": "https://wildriftcounter.com/champions/ambessa/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "amumu",
+      "url": "https://wildriftcounter.com/champions/amumu/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "annie",
+      "url": "https://wildriftcounter.com/champions/annie/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "ashe",
+      "url": "https://wildriftcounter.com/champions/ashe/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "aurelion_sol",
+      "url": "https://wildriftcounter.com/champions/aurelion-sol/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "aurora",
+      "url": "https://wildriftcounter.com/champions/aurora/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "blitzcrank",
+      "url": "https://wildriftcounter.com/champions/blitzcrank/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 5
+        },
+        "TOP": {
+          "counters": 4,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "brand",
+      "url": "https://wildriftcounter.com/champions/brand/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "braum",
+      "url": "https://wildriftcounter.com/champions/braum/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "caitlyn",
+      "url": "https://wildriftcounter.com/champions/caitlyn/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "camille",
+      "url": "https://wildriftcounter.com/champions/camille/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "corki",
+      "url": "https://wildriftcounter.com/champions/corki/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "darius",
+      "url": "https://wildriftcounter.com/champions/darius/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "diana",
+      "url": "https://wildriftcounter.com/champions/diana/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 5,
+          "advantages": 5
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "dr_mundo",
+      "url": "https://wildriftcounter.com/champions/dr-mundo/",
+      "roles": {
+        "TOP": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "draven",
+      "url": "https://wildriftcounter.com/champions/draven/",
+      "roles": {
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "ekko",
+      "url": "https://wildriftcounter.com/champions/ekko/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "evelynn",
+      "url": "https://wildriftcounter.com/champions/evelynn/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "ezreal",
+      "url": "https://wildriftcounter.com/champions/ezreal/",
+      "roles": {
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "fiddlesticks",
+      "url": "https://wildriftcounter.com/champions/fiddlesticks/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "fiora",
+      "url": "https://wildriftcounter.com/champions/fiora/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "fizz",
+      "url": "https://wildriftcounter.com/champions/fizz/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "galio",
+      "url": "https://wildriftcounter.com/champions/galio/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "garen",
+      "url": "https://wildriftcounter.com/champions/garen/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "gnar",
+      "url": "https://wildriftcounter.com/champions/gnar/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "gragas",
+      "url": "https://wildriftcounter.com/champions/gragas/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "graves",
+      "url": "https://wildriftcounter.com/champions/graves/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "gwen",
+      "url": "https://wildriftcounter.com/champions/gwen/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "hecarim",
+      "url": "https://wildriftcounter.com/champions/hecarim/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "heimerdinger",
+      "url": "https://wildriftcounter.com/champions/heimerdinger/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "hwei",
+      "url": "https://wildriftcounter.com/champions/hwei/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "irelia",
+      "url": "https://wildriftcounter.com/champions/irelia/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "janna",
+      "url": "https://wildriftcounter.com/champions/janna/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "jarvan_iv",
+      "url": "https://wildriftcounter.com/champions/jarvan-iv/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "jax",
+      "url": "https://wildriftcounter.com/champions/jax/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "jayce",
+      "url": "https://wildriftcounter.com/champions/jayce/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "jhin",
+      "url": "https://wildriftcounter.com/champions/jhin/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "jinx",
+      "url": "https://wildriftcounter.com/champions/jinx/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "k_sante",
+      "url": "https://wildriftcounter.com/champions/ksante/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kai_sa",
+      "url": "https://wildriftcounter.com/champions/kaisa/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kalista",
+      "url": "https://wildriftcounter.com/champions/kalista/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "karma",
+      "url": "https://wildriftcounter.com/champions/karma/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kassadin",
+      "url": "https://wildriftcounter.com/champions/kassadin/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "katarina",
+      "url": "https://wildriftcounter.com/champions/katarina/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kayle",
+      "url": "https://wildriftcounter.com/champions/kayle/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kayn",
+      "url": "https://wildriftcounter.com/champions/kayn/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kennen",
+      "url": "https://wildriftcounter.com/champions/kennen/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kha_zix",
+      "url": "https://wildriftcounter.com/champions/khazix/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kindred",
+      "url": "https://wildriftcounter.com/champions/kindred/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "kog_maw",
+      "url": "https://wildriftcounter.com/champions/kogmaw/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "lee_sin",
+      "url": "https://wildriftcounter.com/champions/lee-sin/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "leona",
+      "url": "https://wildriftcounter.com/champions/leona/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "lillia",
+      "url": "https://wildriftcounter.com/champions/lillia/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "lissandra",
+      "url": "https://wildriftcounter.com/champions/lissandra/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "lucian",
+      "url": "https://wildriftcounter.com/champions/lucian/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "lulu",
+      "url": "https://wildriftcounter.com/champions/lulu/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "lux",
+      "url": "https://wildriftcounter.com/champions/lux/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "malphite",
+      "url": "https://wildriftcounter.com/champions/malphite/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "maokai",
+      "url": "https://wildriftcounter.com/champions/maokai/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "master_yi",
+      "url": "https://wildriftcounter.com/champions/master-yi/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "mel",
+      "url": "https://wildriftcounter.com/champions/mel/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "milio",
+      "url": "https://wildriftcounter.com/champions/milio/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "miss_fortune",
+      "url": "https://wildriftcounter.com/champions/miss-fortune/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "mordekaiser",
+      "url": "https://wildriftcounter.com/champions/mordekaiser/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "morgana",
+      "url": "https://wildriftcounter.com/champions/morgana/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "nami",
+      "url": "https://wildriftcounter.com/champions/nami/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "nasus",
+      "url": "https://wildriftcounter.com/champions/nasus/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "nautilus",
+      "url": "https://wildriftcounter.com/champions/nautilus/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "nidalee",
+      "url": "https://wildriftcounter.com/champions/nidalee/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "nilah",
+      "url": "https://wildriftcounter.com/champions/nilah/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "norra",
+      "url": "https://wildriftcounter.com/champions/norra/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "nunu_willump",
+      "url": "https://wildriftcounter.com/champions/nunu-willump/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "olaf",
+      "url": "https://wildriftcounter.com/champions/olaf/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "orianna",
+      "url": "https://wildriftcounter.com/champions/orianna/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "ornn",
+      "url": "https://wildriftcounter.com/champions/ornn/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "pantheon",
+      "url": "https://wildriftcounter.com/champions/pantheon/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "poppy",
+      "url": "https://wildriftcounter.com/champions/poppy/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "pyke",
+      "url": "https://wildriftcounter.com/champions/pyke/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "rakan",
+      "url": "https://wildriftcounter.com/champions/rakan/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "rammus",
+      "url": "https://wildriftcounter.com/champions/rammus/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "rell",
+      "url": "https://wildriftcounter.com/champions/rell/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "renekton",
+      "url": "https://wildriftcounter.com/champions/renekton/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "rengar",
+      "url": "https://wildriftcounter.com/champions/rengar/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "riven",
+      "url": "https://wildriftcounter.com/champions/riven/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "rumble",
+      "url": "https://wildriftcounter.com/champions/rumble/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "ryze",
+      "url": "https://wildriftcounter.com/champions/ryze/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "samira",
+      "url": "https://wildriftcounter.com/champions/samira/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "senna",
+      "url": "https://wildriftcounter.com/champions/senna/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "seraphine",
+      "url": "https://wildriftcounter.com/champions/seraphine/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "sett",
+      "url": "https://wildriftcounter.com/champions/sett/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "shen",
+      "url": "https://wildriftcounter.com/champions/shen/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "shyvana",
+      "url": "https://wildriftcounter.com/champions/shyvana/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "singed",
+      "url": "https://wildriftcounter.com/champions/singed/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "sion",
+      "url": "https://wildriftcounter.com/champions/sion/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "sivir",
+      "url": "https://wildriftcounter.com/champions/sivir/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 2
+        }
+      }
+    },
+    {
+      "id": "skarner",
+      "url": "https://wildriftcounter.com/champions/skarner/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "smolder",
+      "url": "https://wildriftcounter.com/champions/smolder/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "sona",
+      "url": "https://wildriftcounter.com/champions/sona/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "soraka",
+      "url": "https://wildriftcounter.com/champions/soraka/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "swain",
+      "url": "https://wildriftcounter.com/champions/swain/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "syndra",
+      "url": "https://wildriftcounter.com/champions/syndra/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "taliyah",
+      "url": "https://wildriftcounter.com/champions/taliyah/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "talon",
+      "url": "https://wildriftcounter.com/champions/talon/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 4
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 4
+        }
+      }
+    },
+    {
+      "id": "teemo",
+      "url": "https://wildriftcounter.com/champions/teemo/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "thresh",
+      "url": "https://wildriftcounter.com/champions/thresh/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "tristana",
+      "url": "https://wildriftcounter.com/champions/tristana/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "tryndamere",
+      "url": "https://wildriftcounter.com/champions/tryndamere/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "twisted_fate",
+      "url": "https://wildriftcounter.com/champions/twisted-fate/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "twitch",
+      "url": "https://wildriftcounter.com/champions/twitch/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "urgot",
+      "url": "https://wildriftcounter.com/champions/urgot/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "varus",
+      "url": "https://wildriftcounter.com/champions/varus/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "vayne",
+      "url": "https://wildriftcounter.com/champions/vayne/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "veigar",
+      "url": "https://wildriftcounter.com/champions/veigar/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 5,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "vel_koz",
+      "url": "https://wildriftcounter.com/champions/velkoz/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "vex",
+      "url": "https://wildriftcounter.com/champions/vex/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "vi",
+      "url": "https://wildriftcounter.com/champions/vi/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "viego",
+      "url": "https://wildriftcounter.com/champions/viego/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "viktor",
+      "url": "https://wildriftcounter.com/champions/viktor/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "vladimir",
+      "url": "https://wildriftcounter.com/champions/vladimir/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "volibear",
+      "url": "https://wildriftcounter.com/champions/volibear/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "warwick",
+      "url": "https://wildriftcounter.com/champions/warwick/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "wukong",
+      "url": "https://wildriftcounter.com/champions/wukong/",
+      "roles": {
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "xayah",
+      "url": "https://wildriftcounter.com/champions/xayah/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "xin_zhao",
+      "url": "https://wildriftcounter.com/champions/xin-zhao/",
+      "roles": {
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "yasuo",
+      "url": "https://wildriftcounter.com/champions/yasuo/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "yone",
+      "url": "https://wildriftcounter.com/champions/yone/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "yuumi",
+      "url": "https://wildriftcounter.com/champions/yuumi/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "zed",
+      "url": "https://wildriftcounter.com/champions/zed/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "zeri",
+      "url": "https://wildriftcounter.com/champions/zeri/",
+      "roles": {
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "ziggs",
+      "url": "https://wildriftcounter.com/champions/ziggs/",
+      "roles": {
+        "MID": {
+          "counters": 5,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 5
+        }
+      }
+    },
+    {
+      "id": "zilean",
+      "url": "https://wildriftcounter.com/champions/zilean/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "zoe",
+      "url": "https://wildriftcounter.com/champions/zoe/",
+      "roles": {
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    },
+    {
+      "id": "zyra",
+      "url": "https://wildriftcounter.com/champions/zyra/",
+      "roles": {
+        "SUPPORT": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "MID": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "ADC": {
+          "counters": 6,
+          "advantages": 6
+        },
+        "JUNGLE": {
+          "counters": 6,
+          "advantages": 5
+        },
+        "TOP": {
+          "counters": 6,
+          "advantages": 6
+        }
+      }
+    }
+  ],
+  "dataFile": "app/src/main/java/com/example/util/ReviewedLaneMatchups.kt"
+}

@@ -192,7 +192,7 @@ fun SubscriptionHistoryDialog(
                                 ) {
                                     Image(
                                         painter = painterResource(id = com.example.R.drawable.ic_blue_essence),
-                                        contentDescription = "Esencia Azul",
+                                        contentDescription = com.example.util.tr("Esencia Azul"),
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
@@ -233,7 +233,7 @@ fun SubscriptionHistoryDialog(
                                 ) {
                                     Image(
                                         painter = painterResource(id = com.example.R.drawable.ic_orange_essence),
-                                        contentDescription = "Esencia Naranja",
+                                        contentDescription = com.example.util.tr("Esencia Naranja"),
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
