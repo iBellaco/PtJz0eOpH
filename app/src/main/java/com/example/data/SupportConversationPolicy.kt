@@ -23,8 +23,13 @@ object SupportConversationPolicy {
             SupportMessageEntry(id = "${reportId}_initial", senderName = userName, senderRole = "USER", text = text, timestampMillis = timestamp),
             SupportMessageEntry(id = "${reportId}_system", senderName = "Sistema Coach", senderRole = "SYSTEM", text = SYSTEM_GREETING, timestampMillis = timestamp + 1, isGreeting = true)
         )
-        return if (legacyReply.isBlank()) initial else initial + SupportMessageEntry(id = "${reportId}_legacy_reply",
-            senderName = legacyAuthor, senderRole = "SUPPORT", text = legacyReply, timestampMillis = legacyTimestamp)
+        val answers = legacyReply.split("\n\n---\n\n").map { it.trim() }
+            .filter { it.isNotBlank() && !SupportReplyManager.isDefaultGreeting(it) }
+            .mapIndexed { index, reply -> SupportMessageEntry(
+                id = if (index == 0) "${reportId}_legacy_reply" else "${reportId}_legacy_reply_$index",
+                senderName = legacyAuthor, senderRole = "SUPPORT", text = reply, timestampMillis = legacyTimestamp + index
+            ) }
+        return initial + answers
     }
     fun encode(message: SupportMessageEntry, senderUid: String = ""): Map<String, Any> = mapOf(
         "id" to message.id, "senderName" to message.senderName, "senderRole" to message.senderRole,

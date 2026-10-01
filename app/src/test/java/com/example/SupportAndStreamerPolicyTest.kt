@@ -45,6 +45,10 @@ class SupportAndStreamerPolicyTest {
         assertEquals("Respuesta anterior", history.last().text)
         assertEquals("SUPPORT", history.last().senderRole)
         assertEquals("old_legacy_reply", history.last().id)
+        val accumulated = SupportConversationPolicy.initial("old", "Diego", "Consulta", 100,
+            SupportConversationPolicy.SYSTEM_GREETING + "\n\n---\n\nRespuesta uno\n\n---\n\nRespuesta dos")
+        assertEquals(listOf("USER", "SYSTEM", "SUPPORT", "SUPPORT"), accumulated.map { it.senderRole })
+        assertTrue(SupportConversationPolicy.canUserReply(accumulated, "READ"))
     }
     @Test fun `shared read flag takes precedence over stale device state`() {
         assertTrue(SupportConversationPolicy.userHasRead(mapOf("userRead" to true, "isRead" to false, "hasNewAdminReply" to false)))
