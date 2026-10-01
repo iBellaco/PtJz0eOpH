@@ -5,7 +5,7 @@ El cambio de aplicación está en la solicitud de cambios de esta versión. Las 
 ## Activación
 
 1. Instalar el APK de pruebas 1.1.10.141 con una cuenta administradora antes de la activación. Comprobar que el proyecto de destino es `wild-rift-drafting`.
-2. Con una sesión del propietario del proyecto, publicar el contenido de `firestore.rules` en la pestaña de reglas de la consola del servicio, o ejecutar desde la raíz del repositorio:
+2. Con una sesión del propietario del proyecto, revisar y guardar las reglas actualmente publicadas. Si contienen permisos adicionales que no están en este repositorio, conservarlos al integrar estos cambios. Después, publicar el contenido de `firestore.rules` en la pestaña de reglas de la consola del servicio, o ejecutar desde la raíz del repositorio:
 
    ```sh
    npx firebase-tools@13.35.1 login

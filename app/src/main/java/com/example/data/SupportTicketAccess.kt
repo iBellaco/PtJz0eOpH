@@ -23,29 +23,33 @@ object SupportTicketAccess {
         if (migratedForUid == uid) return@withLock
         val db = FirebaseFirestore.getInstance()
         val documents = db.collection("support_reports").get().await().documents
-        var batch = db.batch()
-        var updates = 0
         documents.forEach { doc ->
-            val patch = mutableMapOf<String, Any>()
             val visible = !SupportConversationPolicy.isSponsor(doc.getString("tag") ?: doc.getString("type").orEmpty())
-            if (doc.getBoolean("staffVisible") != visible) patch["staffVisible"] = visible
             var owner = doc.getString("userId").orEmpty()
             if (owner.isBlank() && !doc.getString("userEmail").isNullOrBlank()) {
                 owner = db.collection("users").whereEqualTo("email", doc.getString("userEmail")).limit(1).get().await().documents.firstOrNull()?.id.orEmpty()
-                if (owner.isNotBlank()) patch["userId"] = owner
             }
-            if (SupportConversationPolicy.decode(doc.get("conversation")).isEmpty()) {
-                val initial = SupportConversationPolicy.initial(doc.id, doc.getString("userName") ?: "Invocador", doc.getString("description").orEmpty(), doc.getTimestamp("createdAt")?.toDate()?.time ?: 0L)
-                val legacyReply = doc.getString("adminReply").orEmpty()
-                val history = if (legacyReply.isBlank()) initial else initial + SupportMessageEntry(id = "${doc.id}_legacy_reply", senderName = doc.getString("repliedBy") ?: "Soporte Coach", senderRole = "SUPPORT", text = legacyReply, timestampMillis = doc.getTimestamp("repliedAt")?.toDate()?.time ?: 0L)
-                patch["conversation"] = history.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") owner else "") }
-            }
-            if (patch.isNotEmpty()) {
-                batch.update(doc.reference, patch); updates++
-                if (updates == 400) { batch.commit().await(); batch = db.batch(); updates = 0 }
+            if (doc.getBoolean("staffVisible") != visible || (doc.getString("userId").isNullOrBlank() && owner.isNotBlank()) || SupportConversationPolicy.decode(doc.get("conversation")).isEmpty()) {
+                db.runTransaction { transaction ->
+                    val latest = transaction.get(doc.reference)
+                    if (latest.exists()) {
+                        val patch = mutableMapOf<String, Any>()
+                        val latestVisible = !SupportConversationPolicy.isSponsor(latest.getString("tag") ?: latest.getString("type").orEmpty())
+                        if (latest.getBoolean("staffVisible") != latestVisible) patch["staffVisible"] = latestVisible
+                        val latestOwner = latest.getString("userId").orEmpty().ifBlank { owner }
+                        if (latest.getString("userId").isNullOrBlank() && latestOwner.isNotBlank()) patch["userId"] = latestOwner
+                        if (SupportConversationPolicy.decode(latest.get("conversation")).isEmpty()) {
+                            val history = SupportConversationPolicy.initial(doc.id, latest.getString("userName") ?: "Invocador",
+                                latest.getString("description").orEmpty(), latest.getTimestamp("createdAt")?.toDate()?.time ?: 0L,
+                                latest.getString("adminReply").orEmpty(), latest.getString("repliedBy") ?: "Soporte Coach",
+                                latest.getTimestamp("repliedAt")?.toDate()?.time ?: 0L)
+                            patch["conversation"] = history.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") latestOwner else "") }
+                        }
+                        if (patch.isNotEmpty()) transaction.update(doc.reference, patch)
+                    }
+                }.await()
             }
         }
-        if (updates > 0) batch.commit().await()
         migratedForUid = uid
     }
 }

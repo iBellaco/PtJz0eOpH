@@ -106,6 +106,10 @@ service cloud.firestore {
       allow read: if signedIn();
       allow write: if document != 'streamer_live' && isAdmin();
     }
+    match /system_config/{document}/{nested=**} {
+      allow read: if signedIn();
+      allow write: if document != 'streamer_live' && isAdmin();
+    }
     match /system_config/streamer_live {
       function ownRemoval(index) {
         let old = resource.data.entries;

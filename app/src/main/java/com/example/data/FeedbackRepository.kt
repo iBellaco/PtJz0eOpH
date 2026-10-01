@@ -371,7 +371,6 @@ object FeedbackRepository {
                     userId = doc.getString("userId").orEmpty()
                 )
                 seenIds.add(docId)
-                if (title.isNotBlank()) seenTitles.add(title.trim())
                 combinedList.add(converted)
             }
 

@@ -15,6 +15,13 @@ class SupportAndStreamerPolicyTest {
         assertEquals(2, repeated.count { it.senderRole == "SUPPORT" })
         assertEquals(repeated, SupportConversationPolicy.decode(repeated.map { SupportConversationPolicy.encode(it) }))
     }
+    @Test fun `legacy answers survive creation of the shared history`() {
+        val history = SupportConversationPolicy.initial("old", "Diego", "Consulta", 100, "Respuesta anterior", "Soporte", 200)
+        assertEquals(3, history.size)
+        assertEquals("Respuesta anterior", history.last().text)
+        assertEquals("SUPPORT", history.last().senderRole)
+        assertEquals("old_legacy_reply", history.last().id)
+    }
     @Test fun `shared read flag takes precedence over stale device state`() {
         assertTrue(SupportConversationPolicy.userHasRead(mapOf("userRead" to true, "isRead" to false, "hasNewAdminReply" to false)))
         assertFalse(SupportConversationPolicy.userHasRead(mapOf("userRead" to false, "isRead" to true)))

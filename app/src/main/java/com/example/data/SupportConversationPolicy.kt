@@ -11,10 +11,15 @@ object SupportConversationPolicy {
         if (data["userRead"] is Boolean) return data["userRead"] == true && data["hasNewAdminReply"] != true
         return data["isRead"] == true && data["hasNewAdminReply"] != true
     }
-    fun initial(reportId: String, userName: String, text: String, timestamp: Long): List<SupportMessageEntry> = listOf(
-        SupportMessageEntry(id = "${reportId}_initial", senderName = userName, senderRole = "USER", text = text, timestampMillis = timestamp),
-        SupportMessageEntry(id = "${reportId}_system", senderName = "Sistema Coach", senderRole = "SYSTEM", text = SYSTEM_GREETING, timestampMillis = timestamp + 1, isGreeting = true)
-    )
+    fun initial(reportId: String, userName: String, text: String, timestamp: Long,
+        legacyReply: String = "", legacyAuthor: String = "Soporte Coach", legacyTimestamp: Long = timestamp): List<SupportMessageEntry> {
+        val initial = listOf(
+            SupportMessageEntry(id = "${reportId}_initial", senderName = userName, senderRole = "USER", text = text, timestampMillis = timestamp),
+            SupportMessageEntry(id = "${reportId}_system", senderName = "Sistema Coach", senderRole = "SYSTEM", text = SYSTEM_GREETING, timestampMillis = timestamp + 1, isGreeting = true)
+        )
+        return if (legacyReply.isBlank()) initial else initial + SupportMessageEntry(id = "${reportId}_legacy_reply",
+            senderName = legacyAuthor, senderRole = "SUPPORT", text = legacyReply, timestampMillis = legacyTimestamp)
+    }
     fun encode(message: SupportMessageEntry, senderUid: String = ""): Map<String, Any> = mapOf(
         "id" to message.id, "senderName" to message.senderName, "senderRole" to message.senderRole,
         "senderEmail" to message.senderEmail.orEmpty(), "senderUid" to senderUid,

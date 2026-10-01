@@ -258,7 +258,9 @@ object SupportReplyManager {
                 check(SupportTicketAccess.isAdmin() || !SupportConversationPolicy.isSponsor(actualTag)) { "Ticket exclusivo del administrador" }
                 val previous = SupportConversationPolicy.decode(snapshot.get("conversation")).ifEmpty {
                     SupportConversationPolicy.initial(reportId, snapshot.getString("userName") ?: "Invocador",
-                        snapshot.getString("description") ?: reportDescription.orEmpty(), snapshot.getTimestamp("createdAt")?.toDate()?.time ?: entry.timestampMillis)
+                        snapshot.getString("description") ?: reportDescription.orEmpty(), snapshot.getTimestamp("createdAt")?.toDate()?.time ?: entry.timestampMillis,
+                        snapshot.getString("adminReply").orEmpty(), snapshot.getString("repliedBy") ?: "Soporte Coach",
+                        snapshot.getTimestamp("repliedAt")?.toDate()?.time ?: entry.timestampMillis)
                 }
                 val messages = previous + entry
                 val rows = (snapshot.get("conversation") as? List<*>)?.takeIf { it.isNotEmpty() }.orEmpty().ifEmpty { previous.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") owner else "") } } + SupportConversationPolicy.encode(entry, auth.uid)
@@ -307,7 +309,9 @@ object SupportReplyManager {
                 check(!SupportConversationPolicy.isClosed(snapshot.getString("status").orEmpty())) { "Ticket cerrado" }
                 val previous = SupportConversationPolicy.decode(snapshot.get("conversation")).ifEmpty {
                     SupportConversationPolicy.initial(reportId, userName, snapshot.getString("description").orEmpty(),
-                        snapshot.getTimestamp("createdAt")?.toDate()?.time ?: entry.timestampMillis)
+                        snapshot.getTimestamp("createdAt")?.toDate()?.time ?: entry.timestampMillis,
+                        snapshot.getString("adminReply").orEmpty(), snapshot.getString("repliedBy") ?: "Soporte Coach",
+                        snapshot.getTimestamp("repliedAt")?.toDate()?.time ?: entry.timestampMillis)
                 }
                 val messages = previous + entry
                 val data = mapOf<String, Any>("conversation" to ((snapshot.get("conversation") as? List<*>)?.takeIf { it.isNotEmpty() }.orEmpty().ifEmpty { previous.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") auth.uid else "") } } + SupportConversationPolicy.encode(entry, auth.uid)),
