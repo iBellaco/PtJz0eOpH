@@ -88,7 +88,8 @@ enum class CircleTarget(val title: String, val shortName: String) {
 
 @Composable
 fun LiteRTEngineViewerDialog(
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    initializeDiagnostics: Boolean = true
 ) {
     val context = LocalContext.current
     val report by LiteRTVisionClassifier.reportFlow.collectAsStateWithLifecycle()
@@ -196,9 +197,11 @@ fun LiteRTEngineViewerDialog(
         DraftVisionScanner.updateCalibration(context, updated)
     }
 
-    LaunchedEffect(Unit) {
-        TenthPickDiagnosticManager.init(context)
-        TenthPickDiagnosticManager.refreshSavedFrames(context)
+    if (initializeDiagnostics) {
+        LaunchedEffect(Unit) {
+            TenthPickDiagnosticManager.init(context)
+            TenthPickDiagnosticManager.refreshSavedFrames(context)
+        }
     }
 
     Box(

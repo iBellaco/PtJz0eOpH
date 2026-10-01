@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 854
-    versionName = "1.1.10.138"
+    versionCode = 855
+    versionName = "1.1.10.139"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -93,6 +93,13 @@ android {
       isIncludeAndroidResources = true
       all {
         it.systemProperty("robolectric.sqliteMode", "LEGACY")
+        // Robolectric's Compose idler can retain a pending frame between test classes.
+        it.forkEvery = 1L
+        it.testLogging {
+          events("failed", "standard_out", "standard_error")
+          exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+          showStandardStreams = true
+        }
       }
     }
   }

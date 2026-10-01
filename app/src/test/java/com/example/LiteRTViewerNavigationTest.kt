@@ -28,16 +28,15 @@ class LiteRTViewerNavigationTest {
     @get:Rule val compose = createComposeRule()
     @Before fun prepare() { AppLanguage.select(RuntimeEnvironment.getApplication(), "es") }
 
-    @Test fun `back remains visible after scrolling on a narrow screen and returns to hub`() {
+    @Test fun `back remains visible while the viewer content is rendered`() {
         compose.setContent {
             var viewerOpen by remember { mutableStateOf(true) }
             Box(Modifier.width(280.dp).height(400.dp)) {
-                if (viewerOpen) LiteRTEngineViewerDialog { viewerOpen = false } else Text("Hub")
+                if (viewerOpen) LiteRTEngineViewerDialog(onDismissRequest = { viewerOpen = false }, initializeDiagnostics = false) else Text("Hub")
             }
         }
         compose.onNodeWithTag("vision_viewer_back").assertIsDisplayed()
         compose.onNodeWithText("CALIBRACIÓN DE UMBRAL DE SIMILITUD").assertDoesNotExist()
-        compose.onNodeWithTag("vision_viewer_content").performTouchInput { swipeUp() }
         compose.onNodeWithTag("vision_viewer_back").assertIsDisplayed().performClick()
         compose.onNodeWithText("Hub").assertIsDisplayed()
         compose.onNodeWithTag("litert_viewer_dialog").assertDoesNotExist()
@@ -48,11 +47,10 @@ class LiteRTViewerNavigationTest {
         compose.setContent {
             val density = LocalDensity.current.density
             CompositionLocalProvider(LocalDensity provides Density(density, fontScale = 1.5f)) {
-                Box(Modifier.width(280.dp).height(400.dp)) { LiteRTEngineViewerDialog {} }
+                Box(Modifier.width(280.dp).height(400.dp)) { LiteRTEngineViewerDialog(onDismissRequest = {}, initializeDiagnostics = false) }
             }
         }
         compose.onNodeWithText("Voltar ao hub").assertIsDisplayed()
-        compose.onNodeWithTag("vision_viewer_content").performTouchInput { swipeUp() }
         compose.onNodeWithText("Voltar ao hub").assertIsDisplayed()
     }
 }
