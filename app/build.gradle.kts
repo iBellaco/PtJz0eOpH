@@ -93,6 +93,11 @@ android {
       isIncludeAndroidResources = true
       all {
         it.systemProperty("robolectric.sqliteMode", "LEGACY")
+        it.testLogging {
+          events("failed", "standard_out", "standard_error")
+          exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+          showStandardStreams = true
+        }
       }
     }
   }
