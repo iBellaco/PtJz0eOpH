@@ -1241,7 +1241,8 @@ object ChampionRoleMatchupAdvisor {
             (if (primaryRole) champion.advantageAgainst.take(3) else emptyList()), true)
         val synergies = clean((reference?.synergies ?: emptyList()) + known.synergies.take(3) +
             champion.synergies.take(3) + reverseSynergies, false)
-        return MatchupRoleResult(advantages.filterNot { it in counters }.take(12), counters.take(12), synergies.take(12))
+        return CoachMatchupRanking.complete(champion, role,
+            MatchupRoleResult(advantages.filterNot { it in counters }.take(12), counters.take(12), synergies.take(12)), catalog)
     }
 
     fun getMatchups(champion: Champion, role: LaneRole): MatchupRoleResult {

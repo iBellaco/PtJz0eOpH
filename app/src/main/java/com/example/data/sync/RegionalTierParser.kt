@@ -1,103 +1,84 @@
 package com.example.data.sync
 
+import org.json.JSONArray
 import org.json.JSONObject
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
+import java.util.Locale
 
-/** Parses published editorial categories from bestbuildwr.com, wildriftfire.com, and wildriftcore.com */
+/** Each publisher has its own schema. Never carry a tier into navigation/footer links. */
 object RegionalTierParser {
-    fun canonical(value: String): String = value.lowercase(java.util.Locale.ROOT)
-        .filter { it.isLetterOrDigit() }.let { when (it) {
-            "nunu", "nunuwillump", "nunuywillump" -> "nunuwillump"
-            "monkeyking", "wukong" -> "wukong"
-            "drmundo", "dr-mundo", "mundo" -> "drmundo"
-            "aurelionsol", "aurelion-sol", "asol" -> "aurelionsol"
-            "leesin", "lee-sin" -> "leesin"
-            "xinzhao", "xin-zhao" -> "xinzhao"
-            "masteryi", "master-yi", "yi" -> "masteryi"
-            "missfortune", "miss-fortune", "mf" -> "missfortune"
-            "jarvaniv", "jarvan-iv", "jarvan" -> "jarvaniv"
-            "twistedfate", "twisted-fate", "tf" -> "twistedfate"
-            "tahmkench", "tahm-kench" -> "tahmkench"
-            else -> it
-        } }
+    fun canonical(value: String): String = value.lowercase(Locale.ROOT)
+        .filter { it.isLetterOrDigit() }.let {
+            when (it) {
+                "nunu", "nunuwillump", "nunuywillump", "nunuandwillump" -> "nunuwillump"
+                "monkeyking", "wukong" -> "wukong"
+                "mundo", "drmundo" -> "drmundo"
+                "asol", "aurelionsol" -> "aurelionsol"
+                "yi", "masteryi", "maestroyi" -> "masteryi"
+                "mf", "missfortune" -> "missfortune"
+                "tf", "twistedfate" -> "twistedfate"
+                "jarvan", "jarvaniv" -> "jarvaniv"
+                "bardo", "bard" -> "bard"
+                else -> it
+            }
+        }
 
     private val order = listOf("S+", "S", "A+", "A", "B", "C", "D")
+    private fun tier(value: String): String? = value.trim().uppercase(Locale.ROOT)
+        .replace("SPLUS", "S+").takeIf { it in order }
 
-    // Comprehensive regex covering WildRiftFire, BestBuildWR, WildRiftCore, and standard HTML patterns
-    private val tierHeaderRegex = Regex("""(?:tier[-_\s]*(splus|s\+|s|a\+|a|b|c|d|god|op)|class=["'][^"']*\btier[-_\s]+(splus|s\+|s|a\+|a|b|c|d)\b[^"']*["']|<h[1-6][^>]*>\s*(?:Tier\s+)?(S\+|S|A\+|A|B|C|D)\s*</h[1-6]>)""", RegexOption.IGNORE_CASE)
-    private val champLinkRegex = Regex("""(?:href=["'](?:/guide/|/champion/|/es/champions/|/champions/)([^"'/?#]+)["']|data-champion=["']([^"']+)["']|alt=["']([^"']+)["'][^>]*class=["'][^"']*(?:champ|avatar|portrait|icon)[^"']*["'])""", RegexOption.IGNORE_CASE)
-
-    fun parse(html: String): Map<String, String> {
+    fun parse(html: String, source: String? = null): Map<String, String> {
+        if (html.isBlank()) return emptyMap()
+        val doc = Jsoup.parse(html)
         val result = linkedMapOf<String, String>()
-        if (html.isBlank()) return result
-
-        // 1. Check for embedded JSON payload (e.g. Next.js __NEXT_DATA__ or state scripts)
-        try {
-            val jsonMatch = Regex("""<script\s+id=["']__NEXT_DATA__["']\s+type=["']application/json["']>([^<]+)</script>""", RegexOption.IGNORE_CASE).find(html)
-            if (jsonMatch != null) {
-                val jsonStr = jsonMatch.groupValues[1]
-                val root = JSONObject(jsonStr)
-                // Search recursively for champion tier data
-                extractTiersFromJson(root, result)
-                if (result.size >= 10) return result
+        fun add(name: String, category: String) {
+            val id = canonical(name)
+            if (id.length !in 2..30) return
+            val previous = result[id]
+            if (previous == null || order.indexOf(category) < order.indexOf(previous)) result[id] = category
+        }
+        fun links(container: Element, category: String, selector: String) {
+            container.select(selector).forEach { link ->
+                val slug = link.attr("href").substringBefore('?').substringBefore('#').trimEnd('/').substringAfterLast('/')
+                if (slug.isNotBlank()) add(slug, category)
             }
-        } catch (_: Exception) {}
-
-        // 2. Sequential HTML token scanning (handling section-based tier lists)
-        var currentTier: String? = null
-        
-        // Scan tokens sequentially
-        val combinedRegex = Regex("""<div\b[^>]*class=["'][^"']*\btier[-_\s]*(splus|s\+|s|a\+|a|b|c|d)\b[^"']*["'][^>]*>|<h[1-6][^>]*>\s*(?:Tier\s+)?(S\+|S|A\+|A|B|C|D)\s*</h[1-6]>|<a\b[^>]*href=["'](?:/guide/|/champion/|/es/champions/|/champions/)([^"'/?#]+)["'][^>]*>|<(?:div|img)\b[^>]*data-champion=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
-
-        combinedRegex.findAll(html).forEach { match ->
-            val tierClass = match.groupValues[1]
-            val tierHeading = match.groupValues[2]
-            val champHref = match.groupValues[3]
-            val champData = match.groupValues[4]
-
-            val detectedTier = when {
-                tierClass.isNotEmpty() -> if (tierClass.equals("splus", true)) "S+" else tierClass.uppercase(java.util.Locale.ROOT)
-                tierHeading.isNotEmpty() -> tierHeading.uppercase(java.util.Locale.ROOT)
-                else -> null
-            }
-
-            if (detectedTier != null) {
-                currentTier = detectedTier
-            } else if (currentTier != null) {
-                val rawId = champHref.ifEmpty { champData }
-                if (rawId.isNotEmpty()) {
-                    val id = canonical(rawId)
-                    if (id.length in 2..25 && !id.contains("guide") && !id.contains("tierlist") && !id.contains("build") && !id.contains("es")) {
-                        val existing = result[id]
-                        if (existing == null || order.indexOf(currentTier!!) < order.indexOf(existing)) {
-                            result[id] = currentTier!!
+        }
+        if (source == null || source == "bestbuildwr") {
+            // The tier is the dictionary key, not a field inside each champion object.
+            doc.select("script#__NEXT_DATA__").forEach { script ->
+                runCatching {
+                    val groups = JSONObject(script.data()).optJSONObject("props")?.optJSONObject("pageProps")
+                        ?.optJSONObject("tierData")?.optJSONArray("champions") ?: JSONArray()
+                    for (i in 0 until groups.length()) {
+                        val tiers = groups.optJSONObject(i)?.optJSONObject("tiers") ?: continue
+                        tiers.keys().forEach { key ->
+                            val category = tier(key) ?: return@forEach
+                            val champs = tiers.optJSONArray(key) ?: return@forEach
+                            for (j in 0 until champs.length()) {
+                                val champ = champs.optJSONObject(j) ?: continue
+                                add(champ.optString("slug").ifBlank { champ.optString("name") }, category)
+                            }
                         }
                     }
                 }
             }
         }
-
-        return result
-    }
-
-    private fun extractTiersFromJson(obj: Any?, result: MutableMap<String, String>) {
-        when (obj) {
-            is JSONObject -> {
-                val tier = obj.optString("tier").ifEmpty { obj.optString("rank") }.uppercase(java.util.Locale.ROOT)
-                val champ = obj.optString("champion").ifEmpty { obj.optString("name").ifEmpty { obj.optString("id") } }
-                if (tier.isNotEmpty() && tier in order && champ.isNotEmpty()) {
-                    val id = canonical(champ)
-                    result[id] = tier
-                }
-                obj.keys().forEach { key ->
-                    extractTiersFromJson(obj.opt(key), result)
-                }
-            }
-            is org.json.JSONArray -> {
-                for (i in 0 until obj.length()) {
-                    extractTiersFromJson(obj.opt(i), result)
-                }
+        if (source == null || source == "wildriftfire") {
+            val scope = doc.selectFirst(".wf-tier-list__tiers__main") ?: doc
+            scope.select("div.tier").forEach { row ->
+                val category = row.classNames().firstNotNullOfOrNull { tier(it) } ?: return@forEach
+                links(row, category, "a.ico-holder[href^=/guide/]")
             }
         }
+        if (source == null || source == "wildriftcore") {
+            // Prefer the publisher's combined list rather than merging duplicated role panels.
+            val scope = doc.selectFirst("#all-tier-list") ?: doc
+            scope.select(".tl-tier-row[data-tier]").forEach { row ->
+                val category = tier(row.attr("data-tier")) ?: return@forEach
+                links(row, category, "a.tl-champ-tile[href]")
+            }
+        }
+        return result
     }
 }
-

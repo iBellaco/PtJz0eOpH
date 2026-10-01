@@ -49,7 +49,8 @@ class OfflinePortugueseAuditTest {
     }
 
     @Test fun `runtime amounts session messages and build controls use Portuguese`() {
-        assertEquals("Ver dica da build", catalog.translate("pt", "Ver consejo de la build"))
+        assertEquals("Conselho do coach", catalog.translate("pt", "Consejo del coach"))
+        assertEquals("Categorias globais atualizadas (3/3 fontes)", catalog.translate("pt", "Categorías globales actualizadas (3/3 fuentes)"))
         assertEquals("Assinatura cancelada com sucesso", catalog.translate("pt", "Suscripción cancelada correctamente"))
         assertEquals("3. Itens principais (2/3) *Descrição obrigatória", catalog.translate("pt", "3. Objetos Core (2/3) *Desc. Obligatoria"))
         assertEquals("Erro ao abrir link: teste", catalog.translate("pt", "Error al abrir enlace: teste"))

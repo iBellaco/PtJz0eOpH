@@ -279,9 +279,19 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     }
 
     if (showAdminCreatorDialog) {
-        com.example.ui.components.AdminCreatorBuildsDialog(
-            onDismiss = { showAdminCreatorDialog = false }
-        )
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showAdminCreatorDialog = false },
+            properties = androidx.compose.ui.window.DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false
+            )
+        ) {
+            Box(Modifier.fillMaxSize().background(HextechSurface).safeDrawingPadding()) {
+                com.example.ui.components.AdminCreatorBuildsDialog(
+                    onDismiss = { showAdminCreatorDialog = false }
+                )
+            }
+        }
     }
 
     if (showSupportPanel) {
