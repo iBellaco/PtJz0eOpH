@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.runtime.*
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.AnnotatedString
@@ -122,8 +123,9 @@ class LocalizationSurfaceTest {
             }
             }
         }
-        compose.onNodeWithText("Portugués").performClick()
-        compose.onNodeWithText("Continuar em Português").performClick()
+        compose.onNodeWithText("Portugués").performSemanticsAction(SemanticsActions.OnClick) { it() }
+        compose.onNodeWithText("Continuar em Português").performSemanticsAction(SemanticsActions.OnClick) { it() }
+        compose.runOnIdle { assertEquals("pt", AppLanguage.current.value) }
         compose.onNodeWithText("Informação").assertExists()
         compose.onNodeWithText("Información").assertDoesNotExist()
         compose.onNodeWithText("1. Compatibilidade e Patch Oficial").performScrollTo().assertExists()
