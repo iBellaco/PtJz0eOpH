@@ -30,7 +30,10 @@ class OfflinePortugueseAuditTest {
                         // Some generated descriptions are already Portuguese in the
                         // source asset; the residue assertion below is the relevant
                         // invariant for those entries.
-                        assertFalse("Mixed advice: $translated", spanishResidue.containsMatchIn(translated))
+                        if (spanishResidue.containsMatchIn(translated)) {
+                            println("PORTUGUESE_AUDIT_RESIDUE: $translated")
+                            fail("Mixed advice: $translated")
+                        }
                         descriptions++
                     } else if (child is JSONObject || child is JSONArray) inspect(child)
                 }
@@ -55,7 +58,10 @@ class OfflinePortugueseAuditTest {
         for (file in listOf("translations_pt.json", "translations_pt_aliases.json")) {
             phrases(file).forEach { (source, translated) ->
                 val cleaned = catalog.translate("pt", translated)
-                assertFalse("Mixed Portuguese: $source => $cleaned", fragments.containsMatchIn(cleaned))
+                if (fragments.containsMatchIn(cleaned)) {
+                    println("PORTUGUESE_CATALOG_RESIDUE: $source => $cleaned")
+                    fail("Mixed Portuguese: $source => $cleaned")
+                }
             }
         }
         assertEquals("Outros Itens", catalog.translate("pt", "Otros Objetos"))
