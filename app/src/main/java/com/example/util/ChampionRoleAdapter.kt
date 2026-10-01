@@ -648,25 +648,8 @@ object ChampionRoleAdapter {
             val bSituationalBoots = if (b.situationalBoots.isEmpty()) emptyList() else
                 getSituationalBoots(bBootBase, champ.damageType, champ.isFrontline, champ.isRanged, role, champ.id)
 
-            val rawSitRunes = if (opt2Runes.isNotEmpty() && opt2Runes != resolvedRunes) {
-                opt2Runes
-            } else {
-                val b2 = champ.build2Runes.split(",").map { it.trim() }.filter { it.isNotBlank() }
-                if (b2.size >= 2) b2 else opt2Runes
-            }
-            val sitRunesList: List<com.example.data.local.RuneBuildEntry> = rawSitRunes
-                .map { r -> r.replace(Regex("\\s*\\(.*\\)"), "").replace(Regex("^(Clave|Secundarias|Secundaria):\\s*"), "").trim() }
-                .filter { rName -> rName.isNotBlank() && !resolvedRunes.any { it.equals(rName, ignoreCase = true) } }
-                .distinct()
-                .take(4)
-                .map { rName: String ->
-                    val found = WildRiftSpellsAndRunes.getRuneByName(rName)
-                    com.example.data.local.RuneBuildEntry(
-                        runeName = rName,
-                        iconUrl = found?.iconUrl ?: WildRiftSpellsAndRunes.getRuneIconByName(rName),
-                        description = found?.description?.ifBlank { null } ?: "Alternativa táctica adaptativa recomendada según la composición enemiga."
-                    )
-                }
+            // A second rune page is not evidence of a necessary situational swap.
+            val sitRunesList = emptyList<com.example.data.local.RuneBuildEntry>()
 
             val opt1 = ChampionBuildOption(
                 optionNumber = 1,

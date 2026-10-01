@@ -40,6 +40,14 @@ class OfflinePortugueseAuditTest {
         assertTrue(descriptions > 3000)
     }
 
+    @Test fun `item model statistics and tier filter are translated`() {
+        assertEquals("Filtrar por Rota", catalog.translate("pt", "Filtrar por Línea"))
+        val source = "+25 Daño de ataque • +1000 Maná máximo • +20 Velocidad de habilidad"
+        val translated = catalog.translate("pt", source)
+        assertNotEquals(source, translated)
+        assertFalse(Regex("\\b(?:daño|velocidad)\\b", RegexOption.IGNORE_CASE).containsMatchIn(translated))
+    }
+
     @Test fun `runtime amounts session messages and build controls use Portuguese`() {
         assertEquals("Ver dica da build", catalog.translate("pt", "Ver consejo de la build"))
         assertEquals("Assinatura cancelada com sucesso", catalog.translate("pt", "Suscripción cancelada correctamente"))

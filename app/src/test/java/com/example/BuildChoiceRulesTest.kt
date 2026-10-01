@@ -17,9 +17,9 @@ class BuildChoiceRulesTest {
             RuneChoice("Brutal", "Precisión"), RuneChoice("Fuerzas Renovadas", "Valor"),
             RuneChoice("Capa del Nimbo", "Brujería"), RuneChoice("Electrocutar", "Clave"), core[1]))
         assertEquals(3, alternatives.size)
-        assertEquals(1, alternatives[0].secondarySlot)
+        assertEquals(4, alternatives[0].secondarySlot)
         assertEquals(4, alternatives[1].secondarySlot)
-        assertEquals(4, alternatives[2].secondarySlot)
+        assertEquals(0, alternatives[2].secondarySlot)
     }
     @Test fun `visual swaps point to the actual secondary instead of its position in the branch`() {
         val page = listOf(RuneChoice("Conquistador", "Clave"), RuneChoice("Orbe Anulador", "Valor"),
@@ -27,7 +27,17 @@ class BuildChoiceRulesTest {
             RuneChoice("Trascendencia", "Brujería"))
         val alternatives = BuildChoiceRules.runeAlternatives(page, listOf(
             RuneChoice("Revitalizar", "Valor"), RuneChoice("Fuerzas Renovadas", "Valor"), RuneChoice("Inquebrantable", "Valor")))
-        assertEquals(listOf(2, 3, 1), alternatives.map { it.secondarySlot })
+        assertTrue(alternatives.isEmpty())
+    }
+
+    @Test fun `situational objects retain options and fill shortages without core or boots`() {
+        assertEquals(listOf("A", "B"), BuildChoiceRules.situationalItems(listOf("Core"), listOf("A"), listOf("Core", "Botas blindadas", "A", "B")))
+        assertEquals(listOf("A", "B", "C"), BuildChoiceRules.situationalItems(emptyList(), listOf("A", "B", "C"), emptyList()))
+    }
+    @Test fun `generic rune descriptions do not establish a situational need`() {
+        assertFalse(BuildChoiceRules.hasSituationalReason(" +5 daño ", "+5 daño"))
+        assertFalse(BuildChoiceRules.hasSituationalReason("", "+5 daño"))
+        assertTrue(BuildChoiceRules.hasSituationalReason("Contra hostigamiento persistente al inicio", "+5 daño"))
     }
 
     @Test fun `mixed first three branches cannot produce a valid page or alternatives`() {
