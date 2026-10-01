@@ -26,3 +26,6 @@ app/build/
 .build-outputs/
 tmp/
 github.keystore
+
+*-debug.log
+tests/firestore/node_modules

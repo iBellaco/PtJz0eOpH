@@ -104,200 +104,33 @@ fun UserInboxDialog(
         }
     }
 
-    LaunchedEffect(userUid, userEmail) {
-        if (userUid.isNotBlank() && userUid != "anonimo") {
-            try {
-                val act = FeedbackRepository.syncAndPurgeOrphansForUser(context, userUid, userEmail)
-                activeSupportIds = act
-            } catch (_: Exception) {}
-        }
-
+    DisposableEffect(userUid, userEmail) {
         val db = FirebaseFirestore.getInstance()
         val userDoc = db.collection("users").document(userUid)
-
-        // 1. Escuchar subcolección messages
-        userDoc.collection("messages")
-            .addSnapshotListener { snapshot, error ->
-                if (error == null && snapshot != null) {
-                    val msgs = snapshot.documents.mapNotNull { doc ->
-                        doc.data?.plus("id" to doc.id)
-                    }
-                    subcollectionMessages = msgs
-                }
-                isLoading = false
-            }
-
-        // 2. Escuchar campo privateMessages en el documento del usuario
-        userDoc.addSnapshotListener { snapshot, error ->
-            if (error == null && snapshot != null && snapshot.exists()) {
-                @Suppress("UNCHECKED_CAST")
-                val pMsgs = snapshot.get("privateMessages") as? List<Map<String, Any>>
-                if (pMsgs != null) {
-                    arrayMessages = pMsgs
-                }
-            }
+        val listeners = mutableListOf<com.google.firebase.firestore.ListenerRegistration>()
+        listeners += userDoc.collection("messages").addSnapshotListener { snapshot, error ->
+            if (error == null && snapshot != null) subcollectionMessages = snapshot.documents.mapNotNull { it.data?.plus("id" to it.id) }
             isLoading = false
         }
-
-        // 3. Escuchar tickets de soporte directamente desde support_reports para este usuario (por userId o userEmail)
-        try {
-            val supportMap = mutableMapOf<String, Map<String, Any>>()
-            fun updateSupportList() {
-                supportReportMessages = supportMap.values.toList()
+        listeners += userDoc.addSnapshotListener { snapshot, error ->
+            if (error == null && snapshot != null) {
+                @Suppress("UNCHECKED_CAST")
+                arrayMessages = (snapshot.get("privateMessages") as? List<Map<String, Any>>).orEmpty()
             }
-
-            if (userUid.isNotBlank() && userUid != "anonimo") {
-                db.collection("support_reports")
-                    .whereEqualTo("userId", userUid)
-                    .addSnapshotListener { snap, err ->
-                        if (err == null && snap != null) {
-                            for (change in snap.documentChanges) {
-                                if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
-                                    deletedIds = deletedIds + change.document.id
-                                    deletedRefreshTrigger++
-                                    supportMap.remove(change.document.id)
-                                }
-                            }
-                            for (doc in snap.documents) {
-                                val data = doc.data ?: continue
-                                val isDeleted = (data["isDeleted"] as? Boolean) == true || (data["deleted"] as? Boolean) == true || (data["status"] as? String)?.uppercase() in listOf("ELIMINADO", "DELETED", "CERRADO")
-                                if (isDeleted) {
-                                    deletedIds = deletedIds + doc.id
-                                    deletedRefreshTrigger++
-                                    supportMap.remove(doc.id)
-                                    continue
-                                }
-                                val title = data["title"] as? String ?: "Reporte de Soporte"
-                                val desc = data["description"] as? String ?: (data["content"] as? String ?: "")
-                                val conv = data["conversation"] as? List<Map<String, Any>> ?: emptyList()
-                                val admRep = data["adminReply"] as? String ?: ""
-                                val repBy = data["repliedBy"] as? String ?: ""
-                                val lastEntry = conv.lastOrNull()
-                                val lastConvTs = (lastEntry?.get("timestampMillis") as? Number)?.toLong()
-                                val ts = (data["lastMessageAt"] as? Timestamp)?.toDate()?.time
-                                    ?: (data["repliedAt"] as? Timestamp)?.toDate()?.time
-                                    ?: lastConvTs
-                                    ?: (data["updatedAt"] as? Timestamp)?.toDate()?.time
-                                    ?: (data["createdAt"] as? Timestamp)?.toDate()?.time
-                                    ?: System.currentTimeMillis()
-                                val status = data["status"] as? String ?: "PENDIENTE"
-                                val lastRole = (lastEntry?.get("senderRole") as? String)?.uppercase()
-                                    ?: (data["lastReplyRole"] as? String)?.uppercase()
-                                    ?: (data["lastReplySenderRole"] as? String)?.uppercase()
-                                    ?: ""
-                                val isLastReplyFromSupport = lastRole == "SUPPORT" || lastRole == "ADMIN" || admRep.isNotBlank()
-                                val hasNewAdminReply = (data["hasNewAdminReply"] as? Boolean) == true || (data["hasNewReply"] as? Boolean) == true
-
-                                val rawDocTag = (data["tag"] as? String) ?: (data["type"] as? String) ?: "SUPPORT"
-                                val isSponsorTag = rawDocTag.equals("PATROCINADOR", ignoreCase = true) || rawDocTag.equals("SPONSOR", ignoreCase = true)
-                                val finalTag = if (isSponsorTag) "PATROCINADOR" else "SUPPORT"
-                                val displayTitle = if (isSponsorTag) {
-                                    if (title.startsWith("Patrocinio:", ignoreCase = true)) title else "Patrocinio: $title"
-                                } else {
-                                    if (title.startsWith("Soporte:", ignoreCase = true)) title else "Soporte: $title"
-                                }
-
-                                supportMap[doc.id] = mapOf(
-                                    "id" to doc.id,
-                                    "reportId" to doc.id,
-                                    "title" to displayTitle,
-                                    "content" to desc,
-                                    "description" to desc,
-                                    "tag" to finalTag,
-                                    "timestamp" to ts,
-                                    "status" to status,
-                                    "conversation" to conv,
-                                    "adminReply" to admRep,
-                                    "repliedBy" to repBy,
-                                    "isRead" to ((data["isRead"] as? Boolean) == true),
-                                    "userRead" to ((data["userRead"] as? Boolean) == true),
-                                    "hasNewAdminReply" to hasNewAdminReply,
-                                    "isLastReplyFromSupport" to isLastReplyFromSupport,
-                                    "lastReplyTs" to (lastConvTs ?: ts),
-                                    "sender" to (data["userName"] as? String ?: (if (isSponsorTag) "Patrocinador" else "Soporte Coach"))
-                                )
-                            }
-                            updateSupportList()
-                        }
-                    }
-            }
-
-            if (userEmail.isNotBlank()) {
-                db.collection("support_reports")
-                    .whereEqualTo("userEmail", userEmail)
-                    .addSnapshotListener { snap, err ->
-                        if (err == null && snap != null) {
-                            for (change in snap.documentChanges) {
-                                if (change.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
-                                    deletedIds = deletedIds + change.document.id
-                                    deletedRefreshTrigger++
-                                    supportMap.remove(change.document.id)
-                                }
-                            }
-                            for (doc in snap.documents) {
-                                val data = doc.data ?: continue
-                                val isDeleted = (data["isDeleted"] as? Boolean) == true || (data["deleted"] as? Boolean) == true || (data["status"] as? String)?.uppercase() in listOf("ELIMINADO", "DELETED", "CERRADO")
-                                if (isDeleted) {
-                                    deletedIds = deletedIds + doc.id
-                                    deletedRefreshTrigger++
-                                    supportMap.remove(doc.id)
-                                    continue
-                                }
-                                val title = data["title"] as? String ?: "Reporte de Soporte"
-                                val desc = data["description"] as? String ?: (data["content"] as? String ?: "")
-                                val conv = data["conversation"] as? List<Map<String, Any>> ?: emptyList()
-                                val admRep = data["adminReply"] as? String ?: ""
-                                val repBy = data["repliedBy"] as? String ?: ""
-                                val lastEntry = conv.lastOrNull()
-                                val lastConvTs = (lastEntry?.get("timestampMillis") as? Number)?.toLong()
-                                val ts = (data["lastMessageAt"] as? Timestamp)?.toDate()?.time
-                                    ?: (data["repliedAt"] as? Timestamp)?.toDate()?.time
-                                    ?: lastConvTs
-                                    ?: (data["updatedAt"] as? Timestamp)?.toDate()?.time
-                                    ?: (data["createdAt"] as? Timestamp)?.toDate()?.time
-                                    ?: System.currentTimeMillis()
-                                val status = data["status"] as? String ?: "PENDIENTE"
-                                val lastRole = (lastEntry?.get("senderRole") as? String)?.uppercase()
-                                    ?: (data["lastReplyRole"] as? String)?.uppercase()
-                                    ?: (data["lastReplySenderRole"] as? String)?.uppercase()
-                                    ?: ""
-                                val isLastReplyFromSupport = lastRole == "SUPPORT" || lastRole == "ADMIN" || admRep.isNotBlank()
-                                val hasNewAdminReply = (data["hasNewAdminReply"] as? Boolean) == true || (data["hasNewReply"] as? Boolean) == true
-
-                                val rawDocTagEmail = (data["tag"] as? String) ?: (data["type"] as? String) ?: "SUPPORT"
-                                val isSponsorTagEmail = rawDocTagEmail.equals("PATROCINADOR", ignoreCase = true) || rawDocTagEmail.equals("SPONSOR", ignoreCase = true)
-                                val finalTagEmail = if (isSponsorTagEmail) "PATROCINADOR" else "SUPPORT"
-                                val displayTitleEmail = if (isSponsorTagEmail) {
-                                    if (title.startsWith("Patrocinio:", ignoreCase = true)) title else "Patrocinio: $title"
-                                } else {
-                                    if (title.startsWith("Soporte:", ignoreCase = true)) title else "Soporte: $title"
-                                }
-
-                                supportMap[doc.id] = mapOf(
-                                    "id" to doc.id,
-                                    "reportId" to doc.id,
-                                    "title" to displayTitleEmail,
-                                    "content" to desc,
-                                    "description" to desc,
-                                    "tag" to finalTagEmail,
-                                    "timestamp" to ts,
-                                    "status" to status,
-                                    "conversation" to conv,
-                                    "adminReply" to admRep,
-                                    "repliedBy" to repBy,
-                                    "isRead" to ((data["isRead"] as? Boolean) == true),
-                                    "userRead" to ((data["userRead"] as? Boolean) == true),
-                                    "hasNewAdminReply" to hasNewAdminReply,
-                                    "isLastReplyFromSupport" to isLastReplyFromSupport,
-                                    "lastReplyTs" to (lastConvTs ?: ts),
-                                    "sender" to (data["userName"] as? String ?: (if (isSponsorTagEmail) "Patrocinador" else "Soporte Coach"))
-                                )
-                            }
-                            updateSupportList()
-                        }
-                    }
-            }
-        } catch (_: Exception) {}
+        }
+        val byId = mutableMapOf<String, Map<String, Any>>()
+        val byEmail = mutableMapOf<String, Map<String, Any>>()
+        fun updateTickets() { supportReportMessages = (byEmail + byId).values.toList() }
+        fun ticket(doc: com.google.firebase.firestore.DocumentSnapshot): Map<String, Any> = doc.data.orEmpty() + mapOf(
+            "id" to doc.id, "reportId" to doc.id, "content" to doc.getString("description").orEmpty(),
+            "timestamp" to (doc.getTimestamp("createdAt")?.toDate()?.time ?: 0L))
+        listeners += db.collection("support_reports").whereEqualTo("userId", userUid).addSnapshotListener { snapshot, error ->
+            if (error == null && snapshot != null) { byId.clear(); snapshot.documents.forEach { byId[it.id] = ticket(it) }; updateTickets() }
+        }
+        if (userEmail.isNotBlank()) listeners += db.collection("support_reports").whereEqualTo("userEmail", userEmail).addSnapshotListener { snapshot, error ->
+            if (error == null && snapshot != null) { byEmail.clear(); snapshot.documents.forEach { byEmail[it.id] = ticket(it) }; updateTickets() }
+        }
+        onDispose { listeners.forEach { it.remove() } }
     }
 
     // Unir mensajes de todas las fuentes eliminando duplicados por id y filtrando soporte eliminado/cerrado
@@ -307,67 +140,7 @@ fun UserInboxDialog(
         val all = mutableMapOf<String, Map<String, Any>>()
 
         fun resolveIsRead(m: Map<String, Any>, id: String, reportId: String): Boolean {
-            val lastReadTs = maxOf(
-                inboxPrefs.getLong("last_read_ts_$reportId", 0L),
-                inboxPrefs.getLong("last_read_ts_$id", 0L)
-            )
-
-            val isSupport = (m["tag"] as? String)?.equals("SUPPORT", ignoreCase = true) == true ||
-                (m["reportId"] as? String)?.isNotBlank() == true ||
-                (m["ticketId"] as? String)?.isNotBlank() == true ||
-                m["conversation"] != null ||
-                (m["adminReply"] as? String)?.isNotBlank() == true ||
-                FeedbackRepository.isSupportMessage(m) ||
-                (m["title"] as? String)?.contains("Soporte", ignoreCase = true) == true ||
-                (m["title"] as? String)?.contains("Ticket", ignoreCase = true) == true
-
-            val conv = (m["conversation"] as? List<*>)?.filterIsInstance<Map<String, Any>>() ?: emptyList()
-            val lastEntry = conv.lastOrNull()
-            val lastRole = (lastEntry?.get("senderRole") as? String)?.uppercase()
-                ?: (m["lastReplyRole"] as? String)?.uppercase()
-                ?: (m["lastReplySenderRole"] as? String)?.uppercase()
-                ?: ""
-            val hasSupportReply = (m["adminReply"] as? String)?.isNotBlank() == true
-            val isLastReplyFromSupport = (m["isLastReplyFromSupport"] as? Boolean) == true ||
-                lastRole == "SUPPORT" || lastRole == "ADMIN" || (conv.isEmpty() && hasSupportReply)
-            val hasNewAdminReply = (m["hasNewAdminReply"] as? Boolean) == true || (m["hasNewReply"] as? Boolean) == true
-
-            val replyTs = (lastEntry?.get("timestampMillis") as? Number)?.toLong()
-                ?: (m["lastReplyTs"] as? Long)
-                ?: (m["lastMessageAt"] as? Timestamp)?.toDate()?.time
-                ?: (m["repliedAt"] as? Timestamp)?.toDate()?.time
-                ?: (m["timestamp"] as? Long)
-                ?: 0L
-
-            val isLocallyMarkedRead = localReadIds.contains(id) || localReadIds.contains(reportId)
-
-            // Si es un reporte propio y soporte aún no ha respondido (el usuario envió el reporte y está en espera):
-            if (isSupport && !hasSupportReply && !hasNewAdminReply) {
-                return true
-            }
-
-            // Si el equipo de soporte respondió y el usuario no lo ha leído después de esa respuesta:
-            if (isSupport && (hasNewAdminReply || isLastReplyFromSupport)) {
-                if (hasNewAdminReply) {
-                    return false // Incondicionalmente NUEVO
-                }
-                if (replyTs > lastReadTs && replyTs > 0L) {
-                    return false // ¡Nueva respuesta de soporte posterior a la lectura previa!
-                }
-                if (lastReadTs == 0L && ((m["isRead"] as? Boolean) == false || (m["userRead"] as? Boolean) == false)) {
-                    return false
-                }
-                if (lastReadTs >= replyTs && lastReadTs > 0L) {
-                    return true
-                }
-            }
-
-            if (isLocallyMarkedRead) {
-                return true
-            }
-
-            val rawRead = (m["isRead"] as? Boolean) == true || (m["userRead"] as? Boolean) == true
-            return rawRead
+            return com.example.data.SupportConversationPolicy.userHasRead(m)
         }
 
         for (m in supportReportMessages) {
@@ -401,21 +174,8 @@ fun UserInboxDialog(
             if (isDeleted) return
 
             val isSupport = FeedbackRepository.isSupportMessage(m)
-            if (isSupport) {
-                val rId = m["reportId"] as? String
-                if (currActive != null) {
-                    if (currActive.isEmpty()) return
-                    val matchesActive = currActive.contains(id) ||
-                                       currActive.contains(reportId) ||
-                                       (rId != null && currActive.contains(rId))
-                    if (!matchesActive) return
-                } else {
-                    val matchesValid = validSupportIds.contains(id) || validSupportIds.contains(reportId) || (rId != null && validSupportIds.contains(rId))
-                    if (!matchesValid) return
-                }
-            }
             val isRead = resolveIsRead(m, id, reportId)
-            all[id] = m.toMutableMap().apply { put("isRead", isRead) }
+            if (!all.containsKey(id)) all[id] = m.toMutableMap().apply { put("isRead", isRead) }
         }
 
         for (m in arrayMessages) {
@@ -431,79 +191,18 @@ fun UserInboxDialog(
         }.sortedByDescending { (it["timestamp"] as? Long) ?: 0L }
     }
 
-    // Si la bandeja está vacía o hay mensajes de soporte huérfanos, limpiar en Firestore
-    LaunchedEffect(isLoading, messages.isEmpty(), supportReportMessages, subcollectionMessages, arrayMessages, activeSupportIds) {
-        if (!isLoading && userUid.isNotBlank() && userUid != "anonimo") {
-            val db = FirebaseFirestore.getInstance()
-            val uRef = db.collection("users").document(userUid)
-
-            if (messages.isEmpty()) {
-                SubscriptionManager.setUnreadMessagesCount(0)
-                uRef.update(
-                    "hasUnreadMessages", false,
-                    "unreadMessagesCount", 0
-                )
-            }
-
-            val currActive = activeSupportIds
-            val validSupportIds = if (currActive != null) {
-                currActive
-            } else {
-                supportReportMessages.mapNotNull { it["id"] as? String }.toSet()
-            }
-
-            // Purgar mensajes huérfanos de soporte en subcolección messages
-            for (m in subcollectionMessages) {
-                val id = m["id"] as? String ?: continue
-                val reportId = m["reportId"] as? String ?: id
-                val title = (m["title"] as? String ?: "").trim()
-                val isSupport = FeedbackRepository.isSupportMessage(m)
-
-                val shouldKeep = isSupport && validSupportIds.isNotEmpty() &&
-                        (validSupportIds.contains(id) || validSupportIds.contains(reportId) || validSupportIds.contains(title))
-
-                if (isSupport && !shouldKeep) {
-                    try { uRef.collection("messages").document(id).delete() } catch (_: Exception) {}
-                }
-            }
-
-            // Purgar mensajes huérfanos de soporte en array privateMessages
-            val orphanInArray = arrayMessages.any { m ->
-                val id = m["id"] as? String ?: ""
-                val reportId = m["reportId"] as? String ?: id
-                val title = (m["title"] as? String ?: "").trim()
-                val isSupport = FeedbackRepository.isSupportMessage(m)
-                val shouldKeep = isSupport && validSupportIds.isNotEmpty() &&
-                        (validSupportIds.contains(id) || validSupportIds.contains(reportId) || validSupportIds.contains(title))
-                isSupport && !shouldKeep
-            }
-
-            if (orphanInArray) {
-                uRef.get().addOnSuccessListener { snap ->
-                    if (snap.exists()) {
-                        @Suppress("UNCHECKED_CAST")
-                        val pMsgs = snap.get("privateMessages") as? List<Map<String, Any>>
-                        if (pMsgs != null) {
-                            val cleaned = pMsgs.filterNot { m ->
-                                val id = m["id"] as? String ?: ""
-                                val reportId = m["reportId"] as? String ?: id
-                                val title = (m["title"] as? String ?: "").trim()
-                                val isSupport = FeedbackRepository.isSupportMessage(m)
-                                val shouldKeep = isSupport && validSupportIds.isNotEmpty() &&
-                                        (validSupportIds.contains(id) || validSupportIds.contains(reportId) || validSupportIds.contains(title))
-                                isSupport && !shouldKeep
-                            }
-                            uRef.update("privateMessages", cleaned)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     fun markMessageAsRead(id: String) {
         val targetMsg = messages.find { (it["id"] as? String) == id }
         val reportId = (targetMsg?.get("reportId") as? String ?: "").takeIf { it.isNotBlank() } ?: id
+        if (targetMsg != null && (targetMsg["reportId"] != null || targetMsg["conversation"] != null)) {
+            val observed = com.example.data.SupportConversationPolicy.decode(targetMsg["conversation"]).lastOrNull()?.id
+            coroutineScope.launch {
+                if (!SupportReplyManager.markUserRead(reportId, observed)) {
+                    android.widget.Toast.makeText(context, com.example.util.appTr("No se pudo sincronizar la lectura. Vuelve a abrir el mensaje."), android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+            return
+        }
         val now = System.currentTimeMillis()
         val newRead = localReadIds + id + reportId
         localReadIds = newRead
@@ -614,60 +313,7 @@ fun UserInboxDialog(
     }
 
     fun markAllAsRead() {
-        val now = System.currentTimeMillis()
-        val editor = inboxPrefs.edit()
-        val allIds = messages.flatMap {
-            val mId = it["id"] as? String ?: ""
-            val rId = it["reportId"] as? String ?: ""
-            if (mId.isNotBlank()) editor.putLong("last_read_ts_$mId", now)
-            if (rId.isNotBlank()) editor.putLong("last_read_ts_$rId", now)
-            listOfNotNull(mId.takeIf { it.isNotBlank() }, rId.takeIf { it.isNotBlank() })
-        }.toSet()
-        val newRead = localReadIds + allIds
-        localReadIds = newRead
-        editor.putStringSet("read_ids", newRead).apply()
-
-        subcollectionMessages = subcollectionMessages.map { it.toMutableMap().apply { put("isRead", true); put("userRead", true); put("hasNewAdminReply", false) } }
-        arrayMessages = arrayMessages.map { it.toMutableMap().apply { put("isRead", true); put("userRead", true); put("hasNewAdminReply", false) } }
-        supportReportMessages = supportReportMessages.map { it.toMutableMap().apply { put("isRead", true); put("userRead", true); put("hasNewAdminReply", false) } }
-
-        SubscriptionManager.setUnreadMessagesCount(0)
-
-        val db = FirebaseFirestore.getInstance()
-        val uRef = db.collection("users").document(userUid)
-        val readUpdate = mapOf(
-            "isRead" to true,
-            "userRead" to true,
-            "hasNewAdminReply" to false,
-            "hasNewReply" to false
-        )
-        for (m in messages) {
-            val mId = m["id"] as? String ?: continue
-            val rId = m["reportId"] as? String ?: ""
-            uRef.collection("messages").document(mId).set(readUpdate, com.google.firebase.firestore.SetOptions.merge())
-            if (rId.isNotBlank() && rId != mId) {
-                uRef.collection("messages").document(rId).set(readUpdate, com.google.firebase.firestore.SetOptions.merge())
-            }
-            try { db.collection("support_reports").document(mId).set(readUpdate, com.google.firebase.firestore.SetOptions.merge()) } catch (_: Exception) {}
-            if (rId.isNotBlank() && rId != mId) {
-                try { db.collection("support_reports").document(rId).set(readUpdate, com.google.firebase.firestore.SetOptions.merge()) } catch (_: Exception) {}
-            }
-        }
-        uRef.get().addOnSuccessListener { snap ->
-            @Suppress("UNCHECKED_CAST")
-            val pMsgs = snap.get("privateMessages") as? List<Map<String, Any>>
-            val updated = pMsgs?.map { m ->
-                m.toMutableMap().apply { put("isRead", true) }
-            } ?: emptyList()
-            uRef.set(
-                mapOf(
-                    "privateMessages" to updated,
-                    "hasUnreadMessages" to false,
-                    "unreadMessagesCount" to 0
-                ),
-                com.google.firebase.firestore.SetOptions.merge()
-            )
-        }
+        messages.forEach { message -> (message["id"] as? String)?.let { markMessageAsRead(it) } }
     }
 
     fun deleteMessage(id: String) {
@@ -1406,7 +1052,7 @@ fun UserSupportThreadCard(
                                 isGreeting = (m["isGreeting"] as? Boolean) ?: false
                             )
                         }
-                        val hasUserInitial = parsed.any { it.senderRole.equals("USER", ignoreCase = true) && it.text.trim() == desc.trim() }
+                        val hasUserInitial = parsed.any { it.senderRole.equals("USER", ignoreCase = true) }
                         val fullList = if (!hasUserInitial && desc.isNotBlank()) {
                             listOf(
                                 SupportMessageEntry(
@@ -1630,7 +1276,7 @@ fun UserSupportThreadCard(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            com.example.util.tr(if (isUserMsg) "👤 ${msg.senderName} (Tú)" else "🛡️ ${msg.senderName}"),
+                                            if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_name) else com.example.util.tr(if (isUserMsg) "👤 ${msg.senderName} (Tú)" else "🛡️ ${msg.senderName}"),
                                             color = if (isUserMsg) Color(0xFFD4AF37) else Color(0xFF38BDF8),
                                             fontSize = 10.5.sp,
                                             fontWeight = FontWeight.Bold,
@@ -1663,7 +1309,7 @@ fun UserSupportThreadCard(
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(com.example.util.tr(msg.text), color = Color.White, fontSize = 12.sp)
+                                Text(if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_greeting) else com.example.util.tr(msg.text), color = Color.White, fontSize = 12.sp)
                             }
                         }
                     }
@@ -1693,7 +1339,7 @@ fun UserSupportThreadCard(
                     }
                 }
             }
-            !canReply || isOnlyGreeting -> {
+            !canReply -> {
                 Surface(
                     shape = RoundedCornerShape(6.dp),
                     color = Color(0xFF0F172A),

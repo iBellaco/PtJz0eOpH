@@ -163,7 +163,7 @@ fun AdminSupportReportsDialog(
     val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
     val userEmail = authUser?.email ?: ""
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
-    val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin() || userEmail.contains("barbadiego", ignoreCase = true)
+    val isAdmin = userRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
 
     fun loadAllReports() {
         isLoading = true
@@ -224,7 +224,7 @@ fun AdminSupportReportsDialog(
                                 type = fbType,
                                 title = fb.title.ifBlank { "Reporte sin título" },
                                 description = cleanDesc,
-                                userId = "",
+                                userId = fb.userId,
                                 userEmail = email,
                                 userName = fb.parsedUserName ?: "",
                                 photosBase64 = photos,
@@ -250,9 +250,7 @@ fun AdminSupportReportsDialog(
 
             // 2. Intentar leer también desde Firestore silenciosamente
             try {
-                FirebaseFirestore.getInstance()
-                    .collection("support_reports")
-                    .orderBy("createdAt", Query.Direction.DESCENDING)
+                com.example.data.SupportTicketAccess.staffQuery()
                     .limit(50)
                     .get()
                     .addOnSuccessListener { snapshot ->
@@ -260,7 +258,7 @@ fun AdminSupportReportsDialog(
                             for (doc in snapshot.documents) {
                                 val docId = doc.id
                                 val docTitle = doc.getString("title") ?: ""
-                                val existing = combined.find { it.id == docId || it.firestoreDocId == docId || (docTitle.isNotBlank() && it.title == docTitle) }
+                                val existing = combined.find { it.id == docId || it.firestoreDocId == docId }
                                 val docReply = doc.getString("adminReply") ?: ""
                                 val docRepliedAt = doc.getTimestamp("repliedAt")?.toDate()?.time ?: 0L
                                 val docRepliedBy = doc.getString("repliedBy") ?: ""
@@ -359,13 +357,11 @@ fun AdminSupportReportsDialog(
                     for (fb in supaList) {
                         val id = fb.id ?: "${fb.title}_${fb.createdAt}"
                         val status = FeedbackRepository.getReportStatus(context, fb)
-                        val existingIdx = reportsList.indexOfFirst { it.id == id || it.remoteReportId == id || (fb.title.isNotBlank() && it.title == fb.title) }
+                        val existingIdx = reportsList.indexOfFirst { it.id == id || it.remoteReportId == id }
                         if (existingIdx != -1) {
                             val cur = reportsList[existingIdx]
                             // Jamás degradar un estado resuelto o leído a pendiente por sondeo pasivo
-                            val shouldUpdateStatus = if (status != FeedbackRepository.STATUS_PENDING) {
-                                cur.status != status
-                            } else false
+                            val shouldUpdateStatus = cur.status != status
                             val shouldUpdateReply = !fb.adminReply.isNullOrBlank() && cur.adminReply.isBlank()
                             if (shouldUpdateStatus || shouldUpdateReply) {
                                 reportsList[existingIdx] = cur.copy(
@@ -382,9 +378,7 @@ fun AdminSupportReportsDialog(
 
     // Escucha en tiempo real para sincronización multidispositivo de estados y respuestas
     DisposableEffect(Unit) {
-        val listenerReg = FirebaseFirestore.getInstance()
-            .collection("support_reports")
-            .orderBy("createdAt", Query.Direction.DESCENDING)
+        val listenerReg = com.example.data.SupportTicketAccess.staffQuery()
             .limit(100)
             .addSnapshotListener { snapshot, error ->
                 if (error == null && snapshot != null) {
@@ -404,7 +398,7 @@ fun AdminSupportReportsDialog(
                         val docRepliedBy = doc.getString("repliedBy") ?: ""
                         val docRepliedEmail = doc.getString("repliedEmail") ?: ""
 
-                        val existingIdx = reportsList.indexOfFirst { it.id == docId || it.firestoreDocId == docId || (docTitle.isNotBlank() && it.title == docTitle) }
+                        val existingIdx = reportsList.indexOfFirst { it.id == docId || it.firestoreDocId == docId }
                         if (existingIdx != -1) {
                             val cur = reportsList[existingIdx]
                             val finalReply = if (docReply.isNotBlank()) docReply else cur.adminReply
@@ -518,39 +512,14 @@ fun AdminSupportReportsDialog(
     )
 
     fun updateReportStatus(report: UnifiedSupportReport, newStatus: String) {
-        val idx = reportsList.indexOfFirst { it.id == report.id || (report.firestoreDocId != null && it.firestoreDocId == report.firestoreDocId) }
-        if (idx != -1) {
-            reportsList[idx] = reportsList[idx].copy(status = newStatus)
-        }
-
-        // 1. Guardar en SharedPreferences y sincronizar en la nube
-        val fakeReport = FeedbackReport(id = report.id, title = report.title, type = report.type)
-        FeedbackRepository.setFeedbackStatus(context, fakeReport, newStatus)
-        if (report.id.isNotBlank()) {
-            coroutineScope.launch {
-                FeedbackRepository.updateFeedbackStatusInCloud(report.id, newStatus)
-            }
-        }
-
-        // 2. Sincronizar multidispositivo en Firestore y almacenamiento local
-        val effectiveFirestoreId = report.firestoreDocId ?: report.id
         coroutineScope.launch {
-            SupportReplyManager.updateReportStatus(
-                context = context,
-                reportId = effectiveFirestoreId,
-                newStatus = newStatus,
-                userId = report.userId.takeIf { it.isNotBlank() },
-                userEmail = report.userEmail.takeIf { it.isNotBlank() },
-                reportTitle = report.title
-            )
+            val ok = SupportReplyManager.updateReportStatus(context, report.firestoreDocId ?: report.id, newStatus)
+            if (ok) {
+                val idx = reportsList.indexOfFirst { it.id == report.id }
+                if (idx >= 0) reportsList[idx] = reportsList[idx].copy(status = newStatus)
+            }
+            Toast.makeText(context, com.example.util.appTr(if (ok) "Estado actualizado" else "No se pudo sincronizar el estado. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
         }
-
-        val statusLabel = when (newStatus) {
-            FeedbackRepository.STATUS_SOLVED -> "Solucionado"
-            FeedbackRepository.STATUS_READ -> "Leído"
-            else -> "Pendiente"
-        }
-        Toast.makeText(context, com.example.util.appTr("Estado actualizado: $statusLabel"), Toast.LENGTH_SHORT).show()
     }
 
     Dialog(
@@ -897,7 +866,7 @@ fun AdminSupportReportsDialog(
                                         reportToReply = item
                                     },
                                     onEditReplyClick = {
-                                        initialReplyText = item.adminReply
+                                        initialReplyText = ""
                                         reportToReply = item
                                     },
                                     onDelete = { reportToDelete = item }

@@ -5605,6 +5605,7 @@ fun AdminModeratorRequestsDialog(
     val db = FirebaseFirestore.getInstance()
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var showStreamers by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
 
     fun loadRequests() {
@@ -5699,7 +5700,7 @@ fun AdminModeratorRequestsDialog(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = tr("Solicitudes de Moderadores"),
+                            text = com.example.util.localizedString(com.example.R.string.streamer_review_title),
                             color = HextechGold,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -5712,6 +5713,13 @@ fun AdminModeratorRequestsDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = { showStreamers = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers) HextechGold else TextSecondary) }
+                    TextButton(onClick = { showStreamers = true }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
+                }
+                if (showStreamers) {
+                    StreamerReviewPanel(Modifier.weight(1f).fillMaxWidth())
+                } else {
                 // Toggle history
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -5959,6 +5967,7 @@ fun AdminModeratorRequestsDialog(
                             }
                         }
                     }
+                }
                 }
             }
         }

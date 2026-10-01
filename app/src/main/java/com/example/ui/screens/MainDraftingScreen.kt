@@ -382,6 +382,8 @@ fun MainDraftingScreen(
             ) {
                 Spacer(modifier = Modifier.height(6.dp))
 
+                com.example.ui.components.LiveStreamersRow()
+
                 // Banner de comunicado / alerta global activa en tiempo real
                 if (globalAnnouncement != null && globalAnnouncement!!.active) {
                     com.example.ui.components.GlobalAnnouncementBanner(

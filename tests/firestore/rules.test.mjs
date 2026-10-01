@@ -1,0 +1,90 @@
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
+import { doc, setDoc, getDoc, updateDoc, getDocs, collection, query, where, runTransaction, writeBatch } from 'firebase/firestore';
+const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8080, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
+const db = uid => env.authenticatedContext(uid, { email: `${uid}@test.invalid` }).firestore();
+const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
+const greeting = 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.';
+const initial = id => [{ id: `${id}_initial`, senderRole: 'USER', senderUid: 'user', text: 'Ayuda', timestampMillis: 100 }, { id: `${id}_system`, senderRole: 'SYSTEM', senderUid: '', text: greeting, timestampMillis: 101 }];
+const ticket = (id, tag = 'SOPORTE') => ({ userId: 'user', userEmail: 'user@test.invalid', tag, type: tag, staffVisible: tag !== 'PATROCINADOR', status: 'PENDING', conversation: initial(id), userRead: true, isRead: true, hasNewAdminReply: false });
+let count = 0;
+async function test(name, action) { await action(); count++; console.log(`PASS ${name}`); }
+try {
+  await env.clearFirestore();
+  await env.withSecurityRulesDisabled(async context => {
+    const store = context.firestore();
+    for (const [uid, role] of [['user','free'],['other','free'],['mod','moderador'],['admin','admin'],['s1','streamer'],['s2','streamer']]) await setDoc(doc(store, 'users', uid), { role, email: `${uid}@test.invalid`, registeredDevices: [] });
+    await setDoc(doc(store, 'system_config', 'streamer_live'), { entries: [] });
+  });
+  await test('ticket and inbox mirror are created atomically with one system greeting', async () => {
+    const batch = writeBatch(user); batch.set(doc(user, 'support_reports', 'ticket'), ticket('ticket')); batch.set(doc(user, 'users/user/messages/ticket'), ticket('ticket')); await assertSucceeds(batch.commit());
+  });
+  await test('owner and moderator can read support but another user cannot', async () => {
+    await assertSucceeds(getDoc(doc(user, 'support_reports', 'ticket'))); await assertSucceeds(getDoc(doc(moderator, 'support_reports', 'ticket'))); await assertFails(getDoc(doc(other, 'support_reports', 'ticket')));
+    await assertSucceeds(getDocs(query(collection(moderator, 'support_reports'), where('staffVisible', '==', true)))); await assertFails(getDocs(collection(moderator, 'support_reports')));
+  });
+  await test('sponsor stays private to its owner and administrator', async () => {
+    await assertSucceeds(setDoc(doc(user, 'support_reports', 'sponsor'), ticket('sponsor','PATROCINADOR')));
+    await assertSucceeds(getDoc(doc(admin, 'support_reports', 'sponsor'))); await assertFails(getDoc(doc(moderator, 'support_reports', 'sponsor')));
+    await assertFails(updateDoc(doc(user, 'support_reports', 'sponsor'), { staffVisible: true }));
+    await assertFails(setDoc(doc(user, 'support_reports', 'fake'), { ...ticket('fake','PATROCINADOR'), staffVisible: true }));
+  });
+  await test('role and secondary-role self escalation are forbidden', async () => {
+    await assertFails(updateDoc(doc(user, 'users', 'user'), { role: 'admin' })); await assertFails(updateDoc(doc(user, 'users', 'user'), { secondaryRole: 'moderador' }));
+  });
+  await test('staff appends repeated answers and syncs recipient mirror', async () => {
+    for (let i = 0; i < 2; i++) await assertSucceeds(runTransaction(moderator, async transaction => {
+      const ref = doc(moderator, 'support_reports', 'ticket'), snap = await transaction.get(ref);
+      const history = [...snap.data().conversation, { id: `reply${i}`, senderRole: 'SUPPORT', senderUid: 'mod', text: `Respuesta ${i}`, timestampMillis: 200+i }];
+      const data = { conversation: history, status: 'READ', userRead: false, isRead: false, hasNewAdminReply: true, staffRead: true };
+      transaction.update(ref, data); transaction.set(doc(moderator, 'users/user/messages/ticket'), data, { merge: true });
+    }));
+    assert.equal((await getDoc(doc(user, 'support_reports', 'ticket'))).data().conversation.length, 4);
+  });
+  await test('read status propagates to another device and ticket cannot be spoofed by user', async () => {
+    await assertSucceeds(updateDoc(doc(user, 'support_reports', 'ticket'), { userRead: true, isRead: true, hasNewAdminReply: false, hasNewReply: false }));
+    const secondDevice = db('user'); assert.equal((await getDoc(doc(secondDevice, 'support_reports', 'ticket'))).data().userRead, true);
+    await assertFails(updateDoc(doc(user, 'support_reports', 'ticket'), { adminReply: 'Respuesta falsa' })); await assertFails(updateDoc(doc(user, 'support_reports', 'ticket'), { status: 'SOLVED' }));
+  });
+  await test('user may append information before staff replies but cannot alter history', async () => {
+    await assertSucceeds(setDoc(doc(user, 'support_reports', 'new'), ticket('new')));
+    const history = [...initial('new'), { id:'followup', senderRole:'USER', senderUid:'user', text:'Más detalles', timestampMillis:300 }];
+    await assertSucceeds(updateDoc(doc(user, 'support_reports', 'new'), { conversation:history, status:'PENDING', isCompleted:false, staffRead:false, lastUserMessage:'Más detalles' }));
+    await assertFails(updateDoc(doc(user, 'support_reports', 'new'), { conversation:[...history.slice(1),{ id:'evil',senderRole:'SUPPORT',senderUid:'user',text:'Falso' }] }));
+  });
+  await test('resolved status is shared and prevents user replies', async () => {
+    await assertSucceeds(updateDoc(doc(moderator, 'support_reports', 'new'), { status:'SOLVED', isCompleted:true, staffRead:true }));
+    assert.equal((await getDoc(doc(user,'support_reports','new'))).data().status,'SOLVED');
+    const history = (await getDoc(doc(user,'support_reports','new'))).data().conversation;
+    await assertFails(updateDoc(doc(user,'support_reports','new'), { conversation:[...history,{ id:'closedreply', senderRole:'USER',senderUid:'user',text:'No',timestampMillis:400 }], status:'PENDING',isCompleted:false,staffRead:false }));
+  });
+  const request = uid => ({ userId:uid,userName:uid,channelName:'Canal Coach',channelUrl:'https://twitch.tv/coach_test',platform:'Twitch',status:'PENDING',usingCoachAcknowledged:true,submittedAtMillis:100 });
+  await test('only streamers request and only admin reviews; bad hosts are rejected', async () => {
+    await assertSucceeds(setDoc(doc(streamer,'streamer_requests','s1'),request('s1')));
+    await assertFails(setDoc(doc(user,'streamer_requests','user'),request('user')));
+    await assertFails(updateDoc(doc(streamer,'streamer_requests','s1'),{status:'APPROVED'}));
+    await assertFails(getDocs(collection(moderator,'streamer_requests')));
+    await assertFails(setDoc(doc(db('s2'),'streamer_requests','s2'),{...request('s2'),channelUrl:'https://twitch.tv.evil.com/coach_test'}));
+    await assertSucceeds(getDocs(query(collection(admin,'streamer_requests'),where('status','==','PENDING'))));
+  });
+  await test('concurrent approvals never exceed five; requests stop at capacity', async () => {
+    await setDoc(doc(admin,'system_config','streamer_live'), { entries:[1,2,3,4].map(i=>({userId:`live${i}`,channelName:`Canal ${i}`,channelUrl:'https://kick.com/coach_test'})) });
+    const publish = uid => runTransaction(admin, async transaction => {
+      const ref = doc(admin,'system_config','streamer_live'), snapshot = await transaction.get(ref), entries = snapshot.data().entries;
+      if (entries.length >= 5) throw new Error('capacity');
+      transaction.update(ref,{entries:[...entries,{userId:uid,channelName:uid,channelUrl:'https://twitch.tv/coach_test'}]});
+    });
+    const results = await Promise.allSettled([publish('s1'),publish('s2')]);
+    assert.equal(results.filter(r=>r.status==='fulfilled').length,1); assert.equal((await getDoc(doc(admin,'system_config','streamer_live'))).data().entries.length,5);
+    await assertFails(setDoc(doc(db('s2'),'streamer_requests','s2'),request('s2')));
+    await assertFails(updateDoc(doc(admin,'system_config','streamer_live'),{entries:Array.from({length:6},(_,i)=>({userId:`u${i}`}))}));
+    await assertFails(updateDoc(doc(streamer,'system_config','streamer_live'),{entries:[]}));
+  });
+  await test('streamer removes only own publication and releases one slot', async () => {
+    await setDoc(doc(admin,'system_config','streamer_live'),{entries:[{userId:'s1',channelName:'Uno',channelUrl:'https://kick.com/coach_test'},{userId:'s2',channelName:'Dos',channelUrl:'https://kick.com/coach_two'}]});
+    await assertFails(updateDoc(doc(streamer,'system_config','streamer_live'),{entries:[]}));
+    await assertSucceeds(updateDoc(doc(streamer,'system_config','streamer_live'),{entries:[{userId:'s2',channelName:'Dos',channelUrl:'https://kick.com/coach_two'}]}));
+  });
+  console.log(`${count} rule scenarios passed`);
+} finally { await env.cleanup(); }

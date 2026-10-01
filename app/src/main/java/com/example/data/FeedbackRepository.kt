@@ -49,13 +49,6 @@ object FeedbackRepository {
         id: String? = null
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            // 1. Purgar reportes que exceden el ciclo de retención (60 días máximo)
-            try {
-                purgeOldReports(60)
-            } catch (e: Exception) {
-                Log.w(TAG, "No se pudo realizar la purga automática de reportes antiguos: ${e.message}")
-            }
-
             // 2. Preparar el nuevo reporte
             val baseDeviceInfo = "${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE}, API ${Build.VERSION.SDK_INT})"
             var deviceInfo = baseDeviceInfo
@@ -83,6 +76,9 @@ object FeedbackRepository {
 
             // 3. Guardar en almacenamiento en la nube (support_reports) para garantizar sincronización multidispositivo
             val db = FirebaseFirestore.getInstance()
+            val account = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser ?: error("Inicia sesión para enviar un mensaje")
+            val now = System.currentTimeMillis()
+            val history = SupportConversationPolicy.initial(reportId, userName ?: "Invocador", description.trim(), now)
             val firestoreMap = hashMapOf<String, Any>(
                 "id" to reportId,
                 "reportId" to reportId,
@@ -92,7 +88,11 @@ object FeedbackRepository {
                 "description" to finalDescription,
                 "content" to finalDescription,
                 "userName" to (userName ?: "Usuario"),
-                "userEmail" to (email ?: ""),
+                "userEmail" to account.email.orEmpty(),
+                "contactEmail" to email.orEmpty(), "userId" to account.uid,
+                "staffVisible" to !SupportConversationPolicy.isSponsor(type),
+                "conversation" to history.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") account.uid else "") },
+                "userRead" to true, "isRead" to true, "hasNewAdminReply" to false, "staffRead" to false,
                 "appVersion" to appVersion,
                 "deviceInfo" to deviceInfo,
                 "photos" to imagesBase64,
@@ -100,7 +100,12 @@ object FeedbackRepository {
                 "timestamp" to System.currentTimeMillis(),
                 "createdAt" to com.google.firebase.Timestamp.now()
             )
-            db.collection("support_reports").document(reportId).set(firestoreMap).await()
+            val batch = db.batch()
+            batch.set(db.collection("support_reports").document(reportId), firestoreMap)
+            batch.set(db.collection("users").document(account.uid).collection("messages").document(reportId),
+                firestoreMap + mapOf("timestamp" to now))
+            batch.commit().await()
+            com.example.WildRiftApp.instance?.let { SupportReplyManager.saveConversation(it, reportId, history) }
             Log.d(TAG, "Feedback guardado exitosamente en la nube")
             Result.success(Unit)
         } catch (e: Exception) {
@@ -253,13 +258,8 @@ object FeedbackRepository {
     suspend fun updateFeedbackStatusInCloud(id: String, status: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val isCompleted = (status == STATUS_SOLVED || status == STATUS_ACCEPTED || status == STATUS_COMPLETED)
-            val db = FirebaseFirestore.getInstance()
-            val updateData = mapOf(
-                "status" to status,
-                "isCompleted" to isCompleted,
-                "updatedAt" to com.google.firebase.Timestamp.now()
-            )
-            db.collection("support_reports").document(id).set(updateData, com.google.firebase.firestore.SetOptions.merge()).await()
+            val context = com.example.WildRiftApp.instance ?: error("Aplicación no disponible")
+            check(SupportReplyManager.updateReportStatus(context, id, status)) { "No se pudo sincronizar el estado" }
             Log.d(TAG, "Estado de reporte $id actualizado en nube a $status")
             Result.success(Unit)
         } catch (e: Exception) {
@@ -471,8 +471,8 @@ object FeedbackRepository {
 
         try {
             val db = FirebaseFirestore.getInstance()
-            val fireSnap = db.collection("support_reports")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+            SupportTicketAccess.migrateLegacyVisibility()
+            val fireSnap = SupportTicketAccess.staffQuery()
                 .limit(100)
                 .get()
                 .await()
@@ -497,7 +497,7 @@ object FeedbackRepository {
                 val repliedBy = doc.getString("repliedBy")
                 val repliedEmail = doc.getString("repliedEmail")
 
-                if (seenIds.contains(docId) || (title.isNotBlank() && seenTitles.contains(title.trim()))) {
+                if (seenIds.contains(docId)) {
                     continue
                 }
 
@@ -522,7 +522,8 @@ object FeedbackRepository {
                     status = normalizedStatus,
                     adminReply = adminReply,
                     repliedBy = repliedBy,
-                    repliedEmail = repliedEmail
+                    repliedEmail = repliedEmail,
+                    userId = doc.getString("userId").orEmpty()
                 )
                 seenIds.add(docId)
                 if (title.isNotBlank()) seenTitles.add(title.trim())

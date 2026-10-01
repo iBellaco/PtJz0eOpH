@@ -208,6 +208,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     var showAdminDashboard by remember { mutableStateOf(false) }
     var showModeratorDashboard by remember { mutableStateOf(false) }
     var showAdminCreatorDialog by remember { mutableStateOf(false) }
+    var showStreamerPanel by remember { mutableStateOf(false) }
     var showSupportPanel by remember { mutableStateOf(false) }
     var showSponsorPanel by remember { mutableStateOf(false) }
     var showSponsorModerationDialog by remember { mutableStateOf(false) }
@@ -271,6 +272,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             onDismiss = { showAdminDashboard = false }
         )
     }
+
+    if (showStreamerPanel) { com.example.ui.components.StreamerPanelDialog(onDismiss = { showStreamerPanel = false }) }
 
     if (showModeratorDashboard) {
         com.example.ui.components.ModeratorDashboardDialog(
@@ -1240,6 +1243,13 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             }
 
             Spacer(modifier = Modifier.height(14.dp))
+
+            if (userRole == "streamer" || secondaryRole == "streamer") {
+                Button(onClick = { showStreamerPanel = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text(com.example.util.localizedString(com.example.R.string.streamer_panel))
+                }
+                Spacer(Modifier.height(10.dp))
+            }
 
             if (userRole == "admin") {
                 // Panel de Administración / Gestión (Solo para Administradores)
