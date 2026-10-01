@@ -15,12 +15,21 @@ fun main(args: Array<String>) {
  fun add(text:String,path:String){ if(text.any {it.isLetter()} && text.length>3) phrases.getOrPut(text){linkedSetOf()}.add(path) }
  root.resolve("app/src/main/java").walkTopDown().filter{it.extension=="kt"}.forEach{f->
   val p=f.relativeTo(root).path;val psi=factory.createFile(f.name,f.readText())
+  if ("--wide" in args) {
+  PsiTreeUtil.collectElementsOfType(psi,KtStringTemplateExpression::class.java).forEach{expr ->
+   var slot=0
+   val text=expr.entries.joinToString(""){when(it) { is KtEscapeStringTemplateEntry -> it.unescapedValue; is KtStringTemplateEntryWithExpression -> "{${slot++}}"; else -> it.text }}
+   if(Regex("\\b(?:daño|curación|enemigos|campeones|puedes|pantalla|seleccionar|hechizos|velocidad|cerrar|guardar|obligatori[oa]|filtrar|línea|selecciona|consejo|necesitas|sesión|contraseña)\\b|[¿¡ñ]",RegexOption.IGNORE_CASE).containsMatchIn(text))add(text,p)
+  }
+
+  } else {
   PsiTreeUtil.collectElementsOfType(psi,KtCallExpression::class.java).filter{it.calleeExpression?.text in setOf("tr","appTr","trStr","Text")}.forEach{call->
    val arg=if(call.calleeExpression?.text=="trStr") call.valueArguments.getOrNull(1) else call.valueArguments.firstOrNull{it.getArgumentName()?.asName?.asString()=="text"}?:call.valueArguments.firstOrNull()
    val expr=arg?.getArgumentExpression() as? KtStringTemplateExpression
    if(expr!=null) {
     var slot=0; val text=expr.entries.joinToString(""){when(it) { is KtEscapeStringTemplateEntry -> it.unescapedValue; is KtStringTemplateEntryWithExpression -> "{${slot++}}"; else -> it.text }}; add(text,p)
    }
+  }
   }
  }
  val uiCount=phrases.size
@@ -36,6 +45,6 @@ fun main(args: Array<String>) {
  }
  val unchanged=JSONArray(); phrases.forEach{(phrase,paths)->if(catalog.translate("pt",phrase.replace(Regex("\\{\\d+\\}"),"VALUE"))==phrase.replace(Regex("\\{\\d+\\}"),"VALUE"))unchanged.put(JSONObject().put("text",phrase).put("paths",JSONArray(paths.toList())))}
  File(args.getOrElse(1) { "/tmp/coach-pt-unchanged.json" }).writeText(unchanged.toString(2))
- println("UI phrases=$uiCount; total phrases=${phrases.size}; unchanged=${unchanged.length()}; output=${args.getOrElse(1) { "/tmp/coach-pt-unchanged.json" }}")
+ println("Kotlin phrases=$uiCount; total phrases=${phrases.size}; unchanged=${unchanged.length()}; output=${args.getOrElse(1) { "/tmp/coach-pt-unchanged.json" }}")
  Disposer.dispose(d)
 }

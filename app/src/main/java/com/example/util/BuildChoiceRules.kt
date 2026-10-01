@@ -36,31 +36,34 @@ object BuildChoiceRules {
         return true
     }
 
-    private val swapGroups = listOf(
-        setOf("Brutal", "Triunfo", "Fervor de Batalla"),
-        setOf("Último Esfuerzo", "Derribado", "Golpe de Gracia"),
-        setOf("Leyenda: Presteza", "Leyenda: Velocidad", "Leyenda: Linaje"),
-        setOf("Golpe Bajo", "Impacto Repentino", "Ataque Potenciado"),
-        setOf("Asalto Encadenado", "Tirano", "Soberbia"),
-        setOf("Colección de Globos Oculares", "Cazador Ingenioso", "Cazador Incesante", "Guardián Zombi"),
-        setOf("Fuente de Vida", "Coraje del Coloso", "Orbe Anulador", "Inquebrantable"),
-        setOf("Revestimiento de Huesos", "Fuerzas Renovadas"),
-        setOf("Sobrecrecimiento", "Revitalizar", "Perseverancia"),
-        setOf("Trascendencia", "Celeridad", "Concentración Absoluta"),
-        setOf("Capa del Nimbo", "Piroláser", "Se Avecina Tormenta")
-    )
-
+    /** Situational runes can replace only the keystone or the fourth secondary. */
     fun runeAlternatives(core: List<RuneChoice>, candidates: List<RuneChoice>): List<RuneAlternative> {
         if (!validRunePage(core)) return emptyList()
         val branch = core[1].branch
         return candidates.distinctBy { it.name.lowercase() }.mapNotNull { rune ->
-            if (rune.branch.isBlank() || rune.branch == "Clave" || core.any { it.name.equals(rune.name, true) }) null
-            else {
-                val group = swapGroups.firstOrNull { names -> names.any { it.equals(rune.name, true) } }
-                val sharedSlot = (1..3).firstOrNull { slot -> group?.any { it.equals(core[slot].name, true) } == true }
-                RuneAlternative(rune, if (rune.branch == branch) sharedSlot else 4)
+            when {
+                rune.branch.isBlank() || core.any { it.name.equals(rune.name, true) } -> null
+                rune.branch == "Clave" -> RuneAlternative(rune, 0)
+                rune.branch != branch -> RuneAlternative(rune, 4)
+                else -> null
             }
         }
+    }
+
+    fun hasSituationalReason(description: String, catalogDescription: String): Boolean {
+        fun normalized(text: String) = text.trim().replace(Regex("\\s+"), " ").lowercase()
+        val reason = normalized(description)
+        return reason.isNotBlank() && reason != normalized(catalogDescription) &&
+            !reason.startsWith("alternativa táctica adaptativa recomendada")
+    }
+
+    fun situationalItems(core: List<String>, candidates: List<String>, fallback: List<String>): List<String> {
+        fun key(name: String) = name.trim().lowercase()
+        fun usable(name: String) = name.isNotBlank() && core.none { key(it) == key(name) } &&
+            !Regex("botas|grebas|encantamiento|boots", RegexOption.IGNORE_CASE).containsMatchIn(name)
+        val selected = candidates.filter(::usable).distinctBy(::key)
+        return if (selected.size >= 2) selected else
+            (selected + fallback.filter(::usable)).distinctBy(::key).take(2)
     }
 
     fun matchupLimit(premium: Boolean, signedIn: Boolean = true): Int = when {

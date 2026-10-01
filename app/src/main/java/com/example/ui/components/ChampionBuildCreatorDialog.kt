@@ -1237,6 +1237,10 @@ fun ChampionBuildCreatorDialog(
                                 Toast.makeText(context, com.example.util.appTr("Todos los objetos core deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
+                            if (situationalItems.size < 2) {
+                                Toast.makeText(context, com.example.util.appTr("Añade al menos dos objetos situacionales"), Toast.LENGTH_LONG).show()
+                                return@Button
+                            }
                             if (situationalItems.any { it.description.trim().isBlank() }) {
                                 Toast.makeText(context, com.example.util.appTr("Todos los objetos situacionales deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
@@ -1281,7 +1285,7 @@ fun ChampionBuildCreatorDialog(
                                 Toast.makeText(context, com.example.util.appTr("Todas las runas secundarias deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
-                            if (situationalRunes.any { it.description.trim().isBlank() }) {
+                            if (situationalRunes.any { !com.example.util.BuildChoiceRules.hasSituationalReason(it.description, com.example.data.WildRiftSpellsAndRunes.getRuneByName(it.name)?.description.orEmpty()) }) {
                                 Toast.makeText(context, com.example.util.appTr("Todas las runas situacionales deben tener su descripción obligatoria"), Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
@@ -1310,7 +1314,7 @@ fun ChampionBuildCreatorDialog(
                             }
                             val validAlternatives = com.example.util.BuildChoiceRules.runeAlternatives(runePage, situationalRunes.map { runeChoice(it.name) })
                             if (validAlternatives.size != situationalRunes.size) {
-                                Toast.makeText(context, com.example.util.appTr("Las runas situacionales deben sustituir secundarias y no repetir runas principales"), Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, com.example.util.appTr("Las runas situacionales solo pueden sustituir la clave o la cuarta secundaria"), Toast.LENGTH_LONG).show()
                                 return@Button
                             }
                             val record = CustomChampionBuildRecord(
@@ -1610,10 +1614,10 @@ fun ChampionBuildCreatorDialog(
                              }
                              val allowedBranch = when {
                                  showRunePickerForKeystone -> rune.category == "Clave"
-                                 rune.category == "Clave" -> false
+                                 rune.category == "Clave" -> !showRunePickerForSecondary
                                  showRunePickerForSecondary && coreSecondaryRunes.size in 1..2 -> rune.category == primaryBranch
                                  showRunePickerForSecondary && coreSecondaryRunes.size == 3 -> rune.category != primaryBranch
-                                 else -> true
+                                 else -> rune.category == "Clave" || rune.category != primaryBranch
                              }
                              allowedBranch && !alreadyKeystone && !alreadySecondary && !alreadySituational
                          }

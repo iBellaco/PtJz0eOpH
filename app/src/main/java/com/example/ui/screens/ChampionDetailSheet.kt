@@ -953,10 +953,7 @@ fun ChampionDetailSheet(
                                 modifier = Modifier
                                     .clickable {
                                         if (dbItem != null) {
-                                            itemForDetail = dbItem.copy(
-                                                coachTip = activeOption.coreItemsWithDesc.firstOrNull { it.itemName.equals(rawName, true) }?.description?.takeIf { it.isNotBlank() } ?: dbItem.coachTip,
-                                                coachTipPt = ""
-                                            )
+                                            itemForDetail = dbItem
                                         } else {
                                             selectedSituationalItem = rawName
                                         }
@@ -993,59 +990,36 @@ fun ChampionDetailSheet(
                 }
             }
 
-            // Comentarios tácticos de por qué y contra quiénes comprar cada objeto situacional
-            if (activeOption.situationalItems.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
+            // Keep item choices visible; details belong to the icon, not inline advice.
+            val situationalChoices = BuildChoiceRules.situationalItems(
+                activeOption.items, activeOption.situationalItems,
+                roleProfile.situationalItems + roleProfile.build8Items + champion.situationalItems
+            )
+            if (situationalChoices.isNotEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                    border = androidx.compose.foundation.BorderStroke(0.8.dp, HextechCardBorder)
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
-                        Text(
-                            text = tr("Situaciones recomendadas y objetivos a contrarrestar:"),
-                            color = HextechGold,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        activeOption.situationalItems.forEach { sitItemName ->
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
-                                    .border(0.5.dp, HextechGoldLight.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
-                            ) {
-                                Column(modifier = Modifier.padding(8.dp)) {
-                                    Text(
-                                        text = com.example.util.tr("• ${tr(sitItemName)}:"),
-                                        color = HextechGold,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    val buildAdvice = activeOption.situationalItemsWithDesc
-                                        .firstOrNull { it.itemName.equals(sitItemName, ignoreCase = true) }
-                                        ?.description
-                                        ?.takeIf { it.isNotBlank() }
-                                    val catalogAdvice = com.example.data.WildRiftItemsData.list
-                                        .firstOrNull { it.name.equals(sitItemName, ignoreCase = true) }
-                                        ?.coachTip
-                                        ?.takeIf { it.isNotBlank() }
-                                    Text(
-                                        text = tr(buildAdvice ?: catalogAdvice ?: getSituationalItemExplanation(sitItemName)),
-                                        color = TextSecondary,
-                                        fontSize = 9.5.sp,
-                                        lineHeight = 13.sp
-                                    )
-                                }
+                    Column(Modifier.padding(10.dp)) {
+                        Text(tr("Objetos Situacionales"), color = HextechGold, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(8.dp))
+                        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            situationalChoices.forEach { itemName ->
+                                val item = WildRiftItemsData.getItemByName(itemName)
+                                AppAssetImage(
+                                    url = item?.iconUrl ?: WildRiftItemsData.getItemIconByName(itemName),
+                                    contentDescription = tr(itemName), fallbackText = tr(itemName),
+                                    modifier = Modifier.size(if (isCompact) 32.dp else 42.dp).clickable {
+                                        if (item != null) itemForDetail = item else selectedSituationalItem = itemName
+                                    }, shape = RoundedCornerShape(6.dp)
+                                )
                             }
                         }
                     }
                 }
             }
+
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -1247,7 +1221,7 @@ fun ChampionDetailSheet(
                                         .clip(CircleShape)
                                         .background(HextechSurfaceVariant)
                                         .border(1.5.dp, HextechCyan, CircleShape)
-                                        .clickable { if (dbSpell != null) spellForDetail = dbSpell.copy(description = activeOption.coreSpells.firstOrNull { it.spellName.equals(rawSpellName, true) }?.description?.takeIf { it.isNotBlank() } ?: dbSpell.description, descriptionPt = "") }
+                                        .clickable { if (dbSpell != null) spellForDetail = dbSpell }
                                 ) {
                                     AppAssetImage(
                                         url = iconUrl,
@@ -1336,7 +1310,7 @@ fun ChampionDetailSheet(
                                         shape = CircleShape
                                     )
                                     .clickable {
-                                        runeForDetail = foundRune?.copy(description = activeOption.coreRunes.firstOrNull { it.runeName.equals(rName, true) }?.description?.takeIf { it.isNotBlank() } ?: foundRune.description, descriptionPt = "") ?: com.example.model.RuneItem(
+                                        runeForDetail = foundRune ?: com.example.model.RuneItem(
                                             id = rName.lowercase().replace(" ", "_"),
                                             name = rName,
                                             category = if (isKeystone) "Clave" else "Secundaria",
@@ -1361,7 +1335,10 @@ fun ChampionDetailSheet(
                             val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(name)
                             BuildChoiceRules.RuneChoice(rune?.name ?: name, rune?.category.orEmpty())
                         },
-                        activeOption.situationalRunes.map { entry ->
+                        activeOption.situationalRunes.filter { entry ->
+                            val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(entry.runeName)
+                            BuildChoiceRules.hasSituationalReason(entry.description, rune?.description.orEmpty())
+                        }.map { entry ->
                             val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(entry.runeName)
                             BuildChoiceRules.RuneChoice(rune?.name ?: entry.runeName, rune?.category.orEmpty())
                         }
@@ -1413,7 +1390,7 @@ fun ChampionDetailSheet(
                                         .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                                         .clickable {
-                                            runeForDetail = foundRune?.copy(description = sRune.description.ifBlank { foundRune.description }, descriptionPt = "") ?: com.example.model.RuneItem(
+                                            runeForDetail = foundRune ?: com.example.model.RuneItem(
                                                 id = rName.lowercase().replace(" ", "_"),
                                                 name = rName,
                                                 category = "Situacional",
@@ -1517,7 +1494,7 @@ fun ChampionDetailSheet(
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Column(
-                                modifier = Modifier.fillMaxWidth().heightIn(max = if (isCompact) 57.dp else 65.dp).verticalScroll(rememberScrollState()),
+                                modifier = Modifier.fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(5.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -1615,7 +1592,7 @@ fun ChampionDetailSheet(
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Column(
-                                modifier = Modifier.fillMaxWidth().heightIn(max = if (isCompact) 57.dp else 65.dp).verticalScroll(rememberScrollState()),
+                                modifier = Modifier.fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(5.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -1722,7 +1699,7 @@ fun ChampionDetailSheet(
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
                             Column(
-                                modifier = Modifier.fillMaxWidth().heightIn(max = if (isCompact) 57.dp else 65.dp).verticalScroll(rememberScrollState()),
+                                modifier = Modifier.fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(5.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -2134,7 +2111,6 @@ fun AdaptiveDetailAlertDialog(
                     val localizedName = item.getLocalizedName(lang)
                     val statsList = item.getStatsList(lang)
                     val localizedPassive = item.getLocalizedPassive(lang)
-                    val localizedCoachTip = item.getLocalizedCoachTip(lang)
 
                     com.example.ui.components.AppAssetImage(
                         url = item.iconUrl,
@@ -2234,37 +2210,7 @@ fun AdaptiveDetailAlertDialog(
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
-                    if (localizedCoachTip.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = com.example.ui.theme.HextechGold.copy(alpha = 0.08f)),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, com.example.ui.theme.HextechGold.copy(alpha = 0.4f))
-                        ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Text(com.example.util.tr(""), fontSize = 13.sp)
-                                    Text(
-                                        text = tr("Consejos del Coach:"),
-                                        color = com.example.ui.theme.HextechGoldLight,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                com.example.ui.components.FormattedWildRiftText(
-                                    text = localizedCoachTip,
-                                    color = TextPrimary.copy(alpha = 0.95f),
-                                    fontSize = 11.5.sp,
-                                    lineHeight = 15.5.sp
-                                )
-                            }
-                        }
-                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
                         modifier = Modifier
