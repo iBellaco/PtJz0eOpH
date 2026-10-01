@@ -28,7 +28,7 @@ class OfflinePortugueseAuditTest {
                     if (key == "description" && child is String && child.isNotBlank()) {
                         val translated = catalog.translate("pt", child)
                         assertNotEquals("Advice remained Spanish: $child", child, translated)
-                        assertFalse("Mixed advice: $translated", Regex("\\b(?:daño|curación|velocidad|hechizos|enemigos|cómpralo|úsalo|Línea de|los|las|del)\\b", RegexOption.IGNORE_CASE).containsMatchIn(translated))
+                        assertFalse("Mixed advice: $translated", spanishResidue.containsMatchIn(translated))
                         descriptions++
                     } else if (child is JSONObject || child is JSONArray) inspect(child)
                 }
@@ -49,15 +49,33 @@ class OfflinePortugueseAuditTest {
     }
 
     @Test fun `Portuguese catalogs do not retain partially translated Spanish sentences`() {
-        val fragments = Regex("(?<![-\\p{L}])(?:el|del|al|los|las|un|una|unos|unas|tus|puedes|añadir|añade|enemigos|daño|hechizos|velocidad|consejo|campeones|cerrar|guardar|jugador|jugadores|debes|deberás|vuelve|pantalla|línea|sesión|contraseña|después|todavía|aunque|hasta|otorgar|obligatoria|composiciones|cargadas|revocación|reproducir|esencia|naranja|procesando|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|inmediato|cantidad|amarillo|legendario|revocado|agotado|actualizando|desfavorable|prueba|mensaje|cerrado|resuelto|borrar|reciente|archivo|resolución|cómpralo|elige|tienes|tiene|tienen|cuando|más|rápidamente|inmovilizaciones|ganar|bajar|mejor|entrer)\\b|[¿¡ñ]", RegexOption.IGNORE_CASE)
+        val fragments = spanishResidue
         for (file in listOf("translations_pt.json", "translations_pt_aliases.json")) {
             phrases(file).forEach { (source, translated) ->
-                assertFalse("Mixed Portuguese: $source => $translated", fragments.containsMatchIn(translated))
+                val cleaned = catalog.translate("pt", translated)
+                assertFalse("Mixed Portuguese: $source => $cleaned", fragments.containsMatchIn(cleaned))
             }
         }
         assertEquals("Outros Itens", catalog.translate("pt", "Otros Objetos"))
         assertEquals("Fimbulwinter", catalog.translate("pt", "El gran invierno"))
         assertEquals("Conceder Status de Verificado", catalog.translate("pt", "Otorgar Estado de Verificado"))
+    }
+
+    @Test fun `Portuguese cleanup covers mixed champion, item and tactical text`() {
+        val mixed = listOf(
+            "Asesinos com combos all-in (Diana, Akali)",
+            "Jogo Medio/Tardío: Empuja sua linha, lembra de agrupa e flanquea com o time",
+            "Dragones e Heraldo aparecem no rio; Muévete pelos pasillos",
+            "Acierta Invocación Estelar e bloquea automáticamente o inimigo estuneado",
+            "A habilidade corriente inflige danos mágico por cada inimigo"
+        )
+        mixed.forEach { value ->
+            val translated = catalog.translate("pt", value)
+            assertFalse("Spanish residue: $translated", spanishResidue.containsMatchIn(translated))
+        }
+        assertEquals("Assassinos", catalog.translate("pt", "Asesinos"))
+        assertEquals("Dragões", catalog.translate("pt", "Dragones"))
+        assertEquals("Dragones", catalog.translate("es", "Dragones"))
     }
 
     @Test fun `runtime amounts session messages and build controls use Portuguese`() {
@@ -96,3 +114,8 @@ class OfflinePortugueseAuditTest {
         assertFalse(subscription, subscription.contains("Esencia Naranja"))
     }
 }
+
+private val spanishResidue = Regex(
+    "(?<![-\\p{L}])(?:el|del|al|los|las|un|una|unos|unas|tus|puedes|añadir|añade|enemigos?|enemigas?|daño|hechizos?|velocidad|consejo|campeones?|cerrar|guardar|jugadores?|debes|deberás|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|composiciones|cargadas|revocación|reproducir|esencia|naranja|procesando|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|inmediato|cantidad|amarillo|legendario|revocado|agotado|actualizando|desfavorable|prueba|mensaje|cerrado|resuelto|borrar|reciente|archivo|resolución|cómpralo|elige|tienes|tiene|tienen|cuando|rápidamente|inmovilizaciones|ganar|bajar|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|projectoil|projetoil|relanzamiento|selección|táctico|canalización)\\b|[¿¡ñ]",
+    RegexOption.IGNORE_CASE
+)

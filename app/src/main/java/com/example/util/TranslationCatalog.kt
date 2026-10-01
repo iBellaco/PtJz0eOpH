@@ -2,7 +2,20 @@ package com.example.util
 
 /** Offline exact phrases and full sentence templates. Never performs network translation. */
 class TranslationCatalog(private val portuguese: Map<String, String>, private val spanish: Map<String, String> = emptyMap(), private val portugueseAliases: Map<String, String> = emptyMap()) {
-    private val reverse = portuguese.entries.filter { it.key != it.value }.associate { it.value to it.key }
+    // Several UI labels intentionally share a Portuguese target (for example
+    // "Cerrar" and "Close" both map to "Fechar"). Keep the first canonical
+    // Spanish source so switching back to Spanish does not return an English
+    // alias selected only because it appears later in the catalog.
+    private val reverse = portuguese.entries.filter { it.key != it.value }
+        .groupBy({ it.value }, { it.key })
+        .mapValues { (_, sources) ->
+            sources.firstOrNull { source ->
+                source.lowercase(java.util.Locale.ROOT) !in setOf(
+                    "close", "back", "save", "open", "cancel", "settings", "language",
+                    "continue", "next", "previous", "delete", "edit", "search", "home"
+                )
+            } ?: sources.first()
+        }
     private fun folded(map: Map<String, String>) = map.entries.associate {
         it.key.trim().replace(Regex("\\s+"), " ").lowercase(java.util.Locale.ROOT) to it.value
     }
@@ -40,7 +53,8 @@ class TranslationCatalog(private val portuguese: Map<String, String>, private va
     fun translate(language: String, text: String): String {
         val key = language to text
         cache[key]?.let { return it }
-        val result = translate(language, text, 0)
+        val raw = translate(language, text, 0)
+        val result = if (language.trim().lowercase(java.util.Locale.ROOT).startsWith("pt")) PortugueseTextCleanup.apply(raw) else raw
         if (text.length < 2048) cache[key] = result
         return result
     }
@@ -94,5 +108,62 @@ class TranslationCatalog(private val portuguese: Map<String, String>, private va
         }
         // Unknown proper names, URLs and user-authored content are kept verbatim.
         return text
+    }
+
+    /** Normalizes frequent Spanish leftovers found in offline Portuguese catalog and champion data. */
+    private object PortugueseTextCleanup {
+        private val replacements = listOf(
+            "Invocación Estelar" to "Invocação Estelar",
+            "Juego Medio/Tardío" to "Jogo Médio/Tardio",
+            "Asesinos" to "Assassinos", "asesinos" to "assassinos",
+            "Tardío" to "Tardio", "tardío" to "tardio",
+            "Dragones" to "Dragões", "dragones" to "dragões",
+            "Heraldo" to "Arauto", "heraldo" to "arauto",
+            "obligatorio" to "obrigatório", "obligatoria" to "obrigatória",
+            "obligatorios" to "obrigatórios", "obligatorias" to "obrigatórias",
+            "primera línea" to "linha de frente", "primera linea" to "linha de frente",
+            "peleas grupales" to "lutas em equipe", "peleas de equipo" to "lutas em equipe",
+            "peleas" to "lutas", "pelea" to "luta",
+            "Empuja" to "Empurre", "empuja" to "empurre",
+            "recuerda" to "lembre-se", "agrupa" to "agrupe", "flanquea" to "flanqueie",
+            "Muévete" to "Mova-se", "muévete" to "mova-se",
+            "pasillos" to "corredores", "Absorbe" to "Absorva", "absorbe" to "absorva",
+            "Deniega" to "Negue", "deniega" to "negue", "farmeo" to "farm",
+            "apoindo-se" to "apoiando-se", "Acierta" to "Acerte",
+            "Bloquea automáticamente" to "Bloqueie automaticamente",
+            "bloquea automáticamente" to "bloqueie automaticamente", "estuneado" to "atordoado",
+            "la próxima" to "a próxima", "la siguiente" to "a seguinte",
+            "habilidad" to "habilidade", "enemiga" to "inimiga", "enemigo" to "inimigo",
+            "enemigas" to "inimigas", "enemigos" to "inimigos",
+            "cazado" to "caçado",
+            "projectoil" to "projétil", "projetoil" to "projétil", "projeito" to "projétil",
+            "Relanzamiento" to "Reativação", "por cada" to "para cada",
+            "Cada vez que" to "Sempre que", "cada vez que" to "sempre que",
+            "outorga" to "concede", "Outorga" to "Concede",
+            "inflige danos mágico" to "causa dano mágico", "inflige dano mágico" to "causa dano mágico",
+            "inflige danos físicos" to "causa dano físico", "inflige dano físico" to "causa dano físico",
+            "inflige danos verdadeiros" to "causa dano verdadeiro", "inflige dano verdadeiro" to "causa dano verdadeiro",
+            "Evolución" to "Evolução", "Selección" to "Seleção", "selección" to "seleção",
+            "Táctico" to "Tático", "táctico" to "tático",
+            "Canalización" to "Canalização", "canalización" to "canalização",
+            "Habilidade corriente" to "Habilidade comum", "habilidade corriente" to "habilidade comum",
+            "Cada 4.o ataque" to "A cada 4º ataque",
+            "Esses Laranjas" to "Essências Laranja", "esses Laranjas" to "Essências Laranja",
+            "A coste cero" to "Sem custo", "a coste cero" to "sem custo"
+        )
+        private val replacementMap = replacements.associate { it.first.lowercase(java.util.Locale.ROOT) to it.second }
+        private val matcher = Regex(
+            "(?<![\\p{L}])(?:${replacements.map { Regex.escape(it.first) }.sortedByDescending { it.length }.joinToString("|")})(?![\\p{L}])",
+            RegexOption.IGNORE_CASE
+        )
+
+        fun apply(text: String): String = matcher.replace(text) { match ->
+            val replacement = replacementMap[match.value.lowercase(java.util.Locale.ROOT)] ?: return@replace match.value
+            when {
+                match.value.all { !it.isLetter() || it.isUpperCase() } -> replacement.uppercase(java.util.Locale.ROOT)
+                match.value.firstOrNull()?.isUpperCase() == true -> replacement.replaceFirstChar { it.uppercase(java.util.Locale.ROOT) }
+                else -> replacement
+            }
+        }
     }
 }

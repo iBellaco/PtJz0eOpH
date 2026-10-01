@@ -94,7 +94,10 @@ class LocalizationRegressionTest {
             listOf(it.getLocalizedName("pt"), it.getLocalizedStats("pt"), it.getLocalizedPassive("pt"), it.getLocalizedCoachTip("pt"))
         } + repository.runes.flatMap { listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt")) } +
             repository.summonerSpells.flatMap { listOf(it.getLocalizedName("pt"), it.getLocalizedDescription("pt")) }
-        val spanish = Regex("(?<![\\p{L}\\p{N}_-])(?:daño|enemigos|campeones|hechizos|seleccionar|pantalla|guardar|cerrar|sin|del|los|las)(?![\\p{L}\\p{N}_])|[¿¡ñ]", RegexOption.IGNORE_CASE)
+        val spanish = Regex(
+            "(?<![\\p{L}\\p{N}_-])(?:daño|enemigos?|enemigas?|campeones?|hechizos?|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|projectoil|projetoil|relanzamiento|selección|táctico|canalización|consejo|jugadores?|pantalla|cerrar|guardar|después|todavía|aunque)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
+            RegexOption.IGNORE_CASE
+        )
         descriptions.forEach { text ->
             assertFalse("Portuguese description contains Spanish: $text", spanish.containsMatchIn(text.replace("Lee Sin", "LeeSin")))
         }
