@@ -24,7 +24,6 @@ import java.io.File
 import org.json.JSONArray
 import org.junit.*
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import org.robolectric.ParameterizedRobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -36,7 +35,7 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PortugueseRenderedAuditTest(private val screen: String) {
     companion object {
-        @JvmStatic @Parameterized.Parameters(name = "{0}")
+        @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("information", "faq", "onboarding", "tutorial", "home", "catalog", "tier-list",
             "draft", "champion", "personal-tier", "login", "register", "recover", "legal", "donation", "exit")
             .map { arrayOf(it) }

@@ -176,7 +176,7 @@ jobs:
       - name: Inspect rendered Portuguese screens
         env:
           CI: "true"
-        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --stacktrace --no-daemon
+        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --stacktrace --no-daemon
 
       - name: Upload Portuguese screenshots and rendered texts
         if: always()
