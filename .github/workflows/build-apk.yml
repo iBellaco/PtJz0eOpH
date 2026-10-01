@@ -170,6 +170,9 @@ jobs:
           }
           EOF
 
+      - name: Audit Portuguese text sinks
+        run: bash tools/audit-portuguese.sh
+
       - name: Build Debug APK
         env:
           CI: "true"

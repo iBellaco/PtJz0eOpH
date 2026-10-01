@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.util.TranslationCatalog
+import com.example.util.TranslationAssets
 import java.io.File
 import org.json.JSONArray
 import org.json.JSONObject
@@ -15,7 +16,63 @@ class OfflinePortugueseAuditTest {
         return json.keys().asSequence().associateWith { json.getString(it) }
     }
     private val catalog by lazy {
-        TranslationCatalog(phrases("translations_pt.json"), portugueseAliases = phrases("translations_pt_aliases.json"))
+        TranslationAssets.load(::phrases)
+    }
+
+    @Test fun `subscription overlay recommendation and download regressions use Portuguese`() {
+        val examples = mapOf(
+            "+7 Días" to "+7 Dias",
+            "Desactivando..." to "Desativando...",
+            "Depurado" to "Depuração",
+            "Mi Pick" to "Minha escolha",
+            "Suscripción Premium Activa" to "Assinatura Premium Ativa",
+            "Cuenta Principal" to "Conta Principal",
+            "Guardián (Soporte Global Definitiva)" to "Guardião (Suporte Global com a Definitiva)",
+            "Primer Golpe & Escalado Nivel 13" to "Primeiro Ataque e Escalamento no Nível 13",
+            "APERTURA FÍSICA" to "ABERTURA FÍSICA",
+            "Pix QR Code" to "Código QR Pix",
+            "Descargando código QR Pix" to "Baixando código QR Pix"
+        )
+        examples.forEach { (source, expected) ->
+            assertEquals(source, expected, catalog.translate("pt", source))
+            assertEquals(source, source, catalog.translate("es", source))
+        }
+        val build = catalog.translate("pt", "Build calculada por IA y análisis estadístico para Hwei: 3 Core Items indispensables, opciones situacionales y botas de Nivel 3 adaptadas.")
+        assertEquals("Build calculada por IA e análise estatística para Hwei: 3 itens principais indispensáveis, opções situacionais e botas de Nível 3 adaptadas.", build)
+        assertEquals("Poro Guardião", catalog.translate("pt", "Poro Guardián"))
+        assertEquals("CLÁSSICO", catalog.translate("pt", "CLÁSICO"))
+        assertEquals("COMUM", catalog.translate("pt", "COMÚN"))
+        assertEquals("Elite / Alto Desempenho", catalog.translate("pt", "Élite / Alto Rendimiento"))
+        assertEquals("Em Aprendizagem / Irregular", catalog.translate("pt", "En Aprendizaje / Irregular"))
+        assertEquals("Nível 1 - Alto Desempenho", catalog.translate("pt", "Tier 1 - Alto Rendimiento"))
+    }
+
+    @Test fun `support catalog used by the app is included in the offline audit`() {
+        assertEquals("Não foi possível carregar as mensagens. Verifique as permissões e tente novamente.",
+            catalog.translate("pt", "No se pudieron cargar los mensajes. Comprueba los permisos y vuelve a intentarlo."))
+        assertEquals("Responder novamente", catalog.translate("pt", "Responder de nuevo"))
+        assertEquals("Status atualizado", catalog.translate("pt", "Estado actualizado"))
+    }
+
+    @Test fun `Portuguese resources cover every default string without Spanish residues`() {
+        val resources = File(assets.parentFile, "res")
+        fun strings(directory: String): Map<String, String> {
+            val document = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+                .newDocumentBuilder().parse(File(resources, "$directory/strings.xml"))
+            val nodes = document.getElementsByTagName("string")
+            return (0 until nodes.length).associate { index ->
+                val node = nodes.item(index) as org.w3c.dom.Element
+                node.getAttribute("name") to node.textContent
+            }
+        }
+        val defaultKeys = strings("values").keys
+        for (directory in listOf("values-pt", "values-pt-rBR")) {
+            val translated = strings(directory)
+            assertTrue("Missing Portuguese resources in $directory", translated.keys.containsAll(defaultKeys))
+            translated.forEach { (key, value) ->
+                assertFalse("Mixed resource $directory/$key: $value", spanishResidue.containsMatchIn(value))
+            }
+        }
     }
 
     @Test fun `every bundled build advice is localized including contextual suffixes`() {
@@ -55,7 +112,7 @@ class OfflinePortugueseAuditTest {
 
     @Test fun `Portuguese catalogs do not retain partially translated Spanish sentences`() {
         val fragments = spanishResidue
-        for (file in listOf("translations_pt.json", "translations_pt_aliases.json")) {
+        for (file in TranslationAssets.portugueseFiles + "translations_pt_aliases.json") {
             phrases(file).forEach { (source, translated) ->
                 val cleaned = catalog.translate("pt", translated)
                 if (fragments.containsMatchIn(cleaned)) {
@@ -124,6 +181,7 @@ class OfflinePortugueseAuditTest {
 }
 
 private val spanishResidue = Regex(
+    "\\b(?:días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico)\\b|" +
     "(?<![-\\p{L}])(?:el|del|al|los|las|un|una|unos|unas|tus|puedes|añadir|añade|enemigos?|enemigas?|daño|hechizos?|velocidad|consejo|campeones?|cerrar|guardar|jugadores?|debes|deberás|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|composiciones|cargadas|revocación|reproducir|esencia|naranja|procesando|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|inmediato|cantidad|amarillo|legendario|revocado|agotado|actualizando|desfavorable|prueba|mensaje|cerrado|resuelto|borrar|reciente|archivo|resolución|cómpralo|elige|tienes|tiene|tienen|cuando|rápidamente|inmovilizaciones|ganar|bajar|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|projectoil|projetoil|relanzamiento|selección|táctico|canalización)(?![\\p{L}])|[¿¡ñ]",
     RegexOption.IGNORE_CASE
 )

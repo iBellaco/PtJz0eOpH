@@ -498,7 +498,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                         painter = painterResource(
                             id = if (isOrange) com.example.R.drawable.ic_orange_essence else com.example.R.drawable.ic_blue_essence
                         ),
-                        contentDescription = if (isOrange) "Esencia Naranja" else "Esencia Azul",
+                        contentDescription = com.example.util.tr(if (isOrange) "Esencia Naranja" else "Esencia Azul"),
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))

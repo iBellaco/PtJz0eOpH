@@ -15,7 +15,7 @@ object DynamicTranslations {
                     val json = JSONObject(context.assets.open(name).bufferedReader().use { it.readText() })
                     return json.keys().asSequence().associateWith { json.getString(it) }
                 }
-                catalog = TranslationCatalog(read("translations_pt.json") + read("translations_support_pt.json"), read("translations_es.json"), read("translations_pt_aliases.json"))
+                catalog = TranslationAssets.load(::read)
             } catch (e: Exception) {
                 AppLogger.e("Translations", "Unable to load offline language catalog", e)
             }
