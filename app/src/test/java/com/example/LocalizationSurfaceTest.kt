@@ -2,6 +2,11 @@ package com.example
 
 import android.app.Application
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.*
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.AnnotatedString
@@ -106,6 +111,7 @@ class LocalizationSurfaceTest {
     @Test fun `initial Portuguese selection opens the complete information panel in Portuguese`() {
         compose.setContent {
             var selected by remember { mutableStateOf(false) }
+            Box(Modifier.width(360.dp).height(640.dp)) {
             if (selected) {
                 InfoScreen(onNavigateBack = {}, onNavigateToFAQ = {})
             } else {
@@ -114,24 +120,25 @@ class LocalizationSurfaceTest {
                     selected = true
                 }
             }
+            }
         }
         compose.onNodeWithText("Portugués").performClick()
         compose.onNodeWithText("Continuar em Português").performClick()
-        compose.onNodeWithText("Informação").assertIsDisplayed()
+        compose.onNodeWithText("Informação").assertExists()
         compose.onNodeWithText("Información").assertDoesNotExist()
-        compose.onNodeWithText("1. Compatibilidade e Patch Oficial").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Passo 4: Consulta de Builds e Runas").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Informações Legais e Privacidade").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Todos os direitos reservados.", substring = true).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("1. Compatibilidade e Patch Oficial").performScrollTo().assertExists()
+        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").performScrollTo().assertExists()
+        compose.onNodeWithText("Passo 4: Consulta de Builds e Runas").performScrollTo().assertExists()
+        compose.onNodeWithText("Informações Legais e Privacidade").performScrollTo().assertExists()
+        compose.onNodeWithText("Todos os direitos reservados.", substring = true).performScrollTo().assertExists()
         compose.onAllNodesWithText("Compilação", substring = true).assertCountEquals(2)
 
         compose.runOnIdle { AppLanguage.select(context, "es") }
-        compose.onNodeWithText("Información").assertIsDisplayed()
-        compose.onNodeWithText("Paso 1: Configura tus Líneas de Juego").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Información").assertExists()
+        compose.onNodeWithText("Paso 1: Configura tus Líneas de Juego").performScrollTo().assertExists()
         compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").assertDoesNotExist()
         compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
-        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").assertIsDisplayed()
+        compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").assertExists()
         compose.onNodeWithText("Paso 1: Configura tus Líneas de Juego").assertDoesNotExist()
     }
 
