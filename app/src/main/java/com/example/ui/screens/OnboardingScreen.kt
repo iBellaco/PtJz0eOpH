@@ -116,93 +116,267 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     Brush.radialGradient(
                         colors = listOf(
                             pages[pagerState.currentPage].accentColor.copy(alpha = 0.08f),
-                            Color.Transp…3447 tokens truncated…d_16_api_24_a_36_con_sopor" formatted="false">Compatível com Android 8.0 até Android 16 (API 24 a 36) com suporte nativo a modo multijanela, notch e orientação de tela horizontal.</string>
-    <string name="info_2_modo_de_uso_de_la_aplicacion" formatted="false">2. Modo de Uso do Aplicativo</string>
-    <string name="info_paso_1_configura_tus_lineas_de_juego" formatted="false">Passo 1: Configure suas Rotas de Jogo</string>
-    <string name="info_en_la_pantalla_principal_selecciona_tu_linea_main_segunda_linea_y" formatted="false">Na tela principal, selecione sua \'Rota Principal\', \'Segunda Rota\' e \'Função Autofill\' tocando em cada cartão.</string>
-    <string name="info_paso_2_activa_el_asistente_flotante" formatted="false">Passo 2: Ative o Assistente Flutuante</string>
-    <string name="info_pulsa_el_boton_central_activar_se_desplegara_la_burbuja_flotante" formatted="false">Pressione o botão central \'ATIVAR\'. A bolha flutuante aparecerá na tela para acompanhar sua partida.</string>
-    <string name="info_paso_3_seleccion_de_campeones" formatted="false">Passo 3: Seleção de Campeões</string>
-    <string name="info_abre_wild_rift_y_entra_a_la_fase_de_seleccion_toca_el_boton_flota" formatted="false">Abra o Wild Rift e entre na seleção de campeões. Toque no botão flutuante a qualquer momento para ver recomendações táticas, counters e sinergias ao vivo.</string>
-    <string name="info_paso_4_consulta_de_builds_y_runas" formatted="false">Passo 4: Consulta de Builds e Runas</string>
-    <string name="info_revisa_los_consejos_tacticos_orden_de_habilidades_moviles_pasiva" formatted="false">Confira dicas táticas, ordem de habilidades (Passiva, 1, 2, 3, Ultimate) e builds de itens recomendadas para sua rota.</string>
-    <string name="info_3_donaciones_preguntas_frecuentes_y_legal" formatted="false">3. Doações, Perguntas Frequentes e Termos Legais</string>
-    <string name="info_apoyar_el_proyecto_donaciones" formatted="false">Apoiar o Projeto (Doações)</string>
-    <string name="info_preguntas_frecuentes_faq" formatted="false">Perguntas Frequentes (FAQ)</string>
-    <string name="info_informacion_legal_y_privacidad" formatted="false">Informações Legais e Privacidade</string>
-    <string name="info_4_desarrollador_derechos_y_legal" formatted="false">4. Desenvolvedor, Direitos Autorais e Avisos Legais</string>
-    <string name="info_aplicacion_creada_y_desarrollada_por_diego_barba_chavez" formatted="false">Aplicativo criado e desenvolvido por Diego Barba Chavez.</string>
-    <string name="info_todos_los_derechos_reservados" formatted="false">Todos os direitos reservados.</string>
-    <string name="info_disenado_para_la_comunidad_competitiva_de_league_of_legends_wild" formatted="false">Projetado para a comunidade competitiva de League of Legends: Wild Rift.</string>
-    <string name="info_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op" formatted="false">O Coach não é aprovado nem afiliado à Riot Games e não reflete as opiniões ou pontos de vista da Riot Games ou de qualquer pessoa oficialmente envolvida na produção ou administração das propriedades da Riot Games. Riot Games e todas as propriedades associadas são marcas comerciais ou marcas registradas da Riot Games, Inc.</string>
-    <string name="legal_informacion_legal" formatted="false">Informações Legais</string>
-    <string name="legal_debes_aceptar_los_terminos_de_servicio_y_la_politica_de_privacida" formatted="false">Você deve aceitar os Termos de Serviço e a Política de Privacidade para entrar no aplicativo. Ao fechar esta janela, o aplicativo será encerrado.</string>
-    <string name="legal_cambiar_idioma" formatted="false">Mudar Idioma</string>
-    <string name="legal_rechazar_y_salir" formatted="false">Recusar e Sair</string>
-    <string name="legal_aceptar_y_entrar" formatted="false">Aceitar e Entrar</string>
-    <string name="legal_cerrar" formatted="false">Fechar</string>
-    <string name="legal_1_que_datos_recopilamos_y_por_que" formatted="false">1. Quais dados coletamos e por quê</string>
-    <string name="legal_queremos_ser_100_transparentes_coach_esta_disenada_exclusivamente" formatted="false">Queremos ser 100% transparentes: Coach foi desenvolvido exclusivamente para a análise tática de partidas e drafting no League of Legends: Wild Rift (Patch 7.3). Se você optar por se autenticar no aplicativo, armazenamos apenas seu e-mail e nome de perfil para gerenciar sua sessão, nível de assinatura e configurações sincronizadas na nuvem. Não vendemos, não comercializamos nem compartilhamos suas informações pessoais com qualquer entidade externa.</string>
-    <string name="legal_2_permisos_del_asistente_flotante_y_captura_en_vivo" formatted="false">2. Permissões do Assistente Flutuante e Captura ao Vivo</string>
-    <string name="legal_para_brindar_asistencia_en_tiempo_real_durante_la_seleccion_de_ca" formatted="false">Para fornecer assistência em tempo real durante a seleção de campeões, o aplicativo solicita permissão de sobreposição (Overlay - SYSTEM_ALERT_WINDOW) e projeção de tela. Essas capturas são processadas de forma 100% local e autônoma na memória RAM do seu dispositivo por meio de algoritmos de visão em tempo real e OCR. As imagens não são enviadas para servidores externos, não são armazenadas permanentemente no disco e são descartadas imediatamente após a leitura. Nenhuma gravação de vídeo ou áudio é armazenada ou transmitida.</string>
-    <string name="legal_3_almacenamiento_local_y_recursos_offline" formatted="false">3. Armazenamento Local e Recursos Offline</string>
-    <string name="legal_tus_listas_de_nivel_personales_tier_lists_historial_de_borradores" formatted="false">Suas listas de tier pessoais (Tier Lists), histórico de rascunhos de draft, notas e preferências são salvos com segurança no banco de dados local SQLite (Room) e no armazenamento interno do seu celular. Você pode restaurar ou excluir completamente esses dados limpando o armazenamento do app nas configurações do sistema Android.</string>
-    <string name="legal_4_cero_publicidad_y_rastreo_comercial" formatted="false">4. Zero Publicidade e Rastreamento Comercial</string>
-    <string name="legal_la_aplicacion_no_incluye_anuncios_publicitarios_banners_intrusivo" formatted="false">O aplicativo não inclui anúncios publicitários, banners intrusivos ou kits de desenvolvimento (SDKs) de publicidade ou rastreamento de terceiros. Oferecemos uma experiência totalmente limpa, privada e focada no desempenho competitivo.</string>
-    <string name="legal_5_seguridad_y_cifrado_de_conexion" formatted="false">5. Segurança e Criptografia de Conexão</string>
-    <string name="legal_todas_las_comunicaciones_entre_la_aplicacion_y_los_servicios_de_b" formatted="false">Todas as comunicações entre o aplicativo e os serviços de banco de dados em tempo real utilizam protocolos seguros com criptografia HTTPS/TLS v1.3 para garantir a integridade e confidencialidade absoluta da sua conta.</string>
-    <string name="legal_1_aceptacion_de_los_terminos" formatted="false">1. Aceitação dos Termos</string>
-    <string name="legal_al_descargar_instalar_o_utilizar_la_aplicacion_coach_aceptas_cump" formatted="false">Ao baixar, instalar ou utilizar o aplicativo Coach, você concorda em cumprir estes Termos de Serviço. Se não concordar com alguma disposição, solicitamos que se abstenha de utilizar o aplicativo.</string>
-    <string name="legal_2_proposito_y_uso_permitido" formatted="false">2. Finalidade e Uso Permitido</string>
-    <string name="legal_esta_aplicacion_es_una_herramienta_de_asistencia_tactica_aprendiz" formatted="false">Este aplicativo é uma ferramenta de assistência tática, aprendizado e análise estratégica para League of Legends: Wild Rift. Não modifica arquivos do jogo, não interage com a memória do processo do jogo nem viola as políticas de jogo limpo da Riot Games. Opera exclusivamente através de captura de tela externa, análise estatística e recomendações táticas adaptadas ao Patch 7.3.</string>
-    <string name="legal_3_cuentas_y_suscripciones" formatted="false">3. Contas e Assinaturas</string>
-    <string name="legal_el_acceso_a_funciones_avanzadas_como_analisis_con_ia_historial_de" formatted="false">O acesso a recursos avançados (como análise com IA, histórico de partidas salvas e ferramentas personalizadas) é gerenciado por meio da sua conta de usuário. Você é responsável por manter a confidencialidade de suas credenciais. Reservamo-nos o direito de suspender o acesso em caso de uso indevido ou violação de segurança.</string>
-    <string name="legal_4_disponibilidad_del_servicio_y_metagame" formatted="false">4. Disponibilidade do Serviço e Metagame</string>
-    <string name="legal_nos_esforzamos_por_mantener_la_informacion_de_campeones_runas_obj" formatted="false">Nos esforçamos para manter as informações de campeões, runas, itens e patches constantemente atualizadas com cada versão oficial de Wild Rift; no entanto, não garantimos disponibilidade ininterrupta diante de manutenções ou mudanças imprevistas nos servidores do jogo.</string>
-    <string name="legal_5_limitacion_de_responsabilidad" formatted="false">5. Limitação de Responsabilidade</string>
-    <string name="legal_la_aplicacion_se_proporciona_tal_cual_para_propositos_informativo" formatted="false">O aplicativo é fornecido \'como está\' para fins informativos e de entretenimento. Não nos responsabilizamos por derrotas em partidas ranqueadas, sanções de contas de terceiros ou pelo uso indevido das ferramentas fornecidas.</string>
-    <string name="legal_1_descargo_oficial_de_riot_games" formatted="false">1. Isenção de Responsabilidade Oficial da Riot Games</string>
-    <string name="legal_coach_no_cuenta_con_el_respaldo_de_riot_games_y_no_refleja_las_op" formatted="false">O Coach não é aprovado nem afiliado à Riot Games e não reflete as opiniões ou pontos de vista da Riot Games ou de qualquer pessoa oficialmente envolvida na produção ou administração das propriedades da Riot Games. Riot Games e todas as propriedades associadas são marcas comerciais ou marcas registradas da Riot Games, Inc.</string>
-    <string name="legal_2_politica_de_propiedad_intelectual_legal_jibber_jabber" formatted="false">2. Política de Propriedade Intelectual \'Legal Jibber Jabber\'</string>
-    <string name="legal_esta_aplicacion_cumple_rigurosamente_con_la_politica_de_riot_game" formatted="false">Este aplicativo cumpre rigorosamente a política \'Legal Jibber Jabber\' da Riot Games para projetos comunitários sem intenção de usurpação de marca. Todos os nomes de campeões, habilidades, itens, runas e recursos visuais de League of Legends: Wild Rift pertencem integralmente à Riot Games, Inc.</string>
-    <string name="legal_3_infraestructura_segura_en_la_nube" formatted="false">3. Infraestrutura Segura na Nuvem</string>
-    <string name="legal_utilizamos_infraestructura_en_la_nube_con_servidores_seguros_y_ba" formatted="false">Utilizamos infraestrutura na nuvem com servidores seguros e bancos de dados criptografados para sincronização de perfis, autenticação e armazenamento de status de assinatura, operando sob rigorosas normas de segurança e privacidade.</string>
-    <string name="legal_4_bibliotecas_de_codigo_abierto_open_source" formatted="false">4. Bibliotecas de Código Aberto (Open Source)</string>
-    <string name="legal_esta_aplicacion_utiliza_componentes_de_software_libre_licenciados" formatted="false">Este aplicativo utiliza componentes de software livre licenciados sob Apache 2.0 e MIT, incluindo Jetpack Compose, Kotlinx Coroutines, AndroidX Room, Coil Image Loader, Material 3 e ML Kit Text Recognition.</string>
-    <string name="onboarding_coach_de_elite_draft" formatted="false">Coach de Elite e Draft</string>
-    <string name="onboarding_analisis_tactico_en_tiempo_real" formatted="false">Análise Tática em Tempo Real</string>
-    <string name="onboarding_selecciona_composiciones_optimas_con_evaluacion_para_los_5_roles" formatted="false">Selecione composições ideais com avaliação para as 5 funções do Wild Rift, sinergias de equipe, detecção de counters e condição de vitória.</string>
-    <string name="onboarding_recomendador_de_3_mejores_picks" formatted="false">Recomendação dos 3 melhores picks</string>
-    <string name="onboarding_wombo_combos_y_balance_de_dano" formatted="false">Wombo combos e equilíbrio de dano</string>
-    <string name="onboarding_condicion_de_victoria_del_equipo" formatted="false">Condição de vitória da equipe</string>
-    <string name="onboarding_asistente_flotante_en_juego" formatted="false">Assistente Flutuante em Jogo</string>
-    <string name="onboarding_burbuja_flotante_vision_ocr" formatted="false">Bolha Flutuante &amp; Visão OCR</string>
-    <string name="onboarding_activa_la_burbuja_flotante_para_recibir_coaching_en_directo_sobre" formatted="false">Ative a bolha flutuante para receber orientação ao vivo sobre a tela do Wild Rift e escanear o draft automaticamente sem sair do jogo.</string>
-    <string name="onboarding_burbuja_flotante_movible" formatted="false">Bolha flutuante móvel</string>
-    <string name="onboarding_escaner_visual_de_seleccion" formatted="false">Scanner visual de seleção</string>
-    <string name="onboarding_consejos_tacticos_sin_cambiar_de_app" formatted="false">Dicas táticas sem trocar de app</string>
-    <string name="onboarding_tier_list_oficial" formatted="false">Tier List oficial</string>
-    <string name="onboarding_meta_global_y_counters" formatted="false">Meta Global e Counters</string>
-    <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulte a Tier List oficial atualizada para o último patch e descubra as melhores escolhas para garantir sua vantagem em cada partida.</string>
-    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Tier List global e de servidores asiáticos</string>
-    <string name="onboarding_identificacion_de_mejores_picks_del_meta" formatted="false">Identificação dos melhores picks do meta</string>
-    <string name="onboarding_analisis_de_enfrentamientos_directos" formatted="false">Análise de confrontos diretos</string>
-    <string name="onboarding_ventajas_suscripcion_premium" formatted="false">Vantagens &amp; Assinatura Premium</string>
-    <string name="onboarding_acceso_total_de_elite_personalizacion" formatted="false">Acesso Total de Elite &amp; Personalização</string>
-    <string name="onboarding_desbloquea_todas_las_ventajas_exclusivas_historial_estadistico_de" formatted="false">Desbloqueie todas as vantagens exclusivas: histórico estatístico detalhado, sistema de campeões favoritos e personalização avançada com Temas e Avatares de Runeterra.</string>
-    <string name="onboarding_escaner_automatico_del_draft" formatted="false">Scanner Automático do draft</string>
-    <string name="onboarding_historial_del_draft" formatted="false">Histórico do draft</string>
-    <string name="onboarding_win_rate_personal" formatted="false">Taxa de Vitória pessoal</string>
-    <string name="onboarding_campeones_favoritos" formatted="false">Campeões Favoritos</string>
-    <string name="onboarding_temas_exclusivos" formatted="false">Temas exclusivos</string>
-    <string name="onboarding_avatares_exclusivos" formatted="false">Avatares exclusivos</string>
-    <string name="onboarding_omitir" formatted="false">Pular</string>
-    <string name="onboarding_comenzar_ahora" formatted="false">Começar agora!</string>
-    <string name="onboarding_siguiente" formatted="false">Seguinte</string>
-    <string name="legal_privacy" formatted="false">Privacidade</string>
-    <string name="legal_terms" formatted="false">Termos</string>
-    <string name="legal_third_party" formatted="false">Terceiros</string>
-    <string name="info_patch">Patch %1$s</string>
-    <string name="info_version">v%1$s (Compilação %2$d) • %3$s</string>
-    <string name="info_patch_description">Totalmente sincronizado com o meta oficial do Wild Rift %1$s. Inclui os últimos buffs, nerfs, ajustes de itens e rotações da lista de níveis.</string>
-</resources>
+                            Color.Transparent
+                        ),
+                        radius = 800f
+                    )
+                )
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+        ) {
+            // Top Bar: Skip button and Patch Badge
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Patch Chip
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = HextechSurface,
+                    border = BorderStroke(1.dp, HextechCardBorder)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(HextechGold)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = tr(WildRiftRepository.CURRENT_PATCH_VERSION),
+                            color = HextechGold,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Skip button
+                if (pagerState.currentPage < pages.size - 1) {
+                    TextButton(onClick = onFinish) {
+                        Text(
+                            text = localizedString(R.string.onboarding_omitir),
+                            color = TextMuted,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.width(48.dp))
+                }
+            }
+
+            // Carousel Pager Content
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) { position ->
+                OnboardingPageContent(page = pages[position])
+            }
+
+            // Bottom Navigation Controls
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
+            ) {
+                // Indicators
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(pages.size) { index ->
+                        val isSelected = pagerState.currentPage == index
+                        val color = if (isSelected) pages[index].accentColor else TextMuted.copy(alpha = 0.25f)
+                        val width = if (isSelected) 28.dp else 8.dp
+
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .height(6.dp)
+                                .width(width)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(color)
+                        )
+                    }
+                }
+
+                // Main CTA Button
+                val isLastPage = pagerState.currentPage == pages.size - 1
+                val currentPage = pages[pagerState.currentPage]
+
+                Button(
+                    onClick = {
+                        if (isLastPage) {
+                            onFinish()
+                        } else {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isLastPage) HextechGold else HextechCyan
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = if (isLastPage) localizedString(R.string.onboarding_comenzar_ahora) else localizedString(R.string.onboarding_siguiente),
+                            color = HextechDarkBg,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 15.sp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = if (isLastPage) Icons.Default.CheckCircle else Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = HextechDarkBg,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OnboardingPageContent(page: OnboardingPage) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Icon with glowing concentric circles
+        Box(
+            modifier = Modifier
+                .size(110.dp)
+                .clip(CircleShape)
+                .background(page.accentColor.copy(alpha = 0.12f))
+                .border(1.5.dp, page.accentColor.copy(alpha = 0.4f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(78.dp)
+                    .clip(CircleShape)
+                    .background(HextechSurface)
+                    .border(1.dp, page.accentColor.copy(alpha = 0.6f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = page.icon,
+                    contentDescription = null,
+                    tint = page.accentColor,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Subtitle badge
+        Text(
+            text = page.subtitle.uppercase(),
+            color = page.accentColor,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.2.sp
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        // Title
+        Text(
+            text = page.title,
+            color = TextPrimary,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Black,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Description
+        Text(
+            text = page.description,
+            color = TextSecondary,
+            fontSize = 13.5.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 20.sp,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Feature Highlights Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = HextechSurface.copy(alpha = 0.8f)),
+            border = BorderStroke(1.dp, page.accentColor.copy(alpha = 0.25f))
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                page.highlights.forEach { highlight ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clip(CircleShape)
+                                .background(page.accentColor.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = page.accentColor,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = highlight,
+                            color = TextPrimary,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
