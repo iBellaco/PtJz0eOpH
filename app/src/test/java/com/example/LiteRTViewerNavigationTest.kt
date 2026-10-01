@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.example.ui.components.LiteRTEngineViewerDialog
@@ -37,7 +38,8 @@ class LiteRTViewerNavigationTest {
         }
         compose.onNodeWithTag("vision_viewer_back").assertIsDisplayed()
         compose.onNodeWithText("CALIBRACIÓN DE UMBRAL DE SIMILITUD").assertDoesNotExist()
-        compose.onNodeWithTag("vision_viewer_content").performTouchInput { swipeUp() }
+        compose.onNodeWithTag("vision_viewer_content")
+            .performSemanticsAction(SemanticsActions.ScrollBy) { scrollBy -> scrollBy(0f, 240f) }
         compose.onNodeWithTag("vision_viewer_back").assertIsDisplayed().performClick()
         compose.onNodeWithText("Hub").assertIsDisplayed()
         compose.onNodeWithTag("litert_viewer_dialog").assertDoesNotExist()
@@ -52,7 +54,8 @@ class LiteRTViewerNavigationTest {
             }
         }
         compose.onNodeWithText("Voltar ao hub").assertIsDisplayed()
-        compose.onNodeWithTag("vision_viewer_content").performTouchInput { swipeUp() }
+        compose.onNodeWithTag("vision_viewer_content")
+            .performSemanticsAction(SemanticsActions.ScrollBy) { scrollBy -> scrollBy(0f, 240f) }
         compose.onNodeWithText("Voltar ao hub").assertIsDisplayed()
     }
 }
