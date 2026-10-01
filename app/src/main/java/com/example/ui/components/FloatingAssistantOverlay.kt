@@ -29,7 +29,6 @@ import com.example.model.Champion
 import com.example.model.LaneRole
 import com.example.model.DraftAnalysisResult
 import com.example.util.tr
-import com.example.util.LocalLanguage
 import com.example.ui.theme.*
 import kotlin.math.roundToInt
 
@@ -208,7 +207,7 @@ private fun OverlayItemsTabContent(
     selectedCategory: String?,
     onCategoryChange: (String?) -> Unit
 ) {
-    val lang = LocalLanguage.current
+    val lang = com.example.util.currentAppLanguage()
     val filteredItems = remember(searchQuery, selectedCategory, lang) {
         WildRiftRepository.items.filter { item ->
             val matchCategory = selectedCategory == null || item.category.equals(selectedCategory, ignoreCase=true)

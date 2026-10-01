@@ -94,7 +94,6 @@ import com.example.ui.theme.HextechSurfaceVariant
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.util.LocalLanguage
 import com.example.util.tr
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -104,7 +103,7 @@ fun PersonalTierListView(
     onSelectDraftForDetail: (SavedDraftEntity) -> Unit,
     isOverlay: Boolean = false
 ) {
-    val currentLang = LocalLanguage.current
+    val currentLang = com.example.util.currentAppLanguage()
     var selectedRoleFilter by remember { mutableStateOf<LaneRole?>(null) }
     var selectedQueueMode by remember { mutableStateOf("ALL") } // "ALL", "RANKED", "LEGENDARY"
     var selectedChampionStats by remember { mutableStateOf<PersonalChampionStats?>(null) }

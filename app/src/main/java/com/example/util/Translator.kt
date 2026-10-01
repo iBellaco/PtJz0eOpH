@@ -10,21 +10,22 @@ import com.example.data.WildRiftRepository
 
 val LocalLanguage = compositionLocalOf { "" }
 
+/** One reactive language for labels, catalog fields and generated coaching, including standalone windows. */
 @Composable
-private fun translationLanguage(): String {
+fun currentAppLanguage(): String {
     val selected by AppLanguage.current.collectAsState()
-    return LocalLanguage.current.ifBlank { selected }
+    return AppLanguage.normalize(LocalLanguage.current.ifBlank { selected })
 }
 
 @Composable
-fun tr(key: String): String = trStr(translationLanguage(), key)
+fun tr(key: String): String = trStr(currentAppLanguage(), key)
 
 @Composable
 fun trNullable(text: String?): String? = text?.let { tr(it) }
 
 @Composable
 fun tr(text: AnnotatedString): AnnotatedString {
-    val language = translationLanguage()
+    val language = currentAppLanguage()
     // Translate styled segments without dropping links, colours or emphasis.
     val boundaries = (listOf(0, text.length) + text.spanStyles.flatMap { listOf(it.start, it.end) } +
         text.paragraphStyles.flatMap { listOf(it.start, it.end) } +

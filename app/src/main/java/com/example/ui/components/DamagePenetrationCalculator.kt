@@ -50,7 +50,7 @@ fun DamagePenetrationCalculator(
     // Break-even point: A partir de cuánta armadura % Pen rinde más que Flat Pen
     val breakEvenArmor = if (percentPenetration > 0) (flatPenetration / (percentPenetration / 100f)).roundToInt() else 0
 
-    val currentLang = com.example.util.LocalLanguage.current
+    val currentLang = com.example.util.currentAppLanguage()
 
     Column(
         modifier = modifier

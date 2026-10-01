@@ -65,4 +65,39 @@ class LocalizationSurfaceTest {
         assertEquals(listOf("GLOBAL"), com.example.data.sync.MetaRegion.available)
     }
 
+    @Test fun `standalone catalog fields and cached advice follow both language switches`() {
+        val champion = com.example.model.Champion(name = "Hwei", skills = listOf(
+            com.example.model.ChampionSkill(slot = "1", name = "Desastre", namePt = "Desastre")
+        ))
+        compose.setContent {
+            val language = currentAppLanguage()
+            val analysis = remember(language) {
+                CoachingGenerator.generateTacticalAnalysis(champion, com.example.model.LaneRole.MID, language)
+            }
+            Column {
+                Text(com.example.model.LaneRole.MID.getLocalizedName(language))
+                Text(analysis)
+            }
+        }
+        compose.onNodeWithText("Línea Central").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithText("Rota do Meio").assertExists()
+        compose.onNodeWithText("sua H1 (Desastre)", substring = true).assertExists()
+        compose.onNodeWithText("Línea Central", substring = true).assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onNodeWithText("Línea Central").assertExists()
+        compose.onNodeWithText("su H1 (Desastre)", substring = true).assertExists()
+        compose.onNodeWithText("Rota do Meio", substring = true).assertDoesNotExist()
+    }
+
+    @Test fun `Portuguese locale variants are normalized for model fields`() {
+        compose.setContent {
+            CompositionLocalProvider(LocalLanguage provides "pt-BR") {
+                Text(com.example.model.LaneRole.MID.getLocalizedName(currentAppLanguage()))
+            }
+        }
+        compose.onNodeWithText("Rota do Meio").assertExists()
+        compose.onNodeWithText("Línea Central").assertDoesNotExist()
+    }
+
 }

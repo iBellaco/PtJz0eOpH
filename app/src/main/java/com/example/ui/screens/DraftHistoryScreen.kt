@@ -131,7 +131,6 @@ import com.example.ui.theme.HextechSurfaceVariant
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.util.LocalLanguage
 import com.example.util.tr
 import com.example.util.trStr
 import kotlinx.coroutines.launch
@@ -262,7 +261,7 @@ fun DraftHistoryScreen(
     var profileToClearHistory by remember { mutableStateOf<AccountProfile?>(null) }
     var profileToDeleteProfile by remember { mutableStateOf<AccountProfile?>(null) }
 
-    val currentLang = LocalLanguage.current
+    val currentLang = com.example.util.currentAppLanguage()
     val effectiveLang = if (currentLang == "auto") "es" else currentLang
 
     // Backup & Restore state

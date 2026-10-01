@@ -993,7 +993,7 @@ private fun FloatingOverlayContent(
     val isAdmin = userRole == "admin" || userRole == "moderador" || (currentAuthEmail != null && currentAuthEmail.contains("barbadiego", ignoreCase = true)) || com.example.util.AuthManager.isCurrentUserAdmin()
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val currentLang = LocalLanguage.current
+    val currentLang = com.example.util.currentAppLanguage()
     var activeRole by state::activeRole
 
     val sharedPrefs = remember { context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE) }
