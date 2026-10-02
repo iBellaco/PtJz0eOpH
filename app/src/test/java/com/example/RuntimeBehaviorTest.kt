@@ -67,6 +67,35 @@ class RuntimeBehaviorTest {
         }
     }
 
+    @Test fun `approved channels are public while Google submissions remain administrator only`() {
+        assertEquals("Google", StreamChannelUrl.approved("https://www.google.com")?.platform)
+        assertNull(StreamChannelUrl.parse("https://www.google.com"))
+        assertNull(StreamChannelUrl.approved("https://google.com.evil.test"))
+        assertNotNull(StreamChannelUrl.approved("https://twitch.tv/coach_test"))
+    }
+
+    @Test fun `sponsor tags take precedence over conflicting legacy support categories`() {
+        for (key in listOf("tag", "type", "category")) {
+            val data = mapOf<String, Any>("tag" to "SOPORTE", "type" to "SUPPORT", "title" to "Teste", "description" to "Mensagem") + (key to "PATROCINADOR")
+            assertTrue(SupportConversationPolicy.isSponsor(SupportConversationPolicy.ticketTag(data)))
+            assertEquals("PATROCINADOR", SupportReportDecoder.decode("legacy", data)?.type)
+            assertFalse(SupportConversationPolicy.canView("moderador", SupportConversationPolicy.ticketTag(data)))
+        }
+    }
+
+    @Test fun `a conversation stays replyable across repeated turns until explicitly closed`() {
+        var history = SupportConversationPolicy.initial("local", "Teste", "Mensagem inicial", now)
+        assertFalse(SupportConversationPolicy.canUserReply(history, "PENDING"))
+        repeat(4) { turn ->
+            history = history + SupportMessageEntry(senderRole = "SUPPORT", text = "Resposta $turn", timestampMillis = now + turn + 1)
+            assertTrue(SupportConversationPolicy.canUserReply(history, "READ"))
+            history = history + SupportMessageEntry(senderRole = "USER", text = "Detalhes $turn", timestampMillis = now + turn + 2)
+            assertTrue(SupportConversationPolicy.canUserReply(history, "PENDING"))
+        }
+        assertFalse(SupportConversationPolicy.canUserReply(history, "SOLVED"))
+        assertFalse(SupportConversationPolicy.canUserReply(history, "CLOSED"))
+    }
+
     @Test fun `a saved English choice is migrated and models no longer select English`() {
         val context = RuntimeEnvironment.getApplication()
         context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().putString("selected_language", "en").commit()

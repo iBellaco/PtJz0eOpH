@@ -5,6 +5,10 @@ import java.util.Locale
 object SupportConversationPolicy {
     const val SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí."
     fun isSponsor(tag: String): Boolean = tag.trim().uppercase(Locale.ROOT) in setOf("PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD")
+    fun ticketTag(data: Map<String, Any>, fallback: String = "SOPORTE"): String {
+        val tags = listOf("tag", "type", "category").mapNotNull { (data[it] as? String)?.takeIf(String::isNotBlank) }
+        return tags.firstOrNull(::isSponsor) ?: tags.firstOrNull() ?: fallback
+    }
     fun isClosed(status: String): Boolean = status.trim().uppercase(Locale.ROOT) in setOf("SOLVED", "SOLUCIONADO", "RESUELTO", "CLOSED", "CERRADO", "COMPLETED", "COMPLETADO")
     fun canView(role: String, tag: String): Boolean = role == "admin" || (role == "moderador" && !isSponsor(tag))
     fun hasStaffAnswer(messages: List<SupportMessageEntry>): Boolean = messages.any {

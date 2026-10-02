@@ -247,7 +247,8 @@ object SupportReplyManager {
                 check(snapshot.exists() || (SupportTicketAccess.isAdmin() && fallbackUid.isNotBlank())) { "Ticket no disponible" }
                 val owner = snapshot.getString("userId").orEmpty().ifBlank { fallbackUid }
                 check(owner.isNotBlank() && owner != "anonimo") { "No se pudo identificar al destinatario" }
-                val actualTag = snapshot.getString("tag") ?: snapshot.getString("type") ?: tag
+                check(!SupportConversationPolicy.isClosed(snapshot.getString("status").orEmpty())) { "Ticket cerrado" }
+                val actualTag = SupportConversationPolicy.ticketTag(snapshot.data.orEmpty(), tag)
                 check(SupportTicketAccess.isAdmin() || !SupportConversationPolicy.isSponsor(actualTag)) { "Ticket exclusivo del administrador" }
                 val previous = SupportConversationPolicy.decode(snapshot.get("conversation")).ifEmpty {
                     SupportConversationPolicy.initial(reportId, snapshot.getString("userName") ?: "Invocador",

@@ -1301,11 +1301,11 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     enablePulse = true
                 ) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        horizontalArrangement = Arrangement.Center) {
                         Icon(Icons.Default.Verified, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
                         Text(
                             text = tr(if (hasPendingSponsorsForAuth) "Panel de Moderador (¡Solicitud Pendiente!)" else "Panel de Moderador"),
-                            modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 8.dp).weight(1f, fill = false), textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             color = Color.White, fontWeight = FontWeight.Bold
                         )
                         Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {

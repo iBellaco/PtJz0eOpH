@@ -50,10 +50,14 @@ private fun liveEntries(): Pair<List<Map<String, Any>>, Boolean> {
                 if (error == null && snapshot != null) entries = StreamerRepository.entries(snapshot.get("entries"))
             }
         }
-        // Public channels subscribe immediately, and retry when the guest/session token becomes ready.
-        attach()
+        // Subscribe once initially; retry only when the guest/session identity actually changes.
         val auth = FirebaseAuth.getInstance()
-        val authListener = FirebaseAuth.AuthStateListener { attach() }
+        var listenerUid = auth.currentUser?.uid
+        attach()
+        val authListener = FirebaseAuth.AuthStateListener { updatedAuth ->
+            val uid = updatedAuth.currentUser?.uid
+            if (uid != listenerUid) { listenerUid = uid; attach() }
+        }
         auth.addAuthStateListener(authListener)
         onDispose { auth.removeAuthStateListener(authListener); listener?.remove() }
     }
@@ -81,22 +85,19 @@ private fun operationError(result: Result<Unit>?): String? {
 fun LiveStreamersRow() {
     val (entries, _) = liveEntries()
     val uri = LocalUriHandler.current
-    val role by SubscriptionManager.userRole.collectAsState()
-    val adminClaim by AuthManager.isAdminClaim.collectAsState()
-    val isAdmin = RolePanelAccess.isAdministrator(role, adminClaim)
     val scope = rememberCoroutineScope()
-    LiveStreamersContent(entries, isAdmin) { item, url ->
+    LiveStreamersContent(entries) { item, url ->
         if (runCatching { uri.openUri(url) }.isSuccess) scope.launch { StreamerRepository.recordClick(item) }
     }
 }
 
 @Composable
-fun LiveStreamersContent(entries: List<Map<String, Any>>, isAdmin: Boolean,
+fun LiveStreamersContent(entries: List<Map<String, Any>>,
     onOpen: (Map<String, Any>, String) -> Unit) {
     if (entries.isNotEmpty()) {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             entries.take(StreamerPublicationPolicy.MAX_LIVE).forEach { item ->
-                val channel = StreamChannelUrl.parse(item["channelUrl"] as? String ?: "", allowAdminTest = isAdmin)
+                val channel = StreamChannelUrl.approved(item["channelUrl"] as? String ?: "")
                 if (channel != null) LiveStreamerChip(item["channelName"] as? String ?: "") { onOpen(item, channel.url) }
             }
         }
@@ -242,10 +243,9 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
         operationError(result)?.let { Text(it, color = Color(0xFFFF8A80)) }
         if (!available || !requestAvailable) Text(localizedString(R.string.streamer_loading), color = Color.White)
         entries.forEach { item ->
-            Row(Modifier.fillMaxWidth()) {
-                Text(item["channelName"] as? String ?: "", modifier = Modifier.weight(1f), color = Color.White)
-                TextButton(onClick = { busy = true; scope.launch { result = StreamerRepository.end(item["userId"] as String); busy = false } }, enabled = !busy && available) { Text(localizedString(R.string.streamer_end)) }
-            }
+            ApprovedStreamerReviewCard(item, !busy && available,
+                onOpen = { url -> runCatching { uri.openUri(url) } },
+                onEnd = { busy = true; scope.launch { result = StreamerRepository.end(item["userId"] as String); busy = false } })
         }
         if (requestAvailable && pendingRequests.isEmpty()) Text(localizedString(R.string.streamer_empty), color = Color.White)
         pendingRequests.forEach { request ->
@@ -266,6 +266,24 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/** Approved channels remain available for verification after leaving the pending queue. */
+@Composable
+fun ApprovedStreamerReviewCard(item: Map<String, Any>, enabled: Boolean,
+    onOpen: (String) -> Unit, onEnd: () -> Unit) {
+    val channel = StreamChannelUrl.approved(item["channelUrl"] as? String ?: "")
+    Surface(color = Color(0xFF1F2937), shape = RoundedCornerShape(10.dp)) {
+        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(item["channelName"] as? String ?: "", color = StreamGold, style = MaterialTheme.typography.titleMedium)
+            Text(localizedString(R.string.streamer_review_accepted), color = Color(0xFF2DD4BF))
+            Text(item["channelUrl"] as? String ?: "", color = Color.White)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { channel?.let { onOpen(it.url) } }, enabled = channel != null) { Text(localizedString(R.string.streamer_open)) }
+                TextButton(onClick = onEnd, enabled = enabled) { Text(localizedString(R.string.streamer_end)) }
             }
         }
     }

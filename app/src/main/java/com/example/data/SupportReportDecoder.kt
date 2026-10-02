@@ -65,7 +65,7 @@ object SupportReportDecoder {
             id = id, userId = text("userId", "user_id", "senderUid"),
             userName = text("userName", "user_name", "senderName").ifBlank { initial?.senderName.orEmpty() },
             userEmail = text("contactEmail", "userEmail", "user_email", "email"),
-            type = text("tag", "type", "category").ifBlank { "SOPORTE" },
+            type = SupportConversationPolicy.ticketTag(data),
             title = title.ifBlank { "Ticket de soporte" }, description = body,
             photosBase64 = ((data["photos"] ?: data["photosBase64"]) as? List<*>)?.filterIsInstance<String>().orEmpty(),
             appVersion = text("appVersion", "app_version", "version"),

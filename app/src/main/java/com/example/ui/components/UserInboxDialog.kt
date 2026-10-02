@@ -1040,7 +1040,7 @@ fun UserSupportThreadCard(
                 if (err == null && snap != null && snap.exists()) {
                     val rawSt = snap.getString("status") ?: "PENDIENTE"
                     liveStatus = when (rawSt.uppercase()) {
-                        "SOLVED", "SOLUCIONADO", "RESUELTO", "CERRADO", "CLOSED" -> "SOLUCIONADO"
+                        "SOLVED", "SOLUCIONADO", "RESUELTO", "CERRADO", "CLOSED", "COMPLETED", "COMPLETADO" -> "SOLUCIONADO"
                         "READ", "LEIDO", "LEÍDO" -> "LEÍDO"
                         else -> "PENDIENTE"
                     }
