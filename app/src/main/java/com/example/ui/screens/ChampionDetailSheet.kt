@@ -164,8 +164,8 @@ fun ChampionDetailSheet(
     }
 
     // Perfil dinámico de estadísticas, build, runas y counters adaptados a la línea elegida
-    val roleProfile = remember(champion.id, selectedRole) {
-        ChampionRoleAdapter.getProfile(champion, selectedRole)
+    val roleProfile = remember(champion.id, selectedRole, currentLang) {
+        ChampionRoleAdapter.getProfile(champion, selectedRole, currentLang)
     }
 
     // Perfil de Sinergias del Meta y Compañeros complementarios
@@ -1259,7 +1259,7 @@ fun ChampionDetailSheet(
             // SECCIÓN RUNAS ASOCIADAS A ESTA OPCIÓN
             // ==========================================
             Text(
-                text = com.example.util.tr("${tr("Runas")} • ${activeOption.title}"),
+                text = "${tr("Runas")} • ${tr(activeOption.title)}",
                 color = HextechGold,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold

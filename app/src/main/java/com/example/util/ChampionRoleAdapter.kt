@@ -284,14 +284,14 @@ object ChampionRoleAdapter {
         return WildRiftChampionRunesMeta.resolveRunes(champ, role)
     }
 
-    fun getProfile(champion: Champion, targetRole: LaneRole): ChampionRoleProfile {
+    fun getProfile(champion: Champion, targetRole: LaneRole, language: String = AppLanguage.current.value): ChampionRoleProfile {
         val isPrimary = targetRole == champion.primaryRole
 
         if (isPrimary) {
             return buildPrimaryProfile(champion)
         }
 
-        return buildFlexRoleProfile(champion, targetRole)
+        return buildFlexRoleProfile(champion, targetRole, language)
     }
 
     private fun buildPrimaryProfile(champ: Champion): ChampionRoleProfile {
@@ -414,7 +414,7 @@ object ChampionRoleAdapter {
         )
     }
 
-    private fun buildFlexRoleProfile(champ: Champion, role: LaneRole): ChampionRoleProfile {
+    private fun buildFlexRoleProfile(champ: Champion, role: LaneRole, language: String): ChampionRoleProfile {
         val isAp = champ.damageType == DamageType.MAGIC
         val isTank = champ.isFrontline || (role == LaneRole.SUPPORT && !isAp && !champ.isRanged)
         val isMarksman = champ.isRanged && champ.damageType == DamageType.PHYSICAL
@@ -538,7 +538,7 @@ object ChampionRoleAdapter {
         val flexAdvantages = flexMatchup.advantages
         val flexCounters = flexMatchup.counters
         val flexSynergies = flexMatchup.synergies
-        val flexTacticalAdvice = CoachingGenerator.generateTacticalAnalysis(champ, role, "es")
+        val flexTacticalAdvice = CoachingGenerator.generateTacticalAnalysis(champ, role, language)
 
         return ChampionRoleProfile(
             role = role,

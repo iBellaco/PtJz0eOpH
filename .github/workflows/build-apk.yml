@@ -20,6 +20,7 @@ permissions:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -173,6 +174,21 @@ jobs:
       - name: Audit Portuguese text sinks
         run: bash tools/audit-portuguese.sh
 
+      - name: Inspect rendered Portuguese screens
+        env:
+          CI: "true"
+        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest -Proborazzi.test.record=true --stacktrace --no-daemon
+
+      - name: Upload Portuguese screenshots and rendered texts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portuguese-rendered-audit
+          path: |
+            app/build/reports/portuguese-rendered/
+            app/build/test-results/testDebugUnitTest/
+          retention-days: 14
+
       - name: Build Debug APK
         env:
           CI: "true"
@@ -205,9 +221,32 @@ jobs:
         with:
           name: app-debug.apk
           path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: warn
-          retention-days: 1
-        continue-on-error: true
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Enable Android virtual device acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Revisit installed APK in Portuguese
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: default
+          disable-animations: true
+          emulator-boot-timeout: 300
+          script: python3 tools/audit-portuguese-device.py
+
+      - name: Upload installed APK Portuguese evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portuguese-device-audit
+          path: app/build/reports/portuguese-device/
+          retention-days: 14
 
       - name: Extract App Version from Gradle
         id: app_version

@@ -532,8 +532,8 @@ object SubscriptionManager {
         val years = daysTotal / 365
 
         val parts = mutableListOf<String>()
-        if (years > 0) parts.add("$years año" + if (years > 1L) "s" else "")
-        if (days > 0) parts.add("$days día" + if (days > 1L) "s" else "")
+        if (years > 0) parts.add("$years " + appTr(if (years > 1L) "años" else "año"))
+        if (days > 0) parts.add("$days " + appTr(if (days > 1L) "días" else "día"))
         if (hours > 0) parts.add("$hours hora" + if (hours > 1L) "s" else "")
         if (minutes > 0) parts.add("$minutes minuto" + if (minutes > 1L) "s" else "")
         if (seconds > 0) parts.add("$seconds segundo" + if (seconds > 1L) "s" else "")
