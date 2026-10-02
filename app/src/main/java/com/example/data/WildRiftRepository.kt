@@ -413,7 +413,6 @@ object WildRiftRepository {
         var counterText = ""
         val isPt = lang.lowercase().startsWith("pt")
 
-        val isEs = !isPt
 
         // Check for Off-role / Troll pick
         val isOffRole = champ.primaryRole != myRole && !champ.secondaryRoles.contains(myRole)
