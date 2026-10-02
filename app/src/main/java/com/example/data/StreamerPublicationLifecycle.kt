@@ -49,6 +49,9 @@ class StreamerExpiryWorker(context: Context, parameters: WorkerParameters) : Cor
         val user = AuthManager.getAuth()?.currentUser
         if (AuthManager.isGuestOrUnauthenticated(user) || user?.uid != uid) return Result.success()
         val result = StreamerRepository.expire(uid)
-        return if (result.isSuccess) Result.success() else Result.retry()
+        val denied = generateSequence(result.exceptionOrNull()) { it.cause }.any {
+            (it as? com.google.firebase.firestore.FirebaseFirestoreException)?.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED
+        }
+        return when { result.isSuccess -> Result.success(); denied -> Result.failure(); else -> Result.retry() }
     }
 }

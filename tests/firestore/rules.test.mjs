@@ -142,6 +142,11 @@ try {
     const approved = (await getDoc(doc(admin,'streamer_requests','s2'))).data();
     await assertSucceeds(setDoc(doc(admin,`streamer_requests/s2/history/${data.publicationId}`),approved));
     assert.equal((await getDoc(doc(db('s2'),`streamer_requests/s2/history/${data.publicationId}`))).data().status,'APPROVED');
+    const reused = { ...request('s2'), publicationId:data.publicationId };
+    const forged = writeBatch(secondStreamer);
+    forged.set(doc(secondStreamer,'streamer_requests','s2'),reused);
+    forged.set(doc(secondStreamer,`streamer_requests/s2/history/${data.publicationId}`),reused);
+    await assertFails(forged.commit());
   });
   await test('expired requests leave the queue atomically and remain rejected in history', async () => {
     const expiredAt = Date.now()-10800000-1000;

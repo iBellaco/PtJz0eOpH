@@ -77,6 +77,7 @@ import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechSurface
 import com.example.util.AuthManager
+import androidx.compose.material.icons.filled.Videocam
 import com.example.util.tr
 
 @OptIn(ExperimentalAnimationApi::class)

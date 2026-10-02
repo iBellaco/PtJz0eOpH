@@ -142,10 +142,15 @@ service cloud.firestore {
         function latest() { return getAfter(/databases/$(database)/documents/streamer_requests/$(userId)).data; }
         function previous() { return get(/databases/$(database)/documents/streamer_requests/$(userId)).data; }
         allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
-        allow create, update: if isAdmin() || (signedIn() && request.auth.uid == userId && (
-          (historyId == latest().get('publicationId', '') && request.resource.data == latest() && latest().status in ['PENDING','ENDED']) ||
-          (historyId == publicationId(previous()) && request.resource.data == previous() && previous().status != 'PENDING') ||
-          (historyId == publicationId(previous()) && timeoutCopy(request.resource.data, previous()))));
+        function ownerHistoryWrite() {
+          return signedIn() && request.auth.uid == userId && (
+            (historyId == latest().get('publicationId', '') && request.resource.data == latest() && latest().status in ['PENDING','ENDED']) ||
+            (historyId == publicationId(previous()) && request.resource.data == previous() && previous().status != 'PENDING') ||
+            (historyId == publicationId(previous()) && timeoutCopy(request.resource.data, previous())));
+        }
+        allow create: if isAdmin() || ownerHistoryWrite();
+        allow update: if isAdmin() || (ownerHistoryWrite() && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status','endedAtMillis','reviewedAtMillis','rejectionReason']));
         allow delete: if false;
       }
     }
