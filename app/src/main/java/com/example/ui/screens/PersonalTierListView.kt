@@ -426,7 +426,7 @@ fun PersonalTierListView(
                     ) {
                         Text(
                             text = com.example.util.tr(if (selectedRoleFilter != null) {
-                                "🏆 Tier List Personal: ${selectedRoleFilter?.displayName}"
+                                "🏆 Tier List Personal: ${com.example.util.tr(selectedRoleFilter!!.displayName)}"
                             } else {
                                 "🏆 Tier List Personal (Todos los Campeones)"
                             }),

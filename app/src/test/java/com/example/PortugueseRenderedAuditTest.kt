@@ -20,7 +20,12 @@ import com.example.util.DynamicTranslations
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.MemoryCacheSettings
+import com.google.android.gms.tasks.Tasks
 import java.io.File
+import java.util.concurrent.TimeUnit
 import org.json.JSONArray
 import org.junit.*
 import org.junit.runner.RunWith
@@ -50,9 +55,22 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             FirebaseApp.initializeApp(context, FirebaseOptions.Builder().setApplicationId("1:123:android:audit")
                 .setProjectId("demo-coach-audit").setApiKey("audit-local-only").build())
         }
+        // This audit uses bundled data. Keep cloud cache workers away from Robolectric's
+        // SQLite connections, which are reset between parameterized screen tests.
+        val database = FirebaseFirestore.getInstance()
+        database.firestoreSettings = FirebaseFirestoreSettings.Builder()
+            .setLocalCacheSettings(MemoryCacheSettings.newBuilder().build())
+            .build()
+        Tasks.await(database.disableNetwork(), 10, TimeUnit.SECONDS)
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
+    }
+
+    @After fun releaseCloudResources() {
+        // Await shutdown before Robolectric tears down the current Android sandbox.
+        Tasks.await(FirebaseFirestore.getInstance().terminate(), 10, TimeUnit.SECONDS)
+        FirebaseApp.getApps(context).forEach { it.delete() }
     }
 
     @Composable private fun surface() {
@@ -131,7 +149,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
 
 internal object SpanishUiResidue {
     val pattern = Regex(
-        "(?<![\\p{L}\\p{N}_-])(?:el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
+        "(?<![\\p{L}\\p{N}_-])(?:parche|presiona|tier list personal|el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
         RegexOption.IGNORE_CASE
     )
 }
