@@ -284,6 +284,12 @@ class RuntimeVisibilityTest(private val screen: String) {
                 for (label in listOf("Painel de streamer", appTr("Panel de Administración"), appTr("Panel de Soporte y Moderación"), appTr("Panel de Patrocinador"))) {
                     compose.onNodeWithText(label).performScrollTo().assertExists()
                 }
+                compose.onNodeWithText(appTr("Panel de Moderador")).performScrollTo().assertExists()
+                val icon = compose.onNodeWithTag("moderator_panel_icon", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val title = compose.onNodeWithTag("moderator_panel_title", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val maximumGap = 16f * context.resources.displayMetrics.density
+                Assert.assertTrue("Moderator icon must sit beside its title: $icon $title", title.left >= icon.right && title.left - icon.right <= maximumGap)
+                if (screen == "profile-admin-large") compose.onNodeWithText("Solicitação pendente").assertExists()
                 inspect("role-buttons")
                 compose.onNodeWithText(appTr("Panel de Soporte y Moderación")).performScrollTo().performClick()
                 compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()

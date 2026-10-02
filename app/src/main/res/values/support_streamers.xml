@@ -55,4 +55,5 @@
     <string name="streamer_history_copy">Copiar datos de la publicación</string>
     <string name="streamer_history_copied">Datos de la publicación copiados.</string>
     <string name="streamer_review_accepted">Publicación aceptada y visible para todos.</string>
+    <string name="moderator_pending_request">Solicitud pendiente</string>
 </resources>
