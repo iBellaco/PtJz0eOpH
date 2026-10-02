@@ -147,7 +147,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 "role" to if (screen == "premium-editor-secondary") "creador" else "premium",
                 "secondaryRole" to if (screen == "premium-editor-secondary") "moderador" else "",
                 "premiumUntil" to System.currentTimeMillis() + 86400000L), {}, {}, {}, {})
-            screen.startsWith("champion") -> ChampionDetailSheet(champion = WildRiftRepository.champions.first { it.id == "garen" }, onDismiss = {})
+            screen.startsWith("champion") -> ChampionDetailSheet(isOverlay = screen.endsWith("-advice"), champion = WildRiftRepository.champions.first { it.id == "garen" }, onDismiss = {})
             screen.startsWith("tier") -> TierListTab(onSelectChampion = {})
             else -> {
                 val realOwn = WildRiftRepository.champions.first { it.id == "ahri" }

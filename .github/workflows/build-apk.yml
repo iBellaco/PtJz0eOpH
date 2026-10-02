@@ -190,6 +190,35 @@ jobs:
             app/build/test-results/testDebugUnitTest/
           retention-days: 14
 
+      - name: Prepare focused Portuguese evidence
+        if: always()
+        run: |
+          python3 - <<'PYFOCUS'
+          from pathlib import Path
+          import shutil
+          source = Path('app/build/reports/portuguese-rendered')
+          target = Path('app/build/reports/portuguese-focused')
+          target.mkdir(parents=True, exist_ok=True)
+          for file in source.glob('*.json'):
+              shutil.copy2(file, target / file.name)
+          for file in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml'):
+              shutil.copy2(file, target / file.name)
+          names = ['creator-after-delete-pt', 'champion-guest-account-hint',
+                   'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
+                   'streamer-live-animation', 'streamer-history', 'user-notification']
+          for file in source.glob('*.png'):
+              if any(file.stem.startswith(name) for name in names):
+                  shutil.copy2(file, target / file.name)
+          PYFOCUS
+
+      - name: Upload focused Portuguese evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portuguese-focused-audit
+          path: app/build/reports/portuguese-focused/
+          retention-days: 14
+
       - name: Build Debug APK
         env:
           CI: "true"
