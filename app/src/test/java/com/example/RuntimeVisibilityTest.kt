@@ -9,6 +9,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
+import com.example.data.StreamerPublicationPolicy
 import com.example.model.*
 import com.example.ui.components.*
 import androidx.compose.foundation.verticalScroll
