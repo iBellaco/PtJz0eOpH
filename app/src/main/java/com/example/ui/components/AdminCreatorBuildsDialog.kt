@@ -766,9 +766,11 @@ fun AdminCreatorBuildsDialog(
                                                 deletionScope.launch {
                                                     val deletion = CustomChampionBuildsManager.deleteBuild(context, record.id)
                                                     if (deletion.isSuccess) runCatching { favoriteDao.deleteFavorite(record.id) }
-                                                    deletingBuildId = null
-                                                    Toast.makeText(context, com.example.util.appTr(if (deletion.isSuccess)
-                                                        "Build eliminada" else "No se pudo eliminar la build. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
+                                                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
+                                                        deletingBuildId = null
+                                                        Toast.makeText(context, com.example.util.appTr(if (deletion.isSuccess)
+                                                            "Build eliminada" else "No se pudo eliminar la build. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
+                                                    }
                                                 }
                                             },
                                             enabled = deletingBuildId == null,

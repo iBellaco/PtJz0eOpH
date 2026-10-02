@@ -89,6 +89,8 @@ class RuntimeVisibilityTest(private val screen: String) {
         setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin")) "admin" else "free")
         setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
         setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
+        if (screen.startsWith("champion")) setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
+            com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
         if (screen.startsWith("profile-admin")) setFlow(SubscriptionManager, "_isPremium", true)
         com.example.data.AppNoticeManager.notices.value
         setFlow(com.example.data.AppNoticeManager, "_notices", if (screen == "profile-admin-large")
@@ -198,6 +200,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val category = screen.removePrefix("champion-").removeSuffix("-advice")
                 compose.onAllNodesWithTag("build_${category}_details").onFirst().performScrollTo().performClick()
                 compose.onNodeWithTag("build_element_advice_card").performScrollTo().assertExists()
+                compose.onNodeWithTag("build_element_advice_card").captureRoboImage(filePath = File(output, "$screen-framed-card.png").path)
             }
             "champion-guest" -> {
                 compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
