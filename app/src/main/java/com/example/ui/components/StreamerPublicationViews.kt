@@ -2,6 +2,9 @@ package com.example.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -46,20 +49,32 @@ internal fun streamerClock(): Long {
 fun LiveStreamerChip(channelName: String, onClick: () -> Unit) {
     val liveDescription = localizedString(R.string.streamer_live_description)
     val transition = rememberInfiniteTransition(label = "streamer-live")
-    val glow by transition.animateFloat(0.7f, 1f,
-        infiniteRepeatable(tween(1000), RepeatMode.Reverse), label = "live-indicator")
+    val wave = transition.animateFloat(0f, 1f,
+        infiniteRepeatable(tween(1400, easing = LinearEasing), RepeatMode.Restart), label = "live-wave")
+    val meter = transition.animateFloat(0.25f, 1f,
+        infiniteRepeatable(tween(450), RepeatMode.Reverse), label = "live-meter")
     val red = Color(0xFFFF6B6B)
     AssistChip(onClick = onClick, modifier = Modifier.heightIn(min = 54.dp).testTag("live_streamer_chip").semantics { stateDescription = liveDescription },
         leadingIcon = {
-            Box(Modifier.size(16.dp), contentAlignment = Alignment.Center) {
-                Box(Modifier.size(16.dp).alpha(glow * 0.4f).background(red, CircleShape))
-                Box(Modifier.size(8.dp).alpha(glow).background(red, CircleShape))
+            Canvas(Modifier.size(34.dp).testTag("streamer_live_animation")) {
+                val point = Offset(size.width * 0.32f, size.height / 2)
+                repeat(2) { index ->
+                    val progress = (wave.value + index * 0.5f) % 1f
+                    drawCircle(red.copy(alpha = (1f - progress) * 0.85f),
+                        radius = (4f + progress * 9f).dp.toPx(), center = point, style = Stroke(1.6.dp.toPx()))
+                }
+                drawCircle(red, radius = 4.dp.toPx(), center = point)
+                repeat(3) { index ->
+                    val height = (5f + 12f * if (index == 1) meter.value else 1.25f - meter.value).dp.toPx()
+                    val x = size.width * 0.73f + index * 4.dp.toPx()
+                    drawLine(red, Offset(x, (size.height - height) / 2), Offset(x, (size.height + height) / 2), 2.dp.toPx())
+                }
             }
         }, label = {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(channelName, color = Color(0xFFD4AF37), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(localizedString(R.string.streamer_live_label), color = red,
-                    fontSize = 10.sp, modifier = Modifier.alpha(glow).testTag("streamer_live_label"))
+                    fontSize = 10.sp, modifier = Modifier.testTag("streamer_live_label"))
             }
         })
 }
@@ -124,7 +139,7 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
                         val deadline = StreamerPublicationPolicy.historyExpiresAt(item)
                         val remaining = ((deadline - now).coerceAtLeast(0L) + 59999L) / 60000L
                         val expiresText = if (deadline > 0L) localizedString(R.string.streamer_history_delete_in,
-                            remaining / 1440L, (remaining / 60L) % 24L, remaining % 60L) else ""
+                            remaining / 1440L, (remaining / 60L) % 24L, remaining % 60L) else if (status == "APPROVED") localizedString(R.string.streamer_history_active_retention) else ""
                         Text(dateText, color = Color.LightGray)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(statusText, color = color)

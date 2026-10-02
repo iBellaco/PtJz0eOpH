@@ -1422,7 +1422,7 @@ fun ChampionsCatalogTab(
                                 lineHeight = if (isOverlay) 12.sp else 15.sp,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
-                            if (!isOverlay) {
+                            if (!isOverlay && com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle().value) {
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier

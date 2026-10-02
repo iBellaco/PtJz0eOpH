@@ -563,55 +563,7 @@ fun DashboardScreen(
                         selected = pagerState.currentPage == 4,
                         onClick = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
                         icon = {
-                            val unreadCount by com.example.util.SubscriptionManager.unreadMessagesCount.collectAsStateWithLifecycle(0)
-                            val allNotices by com.example.data.AppNoticeManager.notices.collectAsStateWithLifecycle(com.example.data.AppNoticeManager.notices.value)
-                            val userRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
-                            val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-                            val isLogged = authUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(authUser)
-
-                            val effectiveUnreadCount = unreadCount
-                            val showBadge = effectiveUnreadCount > 0
-
-                            val infiniteTransition = rememberInfiniteTransition(label = "bellPulseAnim")
-                            val bellScale by infiniteTransition.animateFloat(
-                                initialValue = 0.90f,
-                                targetValue = 1.15f,
-                                animationSpec = infiniteRepeatable(
-                                    animation = tween(durationMillis = 600, easing = FastOutSlowInEasing),
-                                    repeatMode = RepeatMode.Reverse
-                                ),
-                                label = "bellScale"
-                            )
-
-                            BadgedBox(
-                                badge = {
-                                    if (showBadge) {
-                                        Badge(
-                                            containerColor = com.example.ui.theme.DangerRed,
-                                            contentColor = Color.White
-                                        ) {
-                                            Text(com.example.util.tr(effectiveUnreadCount.toString()))
-                                        }
-                                    }
-                                }
-                            ) {
-                                val iconModifier = if (showBadge) {
-                                    Modifier
-                                        .size(24.dp)
-                                        .graphicsLayer {
-                                            scaleX = bellScale
-                                            scaleY = bellScale
-                                        }
-                                } else {
-                                    Modifier.size(24.dp)
-                                }
-
-                                Icon(
-                                    imageVector = if (showBadge) Icons.Default.Notifications else Icons.Default.Person,
-                                    contentDescription = com.example.util.trNullable(if (showBadge) tr("Notificaciones") else tr("Usuario")),
-                                    modifier = iconModifier
-                                )
-                            }
+                            com.example.ui.components.UserNotificationIcon(com.example.ui.components.userPanelNotificationCount())
                         },
                         label = { Text(tr("Usuario")) },
                         colors = NavigationBarItemDefaults.colors(

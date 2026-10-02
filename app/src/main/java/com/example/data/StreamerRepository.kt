@@ -58,7 +58,7 @@ object StreamerRepository {
                 "channelName" to name.trim(), "channelUrl" to channel.url, "platform" to channel.platform,
                 "status" to "PENDING", "usingCoachAcknowledged" to true, "submittedAtMillis" to now)
             if (archive) fields.putAll(mapOf("submittedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(), "publicationId" to publicationId,
-                "streamerHistoryDeleteAt" to com.google.firebase.Timestamp(java.util.Date(now + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS))))
+                "streamerHistoryDeleteAt" to com.google.firebase.Timestamp(java.util.Date(now + StreamerPublicationPolicy.PENDING_HISTORY_WINDOW_MILLIS))))
             if (isAdmin) fields["adminTest"] = channel.platform == "Google"
             transaction.set(ref, fields)
             if (archive) transaction.set(history(user.uid).document(publicationId), fields)
@@ -91,12 +91,24 @@ object StreamerRepository {
                 if (countClicks) transaction.set(metrics.document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())),
                     mapOf("userId" to uid, "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()),
                         "submittedAtMillis" to StreamerPublicationPolicy.submittedAt(request.data.orEmpty()), "clickCount" to 0L,
-                        "streamerHistoryDeleteAt" to com.google.firebase.Timestamp(java.util.Date(StreamerPublicationPolicy.historyExpiresAt(request.data.orEmpty())))))
+                        "status" to "APPROVED"))
             }
-            val reviewed = mapOf("status" to if (approve) "APPROVED" else "REJECTED",
-                "verifiedUsingCoach" to (approve && verifiedUsingCoach), "reviewedAtMillis" to System.currentTimeMillis())
+            val reviewedAt = System.currentTimeMillis()
+            val reviewed = mutableMapOf<String, Any>("status" to if (approve) "APPROVED" else "REJECTED",
+                "verifiedUsingCoach" to (approve && verifiedUsingCoach), "reviewedAtMillis" to reviewedAt)
+            if (archive) reviewed["streamerHistoryDeleteAt"] = if (approve)
+                com.google.firebase.firestore.FieldValue.delete() else com.google.firebase.Timestamp(java.util.Date(reviewedAt + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS))
             transaction.update(ref, reviewed)
-            if (archive) transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())), request.data.orEmpty() + reviewed)
+            val messageId = "streamer_review_${StreamerPublicationPolicy.publicationId(request.data.orEmpty())}"
+            transaction.set(db.collection("users").document(uid).collection("messages").document(messageId),
+                mapOf("id" to messageId, "title" to "Publicación de streamer",
+                    "content" to if (approve) "Tu publicación fue aceptada y el canal ya está visible." else "Tu publicación fue rechazada. Puedes enviar una nueva solicitud.",
+                    "tag" to "GENERAL", "timestamp" to reviewedAt, "isRead" to false))
+            if (archive) {
+                val archived = (request.data.orEmpty() + reviewed).toMutableMap()
+                if (approve) archived.remove("streamerHistoryDeleteAt")
+                transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())), archived)
+            }
         }.await()
         Unit
     } }
@@ -106,15 +118,22 @@ object StreamerRepository {
         check(user.uid == uid || SupportTicketAccess.isAdmin()) { "streamer_error" }
         val ref = requests.document(uid)
         val archive = historyAvailable(uid)
+        val countClicks = archive && metricsAvailable(uid)
         db.runTransaction { transaction ->
             val live = entries(transaction.get(registry).get("entries"))
             val request = transaction.get(ref)
+            val metricRef = metrics.document(StreamerPublicationPolicy.publicationId(request.data.orEmpty()))
+            val metric = if (countClicks) transaction.get(metricRef) else null
             transaction.set(registry, mapOf("entries" to live.filterNot { it["userId"] == uid }), SetOptions.merge())
             if (request.exists()) {
-                val ended = mapOf("status" to "ENDED", "endedAtMillis" to System.currentTimeMillis())
+                check(request.getString("status") == "APPROVED") { "streamer_error" }
+                val endedAt = System.currentTimeMillis()
+                val ended = mutableMapOf<String, Any>("status" to "ENDED", "endedAtMillis" to endedAt)
+                if (archive) ended["streamerHistoryDeleteAt"] = com.google.firebase.Timestamp(java.util.Date(endedAt + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS))
                 transaction.update(ref, ended)
-                if (archive && !StreamerPublicationPolicy.historyExpired(request.data.orEmpty()))
-                    transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())), request.data.orEmpty() + ended)
+                if (archive) transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())), request.data.orEmpty() + ended)
+                if (metric?.exists() == true) transaction.update(metricRef, ended)
+
             }
         }.await()
         Unit

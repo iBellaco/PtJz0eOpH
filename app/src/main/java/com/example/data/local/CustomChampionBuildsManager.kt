@@ -12,6 +12,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import com.google.firebase.firestore.FieldValue
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -79,6 +83,10 @@ object CustomChampionBuildsManager {
     private const val TAG = "CreatorBuildsManager"
     private const val PREFS_NAME = "wr_custom_champion_builds_prefs"
     private const val KEY_BUILDS_JSON = "custom_champion_builds_json"
+    private const val KEY_DELETED_BUILDS = "deleted_build_ids"
+    private val deletionMutex = Mutex()
+    @Volatile private var defaultBuildsCache: List<CustomChampionBuildRecord>? = null
+    private val deletedBuildIds = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private const val KEY_USER_VOTES = "user_voted_builds_map"
 
     private const val REMOTE_CONFIG_COLLECTION = "system_config"
@@ -142,18 +150,19 @@ object CustomChampionBuildsManager {
             .filterNot { isBundledOfficialBuild(it) }
             .distinctBy { it.id }
 
-        return defaults + userCreated
+        return (defaults + userCreated).filterNot { it.id in deletedBuildIds }
     }
 
     private fun loadFromLocalStorage(context: Context) {
         val defaults = getDefaultBuilds(context)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        deletedBuildIds.addAll(prefs.getStringSet(KEY_DELETED_BUILDS, emptySet()).orEmpty())
         val rawJson = prefs.getString(KEY_BUILDS_JSON, null)
 
         if (!rawJson.isNullOrBlank()) {
             try {
                 val cached = json.decodeFromString<List<CustomChampionBuildRecord>>(rawJson)
-                if (cached.isNotEmpty()) {
+                run {
                     val reconciled = reconcileWithOfficialDefaults(context, cached)
                     _customBuilds.value = reconciled
                     saveToLocalStorage(context, reconciled)
@@ -162,8 +171,8 @@ object CustomChampionBuildsManager {
             } catch (_: Exception) {}
         }
 
-        _customBuilds.value = defaults
-        saveToLocalStorage(context, defaults)
+        _customBuilds.value = defaults.filterNot { it.id in deletedBuildIds }
+        saveToLocalStorage(context, _customBuilds.value)
     }
 
     private fun fetchFromCloudCache(appContext: Context) {
@@ -276,11 +285,18 @@ object CustomChampionBuildsManager {
     }
 
     private fun processCloudSnapshot(context: Context, snapshot: com.google.firebase.firestore.DocumentSnapshot) {
+        CoroutineScope(Dispatchers.IO).launch {
+            deletionMutex.withLock { processCloudSnapshotLocked(context, snapshot) }
+        }
+    }
+
+    private fun processCloudSnapshotLocked(context: Context, snapshot: com.google.firebase.firestore.DocumentSnapshot) {
         try {
+            deletedBuildIds.addAll((snapshot.get("deletedBuildIds") as? List<*>)?.filterIsInstance<String>().orEmpty())
             val rawJson = snapshot.getString("builds_json")
             if (!rawJson.isNullOrBlank()) {
                 val parsedList = json.decodeFromString<List<CustomChampionBuildRecord>>(rawJson)
-                if (parsedList.isNotEmpty()) {
+                run {
                     val reconciled = reconcileWithOfficialDefaults(context, parsedList)
                     _customBuilds.value = reconciled
                     saveToLocalStorage(context, reconciled)
@@ -311,12 +327,15 @@ object CustomChampionBuildsManager {
         }
     }
 
+    @Synchronized
     fun getDefaultBuilds(context: Context): List<CustomChampionBuildRecord> {
+        defaultBuildsCache?.let { return it }
         try {
             val assetStream = context.assets.open("champions_creator_builds.json")
             val raw = assetStream.bufferedReader().use { it.readText() }
             val parsed = json.decodeFromString<List<CustomChampionBuildRecord>>(raw)
             if (parsed.isNotEmpty()) {
+                defaultBuildsCache = parsed
                 return parsed
             }
         } catch (e: Exception) {
@@ -348,12 +367,24 @@ object CustomChampionBuildsManager {
         saveToCloud(context, current)
     }
 
-    fun deleteBuild(context: Context, id: String) {
-        init(context)
-        val current = _customBuilds.value.filter { it.id != id }
-        _customBuilds.value = current
-        saveToLocalStorage(context, current)
-        saveToCloud(context, current)
+    /** Persist before updating the list; decoding and disk writes never block a delete tap. */
+    suspend fun deleteBuild(context: Context, id: String): Result<Unit> = withContext(Dispatchers.IO) {
+        deletionMutex.withLock {
+            runCatching {
+                init(context)
+                require(id.isNotBlank())
+                val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                val deleted = deletedBuildIds.toSet() + id
+                val current = _customBuilds.value.filterNot { it.id in deleted }
+                val encoded = json.encodeToString(current.filterNot(::isBundledOfficialBuild))
+                check(prefs.edit().putString(KEY_BUILDS_JSON, encoded)
+                    .putStringSet(KEY_DELETED_BUILDS, deleted).commit())
+                deletedBuildIds.add(id)
+                _customBuilds.value = current
+                saveToCloud(context, current)
+                Unit
+            }
+        }
     }
 
     fun getBuildsForChampion(championId: String): List<CustomChampionBuildRecord> {
@@ -381,8 +412,9 @@ object CustomChampionBuildsManager {
     private fun saveToLocalStorage(context: Context, list: List<CustomChampionBuildRecord>) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         try {
-            val encoded = json.encodeToString(list)
-            prefs.edit().putString(KEY_BUILDS_JSON, encoded).apply()
+            val encoded = json.encodeToString(list.filterNot(::isBundledOfficialBuild))
+            prefs.edit().putString(KEY_BUILDS_JSON, encoded)
+                .putStringSet(KEY_DELETED_BUILDS, deletedBuildIds.toSet()).apply()
         } catch (_: Exception) {}
     }
 
@@ -390,11 +422,12 @@ object CustomChampionBuildsManager {
         val appContext = context.applicationContext
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val encodedJson = json.encodeToString(list)
+                val encodedJson = json.encodeToString(list.filterNot(::isBundledOfficialBuild))
                 val payload = mapOf(
                     "builds_json" to encodedJson,
                     "updatedAt" to System.currentTimeMillis(),
-                    "totalBuilds" to list.size
+                    "totalBuilds" to list.size,
+                    "deletedBuildIds" to FieldValue.arrayUnion(*deletedBuildIds.toTypedArray())
                 )
                 val db = FirebaseFirestore.getInstance()
                 db.collection(REMOTE_CONFIG_COLLECTION).document(REMOTE_DOC_CREATOR_BUILDS)

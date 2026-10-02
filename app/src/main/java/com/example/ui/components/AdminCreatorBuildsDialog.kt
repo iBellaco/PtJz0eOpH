@@ -35,6 +35,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
+import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -89,6 +91,8 @@ fun AdminCreatorBuildsDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val deletionScope = rememberCoroutineScope()
+    var deletingBuildId by remember { mutableStateOf<String?>(null) }
     val customBuilds by CustomChampionBuildsManager.customBuilds.collectAsStateWithLifecycle()
     val currentUserName by SubscriptionManager.userName.collectAsStateWithLifecycle()
     val currentUserRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
@@ -396,7 +400,7 @@ fun AdminCreatorBuildsDialog(
         )
     }
 
-    androidx.activity.compose.BackHandler {
+    if (androidx.activity.compose.LocalOnBackPressedDispatcherOwner.current != null) androidx.activity.compose.BackHandler {
         if (selectedBuildForDetail != null) {
             selectedBuildForDetail = null
         } else if (selectedCreatorForProfile != null) {
@@ -680,7 +684,7 @@ fun AdminCreatorBuildsDialog(
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(filteredBuilds) { record ->
+                    items(filteredBuilds, key = { it.id }) { record ->
                         val champObj = remember(record.championId) {
                             WildRiftRepository.champions.find { it.id.equals(record.championId, ignoreCase = true) }
                         }
@@ -757,10 +761,17 @@ fun AdminCreatorBuildsDialog(
                                         }
                                         IconButton(
                                             onClick = {
-                                                CustomChampionBuildsManager.deleteBuild(context, record.id)
-                                                Toast.makeText(context, com.example.util.appTr("Build eliminada"), Toast.LENGTH_SHORT).show()
+                                                deletingBuildId = record.id
+                                                deletionScope.launch {
+                                                    val deletion = CustomChampionBuildsManager.deleteBuild(context, record.id)
+                                                    if (deletion.isSuccess) runCatching { favoriteDao.deleteFavorite(record.id) }
+                                                    deletingBuildId = null
+                                                    Toast.makeText(context, com.example.util.appTr(if (deletion.isSuccess)
+                                                        "Build eliminada" else "No se pudo eliminar la build. Inténtalo de nuevo."), Toast.LENGTH_SHORT).show()
+                                                }
                                             },
-                                            modifier = Modifier.size(32.dp)
+                                            enabled = deletingBuildId == null,
+                                            modifier = Modifier.size(32.dp).testTag("delete_build_${record.id}")
                                         ) {
                                             Icon(Icons.Default.Delete, contentDescription = com.example.util.trNullable("Eliminar"), tint = DangerRed, modifier = Modifier.size(16.dp))
                                         }

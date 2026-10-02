@@ -39,12 +39,24 @@ object StreamChannelUrl {
 object StreamerPublicationPolicy {
     const val MAX_LIVE = 5
     const val REVIEW_WINDOW_MILLIS = 3 * 60 * 60 * 1000L
+    const val PENDING_HISTORY_WINDOW_MILLIS = 24 * 60 * 60 * 1000L
     const val HISTORY_WINDOW_MILLIS = 7 * 24 * 60 * 60 * 1000L
     fun submittedAt(data: Map<String, Any>): Long =
         (data["submittedAt"] as? com.google.firebase.Timestamp)?.toDate()?.time
             ?: (data["submittedAtMillis"] as? Number)?.toLong() ?: 0L
     fun expiresAt(data: Map<String, Any>): Long = submittedAt(data) + REVIEW_WINDOW_MILLIS
-    fun historyExpiresAt(data: Map<String, Any>): Long = submittedAt(data).let { if (it > 0L) it + HISTORY_WINDOW_MILLIS else 0L }
+    fun historyExpiresAt(data: Map<String, Any>): Long {
+        val submitted = submittedAt(data)
+        val status = data["status"]
+        if (status == "APPROVED") return 0L
+        val pending = status == "PENDING" || data["rejectionReason"] == "TIMEOUT"
+        val start = when (status) {
+            "ENDED" -> (data["endedAtMillis"] as? Number)?.toLong() ?: submitted
+            "REJECTED" -> if (pending) submitted else (data["reviewedAtMillis"] as? Number)?.toLong() ?: submitted
+            else -> submitted
+        }
+        return if (start > 0) start + if (pending) PENDING_HISTORY_WINDOW_MILLIS else HISTORY_WINDOW_MILLIS else 0L
+    }
     fun historyExpired(data: Map<String, Any>, now: Long = System.currentTimeMillis()): Boolean =
         historyExpiresAt(data).let { it > 0L && now >= it }
     fun isExpired(data: Map<String, Any>, now: Long = System.currentTimeMillis()): Boolean =

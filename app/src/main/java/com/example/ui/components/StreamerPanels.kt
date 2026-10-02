@@ -124,13 +124,14 @@ fun StreamerUrlRecommendations(isAdmin: Boolean, enabled: Boolean = true, onSele
 
 @Composable
 fun StreamerPanelDialog(onDismiss: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
     val role by SubscriptionManager.userRole.collectAsState()
     val adminClaim by AuthManager.isAdminClaim.collectAsState()
     val isAdmin = RolePanelAccess.isAdministrator(role, adminClaim)
     val (entries, registryAvailable) = liveEntries()
     var request by remember(uid) { mutableStateOf<Map<String, Any>>(emptyMap()) }
-    var publications by remember(uid) { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var publications by remember(uid) { mutableStateOf(com.example.data.StreamerHistoryCache.records(context, uid)) }
     var historyError by remember(uid) { mutableStateOf(false) }
     var clickMetrics by remember(uid) { mutableStateOf<Map<String, Long>>(emptyMap()) }
     var clicksAvailable by remember(uid) { mutableStateOf(false) }
@@ -148,13 +149,12 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
             requestAvailable = error == null && snapshot != null && !snapshot.metadata.isFromCache
             if (error == null && snapshot != null) {
                 request = snapshot.data.orEmpty()
-                if (name.isBlank()) name = snapshot.getString("channelName").orEmpty()
-                if (url.isBlank()) url = snapshot.getString("channelUrl").orEmpty()
+                publications = com.example.data.StreamerHistoryCache.merge(context, uid, listOfNotNull(request.takeIf { it.isNotEmpty() }))
             }
         }
         val historyListener = StreamerRepository.history(uid).addSnapshotListener { snapshot, error ->
             historyError = error != null
-            if (error == null && snapshot != null) publications = snapshot.documents.mapNotNull { it.data }
+            if (error == null && snapshot != null) publications = com.example.data.StreamerHistoryCache.merge(context, uid, snapshot.documents.mapNotNull { it.data })
         }
         val metricsListener = StreamerRepository.metrics.whereEqualTo("userId", uid).addSnapshotListener { snapshot, error ->
             clicksAvailable = error == null && snapshot != null
@@ -192,10 +192,10 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 operationError(result)?.let { Text(it, color = Color(0xFFFF8A80)) }
                 if (!registryAvailable || !requestAvailable) Text(localizedString(R.string.streamer_loading), color = Color.White)
                 if (active) Button(onClick = { submitting = false; busy = true; scope.launch { submitted = false; result = StreamerRepository.end(uid); busy = false } }, enabled = !busy && registryAvailable) { Text(localizedString(R.string.streamer_end)) }
-                else Button(onClick = { submitting = true; busy = true; scope.launch { result = StreamerRepository.submit(name, url); submitted = result?.isSuccess == true; busy = false } },
+                else Button(onClick = { submitting = true; busy = true; scope.launch { result = StreamerRepository.submit(name, url); submitted = result?.isSuccess == true; if (submitted) { name = ""; url = "" }; busy = false } },
                     enabled = !busy && registryAvailable && requestAvailable && !maximum && !pending && name.trim().length in 2..60 && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) != null) { Text(localizedString(R.string.streamer_submit)) }
                 if (url.isNotBlank() && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) == null) Text(localizedString(R.string.streamer_url_error), color = Color(0xFFFF8A80))
-                val history = (listOfNotNull(request.takeIf { it.isNotEmpty() }) + publications).map { item ->
+                val history = (publications + listOfNotNull(request.takeIf { it.isNotEmpty() })).distinctBy { StreamerPublicationPolicy.publicationId(it) }.map { item ->
                     val id = StreamerPublicationPolicy.publicationId(item)
                     val count = clickMetrics[id]
                     if (clicksAvailable && count != null) item + ("clickCount" to count)

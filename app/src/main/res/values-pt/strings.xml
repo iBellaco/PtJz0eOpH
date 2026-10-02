@@ -36,4 +36,6 @@
     <string name="h4">Definitiva (H4 / Ulti)</string>
     <string name="blue_essence">Essência Azul</string>
     <string name="orange_essence">Essência Laranja</string>
+    <string name="matchup_sign_in_hint">Crie uma conta e entre para ver seis campeões em Vantagem, Fraqueza e Sinergia.</string>
+    <string name="streamer_history_active_retention">A contagem de sete dias começará quando a publicação for encerrada.</string>
 </resources>
