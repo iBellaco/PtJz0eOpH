@@ -24,7 +24,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.MemoryCacheSettings
 import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.tasks.Task
 import java.io.File
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import org.json.JSONArray
 import org.junit.*
@@ -61,7 +63,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         database.firestoreSettings = FirebaseFirestoreSettings.Builder()
             .setLocalCacheSettings(MemoryCacheSettings.newBuilder().build())
             .build()
-        Tasks.await(database.disableNetwork(), 10, TimeUnit.SECONDS)
+        awaitDatabaseTask(database.disableNetwork())
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
@@ -69,8 +71,14 @@ class PortugueseRenderedAuditTest(private val screen: String) {
 
     @After fun releaseCloudResources() {
         // Await shutdown before Robolectric tears down the current Android sandbox.
-        Tasks.await(FirebaseFirestore.getInstance().terminate(), 10, TimeUnit.SECONDS)
+        awaitDatabaseTask(FirebaseFirestore.getInstance().terminate())
         FirebaseApp.getApps(context).forEach { it.delete() }
+    }
+
+    private fun awaitDatabaseTask(task: Task<Void>) {
+        // Google Tasks forbid blocking Android's main thread, including Robolectric's.
+        CompletableFuture.runAsync { Tasks.await(task, 10, TimeUnit.SECONDS) }
+            .get(15, TimeUnit.SECONDS)
     }
 
     @Composable private fun surface() {
