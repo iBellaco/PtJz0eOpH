@@ -6,7 +6,10 @@ service cloud.firestore {
     function isAdmin() { return signedIn() && (request.auth.token.get('admin', false) == true || account().get('role', '') == 'admin'); }
     function isModerator() { return signedIn() && (account().get('role', '') == 'moderador' || account().get('secondaryRole', '') == 'moderador'); }
     function isStreamer() { return signedIn() && (account().get('role', '') == 'streamer' || account().get('secondaryRole', '') == 'streamer'); }
-    function sponsor(data) { return data.get('tag', data.get('type', '')).upper() in ['PATROCINADOR', 'PATROCINIO', 'SPONSOR', 'PUBLICIDAD']; }
+    function sponsor(data) {
+      let tags = ['PATROCINADOR', 'PATROCINIO', 'SPONSOR', 'PUBLICIDAD'];
+      return data.get('tag', '').upper() in tags || data.get('type', '').upper() in tags || data.get('category', '').upper() in tags;
+    }
     function ownsTicket(data) {
       return signedIn() && (data.get('userId', '') == request.auth.uid ||
         (data.get('userId', '') == '' && request.auth.token.get('email', '') != '' && data.get('userEmail', '') == request.auth.token.email));
@@ -32,7 +35,7 @@ service cloud.firestore {
       let old = resource.data.get('conversation', []);
       let next = request.resource.data.get('conversation', []);
       let last = next[next.size()-1];
-      return next.size() == old.size()+1 && next.removeAll([last]) == old
+      return !closed(resource.data) && next.size() == old.size()+1 && next.removeAll([last]) == old
         && last.senderRole == 'SUPPORT' && last.senderUid == request.auth.uid
         && last.get('isGreeting', false) == false
         && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.';

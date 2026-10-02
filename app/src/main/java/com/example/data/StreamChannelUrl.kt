@@ -7,6 +7,9 @@ data class StreamChannel(val url: String, val platform: String)
 
 /** Only channel URLs are accepted; host suffixes, redirects and video URLs are rejected. */
 object StreamChannelUrl {
+    /** Only use for the administrator-controlled, already approved public registry. */
+    fun approved(raw: String): StreamChannel? = parse(raw, allowAdminTest = true)
+
     fun parse(raw: String, allowAdminTest: Boolean = false): StreamChannel? = runCatching {
         val uri = URI(raw.trim())
         if (uri.scheme?.lowercase(Locale.ROOT) != "https" || uri.userInfo != null || uri.port != -1 || uri.fragment != null) return null

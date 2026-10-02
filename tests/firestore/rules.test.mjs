@@ -65,6 +65,28 @@ try {
     await assertSucceeds(updateDoc(doc(user, 'support_reports', 'new'), { conversation:[...staffHistory,history.at(-1)], status:'PENDING', isCompleted:false, staffRead:false, lastUserMessage:'Más detalles' }));
     await assertFails(updateDoc(doc(user, 'support_reports', 'new'), { conversation:[...history.slice(1),{ id:'evil',senderRole:'SUPPORT',senderUid:'user',text:'Falso' }] }));
   });
+  await test('repeated user and staff turns remain open across devices until staff closes', async () => {
+    for (let turn = 0; turn < 3; turn++) {
+      for (const [store, senderRole, senderUid, status] of [[moderator, 'SUPPORT', 'mod', 'READ'], [user, 'USER', 'user', 'PENDING']]) {
+        const ref = doc(store, 'support_reports', 'new');
+        await assertSucceeds(runTransaction(store, async transaction => {
+          const snap = await transaction.get(ref);
+          const entry = { id: `turn-${turn}-${senderRole}`, senderRole, senderUid, text: `Mensagem ${turn}`, timestampMillis: 1000 + turn, isGreeting: false };
+          const data = { conversation: [...snap.data().conversation, entry], status, isCompleted: false, staffRead: senderRole === 'SUPPORT', ...(senderRole === 'SUPPORT' ? { userCanReply: true } : { lastUserMessage: entry.text }) };
+          transaction.update(ref, data);
+          transaction.set(doc(store, 'users/user/messages/new'), data, { merge: true });
+        }));
+      }
+    }
+    assert.equal((await getDoc(doc(db('user'), 'users/user/messages/new'))).data().conversation.length, 10);
+  });
+  await test('conflicting legacy sponsor tags cannot expose a sponsorship to moderators', async () => {
+    const data = { ...ticket('legacy-sponsor', 'SOPORTE'), type: 'PATROCINADOR', staffVisible: false };
+    await assertSucceeds(setDoc(doc(user, 'support_reports', 'legacy-sponsor'), data));
+    await assertSucceeds(getDoc(doc(admin, 'support_reports', 'legacy-sponsor')));
+    await assertFails(getDoc(doc(moderator, 'support_reports', 'legacy-sponsor')));
+    await assertFails(setDoc(doc(user, 'support_reports', 'exposed-sponsor'), { ...data, staffVisible: true }));
+  });
   await test('only administrator deletes tickets and inbox messages', async () => {
     await assertFails(deleteDoc(doc(user,'support_reports','ticket')));
     await assertFails(deleteDoc(doc(moderator,'support_reports','ticket')));
@@ -82,6 +104,7 @@ try {
     assert.equal((await getDoc(doc(user,'support_reports','new'))).data().status,'SOLVED');
     assert.equal((await getDoc(doc(db('user'),'users/user/messages/new'))).data().status,'SOLVED');
     const history = (await getDoc(doc(user,'support_reports','new'))).data().conversation;
+    await assertFails(updateDoc(doc(moderator,'support_reports','new'), { conversation:[...history,{id:'closed-staff',senderRole:'SUPPORT',senderUid:'mod',text:'Fechado',isGreeting:false}], status:'READ' }));
     await assertFails(updateDoc(doc(user,'support_reports','new'), { conversation:[...history,{ id:'closedreply', senderRole:'USER',senderUid:'user',text:'No',timestampMillis:400 }], status:'PENDING',isCompleted:false,staffRead:false }));
   });
   const request = uid => ({ userId:uid,userName:uid,channelName:'Canal Coach',channelUrl:'https://twitch.tv/coach_test',platform:'Twitch',status:'PENDING',usingCoachAcknowledged:true,submittedAtMillis:Date.now(), submittedAt:serverTimestamp(), publicationId:`publication-${uid}-${Date.now()}` });

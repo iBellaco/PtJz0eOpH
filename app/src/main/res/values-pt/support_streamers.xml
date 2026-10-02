@@ -54,4 +54,6 @@
     <string name="streamer_history_deletion_date">Remoção: %1$s</string>
     <string name="streamer_history_copy">Copiar dados da publicação</string>
     <string name="streamer_history_copied">Dados da publicação copiados.</string>
+    <string name="streamer_review_accepted">Publicação aceita e visível para todos.</string>
+    <string name="moderator_pending_request">Solicitação pendente</string>
 </resources>

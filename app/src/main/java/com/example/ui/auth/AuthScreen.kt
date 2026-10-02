@@ -41,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.draw.clip
@@ -1300,18 +1301,22 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     enableShimmer = true,
                     enablePulse = true
                 ) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.Verified, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
-                        Text(
-                            text = tr(if (hasPendingSponsorsForAuth) "Panel de Moderador (¡Solicitud Pendiente!)" else "Panel de Moderador"),
-                            modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            color = Color.White, fontWeight = FontWeight.Bold
-                        )
-                        Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                            if (hasPendingSponsorsForAuth) Badge(containerColor = Color.White, contentColor = Color.Red) {
-                                Text("!")
-                            }
+                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center) {
+                            Icon(Icons.Default.Verified, contentDescription = null, tint = Color.White,
+                                modifier = Modifier.size(24.dp).testTag("moderator_panel_icon"))
+                            Text(text = tr("Panel de Moderador"),
+                                modifier = Modifier.padding(start = 8.dp).weight(1f, fill = false).testTag("moderator_panel_title"),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                        if (hasPendingSponsorsForAuth) Row(verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Badge(containerColor = Color.White, contentColor = Color.Red) { Text("!") }
+                            Text(com.example.util.localizedString(com.example.R.string.moderator_pending_request),
+                                color = Color.White, fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
                 }

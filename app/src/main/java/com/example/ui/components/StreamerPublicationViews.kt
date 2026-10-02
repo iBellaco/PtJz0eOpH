@@ -85,12 +85,14 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
     val copiedMessage = localizedString(R.string.streamer_history_copied)
-    val days = publications.filterNot { StreamerPublicationPolicy.historyExpired(it, now) }
-        .distinctBy { StreamerPublicationPolicy.publicationId(it) }
-        .sortedByDescending(StreamerPublicationPolicy::submittedAt).groupBy {
-            val date = StreamerPublicationPolicy.submittedAt(it)
-            if (date > 0) dayFormat.format(Date(date)) else ""
-        }
+    val visible = publications.filterNot { StreamerPublicationPolicy.historyExpired(it, now) }
+    val days = remember(visible, locale) {
+        visible.distinctBy { StreamerPublicationPolicy.publicationId(it) }
+            .sortedByDescending(StreamerPublicationPolicy::submittedAt).groupBy {
+                val date = StreamerPublicationPolicy.submittedAt(it)
+                if (date > 0) dayFormat.format(Date(date)) else ""
+            }
+    }
     Column(Modifier.fillMaxWidth().testTag("streamer_publication_history"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(localizedString(R.string.streamer_history), style = MaterialTheme.typography.titleMedium, color = Color(0xFFD4AF37))
         Text(localizedString(R.string.streamer_history_retention), color = Color.LightGray)

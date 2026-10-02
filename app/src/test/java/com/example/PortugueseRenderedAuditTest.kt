@@ -207,7 +207,10 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             }
             compose.onNodeWithContentDescription("Expandir").performClick()
             inspect("expanded")
-            compose.onNodeWithText("Responder Mensagem").performScrollTo()
+            if (screen == "support-ticket-solved") {
+                compose.onNodeWithText("Responder Mensagem").assertDoesNotExist()
+                compose.onNodeWithTag("support_continue_reply").assertDoesNotExist()
+            } else compose.onNodeWithText("Responder Mensagem").performScrollTo()
             inspect("reply-controls")
             compose.onNodeWithText("Versão:", substring = true).performScrollTo()
             inspect("device-details")

@@ -205,7 +205,7 @@ fun getFeedbackCategory(report: FeedbackReport): String {
         com.example.data.SupportConversationPolicy.isSponsor(rawType) -> "PATROCINADOR"
         rawType in listOf("BUG", "ERROR", "BUG_REPORT", "BUG / ERROR") -> "BUG"
         rawType in listOf("BUILD_SUGGESTION", "BUILD", "SUGERIR BUILD", "SUGERENCIA DE BUILD") || parseBuildSuggestionFromText(desc, title) != null -> "BUILD"
-        rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA") -> "SUPPORT"
+        rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA", "REPORTE", "REPORT") -> "SUPPORT"
         else -> "SUGGESTION"
     }
 }
@@ -1273,7 +1273,8 @@ internal fun ComprehensiveFeedbackCard(
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     val itemCategory = remember(report) { getFeedbackCategory(report) }
-    val isBugOrSupport = itemCategory == "BUG" || itemCategory == "SUPPORT"
+    val isBugOrSupport = itemCategory in setOf("BUG", "SUPPORT", "PATROCINADOR")
+    val canContinueConversation = onReply != null && !com.example.data.SupportConversationPolicy.isClosed(currentStatus)
 
     val isReadOrSolved = currentStatus == FeedbackRepository.STATUS_READ ||
             currentStatus == FeedbackRepository.STATUS_SOLVED ||
@@ -1691,18 +1692,7 @@ internal fun ComprehensiveFeedbackCard(
                                 Icon(Icons.Default.QuestionAnswer, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
                                 Text(text = tr("Respuesta de Soporte Coach:"), color = HextechCyan, fontSize = 10.5.sp, fontWeight = FontWeight.Bold)
                             }
-                            if (onReply != null && (itemCategory == "SUPPORT" || itemCategory == "PATROCINADOR" || itemCategory == "BUG")) {
-                                Text(
-                                    text = tr("Responder de nuevo"),
-                                    color = HextechCyan,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .clickable { onReply() }
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            }
+
                         }
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
@@ -1738,13 +1728,15 @@ internal fun ComprehensiveFeedbackCard(
                         }
                     }
                 }
-            } else if (onReply != null && (itemCategory == "SUPPORT" || itemCategory == "PATROCINADOR" || itemCategory == "BUG")) {
+            }
+            if (canContinueConversation) {
                 Spacer(modifier = Modifier.height(6.dp))
                 OutlinedButton(
-                    onClick = onReply,
+                    onClick = { onReply?.invoke() },
                     modifier = Modifier
+                        .testTag("support_continue_reply")
                         .fillMaxWidth()
-                        .height(30.dp),
+                        .heightIn(min = 48.dp),
                     border = BorderStroke(0.8.dp, HextechCyan.copy(alpha = 0.7f)),
                     shape = RoundedCornerShape(6.dp),
                     contentPadding = PaddingValues(0.dp)

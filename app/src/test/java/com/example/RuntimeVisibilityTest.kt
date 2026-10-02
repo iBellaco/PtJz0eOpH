@@ -47,7 +47,7 @@ class RuntimeVisibilityTest(private val screen: String) {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered",
-            "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live",
+            "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
             "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large").map { arrayOf(it) }
@@ -69,7 +69,9 @@ class RuntimeVisibilityTest(private val screen: String) {
             .setLocalCacheSettings(MemoryCacheSettings.newBuilder().build()).build()
         awaitTask(database.disableNetwork())
         if (screen == "streamer-guest-live") database.collection("system_config").document("streamer_live").set(
-            mapOf("entries" to listOf(mapOf("userId" to "local-streamer", "channelName" to "Canal Público", "channelUrl" to "https://twitch.tv/coach_test"))))
+            mapOf("entries" to listOf(
+                mapOf("userId" to "local-streamer", "channelName" to "Canal Público", "channelUrl" to "https://twitch.tv/coach_test"),
+                mapOf("userId" to "local-admin", "channelName" to "Canal Teste", "channelUrl" to "https://www.google.com", "platform" to "Google"))))
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
@@ -105,7 +107,15 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
-            screen == "streamer-guest-live" -> LiveStreamersRow()
+            screen == "streamer-guest-live" -> Column { LiveStreamersRow() }
+            screen == "streamer-approved-review" -> ApprovedStreamerReviewCard(mapOf("channelName" to "Canal Aprovado", "channelUrl" to "https://www.google.com"), true, { copiedSummary = it }, {})
+            screen.startsWith("support-") -> ComprehensiveFeedbackCard(
+                report = com.example.data.remote.model.FeedbackReport(id = "local-thread", userId = "local-user", userName = "Teste",
+                    type = if (screen == "support-legacy-followup") "REPORTE" else "SOPORTE", title = "Conversa Coach", description = "Detalhes do problema",
+                    adminReply = "Resposta anterior", createdAt = com.example.data.SupportReportDecoder.isoDate(System.currentTimeMillis())),
+                currentStatus = if (screen == "support-closed") "SOLVED" else "PENDING",
+                onSelectStatus = {}, onReply = { copiedSummary = "continue" }, onDelete = null,
+                onCopy = {}, onOpenImage = {}, onItemClick = {})
             screen.startsWith("matchup-") -> MatchupPreviewDialog(
                 myChampion = WildRiftRepository.champions.first { it.id == screen.removePrefix("matchup-") },
                 enemyOpponent = WildRiftRepository.champions.first { it.id == "smolder" },
@@ -221,8 +231,25 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             "streamer-guest-live" -> {
                 compose.waitUntil(10000) { compose.onAllNodesWithText("Canal Público").fetchSemanticsNodes().isNotEmpty() }
-                compose.onNodeWithText("Ao vivo").assertExists()
+                compose.onNodeWithText("Canal Teste").assertExists()
+                Assert.assertEquals(2, compose.onAllNodesWithText("Ao vivo").fetchSemanticsNodes().size)
                 Assert.assertFalse(AuthManager.isSignedIn.value)
+            }
+            "streamer-approved-review" -> {
+                compose.onNodeWithText("Publicação aceita e visível para todos.").assertExists()
+                compose.onNodeWithText("https://www.google.com").assertExists()
+                compose.onNodeWithText(com.example.util.appTr("Abrir canal")).performClick()
+                Assert.assertEquals("https://www.google.com", copiedSummary)
+            }
+            "support-followup", "support-legacy-followup", "support-closed" -> {
+                compose.onNodeWithContentDescription("Expandir").performClick()
+                compose.onNodeWithText("Encerrar conversa").assertExists()
+                if (screen == "support-closed") compose.onNodeWithTag("support_continue_reply").assertDoesNotExist()
+                else {
+                    compose.onNodeWithTag("support_continue_reply").assertExists().performClick()
+                    Assert.assertEquals("continue", copiedSummary)
+                }
+                compose.onNodeWithContentDescription("Excluir").assertDoesNotExist()
             }
             "matchup-varus", "matchup-jhin", "matchup-garen" -> {
                 compose.onNodeWithText("Smolder", substring = false).assertExists()
@@ -258,6 +285,12 @@ class RuntimeVisibilityTest(private val screen: String) {
                 for (label in listOf("Painel de streamer", appTr("Panel de Administración"), appTr("Panel de Soporte y Moderación"), appTr("Panel de Patrocinador"))) {
                     compose.onNodeWithText(label).performScrollTo().assertExists()
                 }
+                compose.onNodeWithText(appTr("Panel de Moderador")).performScrollTo().assertExists()
+                val icon = compose.onNodeWithTag("moderator_panel_icon", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val title = compose.onNodeWithTag("moderator_panel_title", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val maximumGap = 16f * context.resources.displayMetrics.density
+                Assert.assertTrue("Moderator icon must sit beside its title: $icon $title", title.left >= icon.right && title.left - icon.right <= maximumGap)
+                if (screen == "profile-admin-large") compose.onNodeWithText("Solicitação pendente").assertExists()
                 inspect("role-buttons")
                 compose.onNodeWithText(appTr("Panel de Soporte y Moderación")).performScrollTo().performClick()
                 compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()
