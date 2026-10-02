@@ -121,7 +121,7 @@ snapshot("faq")
 tap("Como funciona o overlay flutuante durante a partida?")
 snapshot("faq-answer")
 tap("Entendido")
-back()
+# FAQ returns directly to the dashboard; a second Back opens the exit dialog.
 back()
 for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
     tap(tab)
@@ -132,6 +132,7 @@ for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
             snapshot("catalog-" + catalog)
 adb("shell", "am", "force-stop", APP)
 adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
+tap("Início")
 tap("Informação")
 snapshot("restart-retains-portuguese")
 (OUT / "summary.json").write_text(json.dumps({"screens": screens, "findings": findings}, ensure_ascii=False, indent=2))
