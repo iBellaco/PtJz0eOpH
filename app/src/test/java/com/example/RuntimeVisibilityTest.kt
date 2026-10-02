@@ -204,12 +204,12 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val category = screen.removePrefix("champion-").removeSuffix("-advice")
                 if (category == "item") {
                     // The item strip scrolls horizontally; first reveal its parent vertically.
-                    compose.onNodeWithTag("build_core_items_section").performScrollTo()
-                    compose.onAllNodesWithTag("build_item_details").onFirst().assertIsDisplayed().performClick()
-                } else compose.onAllNodesWithTag("build_${category}_details").onFirst().performScrollTo().performClick()
+                    compose.onNodeWithTag("build_core_items_section", useUnmergedTree = true).performScrollTo()
+                    compose.onAllNodesWithTag("build_item_details", useUnmergedTree = true).onFirst().assertIsDisplayed().performClick()
+                } else compose.onAllNodesWithTag("build_${category}_details", useUnmergedTree = true).onFirst().performScrollTo().performClick()
                 inspect("opened")
-                compose.onNodeWithTag("build_element_advice_card").performScrollTo().assertExists()
-                compose.onNodeWithTag("build_element_advice_card").captureRoboImage(filePath = File(output, "$screen-framed-card.png").path)
+                compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).performScrollTo().assertExists()
+                compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).captureRoboImage(filePath = File(output, "$screen-framed-card.png").path)
             }
             "champion-guest" -> {
                 compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
