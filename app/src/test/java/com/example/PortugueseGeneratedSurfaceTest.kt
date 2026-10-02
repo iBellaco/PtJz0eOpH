@@ -103,6 +103,20 @@ class PortugueseGeneratedSurfaceTest {
         }
     }
 
+    @Test fun `kit interactions distinguish projectile blocking spell shields and invulnerability`() {
+        fun champion(id: String) = WildRiftRepository.champions.first { it.id == id }
+        fun plan(own: String, enemy: String) = ChampionMatchupCoaching.forDuel(champion(own), champion(enemy), champion(own).primaryRole, "pt")
+        val shield = plan("varus", "morgana").verdict
+        assertTrue(shield, shield.contains(champion("morgana").skills.first { it.slot == "3" }.getLocalizedName("pt")))
+        assertTrue(shield, shield.contains("proteção"))
+        val projectile = plan("yasuo", "morgana").verdict
+        assertTrue(projectile, projectile.contains(champion("yasuo").skills.first { it.slot == "2" }.getLocalizedName("pt")))
+        assertTrue(projectile, projectile.contains("projétil"))
+        val invulnerability = plan("jhin", "kayle").verdict
+        assertTrue(invulnerability, invulnerability.contains(champion("kayle").skills.first { it.slot == "4" }.getLocalizedName("pt")))
+        assertTrue(invulnerability, invulnerability.contains("invulnerabilidade"))
+    }
+
     @Test fun `personal coaching verdicts localize every grade and lane`() {
         val manager = com.example.data.analytics.PersonalTierListManager
         val method = manager::class.java.getDeclaredMethod("generateCoachVerdict", String::class.java,
