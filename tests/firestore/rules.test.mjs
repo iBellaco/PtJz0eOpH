@@ -225,9 +225,10 @@ try {
     await assertFails(deleteDoc(doc(db('s2'),'streamer_click_metrics',counterId)));
     await assertFails(deleteDoc(doc(other,`streamer_requests/s2/history/${oldId}`)));
     await assertFails(deleteDoc(doc(other,'streamer_click_metrics',oldId)));
-    const batch = writeBatch(db('s2'));
-    batch.delete(doc(db('s2'),`streamer_requests/s2/history/${oldId}`));
-    batch.delete(doc(db('s2'),'streamer_click_metrics',oldId));
+    const owner = db('s2');
+    const batch = writeBatch(owner);
+    batch.delete(doc(owner,`streamer_requests/s2/history/${oldId}`));
+    batch.delete(doc(owner,'streamer_click_metrics',oldId));
     await assertSucceeds(batch.commit());
     assert.equal((await getDoc(doc(db('s2'),`streamer_requests/s2/history/${oldId}`))).exists(),false);
     await assertFails(setDoc(doc(admin,`streamer_requests/s2/history/${oldId}`),data));
