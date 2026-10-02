@@ -48,7 +48,8 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("information", "faq", "onboarding", "tutorial", "home", "catalog", "tier-list",
             "draft", "champion", "matchup", "personal-tier", "login", "register", "recover", "legal", "donation", "exit", "support-form", "support-inbox", "support-reply",
-            "support-ticket-pending", "support-ticket-read", "support-ticket-solved", "support-ticket-unknown-date")
+            "support-ticket-pending", "support-ticket-read", "support-ticket-solved", "support-ticket-unknown-date",
+            "support-panel", "support-mailbox")
             .map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
@@ -71,6 +72,19 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
+        if (screen == "support-panel" || screen == "support-mailbox") {
+            // Model a staff session locally; no account, network or production messages are used.
+            com.example.util.SubscriptionManager.userRole.value
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            val role = com.example.util.SubscriptionManager::class.java.getDeclaredField("_userRole").apply { isAccessible = true }
+            @Suppress("UNCHECKED_CAST")
+            (role.get(com.example.util.SubscriptionManager) as kotlinx.coroutines.flow.MutableStateFlow<String>).value = "admin"
+            database.collection("support_reports").document("audit-seeded-ticket").set(mapOf(
+                "subject" to "Ajuda com o hub", "content" to "Olá, preciso de ajuda com o hub.",
+                "created_at" to System.currentTimeMillis(), "app_version" to "1.1.10.147 (863)",
+                "device_info" to "Android 14", "type" to "SOPORTE", "status" to "PENDING"
+            ))
+        }
     }
 
     @After fun releaseCloudResources() {
@@ -104,6 +118,8 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             "legal" -> PrivacyPolicyDialog(isMandatoryAcceptance = true, onDismiss = {})
             "donation" -> DonationDialog({})
             "exit" -> ExitConfirmationDialog({}, {})
+            "support-panel" -> AdminFeedbackBottomSheet({})
+            "support-mailbox" -> AdminSupportReportsDialog({})
             "support-form" -> SupportReportDialog({})
             "support-inbox" -> UserInboxDialog("audit-local-user", {})
             "support-reply" -> SupportReplyDialog(reportId = "audit-reply", reportTitle = "Ajuda com o hub",
@@ -144,6 +160,9 @@ class PortugueseRenderedAuditTest(private val screen: String) {
 
     @Test fun `Portuguese rendered surfaces contain no Spanish wording`() {
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
+        if (screen == "support-panel" || screen == "support-mailbox") {
+            compose.waitUntil(15_000) { compose.onAllNodesWithText("Ajuda com o hub").fetchSemanticsNodes().isNotEmpty() }
+        }
         inspect("initial")
         if (screen == "onboarding" || screen == "tutorial") {
             repeat(3) { page ->
