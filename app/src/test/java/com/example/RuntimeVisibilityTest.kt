@@ -39,7 +39,8 @@ class RuntimeVisibilityTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
-            "tier-guest", "tier-registered", "tier-registration", "streamer", "streamer-admin").map { arrayOf(it) }
+            "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered",
+            "streamer", "streamer-admin").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private val context get() = RuntimeEnvironment.getApplication()
@@ -63,7 +64,7 @@ class RuntimeVisibilityTest(private val screen: String) {
         org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
         val field = AuthManager::class.java.getDeclaredField("_isSignedIn").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
-        (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen == "tier-registered"
+        (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered")
     }
     @After fun release() {
         awaitTask(FirebaseFirestore.getInstance().terminate())
@@ -73,6 +74,7 @@ class RuntimeVisibilityTest(private val screen: String) {
     @Composable private fun surface() {
         when {
             screen.startsWith("streamer") -> Column { StreamerUrlRecommendations(screen == "streamer-admin") {} }
+            screen.startsWith("champion") -> ChampionDetailSheet(champion = WildRiftRepository.champions.first { it.id == "garen" }, onDismiss = {})
             screen.startsWith("tier") -> TierListTab(onSelectChampion = {})
             else -> {
                 val own = WildRiftRepository.champions.first { it.id == "ahri" }
@@ -110,6 +112,8 @@ class RuntimeVisibilityTest(private val screen: String) {
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
         compose.waitForIdle()
         when (screen) {
+            "champion-guest" -> compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
+            "champion-registered" -> compose.onNodeWithTag("detailed_trend_graph").performScrollTo().assertExists()
             "draft-empty" -> {
                 compose.onNodeWithTag("draft_recommendations").assertDoesNotExist()
                 compose.onNodeWithTag("open_matchup_preview_button").assertDoesNotExist()

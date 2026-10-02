@@ -482,7 +482,7 @@ object SynergyAdvisor {
                     tier = tier,
                     winrate = winrate,
                     synergyScore = entry.score,
-                    category = entry.category,
+                    category = trStr(lang, entry.category),
                     badgeIcon = entry.icon,
                     synergyTitle = title,
                     tacticalReason = reason,
@@ -508,7 +508,7 @@ object SynergyAdvisor {
                     tier = foundChamp.tier,
                     winrate = foundChamp.winrate,
                     synergyScore = ((foundChamp.winrate + 43.0).toInt()).coerceIn(88, 96),
-                    category = cat,
+                    category = trStr(lang, cat),
                     badgeIcon = icon,
                     synergyTitle = title,
                     tacticalReason = reason,
@@ -541,7 +541,7 @@ object SynergyAdvisor {
                             tier = metaPick.tier,
                             winrate = metaPick.winrate,
                             synergyScore = ((metaPick.winrate + 40.0).toInt()).coerceIn(85, 93),
-                            category = cat,
+                            category = trStr(lang, cat),
                             badgeIcon = icon,
                             synergyTitle = title,
                             tacticalReason = reason,
@@ -555,7 +555,7 @@ object SynergyAdvisor {
 
         return ChampionSynergyProfile(
             archetype = archetype,
-            archetypeBadge = badge,
+            archetypeBadge = trStr(lang, badge),
             archetypeDesc = desc,
             coreStrengths = strengths,
             bestTeammates = recommendedTeammates.sortedByDescending { it.synergyScore }

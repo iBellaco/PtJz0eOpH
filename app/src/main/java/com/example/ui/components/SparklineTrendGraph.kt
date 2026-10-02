@@ -10,6 +10,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +40,8 @@ fun SparklineTrendGraph(
     showFullText: Boolean = true,
     canvasHeight: Int = 20
 ) {
+    val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsState()
+    if (!isSignedIn) return
     val roundedWinrate = Math.round(winrate * 100.0) / 100.0
     val roundedDelta = Math.round(delta * 100.0) / 100.0
     val isPositive = roundedDelta >= 0
@@ -249,6 +254,8 @@ fun DetailedTrendGraphCard(
     delta: Double,
     modifier: Modifier = Modifier
 ) {
+    val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsState()
+    if (!isSignedIn) return
     val roundedWinrate = Math.round(winrate * 100.0) / 100.0
     val roundedDelta = Math.round(delta * 100.0) / 100.0
     val winrate24h = Math.round((winrate - delta) * 100.0) / 100.0
@@ -257,7 +264,7 @@ fun DetailedTrendGraphCard(
     val trendColor = if (isPositive) Color(0xFF00FF7F) else Color(0xFFFF453A)
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().testTag("detailed_trend_graph"),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant.copy(alpha = 0.85f)),
         border = androidx.compose.foundation.BorderStroke(0.8.dp, HextechCardBorder)
@@ -378,4 +385,3 @@ fun DetailedTrendGraphCard(
         }
     }
 }
-
