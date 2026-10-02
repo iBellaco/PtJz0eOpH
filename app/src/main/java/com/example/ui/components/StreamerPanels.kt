@@ -57,6 +57,7 @@ private fun operationError(result: Result<Unit>?): String? {
     if (result == null || result.isSuccess) return null
     val cause = generateSequence(result.exceptionOrNull()) { it.cause }.mapNotNull { it.message }.joinToString(" ")
     val id = when {
+        cause.contains("streamer_history_error") -> R.string.streamer_history_error
         cause.contains("streamer_expired") -> R.string.streamer_expired
         cause.contains("streamer_max") -> R.string.streamer_max
         cause.contains("streamer_name_error") -> R.string.streamer_name_error
@@ -115,6 +116,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
     var historyError by remember(uid) { mutableStateOf(false) }
     val now = streamerClock()
     var submitted by remember { mutableStateOf(false) }
+    var submitting by remember { mutableStateOf(false) }
     var requestAvailable by remember(uid) { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
@@ -152,7 +154,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 Text(localizedString(R.string.streamer_panel), color = StreamGold, style = MaterialTheme.typography.titleLarge)
                 Text(localizedString(R.string.streamer_requirement), color = Color.White)
                 Text(localizedString(R.string.streamer_expiry_notice), color = Color.LightGray)
-                StreamerSubmissionFeedback(busy, submitted)
+                StreamerSubmissionFeedback(busy && submitting, submitted)
                 OutlinedTextField(name, { name = it; result = null }, label = { Text(localizedString(R.string.streamer_name)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(url, { url = it; result = null }, label = { Text(localizedString(R.string.streamer_url)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
                 StreamerUrlRecommendations(isAdmin, enabled = !busy && !pending && !active) { url = it; result = null }
@@ -165,13 +167,13 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 }
                 operationError(result)?.let { Text(it, color = Color(0xFFFF8A80)) }
                 if (!registryAvailable || !requestAvailable) Text(localizedString(R.string.streamer_loading), color = Color.White)
-                if (active) Button(onClick = { busy = true; scope.launch { submitted = false; result = StreamerRepository.end(uid); busy = false } }, enabled = !busy && registryAvailable) { Text(localizedString(R.string.streamer_end)) }
-                else Button(onClick = { busy = true; scope.launch { result = StreamerRepository.submit(name, url); submitted = result?.isSuccess == true; busy = false } },
+                if (active) Button(onClick = { submitting = false; busy = true; scope.launch { submitted = false; result = StreamerRepository.end(uid); busy = false } }, enabled = !busy && registryAvailable) { Text(localizedString(R.string.streamer_end)) }
+                else Button(onClick = { submitting = true; busy = true; scope.launch { result = StreamerRepository.submit(name, url); submitted = result?.isSuccess == true; busy = false } },
                     enabled = !busy && registryAvailable && requestAvailable && !maximum && !pending && name.trim().length in 2..60 && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) != null) { Text(localizedString(R.string.streamer_submit)) }
                 if (url.isNotBlank() && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) == null) Text(localizedString(R.string.streamer_url_error), color = Color(0xFFFF8A80))
                 val history = listOfNotNull(request.takeIf { it.isNotEmpty() }) + publications
                 StreamerPublicationHistory(history, now)
-                if (historyError) Text(localizedString(R.string.streamer_error), color = Color(0xFFFF8A80))
+                if (historyError) Text(localizedString(R.string.streamer_history_error), color = Color(0xFFFF8A80))
                 TextButton(onClick = onDismiss, enabled = !busy) { Text(localizedString(R.string.streamer_close)) }
             }
         }

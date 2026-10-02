@@ -127,6 +127,7 @@ try {
   });
   await test('publication history is shared by devices and owners cannot forge decisions', async () => {
     await setDoc(doc(admin,'system_config','streamer_live'), { entries:[] });
+    await assertSucceeds(getDocs(query(collection(db('s2'),'streamer_requests/s2/history'))));
     const data = request('s2');
     const secondStreamer = db('s2');
     const batch = writeBatch(secondStreamer);

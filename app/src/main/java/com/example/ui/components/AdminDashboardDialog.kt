@@ -178,6 +178,7 @@ fun AdminDashboardDialog(
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
     var showModeratorRequestsDialog by remember { mutableStateOf(false) }
     var pendingModeratorRequestsCount by remember { mutableStateOf(0) }
+    val reviewScope = rememberCoroutineScope()
     var isMonitoringMinimized by remember { mutableStateOf(false) }
 
     val userRoleForRequests = com.example.util.SubscriptionManager.userRole.collectAsState().value
@@ -188,6 +189,7 @@ fun AdminDashboardDialog(
             val pendingSet1 = mutableSetOf<String>()
             val pendingSet2 = mutableSetOf<String>()
             var pendingStreamers = 0
+            var expirationJob: kotlinx.coroutines.Job? = null
 
             val listener1 = FirebaseFirestore.getInstance().collection("support_reports")
                 .whereEqualTo("category", "MODERATOR_REQUEST")
@@ -209,9 +211,26 @@ fun AdminDashboardDialog(
                     }
                 }
             val streamerListener = com.example.data.StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, _ ->
-                if (snapshot != null) { pendingStreamers = snapshot.size(); pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers }
+                if (snapshot != null) {
+                    val requests = snapshot.documents.map { it.id to it.data.orEmpty() }
+                    expirationJob?.cancel()
+                    expirationJob = reviewScope.launch {
+                        while (isActive) {
+                            val now = System.currentTimeMillis()
+                            pendingStreamers = requests.count { !com.example.data.StreamerPublicationPolicy.isExpired(it.second, now) }
+                            pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers
+                            requests.filter { com.example.data.StreamerPublicationPolicy.isExpired(it.second, now) }.forEach {
+                                com.example.data.StreamerRepository.expire(it.first)
+                            }
+                            val next = requests.filterNot { com.example.data.StreamerPublicationPolicy.isExpired(it.second, now) }
+                                .minOfOrNull { com.example.data.StreamerPublicationPolicy.expiresAt(it.second) } ?: break
+                            delay((next - now).coerceAtLeast(1L))
+                        }
+                    }
+                }
             }
             onDispose {
+                expirationJob?.cancel()
                 streamerListener.remove()
                 listener1.remove()
                 listener2.remove()

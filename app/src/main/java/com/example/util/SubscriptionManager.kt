@@ -12,6 +12,7 @@ import com.example.data.AvatarCatalog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -114,6 +115,12 @@ object SubscriptionManager {
     }
 
     init {
+        scope.launch {
+            AuthManager.isAdminClaim.collect { claim ->
+                _isPremium.value = com.example.model.PremiumAccessPolicy.isActive(_userRole.value, _premiumUntil.value,
+                    secondary = _secondaryRole.value, adminClaim = claim, banned = _isBanned.value)
+            }
+        }
         com.example.util.AuthManager.getAuth()?.addAuthStateListener {
             val user = it.currentUser
             if (AuthManager.isGuestOrUnauthenticated(user)) {

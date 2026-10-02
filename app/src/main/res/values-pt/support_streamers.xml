@@ -44,4 +44,5 @@
     <string name="streamer_expired">Rejeitada automaticamente: passaram três horas sem aprovação.</string>
     <string name="streamer_expiry_notice">As solicitações sem aprovação são removidas após três horas e ficam como rejeitadas no histórico.</string>
     <string name="streamer_history_date_unavailable">Data indisponível</string>
+    <string name="streamer_history_error">Não foi possível sincronizar o histórico completo. A solicitação mais recente continua visível.</string>
 </resources>
