@@ -205,7 +205,7 @@ fun getFeedbackCategory(report: FeedbackReport): String {
         com.example.data.SupportConversationPolicy.isSponsor(rawType) -> "PATROCINADOR"
         rawType in listOf("BUG", "ERROR", "BUG_REPORT", "BUG / ERROR") -> "BUG"
         rawType in listOf("BUILD_SUGGESTION", "BUILD", "SUGERIR BUILD", "SUGERENCIA DE BUILD") || parseBuildSuggestionFromText(desc, title) != null -> "BUILD"
-        rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA") -> "SUPPORT"
+        rawType in listOf("SOPORTE", "SUPPORT", "TICKET", "AYUDA", "REPORTE", "REPORT") -> "SUPPORT"
         else -> "SUGGESTION"
     }
 }
@@ -1273,7 +1273,7 @@ internal fun ComprehensiveFeedbackCard(
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     val itemCategory = remember(report) { getFeedbackCategory(report) }
-    val isBugOrSupport = itemCategory == "BUG" || itemCategory == "SUPPORT"
+    val isBugOrSupport = itemCategory in setOf("BUG", "SUPPORT", "PATROCINADOR")
     val canContinueConversation = onReply != null && !com.example.data.SupportConversationPolicy.isClosed(currentStatus)
 
     val isReadOrSolved = currentStatus == FeedbackRepository.STATUS_READ ||

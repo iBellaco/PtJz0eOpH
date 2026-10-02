@@ -243,6 +243,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             "support-followup", "support-legacy-followup", "support-closed" -> {
                 compose.onNodeWithContentDescription("Expandir").performClick()
+                compose.onNodeWithText("Encerrar conversa").assertExists()
                 if (screen == "support-closed") compose.onNodeWithTag("support_continue_reply").assertDoesNotExist()
                 else {
                     compose.onNodeWithTag("support_continue_reply").assertExists().performClick()
