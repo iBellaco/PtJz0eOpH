@@ -63,6 +63,19 @@ class PortugueseGeneratedSurfaceTest {
         println("PORTUGUESE_GENERATED_AUDIT: $profiles profiles; ${values.size} distinct texts")
     }
 
+    @Test fun `automatic support acknowledgement and errors are Portuguese`() {
+        val texts = listOf(com.example.data.SupportConversationPolicy.SYSTEM_GREETING,
+            "Ticket cerrado", "Espera la primera respuesta del equipo", "No se pudo sincronizar el mensaje",
+            "No se pudo sincronizar el estado")
+        texts.forEach { text ->
+            val translated = trStr("pt", text)
+            assertNotEquals(text, translated)
+            assertFalse(translated, SpanishUiResidue.pattern.containsMatchIn(translated))
+        }
+        assertEquals("Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá aqui.",
+            trStr("pt", com.example.data.SupportConversationPolicy.SYSTEM_GREETING))
+    }
+
     @Test fun `premium duration translates assembled units before displaying them`() {
         val duration = SubscriptionManager.formatDuration(System.currentTimeMillis() + (367L * 24 * 60 * 60 + 3661) * 1000)
         assertTrue(duration, duration.contains("ano"))

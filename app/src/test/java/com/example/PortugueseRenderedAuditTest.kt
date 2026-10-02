@@ -72,6 +72,11 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
+        if (screen == "support-reply") {
+            com.example.data.SupportReplyManager.saveConversation(context, "audit-reply",
+                com.example.data.SupportConversationPolicy.initial("audit-reply", "Tester",
+                    "Olá, preciso de ajuda com o hub.", System.currentTimeMillis()))
+        }
         if (screen == "support-panel" || screen == "support-mailbox") {
             // Model a staff session locally; no account, network or production messages are used.
             com.example.util.SubscriptionManager.userRole.value
@@ -122,9 +127,11 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             "support-mailbox" -> AdminSupportReportsDialog({})
             "support-form" -> SupportReportDialog({})
             "support-inbox" -> UserInboxDialog("audit-local-user", {})
-            "support-reply" -> SupportReplyDialog(reportId = "audit-reply", reportTitle = "Ajuda com o hub",
+            "support-reply" -> {
+                SupportReplyDialog(reportId = "audit-reply", reportTitle = "Ajuda com o hub",
                 reportDescription = "Olá, preciso de ajuda com o hub.", userEmail = "tester@example.invalid",
                 userName = "Tester", userId = "audit-local-user", onDismiss = {}, onReplySent = { _, _ -> })
+            }
             else -> if (screen.startsWith("support-ticket-")) {
                 val status = when (screen) {
                     "support-ticket-read" -> "READ"
