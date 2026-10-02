@@ -4003,11 +4003,9 @@ fun UserDetailManagementDialog(
                                             toggleUserBanStatus(context, uid, newBanned, newRole) {
                                                 currentBanned = newBanned
                                                 currentRole = newRole
-                            currentPremiumUntil = inheritedUntil
                                                 onUserUpdated(user.toMutableMap().apply {
                                                     put("banned", newBanned)
                                                     put("role", newRole)
-                                if (inheritedUntil != null) put("premiumUntil", inheritedUntil)
                                                 })
                                             }
                                         },
@@ -4308,9 +4306,11 @@ fun UserDetailManagementDialog(
                             roleToConfirm = null
                             currentRole = newRole
                             currentBanned = isBanned
+                            currentPremiumUntil = inheritedUntil
                             onUserUpdated(user.toMutableMap().apply {
                                 put("role", newRole)
                                 put("banned", isBanned)
+                                if (inheritedUntil != null) put("premiumUntil", inheritedUntil)
                             })
                             onReloadAll()
                         }

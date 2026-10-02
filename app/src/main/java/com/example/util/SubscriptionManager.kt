@@ -202,6 +202,9 @@ object SubscriptionManager {
             _userRole.value = "free"
             _userName.value = ""
             _isPremium.value = false
+            _premiumUntil.value = null
+            premiumExpirationJob?.cancel()
+            com.example.data.StreamerPublicationLifecycle.stop(context.applicationContext)
             _isBanned.value = false
             _currentAvatarId.value = "default_poro"
             _unlockedAvatars.value = emptyList()
