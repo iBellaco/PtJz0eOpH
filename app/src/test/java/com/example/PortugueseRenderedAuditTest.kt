@@ -196,6 +196,9 @@ class PortugueseRenderedAuditTest(private val screen: String) {
                 compose.onNodeWithText("Entendido").performClick()
             }
         }
+        if (screen == "support-reply") {
+            compose.onNodeWithText("💡 Guia").assertExists()
+        }
         if (screen.startsWith("support-ticket-")) {
             compose.onNodeWithText("Olá, preciso de ajuda com o hub.").assertExists()
             if (screen == "support-ticket-unknown-date") {
@@ -221,7 +224,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
 
 internal object SpanishUiResidue {
     val pattern = Regex(
-        "(?<![\\p{L}\\p{N}_-])(?:vacío|vacía|equipo|hechiza|plegaria|recibidos|reciente|pendientes?|leídos?|sugerencias?|solucionados?|rechazadas?|aceptadas?|búsqueda|cargando|enlace|respuestas?|gestión|ahora|también|necesitas|estás|están|parche|presiona|tier list personal|el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
+        "(?<![\\p{L}\\p{N}_-])(?:guías?|vacío|vacía|equipo|hechiza|plegaria|recibidos|reciente|pendientes?|leídos?|sugerencias?|solucionados?|rechazadas?|aceptadas?|búsqueda|cargando|enlace|respuestas?|gestión|ahora|también|necesitas|estás|están|parche|presiona|tier list personal|el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
         RegexOption.IGNORE_CASE
     )
 }
