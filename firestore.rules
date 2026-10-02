@@ -115,6 +115,9 @@ service cloud.firestore {
       return data.get('status', '') == 'PENDING' && request.time.toMillis() >= streamerSubmittedMillis(data) + 10800000;
     }
     function publicationId(data) { return data.get('publicationId', 'legacy_' + string(streamerSubmittedMillis(data))); }
+    function streamerHistoryExpired(data) {
+      return streamerSubmittedMillis(data) > 0 && request.time.toMillis() >= streamerSubmittedMillis(data) + 604800000;
+    }
     function timeoutCopy(copy, original) {
       return streamerExpired(original) && copy.get('status', '') == 'REJECTED' && copy.get('rejectionReason', '') == 'TIMEOUT'
         && copy.get('reviewedAtMillis', 0) == streamerSubmittedMillis(original) + 10800000
@@ -137,7 +140,7 @@ service cloud.firestore {
         (signedIn() && request.auth.uid == userId && resource.data.status == 'APPROVED' && request.resource.data.status == 'ENDED'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','endedAtMillis']));
       allow delete: if (isAdmin() || (signedIn() && request.auth.uid == userId)) && streamerExpired(resource.data)
-        && timeoutCopy(getAfter(/databases/$(database)/documents/streamer_requests/$(userId)/history/$(publicationId(resource.data))).data, resource.data);
+        && (streamerHistoryExpired(resource.data) || timeoutCopy(getAfter(/databases/$(database)/documents/streamer_requests/$(userId)/history/$(publicationId(resource.data))).data, resource.data));
       match /history/{historyId} {
         function latest() { return getAfter(/databases/$(database)/documents/streamer_requests/$(userId)).data; }
         function previous() { return get(/databases/$(database)/documents/streamer_requests/$(userId)).data; }
@@ -148,10 +151,10 @@ service cloud.firestore {
             (historyId == publicationId(previous()) && request.resource.data == previous() && previous().status != 'PENDING') ||
             (historyId == publicationId(previous()) && timeoutCopy(request.resource.data, previous())));
         }
-        allow create: if isAdmin() || ownerHistoryWrite();
-        allow update: if isAdmin() || (ownerHistoryWrite() && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status','endedAtMillis','reviewedAtMillis','rejectionReason']));
-        allow delete: if false;
+        allow create: if !streamerHistoryExpired(request.resource.data) && (isAdmin() || ownerHistoryWrite());
+        allow update: if !streamerHistoryExpired(request.resource.data) && (isAdmin() || (ownerHistoryWrite() && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status','endedAtMillis','reviewedAtMillis','rejectionReason'])));
+        allow delete: if (isAdmin() || (signedIn() && request.auth.uid == userId)) && streamerHistoryExpired(resource.data);
       }
     }
     match /system_config/{document} {
@@ -163,6 +166,7 @@ service cloud.firestore {
       allow write: if document != 'streamer_live' && isAdmin();
     }
     match /system_config/streamer_live {
+      allow get: if true;
       function ownRemoval(index) {
         let old = resource.data.entries;
         let next = request.resource.data.entries;
@@ -173,6 +177,26 @@ service cloud.firestore {
         (isAdmin() || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['entries']) &&
           (ownRemoval(0) || ownRemoval(1) || ownRemoval(2) || ownRemoval(3) || ownRemoval(4))));
       allow delete: if isAdmin();
+    }
+    match /streamer_click_metrics/{id} {
+      function activePublication() {
+        let entries = liveEntries();
+        return (entries.size() > 0 && entries[0].get('publicationId', '') == id && entries[0].userId == resource.data.userId)
+          || (entries.size() > 1 && entries[1].get('publicationId', '') == id && entries[1].userId == resource.data.userId)
+          || (entries.size() > 2 && entries[2].get('publicationId', '') == id && entries[2].userId == resource.data.userId)
+          || (entries.size() > 3 && entries[3].get('publicationId', '') == id && entries[3].userId == resource.data.userId)
+          || (entries.size() > 4 && entries[4].get('publicationId', '') == id && entries[4].userId == resource.data.userId);
+      }
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == resource.data.userId);
+      allow create: if isAdmin() && request.resource.data.keys().hasOnly(['userId','publicationId','submittedAtMillis','clickCount'])
+        && request.resource.data.publicationId == id && request.resource.data.clickCount == 0
+        && request.resource.data.submittedAtMillis is int && request.resource.data.submittedAtMillis > 0
+        && !streamerHistoryExpired(request.resource.data);
+      allow update: if activePublication() && !streamerHistoryExpired(resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount','lastClickedAt'])
+        && request.resource.data.clickCount is int && request.resource.data.clickCount == resource.data.clickCount + 1
+        && request.resource.data.lastClickedAt == request.time;
+      allow delete: if (isAdmin() || (signedIn() && request.auth.uid == resource.data.userId)) && streamerHistoryExpired(resource.data);
     }
     match /moderator_requests/{id} {
       allow read, update, delete: if isAdmin();

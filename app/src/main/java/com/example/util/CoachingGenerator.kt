@@ -23,6 +23,10 @@ object CoachingGenerator {
         val isTargetRanged = targetChamp?.isRanged ?: false
         val localizedTargetName = if (isPt) trStr("pt", target) else target
         
+        if (targetChamp != null && type in listOf("Ventaja", "Debilidad")) {
+            val plan = ChampionMatchupCoaching.forDuel(champion, targetChamp, activeRole, lang)
+            return if (type == "Ventaja") plan.early + "\n\n" + plan.winCondition else plan.rival + "\n\n" + plan.ultimate
+        }
         return when (type) {
             "Ventaja" -> {
                 if (isPt) {
@@ -71,61 +75,16 @@ object CoachingGenerator {
                     "️ **$localizedName ($localizedCat)**\n\n$localizedPurpose\n\n• **Efectivo contra:** ${advice.bestAgainst.joinToString(", ")}\n• **Efecto clave:** $localizedKeyEffect\n\n **Consejo:** $localizedTip"
                 }
             }
-            else -> { // Sinergia
-                if (isPt) {
-                    "Excelente sinergia com $localizedTargetName. A combinação de habilidades garante grande vantagem nas lutas de equipe e objetivos neutros."
-                } else {
-                    "Excelente sinergia con $target. La combinación de control de masas, daño y protección de ambos campeones garantiza una superioridad aplastante en peleas de equipo y toma de objetivos."
-                }
+            else -> {
+                val ownPlan = ChampionMatchupCoaching.championPlan(champion, activeRole, lang)
+                val allyPlan = targetChamp?.let { ChampionMatchupCoaching.championPlan(it, it.primaryRole, lang) }.orEmpty()
+                ownPlan + "\n\n" + allyPlan
             }
         }
     }
 
     fun generateTacticalAnalysis(champion: Champion, activeRole: LaneRole, lang: String): String {
-        val cleanLang = lang.lowercase().trim()
-        val isPt = cleanLang.startsWith("pt")
-        val roleStr = activeRole.getLocalizedName(if (isPt) "pt" else "es")
-        
-        val qSkill = champion.skills.find { it.slot == "1" }?.let { if (isPt) "sua H1 (${it.getLocalizedName("pt")})" else "su H1 (${it.name})" } ?: if (isPt) "sua Habilidade 1 (H1)" else "su Habilidad 1 (H1)"
-        val ultSkill = champion.skills.find { it.slot == "4" }?.let { if (isPt) "sua Definitiva (${it.getLocalizedName("pt")})" else "su Definitiva (${it.name})" } ?: if (isPt) "sua Definitiva (H4)" else "su Definitiva (H4)"
-        
-        val base = if (isPt) {
-            when (activeRole) {
-                LaneRole.TOP -> if (champion.isRanged) "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, ${champion.name} deve abusar do seu alcance usando $qSkill para desgastar oponentes corpo a corpo e controlar a onda." else "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, ${champion.name} deve jogar em torno dos tempos de recarga de $qSkill, buscando trocas curtas e garantindo a visão do rio."
-                LaneRole.JUNGLE -> "**Fase de Limpeza:** Na ${roleStr}, ${champion.name} deve priorizar o farm eficiente e buscar emboscadas (ganks) apoiando-se em $qSkill para garantir vantagens iniciais."
-                LaneRole.MID -> "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, a prioridade de ${champion.name} é conseguir prioridade na rota (prio) usando $qSkill para poder rotacionar para os objetivos do rio ou ajudar o caçador."
-                LaneRole.ADC -> "**Fase Inicial (Rotas de Wild Rift):** Na ${roleStr}, ${champion.name} depende de um posicionamento seguro. Use $qSkill para garantir tropas e punir erros de posicionamento da dupla rival."
-                LaneRole.SUPPORT -> "**Fase Inicial (Rotas de Wild Rift):** Como ${roleStr}, ${champion.name} dita o ritmo das trocas. Use $qSkill para pressionar os rivais, ganhar prioridade de nível 2 e proteger seu atirador."
-            }
-        } else {
-            when (activeRole) {
-                LaneRole.TOP -> if (champion.isRanged) "**Fase Temprana (Línea de Wild Rift):** En la ${roleStr}, ${champion.name} debe abusar de su rango usando $qSkill para desgastar a los oponentes cuerpo a cuerpo y controlar la oleada." else "**Fase Temprana (Línea de Wild Rift):** En la ${roleStr}, ${champion.name} debe jugar alrededor de los enfriamientos de $qSkill, buscando intercambios cortos y controlando el Escurridizo del río (1:15 min) y la Flor del Adivino."
-                LaneRole.JUNGLE -> "**Ruta de Jungla y Control de Río:** En la ${roleStr}, ${champion.name} debe priorizar el farmeo eficiente y buscar emboscadas (ganks) clave apoyándose en $qSkill para asegurar ventajas tempranas."
-                LaneRole.MID -> "**Fase Temprana (Línea de Wild Rift):** En la ${roleStr}, la prioridad de ${champion.name} es conseguir el empuje (prio) usando $qSkill para poder rotar a los objetivos del río o emboscar junto al junglero."
-                LaneRole.ADC -> "**Fase Temprana (Línea de Wild Rift):** En la ${roleStr}, ${champion.name} depende de un posicionamiento seguro. Utiliza $qSkill para asegurar súbditos y castigar los errores de posicionamiento del dúo rival."
-                LaneRole.SUPPORT -> "**Fase Temprana (Línea de Wild Rift):** Como ${roleStr}, ${champion.name} dicta el ritmo de los intercambios. Usa $qSkill para presionar a los rivales, ganar prioridad de nivel 2 y proteger a tu tirador."
-            }
-        }
-        
-        val mid = if (isPt) {
-            when (activeRole) {
-                LaneRole.TOP -> if (champion.isFrontline) "**Meio/Fim de Jogo (Macro Wild Rift):** Nas lutas de equipe, ${champion.name} funciona como a principal linha de frente. Absorva o dano e busque usar $ultSkill em momentos críticos." else "**Meio/Fim de Jogo (Macro Wild Rift):** Empurre sua rota para pressão dividida, mas lembre-se que o mapa é curto. Agrupe rapidamente para os objetivos e flanqueie com $ultSkill."
-                LaneRole.JUNGLE -> "**Meio/Fim de Jogo (Macro Wild Rift):** O mapa é pequeno e as rotações são rápidas. Priorize garantir o Dragão ou Arauto cedo, e use $ultSkill para conseguir emboscadas decisivas."
-                LaneRole.MID -> "**Meio/Fim de Jogo (Macro Wild Rift):** Neste jogo de ritmo acelerado, uma emboscada no late game é fatal. Mova-se com sua equipe e use $ultSkill de forma explosiva em espaços fechados da selva."
-                LaneRole.ADC -> "**Meio/Fim de Jogo (Macro Wild Rift):** Agrupe-se com seu suporte. Os cercos às torres de inibidor em Wild Rift são muito rápidos; posicione-se atrás da linha de frente e cause dano com $ultSkill."
-                LaneRole.SUPPORT -> "**Meio/Fim de Jogo (Macro Wild Rift):** Negue a visão inimiga com a Lente Detectora no rio. Use o baixo tempo de recarga das botas encantadas e $ultSkill para virar lutas a seu favor."
-            }
-        } else {
-            when (activeRole) {
-                LaneRole.TOP -> if (champion.isFrontline) "**Juego Medio/Tardío (Macro Wild Rift):** En peleas grupales, ${champion.name} funciona como la principal línea frontal (frontline). Absorbe daño y busca usar $ultSkill en momentos críticos por objetivos." else "**Juego Medio/Tardío (Macro Wild Rift):** Empuja tu línea para aplicar presión dividida, pero recuerda que el mapa es corto: agrupa rápidamente a pie para los objetivos (Heraldo/Barón) y flanquea con tu $ultSkill a los objetivos vulnerables."
-                LaneRole.JUNGLE -> "**Juego Medio/Tardío (Macro Wild Rift):** El mapa es pequeño y las rotaciones son rápidas. Prioriza asegurar el Dragón o Heraldo temprano, y usa tu $ultSkill para conseguir emboscadas clave que permitan a tu equipo tirar torres e invadir la jungla."
-                LaneRole.MID -> "**Juego Medio/Tardío (Macro Wild Rift):** En este juego de ritmo acelerado, una emboscada tardía es fatal. Muévete siempre con tu equipo por el río o la jungla y usa tu $ultSkill de forma explosiva en espacios cerrados (pasillos de jungla) para borrar a los rivales."
-                LaneRole.ADC -> "**Juego Medio/Tardío (Macro Wild Rift):** Agrupa con tu soporte lo antes posible. Los asedios a torres de inhibidor en Wild Rift son rápidos. Posiciónate seguro detrás de tu línea frontal y castiga con $ultSkill sin arriesgar tu vida."
-                LaneRole.SUPPORT -> "**Juego Medio/Tardío (Macro Wild Rift):** Deniega la visión enemiga con Lente Revelador en el río antes de los objetivos neutrales (Dragones, Barón). Usa el corto enfriamiento de las botas encantadas y tu $ultSkill para salvar a tu ADC o enganchar al acarreador rival."
-            }
-        }
-        
-        return base + "\n\n" + mid
+        return ChampionMatchupCoaching.championPlan(champion, activeRole, lang)
     }
 
     fun generateTacticalAdvice(champion: Champion, activeRole: LaneRole, lang: String): String {
