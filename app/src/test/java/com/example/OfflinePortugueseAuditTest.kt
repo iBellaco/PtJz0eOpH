@@ -150,6 +150,9 @@ class OfflinePortugueseAuditTest {
         assertEquals("3. Itens principais (2/3) *Descrição obrigatória", catalog.translate("pt", "3. Objetos Core (2/3) *Desc. Obligatoria"))
         assertEquals("Erro ao abrir link: teste", catalog.translate("pt", "Error al abrir enlace: teste"))
         assertEquals("Diego_42: GG Volibear!", catalog.translate("pt", "Diego_42: GG Volibear!"))
+        // Corrections belong to known app phrases; player messages keep their wording.
+        val playerMessage = "Diego: activa la ayuda, imprescindible para jugar."
+        assertEquals(playerMessage, catalog.translate("pt", playerMessage))
     }
 
     @Test fun `hub media profile and runtime status labels use Portuguese`() {
