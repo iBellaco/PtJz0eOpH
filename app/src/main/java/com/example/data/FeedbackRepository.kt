@@ -361,34 +361,8 @@ object FeedbackRepository {
     /** Converts one authoritative snapshot, excluding internal requests and removed tickets. */
     fun feedbacksFromSnapshot(snapshot: com.google.firebase.firestore.QuerySnapshot): List<FeedbackReport> =
         snapshot.documents.mapNotNull { doc ->
-            val data = doc.data ?: return@mapNotNull null
-            if (!SupportTicketPresentation.isUserTicket(data)) return@mapNotNull null
-            val timestamp = doc.getTimestamp("createdAt")?.toDate()?.time
-                ?: (doc.get("timestamp") as? Number)?.toLong() ?: 0L
-            val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
-                timeZone = TimeZone.getTimeZone("UTC")
-            }.format(Date(timestamp))
-            @Suppress("UNCHECKED_CAST")
-            FeedbackReport(
-                id = doc.id, userId = doc.getString("userId").orEmpty(),
-                userName = doc.getString("userName").orEmpty(),
-                userEmail = doc.getString("contactEmail").orEmpty().ifBlank { doc.getString("userEmail").orEmpty() },
-                type = doc.getString("tag") ?: doc.getString("type") ?: "SOPORTE",
-                title = doc.getString("title").orEmpty().ifBlank { "Ticket de soporte" },
-                description = doc.getString("description").orEmpty(),
-                photosBase64 = (doc.get("photos") as? List<String>).orEmpty(),
-                appVersion = doc.getString("appVersion").orEmpty(),
-                deviceInfo = doc.getString("deviceInfo") ?: doc.getString("device").orEmpty(),
-                createdAt = date, status = SupportTicketPresentation.status(doc.getString("status").orEmpty()),
-                adminReply = doc.getString("adminReply"), repliedBy = doc.getString("repliedBy"),
-                repliedEmail = doc.getString("repliedEmail"),
-                repliedAt = doc.getTimestamp("repliedAt")?.toDate()?.let { instant ->
-                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
-                        timeZone = TimeZone.getTimeZone("UTC")
-                    }.format(instant)
-                }
-            )
-        }.distinctBy { it.id }.sortedByDescending { it.createdAt }
+            SupportReportDecoder.decode(doc.id, doc.data.orEmpty())
+        }.distinctBy { it.id }.sortedByDescending { SupportReportDecoder.timestampMillis(it.createdAt) ?: 0L }
 
     /**
      * Purga absolutamente todos los mensajes y tickets de soporte en todo el sistema.
@@ -462,7 +436,7 @@ object FeedbackRepository {
                 val isRead = status == STATUS_READ || status == STATUS_SOLVED || status == STATUS_ACCEPTED || status == STATUS_COMPLETED
                 val maxDays = if (isRead) 30 else 60
                 val maxLifespan = maxDays * 24L * 60 * 60 * 1000L
-                val createdMillis = parseIsoToMillis(report.createdAt)
+                val createdMillis = SupportReportDecoder.timestampMillis(report.createdAt) ?: continue
 
                 if (now - createdMillis >= maxLifespan) {
                     val id = report.id

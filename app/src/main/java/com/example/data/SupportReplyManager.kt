@@ -160,6 +160,10 @@ object SupportReplyManager {
         val maxDays = if (isRead) DAYS_RETENTION_READ else DAYS_RETENTION_UNREAD
         val maxLifespanMillis = maxDays * 24L * 60 * 60 * 1000L
         val now = System.currentTimeMillis()
+        if (createdAtMillis <= 0) return AutoDeleteCountdown(
+            maxDays = maxDays, remainingMillis = 0, remainingDays = maxDays.toLong(),
+            remainingHours = 0, isExpired = false, displayText = "Fecha no disponible"
+        )
         val elapsed = now - createdAtMillis
         val remainingMillis = maxLifespanMillis - elapsed
 
@@ -195,17 +199,7 @@ object SupportReplyManager {
     }
 
     fun parseDateToMillis(dateStr: String?): Long {
-        if (dateStr.isNullOrBlank()) return System.currentTimeMillis()
-        dateStr.toLongOrNull()?.let { return it }
-        return try {
-            val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
-                timeZone = TimeZone.getTimeZone("UTC")
-            }
-            val clean = dateStr.substringBefore(".").substringBefore("+").substringBefore("Z")
-            sdf.parse(clean)?.time ?: System.currentTimeMillis()
-        } catch (_: Exception) {
-            System.currentTimeMillis()
-        }
+        return SupportReportDecoder.timestampMillis(dateStr) ?: 0L
     }
 
     fun getLocalReply(context: Context, reportId: String): SupportReply? {
