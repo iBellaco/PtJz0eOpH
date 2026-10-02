@@ -184,7 +184,11 @@ class RuntimeVisibilityTest(private val screen: String) {
     }
 
     @Test fun `visibility and Portuguese wording follow actual selections and account access`() {
+        // Enable animation frames before composition: the test framework cancels
+        // infinite animations while its clock advances automatically.
+        if (screen == "streamer-live") compose.mainClock.autoAdvance = false
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
+        if (screen == "streamer-live") compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
         when (screen) {
             "user-notification" -> {
