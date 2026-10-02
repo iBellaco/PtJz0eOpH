@@ -24,9 +24,9 @@ object SupportTicketAccess {
         val db = FirebaseFirestore.getInstance()
         val documents = db.collection("support_reports").get().await().documents
         documents.forEach { doc ->
-            if (!SupportTicketPresentation.isUserTicket(doc.data.orEmpty())) return@forEach
+            val report = SupportReportDecoder.decode(doc.id, doc.data.orEmpty()) ?: return@forEach
             val visible = !SupportConversationPolicy.isSponsor(doc.getString("tag") ?: doc.getString("type").orEmpty())
-            var owner = doc.getString("userId").orEmpty()
+            var owner = report.userId
             if (owner.isBlank() && !doc.getString("userEmail").isNullOrBlank()) {
                 owner = db.collection("users").whereEqualTo("email", doc.getString("userEmail")).limit(1).get().await().documents.firstOrNull()?.id.orEmpty()
             }
@@ -40,10 +40,11 @@ object SupportTicketAccess {
                         val latestOwner = latest.getString("userId").orEmpty().ifBlank { owner }
                         if (latest.getString("userId").isNullOrBlank() && latestOwner.isNotBlank()) patch["userId"] = latestOwner
                         if (SupportConversationPolicy.decode(latest.get("conversation")).isEmpty()) {
-                            val history = SupportConversationPolicy.initial(doc.id, latest.getString("userName") ?: "Invocador",
-                                latest.getString("description").orEmpty(), latest.getTimestamp("createdAt")?.toDate()?.time ?: 0L,
-                                latest.getString("adminReply").orEmpty(), latest.getString("repliedBy") ?: "Soporte Coach",
-                                latest.getTimestamp("repliedAt")?.toDate()?.time ?: 0L)
+                            val decoded = SupportReportDecoder.decode(doc.id, latest.data.orEmpty()) ?: return@runTransaction
+                            val history = SupportConversationPolicy.initial(doc.id, decoded.userName.ifBlank { "Invocador" },
+                                decoded.description, SupportReportDecoder.timestampMillis(decoded.createdAt) ?: 0L,
+                                decoded.adminReply.orEmpty(), decoded.repliedBy ?: "Soporte Coach",
+                                SupportReportDecoder.timestampMillis(decoded.repliedAt) ?: 0L)
                             patch["conversation"] = history.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") latestOwner else "") }
                         }
                         val history = SupportConversationPolicy.decode(patch["conversation"] ?: latest.get("conversation"))

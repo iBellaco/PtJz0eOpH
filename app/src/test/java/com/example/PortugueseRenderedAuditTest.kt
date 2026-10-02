@@ -1,6 +1,9 @@
 package com.example
 
 import android.app.Application
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -44,7 +47,9 @@ class PortugueseRenderedAuditTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("information", "faq", "onboarding", "tutorial", "home", "catalog", "tier-list",
-            "draft", "champion", "matchup", "personal-tier", "login", "register", "recover", "legal", "donation", "exit")
+            "draft", "champion", "matchup", "personal-tier", "login", "register", "recover", "legal", "donation", "exit", "support-form", "support-inbox", "support-reply",
+            "support-ticket-pending", "support-ticket-read", "support-ticket-solved", "support-ticket-unknown-date",
+            "support-panel", "support-mailbox")
             .map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
@@ -67,6 +72,24 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
+        if (screen == "support-reply") {
+            com.example.data.SupportReplyManager.saveConversation(context, "audit-reply",
+                com.example.data.SupportConversationPolicy.initial("audit-reply", "Tester",
+                    "Olá, preciso de ajuda com o hub.", System.currentTimeMillis()))
+        }
+        if (screen == "support-panel" || screen == "support-mailbox") {
+            // Model a staff session locally; no account, network or production messages are used.
+            com.example.util.SubscriptionManager.userRole.value
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            val role = com.example.util.SubscriptionManager::class.java.getDeclaredField("_userRole").apply { isAccessible = true }
+            @Suppress("UNCHECKED_CAST")
+            (role.get(com.example.util.SubscriptionManager) as kotlinx.coroutines.flow.MutableStateFlow<String>).value = "admin"
+            database.collection("support_reports").document("audit-seeded-ticket").set(mapOf(
+                "subject" to "Ajuda com o hub", "content" to "Olá, preciso de ajuda com o hub.",
+                "created_at" to System.currentTimeMillis(), "app_version" to "1.1.10.147 (863)",
+                "device_info" to "Android 14", "type" to "SOPORTE", "status" to "PENDING"
+            ))
+        }
     }
 
     @After fun releaseCloudResources() {
@@ -100,6 +123,31 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             "legal" -> PrivacyPolicyDialog(isMandatoryAcceptance = true, onDismiss = {})
             "donation" -> DonationDialog({})
             "exit" -> ExitConfirmationDialog({}, {})
+            "support-panel" -> AdminFeedbackBottomSheet({})
+            "support-mailbox" -> AdminSupportReportsDialog({})
+            "support-form" -> SupportReportDialog({})
+            "support-inbox" -> UserInboxDialog("audit-local-user", {})
+            "support-reply" -> {
+                SupportReplyDialog(reportId = "audit-reply", reportTitle = "Ajuda com o hub",
+                reportDescription = "Olá, preciso de ajuda com o hub.", userEmail = "tester@example.invalid",
+                userName = "Tester", userId = "audit-local-user", onDismiss = {}, onReplySent = { _, _ -> })
+            }
+            else -> if (screen.startsWith("support-ticket-")) {
+                val status = when (screen) {
+                    "support-ticket-read" -> "READ"
+                    "support-ticket-solved" -> "SOLVED"
+                    else -> "PENDING"
+                }
+                val data = mutableMapOf<String, Any>("subject" to "Ajuda com o hub",
+                    "content" to "Olá, preciso de ajuda com o hub.", "type" to "SOPORTE",
+                    "app_version" to "1.1.10.147 (863)", "device_info" to "Android 14", "status" to status)
+                if (screen != "support-ticket-unknown-date") data["created_at"] = System.currentTimeMillis()
+                val report = com.example.data.SupportReportDecoder.decode(screen, data)!!
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    ComprehensiveFeedbackCard(report, status, {}, onReply = {}, onDelete = null,
+                        onCopy = {}, onOpenImage = {}, onItemClick = {})
+                }
+            }
         }
     }
 
@@ -119,6 +167,9 @@ class PortugueseRenderedAuditTest(private val screen: String) {
 
     @Test fun `Portuguese rendered surfaces contain no Spanish wording`() {
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
+        if (screen == "support-panel" || screen == "support-mailbox") {
+            compose.waitUntil(15_000) { compose.onAllNodesWithText("Ajuda com o hub").fetchSemanticsNodes().isNotEmpty() }
+        }
         inspect("initial")
         if (screen == "onboarding" || screen == "tutorial") {
             repeat(3) { page ->
@@ -145,6 +196,22 @@ class PortugueseRenderedAuditTest(private val screen: String) {
                 compose.onNodeWithText("Entendido").performClick()
             }
         }
+        if (screen == "support-reply") {
+            compose.onNodeWithText("💡 Guia").assertExists()
+        }
+        if (screen.startsWith("support-ticket-")) {
+            compose.onNodeWithText("Olá, preciso de ajuda com o hub.").assertExists()
+            if (screen == "support-ticket-unknown-date") {
+                Assert.assertTrue("Missing date must not expire the ticket", compose.onAllNodesWithText("Expirado", substring = true).fetchSemanticsNodes().isEmpty())
+                compose.onAllNodesWithText("Data indisponível").onFirst().assertExists()
+            }
+            compose.onNodeWithContentDescription("Expandir").performClick()
+            inspect("expanded")
+            compose.onNodeWithText("Responder Mensagem").performScrollTo()
+            inspect("reply-controls")
+            compose.onNodeWithText("Versão:", substring = true).performScrollTo()
+            inspect("device-details")
+        }
         if (screen == "legal") {
             for (tab in listOf("Termos", "Terceiros")) {
                 compose.onNodeWithText(tab).performClick()
@@ -157,7 +224,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
 
 internal object SpanishUiResidue {
     val pattern = Regex(
-        "(?<![\\p{L}\\p{N}_-])(?:parche|presiona|tier list personal|el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]",
+        "(?<![\\p{L}\\p{N}_-])(?:salud|resistencias?|guías?|vacío|vacía|equipo|hechiza|plegaria|recibidos|reciente|pendientes?|leídos?|sugerencias?|solucionados?|rechazadas?|aceptadas?|búsqueda|cargando|enlace|respuestas?|gestión|ahora|también|necesitas|estás|están|parche|presiona|tier list personal|el|los|las|del|al|una|unos|unas|tus|puedes|debes|añadir|añade|daño|hechizos?|velocidad|consejo|campeones|cerrar|guardar|jugadores?|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|revocación|reproducir|esencia|naranja|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|cantidad|legendario|actualizando|desfavorable|mensaje|cerrado|resuelto|borrar|archivo|resolución|elige|tienes|tiene|tienen|cuando|rápidamente|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|relanzamiento|selección|táctico|canalización|días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico|débil|fuerte|habilidades? especiales|principalmente defensivo|su|ruta|jungla|barón|línea|estadísticas|análisis|enfriamiento|duración|supervivencia|movilidad|protección|resurrección|rayo|fisura|reflejo|luces|fauces|atrae|golpea|lanzamiento)(?![\\p{L}\\p{N}_])|[¿¡ñ]|\\b\\p{L}+(?:ción|ciones|sión|siones)\\b",
         RegexOption.IGNORE_CASE
     )
 }

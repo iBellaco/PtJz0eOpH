@@ -180,8 +180,4 @@ class OfflinePortugueseAuditTest {
     }
 }
 
-private val spanishResidue = Regex(
-    "\\b(?:días|años|desactivando|depurado|cuenta|rendimiento|requiere|requieren|soporte|usuario|usuarios|guardián|común|clásico)\\b|" +
-    "(?<![-\\p{L}])(?:el|del|al|los|las|un|una|unos|unas|tus|puedes|añadir|añade|enemigos?|enemigas?|daño|hechizos?|velocidad|consejo|campeones?|cerrar|guardar|jugadores?|debes|deberás|vuelve|pantalla|sesión|contraseña|después|todavía|aunque|otorgar|obligatori[oa]|composiciones|cargadas|revocación|reproducir|esencia|naranja|procesando|izquierda|derecha|arriba|abajo|descripción|versión|ninguna|inmediato|cantidad|amarillo|legendario|revocado|agotado|actualizando|desfavorable|prueba|mensaje|cerrado|resuelto|borrar|reciente|archivo|resolución|cómpralo|elige|tienes|tiene|tienen|cuando|rápidamente|inmovilizaciones|ganar|bajar|mejor|entrer|asesinos|tardío|dragones|heraldo|empuja|recuerda|agrupa|flanquea|muévete|pasillos|deniega|farmeo|apoindo|acierta|automáticamente|bloquea|estuneado|projectoil|projetoil|relanzamiento|selección|táctico|canalización)(?![\\p{L}])|[¿¡ñ]",
-    RegexOption.IGNORE_CASE
-)
+private val spanishResidue = SpanishUiResidue.pattern

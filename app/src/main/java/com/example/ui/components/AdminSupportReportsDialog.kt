@@ -514,7 +514,7 @@ fun AdminSupportReportsDialog(
                             appendLine("Personal de Respuesta: ${repliers.joinToString(", ")}")
                             appendLine("----------------------------------------------")
                             reportsList.take(20).forEach { r ->
-                                val rDate = try { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(r.createdAtMillis)) } catch(_: Exception){ "" }
+                                val rDate = try { if (r.createdAtMillis > 0) SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(r.createdAtMillis)) else com.example.util.appTr("Fecha no disponible") } catch(_: Exception){ "" }
                                 appendLine("• [$rDate] De: ${r.userName.ifBlank { r.userEmail }} | Asunto: ${r.title}")
                                 if (r.adminReply.isNotBlank()) {
                                     appendLine("  -> Respondido por: ${r.repliedBy.ifBlank { "Soporte Coach" }} | Resp: ${r.adminReply}")
@@ -885,7 +885,7 @@ private fun UnifiedReportAdminCard(
     val dateStr = remember(report.createdAtMillis) {
         try {
             val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-            sdf.format(Date(report.createdAtMillis))
+            if (report.createdAtMillis > 0) sdf.format(Date(report.createdAtMillis)) else "Fecha no disponible"
         } catch (e: Exception) {
             ""
         }
@@ -1551,14 +1551,5 @@ private fun UnifiedReportAdminCard(
 }
 
 private fun parseIsoDateToMillis(dateStr: String?): Long {
-    if (dateStr.isNullOrBlank()) return System.currentTimeMillis()
-    return try {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
-            timeZone = TimeZone.getTimeZone("UTC")
-        }
-        val clean = dateStr.substringBefore(".").substringBefore("+").substringBefore("Z")
-        sdf.parse(clean)?.time ?: System.currentTimeMillis()
-    } catch (_: Exception) {
-        System.currentTimeMillis()
-    }
+    return com.example.data.SupportReportDecoder.timestampMillis(dateStr) ?: 0L
 }

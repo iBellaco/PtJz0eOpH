@@ -1260,7 +1260,7 @@ private fun StatusFilterChip(
 }
 
 @Composable
-private fun ComprehensiveFeedbackCard(
+internal fun ComprehensiveFeedbackCard(
     report: FeedbackReport,
     currentStatus: String,
     onSelectStatus: (String) -> Unit,
@@ -1947,7 +1947,7 @@ private fun StatusActionButton(
 }
 
 private fun formatReportDate(dateString: String?): String {
-    if (dateString.isNullOrBlank()) return "Reciente"
+    if (dateString.isNullOrBlank()) return "Fecha no disponible"
     return try {
         val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
             timeZone = TimeZone.getTimeZone("UTC")

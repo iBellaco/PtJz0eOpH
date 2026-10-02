@@ -121,14 +121,18 @@ fun UserInboxDialog(
         val byId = mutableMapOf<String, Map<String, Any>>()
         val byEmail = mutableMapOf<String, Map<String, Any>>()
         fun updateTickets() { supportReportMessages = (byEmail + byId).values.toList() }
-        fun ticket(doc: com.google.firebase.firestore.DocumentSnapshot): Map<String, Any> = doc.data.orEmpty() + mapOf(
-            "id" to doc.id, "reportId" to doc.id, "content" to doc.getString("description").orEmpty(),
-            "timestamp" to (doc.getTimestamp("createdAt")?.toDate()?.time ?: 0L))
+        fun ticket(doc: com.google.firebase.firestore.DocumentSnapshot): Map<String, Any>? {
+            val report = com.example.data.SupportReportDecoder.decode(doc.id, doc.data.orEmpty()) ?: return null
+            return doc.data.orEmpty() + mapOf(
+                "id" to doc.id, "reportId" to doc.id, "title" to report.title, "content" to report.description,
+                "description" to report.description,
+                "timestamp" to (com.example.data.SupportReportDecoder.timestampMillis(report.createdAt) ?: 0L))
+        }
         listeners += db.collection("support_reports").whereEqualTo("userId", userUid).addSnapshotListener { snapshot, error ->
-            if (error == null && snapshot != null) { byId.clear(); snapshot.documents.forEach { byId[it.id] = ticket(it) }; updateTickets() }
+            if (error == null && snapshot != null) { byId.clear(); snapshot.documents.forEach { doc -> ticket(doc)?.let { byId[doc.id] = it } }; updateTickets() }
         }
         if (userEmail.isNotBlank()) listeners += db.collection("support_reports").whereEqualTo("userEmail", userEmail).addSnapshotListener { snapshot, error ->
-            if (error == null && snapshot != null) { byEmail.clear(); snapshot.documents.forEach { byEmail[it.id] = ticket(it) }; updateTickets() }
+            if (error == null && snapshot != null) { byEmail.clear(); snapshot.documents.forEach { doc -> ticket(doc)?.let { byEmail[doc.id] = it } }; updateTickets() }
         }
         onDispose { listeners.forEach { it.remove() } }
     }
@@ -641,7 +645,7 @@ fun UserInboxDialog(
                             val timestamp = msg["timestamp"] as? Long ?: 0L
                             val isRead = msg["isRead"] as? Boolean ?: false
                             val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-                            val dateStr = sdf.format(Date(timestamp))
+                            val dateStr = if (timestamp > 0) sdf.format(Date(timestamp)) else "Fecha no disponible"
 
                             val isSupportReply = messageTag == MessageTag.SUPPORT && !isRead
 

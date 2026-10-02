@@ -10,5 +10,12 @@
   "🔄 Te sugerimos cerrar sesión, reiniciar la app y volver a ingresar para sincronizar tus configuraciones de forma óptima.": "🔄 Recomendamos sair da conta, reiniciar o aplicativo e entrar novamente para sincronizar suas configurações.",
   "🛡️ Hemos verificado la configuración de tu cuenta y optimizado tus datos. Por favor confirma si el problema persiste.": "🛡️ Verificamos as configurações da sua conta e otimizamos seus dados. Por favor, confirme se o problema persiste.",
   "🔍 Tu reporte está siendo analizado detalladamente por nuestro equipo técnico prioritario. Te notificaremos cualquier avance.": "🔍 Seu relato está sendo analisado detalhadamente pela nossa equipe técnica. Informaremos sobre qualquer progresso.",
-  "💡 Recuerda que puedes consultar la sección de guías y optimización en el menú principal para aprovechar al máximo las funciones de Coach.": "💡 Você pode consultar a seção de guias e otimização no menu principal para aproveitar ao máximo as funções do Coach."
+  "💡 Recuerda que puedes consultar la sección de guías y optimización en el menú principal para aprovechar al máximo las funciones de Coach.": "💡 Você pode consultar a seção de guias e otimização no menu principal para aproveitar ao máximo as funções do Coach.",
+  "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.": "Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá aqui.",
+  "Ticket exclusivo del administrador": "Ticket exclusivo do administrador",
+  "Ticket cerrado": "Ticket encerrado",
+  "Espera la primera respuesta del equipo": "Aguarde a primeira resposta da equipe",
+  "No se pudo sincronizar el mensaje": "Não foi possível sincronizar a mensagem",
+  "No se pudo sincronizar el estado": "Não foi possível sincronizar o status",
+  "👋 Hola {0}, {1} del equipo de soporte de Coach. Gracias por escribirnos, hemos recibido tu mensaje y estamos para ayudarte a la brevedad.": "👋 Olá {0}, aqui é {1} da equipe de suporte do Coach. Obrigado por entrar em contato. Recebemos sua mensagem e vamos ajudar o mais breve possível."
 }

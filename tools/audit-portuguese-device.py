@@ -11,7 +11,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 APP = "com.Coach"
 source = Path("app/src/test/java/com/example/PortugueseRenderedAuditTest.kt").read_text()
 literal = re.search(r'val pattern = Regex\(\s*("(?:[^"\\]|\\.)*")', source).group(1)
-pattern = json.loads(literal).replace(r"\p{L}\p{N}_", r"\w")
+pattern = json.loads(literal).replace(r"\p{L}\p{N}_", r"\w").replace(r"\p{L}", r"[^\W\d_]")
 SPANISH = re.compile(pattern, re.IGNORECASE)
 findings = []
 screens = []
@@ -130,6 +130,11 @@ for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
         for catalog in ["Itens", "Runas", "Feitiços"]:
             tap(catalog)
             snapshot("catalog-" + catalog)
+            scroll()
+            snapshot("catalog-scroll-" + catalog)
+    if tab == "Usuário":
+        scroll()
+        snapshot("user-scroll")
 adb("shell", "am", "force-stop", APP)
 adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
 tap("Início")
