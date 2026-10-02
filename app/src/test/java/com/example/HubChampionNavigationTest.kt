@@ -16,12 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.isRoot
-import androidx.compose.ui.test.onAllNodes
 import com.example.data.WildRiftRepository
 import com.example.data.local.CustomChampionBuildsManager
 import com.example.data.local.FavoriteChampionsManager
