@@ -938,7 +938,7 @@ fun ChampionDetailSheet(
 
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth().testTag("build_core_items_section")
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(if (isCompact) 6.dp else 10.dp),
                         verticalAlignment = Alignment.CenterVertically

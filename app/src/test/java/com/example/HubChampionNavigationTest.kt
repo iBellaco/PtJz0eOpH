@@ -79,7 +79,7 @@ class HubChampionNavigationTest {
         load.invoke(CustomChampionBuildsManager, context)
         org.junit.Assert.assertFalse(builds.value.any { it.id == "delete-target" })
         org.junit.Assert.assertTrue(builds.value.any { it.id == "keep-target" })
-        compose.onNodeWithContentDescription("Fechar").performClick()
+        compose.onNodeWithTag("creator_close_button").assertIsDisplayed().performClick()
         compose.onNodeWithText("Reabrir").performClick()
         compose.onNodeWithTag("delete_build_delete-target").assertDoesNotExist()
         compose.onNodeWithTag("creator_build_list").performScrollToNode(hasTestTag("delete_build_keep-target"))

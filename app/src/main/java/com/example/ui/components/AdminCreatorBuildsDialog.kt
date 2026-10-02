@@ -430,6 +430,7 @@ fun AdminCreatorBuildsDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -444,9 +445,9 @@ fun AdminCreatorBuildsDialog(
                             modifier = Modifier.padding(6.dp).size(20.dp)
                         )
                     }
-                    Column {
-                        Text(tr("Panel de Creador (Admin)"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text(tr("Gestión de builds, ranking y creadores oficiales"), color = TextSecondary, fontSize = 11.sp)
+                    Column(Modifier.weight(1f).padding(end = 8.dp)) {
+                        Text(tr("Panel de Creador (Admin)"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(tr("Gestión de builds, ranking y creadores oficiales"), color = TextSecondary, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -461,7 +462,7 @@ fun AdminCreatorBuildsDialog(
                     }) {
                         Icon(Icons.Default.Sync, contentDescription = com.example.util.trNullable("Sincronizar builds"), tint = HextechGold)
                     }
-                    IconButton(onClick = onDismiss) {
+                    IconButton(onClick = onDismiss, modifier = Modifier.testTag("creator_close_button")) {
                         Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Cerrar"), tint = Color.White)
                     }
                 }

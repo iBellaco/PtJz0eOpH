@@ -202,7 +202,12 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             "champion-item-advice", "champion-spell-advice", "champion-rune-advice" -> {
                 val category = screen.removePrefix("champion-").removeSuffix("-advice")
-                compose.onAllNodesWithTag("build_${category}_details").onFirst().performScrollTo().performClick()
+                if (category == "item") {
+                    // The item strip scrolls horizontally; first reveal its parent vertically.
+                    compose.onNodeWithTag("build_core_items_section").performScrollTo()
+                    compose.onAllNodesWithTag("build_item_details").onFirst().assertIsDisplayed().performClick()
+                } else compose.onAllNodesWithTag("build_${category}_details").onFirst().performScrollTo().performClick()
+                inspect("opened")
                 compose.onNodeWithTag("build_element_advice_card").performScrollTo().assertExists()
                 compose.onNodeWithTag("build_element_advice_card").captureRoboImage(filePath = File(output, "$screen-framed-card.png").path)
             }
