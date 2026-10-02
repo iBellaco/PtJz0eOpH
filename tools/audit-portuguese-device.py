@@ -22,8 +22,25 @@ def adb(*args, binary=False):
 
 
 def window():
-    adb("shell", "uiautomator", "dump", "/sdcard/coach-window.xml")
-    return adb("exec-out", "cat", "/sdcard/coach-window.xml")
+    last_error = "UI not ready"
+    for attempt in range(10):
+        try:
+            # Never read a previous screen when Android cannot dump the new hierarchy.
+            adb("shell", "rm", "-f", "/sdcard/coach-window.xml")
+            adb("shell", "uiautomator", "dump", "/sdcard/coach-window.xml")
+            xml = adb("exec-out", "cat", "/sdcard/coach-window.xml")
+            root = ET.fromstring(xml)
+            if root.tag == "hierarchy" and list(root.iter("node")):
+                return xml
+            last_error = "Empty Android UI hierarchy"
+        except (subprocess.SubprocessError, ET.ParseError) as error:
+            last_error = str(error)
+        print("PORTUGUESE_DEVICE_WAIT:", attempt + 1, last_error, flush=True)
+        time.sleep(1)
+    (OUT / "hierarchy-error.txt").write_text(last_error)
+    (OUT / "logcat.txt").write_text(adb("logcat", "-d", "-t", "500"))
+    (OUT / "hierarchy-error.png").write_bytes(adb("exec-out", "screencap", "-p", binary=True))
+    raise AssertionError("Android UI hierarchy did not become ready: " + last_error)
 
 
 def app_nodes(xml):
@@ -78,7 +95,9 @@ def back():
 adb("install", "-r", "app/build/outputs/apk/debug/app-debug.apk")
 adb("shell", "pm", "clear", APP)
 adb("shell", "pm", "grant", APP, "android.permission.POST_NOTIFICATIONS")
-adb("shell", "am", "start", "-n", APP + "/com.example.MainActivity")
+adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
+adb("shell", "wm", "dismiss-keyguard")
+adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
 tap("Português")
 snapshot("language-portuguese")
 tap("Continuar em Português")
@@ -111,7 +130,7 @@ for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
             tap(catalog)
             snapshot("catalog-" + catalog)
 adb("shell", "am", "force-stop", APP)
-adb("shell", "am", "start", "-n", APP + "/com.example.MainActivity")
+adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
 tap("Informação")
 snapshot("restart-retains-portuguese")
 (OUT / "summary.json").write_text(json.dumps({"screens": screens, "findings": findings}, ensure_ascii=False, indent=2))
