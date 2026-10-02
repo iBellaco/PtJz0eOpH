@@ -3786,8 +3786,6 @@ private fun CoachContent(
                     fontWeight = FontWeight.Bold
                 )
             }
-
-
         }
 
         Spacer(modifier = Modifier.height(6.dp))

@@ -47,7 +47,7 @@ class HubChampionNavigationTest {
     @Test fun `open and return from champions without an activity in Portuguese`() = exerciseHub("pt", "Voltar")
 
     private fun exerciseHub(language: String, backLabel: String) {
-        val context = RuntimeEnvironment.getApplication<Application>()
+        val context = RuntimeEnvironment.getApplication()
         AppLanguage.select(context, language)
         WildRiftRepository.initChampions(context, forceReload = true)
         FavoriteChampionsManager.init(context)
