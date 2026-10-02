@@ -36,7 +36,7 @@ object ChampionMatchupCoaching {
         val projectileBlock = own.skills.firstOrNull { it.matches("proyectil") && it.matches("bloque", "destruy", "intercept") }
         val knownProjectileSlot = mapOf("lux" to "1", "morgana" to "1", "ahri" to "3", "blitzcrank" to "1",
             "thresh" to "1", "nautilus" to "1", "ezreal" to "1", "varus" to "1", "jhin" to "2", "ashe" to "2")[enemy.id]
-        val projectile = knownProjectileSlot?.let(enemy::skill) ?: enemy.skills.firstOrNull {
+        val projectile = knownProjectileSlot?.let { enemy.skill(it) } ?: enemy.skills.firstOrNull {
             it.slot in listOf("1", "2", "3") && it.matches("proyectil", "dispara", "flecha") }
         val spellShield = when (enemy.id) {
             "morgana" -> enemy.skill("3")
