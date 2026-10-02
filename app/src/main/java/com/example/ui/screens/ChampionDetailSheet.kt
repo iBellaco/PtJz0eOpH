@@ -144,22 +144,26 @@ fun ChampionDetailSheet(
 
 
 
-    androidx.activity.compose.BackHandler {
-        if (buildAdvice != null) {
-            buildAdvice = null
-        } else if (itemForDetail != null) {
-            itemForDetail = null
-        } else if (runeForDetail != null) {
-            runeForDetail = null
-        } else if (spellForDetail != null) {
-            spellForDetail = null
-        } else if (matchupExplanationTarget != null) {
-            matchupExplanationTarget = null
-            matchupExplanationType = null
-        } else if (selectedSituationalItem != null) {
-            selectedSituationalItem = null
-        } else {
-            onDismiss()
+    // Service-hosted overlays have no activity back dispatcher; their visible
+    // back and close controls already invoke onDismiss.
+    if (androidx.activity.compose.LocalOnBackPressedDispatcherOwner.current != null) {
+        androidx.activity.compose.BackHandler {
+            if (buildAdvice != null) {
+                buildAdvice = null
+            } else if (itemForDetail != null) {
+                itemForDetail = null
+            } else if (runeForDetail != null) {
+                runeForDetail = null
+            } else if (spellForDetail != null) {
+                spellForDetail = null
+            } else if (matchupExplanationTarget != null) {
+                matchupExplanationTarget = null
+                matchupExplanationType = null
+            } else if (selectedSituationalItem != null) {
+                selectedSituationalItem = null
+            } else {
+                onDismiss()
+            }
         }
     }
 
