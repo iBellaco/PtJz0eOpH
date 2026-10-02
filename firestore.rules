@@ -118,12 +118,21 @@ service cloud.firestore {
       return data.get('status', '') == 'PENDING' && request.time.toMillis() >= streamerSubmittedMillis(data) + 10800000;
     }
     function publicationId(data) { return data.get('publicationId', 'legacy_' + string(streamerSubmittedMillis(data))); }
+    function streamerHistoryDeadlineFrom(data, submitted) {
+      let status = data.get('status', '');
+      return status == 'APPROVED' ? 0 :
+        (status == 'PENDING' || data.get('rejectionReason', '') == 'TIMEOUT') ? submitted + 86400000 :
+        status == 'ENDED' ? data.get('endedAtMillis', submitted) + 604800000 :
+        status == 'REJECTED' ? data.get('reviewedAtMillis', submitted) + 604800000 : submitted + 604800000;
+    }
+    function streamerHistoryDeadline(data) { return streamerHistoryDeadlineFrom(data, streamerSubmittedMillis(data)); }
     function validStreamerHistoryDeadline(data) {
       return !data.keys().hasAny(['streamerHistoryDeleteAt']) ||
-        (data.streamerHistoryDeleteAt is timestamp && data.streamerHistoryDeleteAt.toMillis() == data.get('submittedAtMillis', 0) + 604800000);
+        (data.streamerHistoryDeleteAt is timestamp && streamerHistoryDeadline(data) > 0 &&
+         data.streamerHistoryDeleteAt.toMillis() == streamerHistoryDeadlineFrom(data, data.get('submittedAtMillis', 0)));
     }
     function streamerHistoryExpired(data) {
-      return streamerSubmittedMillis(data) > 0 && request.time.toMillis() >= streamerSubmittedMillis(data) + 604800000;
+      return streamerHistoryDeadline(data) > 0 && streamerSubmittedMillis(data) > 0 && request.time.toMillis() >= streamerHistoryDeadline(data);
     }
     function timeoutCopy(copy, original) {
       return streamerExpired(original) && copy.get('status', '') == 'REJECTED' && copy.get('rejectionReason', '') == 'TIMEOUT'
@@ -146,7 +155,10 @@ service cloud.firestore {
         && request.resource.data.submittedAtMillis <= request.time.toMillis() + 60000
         && (!exists(/databases/$(database)/documents/streamer_requests/$(userId)) || resource.data.status != 'PENDING' || streamerExpired(resource.data))) ||
         (signedIn() && request.auth.uid == userId && resource.data.status == 'APPROVED' && request.resource.data.status == 'ENDED'
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','endedAtMillis']));
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','endedAtMillis','streamerHistoryDeleteAt'])
+          && request.resource.data.endedAtMillis >= request.time.toMillis() - 60000
+          && request.resource.data.endedAtMillis <= request.time.toMillis() + 60000
+          && validStreamerHistoryDeadline(request.resource.data));
       allow delete: if (isAdmin() || (signedIn() && request.auth.uid == userId)) && streamerExpired(resource.data)
         && (streamerHistoryExpired(resource.data) || timeoutCopy(getAfter(/databases/$(database)/documents/streamer_requests/$(userId)/history/$(publicationId(resource.data))).data, resource.data));
       match /history/{historyId} {
@@ -161,7 +173,7 @@ service cloud.firestore {
         }
         allow create: if !streamerHistoryExpired(request.resource.data) && (isAdmin() || ownerHistoryWrite());
         allow update: if !streamerHistoryExpired(request.resource.data) && (isAdmin() || (ownerHistoryWrite() && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status','endedAtMillis','reviewedAtMillis','rejectionReason'])));
+          .hasOnly(['status','endedAtMillis','reviewedAtMillis','rejectionReason','streamerHistoryDeleteAt']) && validStreamerHistoryDeadline(request.resource.data)));
         allow delete: if (isAdmin() || (signedIn() && request.auth.uid == userId)) && streamerHistoryExpired(resource.data);
       }
     }
@@ -196,15 +208,22 @@ service cloud.firestore {
           || (entries.size() > 4 && entries[4].get('publicationId', '') == id && entries[4].userId == resource.data.userId);
       }
       allow read: if isAdmin() || (signedIn() && request.auth.uid == resource.data.userId);
-      allow create: if isAdmin() && request.resource.data.keys().hasOnly(['userId','publicationId','submittedAtMillis','clickCount','streamerHistoryDeleteAt'])
+      allow create: if isAdmin() && request.resource.data.keys().hasOnly(['userId','publicationId','submittedAtMillis','clickCount','status','streamerHistoryDeleteAt'])
         && validStreamerHistoryDeadline(request.resource.data)
         && request.resource.data.publicationId == id && request.resource.data.clickCount == 0
         && request.resource.data.submittedAtMillis is int && request.resource.data.submittedAtMillis > 0
         && !streamerHistoryExpired(request.resource.data);
-      allow update: if activePublication() && !streamerHistoryExpired(resource.data)
+      allow update: if activePublication()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount','lastClickedAt'])
         && request.resource.data.clickCount is int && request.resource.data.clickCount == resource.data.clickCount + 1
-        && request.resource.data.lastClickedAt == request.time;
+        && request.resource.data.lastClickedAt == request.time ||
+        ((isAdmin() || (signedIn() && request.auth.uid == resource.data.userId)) &&
+          getAfter(/databases/$(database)/documents/streamer_requests/$(resource.data.userId)).data.status == 'ENDED' &&
+          publicationId(getAfter(/databases/$(database)/documents/streamer_requests/$(resource.data.userId)).data) == id &&
+          request.resource.data.status == 'ENDED' &&
+          request.resource.data.endedAtMillis == getAfter(/databases/$(database)/documents/streamer_requests/$(resource.data.userId)).data.endedAtMillis &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','endedAtMillis','streamerHistoryDeleteAt']) &&
+          validStreamerHistoryDeadline(request.resource.data));
       allow delete: if (isAdmin() || (signedIn() && request.auth.uid == resource.data.userId)) && streamerHistoryExpired(resource.data);
     }
     match /moderator_requests/{id} {

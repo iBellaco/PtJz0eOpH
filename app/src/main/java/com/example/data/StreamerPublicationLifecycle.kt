@@ -22,6 +22,7 @@ object StreamerPublicationLifecycle {
         listener = StreamerRepository.requests.document(uid).addSnapshotListener { snapshot, error ->
             if (error != null || snapshot == null) return@addSnapshotListener
             val data = snapshot.data.orEmpty()
+            scope.launch { StreamerHistoryCache.merge(context, uid, listOfNotNull(data.takeIf { it.isNotEmpty() })) }
             deadlineJob?.cancel()
             val workName = "streamer-expiration-$uid"
             if (data["status"] == "PENDING") {

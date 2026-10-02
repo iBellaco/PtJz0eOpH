@@ -9707,5 +9707,9 @@
   "GRANDMASTER": "GRÃO-MESTRE",
   "CHALLENGER": "DESAFIANTE",
   "Keystone": "Runa essencial",
-  "Failed to load {0}: {1}": "Falha ao carregar {0}: {1}"
+  "Failed to load {0}: {1}": "Falha ao carregar {0}: {1}",
+  "No se pudo eliminar la build. Inténtalo de nuevo.": "Não foi possível excluir a build. Tente novamente.",
+  "Publicación de streamer": "Publicação de streamer",
+  "Tu publicación fue aceptada y el canal ya está visible.": "Sua publicação foi aceita e o canal já está visível.",
+  "Tu publicación fue rechazada. Puedes enviar una nueva solicitud.": "Sua publicação foi rejeitada. Você pode enviar uma nova solicitação."
 }

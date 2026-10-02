@@ -101,7 +101,7 @@ fun CustomBuildDetailDialog(
 
     var showSubscribeConfirm by remember { mutableStateOf(false) }
 
-    androidx.activity.compose.BackHandler { onDismiss() }
+    if (androidx.activity.compose.LocalOnBackPressedDispatcherOwner.current != null) androidx.activity.compose.BackHandler { onDismiss() }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -612,9 +612,9 @@ fun CustomBuildDetailDialog(
                                         Box(
                                             modifier = Modifier
                                                 .size(36.dp)
-                                                .clip(CircleShape)
+                                                .clip(RoundedCornerShape(8.dp))
                                                 .background(HextechSurfaceVariant)
-                                                .border(1.5.dp, if (isKeystone) HextechGold else HextechCyan, CircleShape),
+                                                .border(1.5.dp, if (isKeystone) HextechGold else HextechCyan, RoundedCornerShape(8.dp)),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             AppAssetImage(
@@ -622,7 +622,7 @@ fun CustomBuildDetailDialog(
                                                 contentDescription = rune.runeName,
                                                 fallbackText = rune.runeName,
                                                 modifier = Modifier.size(26.dp),
-                                                shape = CircleShape
+                                                shape = RoundedCornerShape(8.dp)
                                             )
                                         }
                                         Column {
@@ -673,9 +673,9 @@ fun CustomBuildDetailDialog(
                                         Box(
                                             modifier = Modifier
                                                 .size(36.dp)
-                                                .clip(CircleShape)
+                                                .clip(RoundedCornerShape(8.dp))
                                                 .background(HextechSurfaceVariant)
-                                                .border(1.dp, HextechCyan, CircleShape),
+                                                .border(1.dp, HextechCyan, RoundedCornerShape(8.dp)),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             AppAssetImage(
@@ -683,7 +683,7 @@ fun CustomBuildDetailDialog(
                                                 contentDescription = rune.runeName,
                                                 fallbackText = rune.runeName,
                                                 modifier = Modifier.size(26.dp),
-                                                shape = CircleShape
+                                                shape = RoundedCornerShape(8.dp)
                                             )
                                         }
                                         Column {
@@ -729,9 +729,9 @@ fun CustomBuildDetailDialog(
                                         Box(
                                             modifier = Modifier
                                                 .size(36.dp)
-                                                .clip(CircleShape)
+                                                .clip(RoundedCornerShape(8.dp))
                                                 .background(HextechSurfaceVariant)
-                                                .border(1.dp, HextechCyan, CircleShape),
+                                                .border(1.dp, HextechCyan, RoundedCornerShape(8.dp)),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             AppAssetImage(
@@ -739,7 +739,7 @@ fun CustomBuildDetailDialog(
                                                 contentDescription = spell.spellName,
                                                 fallbackText = spell.spellName,
                                                 modifier = Modifier.size(26.dp),
-                                                shape = CircleShape
+                                                shape = RoundedCornerShape(8.dp)
                                             )
                                         }
                                         Column {
@@ -774,9 +774,9 @@ fun CustomBuildDetailDialog(
                                         Box(
                                             modifier = Modifier
                                                 .size(36.dp)
-                                                .clip(CircleShape)
+                                                .clip(RoundedCornerShape(8.dp))
                                                 .background(HextechSurfaceVariant)
-                                                .border(1.dp, HextechCyan, CircleShape),
+                                                .border(1.dp, HextechCyan, RoundedCornerShape(8.dp)),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             AppAssetImage(
@@ -784,7 +784,7 @@ fun CustomBuildDetailDialog(
                                                 contentDescription = spell.spellName,
                                                 fallbackText = spell.spellName,
                                                 modifier = Modifier.size(26.dp),
-                                                shape = CircleShape
+                                                shape = RoundedCornerShape(8.dp)
                                             )
                                         }
                                         Column {

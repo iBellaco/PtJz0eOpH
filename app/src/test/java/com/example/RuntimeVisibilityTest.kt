@@ -46,8 +46,8 @@ class RuntimeVisibilityTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
-            "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered",
-            "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
+            "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered", "champion-item-advice", "champion-spell-advice", "champion-rune-advice",
+            "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
             "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large").map { arrayOf(it) }
@@ -89,6 +89,8 @@ class RuntimeVisibilityTest(private val screen: String) {
         setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin")) "admin" else "free")
         setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
         setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
+        if (screen.startsWith("champion")) setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
+            com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
         if (screen.startsWith("profile-admin")) setFlow(SubscriptionManager, "_isPremium", true)
         com.example.data.AppNoticeManager.notices.value
         setFlow(com.example.data.AppNoticeManager, "_notices", if (screen == "profile-admin-large")
@@ -107,6 +109,7 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen.startsWith("user-notification") -> UserNotificationIcon(if (screen == "user-notification-empty") 0 else 3)
             screen == "streamer-guest-live" -> Column { LiveStreamersRow() }
             screen == "streamer-approved-review" -> ApprovedStreamerReviewCard(mapOf("channelName" to "Canal Aprovado", "channelUrl" to "https://www.google.com"), true, { copiedSummary = it }, {})
             screen.startsWith("support-") -> ComprehensiveFeedbackCard(
@@ -126,9 +129,9 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val now = System.currentTimeMillis()
                 val records = listOf("APPROVED", "REJECTED", "ENDED", "PENDING").mapIndexed { i, status ->
                     mapOf<String, Any>("publicationId" to "history-$i", "channelName" to "Canal $i", "status" to status,
-                        "submittedAtMillis" to now - (i + 1) * 24 * 60 * 60 * 1000L, "clickCount" to if (i == 0) 42L else i.toLong())
+                        "submittedAtMillis" to now - (if (status == "PENDING") 4 * 60 * 60 * 1000L else (i + 1) * 24 * 60 * 60 * 1000L), "endedAtMillis" to now - 3600000L, "clickCount" to if (i == 0) 42L else i.toLong())
                 }
-                Column(Modifier.verticalScroll(rememberScrollState())) { StreamerPublicationHistory(records + mapOf<String, Any>("publicationId" to "history-old", "channelName" to "Canal Expirado", "status" to "APPROVED",
+                Column(Modifier.verticalScroll(rememberScrollState())) { StreamerPublicationHistory(records + mapOf<String, Any>("publicationId" to "history-old", "channelName" to "Canal Expirado", "status" to "ENDED", "endedAtMillis" to now - StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS,
                     "submittedAtMillis" to now - StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS), now) { copiedSummary = it } }
             }
             screen.startsWith("streamer") -> Column { StreamerUrlRecommendations(screen == "streamer-admin") {} }
@@ -144,7 +147,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 "role" to if (screen == "premium-editor-secondary") "creador" else "premium",
                 "secondaryRole" to if (screen == "premium-editor-secondary") "moderador" else "",
                 "premiumUntil" to System.currentTimeMillis() + 86400000L), {}, {}, {}, {})
-            screen.startsWith("champion") -> ChampionDetailSheet(champion = WildRiftRepository.champions.first { it.id == "garen" }, onDismiss = {})
+            screen.startsWith("champion") -> ChampionDetailSheet(isOverlay = screen.endsWith("-advice"), champion = WildRiftRepository.champions.first { it.id == "garen" }, onDismiss = {})
             screen.startsWith("tier") -> TierListTab(onSelectChampion = {})
             else -> {
                 val realOwn = WildRiftRepository.champions.first { it.id == "ahri" }
@@ -181,11 +184,44 @@ class RuntimeVisibilityTest(private val screen: String) {
     }
 
     @Test fun `visibility and Portuguese wording follow actual selections and account access`() {
+        // Enable animation frames before composition: the test framework cancels
+        // infinite animations while its clock advances automatically.
+        if (screen == "streamer-live") compose.mainClock.autoAdvance = false
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
+        if (screen == "streamer-live") compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
         when (screen) {
-            "champion-guest" -> compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
-            "champion-registered" -> compose.onNodeWithTag("detailed_trend_graph").performScrollTo().assertExists()
+            "user-notification" -> {
+                compose.onNodeWithTag("user_navigation_badge").assertExists()
+                compose.onNodeWithText("3").assertExists()
+                compose.onNodeWithContentDescription("Notificações").assertExists()
+            }
+            "user-notification-empty" -> {
+                compose.onNodeWithTag("user_navigation_badge").assertDoesNotExist()
+                compose.onNodeWithContentDescription("Usuário").assertExists()
+            }
+            "champion-item-advice", "champion-spell-advice", "champion-rune-advice" -> {
+                val category = screen.removePrefix("champion-").removeSuffix("-advice")
+                if (category == "item") {
+                    // The item strip scrolls horizontally; first reveal its parent vertically.
+                    compose.onNodeWithTag("build_core_items_section", useUnmergedTree = true).performScrollTo()
+                    compose.onAllNodesWithTag("build_item_details", useUnmergedTree = true).onFirst().assertIsDisplayed().performClick()
+                } else compose.onAllNodesWithTag("build_${category}_details", useUnmergedTree = true).onFirst().performScrollTo().performClick()
+                inspect("opened")
+                compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).performScrollTo().assertExists()
+                compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).captureRoboImage(filePath = File(output, "$screen-framed-card.png").path)
+            }
+            "champion-guest" -> {
+                compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
+                compose.onNodeWithTag("champion_trend_header").assertDoesNotExist()
+                compose.onNodeWithTag("matchup_sign_in_hint").performScrollTo().assertExists()
+                inspect("account-hint")
+            }
+            "champion-registered" -> {
+                compose.onNodeWithTag("champion_trend_header").performScrollTo().assertExists()
+                compose.onNodeWithTag("detailed_trend_graph").performScrollTo().assertExists()
+                compose.onNodeWithTag("matchup_sign_in_hint").assertDoesNotExist()
+            }
             "draft-empty", "draft-placeholder" -> {
                 compose.onAllNodesWithText("Cálculo 1v1 Automático", substring = true).assertCountEquals(0)
                 compose.onAllNodesWithText("Ninguno").assertCountEquals(0)
@@ -228,6 +264,14 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText("Canal Coach").assertExists()
                 compose.onNodeWithText("Ao vivo").assertExists()
                 compose.onNodeWithTag("live_streamer_chip").assertExists()
+                compose.onNodeWithTag("streamer_live_animation", useUnmergedTree = true).assertExists()
+                compose.mainClock.autoAdvance = false
+                inspect("animation-start")
+                compose.mainClock.advanceTimeBy(480)
+                inspect("animation-next")
+                Assert.assertFalse(File(output, "$screen-animation-start.png").readBytes().contentEquals(
+                    File(output, "$screen-animation-next.png").readBytes()))
+                compose.mainClock.autoAdvance = true
             }
             "streamer-guest-live" -> {
                 compose.waitUntil(10000) { compose.onAllNodesWithText("Canal Público").fetchSemanticsNodes().isNotEmpty() }
@@ -270,7 +314,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Cliques para abrir o canal: 42"))
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Aceita"))
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Data e hora:"))
-                Assert.assertTrue(copiedSummary, copiedSummary.contains("Remoção:"))
+                Assert.assertTrue(copiedSummary, copiedSummary.contains("A contagem de sete dias começará"))
                 Assert.assertTrue(copiedSummary, Regex("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}").containsMatchIn(copiedSummary))
                 compose.onAllNodesWithText("Aceita").assertCountEquals(2)
                 compose.onNodeWithText("Rejeitada automaticamente: passaram três horas sem aprovação.").performScrollTo().assertExists()

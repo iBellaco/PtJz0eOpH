@@ -112,6 +112,7 @@ fun ChampionDetailSheet(
     if (champion == null) return
 
     val context = LocalContext.current
+    val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
     val favorites by FavoriteChampionsManager.favoritesFlow.collectAsStateWithLifecycle()
     val isFavorite = favorites.contains(champion.id.lowercase())
 
@@ -459,7 +460,8 @@ fun ChampionDetailSheet(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        Row(
+                        if (isSignedIn) Row(
+                            modifier = Modifier.testTag("champion_trend_header"),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -936,7 +938,7 @@ fun ChampionDetailSheet(
 
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth().testTag("build_core_items_section")
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(if (isCompact) 6.dp else 10.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -954,6 +956,7 @@ fun ChampionDetailSheet(
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
+                                    .testTag("build_item_details")
                                     .clickable {
                                         if (dbItem != null) {
                                             selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawName,
@@ -1231,9 +1234,10 @@ fun ChampionDetailSheet(
                                 Box(
                                     modifier = Modifier
                                         .size(spellBoxSize)
-                                        .clip(CircleShape)
+                                        .clip(RoundedCornerShape(8.dp))
                                         .background(HextechSurfaceVariant)
-                                        .border(1.5.dp, HextechCyan, CircleShape)
+                                        .border(1.5.dp, HextechCyan, RoundedCornerShape(8.dp))
+                                        .testTag("build_spell_details")
                                         .clickable { if (dbSpell != null) {
                                             selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawSpellName,
                                                 activeOption.coreSpells.map { it.spellName to it.description }, activeOption.tacticalReason)
@@ -1245,7 +1249,7 @@ fun ChampionDetailSheet(
                                         contentDescription = spellName,
                                         fallbackText = spellName,
                                         modifier = Modifier.fillMaxSize(),
-                                        shape = CircleShape
+                                        shape = RoundedCornerShape(8.dp)
                                     )
                                 }
                                 if (idx == 0) Spacer(modifier = Modifier.width(12.dp))
@@ -1281,10 +1285,9 @@ fun ChampionDetailSheet(
                         listOf("Conquistador", "Triunfo", "Golpe de gracia", "Linaje")
                     }
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
                             text = com.example.util.tr("${tr("Runa Clave:")} ${tr(runesForActiveOption.firstOrNull() ?: "Principal")}"),
@@ -1297,7 +1300,8 @@ fun ChampionDetailSheet(
                             color = HextechCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            maxLines = 1
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                     Spacer(modifier = Modifier.height(10.dp))
@@ -1319,13 +1323,14 @@ fun ChampionDetailSheet(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
                                     .size(if (isKeystone) runeKeySize else runeSecSize)
-                                    .clip(CircleShape)
+                                    .clip(RoundedCornerShape(8.dp))
                                     .background(HextechSurfaceVariant)
                                     .border(
                                         width = if (isKeystone) 2.dp else 1.dp,
                                         color = finalRuneBorderColor,
-                                        shape = CircleShape
+                                        shape = RoundedCornerShape(8.dp)
                                     )
+                                    .testTag("build_rune_details")
                                     .clickable {
                                         selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rName,
                                             activeOption.coreRunes.map { it.runeName to it.description }, activeOption.tacticalReason)
@@ -1343,7 +1348,7 @@ fun ChampionDetailSheet(
                                     contentDescription = tr(rName),
                                     fallbackText = tr(rName),
                                     modifier = Modifier.fillMaxSize(),
-                                    shape = CircleShape
+                                    shape = RoundedCornerShape(8.dp)
                                 )
                             }
                         }
@@ -1424,9 +1429,9 @@ fun ChampionDetailSheet(
                                     Box(
                                         modifier = Modifier
                                             .size(runeSecSize)
-                                            .clip(CircleShape)
+                                            .clip(RoundedCornerShape(8.dp))
                                             .background(HextechSurfaceVariant)
-                                            .border(1.dp, HextechCyan, CircleShape),
+                                            .border(1.dp, HextechCyan, RoundedCornerShape(8.dp)),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         AppAssetImage(
@@ -1434,7 +1439,7 @@ fun ChampionDetailSheet(
                                             contentDescription = tr(rName),
                                             fallbackText = tr(rName),
                                             modifier = Modifier.fillMaxSize(),
-                                            shape = CircleShape
+                                            shape = RoundedCornerShape(8.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -1447,7 +1452,7 @@ fun ChampionDetailSheet(
                                         AppAssetImage(
                                             url = com.example.data.WildRiftSpellsAndRunes.getRuneIconByName(sourceName),
                                             contentDescription = tr(sourceName), fallbackText = tr(sourceName),
-                                            modifier = Modifier.size(runeSecSize), shape = CircleShape
+                                            modifier = Modifier.size(runeSecSize), shape = RoundedCornerShape(8.dp)
                                         )
                                     }
 
@@ -1466,7 +1471,6 @@ fun ChampionDetailSheet(
             val isUserPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
             val matchupUserRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
             val isPremium = isUserPremium || matchupUserRole == "admin"
-            val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
             val maxMatchupCount = BuildChoiceRules.matchupLimit(isPremium, isSignedIn)
 
             Row(
@@ -1777,7 +1781,12 @@ fun ChampionDetailSheet(
                 }
             }
 
-
+            if (!isSignedIn) {
+                Spacer(Modifier.height(10.dp))
+                Text(com.example.util.localizedString(com.example.R.string.matchup_sign_in_hint),
+                    color = TextMuted, fontSize = 11.sp,
+                    modifier = Modifier.fillMaxWidth().testTag("matchup_sign_in_hint"))
+            }
 
             Spacer(modifier = Modifier.height(30.dp))
         }
@@ -2283,7 +2292,7 @@ fun AdaptiveDetailAlertDialog(
                         fallbackText = rune.getLocalizedName(com.example.util.currentAppLanguage()),
                         modifier = Modifier.size(48.dp),
                         borderColor = com.example.ui.theme.HextechGold,
-                        shape = androidx.compose.foundation.shape.CircleShape
+                        shape = RoundedCornerShape(8.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
@@ -2331,7 +2340,7 @@ fun AdaptiveDetailAlertDialog(
                         fallbackText = spell.getLocalizedName(com.example.util.currentAppLanguage()),
                         modifier = Modifier.size(48.dp),
                         borderColor = com.example.ui.theme.HextechGold,
-                        shape = androidx.compose.foundation.shape.CircleShape
+                        shape = RoundedCornerShape(8.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
@@ -2403,7 +2412,12 @@ private fun getSituationalItemExplanation(itemName: String): String {
 private fun BuildElementCoachAdvice(advice: String) {
     if (advice.isBlank()) return
     Spacer(Modifier.height(14.dp))
-    Text(tr("Consejo del coach"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-    Spacer(Modifier.height(4.dp))
-    FormattedWildRiftText(text = tr(advice), color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
+    androidx.compose.material3.Surface(modifier = Modifier.fillMaxWidth().testTag("build_element_advice_card"),
+        shape = RoundedCornerShape(8.dp), color = HextechSurface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(tr("Consejo del coach"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            FormattedWildRiftText(text = tr(advice), color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
+        }
+    }
 }

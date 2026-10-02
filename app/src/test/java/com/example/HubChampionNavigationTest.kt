@@ -46,6 +46,47 @@ class HubChampionNavigationTest {
 
     @Test fun `open and return from champions without an activity in Portuguese`() = exerciseHub("pt", "Voltar")
 
+    @Test fun `deleting a creator build persists through reopening in the service hosted hub`() {
+        val context = RuntimeEnvironment.getApplication()
+        com.example.util.DynamicTranslations.loadSync(context)
+        AppLanguage.select(context, "pt")
+        WildRiftRepository.initChampions(context, forceReload = true)
+        CustomChampionBuildsManager.init(context)
+        val first = com.example.data.local.CustomChampionBuildRecord(id = "delete-target", championId = "garen", championName = "Garen", buildTitle = "Build para excluir", role = "TOP", creatorName = "Teste")
+        val second = first.copy(id = "keep-target", buildTitle = "Build preservada")
+        val field = CustomChampionBuildsManager::class.java.getDeclaredField("_customBuilds").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        val builds = field.get(CustomChampionBuildsManager) as kotlinx.coroutines.flow.MutableStateFlow<List<com.example.data.local.CustomChampionBuildRecord>>
+        builds.value = listOf(first, second)
+        val serviceView = FrameLayout(context)
+        compose.setContent {
+            CompositionLocalProvider(LocalContext provides context, LocalView provides serviceView) {
+                assertNull(LocalOnBackPressedDispatcherOwner.current)
+                MyApplicationTheme {
+                    var open by remember { mutableStateOf(true) }
+                    if (open) com.example.ui.components.AdminCreatorBuildsDialog { open = false }
+                    else Button(onClick = { open = true }) { Text("Reabrir") }
+                }
+            }
+        }
+        compose.onNodeWithTag("delete_build_delete-target").performScrollTo().performClick()
+        compose.waitUntil(timeoutMillis = 15000) { builds.value.none { it.id == "delete-target" } }
+        org.junit.Assert.assertTrue(builds.value.any { it.id == "keep-target" })
+        val prefs = context.getSharedPreferences("wr_custom_champion_builds_prefs", 0)
+        org.junit.Assert.assertTrue(prefs.getStringSet("deleted_build_ids", emptySet()).orEmpty().contains("delete-target"))
+        org.junit.Assert.assertTrue(prefs.getString("custom_champion_builds_json", "").orEmpty().length < 20000)
+        val load = CustomChampionBuildsManager::class.java.getDeclaredMethod("loadFromLocalStorage", android.content.Context::class.java).apply { isAccessible = true }
+        load.invoke(CustomChampionBuildsManager, context)
+        org.junit.Assert.assertFalse(builds.value.any { it.id == "delete-target" })
+        org.junit.Assert.assertTrue(builds.value.any { it.id == "keep-target" })
+        compose.onNodeWithTag("creator_close_button").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Reabrir").performClick()
+        compose.onNodeWithTag("delete_build_delete-target").assertDoesNotExist()
+        compose.onNodeWithTag("creator_build_list").performScrollToNode(hasTestTag("delete_build_keep-target"))
+        compose.onNodeWithTag("delete_build_keep-target").assertExists()
+        compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = "build/reports/portuguese-rendered/creator-after-delete-pt.png")
+    }
+
     private fun exerciseHub(language: String, backLabel: String) {
         val context = RuntimeEnvironment.getApplication()
         AppLanguage.select(context, language)

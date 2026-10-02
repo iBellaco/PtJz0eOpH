@@ -163,17 +163,51 @@ class RuntimeBehaviorTest {
             assertEquals("SOLVED", SupportTicketPresentation.status(status))
     }
 
-    @Test fun `history expires at exactly seven days using the authoritative submission time`() {
+    @Test fun `active history has no deadline and seven days start at actual end`() {
         val publication = mapOf<String, Any>("submittedAtMillis" to now, "status" to "APPROVED")
-        val end = now + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS
-        assertFalse(StreamerPublicationPolicy.historyExpired(publication, end - 1))
-        assertTrue(StreamerPublicationPolicy.historyExpired(publication, end))
-        assertTrue(StreamerPublicationPolicy.historyExpired(publication + ("status" to "REJECTED"), end))
-        assertTrue(StreamerPublicationPolicy.historyExpired(publication + ("status" to "ENDED"), end))
+        val endedAt = now + 9 * 86400000L
+        assertEquals(0L, StreamerPublicationPolicy.historyExpiresAt(publication))
+        assertFalse(StreamerPublicationPolicy.historyExpired(publication, endedAt + 100 * 86400000L))
+        val ended = publication + mapOf("status" to "ENDED", "endedAtMillis" to endedAt)
+        val end = endedAt + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS
+        assertFalse(StreamerPublicationPolicy.historyExpired(ended, end - 1))
+        assertTrue(StreamerPublicationPolicy.historyExpired(ended, end))
         assertFalse(StreamerPublicationPolicy.historyExpired(emptyMap(), end))
-        val server = publication + ("submittedAt" to com.google.firebase.Timestamp(java.util.Date(now + 1000)))
-        assertFalse(StreamerPublicationPolicy.historyExpired(server, end))
-        assertTrue(StreamerPublicationPolicy.historyExpired(server, end + 1000))
+    }
+
+    @Test fun `pending and timed out histories disappear 24 hours after server submission`() {
+        val data = mapOf<String, Any>("submittedAtMillis" to now - 1000,
+            "submittedAt" to com.google.firebase.Timestamp(java.util.Date(now)), "status" to "PENDING")
+        val deadline = now + 86400000L
+        assertEquals(deadline, StreamerPublicationPolicy.historyExpiresAt(data))
+        assertFalse(StreamerPublicationPolicy.historyExpired(data, deadline - 1))
+        assertTrue(StreamerPublicationPolicy.historyExpired(data, deadline))
+        assertEquals(deadline, StreamerPublicationPolicy.historyExpiresAt(data + mapOf("status" to "REJECTED", "rejectionReason" to "TIMEOUT")))
+    }
+
+    @Test fun `backup preserves separate publications restored after reopening and removes only expired rows`() {
+        val context = RuntimeEnvironment.getApplication()
+        val first = mapOf<String, Any>("publicationId" to "first", "submittedAtMillis" to now - 9 * 86400000L, "status" to "APPROVED", "channelName" to "Primeiro")
+        val second = mapOf<String, Any>("publicationId" to "second", "submittedAtMillis" to now, "status" to "PENDING", "channelName" to "Segundo")
+        StreamerHistoryCache.merge(context, "owner", listOf(first), now)
+        assertEquals(2, StreamerHistoryCache.merge(context, "owner", listOf(second), now).size)
+        assertEquals(2, StreamerHistoryCache.records(context, "owner", now).size)
+        assertTrue(StreamerHistoryCache.records(context, "other", now).isEmpty())
+        val ended = first + mapOf("status" to "ENDED", "endedAtMillis" to now, "clickCount" to 42L)
+        StreamerHistoryCache.merge(context, "owner", listOf(ended), now)
+        assertEquals(42L, (StreamerHistoryCache.records(context, "owner", now).last()["clickCount"] as Number).toLong())
+        assertEquals(listOf("first"), StreamerHistoryCache.records(context, "owner", now + 86400000L).map { it["publicationId"] })
+        assertTrue(StreamerHistoryCache.records(context, "owner", now + 7 * 86400000L).isEmpty())
+    }
+
+    @Test fun `notification policy includes new staff turns and respects sponsor and resolved restrictions`() {
+        val pending = mapOf<String, Any>("status" to "PENDING", "tag" to "SOPORTE")
+        assertTrue(UserPanelNotificationPolicy.staffNeedsAttention(pending, false))
+        assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(pending + ("tag" to "PATROCINADOR"), false))
+        assertTrue(UserPanelNotificationPolicy.staffNeedsAttention(pending + ("tag" to "PATROCINADOR"), true))
+        assertTrue(UserPanelNotificationPolicy.staffNeedsAttention(pending + mapOf("status" to "READ", "staffRead" to false), false))
+        assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(pending + ("status" to "SOLVED"), true))
+        assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(pending + mapOf("status" to "READ", "staffRead" to true), false))
     }
 
 }

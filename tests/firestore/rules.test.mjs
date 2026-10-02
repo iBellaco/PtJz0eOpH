@@ -239,11 +239,11 @@ try {
   });
   await test('seven day retention permits only expired history and counter deletion by owner or staff', async () => {
     const oldId = 'publication-seven-days-old', oldDate = Date.now()-604800000-1000;
-    const data = { ...request('s2'),status:'APPROVED',submittedAtMillis:oldDate,submittedAt:Timestamp.fromMillis(oldDate),publicationId:oldId };
+    const data = { ...request('s2'),status:'ENDED',endedAtMillis:oldDate,submittedAtMillis:oldDate,submittedAt:Timestamp.fromMillis(oldDate),publicationId:oldId };
     await env.withSecurityRulesDisabled(async context => {
       const store = context.firestore();
       await setDoc(doc(store,`streamer_requests/s2/history/${oldId}`),data);
-      await setDoc(doc(store,'streamer_click_metrics',oldId),{userId:'s2',publicationId:oldId,submittedAtMillis:oldDate,clickCount:8});
+      await setDoc(doc(store,'streamer_click_metrics',oldId),{userId:'s2',publicationId:oldId,submittedAtMillis:oldDate,endedAtMillis:oldDate,status:'ENDED',clickCount:8});
     });
     await assertFails(deleteDoc(doc(db('s2'),'streamer_click_metrics',counterId)));
     await assertFails(deleteDoc(doc(other,`streamer_requests/s2/history/${oldId}`)));
@@ -257,11 +257,34 @@ try {
     await assertFails(setDoc(doc(admin,`streamer_requests/s2/history/${oldId}`),data));
     await assertFails(setDoc(doc(admin,'streamer_click_metrics',oldId),{userId:'s2',publicationId:oldId,submittedAtMillis:oldDate,clickCount:0}));
   });
-  await test('retention metadata cannot extend the seven day publication deadline', async () => {
+  await test('retention metadata cannot extend the 24 hour pending deadline', async () => {
     const owner = db('s2'), data = request('s2');
     await assertFails(setDoc(doc(owner,'streamer_requests','s2'),{...data,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+8*86400000)}));
-    await assertSucceeds(setDoc(doc(owner,'streamer_requests','s2'),{...data,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+7*86400000)}));
+    await assertSucceeds(setDoc(doc(owner,'streamer_requests','s2'),{...data,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+86400000)}));
     await assertFails(setDoc(doc(admin,'streamer_click_metrics','publication-wrong-deadline'),{userId:'s2',publicationId:'publication-wrong-deadline',submittedAtMillis:data.submittedAtMillis,clickCount:0,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+8*86400000)}));
+  });
+  await test('an active publication older than seven days still accepts guest clicks and cannot be pruned', async () => {
+    const id='publication-still-active', submitted=Date.now()-9*86400000;
+    await assertSucceeds(setDoc(doc(admin,'system_config','streamer_live'),{entries:[{userId:'s2',publicationId:id,channelName:'Coach',channelUrl:'https://twitch.tv/coach_test'}]}));
+    await assertSucceeds(setDoc(doc(admin,'streamer_click_metrics',id),{userId:'s2',publicationId:id,submittedAtMillis:submitted,status:'APPROVED',clickCount:0}));
+    await assertSucceeds(updateDoc(doc(env.unauthenticatedContext().firestore(),'streamer_click_metrics',id),{clickCount:increment(1),lastClickedAt:serverTimestamp()}));
+    await assertFails(deleteDoc(doc(db('s2'),'streamer_click_metrics',id)));
+    const endedAt=Date.now(), deadline=Timestamp.fromMillis(endedAt+7*86400000);
+    await assertSucceeds(setDoc(doc(admin,'streamer_requests','s2'),{userId:'s2',publicationId:id,submittedAtMillis:submitted,status:'APPROVED'}));
+    const owner=db('s2'), batch=writeBatch(owner);
+    batch.update(doc(owner,'streamer_requests','s2'),{status:'ENDED',endedAtMillis:endedAt,streamerHistoryDeleteAt:deadline});
+    batch.update(doc(owner,'streamer_click_metrics',id),{status:'ENDED',endedAtMillis:endedAt,streamerHistoryDeleteAt:deadline});
+    batch.update(doc(owner,'system_config','streamer_live'),{entries:[]});
+    await assertSucceeds(batch.commit());
+    assert.equal((await getDoc(doc(owner,'streamer_click_metrics',id))).data().clickCount,1);
+    await assertFails(deleteDoc(doc(owner,'streamer_click_metrics',id)));
+  });
+  await test('pending history can be pruned only at 24 hours', async () => {
+    const owner=db('s2'), submitted=Date.now()-86400000-1000, id='publication-pending-24h';
+    await env.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(),`streamer_requests/s2/history/${id}`),{userId:'s2',publicationId:id,submittedAtMillis:submitted,status:'PENDING'});
+    });
+    await assertSucceeds(deleteDoc(doc(owner,`streamer_requests/s2/history/${id}`)));
   });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }

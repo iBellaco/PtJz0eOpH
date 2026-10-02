@@ -44,9 +44,9 @@
     <string name="streamer_expired">Rejeitada automaticamente: passaram três horas sem aprovação.</string>
     <string name="streamer_expiry_notice">As solicitações sem aprovação são removidas após três horas e ficam como rejeitadas no histórico.</string>
     <string name="streamer_history_date_unavailable">Data indisponível</string>
-    <string name="streamer_history_error">Não foi possível sincronizar o histórico completo. A solicitação mais recente continua visível.</string>
+    <string name="streamer_history_error">Não foi possível sincronizar o histórico compartilhado. O histórico deste dispositivo foi preservado.</string>
     <string name="streamer_live_label">Ao vivo</string>
-    <string name="streamer_history_retention">Cada publicação é removida do histórico 7 dias após a data de envio.</string>
+    <string name="streamer_history_retention">Pendentes: 24 horas após o envio. Publicações encerradas: sete dias após o encerramento.</string>
     <string name="streamer_history_exact_date">Data e hora: %1$s</string>
     <string name="streamer_history_clicks">Cliques para abrir o canal: %1$d</string>
     <string name="streamer_history_clicks_unavailable">Cliques: contagem indisponível</string>
