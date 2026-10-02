@@ -19,7 +19,6 @@
     <string name="streamer_name_error">O nome do canal deve ter entre 2 e 60 caracteres.</string>
     <string name="streamer_url_error">Digite um link HTTPS válido de um canal do TikTok, YouTube, Twitch ou Kick.</string>
     <string name="streamer_role_error">É necessário ter o papel de streamer para publicar um canal.</string>
-    <string name="streamer_live">AO VIVO • %1$s</string>
     <string name="streamer_reviews">Streamers</string>
     <string name="streamer_roles">Verificação e papéis</string>
     <string name="streamer_open">Abrir canal</string>
@@ -33,4 +32,16 @@
     <string name="streamer_review_title">Solicitações de verificação, papéis e streamers</string>
     <string name="streamer_url_recommendation">Exemplo de URL válida de um canal:</string>
     <string name="streamer_google_recommendation">Somente para administradores: você pode usar o Google para testes.</string>
+    <string name="streamer_live_description">Transmitindo ao vivo</string>
+    <string name="streamer_sending">Enviando solicitação…</string>
+    <string name="streamer_submitted">Solicitação enviada com sucesso. Você será avisado quando ela for analisada.</string>
+    <string name="streamer_history">Histórico de publicações</string>
+    <string name="streamer_history_empty">Você ainda não solicitou nenhuma publicação.</string>
+    <string name="streamer_history_approved">Aceita</string>
+    <string name="streamer_history_rejected">Rejeitada</string>
+    <string name="streamer_history_pending">Pendente</string>
+    <string name="streamer_history_ended">Publicação encerrada</string>
+    <string name="streamer_expired">Rejeitada automaticamente: passaram três horas sem aprovação.</string>
+    <string name="streamer_expiry_notice">As solicitações sem aprovação são removidas após três horas e ficam como rejeitadas no histórico.</string>
+    <string name="streamer_history_date_unavailable">Data indisponível</string>
 </resources>

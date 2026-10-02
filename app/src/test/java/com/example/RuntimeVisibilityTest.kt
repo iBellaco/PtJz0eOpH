@@ -10,7 +10,9 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
 import com.example.model.*
-import com.example.ui.components.StreamerUrlRecommendations
+import com.example.ui.components.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import com.example.ui.screens.*
 import com.example.ui.theme.MyApplicationTheme
 import com.example.util.*
@@ -40,7 +42,9 @@ class RuntimeVisibilityTest(private val screen: String) {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered",
-            "streamer", "streamer-admin").map { arrayOf(it) }
+            "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history",
+            "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private val context get() = RuntimeEnvironment.getApplication()
@@ -65,6 +69,16 @@ class RuntimeVisibilityTest(private val screen: String) {
         val field = AuthManager::class.java.getDeclaredField("_isSignedIn").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
         (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered")
+        SubscriptionManager.userRole.value
+        fun setFlow(target: Any, name: String, value: Any) {
+            val variable = target.javaClass.getDeclaredField(name).apply { isAccessible = true }
+            @Suppress("UNCHECKED_CAST")
+            (variable.get(target) as MutableStateFlow<Any>).value = value
+        }
+        setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin") "admin" else "free")
+        setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
+        setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
+
     }
     @After fun release() {
         awaitTask(FirebaseFirestore.getInstance().terminate())
@@ -73,14 +87,29 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen == "streamer-live" -> LiveStreamerChip("Canal Coach") {}
+            screen == "streamer-feedback" -> StreamerSubmissionFeedback(false, true)
+            screen == "streamer-history" -> {
+                val now = System.currentTimeMillis()
+                val records = listOf("APPROVED", "REJECTED", "ENDED", "PENDING").mapIndexed { i, status ->
+                    mapOf<String, Any>("publicationId" to "history-$i", "channelName" to "Canal $i", "status" to status,
+                        "submittedAtMillis" to now - (i + 1) * 24 * 60 * 60 * 1000L)
+                }
+                Column(Modifier.verticalScroll(rememberScrollState())) { StreamerPublicationHistory(records, now) }
+            }
             screen.startsWith("streamer") -> Column { StreamerUrlRecommendations(screen == "streamer-admin") {} }
+            screen.startsWith("moderation") -> ModeratorDashboardDialog {}
+            screen == "premium-editor" -> UserDetailManagementDialog(mapOf("uid" to "local-test", "name" to "Teste",
+                "role" to "premium", "premiumUntil" to System.currentTimeMillis() + 86400000L), {}, {}, {}, {})
             screen.startsWith("champion") -> ChampionDetailSheet(champion = WildRiftRepository.champions.first { it.id == "garen" }, onDismiss = {})
             screen.startsWith("tier") -> TierListTab(onSelectChampion = {})
             else -> {
-                val own = WildRiftRepository.champions.first { it.id == "ahri" }
-                    .takeIf { screen == "draft-own-only" || screen == "draft-both" }
-                val rival = WildRiftRepository.champions.first { it.id == "yasuo" }
-                    .takeIf { screen == "draft-rival-only" || screen == "draft-both" }
+                val realOwn = WildRiftRepository.champions.first { it.id == "ahri" }
+                    .takeIf { screen == "draft-own-only" || screen == "draft-both" || screen == "draft-placeholder-rival" }
+                val realRival = WildRiftRepository.champions.first { it.id == "yasuo" }
+                    .takeIf { screen == "draft-rival-only" || screen == "draft-both" || screen == "draft-placeholder-own" }
+                val own = if (screen in listOf("draft-placeholder", "draft-placeholder-own")) WildRiftRepository.EMPTY_CHAMPION else realOwn
+                val rival = if (screen in listOf("draft-placeholder", "draft-placeholder-rival")) WildRiftRepository.EMPTY_CHAMPION else realRival
                 val allies = own?.let { listOf(DraftSlot(it, LaneRole.MID)) }.orEmpty()
                 val enemies = rival?.let { listOf(DraftSlot(it, LaneRole.MID)) }.orEmpty()
                 val analysis = WildRiftRepository.analyzeDraft(LaneRole.MID, allies.map { it.champion },
@@ -114,14 +143,16 @@ class RuntimeVisibilityTest(private val screen: String) {
         when (screen) {
             "champion-guest" -> compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
             "champion-registered" -> compose.onNodeWithTag("detailed_trend_graph").performScrollTo().assertExists()
-            "draft-empty" -> {
+            "draft-empty", "draft-placeholder" -> {
+                compose.onAllNodesWithText("Cálculo 1v1 Automático", substring = true).assertCountEquals(0)
+                compose.onAllNodesWithText("Ninguno").assertCountEquals(0)
                 compose.onNodeWithTag("draft_recommendations").assertDoesNotExist()
                 compose.onNodeWithTag("open_matchup_preview_button").assertDoesNotExist()
                 compose.onNodeWithTag("draft_matchup_missing_selection").performScrollTo()
                 compose.onNodeWithText("Selecione seu campeão e o adversário para ver o confronto 1 contra 1.").assertExists()
                 compose.onNodeWithText("Selecione seu campeão").assertExists()
             }
-            "draft-own-only", "draft-rival-only" -> {
+            "draft-own-only", "draft-rival-only", "draft-placeholder-own", "draft-placeholder-rival" -> {
                 compose.onNodeWithTag("open_matchup_preview_button").assertDoesNotExist()
                 compose.onNodeWithTag("draft_recommendations").assertExists()
                 compose.onNodeWithTag("draft_matchup_missing_selection").performScrollTo()
@@ -149,6 +180,27 @@ class RuntimeVisibilityTest(private val screen: String) {
                     compose.onNodeWithText("Cadastre-se").performScrollTo().performClick()
                     compose.onNodeWithText("Criar uma conta").assertExists()
                 }
+            }
+            "streamer-live" -> {
+                compose.onNodeWithText("Canal Coach").assertExists()
+                compose.onAllNodesWithText("AO VIVO", substring = true).assertCountEquals(0)
+                compose.onNodeWithTag("live_streamer_chip").assertExists()
+            }
+            "streamer-feedback" -> compose.onNodeWithText("Solicitação enviada com sucesso. Você será avisado quando ela for analisada.").assertExists()
+            "streamer-history" -> {
+                compose.onNodeWithText("Histórico de publicações").assertExists()
+                compose.onAllNodesWithText("Aceita").assertCountEquals(2)
+                compose.onNodeWithText("Rejeitada automaticamente: passaram três horas sem aprovação.").performScrollTo().assertExists()
+            }
+            "moderation-admin", "moderation-claim", "moderation-secondary" -> {
+                compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()
+                compose.onNodeWithText(appTr("Abrir Reportes de Soporte")).performClick()
+                compose.onNodeWithText(appTr("Panel de Reportes & Sugerencias")).assertExists()
+                if (screen != "moderation-secondary") compose.onNodeWithContentDescription(appTr("Eliminar solucionados")).assertExists()
+            }
+            "premium-editor" -> {
+                compose.onNodeWithText(appTr("Editar o extender tiempo premium:")).performScrollTo().assertExists()
+                compose.onAllNodesWithText("♾️ Vitalicio").assertCountEquals(0)
             }
             "streamer", "streamer-admin" -> {
                 compose.onNodeWithTag("streamer_channel_example").assertExists()

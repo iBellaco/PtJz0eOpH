@@ -41,8 +41,9 @@ fun ModeratorDashboardDialog(
     val context = LocalContext.current
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsState()
 
-    // Safety check: only moderators are allowed
-    if (userRole != "moderador") {
+    val secondaryRole by com.example.util.SubscriptionManager.secondaryRole.collectAsState()
+    val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsState()
+    if (!com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.MODERATION, userRole, secondaryRole, adminClaim)) {
         LaunchedEffect(Unit) { onDismiss() }
         return
     }
@@ -51,7 +52,7 @@ fun ModeratorDashboardDialog(
     var showSupportPanelDialog by remember { mutableStateOf(false) }
 
     if (showSupportPanelDialog) {
-        AdminSupportReportsDialog(onDismiss = { showSupportPanelDialog = false })
+        AdminFeedbackBottomSheet(onDismiss = { showSupportPanelDialog = false })
     }
 
     Dialog(

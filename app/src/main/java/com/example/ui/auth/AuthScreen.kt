@@ -934,7 +934,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            val isUserPremium = isPremium || userRole == "admin" || userRole == "moderador" || userRole == "streamer" || userRole == "creador" || userRole == "creador_lvl2" || userRole == "creador_lvl3" || userRole == "creador_lvl4" || userRole == "creador_lvl5" || AuthManager.isCurrentUserAdmin()
+            val isUserPremium = isPremium
             if (isUserPremium) {
                 // Quick Theme Selector Strip: Instant 1-tap live theme transformation with horizontal scroll!
                 Column(
@@ -1163,7 +1163,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 glowColor = activeTheme.primary,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .heightIn(min = 52.dp),
                 shape = RoundedCornerShape(10.dp),
                 enableShimmer = true,
                 enablePulse = true
@@ -1204,7 +1204,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 glowColor = HextechGold,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .heightIn(min = 52.dp),
                 shape = RoundedCornerShape(10.dp),
                 enableShimmer = true,
                 enablePulse = true
@@ -1235,8 +1235,16 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             Spacer(modifier = Modifier.height(14.dp))
 
             if (com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.STREAMER, userRole, secondaryRole, adminClaim)) {
-                Button(onClick = { showStreamerPanel = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text(com.example.util.localizedString(com.example.R.string.streamer_panel))
+                com.example.ui.components.HextechAnimatedButton(
+                    onClick = { showStreamerPanel = true },
+                    backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Color(0xFF7C3AED), Color(0xFF4C1D95))),
+                    borderColor = HextechGold, glowColor = Color(0xFFA855F7),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                    shape = RoundedCornerShape(12.dp), enableShimmer = true, enablePulse = true
+                ) {
+                    Icon(Icons.Default.Videocam, contentDescription = null, tint = Color.White)
+                    Spacer(Modifier.width(8.dp))
+                    Text(com.example.util.localizedString(com.example.R.string.streamer_panel), color = Color.White, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(10.dp))
             }
@@ -1252,7 +1260,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     glowColor = com.example.ui.theme.DangerRed,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(12.dp),
                     enableShimmer = true,
                     enablePulse = true
@@ -1286,7 +1294,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     glowColor = if (hasPendingSponsorsForAuth) Color(0xFFFF4500) else Color(0xFFF97316),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(12.dp),
                     enableShimmer = true,
                     enablePulse = true
@@ -1326,6 +1334,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 }
             }
 
+            Spacer(Modifier.height(12.dp))
             if (com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.MODERATION, userRole, secondaryRole, adminClaim)) {
                 // Panel de Soporte y Moderación Exclusivo de Moderadores
                 com.example.ui.components.HextechAnimatedButton(
@@ -1337,7 +1346,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     glowColor = com.example.ui.theme.HextechCyan,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(12.dp),
                     enableShimmer = true,
                     enablePulse = true
@@ -1367,7 +1376,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     glowColor = Color(0xFFF97316),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(12.dp),
                     enableShimmer = true,
                     enablePulse = true
@@ -1386,7 +1395,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 glowColor = DangerRed,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .heightIn(min = 52.dp),
                 shape = RoundedCornerShape(12.dp),
                 scaleDown = 0.92f
             ) {

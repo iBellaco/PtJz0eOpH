@@ -128,5 +128,15 @@
   "Peel & Iniciación": "Proteção e Iniciação",
   "Iniciación & CC": "Iniciação e Controle de Grupo",
   "Peel & Sinergia de Dúo": "Proteção e Sinergia de Dupla",
-  "Dive & Flanqueo": "Mergulho e Flanqueamento"
+  "Dive & Flanqueo": "Mergulho e Flanqueamento",
+  "Eliminar solucionados": "Excluir resolvidos",
+  "¿Eliminar todos los mensajes solucionados?": "Excluir todas as mensagens resolvidas?",
+  "Se eliminarán los mensajes solucionados. Los mensajes pendientes y leídos se conservarán.": "As mensagens resolvidas serão excluídas. As mensagens pendentes e lidas serão preservadas.",
+  "Los mensajes solucionados fueron eliminados": "As mensagens resolvidas foram excluídas",
+  "Sí, eliminar solucionados": "Sim, excluir resolvidos",
+  "Editar o extender tiempo premium:": "Editar ou estender o prazo premium:",
+  "Establecer días restantes de premium": "Definir dias restantes do premium",
+  "Tiempo premium actualizado": "Prazo premium atualizado",
+  "Tiempo premium retirado": "Prazo premium removido",
+  "Establece los días restantes desde hoy.": "Defina os dias restantes a partir de hoje."
 }

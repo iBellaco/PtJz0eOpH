@@ -427,18 +427,6 @@ private fun AdminDashboardHeader(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Botón Soporte
-                AnimatedAdminActionButton(
-                    onClick = onOpenFeedbackAndSupport,
-                    colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.2f)),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
-                ) {
-                    Icon(Icons.Default.SupportAgent, contentDescription = null, tint = HextechCyan, modifier = Modifier.size(13.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(tr("Soporte"), fontSize = 10.5.sp, color = HextechCyan, fontWeight = FontWeight.Bold, maxLines = 1)
-                }
-
                 // Botón Moderación (Peticiones de Moderadores con badge de notificación)
                 Box {
                     AnimatedAdminActionButton(
@@ -2082,7 +2070,7 @@ fun EnhancedUserManagementPanel(
     val premiumUsers = users.count { u ->
         val role = u["role"] as? String ?: "free"
         val until = (u["premiumUntil"] as? Number)?.toLong()
-        role == "premium" && (until == null || until == 0L || until > now)
+        com.example.model.PremiumAccessPolicy.isActive(role, until, now)
     }
 
     val adminUsers = users.count { (it["role"] as? String) == "admin" }
@@ -2093,7 +2081,7 @@ fun EnhancedUserManagementPanel(
     val freeUsers = users.count { u ->
         val role = u["role"] as? String ?: "free"
         val until = (u["premiumUntil"] as? Number)?.toLong()
-        role == "free" || (role == "premium" && until != null && until > 0L && until <= now)
+        !com.example.model.PremiumAccessPolicy.isActive(role, until, now)
     }
     val bannedUsers = users.count { (it["banned"] as? Boolean) == true || (it["role"] as? String) == "banned" }
 
@@ -2109,7 +2097,7 @@ fun EnhancedUserManagementPanel(
 
             val role = user["role"] as? String ?: "free"
             val until = (user["premiumUntil"] as? Number)?.toLong()
-            val isPrem = role == "premium" && (until == null || until == 0L || until > now)
+            val isPrem = com.example.model.PremiumAccessPolicy.isActive(role, until, now)
             val explicitOnline = user["is_online"] as? Boolean
             val lastActiveTmp = (user["last_active"] as? Number)?.toLong() ?: (user["lastActiveTimestamp"] as? Number)?.toLong() ?: 0L
             val isOnline = if (explicitOnline == false) false else (lastActiveTmp > 0L && now - lastActiveTmp < onlineThreshold)
@@ -2586,11 +2574,7 @@ fun EnhancedUserAdminCard(
     val explicitOnline = user["is_online"] as? Boolean
     val isOnline = if (explicitOnline == false) false else (lastActiveTimestamp > 0L && now - lastActiveTimestamp < 10 * 60 * 1000L)
 
-    val isPremiumActive = when {
-        role == "admin" || role == "moderador" -> true
-        role in listOf("premium", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") -> premiumUntil == null || premiumUntil == 0L || premiumUntil > now
-        else -> false
-    }
+    val isPremiumActive = com.example.model.PremiumAccessPolicy.isActive(role, premiumUntil, now, secondary = (user["secondaryRole"] as? String).orEmpty(), banned = isBanned)
 
     val cardBorderColor = when {
         role == "admin" -> HextechGold.copy(alpha = 0.6f)
@@ -2951,9 +2935,10 @@ private fun formatLastConnection(lastActiveTimestamp: Long, isOnline: Boolean, c
 
 private fun getSubscriptionStatusText(role: String, premiumUntil: Long?, isPremiumActive: Boolean, currentTimestamp: Long = System.currentTimeMillis()): String {
     if (role == "admin") return "Acceso Administrador (Vitalicio)"
+    if (role == "moderador") return "Acceso Moderador (Vitalicio)"
     if (role == "banned") return "Cuenta Suspendida"
     if (!isPremiumActive) return "Plan Gratuito"
-    if (premiumUntil == null || premiumUntil == 0L) return "Premium Vitalicio ♾️"
+    if (premiumUntil == null || premiumUntil == 0L) return "Plan Gratuito"
 
     val diff = premiumUntil - currentTimestamp
     if (diff <= 0) return "Suscripción Expirada"
@@ -3027,11 +3012,7 @@ fun UserDetailManagementDialog(
     val registeredDevices = (user["registeredDevices"] as? List<*>) ?: emptyList<Any>()
     var currentDeviceCount by remember { mutableStateOf(registeredDevices.size) }
 
-    val isPremiumActive = when {
-        currentRole == "admin" || currentRole == "moderador" -> true
-        currentRole in listOf("premium", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") -> currentPremiumUntil == null || currentPremiumUntil == 0L || currentPremiumUntil!! > System.currentTimeMillis()
-        else -> false
-    }
+    val isPremiumActive = com.example.model.PremiumAccessPolicy.isActive(currentRole, currentPremiumUntil, secondary = currentSecondaryRole, banned = currentBanned)
 
     Dialog(
         onDismissRequest = {
@@ -3227,7 +3208,7 @@ fun UserDetailManagementDialog(
                                 }
 
                                 Spacer(modifier = Modifier.height(10.dp))
-                                Text(tr("Asignar o Extender Tiempo Premium:"), color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Text(tr("Editar o extender tiempo premium:"), color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                                 Spacer(modifier = Modifier.height(6.dp))
 
                                 // Grid de Duraciones Rápidas
@@ -3236,11 +3217,9 @@ fun UserDetailManagementDialog(
                                         label = "+1 Día",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
-                                            applyPremiumDuration(context, uid, 1, isPermanent = false) { newUntil ->
-                                                currentRole = "premium"
+                                            applyPremiumDuration(context, uid, 1, extendExisting = true) { newUntil ->
                                                 currentPremiumUntil = newUntil
                                                 onUserUpdated(user.toMutableMap().apply {
-                                                    put("role", "premium")
                                                     put("premiumUntil", newUntil)
                                                 })
                                             }
@@ -3250,11 +3229,9 @@ fun UserDetailManagementDialog(
                                         label = "+7 Días",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
-                                            applyPremiumDuration(context, uid, 7, isPermanent = false) { newUntil ->
-                                                currentRole = "premium"
+                                            applyPremiumDuration(context, uid, 7, extendExisting = true) { newUntil ->
                                                 currentPremiumUntil = newUntil
                                                 onUserUpdated(user.toMutableMap().apply {
-                                                    put("role", "premium")
                                                     put("premiumUntil", newUntil)
                                                 })
                                             }
@@ -3264,11 +3241,9 @@ fun UserDetailManagementDialog(
                                         label = "+30 Días",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
-                                            applyPremiumDuration(context, uid, 30, isPermanent = false) { newUntil ->
-                                                currentRole = "premium"
+                                            applyPremiumDuration(context, uid, 30, extendExisting = true) { newUntil ->
                                                 currentPremiumUntil = newUntil
                                                 onUserUpdated(user.toMutableMap().apply {
-                                                    put("role", "premium")
                                                     put("premiumUntil", newUntil)
                                                 })
                                             }
@@ -3283,11 +3258,9 @@ fun UserDetailManagementDialog(
                                         label = "+90 Días (3m)",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
-                                            applyPremiumDuration(context, uid, 90, isPermanent = false) { newUntil ->
-                                                currentRole = "premium"
+                                            applyPremiumDuration(context, uid, 90, extendExisting = true) { newUntil ->
                                                 currentPremiumUntil = newUntil
                                                 onUserUpdated(user.toMutableMap().apply {
-                                                    put("role", "premium")
                                                     put("premiumUntil", newUntil)
                                                 })
                                             }
@@ -3297,31 +3270,15 @@ fun UserDetailManagementDialog(
                                         label = "+1 Año (365d)",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
-                                            applyPremiumDuration(context, uid, 365, isPermanent = false) { newUntil ->
-                                                currentRole = "premium"
+                                            applyPremiumDuration(context, uid, 365, extendExisting = true) { newUntil ->
                                                 currentPremiumUntil = newUntil
                                                 onUserUpdated(user.toMutableMap().apply {
-                                                    put("role", "premium")
                                                     put("premiumUntil", newUntil)
                                                 })
                                             }
                                         }
                                     )
-                                    DurationButton(
-                                        label = "♾️ Vitalicio",
-                                        modifier = Modifier.weight(1f),
-                                        accent = true,
-                                        onClick = {
-                                            applyPremiumDuration(context, uid, 0, isPermanent = true) {
-                                                currentRole = "premium"
-                                                currentPremiumUntil = 0L
-                                                onUserUpdated(user.toMutableMap().apply {
-                                                    put("role", "premium")
-                                                    put("premiumUntil", 0L)
-                                                })
-                                            }
-                                        }
-                                    )
+
                                 }
 
                                 Spacer(modifier = Modifier.height(6.dp))
@@ -3343,12 +3300,11 @@ fun UserDetailManagementDialog(
 
                                     // Quitar Premium
                                     OutlinedButton(
+                                        enabled = !com.example.model.PremiumAccessPolicy.isLifetime(currentRole, currentSecondaryRole),
                                         onClick = {
                                             removePremiumFromUser(context, uid) {
-                                                currentRole = "free"
                                                 currentPremiumUntil = null
                                                 onUserUpdated(user.toMutableMap().apply {
-                                                    put("role", "free")
                                                     put("premiumUntil", 0L)
                                                 })
                                             }
@@ -4047,9 +4003,11 @@ fun UserDetailManagementDialog(
                                             toggleUserBanStatus(context, uid, newBanned, newRole) {
                                                 currentBanned = newBanned
                                                 currentRole = newRole
+                            currentPremiumUntil = inheritedUntil
                                                 onUserUpdated(user.toMutableMap().apply {
                                                     put("banned", newBanned)
                                                     put("role", newRole)
+                                if (inheritedUntil != null) put("premiumUntil", inheritedUntil)
                                                 })
                                             }
                                         },
@@ -4213,10 +4171,10 @@ fun UserDetailManagementDialog(
     if (showCustomDaysDialog) {
         AlertDialog(
             onDismissRequest = { showCustomDaysDialog = false },
-            title = { Text(tr("Días Personalizados de Premium"), fontWeight = FontWeight.Bold, color = HextechGold) },
+            title = { Text(tr("Establecer días restantes de premium"), fontWeight = FontWeight.Bold, color = HextechGold) },
             text = {
                 Column {
-                    Text(com.example.util.tr("Ingresa el número de días que deseas otorgarle a $currentName:"), color = TextSecondary, fontSize = 13.sp)
+                    Text(tr("Establece los días restantes desde hoy."), color = TextSecondary, fontSize = 13.sp)
                     Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = customDaysInput,
@@ -4232,12 +4190,10 @@ fun UserDetailManagementDialog(
                 Button(
                     onClick = {
                         val days = customDaysInput.toIntOrNull()
-                        if (days != null && days > 0) {
-                            applyPremiumDuration(context, uid, days, isPermanent = false) { newUntil ->
-                                currentRole = "premium"
+                        if (days != null && days in 1..36500) {
+                            applyPremiumDuration(context, uid, days, extendExisting = false) { newUntil ->
                                 currentPremiumUntil = newUntil
                                 onUserUpdated(user.toMutableMap().apply {
-                                    put("role", "premium")
                                     put("premiumUntil", newUntil)
                                 })
                                 showCustomDaysDialog = false
@@ -4311,7 +4267,7 @@ fun UserDetailManagementDialog(
                             Spacer(modifier = Modifier.height(6.dp))
                             RoleBadge(
                                 role = target.id,
-                                isPremiumActive = target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.CREATOR_LVL2, AppUserRole.CREATOR_LVL3, AppUserRole.CREATOR_LVL4, AppUserRole.CREATOR_LVL5, AppUserRole.STREAMER, AppUserRole.CREATOR),
+                                isPremiumActive = target in listOf(AppUserRole.ADMIN, AppUserRole.MODERATOR, AppUserRole.PREMIUM),
                                 isBanned = (target == AppUserRole.BANNED),
                                 size = RoleBadgeSize.LARGE
                             )
@@ -4333,7 +4289,7 @@ fun UserDetailManagementDialog(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
-                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR, AppUserRole.PATROCINADOR, AppUserRole.CREATOR, AppUserRole.CREATOR_LVL2, AppUserRole.CREATOR_LVL3, AppUserRole.CREATOR_LVL4, AppUserRole.CREATOR_LVL5, AppUserRole.STREAMER)) {
+                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR)) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = tr("✨ Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech."),
@@ -4347,20 +4303,14 @@ fun UserDetailManagementDialog(
                 Button(
                     onClick = {
                         isChangingRole = true
-                        updateUserRoleInCloud(context, uid, target.id) { newRole, isBanned ->
+                        updateUserRoleInCloud(context, uid, target.id) { newRole, isBanned, inheritedUntil ->
                             isChangingRole = false
                             roleToConfirm = null
                             currentRole = newRole
                             currentBanned = isBanned
-                            if (newRole in listOf("premium", "moderador", "patrocinador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")) {
-                                currentPremiumUntil = 0L
-                            }
                             onUserUpdated(user.toMutableMap().apply {
                                 put("role", newRole)
                                 put("banned", isBanned)
-                                if (newRole in listOf("premium", "moderador", "patrocinador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")) {
-                                    put("premiumUntil", 0L)
-                                }
                             })
                             onReloadAll()
                         }
@@ -5097,32 +5047,22 @@ private fun applyPremiumDuration(
     context: Context,
     uid: String,
     days: Int,
-    isPermanent: Boolean,
+    extendExisting: Boolean = true,
     onSuccess: (Long) -> Unit
 ) {
     val db = FirebaseFirestore.getInstance()
     val userRef = db.collection("users").document(uid)
 
-    val calculatedUntil = if (isPermanent) {
-        0L // 0 indica permanente/vitalicio
-    } else {
-        val now = System.currentTimeMillis()
-        now + (days.toLong() * 24L * 60L * 60L * 1000L)
+    db.runTransaction { transaction ->
+        val account = transaction.get(userRef)
+        val calculatedUntil = com.example.model.PremiumAccessPolicy.extend(if (extendExisting) account.getLong("premiumUntil") else null, days, System.currentTimeMillis())
+        transaction.update(userRef, mapOf("premiumUntil" to calculatedUntil,
+            "subscriptionPlan" to "Admin Grant ($days días)", "lastModifiedByAdmin" to System.currentTimeMillis()))
+        calculatedUntil
+    }.addOnSuccessListener { calculatedUntil ->
+        Toast.makeText(context, com.example.util.appTr("Tiempo premium actualizado"), Toast.LENGTH_SHORT).show()
+        onSuccess(calculatedUntil)
     }
-
-    val updatePayload = hashMapOf<String, Any>(
-        "role" to "premium",
-        "premiumUntil" to calculatedUntil,
-        "subscriptionPlan" to if (isPermanent) "Admin Vitalicio" else "Admin Grant ($days días)",
-        "lastModifiedByAdmin" to System.currentTimeMillis()
-    )
-
-    userRef.set(updatePayload, SetOptions.merge())
-        .addOnSuccessListener {
-            val msg = if (isPermanent) "Premium Vitalicio otorgado" else "Premium otorgado por $days días"
-            Toast.makeText(context, com.example.util.appTr(msg), Toast.LENGTH_SHORT).show()
-            onSuccess(calculatedUntil)
-        }
         .addOnFailureListener { e ->
             Toast.makeText(context, com.example.util.appTr("Error: ${e.message}"), Toast.LENGTH_LONG).show()
         }
@@ -5135,7 +5075,6 @@ private fun removePremiumFromUser(
 ) {
     val db = FirebaseFirestore.getInstance()
     val updatePayload = hashMapOf<String, Any>(
-        "role" to "free",
         "premiumUntil" to 0L,
         "subscriptionPlan" to "Gratuito",
         "lastModifiedByAdmin" to System.currentTimeMillis()
@@ -5144,7 +5083,7 @@ private fun removePremiumFromUser(
     db.collection("users").document(uid)
         .set(updatePayload, SetOptions.merge())
         .addOnSuccessListener {
-            Toast.makeText(context, com.example.util.appTr("Suscripción revocada (Cambiado a Gratuito)"), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
             onSuccess()
         }
         .addOnFailureListener { e ->
@@ -5303,7 +5242,7 @@ private fun updateUserRoleInCloud(
     context: Context,
     uid: String,
     targetRoleId: String,
-    onSuccess: (newRole: String, isBanned: Boolean) -> Unit
+    onSuccess: (newRole: String, isBanned: Boolean, inheritedUntil: Long?) -> Unit
 ) {
     if (targetRoleId == "admin") {
         Toast.makeText(context, com.example.util.appTr("Operación denegada: No se puede asignar el rol de Administrador por directivas de seguridad."), Toast.LENGTH_LONG).show()
@@ -5325,31 +5264,19 @@ private fun updateUserRoleInCloud(
         updatePayload["bannedTimestamp"] = 0L
     }
 
-    // Si el rol es de acceso premium / vitalicio por defecto
-    if (targetRoleId in listOf("premium", "moderador", "patrocinador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer")) {
-        updatePayload["premiumUntil"] = 0L
-        updatePayload["subscriptionPlan"] = when (targetRoleId) {
-            "moderador" -> "Moderador (Vitalicio)"
-            "patrocinador" -> "Patrocinador (Vitalicio)"
-            "creador" -> "Creador Lvl 1 (Vitalicio)"
-            "creador_lvl2" -> "Creador Lvl 2 (Vitalicio)"
-            "creador_lvl3" -> "Creador Lvl 3 (Vitalicio)"
-            "creador_lvl4" -> "Creador Lvl 4 (Vitalicio)"
-            "creador_lvl5" -> "Creador Lvl 5 (Vitalicio)"
-            "streamer" -> "Streamer (Vitalicio)"
-            else -> "Premium Vitalicio"
-        }
-        updatePayload["is_premium"] = true
-    } else if (targetRoleId == "free") {
-        updatePayload["is_premium"] = false
+    val userRef = db.collection("users").document(uid)
+    db.runTransaction { transaction ->
+        val account = transaction.get(userRef)
+        val inherited = account.getLong("premiumUntil")
+        val deadline = com.example.model.PremiumAccessPolicy.deadlineForRole(targetRoleId, inherited, System.currentTimeMillis())
+        if (deadline != inherited && deadline != null) updatePayload["premiumUntil"] = deadline
+        transaction.update(userRef, updatePayload)
+        deadline
     }
-
-    db.collection("users").document(uid)
-        .set(updatePayload, SetOptions.merge())
-        .addOnSuccessListener {
+        .addOnSuccessListener { deadline ->
             val roleName = AppUserRole.fromId(targetRoleId).displayName
             Toast.makeText(context, com.example.util.appTr("Rol actualizado a $roleName"), Toast.LENGTH_SHORT).show()
-            onSuccess(targetRoleId, isBanned)
+            onSuccess(targetRoleId, isBanned, deadline)
         }
         .addOnFailureListener { e ->
             Toast.makeText(context, com.example.util.appTr("Error al actualizar rol: ${e.message}"), Toast.LENGTH_LONG).show()

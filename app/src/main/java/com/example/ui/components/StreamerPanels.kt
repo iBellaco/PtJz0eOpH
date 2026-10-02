@@ -57,6 +57,7 @@ private fun operationError(result: Result<Unit>?): String? {
     if (result == null || result.isSuccess) return null
     val cause = generateSequence(result.exceptionOrNull()) { it.cause }.mapNotNull { it.message }.joinToString(" ")
     val id = when {
+        cause.contains("streamer_expired") -> R.string.streamer_expired
         cause.contains("streamer_max") -> R.string.streamer_max
         cause.contains("streamer_name_error") -> R.string.streamer_name_error
         cause.contains("streamer_url_error") -> R.string.streamer_url_error
@@ -78,8 +79,7 @@ fun LiveStreamersRow() {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             entries.take(StreamerPublicationPolicy.MAX_LIVE).forEach { item ->
                 val channel = StreamChannelUrl.parse(item["channelUrl"] as? String ?: "", allowAdminTest = isAdmin)
-                if (channel != null) AssistChip(onClick = { runCatching { uri.openUri(channel.url) } },
-                    label = { Text(localizedString(R.string.streamer_live, item["channelName"] as? String ?: ""), color = StreamGold) })
+                if (channel != null) LiveStreamerChip(item["channelName"] as? String ?: "") { runCatching { uri.openUri(channel.url) } }
             }
         }
     }
@@ -111,6 +111,10 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
     val isAdmin = RolePanelAccess.isAdministrator(role, adminClaim)
     val (entries, registryAvailable) = liveEntries()
     var request by remember(uid) { mutableStateOf<Map<String, Any>>(emptyMap()) }
+    var publications by remember(uid) { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var historyError by remember(uid) { mutableStateOf(false) }
+    val now = streamerClock()
+    var submitted by remember { mutableStateOf(false) }
     var requestAvailable by remember(uid) { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
@@ -126,16 +130,29 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 if (url.isBlank()) url = snapshot.getString("channelUrl").orEmpty()
             }
         }
-        onDispose { listener.remove() }
+        val historyListener = StreamerRepository.history(uid).addSnapshotListener { snapshot, error ->
+            historyError = error != null
+            if (error == null && snapshot != null) publications = snapshot.documents.mapNotNull { it.data }
+        }
+        onDispose { listener.remove(); historyListener.remove() }
     }
     val active = entries.any { it["userId"] == uid }
-    val pending = request["status"] == "PENDING"
+    val expired = StreamerPublicationPolicy.isExpired(request, now)
+    val pending = request["status"] == "PENDING" && !expired
+    LaunchedEffect(uid, request["publicationId"], expired) {
+        if (expired) {
+            val expiration = StreamerRepository.expire(uid)
+            if (expiration.isFailure) result = expiration
+        }
+    }
     val maximum = entries.size >= StreamerPublicationPolicy.MAX_LIVE
     Dialog(onDismissRequest = { if (!busy) onDismiss() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(Modifier.fillMaxWidth(0.95f).heightIn(max = 650.dp), shape = RoundedCornerShape(16.dp), color = StreamBackground, border = BorderStroke(1.dp, StreamGold)) {
             Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(localizedString(R.string.streamer_panel), color = StreamGold, style = MaterialTheme.typography.titleLarge)
                 Text(localizedString(R.string.streamer_requirement), color = Color.White)
+                Text(localizedString(R.string.streamer_expiry_notice), color = Color.LightGray)
+                StreamerSubmissionFeedback(busy, submitted)
                 OutlinedTextField(name, { name = it; result = null }, label = { Text(localizedString(R.string.streamer_name)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(url, { url = it; result = null }, label = { Text(localizedString(R.string.streamer_url)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
                 StreamerUrlRecommendations(isAdmin, enabled = !busy && !pending && !active) { url = it; result = null }
@@ -148,10 +165,13 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 }
                 operationError(result)?.let { Text(it, color = Color(0xFFFF8A80)) }
                 if (!registryAvailable || !requestAvailable) Text(localizedString(R.string.streamer_loading), color = Color.White)
-                if (active) Button(onClick = { busy = true; scope.launch { result = StreamerRepository.end(uid); busy = false } }, enabled = !busy && registryAvailable) { Text(localizedString(R.string.streamer_end)) }
-                else Button(onClick = { busy = true; scope.launch { result = StreamerRepository.submit(name, url); busy = false } },
+                if (active) Button(onClick = { busy = true; scope.launch { submitted = false; result = StreamerRepository.end(uid); busy = false } }, enabled = !busy && registryAvailable) { Text(localizedString(R.string.streamer_end)) }
+                else Button(onClick = { busy = true; scope.launch { result = StreamerRepository.submit(name, url); submitted = result?.isSuccess == true; busy = false } },
                     enabled = !busy && registryAvailable && requestAvailable && !maximum && !pending && name.trim().length in 2..60 && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) != null) { Text(localizedString(R.string.streamer_submit)) }
                 if (url.isNotBlank() && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) == null) Text(localizedString(R.string.streamer_url_error), color = Color(0xFFFF8A80))
+                val history = listOfNotNull(request.takeIf { it.isNotEmpty() }) + publications
+                StreamerPublicationHistory(history, now)
+                if (historyError) Text(localizedString(R.string.streamer_error), color = Color(0xFFFF8A80))
                 TextButton(onClick = onDismiss, enabled = !busy) { Text(localizedString(R.string.streamer_close)) }
             }
         }
@@ -168,6 +188,15 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
     var result by remember { mutableStateOf<Result<Unit>?>(null) }
     val scope = rememberCoroutineScope()
     val uri = LocalUriHandler.current
+    val now = streamerClock()
+    val expiredRequests = requests.filter { StreamerPublicationPolicy.isExpired(it, now) }
+    val pendingRequests = requests.filterNot { StreamerPublicationPolicy.isExpired(it, now) }
+    LaunchedEffect(expiredRequests.map { it["id"] }) {
+        expiredRequests.forEach { request ->
+            val expiration = StreamerRepository.expire(request["id"] as String)
+            if (expiration.isFailure) result = expiration
+        }
+    }
     DisposableEffect(Unit) {
         val listener = StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             requestAvailable = error == null && snapshot != null && !snapshot.metadata.isFromCache
@@ -187,8 +216,8 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
                 TextButton(onClick = { busy = true; scope.launch { result = StreamerRepository.end(item["userId"] as String); busy = false } }, enabled = !busy && available) { Text(localizedString(R.string.streamer_end)) }
             }
         }
-        if (requestAvailable && requests.isEmpty()) Text(localizedString(R.string.streamer_empty), color = Color.White)
-        requests.forEach { request ->
+        if (requestAvailable && pendingRequests.isEmpty()) Text(localizedString(R.string.streamer_empty), color = Color.White)
+        pendingRequests.forEach { request ->
             key(request["id"]) {
                 var verified by remember { mutableStateOf(false) }
                 val channel = StreamChannelUrl.parse(request["channelUrl"] as? String ?: "", allowAdminTest = request["adminTest"] == true)

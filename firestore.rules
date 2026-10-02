@@ -108,18 +108,46 @@ service cloud.firestore {
       return (entries.size() > 0 && entries[0].userId == uid) || (entries.size() > 1 && entries[1].userId == uid)
         || (entries.size() > 2 && entries[2].userId == uid) || (entries.size() > 3 && entries[3].userId == uid) || (entries.size() > 4 && entries[4].userId == uid);
     }
+    function streamerSubmittedMillis(data) {
+      return data.get('submittedAt', null) is timestamp ? data.submittedAt.toMillis() : data.get('submittedAtMillis', 0);
+    }
+    function streamerExpired(data) {
+      return data.get('status', '') == 'PENDING' && request.time.toMillis() >= streamerSubmittedMillis(data) + 10800000;
+    }
+    function publicationId(data) { return data.get('publicationId', 'legacy_' + string(streamerSubmittedMillis(data))); }
+    function timeoutCopy(copy, original) {
+      return streamerExpired(original) && copy.get('status', '') == 'REJECTED' && copy.get('rejectionReason', '') == 'TIMEOUT'
+        && copy.get('reviewedAtMillis', 0) == streamerSubmittedMillis(original) + 10800000
+        && copy.diff(original).affectedKeys().hasOnly(['status', 'rejectionReason', 'reviewedAtMillis']);
+    }
     match /streamer_requests/{userId} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
-      allow create, update: if isAdmin() || (isStreamer() && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['userId','userName','channelName','channelUrl','platform','status','usingCoachAcknowledged','submittedAtMillis'])
+      allow create, update: if (isAdmin() && (request.resource.data.get('status', '') != 'APPROVED' || !streamerExpired(resource.data))) ||
+        (isStreamer() && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['userId','userName','channelName','channelUrl','platform','status','usingCoachAcknowledged','submittedAtMillis','submittedAt','publicationId'])
         && request.resource.data.userId == userId && request.resource.data.status == 'PENDING'
         && request.resource.data.usingCoachAcknowledged == true && request.resource.data.channelName is string
         && request.resource.data.channelName.size() >= 2 && request.resource.data.channelName.size() <= 60
         && validChannel(request.resource.data.channelUrl) && liveEntries().size() < 5 && !alreadyLive(userId)
-        && (!exists(/databases/$(database)/documents/streamer_requests/$(userId)) || resource.data.status != 'PENDING')) ||
+        && request.resource.data.submittedAt == request.time && request.resource.data.publicationId is string
+        && request.resource.data.publicationId.size() >= 8 && request.resource.data.publicationId.size() <= 80
+        && request.resource.data.submittedAtMillis >= request.time.toMillis() - 60000
+        && request.resource.data.submittedAtMillis <= request.time.toMillis() + 60000
+        && (!exists(/databases/$(database)/documents/streamer_requests/$(userId)) || resource.data.status != 'PENDING' || streamerExpired(resource.data))) ||
         (signedIn() && request.auth.uid == userId && resource.data.status == 'APPROVED' && request.resource.data.status == 'ENDED'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','endedAtMillis']));
-      allow delete: if isAdmin();
+      allow delete: if (isAdmin() || (signedIn() && request.auth.uid == userId)) && streamerExpired(resource.data)
+        && timeoutCopy(getAfter(/databases/$(database)/documents/streamer_requests/$(userId)/history/$(publicationId(resource.data))).data, resource.data);
+      match /history/{historyId} {
+        function latest() { return getAfter(/databases/$(database)/documents/streamer_requests/$(userId)).data; }
+        function previous() { return get(/databases/$(database)/documents/streamer_requests/$(userId)).data; }
+        allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
+        allow create, update: if isAdmin() || (signedIn() && request.auth.uid == userId && (
+          (historyId == latest().get('publicationId', '') && request.resource.data == latest() && latest().status in ['PENDING','ENDED']) ||
+          (historyId == publicationId(previous()) && request.resource.data == previous() && previous().status != 'PENDING') ||
+          (historyId == publicationId(previous()) && timeoutCopy(request.resource.data, previous()))));
+        allow delete: if false;
+      }
     }
     match /system_config/{document} {
       allow read: if signedIn();
