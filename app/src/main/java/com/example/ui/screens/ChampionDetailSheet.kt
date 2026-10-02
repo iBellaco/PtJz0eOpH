@@ -1285,10 +1285,9 @@ fun ChampionDetailSheet(
                         listOf("Conquistador", "Triunfo", "Golpe de gracia", "Linaje")
                     }
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
                             text = com.example.util.tr("${tr("Runa Clave:")} ${tr(runesForActiveOption.firstOrNull() ?: "Principal")}"),
@@ -1301,7 +1300,8 @@ fun ChampionDetailSheet(
                             color = HextechCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            maxLines = 1
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                     Spacer(modifier = Modifier.height(10.dp))
