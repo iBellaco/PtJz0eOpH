@@ -419,8 +419,8 @@ object WildRiftRepository {
         if (isOffRole) {
             score -= 15.0 // heavy penalty
             badge = if (isPt) " ESCOLHA ATÍPICA (OFF-META)" else " SELECCIÓN ATÍPICA (OFF-META)"
-            val msgEs = "Llevar a ${champ.name} a ${com.example.util.trStr(lang, myRole.displayName)} es una selección atípica (off-meta). Sus habilidades no están diseñadas para ganar esta línea. ${com.example.util.trStr(lang, champ.tacticalAdvice)}"
-            val msgPt = "Levar ${champ.name} para ${com.example.util.trStr(lang, myRole.displayName)} é uma escolha atípica (off-meta). Suas habilidades não foram projetadas para esta rota. ${com.example.util.trStr(lang, champ.tacticalAdvice)}"
+            val msgEs = "Llevar a ${champ.getLocalizedName(lang)} a ${com.example.util.trStr(lang, myRole.displayName)} es una selección atípica (off-meta). Sus habilidades no están diseñadas para ganar esta línea. ${com.example.util.trStr(lang, champ.tacticalAdvice)}"
+            val msgPt = "Levar ${champ.getLocalizedName(lang)} para ${com.example.util.trStr(lang, myRole.displayName)} é uma escolha atípica (off-meta). Suas habilidades não foram projetadas para esta rota. ${com.example.util.trStr(lang, champ.tacticalAdvice)}"
 
             reasonParts.add(if (isPt) msgPt else msgEs)
         }
@@ -474,19 +474,19 @@ object WildRiftRepository {
 
             if (isDirectLaneCounter) {
                 score += 5.0
-                if (badge.isBlank()) badge = if (isPt) " DOMINA A ROTA (${champ.name} vs ${opponent.name})" else " DOMINAS LÍNEA (${champ.name} vs ${opponent.name})"
-                reasonParts.add(if (isPt) "Vantagem direta de rota contra ${opponent.name}. Você tem superioridade nas trocas e escalonamento." else "Ventaja directa de carril contra ${opponent.name}. Tienes superioridad en tradeos y escalado.")
+                if (badge.isBlank()) badge = if (isPt) " DOMINA A ROTA (${champ.getLocalizedName(lang)} vs ${opponent.getLocalizedName(lang)})" else " DOMINAS LÍNEA (${champ.getLocalizedName(lang)} vs ${opponent.getLocalizedName(lang)})"
+                reasonParts.add(if (isPt) "Vantagem direta de rota contra ${opponent.getLocalizedName(lang)}. Você tem superioridade nas trocas e escalonamento." else "Ventaja directa de carril contra ${opponent.getLocalizedName(lang)}. Tienes superioridad en tradeos y escalado.")
             } else if (isDirectLaneWeakness) {
                 score -= 4.0
-                if (badge.isBlank()) badge = if (isPt) "️ CONFRONTO DESFAVORÁVEL (${opponent.name})" else "️ MATCHUP DESFAVORABLE (${opponent.name})"
-                reasonParts.add(if (isPt) "Rota difícil contra ${opponent.name}. Evite trocas longas no início e solicite apoio do caçador." else "Línea difícil contra ${opponent.name}. Evita tradeos largos en early y solicita apoyo del jungla.")
+                if (badge.isBlank()) badge = if (isPt) "️ CONFRONTO DESFAVORÁVEL (${opponent.getLocalizedName(lang)})" else "️ MATCHUP DESFAVORABLE (${opponent.getLocalizedName(lang)})"
+                reasonParts.add(if (isPt) "Rota difícil contra ${opponent.getLocalizedName(lang)}. Evite trocas longas no início e solicite apoio do caçador." else "Línea difícil contra ${opponent.getLocalizedName(lang)}. Evita tradeos largos en early y solicita apoyo del jungla.")
             }
 
             // Caso especial: ADC / Rango en línea de Barón (Top)
             if (myRole == LaneRole.TOP && opponent.isRanged && !champ.isRanged) {
-                reasonParts.add(if (isPt) "Rival com alcance (${opponent.name} no Top): Jogue recuado nos níveis 1-3, compre Escudo de Doran / Ventos Revigorantes e faça all-in quando o rival gastar sua habilidade de fuga." else "Rival con rango (${opponent.name} en Top): Juega pasivo niveles 1-3, compra Escudo de Doran / Segundo Aire y all-in cuando gaste su habilidad de escape.")
+                reasonParts.add(if (isPt) "Rival com alcance (${opponent.getLocalizedName(lang)} no Top): Jogue recuado nos níveis 1-3, compre Escudo de Doran / Ventos Revigorantes e faça all-in quando o rival gastar sua habilidade de fuga." else "Rival con rango (${opponent.getLocalizedName(lang)} en Top): Juega pasivo niveles 1-3, compra Escudo de Doran / Segundo Aire y all-in cuando gaste su habilidad de escape.")
             } else if (myRole == LaneRole.TOP && champ.isRanged && !opponent.isRanged) {
-                reasonParts.add(if (isPt) "Vantagem de alcance no Top: Pressione ${opponent.name} nos níveis 1-2 mas congele perto da sua torre para evitar emboscadas." else "Ventaja de rango en Top: Acosa a ${opponent.name} en niveles 1-2 pero congela cerca de tu torre para evitar gankeos.")
+                reasonParts.add(if (isPt) "Vantagem de alcance no Top: Pressione ${opponent.getLocalizedName(lang)} nos níveis 1-2 mas congele perto da sua torre para evitar emboscadas." else "Ventaja de rango en Top: Acosa a ${opponent.getLocalizedName(lang)} en niveles 1-2 pero congela cerca de tu torre para evitar gankeos.")
             }
         }
 
@@ -497,13 +497,13 @@ object WildRiftRepository {
         if (badge.isBlank()) {
             if (directCounters.isNotEmpty() && directCounters.size >= directWeaknesses.size) {
                 badge = if (isPt) " COUNTER FORTE (+${directCounters.size})" else " COUNTER FUERTE (+${directCounters.size})"
-                reasonParts.add(if (isPt) "Você tem vantagem sobre ${directCounters.joinToString(", ")}." else "Tienes ventaja sobre ${directCounters.joinToString(", ")}.")
+                reasonParts.add(if (isPt) "Você tem vantagem sobre ${directCounters.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}." else "Tienes ventaja sobre ${directCounters.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}.")
             } else if (directWeaknesses.isNotEmpty() && directWeaknesses.size > directCounters.size) {
                 badge = if (isPt) "️ PERIGO NO CONFRONTO (-${directWeaknesses.size})" else "️ PELIGRO MATCHUP (-${directWeaknesses.size})"
-                reasonParts.add(if (isPt) "Cuidado: Sofre contra ${directWeaknesses.joinToString(", ")}." else "Cuidado: Sufres contra ${directWeaknesses.joinToString(", ")}.")
+                reasonParts.add(if (isPt) "Cuidado: Sofre contra ${directWeaknesses.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}." else "Cuidado: Sufres contra ${directWeaknesses.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}.")
             } else if (directSynergies.isNotEmpty()) {
                 badge = if (isPt) " SINERGIA COM EQUIPE (+${directSynergies.size})" else " SINERGIA CON EQUIPO (+${directSynergies.size})"
-                reasonParts.add(if (isPt) "Sinergia excelente com ${directSynergies.joinToString(", ")}." else "Sinergia óptima con ${directSynergies.joinToString(", ")}.")
+                reasonParts.add(if (isPt) "Sinergia excelente com ${directSynergies.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}." else "Sinergia óptima con ${directSynergies.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}.")
             } else if (isAllyFullAd && champ.damageType == DamageType.MAGIC) {
                 badge = if (isPt) " DANO MÁGICO ESSENCIAL" else " APERTURA MÁGICA"
                 reasonParts.add(if (isPt) "Fornece o dano mágico necessário para evitar que acumulem armadura." else "Aportas el daño mágico necesario para evitar que apilen armadura.")
@@ -519,21 +519,21 @@ object WildRiftRepository {
             }
         }
 
-        val mainSkill = champ.skills.find { it.slot == "1" }?.let { if (isPt) it.namePt.ifBlank { com.example.util.trStr("pt", it.name) } else it.name } ?: champ.skills.firstOrNull()?.name ?: if (isPt) "habilidades" else "habilidades"
+        val mainSkill = (champ.skills.find { it.slot == "1" } ?: champ.skills.firstOrNull())?.getLocalizedName(lang) ?: com.example.util.trStr(lang, "habilidades")
         synergyText = if (directSynergies.isNotEmpty()) {
-            if (isPt) "Sincronize suas iniciações e combine $mainSkill junto com ${directSynergies.joinToString(", ")} para dominar as lutas de equipe."
-            else "Sincroniza tus engages y combina $mainSkill junto con ${directSynergies.joinToString(", ")} para dominar las peleas de equipo."
+            if (isPt) "Sincronize suas iniciações e combine $mainSkill junto com ${directSynergies.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }} para dominar as lutas de equipe."
+            else "Sincroniza tus engages y combina $mainSkill junto con ${directSynergies.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }} para dominar las peleas de equipo."
         } else {
             if (isPt) "Campeão independente. Priorize seu próprio escalonamento e $mainSkill."
             else "Campeón independiente. Prioriza tu propio escalado y $mainSkill."
         }
 
         counterText = if (directCounters.isNotEmpty()) {
-            if (isPt) "Use sua $mainSkill para anular: ${directCounters.joinToString(", ")}."
-            else "Usa tu $mainSkill para anular completamente a: ${directCounters.joinToString(", ")}."
+            if (isPt) "Use sua $mainSkill para anular: ${directCounters.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}."
+            else "Usa tu $mainSkill para anular completamente a: ${directCounters.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}."
         } else if (directWeaknesses.isNotEmpty()) {
-            if (isPt) "Cuidado com ${directWeaknesses.joinToString(", ")}, podem interromper sua $mainSkill facilmente."
-            else "Cuidado con ${directWeaknesses.joinToString(", ")}, pueden interrumpir tu $mainSkill fácilmente."
+            if (isPt) "Cuidado com ${directWeaknesses.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}, podem interromper sua $mainSkill facilmente."
+            else "Cuidado con ${directWeaknesses.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}, pueden interrumpir tu $mainSkill fácilmente."
         } else {
             if (isPt) "Confronto estável sem counters diretos à vista."
             else "Enfrentamiento estable sin counters directos a la vista."

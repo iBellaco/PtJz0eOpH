@@ -617,41 +617,43 @@ object SynergyAdvisor {
         lang: String
     ): Quintuple<String, String, String, String, String> {
         val isPt = lang.lowercase().startsWith("pt")
+        val partnerName = partner.getLocalizedName(lang)
+        val sourceName = source.getLocalizedName(lang)
 
-        val pSkill = partner.skills.find { it.slot == "1" }?.name ?: "habilidades"
-        val pUlt = partner.skills.find { it.slot == "4" }?.name ?: "Definitiva"
-        val sSkill = source.skills.find { it.slot == "1" }?.name ?: "habilidades"
+        val pSkill = partner.skills.find { it.slot == "1" }?.getLocalizedName(lang) ?: trStr(lang, "habilidades")
+        val pUlt = partner.skills.find { it.slot == "4" }?.getLocalizedName(lang) ?: trStr(lang, "Definitiva")
+        val sSkill = source.skills.find { it.slot == "1" }?.getLocalizedName(lang) ?: trStr(lang, "habilidades")
 
         return if (partner.isFrontline) {
             Quintuple(
                 "Iniciación & Frontline",
                 "🛡️",
                 if (isPt) "Iniciação e Espaço Seguro" else "Iniciación de Tanque & Espacio Seguro",
-                if (isPt) "${partner.name} absorve habilidades inimigas e inicia com $pUlt, permitindo que ${source.name} use $sSkill livremente." else "${partner.name} absorbe las habilidades rivales e inicia con su $pUlt, permitiendo que ${source.name} conecte su $sSkill con total libertad.",
-                if (isPt) "${partner.name} usa $pSkill/$pUlt -> ${source.name} finaliza os alvos." else "${partner.name} conecta $pSkill/$pUlt -> ${source.name} castiga a los objetivos inmovilizados."
+                if (isPt) "$partnerName absorve habilidades inimigas e inicia com $pUlt, permitindo que $sourceName use $sSkill livremente." else "$partnerName absorbe las habilidades rivales e inicia con su $pUlt, permitiendo que $sourceName conecte su $sSkill con total libertad.",
+                if (isPt) "$partnerName usa $pSkill/$pUlt -> $sourceName finaliza os alvos." else "$partnerName conecta $pSkill/$pUlt -> $sourceName castiga a los objetivos inmovilizados."
             )
         } else if (partnerRole == LaneRole.SUPPORT) {
             Quintuple(
                 "Peel & Sinergia de Dúo",
                 "✨",
                 if (isPt) "Proteção e Amplificação de Dano" else "Protección y Amplificación de Daño",
-                if (isPt) "O kit de utilidade de ${partner.name} protege ${source.name} contra assassinos e amplifica seu dano." else "El kit de utilidad de ${partner.name} protege a ${source.name} contra asesinos con escudos y control de masas, aumentando su supervivencia en teamfights.",
-                if (isPt) "${partner.name} aplica escudos -> ${source.name} avança agressivo com $sSkill." else "${partner.name} aplica escudos/curaciones -> ${source.name} avanza agresivo con $sSkill."
+                if (isPt) "O kit de utilidade de $partnerName protege $sourceName contra assassinos e amplifica seu dano." else "El kit de utilidad de $partnerName protege a $sourceName contra asesinos con escudos y control de masas, aumentando su supervivencia en teamfights.",
+                if (isPt) "$partnerName aplica escudos -> $sourceName avança agressivo com $sSkill." else "$partnerName aplica escudos/curaciones -> $sourceName avanza agresivo con $sSkill."
             )
         } else if (partnerRole == LaneRole.JUNGLE) {
             Quintuple(
                 "Gank Setup & Emboscadas",
                 "🎯",
                 if (isPt) "Controle de Rio e Ganks Letais" else "Control de Río y Emboscadas Letales",
-                if (isPt) "A rotação rápida de ${partner.name} na selva garante abates rápidos em emboscadas conjuntas." else "La combinación de daño de ${partner.name} y el control de ${source.name} asegura bajas inmediatas en rotaciones al río y peleas de Heraldo/Dragón.",
-                if (isPt) "${source.name} pressiona a rota -> ${partner.name} ganka com $pSkill." else "${source.name} presiona la línea -> ${partner.name} embosca con $pSkill para cerrar la baja."
+                if (isPt) "A rotação rápida de $partnerName na selva garante abates rápidos em emboscadas conjuntas." else "La combinación de daño de $partnerName y el control de $sourceName asegura bajas inmediatas en rotaciones al río y peleas de Heraldo/Dragón.",
+                if (isPt) "$sourceName pressiona a rota -> $partnerName ganka com $pSkill." else "$sourceName presiona la línea -> $partnerName embosca con $pSkill para cerrar la baja."
             )
         } else {
             Quintuple(
                 "Wombo Combo & Daño Mixto",
                 "⚡",
                 if (isPt) "Cadeia de Dano e Pressão Global" else "Cadena de Daño y Presión en Mapa",
-                if (isPt) "${partner.name} equilibra o dano da equipe e comita nas lutas de equipe junto com ${source.name}." else "${partner.name} equilibra el perfil de daño del equipo y combina sus tiempos de recarga con ${source.name} para ganar peleas grupales.",
+                if (isPt) "$partnerName equilibra o dano da equipe e comita nas lutas de equipe junto com $sourceName." else "$partnerName equilibra el perfil de daño del equipo y combina sus tiempos de recarga con $sourceName para ganar peleas grupales.",
                 if (isPt) "Sincronizar Ultimates em corredores da selva perto de objetivos." else "Sincronizar Definitivas en espacios cerrados de jungla cerca de objetivos neutrales."
             )
         }

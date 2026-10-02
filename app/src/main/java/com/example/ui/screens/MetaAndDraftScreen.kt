@@ -4004,6 +4004,7 @@ fun DraftAnalysisTab(
     onClearAll: () -> Unit
 ) {
     val tabContext = LocalContext.current
+    val draftLanguage = com.example.util.currentAppLanguage()
     val coroutineScope = rememberCoroutineScope()
     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
@@ -4698,7 +4699,7 @@ fun DraftAnalysisTab(
                 allies = allySlots.map { it.champion },
                 enemies = enemySlots.map { it.champion },
                 enemyLaneOpponent = enemyLaneOpponent,
-                lang = "es"
+                lang = draftLanguage
             )
             val isOffRole = activeRole != null && myChamp.primaryRole != activeRole && !myChamp.secondaryRoles.contains(activeRole)
             val isDirectLaneWeakness = enemyLaneOpponent != null && (

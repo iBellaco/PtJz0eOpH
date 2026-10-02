@@ -132,8 +132,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("tier_trend_header").assertExists()
                 compose.onNodeWithTag("tier_trend_sign_in").assertDoesNotExist()
                 inspect("legend")
-                compose.onNodeWithTag("tier_list").performScrollToNode(hasTestTag("tier_trend_graph"))
-                Assert.assertTrue(compose.onAllNodesWithTag("tier_trend_graph").fetchSemanticsNodes().isNotEmpty())
+                compose.onNodeWithTag("tier_list", useUnmergedTree = true).performScrollToNode(hasTestTag("tier_trend_graph"))
+                Assert.assertTrue(compose.onAllNodesWithTag("tier_trend_graph", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty())
             }
             "tier-guest", "tier-registration" -> {
                 compose.onNodeWithTag("tier_list").performScrollToNode(hasTestTag("tier_trend_sign_in_button"))
@@ -142,7 +142,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 if (screen == "tier-registration") {
                     compose.onNodeWithTag("tier_trend_sign_in_button").performClick()
                     inspect("login")
-                    compose.onNodeWithText("Cadastre-se", substring = true, ignoreCase = true).performScrollTo().performClick()
+                    compose.onNodeWithText("Cadastre-se").performScrollTo().performClick()
                     compose.onNodeWithText("Criar uma conta").assertExists()
                 }
             }

@@ -46,8 +46,14 @@ class PortugueseGeneratedSurfaceTest {
             for (role in (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()) {
                 val profile = ChampionRoleAdapter.getProfile(champion, role)
                 profiles++
+                val recommendation = WildRiftRepository.evaluateChampion(champion, role,
+                    WildRiftRepository.champions.filter { it.id != champion.id }.take(2),
+                    WildRiftRepository.champions.filter { it.id != champion.id }.takeLast(2),
+                    enemyLaneOpponent = WildRiftRepository.champions.first { it.id != champion.id }, lang = "pt")
+                inspect("draft-advice/${champion.id}/${role.name}", listOf(recommendation.tacticalReason,
+                    recommendation.advantageBadge, recommendation.synergyDetails, recommendation.counterDetails))
                 val synergy = com.example.data.SynergyAdvisor.getSynergyProfile(champion, role, "pt")
-                inspect("synergy/${champion.id}/${role.name}", listOf(synergy.archetype, synergy.archetypeDesc) + synergy.coreStrengths)
+                inspect("synergy/${champion.id}/${role.name}", listOf(synergy.archetype, synergy.archetypeBadge, synergy.archetypeDesc) + synergy.coreStrengths)
                 synergy.bestTeammates.forEach { teammate ->
                     inspect("synergy-pair/${champion.id}/${teammate.championId}",
                         listOf(teammate.category, teammate.synergyTitle, teammate.tacticalReason, teammate.comboTips))

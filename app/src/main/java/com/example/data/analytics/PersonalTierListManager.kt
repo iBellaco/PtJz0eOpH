@@ -506,7 +506,7 @@ object PersonalTierListManager {
                 else "Aún no hay partidas finalizadas registradas. Marca victorias o derrotas para desbloquear tu calificación."
             }
             winRate >= 75.0 -> {
-                if (lang == "pt") "⚡ God Tier Pick! Maestria excepcional em ${role.getLocalizedName("pt")}. Pick seguro para subir elo."
+                if (lang == "pt") "⚡ Escolha imbatível! Maestria excepcional em ${role.getLocalizedName("pt")}. Escolha segura para subir de elo."
                 else "⚡ ¡Pick Imparable! Maestría absoluta en ${role.displayName}. Es tu mejor herramienta para subir a Soberano."
             }
             winRate >= 60.0 -> {
