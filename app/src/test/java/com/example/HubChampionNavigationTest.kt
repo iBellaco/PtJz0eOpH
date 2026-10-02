@@ -1,7 +1,7 @@
 package com.example
 
 import android.app.Application
-import android.view.View
+import android.widget.FrameLayout
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,7 +58,7 @@ class HubChampionNavigationTest {
         // The real hub attaches a ComposeView to a service, with lifecycle owners
         // but no activity or OnBackPressedDispatcherOwner. An Activity-backed
         // Compose test would otherwise hide the crash reported in the hub.
-        val serviceView = View(context)
+        val serviceView = FrameLayout(context)
         compose.setContent {
             CompositionLocalProvider(LocalContext provides context, LocalView provides serviceView) {
                 assertNull("Service-hosted hub must have no activity back dispatcher", LocalOnBackPressedDispatcherOwner.current)
