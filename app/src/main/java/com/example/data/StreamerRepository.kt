@@ -57,7 +57,8 @@ object StreamerRepository {
             val fields = mutableMapOf<String, Any>("userId" to user.uid, "userName" to (account.getString("userName") ?: user.displayName.orEmpty()),
                 "channelName" to name.trim(), "channelUrl" to channel.url, "platform" to channel.platform,
                 "status" to "PENDING", "usingCoachAcknowledged" to true, "submittedAtMillis" to now)
-            if (archive) fields.putAll(mapOf("submittedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(), "publicationId" to publicationId))
+            if (archive) fields.putAll(mapOf("submittedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(), "publicationId" to publicationId,
+                "streamerHistoryDeleteAt" to com.google.firebase.Timestamp(java.util.Date(now + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS))))
             if (isAdmin) fields["adminTest"] = channel.platform == "Google"
             transaction.set(ref, fields)
             if (archive) transaction.set(history(user.uid).document(publicationId), fields)
@@ -89,7 +90,8 @@ object StreamerRepository {
                 transaction.set(registry, mapOf("entries" to StreamerPublicationPolicy.approve(live, entry)), SetOptions.merge())
                 if (countClicks) transaction.set(metrics.document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())),
                     mapOf("userId" to uid, "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()),
-                        "submittedAtMillis" to StreamerPublicationPolicy.submittedAt(request.data.orEmpty()), "clickCount" to 0L))
+                        "submittedAtMillis" to StreamerPublicationPolicy.submittedAt(request.data.orEmpty()), "clickCount" to 0L,
+                        "streamerHistoryDeleteAt" to com.google.firebase.Timestamp(java.util.Date(StreamerPublicationPolicy.historyExpiresAt(request.data.orEmpty())))))
             }
             val reviewed = mapOf("status" to if (approve) "APPROVED" else "REJECTED",
                 "verifiedUsingCoach" to (approve && verifiedUsingCoach), "reviewedAtMillis" to System.currentTimeMillis())

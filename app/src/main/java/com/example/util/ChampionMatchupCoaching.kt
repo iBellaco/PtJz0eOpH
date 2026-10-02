@@ -53,7 +53,7 @@ object ChampionMatchupCoaching {
             "jhin" -> if (pt) "$me: abra $h4 de uma posição protegida, após $rival gastar $danger. Os disparos param no primeiro campeão; ajuste o ângulo se houver alguém protegendo o rival e use a lentidão para alinhar os próximos tiros."
                 else "$me: abre $h4 desde una posición protegida, después de que $rival gaste $danger. Los disparos se detienen en el primer campeón; ajusta el ángulo si alguien protege al rival y usa la ralentización para alinear los siguientes tiros."
             else -> "$me · $h4: ${fact(own.skill("4"), lang)} $punish"
-        } + cooldown(own.skill("4"), lang)
+        }
         val late = when (own.id) {
             "varus" -> if (pt) "$me: mantenha o dano com ataques e detonações de Infecção no alvo acessível. Antes de disputar um objetivo contra $rival, use H1 para desgastar e guarde H4 para quem entrar na sua equipe; H3 reduz a cura dentro da área."
                 else "$me: mantén el daño con ataques y detonaciones de Infección sobre el objetivo accesible. Antes de disputar un objetivo contra $rival, usa H1 para desgastar y guarda H4 para quien entre en tu equipo; H3 reduce la curación dentro del área."
@@ -88,11 +88,6 @@ object ChampionMatchupCoaching {
     } else if (lang == "pt") "Espere ${label(enemy.threat(), lang)} ser gasto antes de iniciar."
         else "Espera a que gaste ${label(enemy.threat(), lang)} antes de iniciar."
 
-    private fun cooldown(skill: ChampionSkill?, lang: String) = skill?.cooldown?.takeIf { it.isNotBlank() }?.let {
-        if (lang == "pt") " Recarga indicada para esta habilidade: $it, conforme o nível."
-        else " Recarga indicada para esta habilidad: $it, según el nivel."
-    }.orEmpty()
-
     fun championPlan(champion: Champion, role: LaneRole, language: String): String {
         val lang = AppLanguage.normalize(language)
         fun title(slot: String): String {
@@ -112,7 +107,7 @@ object ChampionMatchupCoaching {
                 val details = fact(skill, lang).ifBlank {
                     if (lang == "pt") "Descrição não disponível para este campeão." else "Descripción no disponible para este campeón."
                 }
-                "${title(slot)}: $details${cooldown(skill, lang)}"
+                "${title(slot)}: $details"
             }
     }
 }

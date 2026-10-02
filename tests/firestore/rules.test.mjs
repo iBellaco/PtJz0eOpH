@@ -234,5 +234,11 @@ try {
     await assertFails(setDoc(doc(admin,`streamer_requests/s2/history/${oldId}`),data));
     await assertFails(setDoc(doc(admin,'streamer_click_metrics',oldId),{userId:'s2',publicationId:oldId,submittedAtMillis:oldDate,clickCount:0}));
   });
+  await test('retention metadata cannot extend the seven day publication deadline', async () => {
+    const owner = db('s2'), data = request('s2');
+    await assertFails(setDoc(doc(owner,'streamer_requests','s2'),{...data,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+8*86400000)}));
+    await assertSucceeds(setDoc(doc(owner,'streamer_requests','s2'),{...data,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+7*86400000)}));
+    await assertFails(setDoc(doc(admin,'streamer_click_metrics','publication-wrong-deadline'),{userId:'s2',publicationId:'publication-wrong-deadline',submittedAtMillis:data.submittedAtMillis,clickCount:0,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+8*86400000)}));
+  });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }
