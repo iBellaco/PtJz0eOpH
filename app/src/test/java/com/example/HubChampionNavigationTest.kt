@@ -82,7 +82,8 @@ class HubChampionNavigationTest {
         compose.onNodeWithContentDescription("Fechar").performClick()
         compose.onNodeWithText("Reabrir").performClick()
         compose.onNodeWithTag("delete_build_delete-target").assertDoesNotExist()
-        compose.onNodeWithTag("delete_build_keep-target").performScrollTo().assertExists()
+        compose.onNodeWithTag("creator_build_list").performScrollToNode(hasTestTag("delete_build_keep-target"))
+        compose.onNodeWithTag("delete_build_keep-target").assertExists()
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = "build/reports/portuguese-rendered/creator-after-delete-pt.png")
     }
 

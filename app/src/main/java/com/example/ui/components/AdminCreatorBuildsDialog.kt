@@ -680,6 +680,7 @@ fun AdminCreatorBuildsDialog(
             } else {
                 LazyColumn(
                     modifier = Modifier
+                        .testTag("creator_build_list")
                         .fillMaxWidth()
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)

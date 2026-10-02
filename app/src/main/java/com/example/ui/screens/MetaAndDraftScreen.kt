@@ -882,6 +882,7 @@ fun ChampionsCatalogTab(
     val context = androidx.compose.ui.platform.LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
+    val catalogSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
     val syncState by ChineseMetaSyncService.syncState.collectAsStateWithLifecycle()
     val currentTier by ChineseMetaSyncService.currentTier.collectAsStateWithLifecycle()
@@ -1422,7 +1423,7 @@ fun ChampionsCatalogTab(
                                 lineHeight = if (isOverlay) 12.sp else 15.sp,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
-                            if (!isOverlay && com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle().value) {
+                            if (!isOverlay && catalogSignedIn) {
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier
