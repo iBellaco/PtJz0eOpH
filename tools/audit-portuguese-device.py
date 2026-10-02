@@ -70,10 +70,11 @@ def scroll():
 
 
 def tap(label, scrolling=0):
+    labels = (label,) if isinstance(label, str) else tuple(label)
     for attempt in range(max(10, scrolling + 1)):
         nodes = app_nodes(window())
         for node in nodes:
-            if label in [node.get("text"), node.get("content-desc")]:
+            if any(candidate in [node.get("text"), node.get("content-desc")] for candidate in labels):
                 points = list(map(int, re.findall(r"\d+", node.get("bounds", ""))))
                 if len(points) == 4 and points[2] > points[0] and points[3] > points[1]:
                     adb("shell", "input", "tap", str((points[0] + points[2]) // 2), str((points[1] + points[3]) // 2))
@@ -84,7 +85,7 @@ def tap(label, scrolling=0):
         else:
             time.sleep(1)
     snapshot("missing-" + str(len(screens)))
-    raise AssertionError("Control not found: " + label)
+    raise AssertionError("Control not found: " + str(label))
 
 
 def back():
@@ -98,7 +99,7 @@ adb("shell", "pm", "grant", APP, "android.permission.POST_NOTIFICATIONS")
 adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
 adb("shell", "wm", "dismiss-keyguard")
 adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
-tap("Português")
+tap(("Português", "Portugués"))
 snapshot("language-portuguese")
 tap("Continuar em Português")
 snapshot("privacy")
