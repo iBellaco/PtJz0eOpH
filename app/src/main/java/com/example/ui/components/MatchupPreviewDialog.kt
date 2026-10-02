@@ -44,6 +44,10 @@ fun MatchupPreviewDialog(
     activeRole: LaneRole,
     onDismiss: () -> Unit
 ) {
+    val language = com.example.util.currentAppLanguage()
+    val coaching = remember(myChampion, enemyOpponent, activeRole, language) {
+        com.example.util.ChampionMatchupCoaching.forDuel(myChampion, enemyOpponent, activeRole, language)
+    }
     val isMyCounter = enemyOpponent.counteredBy.any {
         it.equals(myChampion.name, ignoreCase = true) || it.equals(myChampion.id, ignoreCase = true)
     } || myChampion.advantageAgainst.any {
@@ -260,12 +264,7 @@ fun MatchupPreviewDialog(
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = com.example.util.tr(if (isMyCounter)
-                                        tr("Ventaja en intercambios tempranos. En Wild Rift la primera oleada otorga nivel 2 inmediato; presiona para denegar el Fruto de Miel (1:15).")
-                                    else if (isEnemyCounter)
-                                        tr("Precaución en fase temprana. Cede la prioridad de la primera oleada, farmea bajo torre y espera tu pico al nivel 3 (kit completo).")
-                                    else
-                                        tr("Línea neutra de Wild Rift. Controla los arbustos de línea, guarda la Flor del Adivino y castiga tras esquivar su habilidad principal.")),
+                                    text = coaching.early,
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp
@@ -281,11 +280,11 @@ fun MatchupPreviewDialog(
                                         .border(0.8.dp, HextechGold, RoundedCornerShape(4.dp))
                                         .padding(horizontal = 5.dp, vertical = 2.dp)
                                 ) {
-                                    Text(tr("Nv. 5 (Definitiva)"), color = HextechGold, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                                    Text("H4", color = HextechGold, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = tr("Pico de Definitiva (Nivel 5): En Wild Rift los enfriamientos de R son cortos (35-50s). Si %s falla su definitiva, castiga agresivamente antes del objetivo del minuto 5:00.").format(enemyOpponent.name),
+                                    text = coaching.ultimate,
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp
@@ -305,7 +304,7 @@ fun MatchupPreviewDialog(
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = tr("Macro y Objetivos Móviles: Al minuto 5:00 asegura la primera rotación (Dragón o Heraldo). En minuto 7:30 caen las placas de torre y a los 12:00 el Barón/Ancestral."),
+                                    text = coaching.late,
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp
@@ -336,7 +335,7 @@ fun MatchupPreviewDialog(
                                 Icon(Icons.Default.Shield, contentDescription = null, tint = DangerRed, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = tr("Fuerte contra (Matchups favorables): %s").format(if (enemyOpponent.advantageAgainst.isNotEmpty()) enemyOpponent.advantageAgainst.take(3).joinToString(", ") else tr("Intercambio en línea de Wild Rift")),
+                                    text = coaching.rivalHeading,
                                     color = DangerRed,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp
@@ -344,7 +343,7 @@ fun MatchupPreviewDialog(
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = tr("Consejo del rival: %s").format(tr(enemyOpponent.tacticalAdvice.ifBlank { "Castiga cuando falle sus habilidades principales o use recursos en la oleada." })),
+                                text = coaching.rival,
                                 color = TextPrimary,
                                 fontSize = 11.sp,
                                 lineHeight = 14.sp
@@ -376,7 +375,7 @@ fun MatchupPreviewDialog(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = tr("Aprovecha que las rotaciones en Wild Rift son rápidas. Prioriza rotar al Dragón antes del minuto 5. Si %s rota primero, castiga su torre por placas.").format(enemyOpponent.name),
+                                text = coaching.winCondition,
                                 color = TextPrimary,
                                 fontSize = 11.sp,
                                 lineHeight = 14.5.sp
@@ -410,12 +409,7 @@ fun MatchupPreviewDialog(
                                     fontWeight = FontWeight.Black
                                 )
                                 Text(
-                                    text = com.example.util.tr(if (isMyCounter)
-                                        "Tienes la ventaja de campeón. Mantén el control de la oleada y usa los arbustos laterales para rotar rápido y emboscar (roam) a otras líneas."
-                                    else if (isEnemyCounter)
-                                        "Mantén la calma y no cedas oro. En Wild Rift el juego tardío llega rápido; agrupa con tu equipo tan pronto caiga la primera torre."
-                                    else
-                                        "Duelo equilibrado. Mantén visión en el río con Lente Revelador antes de los objetivos y castiga cuando use habilidades en la oleada."),
+                                    text = coaching.verdict,
                                     color = TextPrimary,
                                     fontSize = 11.sp,
                                     lineHeight = 14.5.sp

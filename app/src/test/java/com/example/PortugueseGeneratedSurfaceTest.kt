@@ -46,6 +46,11 @@ class PortugueseGeneratedSurfaceTest {
             for (role in (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()) {
                 val profile = ChampionRoleAdapter.getProfile(champion, role)
                 profiles++
+                val rival = WildRiftRepository.champions.first { it.id != champion.id }
+                val duel = ChampionMatchupCoaching.forDuel(champion, rival, role, "pt")
+                inspect("duel/${champion.id}/${role.name}", listOf(duel.early, duel.ultimate, duel.late, duel.rivalHeading,
+                    duel.rival, duel.winCondition, duel.verdict))
+                inspect("coaching/${champion.id}/${role.name}", listOf(CoachingGenerator.generateTacticalAnalysis(champion, role, "pt")))
                 val recommendation = WildRiftRepository.evaluateChampion(champion, role,
                     WildRiftRepository.champions.filter { it.id != champion.id }.take(2),
                     WildRiftRepository.champions.filter { it.id != champion.id }.takeLast(2),
@@ -73,6 +78,46 @@ class PortugueseGeneratedSurfaceTest {
         failures.forEach { (value, origin) -> println("PORTUGUESE_GENERATED_RESIDUE: $origin: $value") }
         assertTrue("Generated Spanish remains:\n${failures.entries.joinToString("\n") { "${it.value}: ${it.key}" }}", failures.isEmpty())
         println("PORTUGUESE_GENERATED_AUDIT: $profiles profiles; ${values.size} distinct texts")
+    }
+
+    @Test fun `duel plans reflect every champion kit and both photographed matchups differ`() {
+        val champions = WildRiftRepository.champions
+        val enemy = champions.first { it.id == "smolder" }
+        val varus = ChampionMatchupCoaching.forDuel(champions.first { it.id == "varus" }, enemy, com.example.model.LaneRole.ADC, "es")
+        val jhin = ChampionMatchupCoaching.forDuel(champions.first { it.id == "jhin" }, enemy, com.example.model.LaneRole.ADC, "es")
+        for ((a, b) in listOf(varus.early to jhin.early, varus.ultimate to jhin.ultimate, varus.late to jhin.late,
+            varus.rival to jhin.rival, varus.winCondition to jhin.winCondition, varus.verdict to jhin.verdict)) assertNotEquals(a, b)
+        assertTrue(varus.early.contains("tres marcas")); assertTrue(jhin.early.contains("cuarto disparo"))
+        for (champion in champions) {
+            val rival = champions.first { it.id != champion.id }
+            val other = champions.last { it.id != champion.id && it.id != rival.id }
+            val first = ChampionMatchupCoaching.forDuel(champion, rival, champion.primaryRole, "pt")
+            val second = ChampionMatchupCoaching.forDuel(champion, other, champion.primaryRole, "pt")
+            assertNotEquals(champion.id, first, second)
+            for (text in listOf(first.early, first.ultimate, first.late, first.winCondition, first.verdict)) {
+                assertTrue(champion.id, text.contains(champion.getLocalizedName("pt")))
+                assertTrue(champion.id, text.contains(rival.getLocalizedName("pt")))
+                assertFalse(text, text.contains("35-50"))
+            }
+            assertTrue(first.ultimate, first.ultimate.contains(champion.skills.first { it.slot == "4" }.getLocalizedName("pt")))
+        }
+    }
+
+    @Test fun `kit interactions distinguish projectile blocking spell shields and invulnerability`() {
+        fun champion(id: String) = WildRiftRepository.champions.first { it.id == id }
+        fun plan(own: String, enemy: String) = ChampionMatchupCoaching.forDuel(champion(own), champion(enemy), champion(own).primaryRole, "pt")
+        val shield = plan("varus", "morgana").verdict
+        assertTrue(shield, shield.contains(champion("morgana").skills.first { it.slot == "3" }.getLocalizedName("pt")))
+        assertTrue(shield, shield.contains("proteção"))
+        val projectile = plan("yasuo", "morgana").verdict
+        assertTrue(projectile, projectile.contains(champion("yasuo").skills.first { it.slot == "2" }.getLocalizedName("pt")))
+        assertTrue(projectile, projectile.contains("projétil"))
+        val invulnerability = plan("jhin", "kayle").verdict
+        assertTrue(invulnerability, invulnerability.contains(champion("kayle").skills.first { it.slot == "4" }.getLocalizedName("pt")))
+        assertTrue(invulnerability, invulnerability.contains("invulnerabilidade"))
+        val sameResource = plan("garen", "smolder").verdict
+        assertTrue(sameResource, sameResource.contains("sem gastar seu controle"))
+        assertFalse(sameResource, sameResource.contains("pressione primeiro com H1"))
     }
 
     @Test fun `personal coaching verdicts localize every grade and lane`() {

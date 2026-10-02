@@ -134,4 +134,17 @@ class RuntimeBehaviorTest {
             assertEquals("SOLVED", SupportTicketPresentation.status(status))
     }
 
+    @Test fun `history expires at exactly seven days using the authoritative submission time`() {
+        val publication = mapOf<String, Any>("submittedAtMillis" to now, "status" to "APPROVED")
+        val end = now + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS
+        assertFalse(StreamerPublicationPolicy.historyExpired(publication, end - 1))
+        assertTrue(StreamerPublicationPolicy.historyExpired(publication, end))
+        assertTrue(StreamerPublicationPolicy.historyExpired(publication + ("status" to "REJECTED"), end))
+        assertTrue(StreamerPublicationPolicy.historyExpired(publication + ("status" to "ENDED"), end))
+        assertFalse(StreamerPublicationPolicy.historyExpired(emptyMap(), end))
+        val server = publication + ("submittedAt" to com.google.firebase.Timestamp(java.util.Date(now + 1000)))
+        assertFalse(StreamerPublicationPolicy.historyExpired(server, end))
+        assertTrue(StreamerPublicationPolicy.historyExpired(server, end + 1000))
+    }
+
 }

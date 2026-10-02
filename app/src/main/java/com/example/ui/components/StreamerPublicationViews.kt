@@ -13,14 +13,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.data.StreamerPublicationPolicy
 import com.example.util.currentAppLanguage
 import com.example.util.localizedString
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -40,15 +46,22 @@ internal fun streamerClock(): Long {
 fun LiveStreamerChip(channelName: String, onClick: () -> Unit) {
     val liveDescription = localizedString(R.string.streamer_live_description)
     val transition = rememberInfiniteTransition(label = "streamer-live")
-    val glow by transition.animateFloat(0.35f, 1f,
+    val glow by transition.animateFloat(0.7f, 1f,
         infiniteRepeatable(tween(1000), RepeatMode.Reverse), label = "live-indicator")
-    AssistChip(onClick = onClick, modifier = Modifier.testTag("live_streamer_chip").semantics { stateDescription = liveDescription },
+    val red = Color(0xFFFF6B6B)
+    AssistChip(onClick = onClick, modifier = Modifier.heightIn(min = 54.dp).testTag("live_streamer_chip").semantics { stateDescription = liveDescription },
         leadingIcon = {
             Box(Modifier.size(16.dp), contentAlignment = Alignment.Center) {
-                Box(Modifier.size(16.dp).alpha(glow * 0.4f).background(Color(0xFF34D399), CircleShape))
-                Box(Modifier.size(8.dp).alpha(glow).background(Color(0xFF34D399), CircleShape))
+                Box(Modifier.size(16.dp).alpha(glow * 0.4f).background(red, CircleShape))
+                Box(Modifier.size(8.dp).alpha(glow).background(red, CircleShape))
             }
-        }, label = { Text(channelName, color = Color(0xFFD4AF37)) })
+        }, label = {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(channelName, color = Color(0xFFD4AF37), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(localizedString(R.string.streamer_live_label), color = red,
+                    fontSize = 10.sp, modifier = Modifier.alpha(glow).testTag("streamer_live_label"))
+            }
+        })
 }
 
 @Composable
@@ -65,17 +78,22 @@ fun StreamerSubmissionFeedback(busy: Boolean, submitted: Boolean) {
 }
 
 @Composable
-fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long) {
+fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, onCopy: ((String) -> Unit)? = null) {
     val locale = if (currentAppLanguage() == "pt") Locale("pt", "BR") else Locale("es", "ES")
     val dayFormat = remember(locale) { DateFormat.getDateInstance(DateFormat.MEDIUM, locale) }
-    val timeFormat = remember(locale) { DateFormat.getTimeInstance(DateFormat.SHORT, locale) }
-    val days = publications.distinctBy { StreamerPublicationPolicy.publicationId(it) }
+    val exactFormat = remember(locale) { SimpleDateFormat("dd/MM/yyyy HH:mm:ss z", locale) }
+    val clipboard = LocalClipboardManager.current
+    val context = LocalContext.current
+    val copiedMessage = localizedString(R.string.streamer_history_copied)
+    val days = publications.filterNot { StreamerPublicationPolicy.historyExpired(it, now) }
+        .distinctBy { StreamerPublicationPolicy.publicationId(it) }
         .sortedByDescending(StreamerPublicationPolicy::submittedAt).groupBy {
             val date = StreamerPublicationPolicy.submittedAt(it)
             if (date > 0) dayFormat.format(Date(date)) else ""
         }
     Column(Modifier.fillMaxWidth().testTag("streamer_publication_history"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(localizedString(R.string.streamer_history), style = MaterialTheme.typography.titleMedium, color = Color(0xFFD4AF37))
+        Text(localizedString(R.string.streamer_history_retention), color = Color.LightGray)
         if (days.isEmpty()) Text(localizedString(R.string.streamer_history_empty), color = Color.LightGray)
         days.forEach { (date, records) ->
             Text(date.ifBlank { localizedString(R.string.streamer_history_date_unavailable) }, color = Color.LightGray)
@@ -95,14 +113,37 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long) 
                     Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text((item["channelName"] as? String).orEmpty(), color = Color.White)
                         val timestamp = StreamerPublicationPolicy.submittedAt(item)
+                        val channel = (item["channelName"] as? String).orEmpty()
+                        val exactDate = if (timestamp > 0L) exactFormat.format(Date(timestamp)) else localizedString(R.string.streamer_history_date_unavailable)
+                        val dateText = localizedString(R.string.streamer_history_exact_date, exactDate)
+                        val statusText = localizedString(statusId)
+                        val clickText = (item["clickCount"] as? Number)?.let { localizedString(R.string.streamer_history_clicks, it.toLong()) }
+                            ?: localizedString(R.string.streamer_history_clicks_unavailable)
+                        val deadline = StreamerPublicationPolicy.historyExpiresAt(item)
+                        val remaining = ((deadline - now).coerceAtLeast(0L) + 59999L) / 60000L
+                        val expiresText = if (deadline > 0L) localizedString(R.string.streamer_history_delete_in,
+                            remaining / 1440L, (remaining / 60L) % 24L, remaining % 60L) else ""
+                        Text(dateText, color = Color.LightGray)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            if (timestamp > 0L) Text(timeFormat.format(Date(timestamp)), color = Color.LightGray)
-                            Text(localizedString(statusId), color = color)
+                            Text(statusText, color = color)
                         }
+                        Text(clickText, color = Color.White, modifier = Modifier.testTag("streamer_clicks_${StreamerPublicationPolicy.publicationId(item)}"))
+                        if (expiresText.isNotBlank()) Text(expiresText, color = Color.LightGray)
                         if (item["rejectionReason"] == "TIMEOUT" || StreamerPublicationPolicy.isExpired(item, now)) {
                             Text(localizedString(R.string.streamer_expired), color = Color.LightGray)
                         }
                         if (status == "ENDED") Text(localizedString(R.string.streamer_history_ended), color = Color.LightGray)
+                        val deletionDate = if (deadline > 0L) localizedString(R.string.streamer_history_deletion_date, exactFormat.format(Date(deadline))) else ""
+                        val copyLabel = localizedString(R.string.streamer_history_copy)
+                        TextButton(onClick = {
+                            val summary = listOf(channel, dateText, statusText, clickText, expiresText, deletionDate).filter { it.isNotBlank() }.joinToString("\n")
+                            if (onCopy != null) onCopy(summary) else {
+                                clipboard.setText(AnnotatedString(summary))
+                                android.widget.Toast.makeText(context, copiedMessage, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }, modifier = Modifier.testTag("streamer_history_copy_${StreamerPublicationPolicy.publicationId(item)}")) {
+                            Text(copyLabel, color = Color(0xFFD4AF37))
+                        }
                     }
                 }
             }

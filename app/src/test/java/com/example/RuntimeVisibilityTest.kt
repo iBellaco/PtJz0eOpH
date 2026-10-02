@@ -9,6 +9,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
+import com.example.data.StreamerPublicationPolicy
 import com.example.model.*
 import com.example.ui.components.*
 import androidx.compose.foundation.verticalScroll
@@ -46,11 +47,13 @@ class RuntimeVisibilityTest(private val screen: String) {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered",
-            "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history",
+            "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live",
+            "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
             "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
+    private var copiedSummary = ""
     private val context get() = RuntimeEnvironment.getApplication()
     private val output = File("build/reports/portuguese-rendered").apply { mkdirs() }
 
@@ -65,6 +68,8 @@ class RuntimeVisibilityTest(private val screen: String) {
         database.firestoreSettings = FirebaseFirestoreSettings.Builder()
             .setLocalCacheSettings(MemoryCacheSettings.newBuilder().build()).build()
         awaitTask(database.disableNetwork())
+        if (screen == "streamer-guest-live") database.collection("system_config").document("streamer_live").set(
+            mapOf("entries" to listOf(mapOf("userId" to "local-streamer", "channelName" to "Canal Público", "channelUrl" to "https://twitch.tv/coach_test"))))
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
@@ -100,15 +105,21 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen == "streamer-guest-live" -> LiveStreamersRow()
+            screen.startsWith("matchup-") -> MatchupPreviewDialog(
+                myChampion = WildRiftRepository.champions.first { it.id == screen.removePrefix("matchup-") },
+                enemyOpponent = WildRiftRepository.champions.first { it.id == "smolder" },
+                activeRole = if (screen == "matchup-garen") LaneRole.TOP else LaneRole.ADC, onDismiss = {})
             screen == "streamer-live" -> LiveStreamerChip("Canal Coach") {}
             screen == "streamer-feedback" -> StreamerSubmissionFeedback(false, true)
             screen == "streamer-history" -> {
                 val now = System.currentTimeMillis()
                 val records = listOf("APPROVED", "REJECTED", "ENDED", "PENDING").mapIndexed { i, status ->
                     mapOf<String, Any>("publicationId" to "history-$i", "channelName" to "Canal $i", "status" to status,
-                        "submittedAtMillis" to now - (i + 1) * 24 * 60 * 60 * 1000L)
+                        "submittedAtMillis" to now - (i + 1) * 24 * 60 * 60 * 1000L, "clickCount" to if (i == 0) 42L else i.toLong())
                 }
-                Column(Modifier.verticalScroll(rememberScrollState())) { StreamerPublicationHistory(records, now) }
+                Column(Modifier.verticalScroll(rememberScrollState())) { StreamerPublicationHistory(records + mapOf<String, Any>("publicationId" to "history-old", "channelName" to "Canal Expirado", "status" to "APPROVED",
+                    "submittedAtMillis" to now - StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS), now) { copiedSummary = it } }
             }
             screen.startsWith("streamer") -> Column { StreamerUrlRecommendations(screen == "streamer-admin") {} }
             screen.startsWith("moderation") -> ModeratorDashboardDialog {}
@@ -205,12 +216,35 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             "streamer-live" -> {
                 compose.onNodeWithText("Canal Coach").assertExists()
-                compose.onAllNodesWithText("AO VIVO", substring = true).assertCountEquals(0)
+                compose.onNodeWithText("Ao vivo").assertExists()
                 compose.onNodeWithTag("live_streamer_chip").assertExists()
+            }
+            "streamer-guest-live" -> {
+                compose.waitUntil(10000) { compose.onAllNodesWithText("Canal Público").fetchSemanticsNodes().isNotEmpty() }
+                compose.onNodeWithText("Ao vivo").assertExists()
+                Assert.assertFalse(AuthManager.isSignedIn.value)
+            }
+            "matchup-varus", "matchup-jhin", "matchup-garen" -> {
+                compose.onNodeWithText("Smolder", substring = false).assertExists()
+                val champion = WildRiftRepository.champions.first { it.id == screen.removePrefix("matchup-") }
+                val plan = ChampionMatchupCoaching.forDuel(champion, WildRiftRepository.champions.first { it.id == "smolder" },
+                    if (screen == "matchup-garen") LaneRole.TOP else LaneRole.ADC, "pt")
+                compose.onNodeWithText(plan.early).assertExists()
+                inspect("early")
+                compose.onNodeWithText(plan.winCondition).performScrollTo().assertExists()
+                inspect("condition")
+                compose.onNodeWithText(plan.verdict).performScrollTo().assertExists()
             }
             "streamer-feedback" -> compose.onNodeWithText("Solicitação enviada com sucesso. Você será avisado quando ela for analisada.").assertExists()
             "streamer-history" -> {
                 compose.onNodeWithText("Histórico de publicações").assertExists()
+                compose.onNodeWithText("Canal Expirado").assertDoesNotExist()
+                compose.onNodeWithTag("streamer_history_copy_history-0").performScrollTo().performClick()
+                Assert.assertTrue(copiedSummary, copiedSummary.contains("Cliques para abrir o canal: 42"))
+                Assert.assertTrue(copiedSummary, copiedSummary.contains("Aceita"))
+                Assert.assertTrue(copiedSummary, copiedSummary.contains("Data e hora:"))
+                Assert.assertTrue(copiedSummary, copiedSummary.contains("Remoção:"))
+                Assert.assertTrue(copiedSummary, Regex("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}").containsMatchIn(copiedSummary))
                 compose.onAllNodesWithText("Aceita").assertCountEquals(2)
                 compose.onNodeWithText("Rejeitada automaticamente: passaram três horas sem aprovação.").performScrollTo().assertExists()
             }

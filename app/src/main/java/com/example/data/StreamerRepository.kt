@@ -11,9 +11,16 @@ object StreamerRepository {
     private val db get() = FirebaseFirestore.getInstance()
     val registry get() = db.collection("system_config").document("streamer_live")
     val requests get() = db.collection("streamer_requests")
+    val metrics get() = db.collection("streamer_click_metrics")
     fun history(uid: String) = requests.document(uid).collection("history")
     private suspend fun historyAvailable(uid: String): Boolean = try {
         history(uid).limit(1).get(com.google.firebase.firestore.Source.SERVER).await()
+        true
+    } catch (error: com.google.firebase.firestore.FirebaseFirestoreException) {
+        if (error.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED) false else throw error
+    }
+    private suspend fun metricsAvailable(uid: String): Boolean = try {
+        metrics.whereEqualTo("userId", uid).limit(1).get(com.google.firebase.firestore.Source.SERVER).await()
         true
     } catch (error: com.google.firebase.firestore.FirebaseFirestoreException) {
         if (error.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED) false else throw error
@@ -41,7 +48,7 @@ object StreamerRepository {
             val now = System.currentTimeMillis()
             val prior = current.data.orEmpty()
             check(current.getString("status") != "PENDING" || StreamerPublicationPolicy.isExpired(prior, now)) { "streamer_pending" }
-            if (archive && current.exists()) {
+            if (archive && current.exists() && !StreamerPublicationPolicy.historyExpired(prior, now)) {
                 val previous = prior.toMutableMap()
                 if (StreamerPublicationPolicy.isExpired(prior, now)) previous.putAll(mapOf("status" to "REJECTED",
                     "rejectionReason" to "TIMEOUT", "reviewedAtMillis" to StreamerPublicationPolicy.expiresAt(prior)))
@@ -50,7 +57,8 @@ object StreamerRepository {
             val fields = mutableMapOf<String, Any>("userId" to user.uid, "userName" to (account.getString("userName") ?: user.displayName.orEmpty()),
                 "channelName" to name.trim(), "channelUrl" to channel.url, "platform" to channel.platform,
                 "status" to "PENDING", "usingCoachAcknowledged" to true, "submittedAtMillis" to now)
-            if (archive) fields.putAll(mapOf("submittedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(), "publicationId" to publicationId))
+            if (archive) fields.putAll(mapOf("submittedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(), "publicationId" to publicationId,
+                "streamerHistoryDeleteAt" to com.google.firebase.Timestamp(java.util.Date(now + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS))))
             if (isAdmin) fields["adminTest"] = channel.platform == "Google"
             transaction.set(ref, fields)
             if (archive) transaction.set(history(user.uid).document(publicationId), fields)
@@ -62,6 +70,7 @@ object StreamerRepository {
         check(SupportTicketAccess.isAdmin()) { "streamer_error" }
         val ref = requests.document(uid)
         val archive = historyAvailable(uid)
+        val countClicks = archive && metricsAvailable(uid)
         db.runTransaction { transaction ->
             val request = transaction.get(ref)
             val live = entries(transaction.get(registry).get("entries"))
@@ -76,8 +85,13 @@ object StreamerRepository {
                 val channel = StreamChannelUrl.parse(request.getString("channelUrl").orEmpty(),
                     allowAdminTest = trustedTest) ?: error("streamer_url_error")
                 val entry = mapOf<String, Any>("userId" to uid, "channelName" to request.getString("channelName").orEmpty(),
-                    "channelUrl" to channel.url, "platform" to channel.platform, "approvedAtMillis" to System.currentTimeMillis())
+                    "channelUrl" to channel.url, "platform" to channel.platform, "approvedAtMillis" to System.currentTimeMillis(),
+                    "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()))
                 transaction.set(registry, mapOf("entries" to StreamerPublicationPolicy.approve(live, entry)), SetOptions.merge())
+                if (countClicks) transaction.set(metrics.document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())),
+                    mapOf("userId" to uid, "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()),
+                        "submittedAtMillis" to StreamerPublicationPolicy.submittedAt(request.data.orEmpty()), "clickCount" to 0L,
+                        "streamerHistoryDeleteAt" to com.google.firebase.Timestamp(java.util.Date(StreamerPublicationPolicy.historyExpiresAt(request.data.orEmpty())))))
             }
             val reviewed = mapOf("status" to if (approve) "APPROVED" else "REJECTED",
                 "verifiedUsingCoach" to (approve && verifiedUsingCoach), "reviewedAtMillis" to System.currentTimeMillis())
@@ -99,7 +113,8 @@ object StreamerRepository {
             if (request.exists()) {
                 val ended = mapOf("status" to "ENDED", "endedAtMillis" to System.currentTimeMillis())
                 transaction.update(ref, ended)
-                if (archive) transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())), request.data.orEmpty() + ended)
+                if (archive && !StreamerPublicationPolicy.historyExpired(request.data.orEmpty()))
+                    transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())), request.data.orEmpty() + ended)
             }
         }.await()
         Unit
@@ -117,11 +132,34 @@ object StreamerRepository {
                 val rejected = data + mapOf("status" to "REJECTED", "rejectionReason" to "TIMEOUT",
                     "reviewedAtMillis" to StreamerPublicationPolicy.expiresAt(data))
                 if (archive) {
-                    transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(data)), rejected)
+                    if (!StreamerPublicationPolicy.historyExpired(data))
+                        transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(data)), rejected)
                     transaction.delete(ref)
                 } else transaction.update(ref, rejected)
             }
         }.await()
+        Unit
+    } }
+
+    /** Count successful channel-open actions; no visitor identity is stored and no login is required. */
+    suspend fun recordClick(entry: Map<String, Any>): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
+        val id = (entry["publicationId"] as? String)?.takeIf { it.isNotBlank() } ?: return@runCatching
+        metrics.document(id).update(mapOf("clickCount" to com.google.firebase.firestore.FieldValue.increment(1L),
+            "lastClickedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp())).await()
+        Unit
+    } }
+
+    suspend fun pruneHistory(uid: String): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
+        val now = System.currentTimeMillis()
+        val rows = history(uid).get(com.google.firebase.firestore.Source.SERVER).await().documents
+        val counters = if (metricsAvailable(uid)) metrics.whereEqualTo("userId", uid)
+            .get(com.google.firebase.firestore.Source.SERVER).await().documents else emptyList()
+        val old = (rows + counters).filter { StreamerPublicationPolicy.historyExpired(it.data.orEmpty(), now) }
+        old.chunked(400).forEach { records ->
+            val batch = db.batch()
+            records.forEach { batch.delete(it.reference) }
+            batch.commit().await()
+        }
         Unit
     } }
 

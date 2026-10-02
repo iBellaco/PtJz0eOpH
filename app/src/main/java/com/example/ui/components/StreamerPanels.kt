@@ -41,13 +41,21 @@ private fun streamerFieldColors() = OutlinedTextFieldDefaults.colors(
 private fun liveEntries(): Pair<List<Map<String, Any>>, Boolean> {
     var entries by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var available by remember { mutableStateOf(false) }
-    val uid = FirebaseAuth.getInstance().currentUser?.uid
-    DisposableEffect(uid) {
-        val listener = if (uid != null) StreamerRepository.registry.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
-            available = error == null && snapshot != null && !snapshot.metadata.isFromCache
-            if (error == null && snapshot != null) entries = StreamerRepository.entries(snapshot.get("entries"))
-        } else null
-        onDispose { listener?.remove() }
+    DisposableEffect(Unit) {
+        var listener: com.google.firebase.firestore.ListenerRegistration? = null
+        fun attach() {
+            listener?.remove()
+            listener = StreamerRepository.registry.addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
+                available = error == null && snapshot != null && !snapshot.metadata.isFromCache
+                if (error == null && snapshot != null) entries = StreamerRepository.entries(snapshot.get("entries"))
+            }
+        }
+        // Public channels subscribe immediately, and retry when the guest/session token becomes ready.
+        attach()
+        val auth = FirebaseAuth.getInstance()
+        val authListener = FirebaseAuth.AuthStateListener { attach() }
+        auth.addAuthStateListener(authListener)
+        onDispose { auth.removeAuthStateListener(authListener); listener?.remove() }
     }
     return entries to available
 }
@@ -76,11 +84,20 @@ fun LiveStreamersRow() {
     val role by SubscriptionManager.userRole.collectAsState()
     val adminClaim by AuthManager.isAdminClaim.collectAsState()
     val isAdmin = RolePanelAccess.isAdministrator(role, adminClaim)
+    val scope = rememberCoroutineScope()
+    LiveStreamersContent(entries, isAdmin) { item, url ->
+        if (runCatching { uri.openUri(url) }.isSuccess) scope.launch { StreamerRepository.recordClick(item) }
+    }
+}
+
+@Composable
+fun LiveStreamersContent(entries: List<Map<String, Any>>, isAdmin: Boolean,
+    onOpen: (Map<String, Any>, String) -> Unit) {
     if (entries.isNotEmpty()) {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             entries.take(StreamerPublicationPolicy.MAX_LIVE).forEach { item ->
                 val channel = StreamChannelUrl.parse(item["channelUrl"] as? String ?: "", allowAdminTest = isAdmin)
-                if (channel != null) LiveStreamerChip(item["channelName"] as? String ?: "") { runCatching { uri.openUri(channel.url) } }
+                if (channel != null) LiveStreamerChip(item["channelName"] as? String ?: "") { onOpen(item, channel.url) }
             }
         }
     }
@@ -114,6 +131,8 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
     var request by remember(uid) { mutableStateOf<Map<String, Any>>(emptyMap()) }
     var publications by remember(uid) { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var historyError by remember(uid) { mutableStateOf(false) }
+    var clickMetrics by remember(uid) { mutableStateOf<Map<String, Long>>(emptyMap()) }
+    var clicksAvailable by remember(uid) { mutableStateOf(false) }
     val now = streamerClock()
     var submitted by remember { mutableStateOf(false) }
     var submitting by remember { mutableStateOf(false) }
@@ -136,7 +155,11 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
             historyError = error != null
             if (error == null && snapshot != null) publications = snapshot.documents.mapNotNull { it.data }
         }
-        onDispose { listener.remove(); historyListener.remove() }
+        val metricsListener = StreamerRepository.metrics.whereEqualTo("userId", uid).addSnapshotListener { snapshot, error ->
+            clicksAvailable = error == null && snapshot != null
+            if (clicksAvailable) clickMetrics = snapshot!!.documents.associate { it.id to (it.getLong("clickCount") ?: 0L) }
+        }
+        onDispose { listener.remove(); historyListener.remove(); metricsListener.remove() }
     }
     val active = entries.any { it["userId"] == uid }
     val expired = StreamerPublicationPolicy.isExpired(request, now)
@@ -171,7 +194,13 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 else Button(onClick = { submitting = true; busy = true; scope.launch { result = StreamerRepository.submit(name, url); submitted = result?.isSuccess == true; busy = false } },
                     enabled = !busy && registryAvailable && requestAvailable && !maximum && !pending && name.trim().length in 2..60 && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) != null) { Text(localizedString(R.string.streamer_submit)) }
                 if (url.isNotBlank() && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) == null) Text(localizedString(R.string.streamer_url_error), color = Color(0xFFFF8A80))
-                val history = listOfNotNull(request.takeIf { it.isNotEmpty() }) + publications
+                val history = (listOfNotNull(request.takeIf { it.isNotEmpty() }) + publications).map { item ->
+                    val id = StreamerPublicationPolicy.publicationId(item)
+                    val count = clickMetrics[id]
+                    if (clicksAvailable && count != null) item + ("clickCount" to count)
+                    else if (StreamerPublicationPolicy.historyStatus(item, now) in listOf("PENDING", "REJECTED")) item + ("clickCount" to 0L)
+                    else item
+                }
                 StreamerPublicationHistory(history, now)
                 if (historyError) Text(localizedString(R.string.streamer_history_error), color = Color(0xFFFF8A80))
                 TextButton(onClick = onDismiss, enabled = !busy) { Text(localizedString(R.string.streamer_close)) }

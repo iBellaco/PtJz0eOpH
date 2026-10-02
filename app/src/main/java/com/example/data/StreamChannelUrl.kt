@@ -36,10 +36,14 @@ object StreamChannelUrl {
 object StreamerPublicationPolicy {
     const val MAX_LIVE = 5
     const val REVIEW_WINDOW_MILLIS = 3 * 60 * 60 * 1000L
+    const val HISTORY_WINDOW_MILLIS = 7 * 24 * 60 * 60 * 1000L
     fun submittedAt(data: Map<String, Any>): Long =
         (data["submittedAt"] as? com.google.firebase.Timestamp)?.toDate()?.time
             ?: (data["submittedAtMillis"] as? Number)?.toLong() ?: 0L
     fun expiresAt(data: Map<String, Any>): Long = submittedAt(data) + REVIEW_WINDOW_MILLIS
+    fun historyExpiresAt(data: Map<String, Any>): Long = submittedAt(data).let { if (it > 0L) it + HISTORY_WINDOW_MILLIS else 0L }
+    fun historyExpired(data: Map<String, Any>, now: Long = System.currentTimeMillis()): Boolean =
+        historyExpiresAt(data).let { it > 0L && now >= it }
     fun isExpired(data: Map<String, Any>, now: Long = System.currentTimeMillis()): Boolean =
         data["status"] == "PENDING" && now >= expiresAt(data)
     fun historyStatus(data: Map<String, Any>, now: Long): String =

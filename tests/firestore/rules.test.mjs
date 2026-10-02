@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8080, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
 const db = uid => env.authenticatedContext(uid, { email: `${uid}@test.invalid` }).firestore();
 const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
@@ -184,6 +184,61 @@ try {
     assert.equal((await getDoc(doc(streamer,'users','s1'))).data().premiumUntil,until);
     await assertFails(updateDoc(doc(streamer,'users','s1'),{premiumUntil:until+86400000}));
     await assertSucceeds(updateDoc(doc(admin,'users','s1'),{premiumUntil:until+86400000}));
+  });
+  await test('guests read published channels but cannot read private configuration or history', async () => {
+    const guest = env.unauthenticatedContext().firestore();
+    await assertSucceeds(getDoc(doc(guest,'system_config','streamer_live')));
+    await assertFails(getDoc(doc(guest,'system_config','app_notice_analytics')));
+    await assertFails(getDocs(collection(guest,'system_config')));
+    await assertFails(getDocs(collection(guest,'streamer_requests/s2/history')));
+    await assertFails(updateDoc(doc(guest,'system_config','streamer_live'),{entries:[]}));
+  });
+  const counterId = 'publication-click-count-test';
+  await test('channel opens from guests and two devices increment one shared private count', async () => {
+    const owner = db('s2'), guest = env.unauthenticatedContext().firestore();
+    await assertSucceeds(setDoc(doc(admin,'system_config','streamer_live'),{entries:[{userId:'s2',publicationId:counterId,channelName:'Coach',channelUrl:'https://twitch.tv/coach_test'}]}));
+    await assertSucceeds(setDoc(doc(admin,'streamer_click_metrics',counterId),{userId:'s2',publicationId:counterId,submittedAtMillis:Date.now(),clickCount:0}));
+    await assertSucceeds(updateDoc(doc(guest,'streamer_click_metrics',counterId),{clickCount:increment(1),lastClickedAt:serverTimestamp()}));
+    await Promise.all([user,other,guest].map(viewer => assertSucceeds(updateDoc(doc(viewer,'streamer_click_metrics',counterId),{clickCount:increment(1),lastClickedAt:serverTimestamp()}))));
+    assert.equal((await getDoc(doc(owner,'streamer_click_metrics',counterId))).data().clickCount,4);
+    assert.equal((await getDoc(doc(db('s2'),'streamer_click_metrics',counterId))).data().clickCount,4);
+    await assertSucceeds(getDocs(query(collection(owner,'streamer_click_metrics'),where('userId','==','s2'))));
+    await assertFails(getDoc(doc(guest,'streamer_click_metrics',counterId)));
+    await assertFails(getDoc(doc(other,'streamer_click_metrics',counterId)));
+  });
+  await test('visitors cannot forge counters reset counts alter owners or count an inactive publication', async () => {
+    const guest = env.unauthenticatedContext().firestore();
+    await assertFails(setDoc(doc(guest,'streamer_click_metrics','forged-counter'),{userId:'s2',publicationId:'forged-counter',submittedAtMillis:Date.now(),clickCount:0}));
+    for (const clickCount of [0,-1,100]) await assertFails(updateDoc(doc(guest,'streamer_click_metrics',counterId),{clickCount,lastClickedAt:serverTimestamp()}));
+    await assertFails(updateDoc(doc(guest,'streamer_click_metrics',counterId),{clickCount:increment(1),lastClickedAt:serverTimestamp(),userId:'other'}));
+    await assertSucceeds(updateDoc(doc(admin,'system_config','streamer_live'),{entries:[]}));
+    await assertFails(updateDoc(doc(guest,'streamer_click_metrics',counterId),{clickCount:increment(1),lastClickedAt:serverTimestamp()}));
+  });
+  await test('seven day retention permits only expired history and counter deletion by owner or staff', async () => {
+    const oldId = 'publication-seven-days-old', oldDate = Date.now()-604800000-1000;
+    const data = { ...request('s2'),status:'APPROVED',submittedAtMillis:oldDate,submittedAt:Timestamp.fromMillis(oldDate),publicationId:oldId };
+    await env.withSecurityRulesDisabled(async context => {
+      const store = context.firestore();
+      await setDoc(doc(store,`streamer_requests/s2/history/${oldId}`),data);
+      await setDoc(doc(store,'streamer_click_metrics',oldId),{userId:'s2',publicationId:oldId,submittedAtMillis:oldDate,clickCount:8});
+    });
+    await assertFails(deleteDoc(doc(db('s2'),'streamer_click_metrics',counterId)));
+    await assertFails(deleteDoc(doc(other,`streamer_requests/s2/history/${oldId}`)));
+    await assertFails(deleteDoc(doc(other,'streamer_click_metrics',oldId)));
+    const owner = db('s2');
+    const batch = writeBatch(owner);
+    batch.delete(doc(owner,`streamer_requests/s2/history/${oldId}`));
+    batch.delete(doc(owner,'streamer_click_metrics',oldId));
+    await assertSucceeds(batch.commit());
+    assert.equal((await getDoc(doc(db('s2'),`streamer_requests/s2/history/${oldId}`))).exists(),false);
+    await assertFails(setDoc(doc(admin,`streamer_requests/s2/history/${oldId}`),data));
+    await assertFails(setDoc(doc(admin,'streamer_click_metrics',oldId),{userId:'s2',publicationId:oldId,submittedAtMillis:oldDate,clickCount:0}));
+  });
+  await test('retention metadata cannot extend the seven day publication deadline', async () => {
+    const owner = db('s2'), data = request('s2');
+    await assertFails(setDoc(doc(owner,'streamer_requests','s2'),{...data,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+8*86400000)}));
+    await assertSucceeds(setDoc(doc(owner,'streamer_requests','s2'),{...data,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+7*86400000)}));
+    await assertFails(setDoc(doc(admin,'streamer_click_metrics','publication-wrong-deadline'),{userId:'s2',publicationId:'publication-wrong-deadline',submittedAtMillis:data.submittedAtMillis,clickCount:0,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+8*86400000)}));
   });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }
