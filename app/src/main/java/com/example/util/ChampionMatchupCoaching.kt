@@ -60,8 +60,17 @@ object ChampionMatchupCoaching {
                 else "$rival evita daño durante ${label(invulnerable, lang)}. Con $me, retrasa ${label(myUlt, lang)} hasta que termine ese efecto y mantén distancia durante la protección, sin gastar el daño decisivo durante la invulnerabilidad."
             antiHeal != null && healing != null -> if (pt) "$me tem redução de cura em ${label(antiHeal, lang)}. Aplique-a quando $rival usar ${label(healing, lang)} para recuperar vida; alinhe sua sequência de dano com essa janela."
                 else "$me tiene reducción de curación en ${label(antiHeal, lang)}. Aplícala cuando $rival use ${label(healing, lang)} para recuperar vida; coordina tu secuencia de daño con esa ventana."
-            mobility != null && control != null -> if (pt) "$rival pode escapar com ${label(mobility, lang)}. Com $me, pressione primeiro com ${label(own.skill("1"), lang)} e guarde ${label(control, lang)} para o fim do deslocamento ou o ponto de saída."
-                else "$rival puede escapar con ${label(mobility, lang)}. Con $me, presiona primero con ${label(own.skill("1"), lang)} y guarda ${label(control, lang)} para el final del desplazamiento o el punto de salida."
+            mobility != null && control != null -> {
+                val pressure = if (control.slot == "1") {
+                    if (pt) "Com $me, aproxime-se e ameace uma troca curta sem gastar seu controle;"
+                    else "Con $me, acércate y amenaza un intercambio corto sin gastar tu control;"
+                } else {
+                    if (pt) "Com $me, pressione primeiro com ${label(own.skill("1"), lang)} e"
+                    else "Con $me, presiona primero con ${label(own.skill("1"), lang)} y"
+                }
+                if (pt) "$rival pode escapar com ${label(mobility, lang)}. $pressure guarde ${label(control, lang)} para o fim do deslocamento ou o ponto de saída."
+                else "$rival puede escapar con ${label(mobility, lang)}. $pressure guarda ${label(control, lang)} para el final del desplazamiento o el punto de salida."
+            }
             dodgeAttacks != null && empoweredAttacks != null -> if (pt) "$me: sincronize ${label(dodgeAttacks, lang)} com os ataques reforçados por ${label(empoweredAttacks, lang)} de $rival. Não inicie a troca longa com essa defesa indisponível."
                 else "$me: sincroniza ${label(dodgeAttacks, lang)} con los ataques potenciados por ${label(empoweredAttacks, lang)} de $rival. No inicies el intercambio largo con esa defensa indisponible."
             myUlt?.matches("canaliza", "concentra") == true && danger?.matches("aturd", "inmovil", "encant", "derrib", "silenci") == true -> if (pt) "$me precisa de uma posição protegida para ${label(myUlt, lang)}. Espere $rival gastar ${label(danger, lang)} antes de canalizar; mantenha distância do alcance desse controle."

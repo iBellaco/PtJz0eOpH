@@ -115,6 +115,9 @@ class PortugueseGeneratedSurfaceTest {
         val invulnerability = plan("jhin", "kayle").verdict
         assertTrue(invulnerability, invulnerability.contains(champion("kayle").skills.first { it.slot == "4" }.getLocalizedName("pt")))
         assertTrue(invulnerability, invulnerability.contains("invulnerabilidade"))
+        val sameResource = plan("garen", "smolder").verdict
+        assertTrue(sameResource, sameResource.contains("sem gastar seu controle"))
+        assertFalse(sameResource, sameResource.contains("pressione primeiro com H1"))
     }
 
     @Test fun `personal coaching verdicts localize every grade and lane`() {
