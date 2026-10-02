@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -53,6 +55,7 @@ fun ChampionAvatar(
     borderColor: Color = HextechGold,
     modifier: Modifier = Modifier
 ) {
+    val localizedName = champion.getLocalizedName(com.example.util.currentAppLanguage())
     // Animación fluida de escala y deslizamiento al seleccionar o cambiar de campeón
     val scaleAnim = remember(champion.id) { Animatable(0.68f) }
     val slideAnim = remember(champion.id) { Animatable(12f) }
@@ -118,7 +121,8 @@ fun ChampionAvatar(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = com.example.util.tr(champion.name.take(2).uppercase()),
+                    text = localizedName.take(2).uppercase(),
+                    modifier = Modifier.clearAndSetSemantics { contentDescription = localizedName },
                     color = Color.White,
                     fontSize = (size.value * 0.32).sp,
                     fontWeight = FontWeight.Bold
@@ -155,7 +159,7 @@ fun ChampionAvatar(
                         )
                         .build(),
                     imageLoader = LocalContext.current.imageLoader,
-                    contentDescription = champion.name,
+                    contentDescription = localizedName,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(size - 4.dp)

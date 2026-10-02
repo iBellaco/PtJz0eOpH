@@ -196,6 +196,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     val isVerified by SubscriptionManager.isVerified.collectAsState()
     val userRole by SubscriptionManager.userRole.collectAsState()
     val secondaryRole by SubscriptionManager.secondaryRole.collectAsState()
+    val adminClaim by AuthManager.isAdminClaim.collectAsState()
     val premiumUntil by SubscriptionManager.premiumUntil.collectAsState()
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
@@ -520,7 +521,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 )
             }
 
-            val isAdminUser = userRole == "admin" || AuthManager.isCurrentUserAdmin()
+            val isAdminUser = com.example.model.RolePanelAccess.isAdministrator(userRole, adminClaim)
             var showPurchaseHistoryDialog by remember { mutableStateOf(false) }
             var showVerifiedInfoDialog by remember { mutableStateOf(false) }
 
@@ -1189,7 +1190,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             val creatorToastMessage = tr("Panel exclusivo para Creadores de Build oficiales (Admin, Moderador, Streamer o Creador)")
             com.example.ui.components.HextechAnimatedButton(
                 onClick = {
-                    val hasCreatorRole = userRole in listOf("admin", "moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") || AuthManager.isCurrentUserAdmin()
+                    val hasCreatorRole = com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.CREATOR, userRole, secondaryRole, adminClaim)
                     if (hasCreatorRole) {
                         showAdminCreatorDialog = true
                     } else {
@@ -1233,14 +1234,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            if (userRole == "streamer" || secondaryRole == "streamer") {
+            if (com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.STREAMER, userRole, secondaryRole, adminClaim)) {
                 Button(onClick = { showStreamerPanel = true }, modifier = Modifier.fillMaxWidth()) {
                     Text(com.example.util.localizedString(com.example.R.string.streamer_panel))
                 }
                 Spacer(Modifier.height(10.dp))
             }
 
-            if (userRole == "admin") {
+            if (isAdminUser) {
                 // Panel de Administración / Gestión (Solo para Administradores)
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showAdminDashboard = true },
@@ -1323,7 +1324,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                         }
                     }
                 }
-            } else if (userRole == "moderador") {
+            }
+
+            if (com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.MODERATION, userRole, secondaryRole, adminClaim)) {
                 // Panel de Soporte y Moderación Exclusivo de Moderadores
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showModeratorDashboard = true },
@@ -1354,7 +1357,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            if (userRole == "patrocinador") {
+            if (com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.SPONSOR, userRole, secondaryRole, adminClaim)) {
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showSponsorPanel = true },
                     backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(

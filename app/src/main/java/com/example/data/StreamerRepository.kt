@@ -13,23 +13,28 @@ object StreamerRepository {
     val requests get() = db.collection("streamer_requests")
     @Suppress("UNCHECKED_CAST")
     fun entries(value: Any?): List<Map<String, Any>> = (value as? List<*>)?.mapNotNull { it as? Map<String, Any> }.orEmpty()
-    private fun hasRole(role: String?, secondary: String?) = role == "streamer" || secondary == "streamer"
+    private fun hasRole(role: String?, secondary: String?, adminClaim: Boolean = false) =
+        com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.STREAMER, role.orEmpty(), secondary.orEmpty(), adminClaim)
 
     suspend fun submit(name: String, rawUrl: String): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
         val user = FirebaseAuth.getInstance().currentUser ?: error("streamer_error")
         check(name.trim().length in 2..60) { "streamer_name_error" }
-        val channel = StreamChannelUrl.parse(rawUrl) ?: error("streamer_url_error")
+        val adminClaim = com.example.util.AuthManager.isAdminClaim.value
         val ref = requests.document(user.uid)
         db.runTransaction { transaction ->
             val live = entries(transaction.get(registry).get("entries"))
             val current = transaction.get(ref)
             val account = transaction.get(db.collection("users").document(user.uid))
-            check(hasRole(account.getString("role"), account.getString("secondaryRole"))) { "streamer_role_error" }
+            val isAdmin = com.example.model.RolePanelAccess.isAdministrator(account.getString("role").orEmpty(), adminClaim)
+            check(hasRole(account.getString("role"), account.getString("secondaryRole"), adminClaim)) { "streamer_role_error" }
+            val channel = StreamChannelUrl.parse(rawUrl, allowAdminTest = isAdmin) ?: error("streamer_url_error")
             check(StreamerPublicationPolicy.canRequest(live, user.uid)) { "streamer_max" }
             check(current.getString("status") != "PENDING") { "streamer_pending" }
-            transaction.set(ref, mapOf("userId" to user.uid, "userName" to (account.getString("userName") ?: user.displayName.orEmpty()),
+            val fields = mutableMapOf<String, Any>("userId" to user.uid, "userName" to (account.getString("userName") ?: user.displayName.orEmpty()),
                 "channelName" to name.trim(), "channelUrl" to channel.url, "platform" to channel.platform,
-                "status" to "PENDING", "usingCoachAcknowledged" to true, "submittedAtMillis" to System.currentTimeMillis()))
+                "status" to "PENDING", "usingCoachAcknowledged" to true, "submittedAtMillis" to System.currentTimeMillis())
+            if (isAdmin) fields["adminTest"] = channel.platform == "Google"
+            transaction.set(ref, fields)
         }.await()
         Unit
     } }
@@ -44,8 +49,11 @@ object StreamerRepository {
             check(request.getString("status") == "PENDING") { "streamer_error" }
             if (approve) {
                 check(verifiedUsingCoach && request.getBoolean("usingCoachAcknowledged") == true) { "streamer_requirement" }
-                check(hasRole(account.getString("role"), account.getString("secondaryRole"))) { "streamer_role_error" }
-                val channel = StreamChannelUrl.parse(request.getString("channelUrl").orEmpty()) ?: error("streamer_url_error")
+                // Only a trusted staff writer can create adminTest; ordinary requests forbid this field.
+                val trustedTest = request.getBoolean("adminTest") == true
+                check(hasRole(account.getString("role"), account.getString("secondaryRole"), trustedTest)) { "streamer_role_error" }
+                val channel = StreamChannelUrl.parse(request.getString("channelUrl").orEmpty(),
+                    allowAdminTest = trustedTest) ?: error("streamer_url_error")
                 val entry = mapOf<String, Any>("userId" to uid, "channelName" to request.getString("channelName").orEmpty(),
                     "channelUrl" to channel.url, "platform" to channel.platform, "approvedAtMillis" to System.currentTimeMillis())
                 transaction.set(registry, mapOf("entries" to StreamerPublicationPolicy.approve(live, entry)), SetOptions.merge())

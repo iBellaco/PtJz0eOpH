@@ -116,5 +116,17 @@
   "+{0} salud máxima": "+{0} Vida Máxima",
   "+250 Vida máxima • +50 Armadura • +30 Resistencia mágica": "+250 Vida Máxima • +50 Armadura • +30 Resistência Mágica",
   "+300 Vida máxima • +50 Armadura • +50 Resistencia mágica": "+300 Vida Máxima • +50 Armadura • +50 Resistência Mágica",
-  "+200 salud máxima • +40 armadura • +40 resistencia mágica": "+200 Vida Máxima • +40 Armadura • +40 Resistência Mágica"
+  "+200 salud máxima • +40 armadura • +40 resistencia mágica": "+200 Vida Máxima • +40 Armadura • +40 Resistência Mágica",
+  "Selecciona tu campeón": "Selecione seu campeão",
+  "Selecciona tu campeón y el rival para ver el cara a cara 1 vs 1.": "Selecione seu campeão e o adversário para ver o confronto 1 contra 1.",
+  "Selecciona tu campeón para ver el cara a cara 1 vs 1.": "Selecione seu campeão para ver o confronto 1 contra 1.",
+  "Selecciona el campeón rival para ver el cara a cara 1 vs 1.": "Selecione o campeão adversário para ver o confronto 1 contra 1.",
+  "Inicia sesión o regístrate para ver la evolución de 24 y 12 horas.": "Entre na sua conta ou cadastre-se para ver a evolução de 24 e 12 horas.",
+  "Iniciar sesión o registrarse": "Entrar ou cadastrar-se",
+  "Iniciación & Frontline": "Iniciação e Linha de Frente",
+  "Iniciación & Reposicionamiento": "Iniciação e Reposicionamento",
+  "Peel & Iniciación": "Proteção e Iniciação",
+  "Iniciación & CC": "Iniciação e Controle de Grupo",
+  "Peel & Sinergia de Dúo": "Proteção e Sinergia de Dupla",
+  "Dive & Flanqueo": "Mergulho e Flanqueamento"
 }

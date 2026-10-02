@@ -27,13 +27,6 @@ enum class LaneRole(val displayName: String, val shortName: String) {
             ADC -> "Rota do Dragão (Duo)"
             SUPPORT -> "Suporte"
         }
-        "en" -> when (this) {
-            TOP -> "Baron Lane (Top)"
-            JUNGLE -> "Jungle"
-            MID -> "Mid Lane"
-            ADC -> "Dragon Lane (ADC)"
-            SUPPORT -> "Support"
-        }
         else -> displayName
     }
 }
@@ -60,13 +53,11 @@ data class ChampionSkill(
     val cooldown: String = ""
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
-        "en" -> nameEn.ifBlank { name }
         "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedDescription(lang: String): String = when (lang) {
-        "en" -> descriptionEn.ifBlank { description }
         "pt" -> com.example.util.trStr("pt", descriptionPt.ifBlank { description })
         else -> description
     }
@@ -152,19 +143,16 @@ data class Champion(
     fun getLocalAvatarUri(): String = "file:///android_asset/champions/$id.png"
 
     fun getLocalizedName(lang: String): String = when (lang) {
-        "en" -> nameEn.ifBlank { name }
         "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedTitle(lang: String): String = when (lang) {
-        "en" -> titleEn.ifBlank { title }
         "pt" -> com.example.util.trStr("pt", titlePt.ifBlank { title })
         else -> title
     }
 
     fun getLocalizedSummary(lang: String): String = when (lang) {
-        "en" -> com.example.util.trStr("en", summary)
         "pt" -> com.example.util.trStr("pt", summary)
         else -> summary
     }
@@ -194,25 +182,21 @@ data class WildRiftItem(
     val isEvolution: Boolean
         get() = evolvesFrom.isNotBlank() || goldCost == 0
     fun getLocalizedName(lang: String): String = when (lang) {
-        "en" -> nameEn.ifBlank { name }
         "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedStats(lang: String): String = when (lang) {
-        "en" -> statsEn.ifBlank { stats }
         "pt" -> com.example.util.trStr("pt", statsPt.ifBlank { stats })
         else -> stats
     }
 
     fun getLocalizedPassive(lang: String): String = when (lang) {
-        "en" -> passiveEn.ifBlank { passive }
         "pt" -> com.example.util.trStr("pt", passivePt.ifBlank { passive })
         else -> passive
     }
 
     fun getLocalizedCoachTip(lang: String): String = when (lang) {
-        "en" -> coachTipEn.ifBlank { coachTip }
         "pt" -> com.example.util.trStr("pt", coachTipPt.ifBlank { coachTip })
         else -> coachTip
     }
@@ -250,13 +234,11 @@ data class SummonerSpellItem(
     val category: String = "Hechizos"
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
-        "en" -> nameEn.ifBlank { name }
         "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedDescription(lang: String): String = when (lang) {
-        "en" -> descriptionEn.ifBlank { description }
         "pt" -> com.example.util.trStr("pt", descriptionPt.ifBlank { description })
         else -> description
     }
@@ -275,13 +257,11 @@ data class RuneItem(
     val descriptionPt: String = ""
 ) {
     fun getLocalizedName(lang: String): String = when (lang) {
-        "en" -> nameEn.ifBlank { name }
         "pt" -> com.example.util.trStr("pt", namePt.ifBlank { name })
         else -> name
     }
 
     fun getLocalizedDescription(lang: String): String = when (lang) {
-        "en" -> descriptionEn.ifBlank { description }
         "pt" -> com.example.util.trStr("pt", descriptionPt.ifBlank { description })
         else -> description
     }

@@ -7,10 +7,14 @@ data class StreamChannel(val url: String, val platform: String)
 
 /** Only channel URLs are accepted; host suffixes, redirects and video URLs are rejected. */
 object StreamChannelUrl {
-    fun parse(raw: String): StreamChannel? = runCatching {
+    fun parse(raw: String, allowAdminTest: Boolean = false): StreamChannel? = runCatching {
         val uri = URI(raw.trim())
         if (uri.scheme?.lowercase(Locale.ROOT) != "https" || uri.userInfo != null || uri.port != -1 || uri.fragment != null) return null
         val host = uri.host?.lowercase(Locale.ROOT) ?: return null
+        if (host in setOf("google.com", "www.google.com")) {
+            return if (allowAdminTest && uri.path.orEmpty() in setOf("", "/") && uri.rawQuery == null)
+                StreamChannel("https://www.google.com", "Google") else null
+        }
         val path = uri.path.orEmpty().trimEnd('/')
         val platform = when (host) {
             "tiktok.com", "www.tiktok.com" -> if (path.matches(Regex("/@[A-Za-z0-9_.]{2,24}(/live)?"))) "TikTok" else return null

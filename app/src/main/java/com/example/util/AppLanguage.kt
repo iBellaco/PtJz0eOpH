@@ -38,7 +38,9 @@ object AppLanguage {
         val prefs = context.applicationContext.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         preferences = prefs
         applicationContext = context.applicationContext
-        _current.value = normalize(prefs.getString("selected_language", "es"))
+        val savedLanguage = prefs.getString("selected_language", "es")
+        _current.value = normalize(savedLanguage)
+        if (savedLanguage != _current.value) prefs.edit().putString("selected_language", _current.value).apply()
         applyLocale(context.applicationContext, _current.value)
         prefs.registerOnSharedPreferenceChangeListener(listener)
         DynamicTranslations.loadSync(context.applicationContext)

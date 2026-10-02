@@ -46,6 +46,18 @@ class PortugueseGeneratedSurfaceTest {
             for (role in (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()) {
                 val profile = ChampionRoleAdapter.getProfile(champion, role)
                 profiles++
+                val recommendation = WildRiftRepository.evaluateChampion(champion, role,
+                    WildRiftRepository.champions.filter { it.id != champion.id }.take(2),
+                    WildRiftRepository.champions.filter { it.id != champion.id }.takeLast(2),
+                    enemyLaneOpponent = WildRiftRepository.champions.first { it.id != champion.id }, lang = "pt")
+                inspect("draft-advice/${champion.id}/${role.name}", listOf(recommendation.tacticalReason,
+                    recommendation.advantageBadge, recommendation.synergyDetails, recommendation.counterDetails))
+                val synergy = com.example.data.SynergyAdvisor.getSynergyProfile(champion, role, "pt")
+                inspect("synergy/${champion.id}/${role.name}", listOf(synergy.archetype, synergy.archetypeBadge, synergy.archetypeDesc) + synergy.coreStrengths)
+                synergy.bestTeammates.forEach { teammate ->
+                    inspect("synergy-pair/${champion.id}/${teammate.championId}",
+                        listOf(teammate.category, teammate.synergyTitle, teammate.tacticalReason, teammate.comboTips))
+                }
                 inspect("profile/${champion.id}/${role.name}", listOf(profile.tacticalAdvice, profile.recommendedRunes, profile.runeTreeDetails))
                 profile.itemSwaps.forEach { inspect("swap/${champion.id}", listOf(it.reasonTitle, it.reasonDesc, it.againstWho)) }
                 profile.buildOptions.forEach { option ->
@@ -61,6 +73,21 @@ class PortugueseGeneratedSurfaceTest {
         failures.forEach { (value, origin) -> println("PORTUGUESE_GENERATED_RESIDUE: $origin: $value") }
         assertTrue("Generated Spanish remains:\n${failures.entries.joinToString("\n") { "${it.value}: ${it.key}" }}", failures.isEmpty())
         println("PORTUGUESE_GENERATED_AUDIT: $profiles profiles; ${values.size} distinct texts")
+    }
+
+    @Test fun `personal coaching verdicts localize every grade and lane`() {
+        val manager = com.example.data.analytics.PersonalTierListManager
+        val method = manager::class.java.getDeclaredMethod("generateCoachVerdict", String::class.java,
+            java.lang.Double.TYPE, java.lang.Integer.TYPE, com.example.model.LaneRole::class.java, String::class.java)
+            .apply { isAccessible = true }
+        val texts = com.example.model.LaneRole.entries.flatMap { role ->
+            listOf(0.0, 25.0, 40.0, 55.0, 65.0, 80.0).map { winrate ->
+                method.invoke(manager, "Ahri", winrate, if (winrate == 0.0) 0 else 20, role, "pt") as String
+            }
+        }
+        texts.forEach { assertFalse(it, SpanishUiResidue.pattern.containsMatchIn(it)) }
+        File("build/reports/portuguese-rendered").apply { mkdirs() }.resolve("personal-coaching-verdicts.json")
+            .writeText(JSONArray(texts).toString(2))
     }
 
     @Test fun `automatic support acknowledgement and errors are Portuguese`() {

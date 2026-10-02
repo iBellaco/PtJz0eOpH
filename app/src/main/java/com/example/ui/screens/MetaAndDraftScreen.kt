@@ -1503,6 +1503,20 @@ fun TierListTab(
     isPremium: Boolean = false,
     horizontalPadding: androidx.compose.ui.unit.Dp = if (isOverlay) 4.dp else 16.dp
 ) {
+    val isSignedIn by com.example.util.AuthManager.isSignedIn.collectAsStateWithLifecycle()
+    var showTrendSignIn by remember { mutableStateOf(false) }
+    if (showTrendSignIn) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { showTrendSignIn = false },
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+            Surface(Modifier.fillMaxWidth(0.95f).heightIn(max = 680.dp),
+                color = HextechDarkBg, shape = RoundedCornerShape(16.dp)) {
+                Column(Modifier.verticalScroll(rememberScrollState()).padding(12.dp)) {
+                    TextButton(onClick = { showTrendSignIn = false }) { Text(tr("Cerrar")) }
+                    com.example.ui.auth.AuthFlowContainer(onLoginSuccess = { showTrendSignIn = false })
+                }
+            }
+        }
+    }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val syncState by ChineseMetaSyncService.syncState.collectAsStateWithLifecycle()
@@ -1539,6 +1553,7 @@ fun TierListTab(
 
     LazyColumn(
         modifier = Modifier
+            .testTag("tier_list")
             .fillMaxSize()
             .padding(horizontal = horizontalPadding),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -1737,8 +1752,16 @@ fun TierListTab(
             }
 
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
+                if (!isSignedIn) {
+                    Column(Modifier.fillMaxWidth().testTag("tier_trend_sign_in")) {
+                        Text(tr("Inicia sesión o regístrate para ver la evolución de 24 y 12 horas."),
+                            color = TextSecondary, fontSize = 12.sp)
+                        TextButton(onClick = { showTrendSignIn = true }, modifier = Modifier.testTag("tier_trend_sign_in_button")) {
+                            Text(tr("Iniciar sesión o registrarse"))
+                        }
+                    }
+                } else Card(
+                    modifier = Modifier.fillMaxWidth().testTag("tier_trend_header"),
                     shape = RoundedCornerShape(8.dp),
                     colors = CardDefaults.cardColors(containerColor = HextechSurface.copy(alpha = 0.85f)),
                     border = androidx.compose.foundation.BorderStroke(0.6.dp, HextechCardBorder)
@@ -1822,6 +1845,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showTrend = isSignedIn,
                         tierName = "TIER S+ (${tr("Dominantes / Prioridad Pick & Ban")})",
                         tierColor = TierSPlusColor,
                         champions = tierSPlus,
@@ -1835,6 +1859,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showTrend = isSignedIn,
                         tierName = "TIER S (${tr("Meta Muy Fuerte / Alta Prioridad")})",
                         tierColor = TierSColor,
                         champions = tierS,
@@ -1848,6 +1873,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showTrend = isSignedIn,
                         tierName = "TIER A (${tr("Opciones Sólidas y Balanceadas")})",
                         tierColor = TierAColor,
                         champions = tierA,
@@ -1861,6 +1887,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showTrend = isSignedIn,
                         tierName = "TIER B (${tr("Opciones Viables")})",
                         tierColor = com.example.ui.theme.TierBColor,
                         champions = tierB,
@@ -1874,6 +1901,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showTrend = isSignedIn,
                         tierName = "TIER C (${tr("Situacionales")})",
                         tierColor = com.example.ui.theme.TierCColor,
                         champions = tierC,
@@ -1887,6 +1915,7 @@ fun TierListTab(
                 item {
                     TierSectionCard(
                         isOverlay = isOverlay,
+                        showTrend = isSignedIn,
                         tierName = "TIER D / OTROS",
                         tierColor = com.example.ui.theme.TierDColor,
                         champions = tierD,
@@ -2042,11 +2071,12 @@ fun TierListTab(
                                 }
                             }
 
-                            // Gráfica de tendencia (hace 24h, 12h y actual) para todos los campeones
-                            if (!isOverlay) {
+                            // History is available only to registered, signed-in accounts.
+                            if (!isOverlay && isSignedIn) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     modifier = Modifier
+                                        .testTag("tier_trend_graph")
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(6.dp))
                                         .background(HextechDarkBg.copy(alpha = 0.5f))
@@ -2086,6 +2116,7 @@ fun TierListTab(
 @Composable
 fun TierSectionCard(
     isOverlay: Boolean = false,
+    showTrend: Boolean = false,
     tierName: String,
     tierColor: Color,
     champions: List<Champion>,
@@ -2212,10 +2243,11 @@ fun TierSectionCard(
                             }
 
                             // Gráfica de tendencia (hace 24h, 12h y actual) para todos los campeones
-                            if (!isOverlay) {
+                            if (!isOverlay && showTrend) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     modifier = Modifier
+                                        .testTag("tier_trend_graph")
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(6.dp))
                                         .background(HextechDarkBg.copy(alpha = 0.5f))
@@ -3972,6 +4004,7 @@ fun DraftAnalysisTab(
     onClearAll: () -> Unit
 ) {
     val tabContext = LocalContext.current
+    val draftLanguage = com.example.util.currentAppLanguage()
     val coroutineScope = rememberCoroutineScope()
     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
@@ -3983,11 +4016,10 @@ fun DraftAnalysisTab(
     val victoryToastText = " " + tr("Draft registrado como Victoria")
     val defeatToastText = " " + tr("Draft registrado como Derrota")
 
-    if (showMatchupDialog && myChampion != null) {
-        val opponent = enemyLaneOpponent ?: enemySlots.firstOrNull()?.champion ?: myChampion
+    if (showMatchupDialog && myChampion != null && enemyLaneOpponent != null) {
         MatchupPreviewDialog(
             myChampion = myChampion,
-            enemyOpponent = opponent,
+            enemyOpponent = enemyLaneOpponent,
             activeRole = activeRole ?: myChampion.primaryRole,
             onDismiss = { showMatchupDialog = false }
         )
@@ -4488,7 +4520,7 @@ fun DraftAnalysisTab(
         }
 
         // Cálculo Automático de Matchup 1v1 vs Rival de Línea
-        if (enemyLaneOpponent != null) {
+        if (enemyLaneOpponent != null && myChampion != null) {
             val allSavedDraftsState by DraftHistoryRepository.getAllDrafts(tabContext).collectAsState(initial = emptyList())
             val matchesVsOpponent = remember(allSavedDraftsState, enemyLaneOpponent.name, myChampion?.name) {
                 allSavedDraftsState.filter { draft ->
@@ -4667,7 +4699,7 @@ fun DraftAnalysisTab(
                 allies = allySlots.map { it.champion },
                 enemies = enemySlots.map { it.champion },
                 enemyLaneOpponent = enemyLaneOpponent,
-                lang = "es"
+                lang = draftLanguage
             )
             val isOffRole = activeRole != null && myChamp.primaryRole != activeRole && !myChamp.secondaryRoles.contains(activeRole)
             val isDirectLaneWeakness = enemyLaneOpponent != null && (
@@ -4754,7 +4786,7 @@ fun DraftAnalysisTab(
                     )
 
                     // 1v1 Matchup Preview Trigger Button
-                    if (enemyLaneOpponent != null || enemySlots.isNotEmpty()) {
+                    if (enemyLaneOpponent != null) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Button(
                             onClick = {
@@ -4815,7 +4847,7 @@ fun DraftAnalysisTab(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = com.example.util.tr(if (activeRole != null) tr("SELECCIONAR MI PICK PARA") + " ${com.example.util.tr(activeRole.displayName).uppercase()}" else tr("SELECCIONAR MI CAMPEÓN (GLOBAL)")),
+                    text = tr("Selecciona tu campeón"),
                     fontWeight = FontWeight.Black,
                     fontSize = 13.sp,
                     letterSpacing = 0.5.sp
@@ -4824,9 +4856,23 @@ fun DraftAnalysisTab(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        if (activeRole != null) {
+        if (myChampion == null || enemyLaneOpponent == null) {
+            Text(
+                text = tr(when {
+                    myChampion == null && enemyLaneOpponent == null -> "Selecciona tu campeón y el rival para ver el cara a cara 1 vs 1."
+                    myChampion == null -> "Selecciona tu campeón para ver el cara a cara 1 vs 1."
+                    else -> "Selecciona el campeón rival para ver el cara a cara 1 vs 1."
+                }),
+                color = TextSecondary,
+                fontSize = 12.sp,
+                modifier = Modifier.testTag("draft_matchup_missing_selection")
+            )
+            Spacer(Modifier.height(16.dp))
+        }
+
+        if (activeRole != null && (allySlots.isNotEmpty() || enemySlots.isNotEmpty())) {
             // Live Recommendations Header
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.testTag("draft_recommendations"), verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     painter = painterResource(id = activeRole.iconResId),
                     contentDescription = null,
