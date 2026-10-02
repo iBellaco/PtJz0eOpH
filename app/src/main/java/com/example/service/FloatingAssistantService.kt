@@ -2064,7 +2064,6 @@ private fun FloatingOverlayContent(
                                                 DraftVisionScanner.resetSlotMemory()
                                                 android.widget.Toast.makeText(context, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
                                             },
-                                            onGoToTierList = { overlayHubTab = OverlayHubTab.TIER_LIST },
                                             onManualEdit = { autoScanEnabled = false },
                                             onOpenLiteRTViewer = {
                                                 autoScanEnabled = true
@@ -2948,7 +2947,6 @@ private fun FloatingDraftCoachView(
     onSaveDraftClick: () -> Unit,
     isSavedRecently: Boolean,
     onClearAll: () -> Unit,
-    onGoToTierList: () -> Unit,
     onManualEdit: () -> Unit,
     onOpenLiteRTViewer: () -> Unit = {}
 ) {
@@ -3051,7 +3049,6 @@ private fun FloatingDraftCoachView(
             onSaveDraftClick = onSaveDraftClick,
             isSavedRecently = isSavedRecently,
             onClearAll = onClearAll,
-            onGoToTierList = onGoToTierList,
             isPremium = isPremium
         )
     }
@@ -3556,7 +3553,6 @@ private fun CoachContent(
     onSaveDraftClick: () -> Unit,
     isSavedRecently: Boolean,
     onClearAll: () -> Unit,
-    onGoToTierList: () -> Unit,
     isPremium: Boolean
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -3738,7 +3734,7 @@ private fun CoachContent(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Botones de acción rápida: Guardar Partida, Vaciar Todo y Ver Tier List
+        // Acciones del draft; la lista de tiers se abre desde la navegación del hub.
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -3786,20 +3782,6 @@ private fun CoachContent(
                 Text(
                     text = tr("Vaciar"),
                     color = DangerRed,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Button(
-                onClick = onGoToTierList,
-                modifier = Modifier.weight(1f).height(28.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = HextechCyan),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-            ) {
-                Text(
-                    text = tr("Tier List"),
-                    color = HextechDarkBg,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold
                 )
