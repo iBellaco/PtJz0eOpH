@@ -36,6 +36,13 @@ class RuntimeBehaviorTest {
         assertEquals(now + 40_000, InboxMessageOrder.latestMessageAt(old + ("lastMessageAt" to now + 40_000)))
     }
 
+    @Test fun `a system greeting does not invent activity or an epoch date`() {
+        val unknown = mapOf<String, Any>("conversation" to listOf(mapOf("text" to "Olá",
+            "senderRole" to "SYSTEM", "timestampMillis" to 1L, "isGreeting" to true)))
+        assertEquals(0L, InboxMessageOrder.latestMessageAt(unknown))
+        assertEquals(now, InboxMessageOrder.latestMessageAt(unknown + ("created_at" to now)))
+    }
+
     @Test fun `administrators have every role panel including a trusted claim`() {
         for (panel in RolePanel.entries) {
             assertTrue(panel.name, RolePanelAccess.canOpen(panel, "admin"))

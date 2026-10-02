@@ -8,6 +8,7 @@ object InboxMessageOrder {
     fun latestMessageAt(message: Map<String, Any>): Long {
         val fields = activityKeys.mapNotNull { SupportReportDecoder.timestampMillis(message[it]) }
         val conversation = SupportConversationPolicy.decode(message["conversation"])
+            .filter { !it.isGreeting && it.senderRole != "SYSTEM" && it.text.isNotBlank() }
             .map { it.timestampMillis }.filter { it > 0 }
         return (fields + conversation).maxOrNull() ?: 0L
     }
