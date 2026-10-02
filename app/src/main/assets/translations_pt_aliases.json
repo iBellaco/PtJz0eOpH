@@ -1158,5 +1158,14 @@
   "Salem umas grossas vides do solo que exploram e lançam espinhos, as quais infligem danos mágico aos inimigos na zona. Zyra também gera uma escupespinas que inflige danos. Para cada inimigo atingido, aumenta o número de Escupespinas.": "Salem umas grossas vides do solo que exploram e lançam espinhos, as quais infligem danos mágico aos inimigos na zona. Zyra também gera uma planta carnívora que inflige danos. Para cada inimigo atingido, aumenta o número de Planta carnívora.",
   "Zyra faz enfurecer as Escupespinas próximas. A duração das Escupespinas enfurecidas reinicia-se e obtém vida e dano de ataque adicionais.": "Zyra faz enfurecer as Planta carnívora próximas. A duração das Planta carnívora enfurecidas reinicia-se e obtém vida e dano de ataque adicionais.",
   "Zyra lança vides pelo chão para envolver seus inimigos que infligem danos mágico e imobilizam os que alcancem. Zyra faz brotar uma Escupespinas quando as vides atingem o primeiro inimigo ou depois de lançar a habilidade se não bater em nenhum inimigo.": "Zyra lança vides pelo chão para envolver seus inimigos que infligem danos mágico e imobilizam os que alcancem. Zyra faz brotar uma Planta carnívora quando as vides atingem o primeiro inimigo ou depois de lançar a habilidade se não bater em nenhum inimigo.",
-  "Zyra invoca um enorme matorral na localização alvo que causa dano mágico aos inimigos quando se expande e os lança pelos ars ao se apanhar. Ao bater em campeões inimigos, gera uma Escupespinas.": "Zyra invoca um enorme matorral na localização alvo que causa dano mágico aos inimigos quando se expande e os lança pelos ares ao se apanhar. Ao bater em campeões inimigos, gera uma Planta carnívora."
+  "Zyra invoca um enorme matorral na localização alvo que causa dano mágico aos inimigos quando se expande e os lança pelos ars ao se apanhar. Ao bater em campeões inimigos, gera uma Escupespinas.": "Zyra invoca um enorme matorral na localização alvo que causa dano mágico aos inimigos quando se expande e os lança pelos ares ao se apanhar. Ao bater em campeões inimigos, gera uma Planta carnívora.",
+  "Desbanar e Reactivar Conta": "Desbanar e Reativar Conta",
+  "Operação recusada: Não é possível atribuir o papel de Administrador por directivas de segurança.": "Operação recusada: Não é possível atribuir o papel de Administrador por diretrizes de segurança.",
+  "Erro ao actualizar o correio: {0}": "Erro ao atualizar o correio: {0}",
+  "Comunicado oficial activo • Toca para ler": "Comunicado oficial ativo • Toca para ler",
+  "Ej: Buen counter em early, build com cortacuras...": "Ex.: Bom counter no início do jogo, build com itens anticura...",
+  "• Formatos elegíveis: Imagens em formato PNG ou JPG/JPEG e Videos em formato MP4 (máximo 10 segundos).\n": "• Formatos elegíveis: Imagens em formato PNG ou JPG/JPEG e Vídeos em formato MP4 (máximo 10 segundos).\n",
+  "Podio de Criadores": "Pódio de Criadores",
+  "Em manutenção: As compras de {0} estão temporariamente desactivadas por manutenção técnica.": "Em manutenção: As compras de {0} estão temporariamente desativadas por manutenção técnica.",
+  "Etapa do Escáner:": "Etapa da varredura:"
 }

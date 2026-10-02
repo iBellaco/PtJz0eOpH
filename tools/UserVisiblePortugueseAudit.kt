@@ -8,6 +8,7 @@ import org.json.JSONObject
 import org.json.JSONArray
 import com.example.util.TranslationCatalog
 import com.example.util.TranslationAssets
+import com.example.SpanishUiResidue
 
 /** Audits real text sinks, including literals inside conditionals and interpolation. */
 fun main(args: Array<String>) {
@@ -83,5 +84,10 @@ fun main(args: Array<String>) {
                 it.getString("text").replace(Regex("\\{\\d+\\}"), "VALUE") != it.getString("portuguese")
         }
         check(bypasses.isEmpty()) { "Unlocalized text sinks: ${bypasses.joinToString()}" }
+        val residues = (0 until records.length()).map { records.getJSONObject(it) }.filter {
+            SpanishUiResidue.pattern.containsMatchIn(it.getString("portuguese").replace("Lee Sin", "LeeSin"))
+        }
+        check(residues.isEmpty()) { "Spanish in Portuguese text sinks: ${residues.joinToString()}" }
+        println("PORTUGUESE_SOURCE_AUDIT: ${records.length()} literal occurrences; zero Spanish findings")
     }
 }

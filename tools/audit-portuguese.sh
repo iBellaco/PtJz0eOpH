@@ -29,7 +29,8 @@ for audit in UserVisiblePortugueseAudit PortugueseAudit; do
   java -cp "$audit_dir/deps/*" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -no-stdlib -no-reflect -classpath "$compile_classpath" \
     "tools/$audit.kt" app/src/main/java/com/example/util/TranslationCatalog.kt \
-    app/src/main/java/com/example/util/TranslationAssets.kt -d "$audit_dir/$audit.jar"
+    app/src/main/java/com/example/util/TranslationAssets.kt \
+    app/src/test/java/com/example/SpanishUiResidue.kt -d "$audit_dir/$audit.jar"
 done
 java -Xmx1g -cp "$audit_dir/UserVisiblePortugueseAudit.jar:$audit_dir/deps/*" \
   UserVisiblePortugueseAuditKt "$project_root" "$audit_dir/visible.json" --check
