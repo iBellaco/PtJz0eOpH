@@ -48,7 +48,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered",
             "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "profile-admin", "profile-admin-large").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private val context get() = RuntimeEnvironment.getApplication()
@@ -82,6 +82,10 @@ class RuntimeVisibilityTest(private val screen: String) {
         setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin")) "admin" else "free")
         setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
         setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
+        if (screen.startsWith("profile-admin")) setFlow(SubscriptionManager, "_isPremium", true)
+        com.example.data.AppNoticeManager.notices.value
+        setFlow(com.example.data.AppNoticeManager, "_notices", if (screen == "profile-admin-large")
+            listOf(com.example.data.AppNotice(id = "local-pending", title = "Teste", content = "Teste", tag = "Publicidad", isApproved = false)) else emptyList<com.example.data.AppNotice>())
         if (screen == "profile-admin-large") {
             val configuration = android.content.res.Configuration(context.resources.configuration).apply { fontScale = 1.5f }
             @Suppress("DEPRECATION")
@@ -115,8 +119,10 @@ class RuntimeVisibilityTest(private val screen: String) {
                 Mockito.`when`(user.displayName).thenReturn("Coach Teste")
                 AuthenticatedProfilePanel(user) {}
             }
-            screen == "premium-editor" -> UserDetailManagementDialog(mapOf("uid" to "local-test", "name" to "Teste",
-                "role" to "premium", "premiumUntil" to System.currentTimeMillis() + 86400000L), {}, {}, {}, {})
+            screen.startsWith("premium-editor") -> UserDetailManagementDialog(mapOf("uid" to "local-test", "name" to "Teste",
+                "role" to if (screen == "premium-editor-secondary") "creador" else "premium",
+                "secondaryRole" to if (screen == "premium-editor-secondary") "moderador" else "",
+                "premiumUntil" to System.currentTimeMillis() + 86400000L), {}, {}, {}, {})
             screen.startsWith("champion") -> ChampionDetailSheet(champion = WildRiftRepository.champions.first { it.id == "garen" }, onDismiss = {})
             screen.startsWith("tier") -> TierListTab(onSelectChampion = {})
             else -> {
@@ -222,7 +228,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText(appTr("Panel de Soporte y Moderación")).performScrollTo().performClick()
                 compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()
             }
-            "premium-editor" -> {
+            "premium-editor", "premium-editor-secondary" -> {
+                if (screen == "premium-editor-secondary") compose.onNodeWithText(appTr("Acceso Moderador (Vitalicio)")).performScrollTo().assertExists()
                 compose.onNodeWithText(appTr("Editar o extender tiempo premium:")).performScrollTo().assertExists()
                 compose.onAllNodesWithText("♾️ Vitalicio").assertCountEquals(0)
             }

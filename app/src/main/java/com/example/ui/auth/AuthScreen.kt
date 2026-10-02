@@ -1300,36 +1300,15 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     enableShimmer = true,
                     enablePulse = true
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Verified,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = com.example.util.tr(if (hasPendingSponsorsForAuth) tr("Panel de Moderador (¡Solicitud Pendiente!)") else tr("Panel de Moderador")),
-                                color = Color.White,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                            )
-                        }
-                        if (hasPendingSponsorsForAuth) {
-                            Badge(
-                                containerColor = Color.White,
-                                contentColor = Color.Red,
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(end = 16.dp)
-                            ) {
-                                Text(com.example.util.tr("!"))
-                            }
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Default.Verified, contentDescription = null, tint = Color.White)
+                        Text(
+                            text = tr(if (hasPendingSponsorsForAuth) "Panel de Moderador (¡Solicitud Pendiente!)" else "Panel de Moderador"),
+                            modifier = Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold
+                        )
+                        if (hasPendingSponsorsForAuth) Badge(containerColor = Color.White, contentColor = Color.Red) {
+                            Text("!")
                         }
                     }
                 }

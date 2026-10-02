@@ -2774,14 +2774,14 @@ fun EnhancedUserAdminCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = com.example.util.tr(getSubscriptionStatusText(role, premiumUntil, isPremiumActive, now)),
+                            text = com.example.util.tr(getSubscriptionStatusText(role, premiumUntil, isPremiumActive, now, (user["secondaryRole"] as? String).orEmpty())),
                             fontSize = 11.sp,
                             color = if (isPremiumActive) HextechCyan else TextMuted,
                             fontWeight = FontWeight.Medium
                         )
                     }
 
-                    if (isPremiumActive && role != "admin" && premiumUntil != null && premiumUntil > 0L) {
+                    if (isPremiumActive && !com.example.model.PremiumAccessPolicy.isLifetime(role, (user["secondaryRole"] as? String).orEmpty()) && premiumUntil != null && premiumUntil > 0L) {
                         Text(
                             text = com.example.util.tr(formatExpirationDateDetailed(premiumUntil)),
                             color = if (premiumUntil - now < 3 * 86400000L) Color(0xFFFBBF24) else TextSecondary,
@@ -2952,11 +2952,11 @@ private fun formatLastConnection(lastActiveTimestamp: Long, isOnline: Boolean, c
     }
 }
 
-private fun getSubscriptionStatusText(role: String, premiumUntil: Long?, isPremiumActive: Boolean, currentTimestamp: Long = System.currentTimeMillis()): String {
-    if (role == "admin") return "Acceso Administrador (Vitalicio)"
-    if (role == "moderador") return "Acceso Moderador (Vitalicio)"
+private fun getSubscriptionStatusText(role: String, premiumUntil: Long?, isPremiumActive: Boolean, currentTimestamp: Long = System.currentTimeMillis(), secondary: String = ""): String {
     if (role == "banned") return "Cuenta Suspendida"
     if (!isPremiumActive) return "Plan Gratuito"
+    if (role == "admin") return "Acceso Administrador (Vitalicio)"
+    if (role == "moderador" || secondary == "moderador") return "Acceso Moderador (Vitalicio)"
     if (premiumUntil == null || premiumUntil == 0L) return "Plan Gratuito"
 
     val diff = premiumUntil - currentTimestamp
@@ -3212,11 +3212,13 @@ fun UserDetailManagementDialog(
                                             fontSize = 12.sp
                                         )
                                         Text(
-                                            text = com.example.util.tr(getSubscriptionStatusText(currentRole, currentPremiumUntil, isPremiumActive)),
+                                            text = com.example.util.tr(getSubscriptionStatusText(currentRole, currentPremiumUntil, isPremiumActive, secondary = currentSecondaryRole)),
                                             color = TextMuted,
                                             fontSize = 11.sp
                                         )
                                         if (currentPremiumUntil != null && currentPremiumUntil!! > 0L) {
+                                            if (com.example.model.PremiumAccessPolicy.isLifetime(currentRole, currentSecondaryRole))
+                                                Text(tr("Plazo guardado para cambios de rol:"), color = TextSecondary, fontSize = 11.sp)
                                             Text(
                                                 text = com.example.util.tr(formatExpirationDateDetailed(currentPremiumUntil)),
                                                 color = HextechGold,
