@@ -331,7 +331,7 @@ object FeedbackRepository {
     /**
      * Elimina un reporte específico de forma definitiva.
      */
-    suspend fun deleteFeedback(report: FeedbackReport): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun deleteFeedback(report: FeedbackReport, onlySolved: Boolean = false): Result<Unit> = withContext(Dispatchers.IO) {
         if (!SupportTicketAccess.isAdmin()) return@withContext Result.failure(SecurityException("Solo el administrador puede eliminar mensajes"))
         val id = report.id ?: return@withContext Result.failure(Exception("ID nulo"))
         try {
@@ -339,6 +339,7 @@ object FeedbackRepository {
             val ref = db.collection("support_reports").document(id)
             db.runTransaction { transaction ->
                 val ticket = transaction.get(ref)
+                if (onlySolved && SupportTicketPresentation.status(ticket.getString("status").orEmpty()) != STATUS_SOLVED) return@runTransaction
                 val owner = ticket.getString("userId").orEmpty()
                 val ownerRef = owner.takeIf { it.isNotBlank() }?.let { db.collection("users").document(it) }
                 val account = ownerRef?.let { transaction.get(it) }
@@ -364,19 +365,14 @@ object FeedbackRepository {
             SupportReportDecoder.decode(doc.id, doc.data.orEmpty())
         }.distinctBy { it.id }.sortedByDescending { SupportReportDecoder.timestampMillis(it.createdAt) ?: 0L }
 
-    /**
-     * Purga absolutamente todos los mensajes y tickets de soporte en todo el sistema.
-     */
-    suspend fun purgeAllSupportMessagesAcrossSystem(): Result<Unit> = withContext(Dispatchers.IO) {
+    /** Bulk removal touches only solved tickets; pending and read messages remain. */
+    suspend fun clearSolvedFeedbacks(): Result<Unit> = withContext(Dispatchers.IO) {
         if (!SupportTicketAccess.isAdmin()) return@withContext Result.failure(SecurityException("Solo el administrador puede eliminar mensajes"))
-        try {
-            val reports = getAllFeedbacks().getOrThrow()
-            reports.forEach { deleteFeedback(it).getOrThrow() }
-            Result.success(Unit)
-        } catch (error: Exception) { Result.failure(error) }
+        runCatching {
+            getAllFeedbacks().getOrThrow().filter { SupportTicketPresentation.status(it.status.orEmpty()) == STATUS_SOLVED }
+                .forEach { deleteFeedback(it, onlySolved = true).getOrThrow() }
+        }
     }
-
-    suspend fun clearAllFeedbacks(): Result<Unit> = purgeAllSupportMessagesAcrossSystem()
 
     /**
      * Elimina manualmente o por mantenimiento los reportes con más de [days] días de antigüedad.

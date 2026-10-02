@@ -20,8 +20,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 866
-    versionName = "1.1.10.150"
+    versionCode = 867
+    versionName = "1.1.10.151"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -152,6 +152,7 @@ dependencies {
   implementation(libs.okhttp)
 
   testImplementation(libs.mockwebserver)
+  testImplementation("org.mockito:mockito-core:5.14.2")
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)

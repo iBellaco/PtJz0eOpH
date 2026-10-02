@@ -19,7 +19,6 @@
     <string name="streamer_name_error">El nombre del canal debe tener entre 2 y 60 caracteres.</string>
     <string name="streamer_url_error">Introduce un enlace HTTPS válido de un canal de TikTok, YouTube, Twitch o Kick.</string>
     <string name="streamer_role_error">Se necesita el rol streamer para publicar un canal.</string>
-    <string name="streamer_live">EN VIVO • %1$s</string>
     <string name="streamer_reviews">Streamers</string>
     <string name="streamer_roles">Verificación y roles</string>
     <string name="streamer_open">Abrir canal</string>
@@ -33,4 +32,17 @@
     <string name="streamer_review_title">Solicitudes de verificación, roles y streamers</string>
     <string name="streamer_url_recommendation">Ejemplo de URL válida de un canal:</string>
     <string name="streamer_google_recommendation">Solo para administradores: puedes usar Google para pruebas.</string>
+    <string name="streamer_live_description">Transmitiendo en vivo</string>
+    <string name="streamer_sending">Enviando solicitud…</string>
+    <string name="streamer_submitted">Solicitud enviada correctamente. Te avisaremos cuando sea revisada.</string>
+    <string name="streamer_history">Historial de publicaciones</string>
+    <string name="streamer_history_empty">Todavía no has solicitado ninguna publicación.</string>
+    <string name="streamer_history_approved">Aceptada</string>
+    <string name="streamer_history_rejected">Rechazada</string>
+    <string name="streamer_history_pending">Pendiente</string>
+    <string name="streamer_history_ended">Publicación finalizada</string>
+    <string name="streamer_expired">Rechazada automáticamente: pasaron tres horas sin aprobación.</string>
+    <string name="streamer_expiry_notice">Las solicitudes sin aprobación se retiran a las tres horas y quedan como rechazadas en el historial.</string>
+    <string name="streamer_history_date_unavailable">Fecha no disponible</string>
+    <string name="streamer_history_error">No se pudo sincronizar el historial completo. La solicitud más reciente sigue visible.</string>
 </resources>

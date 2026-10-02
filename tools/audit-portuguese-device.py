@@ -73,6 +73,17 @@ def tap(label, scrolling=0):
     labels = (label,) if isinstance(label, str) else tuple(label)
     for attempt in range(max(10, scrolling + 1)):
         nodes = app_nodes(window())
+        # A real remote announcement can arrive at any step, including onboarding.
+        # Retain its Portuguese evidence before closing the blocking window.
+        if any(n.get("text") == "COMUNICADO OFICIAL" for n in nodes):
+            snapshot("official-notice-" + str(len(screens)))
+            acknowledgment = next((n for n in nodes if n.get("text") == "Entendido"), None)
+            if acknowledgment is not None:
+                points = list(map(int, re.findall(r"\d+", acknowledgment.get("bounds", ""))))
+                if len(points) == 4 and points[2] > points[0] and points[3] > points[1]:
+                    adb("shell", "input", "tap", str((points[0] + points[2]) // 2), str((points[1] + points[3]) // 2))
+                    time.sleep(0.8)
+                    continue
         for node in nodes:
             if any(candidate in [node.get("text"), node.get("content-desc")] for candidate in labels):
                 points = list(map(int, re.findall(r"\d+", node.get("bounds", ""))))

@@ -257,7 +257,7 @@ fun AdminPrivateMessageDialog(
                                                 if (targetAudience == MessageAudienceTarget.PREMIUM_ONLY) {
                                                     val role = doc.getString("role") ?: "free"
                                                     val until = doc.getLong("premiumUntil")
-                                                    role == "admin" || (role == "premium" && (until == null || until == 0L || until > now))
+                                                    com.example.model.PremiumAccessPolicy.isActive(role, until, now)
                                                 } else {
                                                     true
                                                 }

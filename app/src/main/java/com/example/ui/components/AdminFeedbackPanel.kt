@@ -754,7 +754,7 @@ fun AdminFeedbackBottomSheet(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                     modifier = Modifier.height(46.dp)
                 ) {
-                    Icon(Icons.Default.DeleteSweep, contentDescription = tr("Borrar todo"), tint = DangerRed, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.DeleteSweep, contentDescription = tr("Eliminar solucionados"), tint = DangerRed, modifier = Modifier.size(18.dp))
                 }
             }
 
@@ -979,12 +979,12 @@ fun AdminFeedbackBottomSheet(
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Icons.Default.DeleteSweep, contentDescription = null, tint = DangerRed, modifier = Modifier.size(24.dp))
-                    Text(tr("¿Borrar todos los reportes?"), color = DangerRed, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("¿Eliminar todos los mensajes solucionados?"), color = DangerRed, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             },
             text = {
                 Text(
-                    text = tr("Esta acción eliminará todos los reportes y sugerencias registrados en la nube y el dispositivo de forma irreversible."),
+                    text = tr("Se eliminarán los mensajes solucionados. Los mensajes pendientes y leídos se conservarán."),
                     color = TextSecondary,
                     fontSize = 13.sp
                 )
@@ -994,11 +994,11 @@ fun AdminFeedbackBottomSheet(
                     onClick = {
                         isDeleting = true
                         scope.launch {
-                            val res = FeedbackRepository.clearAllFeedbacks()
+                            val res = FeedbackRepository.clearSolvedFeedbacks()
                             isDeleting = false
                             showClearAllConfirm = false
                             if (res.isSuccess) {
-                                Toast.makeText(context, com.example.util.appTr("Todos los reportes fueron eliminados"), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, com.example.util.appTr("Los mensajes solucionados fueron eliminados"), Toast.LENGTH_SHORT).show()
                                 loadReports()
                             } else {
                                 Toast.makeText(context, com.example.util.appTr("Error: ${res.exceptionOrNull()?.message}"), Toast.LENGTH_SHORT).show()
@@ -1012,7 +1012,7 @@ fun AdminFeedbackBottomSheet(
                     if (isDeleting) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                     } else {
-                        Text(tr("Sí, Borrar Todo"), color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(tr("Sí, eliminar solucionados"), color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             },

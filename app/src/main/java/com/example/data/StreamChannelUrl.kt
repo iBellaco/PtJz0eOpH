@@ -35,6 +35,17 @@ object StreamChannelUrl {
 
 object StreamerPublicationPolicy {
     const val MAX_LIVE = 5
+    const val REVIEW_WINDOW_MILLIS = 3 * 60 * 60 * 1000L
+    fun submittedAt(data: Map<String, Any>): Long =
+        (data["submittedAt"] as? com.google.firebase.Timestamp)?.toDate()?.time
+            ?: (data["submittedAtMillis"] as? Number)?.toLong() ?: 0L
+    fun expiresAt(data: Map<String, Any>): Long = submittedAt(data) + REVIEW_WINDOW_MILLIS
+    fun isExpired(data: Map<String, Any>, now: Long = System.currentTimeMillis()): Boolean =
+        data["status"] == "PENDING" && now >= expiresAt(data)
+    fun historyStatus(data: Map<String, Any>, now: Long): String =
+        if (isExpired(data, now)) "REJECTED" else (data["status"] as? String).orEmpty()
+    fun publicationId(data: Map<String, Any>): String =
+        (data["publicationId"] as? String)?.takeIf { it.isNotBlank() } ?: "legacy_${submittedAt(data)}"
     fun canRequest(entries: List<Map<String, Any>>, uid: String): Boolean =
         entries.size < MAX_LIVE && entries.none { it["userId"] == uid }
     fun approve(entries: List<Map<String, Any>>, entry: Map<String, Any>): List<Map<String, Any>> {

@@ -242,7 +242,7 @@ fun UserAvatarView(
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .memoryCachePolicy(CachePolicy.ENABLED)
                         .build(),
-                    contentDescription = avatar.name,
+                    contentDescription = com.example.util.tr(avatar.name),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()

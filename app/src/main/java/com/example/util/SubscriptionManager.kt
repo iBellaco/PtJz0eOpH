@@ -12,6 +12,7 @@ import com.example.data.AvatarCatalog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +63,7 @@ object SubscriptionManager {
     private var supportReportsListener: ListenerRegistration? = null
     private var supportReportsEmailListener: ListenerRegistration? = null
     private var moderatorSupportReportsListener: ListenerRegistration? = null
+    private var premiumExpirationJob: kotlinx.coroutines.Job? = null
     private var heartbeatJob: kotlinx.coroutines.Job? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -113,6 +115,12 @@ object SubscriptionManager {
     }
 
     init {
+        scope.launch {
+            AuthManager.isAdminClaim.collect { claim ->
+                _isPremium.value = com.example.model.PremiumAccessPolicy.isActive(_userRole.value, _premiumUntil.value,
+                    secondary = _secondaryRole.value, adminClaim = claim, banned = _isBanned.value)
+            }
+        }
         com.example.util.AuthManager.getAuth()?.addAuthStateListener {
             val user = it.currentUser
             if (AuthManager.isGuestOrUnauthenticated(user)) {
@@ -120,6 +128,8 @@ object SubscriptionManager {
                 _secondaryRole.value = ""
                 _userName.value = ""
                 _isPremium.value = false
+                _premiumUntil.value = null
+                premiumExpirationJob?.cancel()
                 _isBanned.value = false
                 _isVerified.value = false
                 _currentAvatarId.value = "default_poro"
@@ -199,6 +209,9 @@ object SubscriptionManager {
             _userRole.value = "free"
             _userName.value = ""
             _isPremium.value = false
+            _premiumUntil.value = null
+            premiumExpirationJob?.cancel()
+            com.example.data.StreamerPublicationLifecycle.stop(context.applicationContext)
             _isBanned.value = false
             _currentAvatarId.value = "default_poro"
             _unlockedAvatars.value = emptyList()
@@ -210,6 +223,7 @@ object SubscriptionManager {
         }
 
         startHeartbeat(user!!.uid)
+        com.example.data.StreamerPublicationLifecycle.start(context.applicationContext, user.uid)
 
         val db = FirebaseFirestore.getInstance()
         val userRef = db.collection("users").document(user.uid)
@@ -369,16 +383,17 @@ object SubscriptionManager {
                     val isVerifiedDoc = listenSnapshot.getBoolean("isVerified") ?: listenSnapshot.getBoolean("verified") ?: false
                     _isVerified.value = isVerifiedDoc || isAdminClaim || role == "admin" || role == "moderador"
 
-                    val isPrem = when {
-                        isAdminClaim || role == "admin" || role == "moderador" -> true
-                        role == "premium" || role == "streamer" || role == "creador" || role == "creador_lvl2" || role == "creador_lvl3" || role == "creador_lvl4" || role == "creador_lvl5" -> {
-                            until == null || until == 0L || until > System.currentTimeMillis()
-                        }
-                        else -> {
-                            until != null && until > System.currentTimeMillis()
+                    premiumExpirationJob?.cancel()
+                    _isPremium.value = com.example.model.PremiumAccessPolicy.isActive(role, until,
+                        secondary = _secondaryRole.value, adminClaim = isAdminClaim, banned = banned)
+                    if (until != null && until > System.currentTimeMillis() &&
+                        !com.example.model.PremiumAccessPolicy.isLifetime(role, _secondaryRole.value, isAdminClaim)) {
+                        premiumExpirationJob = scope.launch {
+                            kotlinx.coroutines.delay((until - System.currentTimeMillis()).coerceAtLeast(1L))
+                            _isPremium.value = com.example.model.PremiumAccessPolicy.isActive(_userRole.value, _premiumUntil.value,
+                                secondary = _secondaryRole.value, adminClaim = AuthManager.isAdminClaim.value, banned = _isBanned.value)
                         }
                     }
-                    _isPremium.value = isPrem
                     _currentAvatarId.value = avatarId
                     
                     _unlockedAvatars.value = unlocked
@@ -542,7 +557,7 @@ object SubscriptionManager {
     }
 
     fun isExpiringSoon(): Boolean {
-        if (_userRole.value == "admin" || _userRole.value == "moderador") return false
+        if (com.example.model.PremiumAccessPolicy.isLifetime(_userRole.value, _secondaryRole.value, AuthManager.isAdminClaim.value)) return false
         if (!_isPremium.value) return false
         val until = _premiumUntil.value ?: return false
         if (until == 0L) return false
@@ -553,10 +568,10 @@ object SubscriptionManager {
 
     fun getRemainingPremiumTimeFormatted(): String {
         if (_userRole.value == "admin") return "Acceso Administrador (Vitalicio)"
-        if (_userRole.value == "moderador") return "Acceso Moderador (Vitalicio)"
+        if (_userRole.value == "moderador" || _secondaryRole.value == "moderador") return "Acceso Moderador (Vitalicio)"
         if (!_isPremium.value) return "Sin suscripción activa"
-        val until = _premiumUntil.value ?: return "Activo (Permanente)"
-        if (until == 0L) return "Activo (Permanente)"
+        val until = _premiumUntil.value ?: return "Sin suscripción activa"
+        if (until == 0L) return "Sin suscripción activa"
         return formatDuration(until)
     }
 

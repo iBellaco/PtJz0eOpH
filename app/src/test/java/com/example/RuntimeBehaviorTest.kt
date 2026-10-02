@@ -90,4 +90,48 @@ class RuntimeBehaviorTest {
         AppLanguage.select(context, "pt")
         assertEquals("pt", AppLanguage.current.value)
     }
+    @Test fun `only staff are lifetime and a premium account always has a finite deadline`() {
+        for (role in listOf("admin", "moderador")) {
+            assertTrue(PremiumAccessPolicy.isActive(role, null, now))
+            assertTrue(PremiumAccessPolicy.isActive(role, now - 1, now))
+        }
+        assertFalse(PremiumAccessPolicy.isActive("premium", null, now))
+        assertFalse(PremiumAccessPolicy.isActive("premium", 0L, now))
+        assertFalse(PremiumAccessPolicy.isActive("premium", now, now))
+        assertTrue(PremiumAccessPolicy.isActive("premium", now + 1, now))
+        for (role in listOf("free", "streamer", "patrocinador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5")) {
+            assertFalse(role, PremiumAccessPolicy.isActive(role, now + 1000, now))
+        }
+        assertTrue(PremiumAccessPolicy.isActive("streamer", now + 1, now, secondary = "premium"))
+        assertTrue(PremiumAccessPolicy.isActive("streamer", null, now, secondary = "moderador"))
+        assertFalse(PremiumAccessPolicy.isActive("admin", null, now, banned = true))
+    }
+    @Test fun `role transitions retain an expiry without inheriting staff lifetime`() {
+        val until = now + 7 * PremiumAccessPolicy.DAY_MILLIS
+        for (role in listOf("streamer", "moderador", "creador", "free", "premium"))
+            assertEquals(until, PremiumAccessPolicy.deadlineForRole(role, until, now))
+        assertEquals(now - 1, PremiumAccessPolicy.deadlineForRole("premium", now - 1, now))
+        assertEquals(now + 30 * PremiumAccessPolicy.DAY_MILLIS, PremiumAccessPolicy.deadlineForRole("premium", 0, now))
+        assertEquals(until + PremiumAccessPolicy.DAY_MILLIS, PremiumAccessPolicy.extend(until, 1, now))
+        assertEquals(now + PremiumAccessPolicy.DAY_MILLIS, PremiumAccessPolicy.extend(null, 1, now))
+    }
+    @Test fun `pending publications expire at three hours and approved ones remain accepted`() {
+        val data = mapOf<String, Any>("status" to "PENDING", "submittedAtMillis" to now, "publicationId" to "publication-test")
+        val end = now + StreamerPublicationPolicy.REVIEW_WINDOW_MILLIS
+        assertFalse(StreamerPublicationPolicy.isExpired(data, end - 1))
+        assertTrue(StreamerPublicationPolicy.isExpired(data, end))
+        assertEquals("REJECTED", StreamerPublicationPolicy.historyStatus(data, end))
+        assertEquals("APPROVED", StreamerPublicationPolicy.historyStatus(data + ("status" to "APPROVED"), end))
+        assertFalse(StreamerPublicationPolicy.isExpired(data + ("status" to "ENDED"), end))
+        assertEquals("publication-test", StreamerPublicationPolicy.publicationId(data))
+        val server = data + ("submittedAt" to com.google.firebase.Timestamp(java.util.Date(now + 1000)))
+        assertEquals(end + 1000, StreamerPublicationPolicy.expiresAt(server))
+    }
+    @Test fun `bulk deletion eligibility excludes unread and read tickets`() {
+        for (status in listOf("PENDING", "PENDIENTE", "READ", "LEIDO", "ACCEPTED", "REJECTED"))
+            assertNotEquals("SOLVED", SupportTicketPresentation.status(status))
+        for (status in listOf("SOLVED", "SOLUCIONADO", "CLOSED", "CERRADO", "COMPLETED"))
+            assertEquals("SOLVED", SupportTicketPresentation.status(status))
+    }
+
 }
