@@ -5,6 +5,6 @@ object UserPanelNotificationPolicy {
         if (!admin && SupportConversationPolicy.isSponsor(SupportConversationPolicy.ticketTag(data))) return false
         val status = (data["status"] as? String).orEmpty().uppercase(java.util.Locale.ROOT)
         if (SupportConversationPolicy.isClosed(status) || status in setOf("DELETED", "ELIMINADO", "ACCEPTED", "ACEPTADO", "REJECTED", "RECHAZADO")) return false
-        return data["staffRead"] == false || status in setOf("PENDING", "PENDIENTE")
+        return data["staffRead"] == false || data["hasNewUserReply"] == true || status in setOf("PENDING", "PENDIENTE", "UNREAD")
     }
 }

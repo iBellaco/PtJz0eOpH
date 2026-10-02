@@ -2412,7 +2412,7 @@ private fun getSituationalItemExplanation(itemName: String): String {
 private fun BuildElementCoachAdvice(advice: String) {
     if (advice.isBlank()) return
     Spacer(Modifier.height(14.dp))
-    Surface(modifier = Modifier.fillMaxWidth().testTag("build_element_advice_card"),
+    androidx.compose.material3.Surface(modifier = Modifier.fillMaxWidth().testTag("build_element_advice_card"),
         shape = RoundedCornerShape(8.dp), color = HextechSurface,
         border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
