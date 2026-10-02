@@ -152,6 +152,7 @@ dependencies {
   implementation(libs.okhttp)
 
   testImplementation(libs.mockwebserver)
+  testImplementation("org.mockito:mockito-core:5.14.2")
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)

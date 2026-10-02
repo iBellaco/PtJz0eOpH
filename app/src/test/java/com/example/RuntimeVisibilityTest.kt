@@ -14,6 +14,10 @@ import com.example.ui.components.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import com.example.ui.screens.*
+import com.example.ui.auth.AuthenticatedProfilePanel
+import com.google.firebase.auth.FirebaseUser
+import org.mockito.Mockito
+import androidx.compose.ui.unit.dp
 import com.example.ui.theme.MyApplicationTheme
 import com.example.util.*
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -44,7 +48,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered",
             "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "profile-admin", "profile-admin-large").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private val context get() = RuntimeEnvironment.getApplication()
@@ -75,9 +79,14 @@ class RuntimeVisibilityTest(private val screen: String) {
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any>).value = value
         }
-        setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin") "admin" else "free")
+        setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin")) "admin" else "free")
         setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
         setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
+        if (screen == "profile-admin-large") {
+            val configuration = android.content.res.Configuration(context.resources.configuration).apply { fontScale = 1.5f }
+            @Suppress("DEPRECATION")
+            context.resources.updateConfiguration(configuration, context.resources.displayMetrics)
+        }
 
     }
     @After fun release() {
@@ -99,6 +108,13 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             screen.startsWith("streamer") -> Column { StreamerUrlRecommendations(screen == "streamer-admin") {} }
             screen.startsWith("moderation") -> ModeratorDashboardDialog {}
+            screen.startsWith("profile-admin") -> {
+                val user = Mockito.mock(FirebaseUser::class.java)
+                Mockito.`when`(user.uid).thenReturn("local-profile-test")
+                Mockito.`when`(user.email).thenReturn("coach@example.invalid")
+                Mockito.`when`(user.displayName).thenReturn("Coach Teste")
+                AuthenticatedProfilePanel(user) {}
+            }
             screen == "premium-editor" -> UserDetailManagementDialog(mapOf("uid" to "local-test", "name" to "Teste",
                 "role" to "premium", "premiumUntil" to System.currentTimeMillis() + 86400000L), {}, {}, {}, {})
             screen.startsWith("champion") -> ChampionDetailSheet(champion = WildRiftRepository.champions.first { it.id == "garen" }, onDismiss = {})
@@ -197,6 +213,14 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText(appTr("Abrir Reportes de Soporte")).performClick()
                 compose.onNodeWithText(appTr("Panel de Reportes & Sugerencias")).assertExists()
                 if (screen != "moderation-secondary") compose.onNodeWithContentDescription(appTr("Eliminar solucionados")).assertExists()
+            }
+            "profile-admin", "profile-admin-large" -> {
+                for (label in listOf("Painel de streamer", appTr("Panel de Administración"), appTr("Panel de Soporte y Moderación"), appTr("Panel de Patrocinador"))) {
+                    compose.onNodeWithText(label).performScrollTo().assertExists()
+                }
+                inspect("role-buttons")
+                compose.onNodeWithText(appTr("Panel de Soporte y Moderación")).performScrollTo().performClick()
+                compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()
             }
             "premium-editor" -> {
                 compose.onNodeWithText(appTr("Editar o extender tiempo premium:")).performScrollTo().assertExists()
