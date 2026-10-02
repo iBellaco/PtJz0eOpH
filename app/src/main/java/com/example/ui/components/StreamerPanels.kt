@@ -19,6 +19,10 @@ import com.example.data.StreamChannelUrl
 import com.example.data.StreamerPublicationPolicy
 import com.example.data.StreamerRepository
 import com.example.util.localizedString
+import com.example.util.AuthManager
+import com.example.util.SubscriptionManager
+import com.example.model.RolePanelAccess
+import androidx.compose.ui.platform.testTag
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.MetadataChanges
 import kotlinx.coroutines.launch
@@ -67,10 +71,13 @@ private fun operationError(result: Result<Unit>?): String? {
 fun LiveStreamersRow() {
     val (entries, _) = liveEntries()
     val uri = LocalUriHandler.current
+    val role by SubscriptionManager.userRole.collectAsState()
+    val adminClaim by AuthManager.isAdminClaim.collectAsState()
+    val isAdmin = RolePanelAccess.isAdministrator(role, adminClaim)
     if (entries.isNotEmpty()) {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             entries.take(StreamerPublicationPolicy.MAX_LIVE).forEach { item ->
-                val channel = StreamChannelUrl.parse(item["channelUrl"] as? String ?: "")
+                val channel = StreamChannelUrl.parse(item["channelUrl"] as? String ?: "", allowAdminTest = isAdmin)
                 if (channel != null) AssistChip(onClick = { runCatching { uri.openUri(channel.url) } },
                     label = { Text(localizedString(R.string.streamer_live, item["channelName"] as? String ?: ""), color = StreamGold) })
             }
@@ -79,8 +86,29 @@ fun LiveStreamersRow() {
 }
 
 @Composable
+fun StreamerUrlRecommendations(isAdmin: Boolean, enabled: Boolean = true, onSelectUrl: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(localizedString(R.string.streamer_url_recommendation), color = Color.LightGray)
+        TextButton(onClick = { onSelectUrl("https://www.twitch.tv/riotgames") }, enabled = enabled,
+            modifier = Modifier.testTag("streamer_channel_example")) {
+            Text("https://www.twitch.tv/riotgames")
+        }
+        if (isAdmin) {
+            Text(localizedString(R.string.streamer_google_recommendation), color = Color.LightGray)
+            TextButton(onClick = { onSelectUrl("https://www.google.com") }, enabled = enabled,
+                modifier = Modifier.testTag("streamer_admin_google_example")) {
+                Text("https://www.google.com")
+            }
+        }
+    }
+}
+
+@Composable
 fun StreamerPanelDialog(onDismiss: () -> Unit) {
     val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    val role by SubscriptionManager.userRole.collectAsState()
+    val adminClaim by AuthManager.isAdminClaim.collectAsState()
+    val isAdmin = RolePanelAccess.isAdministrator(role, adminClaim)
     val (entries, registryAvailable) = liveEntries()
     var request by remember(uid) { mutableStateOf<Map<String, Any>>(emptyMap()) }
     var requestAvailable by remember(uid) { mutableStateOf(false) }
@@ -110,6 +138,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 Text(localizedString(R.string.streamer_requirement), color = Color.White)
                 OutlinedTextField(name, { name = it; result = null }, label = { Text(localizedString(R.string.streamer_name)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(url, { url = it; result = null }, label = { Text(localizedString(R.string.streamer_url)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
+                StreamerUrlRecommendations(isAdmin, enabled = !busy && !pending && !active) { url = it; result = null }
                 Text(localizedString(R.string.streamer_count, entries.size), color = Color.White)
                 if (maximum) Text(localizedString(R.string.streamer_max), color = StreamGold)
                 when {
@@ -121,8 +150,8 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 if (!registryAvailable || !requestAvailable) Text(localizedString(R.string.streamer_loading), color = Color.White)
                 if (active) Button(onClick = { busy = true; scope.launch { result = StreamerRepository.end(uid); busy = false } }, enabled = !busy && registryAvailable) { Text(localizedString(R.string.streamer_end)) }
                 else Button(onClick = { busy = true; scope.launch { result = StreamerRepository.submit(name, url); busy = false } },
-                    enabled = !busy && registryAvailable && requestAvailable && !maximum && !pending && name.trim().length in 2..60 && StreamChannelUrl.parse(url) != null) { Text(localizedString(R.string.streamer_submit)) }
-                if (url.isNotBlank() && StreamChannelUrl.parse(url) == null) Text(localizedString(R.string.streamer_url_error), color = Color(0xFFFF8A80))
+                    enabled = !busy && registryAvailable && requestAvailable && !maximum && !pending && name.trim().length in 2..60 && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) != null) { Text(localizedString(R.string.streamer_submit)) }
+                if (url.isNotBlank() && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) == null) Text(localizedString(R.string.streamer_url_error), color = Color(0xFFFF8A80))
                 TextButton(onClick = onDismiss, enabled = !busy) { Text(localizedString(R.string.streamer_close)) }
             }
         }
@@ -162,7 +191,7 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
         requests.forEach { request ->
             key(request["id"]) {
                 var verified by remember { mutableStateOf(false) }
-                val channel = StreamChannelUrl.parse(request["channelUrl"] as? String ?: "")
+                val channel = StreamChannelUrl.parse(request["channelUrl"] as? String ?: "", allowAdminTest = request["adminTest"] == true)
                 val uid = request["id"] as String
                 Surface(color = Color(0xFF1F2937), shape = RoundedCornerShape(10.dp)) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

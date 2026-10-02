@@ -126,6 +126,22 @@ back()
 for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
     tap(tab)
     snapshot("dashboard-" + tab)
+    if tab == "Seleção":
+        for page in range(3):
+            scroll()
+            snapshot("draft-empty-scroll-" + str(page + 1))
+        texts = [n.get("text", "") for n in app_nodes(window())]
+        if any("Melhor Opção segundo" in text for text in texts):
+            raise AssertionError("Empty draft must not show team recommendations")
+    if tab == "Tier List":
+        tap("Entrar ou cadastrar-se", scrolling=3)
+        snapshot("tier-login")
+        tap("Cadastre-se", scrolling=3)
+        snapshot("tier-registration")
+        back()
+        for page in range(2):
+            scroll()
+            snapshot("tier-guest-scroll-" + str(page + 1))
     if tab == "Catálogo":
         for catalog in ["Itens", "Runas", "Feitiços"]:
             tap(catalog)

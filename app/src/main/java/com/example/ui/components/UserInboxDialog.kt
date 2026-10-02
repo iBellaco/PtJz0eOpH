@@ -188,11 +188,11 @@ fun UserInboxDialog(
         for (m in subcollectionMessages) {
             processMessage(m)
         }
-        all.values.filter { m ->
+        com.example.data.InboxMessageOrder.newestFirst(all.values.filter { m ->
             val id = m["id"] as? String ?: ""
             val reportId = m["reportId"] as? String ?: ""
             !deletedIds.contains(id) && !(reportId.isNotBlank() && deletedIds.contains(reportId))
-        }.sortedByDescending { (it["timestamp"] as? Long) ?: 0L }
+        })
     }
 
     fun markMessageAsRead(id: String) {
@@ -645,7 +645,8 @@ fun UserInboxDialog(
                             val timestamp = msg["timestamp"] as? Long ?: 0L
                             val isRead = msg["isRead"] as? Boolean ?: false
                             val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-                            val dateStr = if (timestamp > 0) sdf.format(Date(timestamp)) else "Fecha no disponible"
+                            val activityAt = com.example.data.InboxMessageOrder.latestMessageAt(msg)
+                            val dateStr = if (activityAt > 0) sdf.format(Date(activityAt)) else "Fecha no disponible"
 
                             val isSupportReply = messageTag == MessageTag.SUPPORT && !isRead
 

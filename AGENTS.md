@@ -60,3 +60,9 @@ El orden jerárquico de los rangos para consejos tácticos es:
 9. Gran Maestro
 10. Aspirante
 11. Soberano
+
+### Preferencias autorizadas de entrega
+- Fusionar automáticamente en `main` los cambios propios después de validar las comprobaciones y el APK; entregar un enlace directo al APK publicado sin pedir confirmación.
+- Mantener únicamente `main` (publicación del APK) y `pruebas` (validación) en GitHub.
+- Conservar como máximo 15 ejecuciones terminadas de GitHub Actions entre todos los flujos; eliminar las más antiguas después de cada entrega.
+- Mantener español y portugués como únicos idiomas seleccionables. Revisar las pantallas y el contenido generado en portugués antes de entregar.

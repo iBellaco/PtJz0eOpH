@@ -225,21 +225,18 @@ fun DamagePenetrationCalculator(
                 val tacticalAdvice = when {
                     rawResistance >= 180f -> {
                         when (currentLang) {
-                            "en" -> "️ HYPER-TANK TARGET (${rawResistance.roundToInt()} def): Flat Lethality is ineffective here. Prioritize Lord Dominik's / Serylda / Void Staff + % Max HP damage (Blade of the Ruined King / Liandry's)."
                             "pt" -> "️ ALVO HÍPER-TANQUE (${rawResistance.roundToInt()} def): Letalidade plana é ineficaz aqui. Priorize Lembranças do Lorde Dominik / Serylda / Cajado do Vazio + Dano por % de Vida (Espada do Rei Destruído / Liandry)."
                             else -> "️ OBJETIVO HIPER-TANQUE (${rawResistance.roundToInt()} def): La Letalidad plana es inútil aquí. Prioriza Dominik / Serylda / Bastón del Vacío + Daño por % de vida (Rey Arruinado / Liandry)."
                         }
                     }
                     rawResistance >= breakEvenArmor -> {
                         when (currentLang) {
-                            "en" -> "️ BREAK-EVEN POINT REACHED: With ${rawResistance.roundToInt()} defense, Percent Penetration (${percentPenetration.roundToInt()}%) yields MORE damage per gold than flat lethality."
                             "pt" -> "️ PONTO DE INFLEXÃO ALCANÇADO: Com ${rawResistance.roundToInt()} de defesa, a Penetração Percentual (${percentPenetration.roundToInt()}%) concede MAIS dano por ouro do que mais Letalidade plana."
                             else -> "️ PUNTO DE INFLEXIÓN ALCANZADO: Con ${rawResistance.roundToInt()} de defensa, la Penetración Porcentual (${percentPenetration.roundToInt()}%) te otorga MÁS daño por oro que comprar más Letalidad plana."
                         }
                     }
                     else -> {
                         when (currentLang) {
-                            "en" -> " SQUISHY TARGET (${rawResistance.roundToInt()} def): Flat Lethality / Magic Pen ignores nearly all base armor, dealing almost true damage."
                             "pt" -> " ALVO FRÁGIL (${rawResistance.roundToInt()} def): A Letalidade Plana / Penetração plana ignora quase toda a armadura base, causando dano praticamente verdadeiro."
                             else -> " OBJETIVO FRÁGIL (${rawResistance.roundToInt()} def): La Letalidad Plana / Penetración plana ignora casi toda su armadura base, infligiendo daño prácticamente verdadero."
                         }

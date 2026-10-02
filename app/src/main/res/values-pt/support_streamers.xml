@@ -31,4 +31,6 @@
     <string name="streamer_count">Canais publicados: %1$d de 5</string>
     <string name="streamer_close">Fechar</string>
     <string name="streamer_review_title">Solicitações de verificação, papéis e streamers</string>
+    <string name="streamer_url_recommendation">Exemplo de URL válida de um canal:</string>
+    <string name="streamer_google_recommendation">Somente para administradores: você pode usar o Google para testes.</string>
 </resources>

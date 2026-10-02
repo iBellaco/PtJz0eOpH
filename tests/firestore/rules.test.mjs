@@ -85,6 +85,20 @@ try {
     await assertFails(updateDoc(doc(user,'support_reports','new'), { conversation:[...history,{ id:'closedreply', senderRole:'USER',senderUid:'user',text:'No',timestampMillis:400 }], status:'PENDING',isCompleted:false,staffRead:false }));
   });
   const request = uid => ({ userId:uid,userName:uid,channelName:'Canal Coach',channelUrl:'https://twitch.tv/coach_test',platform:'Twitch',status:'PENDING',usingCoachAcknowledged:true,submittedAtMillis:100 });
+  await test('Google test URL is reserved for administrators and cannot be forged by streamers', async () => {
+    const google = uid => ({ ...request(uid), channelUrl: 'https://www.google.com', platform: 'Google' });
+    await assertSucceeds(setDoc(doc(admin, 'streamer_requests', 'admin'), { ...google('admin'), adminTest: true }));
+    await assertFails(setDoc(doc(user, 'streamer_requests', 'user'), google('user')));
+    await assertFails(setDoc(doc(streamer, 'streamer_requests', 's1'), google('s1')));
+    await assertFails(setDoc(doc(streamer, 'streamer_requests', 's1'), { ...google('s1'), adminTest: true }));
+    await assertFails(setDoc(doc(streamer, 'streamer_requests', 's1'), { ...request('s1'), adminTest: true }));
+    const secondary = db('secondary');
+    await env.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(), 'users', 'secondary'), { role: 'free', secondaryRole: 'streamer' });
+    });
+    await assertFails(setDoc(doc(secondary, 'streamer_requests', 'secondary'), google('secondary')));
+    await assertSucceeds(setDoc(doc(secondary, 'streamer_requests', 'secondary'), request('secondary')));
+  });
   await test('only streamers request and only admin reviews; bad hosts are rejected', async () => {
     await assertSucceeds(setDoc(doc(streamer,'streamer_requests','s1'),request('s1')));
     await assertFails(setDoc(doc(user,'streamer_requests','user'),request('user')));

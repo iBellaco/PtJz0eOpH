@@ -14,6 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
+  actions: write
   contents: write
   packages: write
 
@@ -177,7 +178,7 @@ jobs:
       - name: Inspect rendered Portuguese screens
         env:
           CI: "true"
-        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests com.example.HubChampionNavigationTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest -Proborazzi.test.record=true --stacktrace --no-daemon
+        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests com.example.HubChampionNavigationTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest -Proborazzi.test.record=true --stacktrace --no-daemon
 
       - name: Upload Portuguese screenshots and rendered texts
         if: always()
@@ -273,7 +274,7 @@ jobs:
           mkdir -p "$ASSET_DIR"
           VERSION_NAME="${{ steps.app_version.outputs.version_name }}"
           VERSION_CODE="${{ steps.app_version.outputs.version_code }}"
-          ASSET_NAME="Wild-Rift-Coach-v${VERSION_NAME}-build-${VERSION_CODE}-debug.apk"
+          ASSET_NAME="Coach-v${VERSION_NAME}-build-${VERSION_CODE}-debug.apk"
           ASSET_PATH="${ASSET_DIR}/${ASSET_NAME}"
           cp app/build/outputs/apk/debug/app-debug.apk "$ASSET_PATH"
           echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
@@ -286,7 +287,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME="v${{ steps.app_version.outputs.version_name }}-b${{ steps.app_version.outputs.version_code }}"
-          RELEASE_NAME="Wild Rift Coach v${{ steps.app_version.outputs.version_name }} (Build #${{ steps.app_version.outputs.version_code }})"
+          RELEASE_NAME="Coach v${{ steps.app_version.outputs.version_name }} (Build #${{ steps.app_version.outputs.version_code }})"
           
           echo "Creando release: $TAG_NAME"
           
@@ -294,11 +295,11 @@ jobs:
           gh release delete "$TAG_NAME" --cleanup-tag -y 2>/dev/null || true
           
           cat << NOTE_EOF > release_notes.md
-          ### 🎮 Wild Rift Coach - APK de Pruebas (Debug)
+          ### Coach - APK de Pruebas (Debug)
           - **Versión de la app:** v${{ steps.app_version.outputs.version_name }}
           - **Código de versión:** ${{ steps.app_version.outputs.version_code }}
           - **Ejecución GitHub Actions:** #${{ github.run_number }}
-          - **Commit:** `${{ github.sha }}`
+          - **Commit:** ${{ github.sha }}
           
           Descarga el archivo APK directamente en tu teléfono Android desde los archivos adjuntos (Assets) abajo.
           NOTE_EOF
@@ -308,3 +309,18 @@ jobs:
              --title "$RELEASE_NAME" \
              --target "${{ github.sha }}" \
              --notes-file release_notes.md
+
+  cleanup-history:
+    if: always()
+    needs: [build-and-release]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: coach-actions-history
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Keep at most 15 completed workflow runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await require('./.github/scripts/cleanup-completed-runs.cjs')({ github, context, core });
