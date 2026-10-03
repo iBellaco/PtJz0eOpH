@@ -285,8 +285,8 @@ class RuntimeVisibilityTest(private val screen: String) {
         compose.waitForIdle()
         if (screen.startsWith("component-catalog-")) {
             val section = mapOf("luchador" to "Luchador","asesino" to "Asesino","tirador" to "Tirador","magico" to "Mágico","defensa" to "Defensa","apoyo" to "Apoyo").getValue(screen.removePrefix("component-catalog-"))
-            compose.onNodeWithTag("catalog_section_$section").performScrollTo().performClick()
-            compose.onNodeWithText(appTr("Minimizar filtros")).performClick()
+            compose.onNodeWithTag("catalog_section_$section").performClick()
+            compose.onNodeWithContentDescription(appTr("Minimizar filtros")).performClick()
             compose.onNodeWithTag("catalog_level_1").performScrollTo().performClick()
             if (section == "Apoyo") compose.onNodeWithTag("catalog_group_${section}_Básico").assertDoesNotExist()
             else {
