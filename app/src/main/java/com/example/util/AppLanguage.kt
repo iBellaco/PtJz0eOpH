@@ -12,9 +12,12 @@ object AppLanguage {
     fun normalize(value: String?): String = if (value?.trim()?.lowercase(java.util.Locale.ROOT)?.startsWith("pt") == true) "pt" else "es"
     private var preferences: SharedPreferences? = null
     private var applicationContext: Context? = null
+    fun locale(language: String): java.util.Locale = java.util.Locale.forLanguageTag(
+        if (normalize(language) == "pt") "pt-BR" else "es-419"
+    )
     @Suppress("DEPRECATION")
     private fun applyLocale(context: Context, language: String) {
-        val locale = if (language == "pt") java.util.Locale("pt", "BR") else java.util.Locale("es")
+        val locale = locale(language)
         java.util.Locale.setDefault(locale)
         val config = android.content.res.Configuration(context.resources.configuration)
         config.setLocale(locale)
@@ -23,7 +26,7 @@ object AppLanguage {
     fun localizedContext(context: Context): Context {
         val language = normalize(context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getString("selected_language", "es"))
         val config = android.content.res.Configuration(context.resources.configuration)
-        config.setLocale(if (language == "pt") java.util.Locale("pt", "BR") else java.util.Locale("es"))
+        config.setLocale(locale(language))
         return context.createConfigurationContext(config)
     }
     private val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->

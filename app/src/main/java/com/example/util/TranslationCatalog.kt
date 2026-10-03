@@ -21,6 +21,7 @@ class TranslationCatalog(private val portuguese: Map<String, String>, private va
     }
     private val ptFolded by lazy { folded(portuguese) }
     private val esFolded by lazy { folded(reverse) }
+    private val spanishFolded by lazy { folded(spanish) }
     private fun preserveCase(source: String, translated: String): String =
         if (source.any { it.isLetter() } && source.filter { it.isLetter() }.all { it.isUpperCase() }) translated.uppercase(java.util.Locale.ROOT) else translated
     private data class Template(val pattern: Regex, val output: String, val slots: List<Int>, val weight: Int, val anchor: String)
@@ -66,8 +67,13 @@ class TranslationCatalog(private val portuguese: Map<String, String>, private va
         val map = if (isPt) portuguese else reverse
         if (!isPt) {
             spanish[text]?.let { return it }
-            // Canonical Spanish must not be mistaken for an ambiguous reverse alias.
-            if (text in portuguese) return text
+            val normalized = text.trim().replace(Regex("\\s+"), " ").lowercase(java.util.Locale.ROOT)
+            spanishFolded[normalized]?.let {
+                return text.takeWhile { c -> c.isWhitespace() } + preserveCase(text.trim(), it) + text.takeLastWhile { c -> c.isWhitespace() }
+            }
+            // Protect Spanish before both exact and folded reverse aliases.
+            // PATROCINADOR/DERROTA must not turn into SPONSOR/DEFEAT.
+            if (text in portuguese || normalized in ptFolded) return text
         }
         map[text]?.let { return it }
         if (isPt && text in translatedPhrases) return text

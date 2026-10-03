@@ -56,6 +56,9 @@ fun tr(text: AnnotatedString): AnnotatedString {
 
 fun trStr(lang: String, key: String): String {
     val language = AppLanguage.normalize(lang)
+    // The Spanish catalog is authoritative. Reverse UI aliases must not rename
+    // an item or replace its updated Spanish description with another source.
+    if (language == "es" && key.trim().lowercase(java.util.Locale.ROOT) in spanishItemPhrases) return key
     DynamicTranslations.get(language, key)?.let { return it }
     if (language != "pt") return key
     WildRiftRepository.items.forEach {
@@ -77,4 +80,10 @@ fun trStr(lang: String, key: String): String {
         if (it.description.equals(key, true) && it.descriptionPt.isNotBlank()) return it.descriptionPt
     }
     return key
+}
+
+private val spanishItemPhrases by lazy {
+    com.example.data.WildRiftItemsData.list.flatMap {
+        listOf(it.name, it.stats, it.passive, it.coachTip) + it.getStatsList("es")
+    }.map { it.trim().lowercase(java.util.Locale.ROOT) }.toHashSet()
 }
