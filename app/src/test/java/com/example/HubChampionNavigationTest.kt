@@ -53,6 +53,10 @@ class HubChampionNavigationTest {
         AppLanguage.select(context, "pt")
         WildRiftRepository.initChampions(context, forceReload = true)
         CustomChampionBuildsManager.init(context)
+        // Deletion is reserved for an authorized author or administrator.
+        val roleField = com.example.util.SubscriptionManager::class.java.getDeclaredField("_userRole").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        (roleField.get(com.example.util.SubscriptionManager) as kotlinx.coroutines.flow.MutableStateFlow<String>).value = "admin"
         val first = com.example.data.local.CustomChampionBuildRecord(id = "delete-target", championId = "garen", championName = "Garen", buildTitle = "Build para excluir", role = "TOP", creatorName = "Teste")
         val second = first.copy(id = "keep-target", buildTitle = "Build preservada")
         val field = CustomChampionBuildsManager::class.java.getDeclaredField("_customBuilds").apply { isAccessible = true }
