@@ -21,6 +21,11 @@ class WildRiftItemsCatalogTest {
             memberships += basic.size + medium.size
             (basic + medium).forEach { assertSame(it, WildRiftItemsData.getItemById(it.id)) }
             assertEquals(basic.map { it.id }, WildRiftItemsData.getCatalogGroups(section).firstOrNull { it.level == "Básico" }?.items.orEmpty().map { it.id })
+            val groups = WildRiftItemsData.getCatalogGroups(section)
+            val order = listOf("Completos", "Nivel Medio", "Básico", "Inicial")
+            assertEquals(groups.map { it.level }.sortedBy { order.indexOf(it) }, groups.map { it.level })
+            assertEquals(groups.flatMap { it.items }.size, groups.flatMap { it.items }.distinctBy { it.id }.size)
+            (basic + medium).forEach { assertEquals("file:///android_asset/component_icons/${it.id}.webp", it.iconUrl) }
         }
         assertEquals(98, memberships)
         assertTrue(components.getItems("Apoyo","Básico").isEmpty())

@@ -29,6 +29,26 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Validate signing publication policy
+        run: python3 -m unittest discover -s .github/scripts -p test_prepare_debug_signing.py
+
+      - name: Check publication signing configuration
+        if: github.ref == 'refs/heads/main'
+        env:
+          COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
+          COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
+        run: |
+          python3 - <<'PYSIGN'
+          import os, re
+          from pathlib import Path
+          key_present = bool(os.environ.get('COACH_DEBUG_KEYSTORE_BASE64', '').strip())
+          certificate_valid = bool(re.fullmatch(r'[0-9a-fA-F]{64}', os.environ.get('COACH_SIGNING_CERT_SHA256', '').strip()))
+          if not key_present or not certificate_valid:
+              summary = 'Publicación bloqueada: falta la configuración de firma persistente.\n\nConfigurar el secreto `COACH_DEBUG_KEYSTORE_BASE64` con la clave original y la variable pública `COACH_SIGNING_CERT_SHA256` con su huella. Las fusiones ya realizadas no requieren intervención manual. Una firma nueva no puede actualizar instalaciones anteriores.\n\n[Instrucciones de firma](https://github.com/iBellaco/PtJz0eOpH/blob/main/docs/persistent-apk-signing.md)\n'
+              Path(os.environ['GITHUB_STEP_SUMMARY']).write_text(summary)
+              raise SystemExit('Falta la clave persistente de firma o su huella. Consulta el resumen del flujo.')
+          PYSIGN
+
       - name: Remove any legacy wrapper binaries
         run: |
           rm -f gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties gradlew gradlew.bat || true
@@ -97,9 +117,6 @@ jobs:
           gradle-version: '9.3.1'
           cache-disabled: false
 
-      - name: Validate signing publication policy
-        run: python3 -m unittest discover -s .github/scripts -p test_prepare_debug_signing.py
-
       - name: Restore persistent debug keystore
         env:
           COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
@@ -163,6 +180,7 @@ jobs:
       - name: Audit Portuguese text sinks
         run: |
           python3 tools/generate-component-items.py --check
+          python3 tools/import-component-icons.py --check
           python3 tools/update-champion-builds.py --check
           bash tools/audit-portuguese.sh
 

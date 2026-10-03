@@ -2444,7 +2444,7 @@ internal fun ItemsCatalogTab() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            listOf<String?>(null, "Básico", "Nivel Medio", "Completos", "Inicial").forEachIndexed { index, level ->
+            listOf<String?>(null, "Completos", "Nivel Medio", "Básico", "Inicial").forEachIndexed { index, level ->
                 FilterChip(selected = selectedLevel == level, onClick = { selectedLevel = level },
                     modifier = Modifier.testTag("catalog_level_$index"),
                     label = { Text(tr(level ?: "Todos"), fontSize = 11.sp) },
@@ -2552,8 +2552,8 @@ internal fun ItemsCatalogTab() {
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            treeCategories.forEachIndexed { catIdx, (categoryName, itemLevel, itemsInCat) ->
-                item(key = "item_cat_${catIdx}_${categoryName}_${itemLevel}") {
+            treeCategories.groupBy { it.section }.forEach { (categoryName, groups) ->
+                item(key = "item_cat_$categoryName") {
                     val catColor = when {
                         categoryName.contains("Luchador", ignoreCase = true) -> Color(0xFFFF8C00)
                         categoryName.contains("Asesino", ignoreCase = true) -> Color(0xFFEF4444)
@@ -2566,7 +2566,7 @@ internal fun ItemsCatalogTab() {
                     }
 
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().testTag("catalog_panel_$categoryName"),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface.copy(alpha = 0.95f)),
                         border = androidx.compose.foundation.BorderStroke(1.dp, catColor.copy(alpha = 0.35f))
@@ -2585,24 +2585,27 @@ internal fun ItemsCatalogTab() {
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = com.example.util.tr("(${itemsInCat.size})"),
+                                    text = com.example.util.tr("(${groups.sumOf { it.items.size }})"),
                                     color = catColor,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp
                                 )
                             }
 
-                            Text(tr(itemLevel).uppercase(), color = HextechCyan, fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp, modifier = Modifier.padding(bottom = 8.dp).testTag("catalog_group_${categoryName}_${itemLevel}"))
-                            if (isGridView) {
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                                    itemsInCat.forEach { item ->
-                                        ItemGridCard(item = item, onClick = { itemForDetail = item }, modifier = Modifier.width(68.dp), borderColor = catColor)
+                            groups.forEachIndexed { groupIndex, (_, itemLevel, itemsInCat) ->
+                                if (groupIndex > 0) Spacer(Modifier.height(16.dp))
+                                Text(tr(itemLevel).uppercase(), color = HextechCyan, fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp, modifier = Modifier.padding(bottom = 8.dp).testTag("catalog_group_${categoryName}_${itemLevel}"))
+                                if (isGridView) {
+                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                                        itemsInCat.forEach { item ->
+                                            ItemGridCard(item = item, onClick = { itemForDetail = item }, modifier = Modifier.width(68.dp), borderColor = catColor)
+                                        }
                                     }
-                                }
-                            } else {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    itemsInCat.forEach { item -> ItemListCard(item = item, onClick = { itemForDetail = item }, borderColor = catColor) }
+                                } else {
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        itemsInCat.forEach { item -> ItemListCard(item = item, onClick = { itemForDetail = item }, borderColor = catColor) }
+                                    }
                                 }
                             }
                         }
