@@ -770,7 +770,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     role = userRole,
                     isPremiumActive = isPremium,
                     isBanned = (userRole == "banned"),
-                    isExpiringSoon = isExpiringSoon,
+                    isExpiringSoon = isPremium && !com.example.model.PremiumAccessPolicy.isLifetime(userRole, secondaryRole, adminClaim) && com.example.model.PremiumAccessPolicy.isExpiringSoon(premiumUntil, System.currentTimeMillis()),
                     size = RoleBadgeSize.NORMAL
                 )
                 if (secondaryRole.isNotBlank()) {
