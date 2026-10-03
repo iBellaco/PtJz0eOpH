@@ -7,6 +7,31 @@ import org.junit.Test
 
 class WildRiftItemsCatalogTest {
 
+    @Test fun `components are strictly grouped and repeated data is shared`() {
+        val counts = mapOf("Luchador" to (4 to 10), "Asesino" to (3 to 7), "Tirador" to (4 to 13),
+            "Mágico" to (4 to 18), "Defensa" to (4 to 16), "Apoyo" to (0 to 15))
+        val components = com.example.data.WildRiftComponentItemsData
+        assertEquals(52, components.items.size)
+        var memberships = 0
+        counts.forEach { (section, expected) ->
+            val basic = components.getItems(section, "Básico")
+            val medium = components.getItems(section, "Nivel Medio")
+            assertEquals(expected.first, basic.size)
+            assertEquals(expected.second, medium.size)
+            memberships += basic.size + medium.size
+            (basic + medium).forEach { assertSame(it, WildRiftItemsData.getItemById(it.id)) }
+            assertEquals(basic.map { it.id }, WildRiftItemsData.getCatalogGroups(section).firstOrNull { it.level == "Básico" }?.items.orEmpty().map { it.id })
+        }
+        assertEquals(98, memberships)
+        assertTrue(components.getItems("Apoyo","Básico").isEmpty())
+        assertEquals(listOf("spectral_sickle","relic_shield"),WildRiftItemsData.getCatalogGroups("Apoyo").first { it.level == "Inicial" }.items.map { it.id })
+        assertNull(WildRiftItemsData.getItemByName("objeto inexistente zzz987"))
+        assertEquals(300, WildRiftItemsData.getItemById("revelation_ring")!!.goldCost)
+        val bramble = WildRiftItemsData.getItemById("bramble_vest")!!
+        assertTrue(bramble.stats.isEmpty())
+        assertFalse(bramble.passive.any { it.isDigit() })
+    }
+
     @Test
     fun `support category contains basic starter items and completed support items`() {
         val supportItems = WildRiftItemsData.getItemsForCategory("Apoyo")

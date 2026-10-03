@@ -173,12 +173,14 @@ jobs:
           EOF
 
       - name: Audit Portuguese text sinks
-        run: bash tools/audit-portuguese.sh
+        run: |
+          python3 tools/generate-component-items.py --check
+          bash tools/audit-portuguese.sh
 
       - name: Inspect rendered Portuguese screens
         env:
           CI: "true"
-        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests com.example.HubChampionNavigationTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.RequiredItemCorrectionsTest -Proborazzi.test.record=true --stacktrace --no-daemon
+        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests com.example.HubChampionNavigationTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.RequiredItemCorrectionsTest --tests com.example.ComponentItemsCatalogTest -Proborazzi.test.record=true --stacktrace --no-daemon
 
       - name: Upload Portuguese screenshots and rendered texts
         if: always()
@@ -203,7 +205,7 @@ jobs:
               shutil.copy2(file, target / file.name)
           for file in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml'):
               shutil.copy2(file, target / file.name)
-          names = ['sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
+          names = ['component-catalog', 'component-item-tear_of_the_goddess', 'component-item-quicksilver_sash', 'component-item-bramble_vest', 'component-item-mejais_soulstealer', 'sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
                    'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
                    'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
                    'premium-editor', 'premium-status', 'creator-reader',

@@ -3,7 +3,7 @@ package com.example.data
 import com.example.model.WildRiftItem
 
 object WildRiftItemsData {
-    val list: List<WildRiftItem> = listOf(
+    private val coreItems: List<WildRiftItem> = listOf(
 WildRiftItem(
             id = "fiendhunter_bolts",
             name = "Dardos rastreademonios",
@@ -2324,6 +2324,22 @@ WildRiftItem(
         "el baluarte de la montana" to "bulwark_of_the_mountain"
     )
 
+    val list: List<WildRiftItem> by lazy { coreItems + WildRiftComponentItemsData.items }
+
+    /** Component memberships remain independent of completed-item memberships. */
+    data class CatalogGroup(val section: String, val level: String, val items: List<WildRiftItem>)
+    fun getCatalogGroups(section: String): List<CatalogGroup> {
+        val result = listOf("Básico", "Nivel Medio").mapNotNull { level ->
+            WildRiftComponentItemsData.getItems(section, level).takeIf { it.isNotEmpty() }?.let { CatalogGroup(section, level, it) }
+        }.toMutableList()
+        val original = getItemsForCategory(section)
+        val starters = if (section == "Apoyo") original.filter { it.id in setOf("spectral_sickle", "relic_shield") } else emptyList()
+        if (starters.isNotEmpty()) result += CatalogGroup(section, "Inicial", starters)
+        val completed = original.filter { it !in starters }
+        if (completed.isNotEmpty()) result += CatalogGroup(section, "Completos", completed)
+        return result
+    }
+
     private fun normalizeString(input: String): String {
         return java.text.Normalizer.normalize(input, java.text.Normalizer.Form.NFD)
             .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
@@ -2349,6 +2365,9 @@ WildRiftItem(
         val normalized = normalizeString(raw)
         val cleaned = cleanItemKey(raw)
 
+        // Prefer canonical names before legacy aliases.
+        list.find { it.name.equals(raw, ignoreCase = true) || it.nameEn.equals(raw, ignoreCase = true) || it.namePt.equals(raw, ignoreCase = true) || it.id.equals(raw, ignoreCase = true) }?.let { return it }
+
         // 1. Alias lookup by ID
         val aliasId = itemAliases[q] ?: itemAliases[normalized] ?: itemAliases[cleaned]
         if (aliasId != null) {
@@ -2356,29 +2375,26 @@ WildRiftItem(
             if (byId != null) return byId
         }
 
-        // 2. Direct exact matches (by name, nameEn, or id)
-        list.find { it.name.equals(raw, ignoreCase = true) || it.nameEn.equals(raw, ignoreCase = true) || it.id.equals(raw, ignoreCase = true) }?.let { return it }
-
         // 3. Normalized exact matches
-        list.find { normalizeString(it.name) == normalized || normalizeString(it.nameEn) == normalized }?.let { return it }
+        list.find { normalizeString(it.name) == normalized || normalizeString(it.nameEn) == normalized || normalizeString(it.namePt) == normalized }?.let { return it }
 
         // 4. Cleaned key matches (stripping articles)
-        list.find { cleanItemKey(it.name) == cleaned || cleanItemKey(it.nameEn) == cleaned }?.let { return it }
+        list.find { cleanItemKey(it.name) == cleaned || cleanItemKey(it.nameEn) == cleaned || cleanItemKey(it.namePt) == cleaned }?.let { return it }
 
         // 5. Bidirectional substring matching
         list.find { 
             val itemNorm = normalizeString(it.name)
             val itemEnNorm = normalizeString(it.nameEn)
-            itemNorm.contains(normalized) || normalized.contains(itemNorm) ||
-            itemEnNorm.contains(normalized) || normalized.contains(itemEnNorm)
+            (itemNorm.isNotBlank() && (itemNorm.contains(normalized) || normalized.contains(itemNorm))) ||
+            (itemEnNorm.isNotBlank() && (itemEnNorm.contains(normalized) || normalized.contains(itemEnNorm)))
         }?.let { return it }
 
         // 6. Cleaned bidirectional substring matching
         list.find {
             val itemClean = cleanItemKey(it.name)
             val itemEnClean = cleanItemKey(it.nameEn)
-            itemClean.contains(cleaned) || cleaned.contains(itemClean) ||
-            itemEnClean.contains(cleaned) || cleaned.contains(itemEnClean)
+            (itemClean.isNotBlank() && (itemClean.contains(cleaned) || cleaned.contains(itemClean))) ||
+            (itemEnClean.isNotBlank() && (itemEnClean.contains(cleaned) || cleaned.contains(itemEnClean)))
         }?.let { return it }
 
         // 7. Tactical keyword fallbacks

@@ -2288,8 +2288,9 @@ fun TierSectionCard(
 // ====================================================================
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ItemsCatalogTab() {
+internal fun ItemsCatalogTab() {
     var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var selectedLevel by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     var isGridView by remember { mutableStateOf(true) }
     var showFilterChips by remember { mutableStateOf(true) }
@@ -2330,38 +2331,26 @@ private fun ItemsCatalogTab() {
                normalizeSearch(item.getLocalizedCoachTip(lang)).contains(qNorm)
     }
 
-    val filteredItems = remember(selectedCategory, searchQuery, lang) {
-        if (selectedCategory != null) {
-            val catItems = com.example.data.WildRiftItemsData.getItemsForCategory(selectedCategory!!)
-            catItems.filter { itemMatchesQuery(it, searchQuery) }
-        } else {
-            val allCatItems = com.example.data.WildRiftItemsData.list.distinctBy { it.id }
-            allCatItems.filter { itemMatchesQuery(it, searchQuery) }
-        }
-    }
-
-    val treeCategories = remember(selectedCategory, searchQuery, lang) {
-        val result = mutableListOf<Pair<String, List<WildRiftItem>>>()
+    val treeCategories = remember(selectedCategory, selectedLevel, searchQuery, lang) {
+        val result = mutableListOf<WildRiftItemsData.CatalogGroup>()
         val catsToProcess = if (selectedCategory != null) listOf(selectedCategory!!) else allCategories
         val processedItemIds = mutableSetOf<String>()
-        catsToProcess.forEach { cat ->
-            val catItems = com.example.data.WildRiftItemsData.getItemsForCategory(cat)
-            val filteredCatItems = catItems.filter { itemMatchesQuery(it, searchQuery) }
-            if (filteredCatItems.isNotEmpty()) {
-                result.add(cat to filteredCatItems)
-                processedItemIds.addAll(filteredCatItems.map { it.id })
+        catsToProcess.forEach { category ->
+            WildRiftItemsData.getCatalogGroups(category).filter { selectedLevel == null || it.level == selectedLevel }.forEach { group ->
+                val matching = group.items.filter { itemMatchesQuery(it, searchQuery) }
+                if (matching.isNotEmpty()) {
+                    result += group.copy(items = matching)
+                    processedItemIds.addAll(matching.map { it.id })
+                }
             }
         }
-        // If searching with TODOS selected, ensure any item matching the query that wasn't in the mapped categories is also visible
-        if (selectedCategory == null && searchQuery.isNotBlank()) {
-            val remainingMatches = com.example.data.WildRiftItemsData.list
-                .filter { it.id !in processedItemIds && itemMatchesQuery(it, searchQuery) }
-            if (remainingMatches.isNotEmpty()) {
-                result.add("Otros Objetos" to remainingMatches)
-            }
+        if (selectedCategory == null && searchQuery.isNotBlank() && (selectedLevel == null || selectedLevel == "Completos")) {
+            val remaining = WildRiftItemsData.list.filter { it.id !in processedItemIds && itemMatchesQuery(it, searchQuery) }
+            if (remaining.isNotEmpty()) result += WildRiftItemsData.CatalogGroup("Otros Objetos", "Completos", remaining)
         }
         result
     }
+    val filteredItems = remember(treeCategories) { treeCategories.flatMap { it.items }.distinctBy { it.id } }
 
     Column(
         modifier = Modifier
@@ -2454,6 +2443,15 @@ private fun ItemsCatalogTab() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf<String?>(null, "Básico", "Nivel Medio", "Completos", "Inicial").forEachIndexed { index, level ->
+                FilterChip(selected = selectedLevel == level, onClick = { selectedLevel = level },
+                    modifier = Modifier.testTag("catalog_level_$index"),
+                    label = { Text(tr(level ?: "Todos"), fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = HextechGold, selectedLabelColor = HextechDarkBg))
+            }
+        }
+
         // Collapsible Header for Item Categories
         Row(
             modifier = Modifier
@@ -2520,10 +2518,12 @@ private fun ItemsCatalogTab() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 filterOptions.forEach { (key, label) ->
-                    val count = if (key == "TODOS") com.example.data.WildRiftItemsData.list.distinctBy { it.id }.size else com.example.data.WildRiftItemsData.getItemsForCategory(key).size
+                    val count = (if (key == "TODOS") allCategories.flatMap { WildRiftItemsData.getCatalogGroups(it) } else WildRiftItemsData.getCatalogGroups(key))
+                        .filter { selectedLevel == null || it.level == selectedLevel }.flatMap { it.items }.distinctBy { it.id }.size
                     val isSelected = (selectedCategory == null && key == "TODOS") || (selectedCategory != null && selectedCategory.equals(key, ignoreCase = true))
                     FilterChip(
                         selected = isSelected,
+                        modifier = Modifier.testTag("catalog_section_$key"),
                         onClick = { selectedCategory = if (key == "TODOS") null else key },
                         label = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -2552,8 +2552,8 @@ private fun ItemsCatalogTab() {
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            treeCategories.forEachIndexed { catIdx, (categoryName, itemsInCat) ->
-                item(key = "item_cat_${catIdx}_${categoryName}") {
+            treeCategories.forEachIndexed { catIdx, (categoryName, itemLevel, itemsInCat) ->
+                item(key = "item_cat_${catIdx}_${categoryName}_${itemLevel}") {
                     val catColor = when {
                         categoryName.contains("Luchador", ignoreCase = true) -> Color(0xFFFF8C00)
                         categoryName.contains("Asesino", ignoreCase = true) -> Color(0xFFEF4444)
@@ -2592,105 +2592,17 @@ private fun ItemsCatalogTab() {
                                 )
                             }
 
-                            val isApoyoCategory = categoryName.equals("Apoyo", ignoreCase = true)
-                            val basicSupportItems = if (isApoyoCategory) itemsInCat.filter { it.id in listOf("spectral_sickle", "relic_shield") } else emptyList()
-                            val advancedSupportItems = if (isApoyoCategory) itemsInCat.filter { it.id !in listOf("spectral_sickle", "relic_shield") } else itemsInCat
-
-                            if (isApoyoCategory && basicSupportItems.isNotEmpty()) {
-                                // Sub-section header for BÁSICO
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 6.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .background(HextechCyan.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
-                                            .border(0.5.dp, HextechCyan.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    ) {
-                                        Text(
-                                            text = tr("BÁSICO"),
-                                            color = HextechCyan,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Black,
-                                            letterSpacing = 0.5.sp
-                                        )
+                            Text(tr(itemLevel).uppercase(), color = HextechCyan, fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp, modifier = Modifier.padding(bottom = 8.dp).testTag("catalog_group_${categoryName}_${itemLevel}"))
+                            if (isGridView) {
+                                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                                    itemsInCat.forEach { item ->
+                                        ItemGridCard(item = item, onClick = { itemForDetail = item }, modifier = Modifier.width(68.dp), borderColor = catColor)
                                     }
                                 }
-
-                                if (isGridView) {
-                                    FlowRow(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
-                                    ) {
-                                        basicSupportItems.forEach { item ->
-                                            ItemGridCard(
-                                                item = item,
-                                                onClick = { itemForDetail = item },
-                                                modifier = Modifier.width(68.dp),
-                                                borderColor = HextechCyan
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.padding(bottom = 10.dp)
-                                    ) {
-                                        basicSupportItems.forEach { item ->
-                                            ItemListCard(
-                                                item = item,
-                                                onClick = { itemForDetail = item },
-                                                borderColor = HextechCyan
-                                            )
-                                        }
-                                    }
-                                }
-
-                                if (advancedSupportItems.isNotEmpty()) {
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(0.5.dp)
-                                            .background(HextechGold.copy(alpha = 0.2f))
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                }
-                            }
-
-                            if (advancedSupportItems.isNotEmpty()) {
-                                if (isGridView) {
-                                    FlowRow(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
-                                    ) {
-                                        advancedSupportItems.forEach { item ->
-                                            ItemGridCard(
-                                                item = item,
-                                                onClick = { itemForDetail = item },
-                                                modifier = Modifier.width(68.dp),
-                                                borderColor = catColor
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.padding(bottom = 6.dp)
-                                    ) {
-                                        advancedSupportItems.forEach { item ->
-                                            ItemListCard(
-                                                item = item,
-                                                onClick = { itemForDetail = item },
-                                                borderColor = catColor
-                                            )
-                                        }
-                                    }
+                            } else {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    itemsInCat.forEach { item -> ItemListCard(item = item, onClick = { itemForDetail = item }, borderColor = catColor) }
                                 }
                             }
                         }
