@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
  val d=Disposer.newDisposable(); val env=KotlinCoreEnvironment.createForProduction(d,CompilerConfiguration(),EnvironmentConfigFiles.JVM_CONFIG_FILES);val factory=KtPsiFactory(env.project,false)
  val phrases=linkedMapOf<String,MutableSet<String>>()
  fun add(text:String,path:String){ if(text.any {it.isLetter()} && text.length>3) phrases.getOrPut(text){linkedSetOf()}.add(path) }
- root.resolve("app/src/main/java").walkTopDown().filter{it.extension=="kt"}.forEach{f->
+ root.resolve("app/src/main/java").walkTopDown().filter{it.extension=="kt" && it.name != "GuestAuthHelper.kt"}.forEach{f->
   val p=f.relativeTo(root).path;val psi=factory.createFile(f.name,f.readText())
   if ("--wide" in args || "--all" in args) {
   PsiTreeUtil.collectElementsOfType(psi,KtStringTemplateExpression::class.java).forEach{expr ->

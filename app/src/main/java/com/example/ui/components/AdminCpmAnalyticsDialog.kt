@@ -92,11 +92,11 @@ fun AdminCpmAnalyticsDialog(
     val totalImpressions = remember(metricsMap) { AppNoticeAnalyticsManager.getTotalImpressions() }
     val totalClicks = remember(metricsMap) { AppNoticeAnalyticsManager.getTotalClicks() }
     val totalFullscreen = remember(metricsMap) { AppNoticeAnalyticsManager.getTotalFullscreenViews() }
-    val totalRevenue = remember(totalImpressions, baseCpmRate, notices) { AppNoticeAnalyticsManager.getTotalRevenue(baseCpmRate, notices) }
+    val totalRevenue = remember(metricsMap, baseCpmRate, notices) { AppNoticeAnalyticsManager.getTotalRevenue(baseCpmRate, notices) }
     val overallCtr = remember(totalImpressions, totalClicks) { AppNoticeAnalyticsManager.getOverallCtr() }
 
     // Recomendación dinámica inteligente recalculada en tiempo real
-    val dynamicRec = remember(metricsMap, totalImpressions, totalClicks, totalFullscreen, overallCtr) {
+    val dynamicRec = remember(metricsMap, baseCpmRate, startDateMs, totalImpressions, totalClicks, totalFullscreen, overallCtr) {
         AppNoticeAnalyticsManager.calculateRecommendedCpm()
     }
 
@@ -183,13 +183,13 @@ fun AdminCpmAnalyticsDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(tr("Algoritmo de CPM Recomendado"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(tr("Criterio de CPM y proyección"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
             },
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = tr("El precio sugerido se calcula y actualiza dinámicamente según tus métricas reales y benchmarks globales de apps de eSports/gaming:"),
+                        text = tr("La proyección usa tus impresiones registradas y la tarifa configurada. No representa un pago recibido ni una tarifa de mercado."),
                         color = TextSecondary,
                         fontSize = 12.sp
                     )
@@ -204,11 +204,11 @@ fun AdminCpmAnalyticsDialog(
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(com.example.util.tr("• Nivel / Calificación: ${dynamicRec.tierName}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(3.dp))
-                            Text(com.example.util.tr("• CPM Recomendado Actual: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"), color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text(com.example.util.tr("• CPM configurado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"), color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(3.dp))
                             Text(com.example.util.tr("• Rango sugerido de venta: $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.first)} - $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.second)} USD"), color = HextechGold, fontSize = 11.5.sp)
                             Spacer(modifier = Modifier.height(3.dp))
-                            Text(com.example.util.tr("• Benchmark Mercado Gaming: $${String.format(Locale.US, "%.2f", dynamicRec.marketBenchmarkMin)} - $${String.format(Locale.US, "%.2f", dynamicRec.marketBenchmarkMax)} USD"), color = TextMuted, fontSize = 11.sp)
+                            Text(com.example.util.tr("• Tarifa base configurada: $${String.format(Locale.US, "%.2f", dynamicRec.marketBenchmarkMin)} - $${String.format(Locale.US, "%.2f", dynamicRec.marketBenchmarkMax)} USD"), color = TextMuted, fontSize = 11.sp)
                         }
                     }
 
@@ -228,7 +228,7 @@ fun AdminCpmAnalyticsDialog(
                             onClick = {
                                 val presentationText = """
 PRECIOS PUBLICITARIOS - COACH APP
-CPM Recomendado (por cada 1,000 vistas): ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD
+CPM configurado (por cada 1,000 vistas): ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD
 
 Proyección de Paquetes (Precios Fijos):
 - 1 Día: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD
@@ -283,13 +283,14 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
             confirmButton = {
                 Button(
                     onClick = {
-                        AppNoticeAnalyticsManager.setBaseCpm(context, dynamicRec.recommendedCpm)
-                        showRecommendationInfoDialog = false
-                        Toast.makeText(context, com.example.util.appTr("Tarifa fijada al precio recomendado: $${dynamicRec.recommendedCpm} USD"), Toast.LENGTH_SHORT).show()
+                        AppNoticeAnalyticsManager.setBaseCpm(context, dynamicRec.recommendedCpm) { success ->
+                            if (success) showRecommendationInfoDialog = false
+                            Toast.makeText(context, com.example.util.appTr(if (success) "Tarifa CPM guardada" else "No se pudo guardar la tarifa CPM"), Toast.LENGTH_SHORT).show()
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
                 ) {
-                    Text(com.example.util.tr("Aplicar Recomendado ($${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)})"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                    Text(com.example.util.tr("Guardar tarifa ($${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)})"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                 }
             },
             dismissButton = {
@@ -317,9 +318,11 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
             confirmButton = {
                 Button(
                     onClick = {
-                        AppNoticeAnalyticsManager.resetMetrics(context)
-                        showResetConfirmDialog = false
-                        Toast.makeText(context, com.example.util.appTr("Métricas restablecidas a cero"), Toast.LENGTH_SHORT).show()
+                        AppNoticeAnalyticsManager.resetMetrics(context) { success ->
+                            if (success) showResetConfirmDialog = false
+                            val message = if (success) "Métricas restablecidas a cero" else "No se pudo sincronizar la operación. Intenta de nuevo."
+                            Toast.makeText(context, com.example.util.appTr(message), Toast.LENGTH_SHORT).show()
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
                 ) {
@@ -406,10 +409,12 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                     Button(
                         onClick = {
                             val parsed = cpmInputText.replace(',', '.').toDoubleOrNull()
-                            AppNoticeAnalyticsManager.setNoticeCpm(context, editingNoticeId!!, parsed)
-                            Toast.makeText(context, com.example.util.appTr("CPM individual actualizado"), Toast.LENGTH_SHORT).show()
-                            showEditCpmDialog = false
-                            editingNoticeId = null
+                            if (cpmInputText.isNotBlank() && (parsed == null || !parsed.isFinite() || parsed <= 0)) {
+                                Toast.makeText(context, com.example.util.appTr("Introduce una tarifa mayor que cero"), Toast.LENGTH_SHORT).show()
+                            } else AppNoticeAnalyticsManager.setNoticeCpm(context, editingNoticeId!!, parsed) { success ->
+                                if (success) { showEditCpmDialog = false; editingNoticeId = null }
+                                Toast.makeText(context, com.example.util.appTr(if (success) "Tarifa CPM guardada" else "No se pudo guardar la tarifa CPM"), Toast.LENGTH_SHORT).show()
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
                     ) {
@@ -489,7 +494,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                                                 Spacer(modifier = Modifier.width(6.dp))
-                                                Text(tr("CPM Dinámico Recomendado"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text(tr("Proyección con tu tarifa"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
                                             Text(
                                                 text = com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"),
@@ -500,7 +505,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                         }
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            text = com.example.util.tr("${dynamicRec.tierName} • Rango de mercado: $${String.format(Locale.US, "%.2f", dynamicRec.marketBenchmarkMin)} - $${String.format(Locale.US, "%.2f", dynamicRec.marketBenchmarkMax)} USD"),
+                                            text = com.example.util.tr("${dynamicRec.tierName} • Rango configurado: $${String.format(Locale.US, "%.2f", dynamicRec.marketBenchmarkMin)} - $${String.format(Locale.US, "%.2f", dynamicRec.marketBenchmarkMax)} USD"),
                                             color = HextechCyan,
                                             fontSize = 9.5.sp
                                         )
@@ -508,15 +513,16 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                         Button(
                                             onClick = {
                                                 cpmInputText = String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)
-                                                AppNoticeAnalyticsManager.setBaseCpm(context, dynamicRec.recommendedCpm)
-                                                Toast.makeText(context, com.example.util.appTr("Tarifa sincronizada a $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"), Toast.LENGTH_SHORT).show()
+                                                AppNoticeAnalyticsManager.setBaseCpm(context, dynamicRec.recommendedCpm) { success ->
+                                                    Toast.makeText(context, com.example.util.appTr(if (success) "Tarifa CPM guardada" else "No se pudo guardar la tarifa CPM"), Toast.LENGTH_SHORT).show()
+                                                }
                                             },
                                             colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg),
                                             shape = RoundedCornerShape(6.dp),
                                             modifier = Modifier.fillMaxWidth(),
                                             contentPadding = PaddingValues(vertical = 4.dp)
                                         ) {
-                                            Text(tr("Sincronizar y Aplicar Automático"), fontWeight = FontWeight.Bold, fontSize = 10.5.sp)
+                                            Text(tr("Guardar tarifa configurada"), fontWeight = FontWeight.Bold, fontSize = 10.5.sp)
                                         }
                                     }
                                 }
@@ -738,10 +744,13 @@ Métricas de Tráfico y Rendimiento:
 
                         Button(
                             onClick = {
-                                val parsed = cpmInputText.replace(',', '.').toDoubleOrNull() ?: baseCpmRate
-                                AppNoticeAnalyticsManager.setBaseCpm(context, parsed)
-                                Toast.makeText(context, com.example.util.appTr("Tarifa CPM actualizada: $$parsed USD"), Toast.LENGTH_SHORT).show()
-                                showEditCpmDialog = false
+                                val parsed = cpmInputText.replace(',', '.').toDoubleOrNull()
+                                if (parsed == null || !parsed.isFinite() || parsed <= 0) {
+                                    Toast.makeText(context, com.example.util.appTr("Introduce una tarifa mayor que cero"), Toast.LENGTH_SHORT).show()
+                                } else AppNoticeAnalyticsManager.setBaseCpm(context, parsed) { success ->
+                                    if (success) showEditCpmDialog = false
+                                    Toast.makeText(context, com.example.util.appTr(if (success) "Tarifa CPM guardada" else "No se pudo guardar la tarifa CPM"), Toast.LENGTH_SHORT).show()
+                                }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = HextechGold, contentColor = HextechDarkBg)
                         ) {
@@ -993,7 +1002,7 @@ Métricas de Tráfico y Rendimiento:
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = com.example.util.tr("CPM Recomendado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"),
+                                        text = com.example.util.tr("CPM configurado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"),
                                         color = Color(0xFF00FF66),
                                         fontSize = 12.5.sp,
                                         fontWeight = FontWeight.Bold
@@ -1736,7 +1745,7 @@ private fun NoticeAnalyticsItemCard(
                     )
                 }
 
-                // Ingresos Generados
+                // Valor estimado
                 Column(horizontalAlignment = Alignment.End) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val label = if (metrics.customCpmRate != null) "Tarifa (CPM ★)" else "Tarifa CPM"

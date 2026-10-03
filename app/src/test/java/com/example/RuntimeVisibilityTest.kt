@@ -53,7 +53,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "storage-summary", "storage-summary-partial", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -175,6 +175,9 @@ class RuntimeVisibilityTest(private val screen: String) {
                     if (screen == "essence-plans-blue") 0 else if (screen == "essence-plans-insufficient") 8 else 100) { plan, currency -> copiedSummary = "${plan.name}:${currency.name}" }
             }
             screen == "cash-redemption-options" -> CashRedemptionOptions(25) { copiedSummary = it.toString() }
+            screen.startsWith("storage-summary") -> StorageConsumptionSummary(com.example.data.StorageConsumption(
+                estimatedBytes = 2_097_152, dailyGrowthBytes = if (screen.endsWith("partial")) null else 1024,
+                sampledAtMillis = fixedGrantNow, complete = !screen.endsWith("partial")))
             screen == "saved-data-statistics" -> SavedDataStatisticsContent(listOf(
                 com.example.data.SavedDataStatistic("Cuentas registradas", "Perfiles, roles, saldos, suscripciones y dispositivos registrados.", 42),
                 com.example.data.SavedDataStatistic("Contadores de streamers", "Clics acumulados de cada publicación.", 0),
@@ -411,6 +414,11 @@ class RuntimeVisibilityTest(private val screen: String) {
                 Assert.assertEquals("25", copiedSummary)
                 compose.onNodeWithTag("cash_redemption_50").assertIsNotEnabled()
             }
+            "storage-summary", "storage-summary-partial" -> {
+                compose.onNodeWithText(appTr("Tu almacenamiento")).assertIsDisplayed()
+                compose.onNodeWithText(appTr("Contenido guardado estimado") + ": 2.00 MB").assertIsDisplayed()
+                compose.onNodeWithText(appTr("Límite del plan: consulta del proveedor no conectada")).assertExists()
+            }
             "saved-data-statistics" -> {
                 compose.onNodeWithTag("saved_data_count_0").assertTextEquals("42")
                 compose.onNodeWithTag("saved_data_count_1").assertTextEquals("0")
@@ -535,13 +543,12 @@ class RuntimeVisibilityTest(private val screen: String) {
             "matchup-varus", "matchup-jhin", "matchup-garen" -> {
                 compose.onNodeWithText("Smolder", substring = false).assertExists()
                 val champion = WildRiftRepository.champions.first { it.id == screen.removePrefix("matchup-") }
-                val plan = ChampionMatchupCoaching.forDuel(champion, WildRiftRepository.champions.first { it.id == "smolder" },
-                    if (screen == "matchup-garen") LaneRole.TOP else LaneRole.ADC, "pt")
-                compose.onNodeWithText(plan.early).assertExists()
-                inspect("early")
-                compose.onNodeWithText(plan.winCondition).performScrollTo().assertExists()
-                inspect("condition")
-                compose.onNodeWithText(plan.verdict).performScrollTo().assertExists()
+                val feedback = ChampionMatchupCoaching.sovereignFeedback(champion, if (screen == "matchup-garen") LaneRole.TOP else LaneRole.ADC,
+                    "pt", WildRiftRepository.champions.first { it.id == "smolder" })
+                compose.onNodeWithText(feedback).performScrollTo().assertExists()
+                val titles = listOf("Diagnóstico do erro/situação", "Decisão Soberano", "Micro e Macro detalhe", "Regra aplicável")
+                Assert.assertTrue(titles.zipWithNext().all { (a, b) -> feedback.indexOf(a) < feedback.indexOf(b) })
+                inspect("sovereign-feedback")
             }
             "streamer-feedback" -> compose.onNodeWithText("Solicitação enviada com sucesso. Você será avisado quando ela for analisada.").assertExists()
             "streamer-history" -> {

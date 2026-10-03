@@ -25,11 +25,10 @@ data class NoticeMetrics(
     val customCpmRate: Double? = null
 ) {
     val ctr: Double
-        get() = if (impressions > 0) (clicks.toDouble() / impressions.toDouble()) * 100.0 else 0.0
+        get() = CpmPolicy.ctr(impressions, clicks)
 
     fun calculateRevenue(globalCpmRate: Double, mediaMultiplier: Double = 1.0): Double {
-        val effectiveCpm = (customCpmRate ?: globalCpmRate) * mediaMultiplier
-        return (impressions.toDouble() / 1000.0) * effectiveCpm
+        return CpmPolicy.revenue(impressions, customCpmRate ?: globalCpmRate, mediaMultiplier)
     }
 }
 
@@ -88,91 +87,14 @@ object AppNoticeAnalyticsManager {
 
     fun calculateRecommendedCpm(): DynamicCpmRecommendation {
         val totalImps = getTotalImpressions()
-        val totalClicks = getTotalClicks()
-        val totalFullscreen = getTotalFullscreenViews()
-        val ctr = getOverallCtr()
-        val millisTracked = System.currentTimeMillis() - _trackingStartDate.value
-        val daysTracked = maxOf(1L, millisTracked / (1000 * 60 * 60 * 24)).toDouble()
-        
-        // Estimar impresiones diarias (min 50 para cálculo)
-        val avgDailyImps = maxOf(totalImps.toDouble() / daysTracked, 50.0)
-
-        // Base de mercado eSports Gaming en LATAM/Global: $1.20 - $4.50 USD CPM
-        val baseMarketCpm = 2.20
-
-        // Factor por CTR (rendimiento directo de clics únicos)
-        // CTR promedio en gaming display: ~1.0% a 1.8%. Si supera el 2.5%, el espacio vale considerablemente más.
-        val ctrFactor = when {
-            ctr >= 6.0 -> 2.20  // Excepcional (High Conversion)
-            ctr >= 4.0 -> 1.75  // Muy alto
-            ctr >= 2.5 -> 1.40  // Sólido / Superior a la media
-            ctr >= 1.2 -> 1.10  // Promedio saludable
-            ctr > 0.0  -> 0.90  // Inicial / Bajo CTR
-            else       -> 1.00  // Sin datos aún
-        }
-
-        // Factor por engagement de pantalla completa (retención visual y apertura de videos/imágenes)
-        val fullscreenRatio = if (totalImps > 0) (totalFullscreen.toDouble() / totalImps.toDouble()) else 0.0
-        val engagementBonus = when {
-            fullscreenRatio >= 0.15 -> 0.60 // 15%+ de usuarios ven en pantalla completa (+ $0.60 USD)
-            fullscreenRatio >= 0.08 -> 0.35 // 8%+ (+ $0.35 USD)
-            fullscreenRatio >= 0.03 -> 0.15
-            else -> 0.0
-        }
-
-        // Factor por masa crítica de impresiones (audiencia acumulada)
-        val volumeFactor = when {
-            totalImps >= 10000 -> 1.25 // Audiencia verificada alta
-            totalImps >= 2500  -> 1.15
-            totalImps >= 500   -> 1.05
-            else               -> 1.00
-        }
-
-        // Cálculo dinámico final redondeado a 2 decimales
-        val rawCpm = (baseMarketCpm * ctrFactor * volumeFactor) + engagementBonus
-        val finalCpm = (Math.round(rawCpm * 100.0) / 100.0).coerceIn(0.80, 15.00)
-
-        val tier = when {
-            finalCpm >= 5.50 -> "Premium High-Impact"
-            finalCpm >= 3.50 -> "Tier 1 - Alto Rendimiento"
-            finalCpm >= 2.00 -> "Estándar Competitivo"
-            else -> "Fase Inicial / Crecimiento"
-        }
-
-        val reasoning = when {
-            ctr >= 3.0 && fullscreenRatio >= 0.08 -> "Tus usuarios interactúan activamente (CTR ${String.format(Locale.US, "%.1f", ctr)}% y alto fullscreen). El inventario califica como espacio patrocinado de alto valor."
-            ctr >= 1.5 -> "CTR saludable (${String.format(Locale.US, "%.1f", ctr)}%) alineado con los estándares de apps gaming competitivas."
-            totalImps < 50 -> "Datos iniciales. Recomendamos un CPM base de entrada ($2.00 - $2.50 USD) para atraer anunciantes y recopilar estadísticas."
-            else -> "Audiencia en desarrollo. Optimiza la calidad gráfica y llamadas a la acción (CTA) para elevar el CTR y el valor del espacio."
-        }
-
-        val minRange = (Math.round((finalCpm * 0.85) * 100.0) / 100.0).coerceAtLeast(0.50)
-        val maxRange = (Math.round((finalCpm * 1.25) * 100.0) / 100.0)
-        
-        // Cálculo de precios proyectados basados en impresiones diarias promedio
-        val calcPrice = { days: Double -> (avgDailyImps * days / 1000.0) * finalCpm }
-        // Descuentos progresivos por volumen de tiempo
-        val price1Day = Math.round(calcPrice(1.0) * 100.0) / 100.0
-        val price3Days = Math.round(calcPrice(3.0) * 0.95 * 100.0) / 100.0
-        val price1Week = Math.round(calcPrice(7.0) * 0.90 * 100.0) / 100.0
-        val price1Month = Math.round(calcPrice(30.0) * 0.80 * 100.0) / 100.0
-        val price1Year = Math.round(calcPrice(365.0) * 0.65 * 100.0) / 100.0
-
-        return DynamicCpmRecommendation(
-            recommendedCpm = finalCpm,
-            tierName = tier,
-            marketBenchmarkMin = 1.50,
-            marketBenchmarkMax = 4.80,
-            ctrMultiplier = ctrFactor,
-            engagementBonus = engagementBonus,
-            reasoning = reasoning,
-            suggestedPriceRange = Pair(minRange, maxRange),
-            price1Day = price1Day,
-            price3Days = price3Days,
-            price1Week = price1Week,
-            price1Month = price1Month,
-            price1Year = price1Year
-        )
+        val days = ((System.currentTimeMillis() - _trackingStartDate.value).coerceAtLeast(1L) / 86_400_000.0).coerceAtLeast(1.0)
+        val rate = _baseCpmRate.value.takeIf { it.isFinite() && it > 0 } ?: 2.50
+        val daily = totalImps.coerceAtLeast(0) / days
+        fun projected(duration: Double) = kotlin.math.round(daily * duration * rate / 1000 * 100) / 100
+        return DynamicCpmRecommendation(rate, "Tarifa configurada", rate, rate, 1.0, 0.0,
+            if (totalImps == 0L) "Sin impresiones verificadas: proyección diaria de cero. La tarifa la define el responsable de la campaña."
+            else "Proyección según las impresiones registradas y la tarifa configurada; no representa un pago recibido ni un precio de mercado.",
+            rate to rate, projected(1.0), projected(3.0), projected(7.0), projected(30.0), projected(365.0))
     }
 
     fun init(context: Context) {
@@ -294,7 +216,7 @@ object AppNoticeAnalyticsManager {
             val cloudBaseCpm = snapshot.getDouble("baseCpmRate")
             val cloudStartDate = snapshot.getLong("trackingStartDate")
 
-            if (cloudBaseCpm != null && cloudBaseCpm > 0.0) {
+            if (cloudBaseCpm != null && cloudBaseCpm.isFinite() && cloudBaseCpm > 0.0) {
                 _baseCpmRate.value = cloudBaseCpm
                 saveBaseCpmToPrefs(context, cloudBaseCpm)
             }
@@ -303,9 +225,9 @@ object AppNoticeAnalyticsManager {
                 saveStartDateToPrefs(context, cloudStartDate)
             }
 
-            val metricsRaw = snapshot.get("metrics") as? Map<*, *>
+            val metricsRaw = decodedCpmMetrics(snapshot.data.orEmpty())
             if (metricsRaw != null) {
-                val current = _metricsMap.value.toMutableMap()
+                val current = mutableMapOf<String, NoticeMetrics>()
                 for ((k, v) in metricsRaw) {
                     val noticeId = k?.toString() ?: continue
                     val map = v as? Map<*, *> ?: continue
@@ -316,22 +238,15 @@ object AppNoticeAnalyticsManager {
                     val lastViewed = (map["lastViewedTimestamp"] as? Number)?.toLong() ?: System.currentTimeMillis()
                     val customCpmRate = (map["customCpmRate"] as? Number)?.toDouble()
 
-                    val localExisting = current[noticeId]
-                    val mergedImps = maxOf(imps, localExisting?.impressions ?: 0L)
-                    val mergedClicks = maxOf(clicks, localExisting?.clicks ?: 0L)
-                    val mergedRawClicks = maxOf(rawClicks, localExisting?.totalRawClicks ?: 0L)
-                    val mergedFull = maxOf(full, localExisting?.fullscreenViews ?: 0L)
-                    val mergedLastViewed = maxOf(lastViewed, localExisting?.lastViewedTimestamp ?: 0L)
-                    val mergedCustomCpmRate = customCpmRate ?: localExisting?.customCpmRate
 
                     current[noticeId] = NoticeMetrics(
                         noticeId = noticeId,
-                        impressions = mergedImps,
-                        clicks = mergedClicks,
-                        totalRawClicks = mergedRawClicks,
-                        fullscreenViews = mergedFull,
-                        lastViewedTimestamp = mergedLastViewed,
-                        customCpmRate = mergedCustomCpmRate
+                        impressions = imps.coerceAtLeast(0),
+                        clicks = clicks.coerceAtLeast(0),
+                        totalRawClicks = rawClicks.coerceAtLeast(0),
+                        fullscreenViews = full.coerceAtLeast(0),
+                        lastViewedTimestamp = lastViewed,
+                        customCpmRate = customCpmRate?.takeIf { it.isFinite() && it > 0 }
                     )
                 }
                 _metricsMap.value = current
@@ -345,6 +260,7 @@ object AppNoticeAnalyticsManager {
     }
 
     private fun pushLocalToCloud(context: Context) {
+        if (!SupportTicketAccess.isAdmin()) return
         try {
             val db = FirebaseFirestore.getInstance()
             val metricsData = hashMapOf<String, Any>()
@@ -374,12 +290,14 @@ object AppNoticeAnalyticsManager {
     private fun loadFromLocalStorage(context: Context) {
         try {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val baseCpm = prefs.getFloat(KEY_BASE_CPM, 2.50f).toDouble()
+            val baseCpm = prefs.getString("${KEY_BASE_CPM}_exact", null)?.toDoubleOrNull()
+                ?.takeIf { it.isFinite() && it > 0 } ?: prefs.getFloat(KEY_BASE_CPM, 2.50f).toDouble()
             val startDate = prefs.getLong(KEY_START_DATE, System.currentTimeMillis())
             val jsonStr = prefs.getString(KEY_METRICS_JSON, null)
 
             _baseCpmRate.value = baseCpm
             _trackingStartDate.value = startDate
+            saveStartDateToPrefs(context, startDate)
 
             if (!jsonStr.isNullOrBlank()) {
                 val root = JSONObject(jsonStr)
@@ -394,6 +312,7 @@ object AppNoticeAnalyticsManager {
                         clicks = obj.optLong("clicks", 0L),
                         totalRawClicks = obj.optLong("totalRawClicks", 0L),
                         fullscreenViews = obj.optLong("fullscreenViews", 0L),
+                        customCpmRate = if (obj.has("customCpmRate")) obj.optDouble("customCpmRate").takeIf { it.isFinite() && it > 0 } else null,
                         lastViewedTimestamp = obj.optLong("lastViewedTimestamp", System.currentTimeMillis())
                     )
                 }
@@ -446,7 +365,7 @@ object AppNoticeAnalyticsManager {
                 "updatedAt" to System.currentTimeMillis()
             )
             db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .set(updates, SetOptions.merge())
+                .set(CpmPolicy.nestedWrite(updates), SetOptions.merge())
         } catch (e: Exception) {
             Log.w(TAG, "Error incrementando impresión en la nube: ${e.message}")
         }
@@ -492,7 +411,7 @@ object AppNoticeAnalyticsManager {
                 updates["metrics.$noticeId.clicks"] = FieldValue.increment(1L)
             }
             db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .set(updates, SetOptions.merge())
+                .set(CpmPolicy.nestedWrite(updates), SetOptions.merge())
         } catch (e: Exception) {
             Log.w(TAG, "Error incrementando clic en la nube: ${e.message}")
         }
@@ -534,98 +453,78 @@ object AppNoticeAnalyticsManager {
                 "updatedAt" to System.currentTimeMillis()
             )
             db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .set(updates, SetOptions.merge())
+                .set(CpmPolicy.nestedWrite(updates), SetOptions.merge())
         } catch (e: Exception) {
             Log.w(TAG, "Error incrementando fullscreen en la nube: ${e.message}")
         }
     }
 
-    fun setBaseCpm(context: Context, rate: Double) {
-        val safeRate = rate.coerceAtLeast(0.01)
-        _baseCpmRate.value = safeRate
-        saveBaseCpmToPrefs(context, safeRate)
-
-        // Sincronizar tarifa CPM en la nube para todos los dispositivos
+    fun setBaseCpm(context: Context, rate: Double, onComplete: (Boolean) -> Unit = {}) {
+        if (!rate.isFinite() || rate <= 0) { onComplete(false); return }
         try {
-            val db = FirebaseFirestore.getInstance()
-            val updates = hashMapOf<String, Any>(
-                "baseCpmRate" to safeRate,
-                "updatedAt" to System.currentTimeMillis()
-            )
-            db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .set(updates, SetOptions.merge())
-        } catch (e: Exception) {
-            Log.w(TAG, "Error sincronizando CPM en la nube: ${e.message}")
-        }
+            FirebaseFirestore.getInstance().collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
+                .set(mapOf("baseCpmRate" to rate, "updatedAt" to System.currentTimeMillis()), SetOptions.merge())
+                .addOnSuccessListener { _baseCpmRate.value = rate; saveBaseCpmToPrefs(context, rate); onComplete(true) }
+                .addOnFailureListener { onComplete(false) }
+        } catch (_: Exception) { onComplete(false) }
     }
 
-    fun setNoticeCpm(context: Context, noticeId: String, customCpm: Double?) {
-        val currentMap = _metricsMap.value.toMutableMap()
-        val metrics = currentMap[noticeId] ?: NoticeMetrics(noticeId = noticeId)
-        val safeCpm = customCpm?.coerceAtLeast(0.01)
-        currentMap[noticeId] = metrics.copy(customCpmRate = safeCpm)
-        _metricsMap.value = currentMap
-        saveToPrefs(context, currentMap)
-
+    fun setNoticeCpm(context: Context, noticeId: String, customCpm: Double?, onComplete: (Boolean) -> Unit = {}) {
+        if (noticeId.isBlank() || customCpm != null && (!customCpm.isFinite() || customCpm <= 0)) { onComplete(false); return }
         try {
-            val db = FirebaseFirestore.getInstance()
-            val cpmValue: Any = safeCpm ?: FieldValue.delete()
-            db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .set(hashMapOf("metrics" to hashMapOf(noticeId to hashMapOf("customCpmRate" to cpmValue))), SetOptions.merge())
-        } catch (e: Exception) {
-            Log.w(TAG, "Error sincronizando custom CPM en la nube: ${e.message}")
-        }
+            val value: Any = customCpm ?: FieldValue.delete()
+            FirebaseFirestore.getInstance().collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
+                .set(mapOf("metrics" to mapOf(noticeId to mapOf("customCpmRate" to value))), SetOptions.merge())
+                .addOnSuccessListener {
+                    val map = _metricsMap.value.toMutableMap()
+                    map[noticeId] = (map[noticeId] ?: NoticeMetrics(noticeId)).copy(customCpmRate = customCpm)
+                    _metricsMap.value = map; saveToPrefs(context, map); onComplete(true)
+                }.addOnFailureListener { onComplete(false) }
+        } catch (_: Exception) { onComplete(false) }
     }
 
     fun deleteNoticeMetrics(context: Context, noticeId: String) {
-        val currentMap = _metricsMap.value.toMutableMap()
-        currentMap.remove(noticeId)
-        _metricsMap.value = currentMap
-        saveToPrefs(context, currentMap)
-
+        if (noticeId.isBlank()) return
         try {
             val db = FirebaseFirestore.getInstance()
-            val updates = hashMapOf<String, Any>(
-                "metrics.$noticeId" to FieldValue.delete(),
-                "updatedAt" to System.currentTimeMillis()
-            )
-            db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .update(updates)
-        } catch (e: Exception) {
-            Log.w(TAG, "Error eliminando métricas de anuncio en la nube: ${e.message}")
-        }
+            val ref = db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
+            db.runTransaction { tx ->
+                val data = tx.get(ref).data.orEmpty()
+                tx.set(ref, clearedCpmData(data, noticeId) + ("updatedAt" to System.currentTimeMillis()))
+            }.addOnSuccessListener {
+                val current = _metricsMap.value - noticeId
+                _metricsMap.value = current; saveToPrefs(context, current)
+            }.addOnFailureListener { e -> Log.w(TAG, "No se pudieron eliminar las métricas: ${e.message}") }
+        } catch (e: Exception) { Log.w(TAG, "No se pudieron eliminar las métricas: ${e.message}") }
     }
 
-    fun resetMetrics(context: Context) {
-        _metricsMap.value = emptyMap()
-        _trackingStartDate.value = System.currentTimeMillis()
-        try {
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit()
-                .putString(KEY_METRICS_JSON, "{}")
-                .putLong(KEY_START_DATE, _trackingStartDate.value)
-                .apply()
-        } catch (_: Exception) {}
-
-        // Resetear también en la nube para sincronización multi-dispositivo limpia
+    fun resetMetrics(context: Context, onComplete: (Boolean) -> Unit = {}) {
+        val startDate = System.currentTimeMillis()
         try {
             val db = FirebaseFirestore.getInstance()
-            val updates = hashMapOf<String, Any>(
-                "metrics" to hashMapOf<String, Any>(),
-                "trackingStartDate" to _trackingStartDate.value,
-                "updatedAt" to System.currentTimeMillis()
-            )
-            db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .set(updates, SetOptions.merge())
-        } catch (e: Exception) {
-            Log.w(TAG, "Error reseteando métricas en la nube: ${e.message}")
-        }
+            val ref = db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
+            db.runTransaction { tx ->
+                val data = tx.get(ref).data.orEmpty()
+                tx.set(ref, clearedCpmData(data) + mapOf("trackingStartDate" to startDate,
+                    "baseCpmRate" to _baseCpmRate.value, "updatedAt" to startDate))
+            }.addOnSuccessListener {
+                _metricsMap.value = emptyMap(); _trackingStartDate.value = startDate
+                saveToPrefs(context, emptyMap()); saveStartDateToPrefs(context, startDate)
+                // A new campaign starts a new deduplication window too.
+                val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                val editor = prefs.edit()
+                prefs.all.keys.filter { key -> listOf(KEY_DAILY_IMPRESSIONS_PREFIX,
+                    KEY_DAILY_CLICKS_PREFIX, KEY_DAILY_FULLSCREEN_PREFIX).any { key.startsWith(it) } }
+                    .forEach { editor.remove(it) }
+                editor.apply(); onComplete(true)
+            }.addOnFailureListener { onComplete(false) }
+        } catch (_: Exception) { onComplete(false) }
     }
 
     private fun saveBaseCpmToPrefs(context: Context, rate: Double) {
         try {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit().putFloat(KEY_BASE_CPM, rate.toFloat()).apply()
+            prefs.edit().putString("${KEY_BASE_CPM}_exact", rate.toString()).apply()
         } catch (_: Exception) {}
     }
 
@@ -643,6 +542,8 @@ object AppNoticeAnalyticsManager {
                 val obj = JSONObject().apply {
                     put("impressions", metrics.impressions)
                     put("clicks", metrics.clicks)
+                    put("totalRawClicks", metrics.totalRawClicks)
+                    metrics.customCpmRate?.let { put("customCpmRate", it) }
                     put("fullscreenViews", metrics.fullscreenViews)
                     put("lastViewedTimestamp", metrics.lastViewedTimestamp)
                 }
@@ -671,7 +572,7 @@ object AppNoticeAnalyticsManager {
     fun getOverallCtr(): Double {
         val totalImps = getTotalImpressions()
         val totalClicks = getTotalClicks()
-        return if (totalImps > 0) (totalClicks.toDouble() / totalImps.toDouble()) * 100.0 else 0.0
+        return CpmPolicy.ctr(totalImps, totalClicks)
     }
 
     fun generateSummaryReport(notices: List<AppNotice>): String {

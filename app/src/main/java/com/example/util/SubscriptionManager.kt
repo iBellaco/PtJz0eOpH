@@ -387,6 +387,7 @@ object SubscriptionManager {
                         _userName.value = name
                     }
                     _userRole.value = role
+                    if (role == "admin" && !banned) com.example.data.DatabaseStatisticsWorker.schedule(context)
                     _secondaryRole.value = listenSnapshot.getString("secondaryRole") ?: ""
                     _isBanned.value = (role == "banned" || banned)
                     _premiumUntil.value = until

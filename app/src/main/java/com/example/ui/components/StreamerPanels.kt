@@ -223,7 +223,9 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     val uri = LocalUriHandler.current
     val now = streamerClock()
-    LaunchedEffect(entries) { if (entries.isNotEmpty()) { val repair = StreamerRepository.repairMetrics(); if (repair.isFailure) result = repair } }
+    // Counter repair is separate from approval; it must not overwrite its confirmed result.
+    var metricRepairFailed by remember { mutableStateOf(false) }
+    LaunchedEffect(entries) { if (entries.isNotEmpty()) metricRepairFailed = StreamerRepository.repairMetrics().isFailure }
     val expiredRequests = requests.filter { StreamerPublicationPolicy.isExpired(it, now) }
     val pendingRequests = requests.filterNot { StreamerPublicationPolicy.isExpired(it, now) }
     LaunchedEffect(expiredRequests.map { it["id"] }) {
@@ -246,6 +248,7 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
         if (entries.size >= 5) Text(localizedString(R.string.streamer_max), color = StreamGold)
         operationError(result)?.let { Text(it, color = Color(0xFFFF8A80)) }
         if (!available || !requestAvailable) Text(localizedString(R.string.streamer_loading), color = Color.White)
+        if (metricRepairFailed) Text(localizedString(R.string.streamer_history_clicks_unavailable), color = StreamGold)
         entries.forEach { item ->
             ApprovedStreamerReviewCard(item, !busy && available,
                 onOpen = { url -> runCatching { uri.openUri(url) } },

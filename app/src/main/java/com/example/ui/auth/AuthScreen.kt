@@ -654,7 +654,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 UserAvatarView(
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
-                    size = if (hasRoleFrame) 100.dp else 76.dp,
+                    size = if (hasRoleFrame) 112.dp else 76.dp,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser,
                     secondaryRole = secondaryRole,
@@ -746,6 +746,11 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
             }
 
             Spacer(modifier = Modifier.height(4.dp))
+
+            com.example.ui.components.PremiumStatusCard(userRole, secondaryRole, premiumUntil, adminClaim,
+                banned = SubscriptionManager.isBanned.collectAsState().value, granted = isPremium,
+                onRenew = { showPlansDialog = true })
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Avatar Title & Region subtitle
             Text(
@@ -1035,10 +1040,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            com.example.ui.components.PremiumStatusCard(userRole, secondaryRole, premiumUntil, adminClaim,
-                banned = SubscriptionManager.isBanned.collectAsState().value, granted = isPremium,
-                onRenew = { showPlansDialog = true })
-            Spacer(modifier = Modifier.height(10.dp))
 
             // Animated button for Plans
             com.example.ui.components.HextechAnimatedButton(

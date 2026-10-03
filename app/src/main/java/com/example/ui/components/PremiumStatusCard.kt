@@ -1,6 +1,7 @@
 package com.example.ui.components
 
 import androidx.compose.runtime.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,9 +29,12 @@ fun PremiumStatusCard(role: String, secondary: String = "", until: Long?, adminC
     val active = PremiumAccessPolicy.isActive(role, until, now, secondary, adminClaim, banned, granted)
     val soon = active && !lifetime && PremiumAccessPolicy.isExpiringSoon(until, now)
     val expired = !lifetime && until != null && until > 0 && until <= now
+    val pulse = rememberInfiniteTransition(label = "premiumBorder")
+    val borderAlpha by pulse.animateFloat(0.4f, 0.95f,
+        infiniteRepeatable(tween(1800), RepeatMode.Reverse), label = "premiumBorderAlpha")
     Surface(modifier = Modifier.fillMaxWidth().testTag("premium_status_card"), shape = RoundedCornerShape(10.dp),
         color = com.example.ui.theme.HextechDarkBg,
-        border = BorderStroke(1.dp, if (soon || expired) Color(0xFFFBBF24) else com.example.ui.theme.HextechGold.copy(alpha = 0.4f))) {
+        border = BorderStroke(1.dp, if (soon || expired) Color(0xFFFBBF24) else com.example.ui.theme.HextechGold.copy(alpha = if (active) borderAlpha else 0.4f))) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(localizedString(when { lifetime -> R.string.premium_lifetime_label; active -> R.string.premium_active_label;
                 expired -> R.string.premium_expired_label; else -> R.string.premium_free_label }), color = com.example.ui.theme.HextechGold)

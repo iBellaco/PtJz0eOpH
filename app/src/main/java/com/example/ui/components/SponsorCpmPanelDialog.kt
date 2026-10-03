@@ -1005,7 +1005,7 @@ fun SponsorNoticeCard(
 
     val metricsMap by com.example.data.AppNoticeAnalyticsManager.metricsMap.collectAsState()
     val metrics = metricsMap[notice.id] ?: com.example.data.NoticeMetrics(notice.id)
-    val ctr = if (metrics.impressions > 0) (metrics.clicks.toDouble() / metrics.impressions) * 100 else 0.0
+    val ctr = metrics.ctr
 
     val unitLabel = when (notice.durationUnit.lowercase(Locale.ROOT)) {
         "hour", "hours", "hora", "horas" -> "Horas"

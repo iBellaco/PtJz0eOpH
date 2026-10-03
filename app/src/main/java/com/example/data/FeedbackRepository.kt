@@ -302,7 +302,6 @@ object FeedbackRepository {
      */
     suspend fun getAllFeedbacks(): Result<List<FeedbackReport>> = withContext(Dispatchers.IO) {
         val combinedList = mutableListOf<FeedbackReport>()
-        val seenIds = mutableSetOf<String>()
 
         try {
             val db = FirebaseFirestore.getInstance()
@@ -313,7 +312,7 @@ object FeedbackRepository {
 
             combinedList.addAll(feedbacksFromSnapshot(fireSnap))
 
-            combinedList.sortByDescending { it.createdAt }
+            // feedbacksFromSnapshot already orders by the latest conversation activity.
             Result.success(combinedList)
         } catch (e: Exception) {
             Log.e(TAG, "Error general en getAllFeedbacks: ${e.message}", e)
@@ -363,7 +362,7 @@ object FeedbackRepository {
     fun feedbacksFromSnapshot(snapshot: com.google.firebase.firestore.QuerySnapshot): List<FeedbackReport> =
         snapshot.documents.mapNotNull { doc ->
             SupportReportDecoder.decode(doc.id, doc.data.orEmpty())
-        }.distinctBy { it.id }.sortedByDescending { SupportReportDecoder.timestampMillis(it.createdAt) ?: 0L }
+        }.distinctBy { it.id }.sortedWith(compareByDescending<FeedbackReport> { it.lastActivityAtMillis }.thenBy { it.id.orEmpty() })
 
     /** Bulk removal touches only solved tickets; pending and read messages remain. */
     suspend fun clearSolvedFeedbacks(): Result<Unit> = withContext(Dispatchers.IO) {

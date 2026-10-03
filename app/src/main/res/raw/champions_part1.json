@@ -44,12 +44,12 @@
     ],
     "coreItems": [
       "Eclipse",
-      "Fuerza de trinidad",
+      "Cuchilla negra",
       "Baile de la muerte"
     ],
     "coreItemsIcons": [
       "file:///android_asset/offline_images/58e5a4886b2f0f5814d36b8dfabff5a6.webp",
-      "file:///android_asset/offline_images/1475e9776e1486a548893bcbfba5b0ce.webp",
+      "file:///android_asset/offline_images/c98e3aff8b69a404445bcedab6bc9b96.webp",
       "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp"
     ],
     "situationalItems": [
@@ -129,12 +129,12 @@
         "role": "top",
         "coreItems": [
           "Eclipse",
-          "Fuerza de trinidad",
+          "Cuchilla negra",
           "Baile de la muerte"
         ],
         "items": [
           "Eclipse",
-          "Fuerza de trinidad",
+          "Cuchilla negra",
           "Baile de la muerte"
         ],
         "situationalItems": [
@@ -160,12 +160,12 @@
         "role": "jungle",
         "coreItems": [
           "Eclipse",
-          "Fuerza de trinidad",
+          "Cuchilla negra",
           "Baile de la muerte"
         ],
         "items": [
           "Eclipse",
-          "Fuerza de trinidad",
+          "Cuchilla negra",
           "Baile de la muerte"
         ],
         "situationalItems": [
@@ -420,13 +420,13 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Creagrietas",
       "Orbe infinito",
+      "Creagrietas",
       "Sombrero mortal de Rabadon"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/8ab6dc6493eda1a50bf731f8fa715087.webp",
       "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp",
+      "file:///android_asset/offline_images/8ab6dc6493eda1a50bf731f8fa715087.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp"
     ],
     "situationalItems": [
@@ -502,13 +502,13 @@
         "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Creagrietas",
           "Orbe infinito",
+          "Creagrietas",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
           "Orbe infinito",
+          "Creagrietas",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
@@ -533,13 +533,13 @@
         "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Creagrietas",
           "Orbe infinito",
+          "Creagrietas",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Creagrietas",
           "Orbe infinito",
+          "Creagrietas",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
@@ -826,12 +826,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -1200,26 +1200,26 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Corazón de acero",
+      "Tormento de Liandry",
       "Égida de fuego solar",
-      "Malla de espinas"
+      "Coraza dual purpúrea"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp",
+      "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
       "file:///android_asset/offline_images/446cb1deb4616fba85f68c078be08339.webp",
-      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
     ],
     "situationalItems": [
       "Fuerza de la naturaleza",
-      "Coraza dual purpúrea",
       "Corona abrasadora",
-      "Máscara abisal"
+      "Máscara abisal",
+      "Corazón de acero"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp",
       "file:///android_asset/offline_images/8c585684ae11f4bd1818521dc47bcc3d.webp",
-      "file:///android_asset/offline_images/c08d478db157d63bf53cc63e98254f91.webp"
+      "file:///android_asset/offline_images/c08d478db157d63bf53cc63e98254f91.webp",
+      "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1282,20 +1282,20 @@
         "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Corazón de acero",
+          "Tormento de Liandry",
           "Égida de fuego solar",
-          "Malla de espinas"
+          "Coraza dual purpúrea"
         ],
         "items": [
-          "Corazón de acero",
+          "Tormento de Liandry",
           "Égida de fuego solar",
-          "Malla de espinas"
+          "Coraza dual purpúrea"
         ],
         "situationalItems": [
           "Fuerza de la naturaleza",
-          "Coraza dual purpúrea",
           "Corona abrasadora",
-          "Máscara abisal"
+          "Máscara abisal",
+          "Corazón de acero"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -2135,12 +2135,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Canción de batalla de Shurelya",
       "Corazón de hielo"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/47f3b1e1cbcb3ead1b9819b2367ee282.webp",
       "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp"
     ],
@@ -2322,12 +2322,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -2510,12 +2510,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Tormento de Liandry",
       "Cetro de cristal de Rylai"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
       "file:///android_asset/offline_images/da88ffd23441e3d461aec00c69f066b3.webp"
     ],
@@ -2728,12 +2728,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -2916,25 +2916,25 @@
     "spellsIcons": [],
     "coreItems": [
       "Filo Infinito",
-      "Recaudadora",
+      "Cañón de Fuego Rápido",
       "Recuerdos de Lord Dominik"
     ],
     "coreItemsIcons": [
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "situationalItems": [
-      "Cañón de Fuego Rápido",
       "Sanguinaria",
       "Ángel de la guarda",
-      "Arcoescudo Inmortal"
+      "Arcoescudo Inmortal",
+      "Recaudadora"
     ],
     "situationalItemsIcons": [
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp",
+      "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2998,19 +2998,19 @@
         "role": "adc",
         "coreItems": [
           "Filo Infinito",
-          "Recaudadora",
+          "Cañón de Fuego Rápido",
           "Recuerdos de Lord Dominik"
         ],
         "items": [
           "Filo Infinito",
-          "Recaudadora",
+          "Cañón de Fuego Rápido",
           "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
-          "Cañón de Fuego Rápido",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Arcoescudo Inmortal",
+          "Recaudadora"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -3029,19 +3029,19 @@
         "role": "mid",
         "coreItems": [
           "Filo Infinito",
-          "Recaudadora",
+          "Cañón de Fuego Rápido",
           "Recuerdos de Lord Dominik"
         ],
         "items": [
           "Filo Infinito",
-          "Recaudadora",
+          "Cañón de Fuego Rápido",
           "Recuerdos de Lord Dominik"
         ],
         "situationalItems": [
-          "Cañón de Fuego Rápido",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Arcoescudo Inmortal"
+          "Arcoescudo Inmortal",
+          "Recaudadora"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -3308,7 +3308,7 @@
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
       "file:///android_asset/offline_images/f141ec3263251399bc6226e325c1d998.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4241,9 +4241,9 @@
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4411,26 +4411,26 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Diente de Nashor",
+      "Perdición del liche",
       "Orbe infinito",
       "Sombrero mortal de Rabadon"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/721c3fa5d5bbda08bcc8de214d0ff715.webp",
+      "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp",
       "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp"
     ],
     "situationalItems": [
       "Bastón del Vacío",
-      "Perdición del liche",
       "Corona de la Reina Fragmentada",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Diente de Nashor"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
-      "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/721c3fa5d5bbda08bcc8de214d0ff715.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4493,20 +4493,20 @@
         "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Diente de Nashor",
+          "Perdición del liche",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Diente de Nashor",
+          "Perdición del liche",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Diente de Nashor"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -4524,20 +4524,20 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Diente de Nashor",
+          "Perdición del liche",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Diente de Nashor",
+          "Perdición del liche",
           "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Diente de Nashor"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -4598,26 +4598,26 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Eco de Luden",
       "Orbe infinito",
+      "Perdición del liche",
       "Sombrero mortal de Rabadon"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp",
       "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp",
+      "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp"
     ],
     "situationalItems": [
       "Bastón del Vacío",
-      "Perdición del liche",
       "Corona de la Reina Fragmentada",
-      "Impulso Cósmico"
+      "Impulso Cósmico",
+      "Eco de Luden"
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
-      "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp"
+      "file:///android_asset/offline_images/22da6db8487eb222ee027fc4b6a5fb95.webp",
+      "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4680,20 +4680,20 @@
         "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Eco de Luden",
           "Orbe infinito",
+          "Perdición del liche",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
           "Orbe infinito",
+          "Perdición del liche",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Eco de Luden"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -4711,20 +4711,20 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
           "Orbe infinito",
+          "Perdición del liche",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
           "Orbe infinito",
+          "Perdición del liche",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
           "Bastón del Vacío",
-          "Perdición del liche",
           "Corona de la Reina Fragmentada",
-          "Impulso Cósmico"
+          "Impulso Cósmico",
+          "Eco de Luden"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -5346,26 +5346,26 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Eco de Luden",
       "Perdición del liche",
+      "Orbe infinito",
       "Sombrero mortal de Rabadon"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp",
       "file:///android_asset/offline_images/49358858c22a8313bd7c2a47b405e5fd.webp",
+      "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp"
     ],
     "situationalItems": [
-      "Orbe infinito",
       "Bastón del Vacío",
       "Corona de la Reina Fragmentada",
-      "Morellonomicón"
+      "Morellonomicón",
+      "Eco de Luden"
     ],
     "situationalItemsIcons": [
-      "file:///android_asset/offline_images/026213a99027f6878f2e67427e6a2445.webp",
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp"
+      "file:///android_asset/offline_images/0c0fefe5c38af6fc40ea24c5539672b0.webp",
+      "file:///android_asset/offline_images/1788098a082a158a83b05bbc9bcb4e0b.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -5428,20 +5428,20 @@
         "title": "Build Línea Central • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Eco de Luden",
           "Perdición del liche",
+          "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
           "Perdición del liche",
+          "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Orbe infinito",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Eco de Luden"
         ],
         "bootBase": "Botas de maná",
         "bootUpgrade": "Botas del lanzahechizos",
@@ -5459,20 +5459,20 @@
         "title": "Build Línea de Barón (Línea Flex) • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Eco de Luden",
           "Perdición del liche",
+          "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "items": [
-          "Eco de Luden",
           "Perdición del liche",
+          "Orbe infinito",
           "Sombrero mortal de Rabadon"
         ],
         "situationalItems": [
-          "Orbe infinito",
           "Bastón del Vacío",
           "Corona de la Reina Fragmentada",
-          "Morellonomicón"
+          "Morellonomicón",
+          "Eco de Luden"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -7484,12 +7484,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Incensario ardiente"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp"
     ],
@@ -8234,24 +8234,24 @@
     "coreItems": [
       "Filo Infinito",
       "Recaudadora",
-      "Recuerdos de Lord Dominik"
+      "Cañón de Fuego Rápido"
     ],
     "coreItemsIcons": [
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
       "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/rapid_firecannon.webp"
     ],
     "situationalItems": [
-      "Cañón de Fuego Rápido",
       "Sanguinaria",
       "Ángel de la guarda",
-      "Filo fantasmal de Youmuu"
+      "Filo fantasmal de Youmuu",
+      "Recuerdos de Lord Dominik"
     ],
     "situationalItemsIcons": [
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp"
+      "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp",
+      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8316,18 +8316,18 @@
         "coreItems": [
           "Filo Infinito",
           "Recaudadora",
-          "Recuerdos de Lord Dominik"
+          "Cañón de Fuego Rápido"
         ],
         "items": [
           "Filo Infinito",
           "Recaudadora",
-          "Recuerdos de Lord Dominik"
+          "Cañón de Fuego Rápido"
         ],
         "situationalItems": [
-          "Cañón de Fuego Rápido",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Filo fantasmal de Youmuu"
+          "Filo fantasmal de Youmuu",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Grebas codiciosas",
         "bootUpgrade": "Botas inmortales",
@@ -8347,18 +8347,18 @@
         "coreItems": [
           "Filo Infinito",
           "Recaudadora",
-          "Recuerdos de Lord Dominik"
+          "Cañón de Fuego Rápido"
         ],
         "items": [
           "Filo Infinito",
           "Recaudadora",
-          "Recuerdos de Lord Dominik"
+          "Cañón de Fuego Rápido"
         ],
         "situationalItems": [
-          "Cañón de Fuego Rápido",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Filo fantasmal de Youmuu"
+          "Filo fantasmal de Youmuu",
+          "Recuerdos de Lord Dominik"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -8419,14 +8419,14 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Filo Infinito",
+      "Flechas de los Yun Tal",
       "Huracán de Runaan",
-      "Recuerdos de Lord Dominik"
+      "Filo Infinito"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
+      "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
       "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
     ],
     "situationalItems": [
       "Sanguinaria",
@@ -8436,9 +8436,9 @@
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8501,14 +8501,14 @@
         "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo Infinito",
+          "Flechas de los Yun Tal",
           "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
+          "Flechas de los Yun Tal",
           "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -8532,14 +8532,14 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Filo Infinito",
+          "Flechas de los Yun Tal",
           "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
+          "Flechas de los Yun Tal",
           "Huracán de Runaan",
-          "Recuerdos de Lord Dominik"
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -8625,7 +8625,7 @@
       "file:///android_asset/offline_images/0ec5d7a3b173c4f04ca3cc32e35c2e43.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8982,12 +8982,12 @@
     "coreItems": [
       "Hoja del rey arruinado",
       "Huracán de Runaan",
-      "Filo Infinito"
+      "Verdugo de Krakens"
     ],
     "coreItemsIcons": [
       "file:///android_asset/offline_images/537435e5e6691bd654c89dba3aa169ef.webp",
       "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp",
-      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
+      "file:///android_asset/offline_images/429b846f590224d8699b0e85a75a402c.webp"
     ],
     "situationalItems": [
       "Recuerdos de Lord Dominik",
@@ -8999,7 +8999,7 @@
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9064,12 +9064,12 @@
         "coreItems": [
           "Hoja del rey arruinado",
           "Huracán de Runaan",
-          "Filo Infinito"
+          "Verdugo de Krakens"
         ],
         "items": [
           "Hoja del rey arruinado",
           "Huracán de Runaan",
-          "Filo Infinito"
+          "Verdugo de Krakens"
         ],
         "situationalItems": [
           "Recuerdos de Lord Dominik",
@@ -9095,12 +9095,12 @@
         "coreItems": [
           "Hoja del rey arruinado",
           "Huracán de Runaan",
-          "Filo Infinito"
+          "Verdugo de Krakens"
         ],
         "items": [
           "Hoja del rey arruinado",
           "Huracán de Runaan",
-          "Filo Infinito"
+          "Verdugo de Krakens"
         ],
         "situationalItems": [
           "Recuerdos de Lord Dominik",
@@ -9167,12 +9167,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Mandato imperial"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp"
     ],
@@ -10476,26 +10476,26 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Fuerza de trinidad",
-      "Filo Infinito",
-      "Recuerdos de Lord Dominik"
+      "Hoja del rey arruinado",
+      "Verdugo de Krakens",
+      "El final"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/1475e9776e1486a548893bcbfba5b0ce.webp",
-      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/537435e5e6691bd654c89dba3aa169ef.webp",
+      "file:///android_asset/offline_images/429b846f590224d8699b0e85a75a402c.webp",
+      "file:///android_asset/offline_images/75dd4d584ca6b34dad5d3d12404ca40d.webp"
     ],
     "situationalItems": [
-      "Hoja del rey arruinado",
       "Sanguinaria",
       "Ángel de la guarda",
-      "Fauces de Malmortius"
+      "Fauces de Malmortius",
+      "Fuerza de trinidad"
     ],
     "situationalItemsIcons": [
-      "file:///android_asset/offline_images/537435e5e6691bd654c89dba3aa169ef.webp",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
+      "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
+      "file:///android_asset/offline_images/1475e9776e1486a548893bcbfba5b0ce.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -10558,20 +10558,20 @@
         "title": "Build Jungla • Criterio Coach",
         "role": "jungle",
         "coreItems": [
-          "Fuerza de trinidad",
-          "Filo Infinito",
-          "Recuerdos de Lord Dominik"
+          "Hoja del rey arruinado",
+          "Verdugo de Krakens",
+          "El final"
         ],
         "items": [
-          "Fuerza de trinidad",
-          "Filo Infinito",
-          "Recuerdos de Lord Dominik"
+          "Hoja del rey arruinado",
+          "Verdugo de Krakens",
+          "El final"
         ],
         "situationalItems": [
-          "Hoja del rey arruinado",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Fuerza de trinidad"
         ],
         "bootBase": "Botas dinámicas",
         "bootUpgrade": "Botas quebrantarmaduras",
@@ -10589,20 +10589,20 @@
         "title": "Build Línea de Dragón (Línea Flex) • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Fuerza de trinidad",
-          "Filo Infinito",
-          "Recuerdos de Lord Dominik"
+          "Hoja del rey arruinado",
+          "Verdugo de Krakens",
+          "El final"
         ],
         "items": [
-          "Fuerza de trinidad",
-          "Filo Infinito",
-          "Recuerdos de Lord Dominik"
+          "Hoja del rey arruinado",
+          "Verdugo de Krakens",
+          "El final"
         ],
         "situationalItems": [
-          "Hoja del rey arruinado",
           "Sanguinaria",
           "Ángel de la guarda",
-          "Fauces de Malmortius"
+          "Fauces de Malmortius",
+          "Fuerza de trinidad"
         ],
         "bootBase": "Grebas de berserker",
         "bootUpgrade": "Grebas de metal",
@@ -10682,7 +10682,7 @@
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11037,12 +11037,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -11243,7 +11243,7 @@
       "file:///android_asset/offline_images/8ab6dc6493eda1a50bf731f8fa715087.webp",
       "file:///android_asset/offline_images/a67295fc9713d5227ce1e8037c3e2779.webp",
       "file:///android_asset/offline_images/85536ee1d624a04cb68019aebba6d66e.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11598,14 +11598,14 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Filo Infinito",
-      "Recaudadora",
-      "Recuerdos de Lord Dominik"
+      "Segador de esencia",
+      "Filoveloz de Navori",
+      "Filo Infinito"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/essence_reaver.webp",
+      "file:///android_asset/offline_images/ddb7b42ff818a8e2d2f541c9dc96a0fc.webp",
+      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
     ],
     "situationalItems": [
       "Sanguinaria",
@@ -11615,7 +11615,7 @@
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
     ],
@@ -11680,14 +11680,14 @@
         "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo Infinito",
-          "Recaudadora",
-          "Recuerdos de Lord Dominik"
+          "Segador de esencia",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Recaudadora",
-          "Recuerdos de Lord Dominik"
+          "Segador de esencia",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -11711,14 +11711,14 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Filo Infinito",
-          "Recaudadora",
-          "Recuerdos de Lord Dominik"
+          "Segador de esencia",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Recaudadora",
-          "Recuerdos de Lord Dominik"
+          "Segador de esencia",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -11785,12 +11785,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Incensario ardiente"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp"
     ],
@@ -12160,26 +12160,26 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Corazón de acero",
-      "Égida de fuego solar",
-      "Malla de espinas"
-    ],
-    "coreItemsIcons": [
-      "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp",
-      "file:///android_asset/offline_images/446cb1deb4616fba85f68c078be08339.webp",
-      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp"
-    ],
-    "situationalItems": [
       "Guantelete de hielo",
-      "Fuerza de la naturaleza",
-      "Presagio de Randuin",
+      "Égida de fuego solar",
       "Coraza dual purpúrea"
     ],
-    "situationalItemsIcons": [
+    "coreItemsIcons": [
       "file:///android_asset/offline_images/0ec5d7a3b173c4f04ca3cc32e35c2e43.webp",
+      "file:///android_asset/offline_images/446cb1deb4616fba85f68c078be08339.webp",
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
+    ],
+    "situationalItems": [
+      "Fuerza de la naturaleza",
+      "Presagio de Randuin",
+      "Corazón de acero",
+      "Malla de espinas"
+    ],
+    "situationalItemsIcons": [
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+      "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp",
+      "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12242,20 +12242,20 @@
         "title": "Build Línea de Barón • Criterio Coach",
         "role": "top",
         "coreItems": [
-          "Corazón de acero",
+          "Guantelete de hielo",
           "Égida de fuego solar",
-          "Malla de espinas"
+          "Coraza dual purpúrea"
         ],
         "items": [
-          "Corazón de acero",
+          "Guantelete de hielo",
           "Égida de fuego solar",
-          "Malla de espinas"
+          "Coraza dual purpúrea"
         ],
         "situationalItems": [
-          "Guantelete de hielo",
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Coraza dual purpúrea"
+          "Corazón de acero",
+          "Malla de espinas"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -12273,20 +12273,20 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Corazón de acero",
+          "Guantelete de hielo",
           "Égida de fuego solar",
-          "Malla de espinas"
+          "Coraza dual purpúrea"
         ],
         "items": [
-          "Corazón de acero",
+          "Guantelete de hielo",
           "Égida de fuego solar",
-          "Malla de espinas"
+          "Coraza dual purpúrea"
         ],
         "situationalItems": [
-          "Guantelete de hielo",
           "Fuerza de la naturaleza",
           "Presagio de Randuin",
-          "Coraza dual purpúrea"
+          "Corazón de acero",
+          "Malla de espinas"
         ],
         "bootBase": "Botas blindadas",
         "bootUpgrade": "Avance blindado",
@@ -12379,12 +12379,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -12971,12 +12971,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Incensario ardiente"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp"
     ],
@@ -13364,7 +13364,7 @@
       "file:///android_asset/offline_images/b68d6e640042b5db9b2c77722c9187e5.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -13533,12 +13533,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Cetro de cristal de Rylai",
       "Tormento de Liandry"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/da88ffd23441e3d461aec00c69f066b3.webp",
       "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp"
     ],

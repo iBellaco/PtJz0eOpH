@@ -131,6 +131,7 @@ service cloud.firestore {
     }
     match /{path=**}/messages/{id} { allow read: if isAdmin(); }
     match /{path=**}/subscription_history/{id} { allow read: if isAdmin(); }
+    match /{path=**}/history/{id} { allow read: if isAdmin(); }
     match /cash_redemptions/{id} {
       function op() { return getAfter(/databases/$(database)/documents/users/$(request.auth.uid)/economy_operations/$(id)).data; }
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);

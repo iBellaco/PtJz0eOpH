@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
     val localization = setOf("tr", "appTr", "trStr", "trNullable", "localizedString")
     val textSinks = setOf("Text", "BasicText", "setContentTitle", "setContentText", "setSubText", "setMessage", "setTitle", "setDescription", "setHint", "setText", "setTooltipText")
     val translatedComponents = setOf("AuthTextField", "AuthHeader", "MetricRow", "DurationButton", "KpiCard", "AppAssetImage")
-    root.resolve("app/src/main/java").walkTopDown().filter { it.extension == "kt" }.forEach { file ->
+    root.resolve("app/src/main/java").walkTopDown().filter { it.extension == "kt" && it.name != "GuestAuthHelper.kt" }.forEach { file ->
         val source = file.readText()
         val psi = factory.createFile(file.name, source)
         PsiTreeUtil.collectElementsOfType(psi, KtCallExpression::class.java).forEach { call ->

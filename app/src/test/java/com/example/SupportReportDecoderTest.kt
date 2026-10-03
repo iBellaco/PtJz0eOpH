@@ -14,6 +14,16 @@ import org.robolectric.annotation.Config
 class SupportReportDecoderTest {
     private val time = 1_790_899_200_123L
 
+    @Test fun `a new reply moves an older report first while its original date stays intact`() {
+        val older = SupportReportDecoder.decode("old", mapOf("title" to "Soporte", "content" to "Ayuda",
+            "createdAt" to time - 86_400_000, "lastMessageAt" to time + 1000))!!
+        val newer = SupportReportDecoder.decode("new", mapOf("title" to "Soporte", "content" to "Otra duda",
+            "createdAt" to time, "updatedAt" to time + 5000))!!
+        assertTrue(older.lastActivityAtMillis > newer.lastActivityAtMillis)
+        assertEquals(SupportReportDecoder.isoDate(time - 86_400_000), older.createdAt)
+        assertEquals(time, newer.lastActivityAtMillis)
+    }
+
     @Test fun `legacy content dates version and device remain readable`() {
         val report = SupportReportDecoder.decode("legacy", mapOf(
             "subject" to "Ajuda", "content" to "Preciso de ajuda", "created_at" to "2026-10-02T00:00:00.123-04:00",
