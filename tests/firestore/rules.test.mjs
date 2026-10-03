@@ -81,6 +81,11 @@ try {
       tx.set(operation,{id,userId:'economy',kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',timestamp,createdAt:serverTimestamp(),receipt});
       tx.update(profile,{orangeEssence:account.orangeEssence-amount,lastEconomyOperation:id});
       tx.set(doc(economy,`cash_redemptions/${id}`),{id,userId:'economy',email:'economy@test.invalid',amount,usd:amount,paymentCurrency:'USDT',network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override});
+      const reportId=`payment_${id}`;
+      const conversation=initial(reportId).map(entry=>entry.senderRole==='USER'?{...entry,senderUid:'economy'}:entry);
+      const payment={id:reportId,reportId,redemptionId:id,userId:'economy',userEmail:'economy@test.invalid',userName:'Usuario',title:'Solicitud de pago USDT',description:'Solicitud de pago USDT',content:'Solicitud de pago USDT',tag:'PAGO',type:'PAGO',panel:'HISTORY',staffVisible:false,status:'PENDING',staffRead:false,isRead:true,userRead:true,userCanReply:false,timestamp,createdAt:serverTimestamp(),conversation};
+      tx.set(doc(economy,`support_reports/${reportId}`),payment);
+      tx.set(doc(economy,`users/economy/messages/${reportId}`),payment);
       tx.set(doc(economy,`users/economy/subscription_history/${id}`),receipt);
     });
   }
@@ -90,6 +95,10 @@ try {
     await assertSucceeds(redeem('cash-ten',10));
     assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before.orangeEssence);
     await assertSucceeds(getDoc(doc(admin,'cash_redemptions/cash-ten')));
+    assert.equal((await getDoc(doc(admin,'support_reports/payment_cash-ten'))).data().redemptionId,'cash-ten');
+    assert.equal((await getDoc(doc(economy,'users/economy/messages/payment_cash-ten'))).data().tag,'PAGO');
+    await assertFails(getDoc(doc(moderator,'support_reports/payment_cash-ten')));
+    await assertFails(getDoc(doc(other,'users/economy/messages/payment_cash-ten')));
     await assertFails(getDoc(doc(other,'cash_redemptions/cash-ten')));
     await assertFails(getDocs(collection(other,'cash_redemptions')));
     await assertSucceeds(getDocs(query(collection(economy,'cash_redemptions'),where('userId','==','economy'))));
