@@ -192,3 +192,64 @@ if findings:
         print("PORTUGUESE_DEVICE_RESIDUE:", finding, flush=True)
     raise AssertionError("Spanish text remains in installed APK")
 print("PORTUGUESE_DEVICE_AUDIT:", len(screens), "screens, zero Spanish findings", flush=True)
+
+# Reinstalling is unnecessary: inspect the same APK with Spanish selected and
+# compare its actual item prices/stat rows with the user's requested corrections.
+OUT = OUT / 'spanish'
+OUT.mkdir(parents=True, exist_ok=True)
+SPANISH = re.compile(r'\b(?:você|não|habilidade|habilidades|dano|campeões|velocidade|recarga|adicionais|inimigos|acertos|concede|assinatura|notificação|essências|usuário)\b', re.IGNORECASE)
+findings, authored_texts, screens = [], [], []
+adb('shell', 'pm', 'clear', APP)
+adb('shell', 'pm', 'grant', APP, 'android.permission.POST_NOTIFICATIONS')
+adb('shell', 'am', 'start', '-W', '-n', APP + '/com.example.MainActivity')
+tap('Español')
+snapshot('language-spanish')
+tap('Continuar en Español')
+snapshot('privacy-spanish')
+for tab in ['Términos', 'Terceros', 'Privacidad']:
+    tap(tab)
+    snapshot('legal-' + tab)
+tap('Aceptar y Entrar')
+for page in range(4):
+    snapshot('onboarding-' + str(page + 1))
+    tap('Siguiente' if page < 3 else '¡Comenzar ahora!')
+snapshot('home-spanish')
+for tab in ['Selección', 'Tier List', 'Catálogo', 'Usuario']:
+    tap(tab)
+    snapshot('dashboard-' + tab)
+tap('Catálogo')
+tap('Objetos')
+snapshot('catalog-spanish')
+expectations = json.loads(Path('app/src/test/resources/item-corrections-158.json').read_text())
+items_source = Path('app/src/main/java/com/example/data/WildRiftItemsData.kt').read_text()
+for item_id in ['mercurial_scimitar', 'fiendhunter_bolts', 'kraken_slayer', 'nashor_s_tooth',
+                'imperial_mandate', 'terminus', 'yordle_trap', 'rabadon_s_deathcap']:
+    tap('Buscar objeto por nombre o estadísticas...')
+    adb('shell', 'input', 'text', item_id)
+    back()  # Dismiss the keyboard, retaining the search result.
+    name = re.search(r'id = "' + re.escape(item_id) + r'",\s*name = "([^"]+)"', items_source).group(1)
+    tap(name, scrolling=3)
+    snapshot('required-item-' + item_id)
+    actual = [n.get('text', '') for n in app_nodes(window())]
+    expected = expectations[item_id]
+    if 'goldCost' in expected and not any(str(expected['goldCost']) in s for s in actual):
+        raise AssertionError('Updated item price missing in installed APK: ' + item_id)
+    for stat in expected.get('stats', '').split(' • '):
+        if stat and stat not in actual:
+            raise AssertionError('Updated item stat missing in installed APK: ' + item_id + ': ' + stat)
+    scroll()
+    snapshot('required-item-' + item_id + '-passive')
+    back()
+    tap('Cerrar')  # Clear only the catalog search field after closing the dialog.
+adb('shell', 'am', 'force-stop', APP)
+adb('shell', 'am', 'start', '-W', '-n', APP + '/com.example.MainActivity')
+tap('Inicio')
+tap('Información')
+snapshot('restart-retains-spanish')
+(OUT / 'summary.json').write_text(json.dumps({'language': 'es-419', 'screens': screens,
+    'findings': findings, 'authored_texts': authored_texts}, ensure_ascii=False, indent=2))
+if findings:
+    for finding in findings:
+        print('SPANISH_DEVICE_RESIDUE:', finding, flush=True)
+    raise AssertionError('Portuguese text remains in Spanish screens of installed APK')
+print('SPANISH_DEVICE_AUDIT:', len(screens), 'screens, zero Portuguese findings', flush=True)
