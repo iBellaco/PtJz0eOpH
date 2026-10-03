@@ -39,7 +39,7 @@ class LocalizationSurfaceTest {
         DynamicTranslations.loadSync(context)
         AppLanguage.select(context, "es")
     }
-    @Test fun `asset image accessibility and fallback initials follow language changes`() {
+    @Test fun `asset image accessibility exposes full names across language changes`() {
         compose.setContent {
             com.example.ui.components.AppAssetImage(
                 url = "file:///android_asset/missing-localization-test.png",
@@ -48,15 +48,26 @@ class LocalizationSurfaceTest {
             )
         }
         compose.onNodeWithContentDescription("Destello").assertExists()
-        compose.onNodeWithText("DE").assertExists()
+        compose.onNodeWithText("DE").assertDoesNotExist()
         compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
         compose.onNodeWithContentDescription("Flash").assertExists()
         compose.onNodeWithContentDescription("Destello").assertDoesNotExist()
-        compose.onNodeWithText("FL").assertExists()
+        compose.onNodeWithText("FL").assertDoesNotExist()
         compose.onNodeWithText("DE").assertDoesNotExist()
         compose.runOnIdle { AppLanguage.select(context, "es") }
         compose.onNodeWithContentDescription("Destello").assertExists()
-        compose.onNodeWithText("DE").assertExists()
+        compose.onNodeWithText("DE").assertDoesNotExist()
+    }
+    @Test fun `empty asset exposes full localized name without reading decorative initials`() {
+        compose.setContent { com.example.ui.components.AppAssetImage(url = "", contentDescription = "Destello", fallbackText = "Destello") }
+        compose.onNodeWithContentDescription("Destello").assertExists()
+        compose.onNodeWithText("DE").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithContentDescription("Flash").assertExists()
+        compose.onNodeWithContentDescription("Destello").assertDoesNotExist()
+        compose.onNodeWithText("FL").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "es-419") }
+        compose.onNodeWithContentDescription("Destello").assertExists()
     }
     @Test fun `styled sentence translates as a complete sentence in both directions`() {
         val original = "Curación y Escudos"

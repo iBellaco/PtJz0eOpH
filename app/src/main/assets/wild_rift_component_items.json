@@ -1,0 +1,1799 @@
+{
+  "version_esquema": 1,
+  "idioma_principal": "es-419",
+  "secciones": {
+    "LUCHADOR": {
+      "Básico": [
+        {
+          "id": "tear_of_the_goddess",
+          "nombre": "Lágrima de la diosa",
+          "nombre_pt": "Lágrima da Deusa",
+          "coste_oro": 400,
+          "estadisticas": [
+            "+200 Maná máximo"
+          ],
+          "estadisticas_pt": [
+            "+200 Mana máximo"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Asombro",
+              "descripcion": "Recuperas un 10% del maná gastado.",
+              "nombre_pt": "Espanto",
+              "descripcion_pt": "Recupera 10% do mana gasto."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Carga de maná",
+              "descripcion": "Aumenta el maná máximo en 5 cada vez que se gaste maná, hasta un máximo de 700 de maná adicional. Se activa hasta 3 veces cada 10 s. Solo se puede tener 1 objeto de Lágrima de la diosa.",
+              "nombre_pt": "Carga de Mana",
+              "descripcion_pt": "Aumenta o mana máximo em 5 sempre que mana é gasto, até um máximo de 700 de mana adicional. Pode ser ativada até 3 vezes a cada 10 s. Só é possível possuir 1 item de Lágrima da Deusa."
+            }
+          ]
+        },
+        {
+          "id": "dagger",
+          "nombre": "Daga",
+          "nombre_pt": "Adaga",
+          "coste_oro": 400,
+          "estadisticas": [
+            "+12% Velocidad de ataque"
+          ],
+          "estadisticas_pt": [
+            "+12% Velocidade de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "long_sword",
+          "nombre": "Espada larga",
+          "nombre_pt": "Espada Longa",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+12 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+12 Dano de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "brawlers_gloves",
+          "nombre": "Guantes de pelea",
+          "nombre_pt": "Luvas de Briga",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+10% Probabilidad de crítico"
+          ],
+          "estadisticas_pt": [
+            "+10% Chance de acerto crítico"
+          ],
+          "efectos": []
+        }
+      ],
+      "Nivel Medio": [
+        {
+          "id": "pickaxe",
+          "nombre": "Pico",
+          "nombre_pt": "Picareta",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+20 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "sheen",
+          "nombre": "Brillo",
+          "nombre_pt": "Brilho",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Hoja encantada",
+              "descripcion": "Tras usar una habilidad, el siguiente ataque básico en los próximos 10 s inflige daño físico adicional equivalente al 100% del daño de ataque básico. Enfriamiento de 1,5 s. Inflige daño reducido contra estructuras.",
+              "nombre_pt": "Lâmina Encantada",
+              "descripcion_pt": "Após usar uma habilidade, o próximo ataque básico nos próximos 10 s causa dano físico adicional equivalente a 100% do dano de ataque base. Tempo de recarga de 1,5 s. Causa dano reduzido contra estruturas."
+            }
+          ]
+        },
+        {
+          "id": "executioners_calling",
+          "nombre": "Llamada del verdugo",
+          "nombre_pt": "Chamado do Carrasco",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+15 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+15 Dano de ataque"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Golpe devastador",
+              "descripcion": "Infligir daño físico a campeones enemigos aplica un 40% de heridas graves durante 3 s.",
+              "nombre_pt": "Golpe Devastador",
+              "descripcion_pt": "Causar dano físico a campeões inimigos aplica 40% de Feridas Dolorosas por 3 s."
+            }
+          ]
+        },
+        {
+          "id": "phage",
+          "nombre": "Bacteriófago",
+          "nombre_pt": "Fago",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+150 Vida máxima",
+            "+15 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+150 Vida máxima",
+            "+15 Dano de ataque"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Furia",
+              "descripcion": "Al impactar, los ataques otorgan 20 de velocidad de movimiento durante 2 s. La bonificación no se acumula. Los campeones a distancia obtienen la mitad.",
+              "nombre_pt": "Fúria",
+              "descripcion_pt": "Ao contato, os ataques concedem 20 de velocidade de movimento por 2 s. O bônus não se acumula. Campeões de ataque à distância recebem metade do valor."
+            }
+          ]
+        },
+        {
+          "id": "quicksilver_sash_mid_tier",
+          "nombre": "Fajín de mercurio",
+          "nombre_pt": "Faixa de Mercúrio",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+30 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+30 Resistência mágica"
+          ],
+          "efectos": [
+            {
+              "tipo": "ACTIVA",
+              "nombre": "Fajín de mercurio",
+              "descripcion": "Elimina todas las debilitaciones de control de adversario que te hayan aplicado y otorga inmunidad contra el control de adversario durante 0,25 s. No se puede utilizar mientras te lanzan por los aires o te empujan.",
+              "nombre_pt": "Faixa de Mercúrio",
+              "descripcion_pt": "Remove todos os efeitos debilitantes de controle de grupo aplicados a você e concede imunidade a controle de grupo por 0,25 s. Não pode ser usada enquanto você estiver no ar ou sendo empurrado."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Perseverancia",
+              "descripcion": "Cuando termina el efecto de Fajín, otorga un 30% de tenacidad y un 30% de resistencia a las ralentizaciones durante 1,5 s. Enfriamiento de 60 s.",
+              "nombre_pt": "Perseverança",
+              "descripcion_pt": "Quando o efeito da Faixa termina, concede 30% de tenacidade e 30% de resistência a lentidão por 1,5 s. Tempo de recarga de 60 s."
+            }
+          ]
+        },
+        {
+          "id": "hearthbound_axe",
+          "nombre": "Hacha hogareña",
+          "nombre_pt": "Machado Termestre",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+20 Daño de ataque",
+            "+15% Velocidad de ataque"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque",
+            "+15% Velocidade de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "vampiric_scepter",
+          "nombre": "Cetro vampírico",
+          "nombre_pt": "Cetro Vampírico",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+20 Daño de ataque",
+            "+8% Robo de vida"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque",
+            "+8% Roubo de vida"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "last_whisper",
+          "nombre": "Últimas palabras",
+          "nombre_pt": "Último Sussurro",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+15 Daño de ataque",
+            "+15% Penetración de armadura"
+          ],
+          "estadisticas_pt": [
+            "+15 Dano de ataque",
+            "+15% Penetração de armadura"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "hexdrinker",
+          "nombre": "Sorbemaleficios",
+          "nombre_pt": "Hexdrinker",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+20 Daño de ataque",
+            "+20 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque",
+            "+20 Resistência mágica"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "caulfields_warhammer",
+          "nombre": "Martillo de guerra de Caulfield",
+          "nombre_pt": "Martelo de Guerra de Caulfield",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+25 Daño de ataque",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+25 Dano de ataque",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        }
+      ]
+    },
+    "ASESINO": {
+      "Básico": [
+        {
+          "id": "tear_of_the_goddess",
+          "nombre": "Lágrima de la diosa",
+          "nombre_pt": "Lágrima da Deusa",
+          "coste_oro": 400,
+          "estadisticas": [
+            "+200 Maná máximo"
+          ],
+          "estadisticas_pt": [
+            "+200 Mana máximo"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Asombro",
+              "descripcion": "Recuperas un 10% del maná gastado.",
+              "nombre_pt": "Espanto",
+              "descripcion_pt": "Recupera 10% do mana gasto."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Carga de maná",
+              "descripcion": "Aumenta el maná máximo en 5 cada vez que se gaste maná, hasta un máximo de 700 de maná adicional. Se activa hasta 3 veces cada 10 s. Solo se puede tener 1 objeto de Lágrima de la diosa.",
+              "nombre_pt": "Carga de Mana",
+              "descripcion_pt": "Aumenta o mana máximo em 5 sempre que mana é gasto, até um máximo de 700 de mana adicional. Pode ser ativada até 3 vezes a cada 10 s. Só é possível possuir 1 item de Lágrima da Deusa."
+            }
+          ]
+        },
+        {
+          "id": "long_sword",
+          "nombre": "Espada larga",
+          "nombre_pt": "Espada Longa",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+12 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+12 Dano de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "brawlers_gloves",
+          "nombre": "Guantes de pelea",
+          "nombre_pt": "Luvas de Briga",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+10% Probabilidad de crítico"
+          ],
+          "estadisticas_pt": [
+            "+10% Chance de acerto crítico"
+          ],
+          "efectos": []
+        }
+      ],
+      "Nivel Medio": [
+        {
+          "id": "pickaxe",
+          "nombre": "Pico",
+          "nombre_pt": "Picareta",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+20 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "sheen",
+          "nombre": "Brillo",
+          "nombre_pt": "Brilho",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Hoja encantada",
+              "descripcion": "Tras usar una habilidad, el siguiente ataque básico en los próximos 10 s inflige daño físico adicional equivalente al 100% del daño de ataque básico. Enfriamiento de 1,5 s. Inflige daño reducido contra estructuras.",
+              "nombre_pt": "Lâmina Encantada",
+              "descripcion_pt": "Após usar uma habilidade, o próximo ataque básico nos próximos 10 s causa dano físico adicional equivalente a 100% do dano de ataque base. Tempo de recarga de 1,5 s. Causa dano reduzido contra estruturas."
+            }
+          ]
+        },
+        {
+          "id": "executioners_calling",
+          "nombre": "Llamada del verdugo",
+          "nombre_pt": "Chamado do Carrasco",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+15 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+15 Dano de ataque"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Golpe devastador",
+              "descripcion": "Infligir daño físico a campeones enemigos aplica un 40% de heridas graves durante 3 s.",
+              "nombre_pt": "Golpe Devastador",
+              "descripcion_pt": "Causar dano físico a campeões inimigos aplica 40% de Feridas Dolorosas por 3 s."
+            }
+          ]
+        },
+        {
+          "id": "serrated_dirk",
+          "nombre": "Daga dentada",
+          "nombre_pt": "Punhal Serrilhado",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+20 Daño de ataque",
+            "+8 Penetración de armadura"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque",
+            "+8 Penetração de armadura"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "quicksilver_sash_mid_tier",
+          "nombre": "Fajín de mercurio",
+          "nombre_pt": "Faixa de Mercúrio",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+30 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+30 Resistência mágica"
+          ],
+          "efectos": [
+            {
+              "tipo": "ACTIVA",
+              "nombre": "Fajín de mercurio",
+              "descripcion": "Elimina todas las debilitaciones de control de adversario que te hayan aplicado y otorga inmunidad contra el control de adversario durante 0,25 s. No se puede utilizar mientras te lanzan por los aires o te empujan.",
+              "nombre_pt": "Faixa de Mercúrio",
+              "descripcion_pt": "Remove todos os efeitos debilitantes de controle de grupo aplicados a você e concede imunidade a controle de grupo por 0,25 s. Não pode ser usada enquanto você estiver no ar ou sendo empurrado."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Perseverancia",
+              "descripcion": "Cuando termina el efecto de Fajín, otorga un 30% de tenacidad y un 30% de resistencia a las ralentizaciones durante 1,5 s. Enfriamiento de 60 s.",
+              "nombre_pt": "Perseverança",
+              "descripcion_pt": "Quando o efeito da Faixa termina, concede 30% de tenacidade e 30% de resistência a lentidão por 1,5 s. Tempo de recarga de 60 s."
+            }
+          ]
+        },
+        {
+          "id": "last_whisper",
+          "nombre": "Últimas palabras",
+          "nombre_pt": "Último Sussurro",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+15 Daño de ataque",
+            "+15% Penetración de armadura"
+          ],
+          "estadisticas_pt": [
+            "+15 Dano de ataque",
+            "+15% Penetração de armadura"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "caulfields_warhammer",
+          "nombre": "Martillo de guerra de Caulfield",
+          "nombre_pt": "Martelo de Guerra de Caulfield",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+25 Daño de ataque",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+25 Dano de ataque",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        }
+      ]
+    },
+    "TIRADOR": {
+      "Básico": [
+        {
+          "id": "tear_of_the_goddess",
+          "nombre": "Lágrima de la diosa",
+          "nombre_pt": "Lágrima da Deusa",
+          "coste_oro": 400,
+          "estadisticas": [
+            "+200 Maná máximo"
+          ],
+          "estadisticas_pt": [
+            "+200 Mana máximo"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Asombro",
+              "descripcion": "Recuperas un 10% del maná gastado.",
+              "nombre_pt": "Espanto",
+              "descripcion_pt": "Recupera 10% do mana gasto."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Carga de maná",
+              "descripcion": "Aumenta el maná máximo en 5 cada vez que se gaste maná, hasta un máximo de 700 de maná adicional. Se activa hasta 3 veces cada 10 s. Solo se puede tener 1 objeto de Lágrima de la diosa.",
+              "nombre_pt": "Carga de Mana",
+              "descripcion_pt": "Aumenta o mana máximo em 5 sempre que mana é gasto, até um máximo de 700 de mana adicional. Pode ser ativada até 3 vezes a cada 10 s. Só é possível possuir 1 item de Lágrima da Deusa."
+            }
+          ]
+        },
+        {
+          "id": "dagger",
+          "nombre": "Daga",
+          "nombre_pt": "Adaga",
+          "coste_oro": 400,
+          "estadisticas": [
+            "+12% Velocidad de ataque"
+          ],
+          "estadisticas_pt": [
+            "+12% Velocidade de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "long_sword",
+          "nombre": "Espada larga",
+          "nombre_pt": "Espada Longa",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+12 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+12 Dano de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "brawlers_gloves",
+          "nombre": "Guantes de pelea",
+          "nombre_pt": "Luvas de Briga",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+10% Probabilidad de crítico"
+          ],
+          "estadisticas_pt": [
+            "+10% Chance de acerto crítico"
+          ],
+          "efectos": []
+        }
+      ],
+      "Nivel Medio": [
+        {
+          "id": "pickaxe",
+          "nombre": "Pico",
+          "nombre_pt": "Picareta",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+20 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "sheen",
+          "nombre": "Brillo",
+          "nombre_pt": "Brilho",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Hoja encantada",
+              "descripcion": "Tras usar una habilidad, el siguiente ataque básico en los próximos 10 s inflige daño físico adicional equivalente al 100% del daño de ataque básico. Enfriamiento de 1,5 s. Inflige daño reducido contra estructuras.",
+              "nombre_pt": "Lâmina Encantada",
+              "descripcion_pt": "Após usar uma habilidade, o próximo ataque básico nos próximos 10 s causa dano físico adicional equivalente a 100% do dano de ataque base. Tempo de recarga de 1,5 s. Causa dano reduzido contra estruturas."
+            }
+          ]
+        },
+        {
+          "id": "kircheis_shard",
+          "nombre": "Fragmento de Kircheis",
+          "nombre_pt": "Fragmento de Kircheis",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+20% Velocidad de ataque"
+          ],
+          "estadisticas_pt": [
+            "+20% Velocidade de ataque"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Descarga",
+              "descripcion": "Inflige 40 de daño mágico adicional al dañar a un campeón enemigo. Enfriamiento de 25 s, que se reduce en 1 s por cada ataque.",
+              "nombre_pt": "Descarga",
+              "descripcion_pt": "Causa 40 de dano mágico adicional ao causar dano a um campeão inimigo. Tempo de recarga de 25 s, reduzido em 1 s a cada ataque."
+            }
+          ]
+        },
+        {
+          "id": "executioners_calling",
+          "nombre": "Llamada del verdugo",
+          "nombre_pt": "Chamado do Carrasco",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+15 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+15 Dano de ataque"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Golpe devastador",
+              "descripcion": "Infligir daño físico a campeones enemigos aplica un 40% de heridas graves durante 3 s.",
+              "nombre_pt": "Golpe Devastador",
+              "descripcion_pt": "Causar dano físico a campeões inimigos aplica 40% de Feridas Dolorosas por 3 s."
+            }
+          ]
+        },
+        {
+          "id": "recurve_bow",
+          "nombre": "Arco curvo",
+          "nombre_pt": "Arco Recurvo",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+20% Velocidad de ataque"
+          ],
+          "estadisticas_pt": [
+            "+20% Velocidade de ataque"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Refuerzo",
+              "descripcion": "Los ataques infligen 15 de daño físico adicional al impactar.",
+              "nombre_pt": "Reforço",
+              "descripcion_pt": "Os ataques causam 15 de dano físico adicional ao contato."
+            }
+          ]
+        },
+        {
+          "id": "quicksilver_sash_mid_tier",
+          "nombre": "Fajín de mercurio",
+          "nombre_pt": "Faixa de Mercúrio",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+30 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+30 Resistência mágica"
+          ],
+          "efectos": [
+            {
+              "tipo": "ACTIVA",
+              "nombre": "Fajín de mercurio",
+              "descripcion": "Elimina todas las debilitaciones de control de adversario que te hayan aplicado y otorga inmunidad contra el control de adversario durante 0,25 s. No se puede utilizar mientras te lanzan por los aires o te empujan.",
+              "nombre_pt": "Faixa de Mercúrio",
+              "descripcion_pt": "Remove todos os efeitos debilitantes de controle de grupo aplicados a você e concede imunidade a controle de grupo por 0,25 s. Não pode ser usada enquanto você estiver no ar ou sendo empurrado."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Perseverancia",
+              "descripcion": "Cuando termina el efecto de Fajín, otorga un 30% de tenacidad y un 30% de resistencia a las ralentizaciones durante 1,5 s. Enfriamiento de 60 s.",
+              "nombre_pt": "Perseverança",
+              "descripcion_pt": "Quando o efeito da Faixa termina, concede 30% de tenacidade e 30% de resistência a lentidão por 1,5 s. Tempo de recarga de 60 s."
+            }
+          ]
+        },
+        {
+          "id": "hearthbound_axe",
+          "nombre": "Hacha hogareña",
+          "nombre_pt": "Machado Termestre",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+20 Daño de ataque",
+            "+15% Velocidad de ataque"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque",
+            "+15% Velocidade de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "vampiric_scepter",
+          "nombre": "Cetro vampírico",
+          "nombre_pt": "Cetro Vampírico",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+20 Daño de ataque",
+            "+8% Robo de vida"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque",
+            "+8% Roubo de vida"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "last_whisper",
+          "nombre": "Últimas palabras",
+          "nombre_pt": "Último Sussurro",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+15 Daño de ataque",
+            "+15% Penetración de armadura"
+          ],
+          "estadisticas_pt": [
+            "+15 Dano de ataque",
+            "+15% Penetração de armadura"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "caulfields_warhammer",
+          "nombre": "Martillo de guerra de Caulfield",
+          "nombre_pt": "Martelo de Guerra de Caulfield",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+25 Daño de ataque",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+25 Dano de ataque",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "noonquiver",
+          "nombre": "Carcaj del mediodía",
+          "nombre_pt": "Aljava do Meio-Dia",
+          "coste_oro": 1300,
+          "estadisticas": [
+            "+20 Daño de ataque",
+            "+15% Probabilidad de crítico"
+          ],
+          "estadisticas_pt": [
+            "+20 Dano de ataque",
+            "+15% Chance de acerto crítico"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "zeal",
+          "nombre": "Fervor",
+          "nombre_pt": "Zelo",
+          "coste_oro": 1400,
+          "estadisticas": [
+            "+15% Probabilidad de crítico",
+            "+15% Velocidad de ataque",
+            "+4% Velocidad de movimiento"
+          ],
+          "estadisticas_pt": [
+            "+15% Chance de acerto crítico",
+            "+15% Velocidade de ataque",
+            "+4% Velocidade de movimento"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "bf_sword",
+          "nombre": "Espadón",
+          "nombre_pt": "Espada G. p. C.",
+          "coste_oro": 1500,
+          "estadisticas": [
+            "+40 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+40 Dano de ataque"
+          ],
+          "efectos": []
+        }
+      ]
+    },
+    "MÁGICO": {
+      "Básico": [
+        {
+          "id": "revelation_ring",
+          "nombre": "Anillo de la revelación",
+          "nombre_pt": "Anel da Revelação",
+          "coste_oro": 300,
+          "estadisticas": [
+            "+5 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+5 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "tear_of_the_goddess",
+          "nombre": "Lágrima de la diosa",
+          "nombre_pt": "Lágrima da Deusa",
+          "coste_oro": 400,
+          "estadisticas": [
+            "+200 Maná máximo"
+          ],
+          "estadisticas_pt": [
+            "+200 Mana máximo"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Asombro",
+              "descripcion": "Recuperas un 10% del maná gastado.",
+              "nombre_pt": "Espanto",
+              "descripcion_pt": "Recupera 10% do mana gasto."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Carga de maná",
+              "descripcion": "Aumenta el maná máximo en 5 cada vez que se gaste maná, hasta un máximo de 700 de maná adicional. Se activa hasta 3 veces cada 10 s. Solo se puede tener 1 objeto de Lágrima de la diosa.",
+              "nombre_pt": "Carga de Mana",
+              "descripcion_pt": "Aumenta o mana máximo em 5 sempre que mana é gasto, até um máximo de 700 de mana adicional. Pode ser ativada até 3 vezes a cada 10 s. Só é possível possuir 1 item de Lágrima da Deusa."
+            }
+          ]
+        },
+        {
+          "id": "ruby_crystal",
+          "nombre": "Cristal de rubí",
+          "nombre_pt": "Cristal de Rubi",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+150 Vida máxima"
+          ],
+          "estadisticas_pt": [
+            "+150 Vida máxima"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "amplifying_tome",
+          "nombre": "Tomo amplificador",
+          "nombre_pt": "Tomo Amplificador",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+20 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+20 Poder de habilidade"
+          ],
+          "efectos": []
+        }
+      ],
+      "Nivel Medio": [
+        {
+          "id": "forbidden_idol",
+          "nombre": "Ídolo prohibido",
+          "nombre_pt": "Ídolo Proibido",
+          "coste_oro": 700,
+          "estadisticas": [
+            "+25% Regeneración de maná",
+            "+6% Poder de curaciones y escudos"
+          ],
+          "estadisticas_pt": [
+            "+25% Regeneração de mana",
+            "+6% Poder de cura e escudo"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "blasting_wand",
+          "nombre": "Vara explosiva",
+          "nombre_pt": "Varinha Explosiva",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+40 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+40 Poder de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "sheen",
+          "nombre": "Brillo",
+          "nombre_pt": "Brilho",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Hoja encantada",
+              "descripcion": "Tras usar una habilidad, el siguiente ataque básico en los próximos 10 s inflige daño físico adicional equivalente al 100% del daño de ataque básico. Enfriamiento de 1,5 s. Inflige daño reducido contra estructuras.",
+              "nombre_pt": "Lâmina Encantada",
+              "descripcion_pt": "Após usar uma habilidade, o próximo ataque básico nos próximos 10 s causa dano físico adicional equivalente a 100% do dano de ataque base. Tempo de recarga de 1,5 s. Causa dano reduzido contra estruturas."
+            }
+          ]
+        },
+        {
+          "id": "bandleglass_mirror",
+          "nombre": "Espejo de cristal de Bandle",
+          "nombre_pt": "Espelho de Vidro de Bandópolis",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+20 Poder de habilidad",
+            "+50% Regeneración de maná",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+20 Poder de habilidade",
+            "+50% Regeneração de mana",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "fated_ashes",
+          "nombre": "Cenizas predestinadas",
+          "nombre_pt": "Cinzas Predestinadas",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+40 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+40 Poder de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Inflamar",
+              "descripcion": "Las habilidades infligen 5 de daño mágico adicional durante 3 s; infligen 15 de daño adicional a monstruos.",
+              "nombre_pt": "Inflamar",
+              "descripcion_pt": "As habilidades causam 5 de dano mágico adicional por 3 s; causam 15 de dano adicional a monstros."
+            }
+          ]
+        },
+        {
+          "id": "fiendish_codex",
+          "nombre": "Códice diabólico",
+          "nombre_pt": "Códex Demoníaco",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+25 Poder de habilidad",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+25 Poder de habilidade",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "oblivion_orb",
+          "nombre": "Orbe del olvido",
+          "nombre_pt": "Orbe do Oblívio",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+35 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+35 Poder de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Heridas graves",
+              "descripcion": "Infligir daño mágico aplica un 40% de heridas graves durante 3 s.",
+              "nombre_pt": "Feridas Dolorosas",
+              "descripcion_pt": "Causar dano mágico aplica 40% de Feridas Dolorosas por 3 s."
+            }
+          ]
+        },
+        {
+          "id": "aether_wisp",
+          "nombre": "Brisa de éter",
+          "nombre_pt": "Éter Fogo",
+          "coste_oro": 950,
+          "estadisticas": [
+            "+35 Poder de habilidad",
+            "+4% Velocidad de movimiento"
+          ],
+          "estadisticas_pt": [
+            "+35 Poder de habilidade",
+            "+4% Velocidade de movimento"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "void_amethyst",
+          "nombre": "Amatista del Vacío",
+          "nombre_pt": "Ametista do Vazio",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+20 Poder de habilidad",
+            "+10% Penetración mágica"
+          ],
+          "estadisticas_pt": [
+            "+20 Poder de habilidade",
+            "+10% Penetração mágica"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "kindlegem",
+          "nombre": "Gema avivadora",
+          "nombre_pt": "Gema Ardente",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+175 Vida máxima",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+175 Vida máxima",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "catalyst_of_aeons",
+          "nombre": "Catalizador de eones",
+          "nombre_pt": "Catalisador das Eras",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+200 Vida máxima",
+            "+300 Maná máximo"
+          ],
+          "estadisticas_pt": [
+            "+200 Vida máxima",
+            "+300 Mana máximo"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Eternidad",
+              "descripcion": "Restaura maná equivalente a un 15% del daño recibido y regenera vida equivalente a un 20% del maná utilizado, hasta un máximo de 15 de vida por lanzamiento.",
+              "nombre_pt": "Eternidade",
+              "descripcion_pt": "Restaura mana equivalente a 15% do dano recebido e regenera vida equivalente a 20% do mana usado, até um máximo de 15 de vida por conjuração."
+            }
+          ]
+        },
+        {
+          "id": "hextech_alternator",
+          "nombre": "Alternador hextech",
+          "nombre_pt": "Alternador Hextec",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+45 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+45 Poder de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Revolucionado",
+              "descripcion": "Las habilidades de daño y los ataques potenciados infligen de 25 a 60 de daño mágico adicional. Enfriamiento de 20 s.",
+              "nombre_pt": "Revitalizado",
+              "descripcion_pt": "As habilidades de dano e os ataques fortalecidos causam de 25 a 60 de dano mágico adicional. Tempo de recarga de 20 s."
+            }
+          ]
+        },
+        {
+          "id": "lost_chapter",
+          "nombre": "Capítulo perdido",
+          "nombre_pt": "Capítulo Perdido",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+35 Poder de habilidad",
+            "+200 Maná máximo",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+35 Poder de habilidade",
+            "+200 Mana máximo",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Iluminar",
+              "descripcion": "Al subir de nivel, recupera un 20% del maná máximo a lo largo de 3 s.",
+              "nombre_pt": "Iluminar",
+              "descripcion_pt": "Ao subir de nível, recupera 20% do mana máximo ao longo de 3 s."
+            }
+          ]
+        },
+        {
+          "id": "haunting_guise",
+          "nombre": "Disfraz encantado",
+          "nombre_pt": "Máscara Assustadora",
+          "coste_oro": 1300,
+          "estadisticas": [
+            "+200 Vida máxima",
+            "+30 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+200 Vida máxima",
+            "+30 Poder de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Demencia",
+              "descripcion": "Inflige un 2% de daño adicional por cada segundo en combate contra campeones, hasta un máximo de un 6%.",
+              "nombre_pt": "Demência",
+              "descripcion_pt": "Causa 2% de dano adicional a cada segundo em combate contra campeões, até um máximo de 6%."
+            }
+          ]
+        },
+        {
+          "id": "needlessly_large_rod",
+          "nombre": "Vara innecesariamente grande",
+          "nombre_pt": "Bastão Desnecessariamente Grande",
+          "coste_oro": 1400,
+          "estadisticas": [
+            "+65 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+65 Poder de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "seekers_armguard",
+          "nombre": "Brazalete de la buscadora",
+          "nombre_pt": "Braçadeira da Caçadora",
+          "coste_oro": 1400,
+          "estadisticas": [
+            "+20 Armadura",
+            "+35 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+20 Armadura",
+            "+35 Poder de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "ACTIVA",
+              "nombre": "Éstasis",
+              "descripcion": "Te vuelve invulnerable e inalcanzable durante 2,5 s, sin permitirte moverte, atacar ni lanzar hechizos. Enfriamiento de 150 s.",
+              "nombre_pt": "Estase",
+              "descripcion_pt": "Torna você invulnerável e inalvejável por 2,5 s, sem permitir movimento, ataques ou conjuração de feitiços. Tempo de recarga de 150 s."
+            }
+          ]
+        },
+        {
+          "id": "verdant_barrier",
+          "nombre": "Barrera frondosa",
+          "nombre_pt": "Barreira Verdejante",
+          "coste_oro": 1600,
+          "estadisticas": [
+            "+40 Poder de habilidad",
+            "+25 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+40 Poder de habilidade",
+            "+25 Resistência mágica"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Anular",
+              "descripcion": "Otorga un escudo de hechizos que bloquea la siguiente habilidad enemiga. Enfriamiento de 65 s.",
+              "nombre_pt": "Anular",
+              "descripcion_pt": "Concede um escudo de feitiço que bloqueia a próxima habilidade inimiga. Tempo de recarga de 65 s."
+            }
+          ]
+        },
+        {
+          "id": "mejais_soulstealer",
+          "nombre": "Robaalmas de Mejai",
+          "nombre_pt": "Ladrão de Almas de Mejai",
+          "coste_oro": 1800,
+          "estadisticas": [
+            "+70 Vida máxima",
+            "+25 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+70 Vida máxima",
+            "+25 Poder de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Gloria",
+              "descripcion": "Obtienes hasta 30 acumulaciones por asesinatos y asistencias. Pierdes 10 acumulaciones al morir.",
+              "nombre_pt": "Glória",
+              "descripcion_pt": "Recebe até 30 acúmulos por abates e assistências. Perde 10 acúmulos ao morrer."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Terror",
+              "descripcion": "Otorga 5 de poder de habilidad por cada acumulación de Gloria. Con 10 o más acumulaciones, otorga un 10% de velocidad de movimiento.",
+              "nombre_pt": "Terror",
+              "descripcion_pt": "Concede 5 de poder de habilidade por acúmulo de Glória. Com 10 ou mais acúmulos, concede 10% de velocidade de movimento."
+            }
+          ]
+        }
+      ]
+    },
+    "DEFENSA": {
+      "Básico": [
+        {
+          "id": "tear_of_the_goddess",
+          "nombre": "Lágrima de la diosa",
+          "nombre_pt": "Lágrima da Deusa",
+          "coste_oro": 400,
+          "estadisticas": [
+            "+200 Maná máximo"
+          ],
+          "estadisticas_pt": [
+            "+200 Mana máximo"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Asombro",
+              "descripcion": "Recuperas un 10% del maná gastado.",
+              "nombre_pt": "Espanto",
+              "descripcion_pt": "Recupera 10% do mana gasto."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Carga de maná",
+              "descripcion": "Aumenta el maná máximo en 5 cada vez que se gaste maná, hasta un máximo de 700 de maná adicional. Se activa hasta 3 veces cada 10 s. Solo se puede tener 1 objeto de Lágrima de la diosa.",
+              "nombre_pt": "Carga de Mana",
+              "descripcion_pt": "Aumenta o mana máximo em 5 sempre que mana é gasto, até um máximo de 700 de mana adicional. Pode ser ativada até 3 vezes a cada 10 s. Só é possível possuir 1 item de Lágrima da Deusa."
+            }
+          ]
+        },
+        {
+          "id": "ruby_crystal",
+          "nombre": "Cristal de rubí",
+          "nombre_pt": "Cristal de Rubi",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+150 Vida máxima"
+          ],
+          "estadisticas_pt": [
+            "+150 Vida máxima"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "cloth_armor",
+          "nombre": "Armadura de tela",
+          "nombre_pt": "Armadura de Pano",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+20 Armadura"
+          ],
+          "estadisticas_pt": [
+            "+20 Armadura"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "null_magic_mantle",
+          "nombre": "Manto de anulación de magia",
+          "nombre_pt": "Manto Anula-Magia",
+          "coste_oro": 500,
+          "estadisticas": [
+            "+20 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+20 Resistência mágica"
+          ],
+          "efectos": []
+        }
+      ],
+      "Nivel Medio": [
+        {
+          "id": "sheen",
+          "nombre": "Brillo",
+          "nombre_pt": "Brilho",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Hoja encantada",
+              "descripcion": "Tras usar una habilidad, el siguiente ataque básico en los próximos 10 s inflige daño físico adicional equivalente al 100% del daño de ataque básico. Enfriamiento de 1,5 s. Inflige daño reducido contra estructuras.",
+              "nombre_pt": "Lâmina Encantada",
+              "descripcion_pt": "Após usar uma habilidade, o próximo ataque básico nos próximos 10 s causa dano físico adicional equivalente a 100% do dano de ataque base. Tempo de recarga de 1,5 s. Causa dano reduzido contra estruturas."
+            }
+          ]
+        },
+        {
+          "id": "chain_vest",
+          "nombre": "Chaleco de cadenas",
+          "nombre_pt": "Cota de Malha",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+40 Armadura"
+          ],
+          "estadisticas_pt": [
+            "+40 Armadura"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "winged_moonplate",
+          "nombre": "Armadura lunar alada",
+          "nombre_pt": "Placa Lunar Alada",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+150 Vida máxima",
+            "+4% Velocidad de movimiento"
+          ],
+          "estadisticas_pt": [
+            "+150 Vida máxima",
+            "+4% Velocidade de movimento"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "negatron_cloak",
+          "nombre": "Capa negatrón",
+          "nombre_pt": "Capa Negatron",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+40 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+40 Resistência mágica"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "kindlegem",
+          "nombre": "Gema avivadora",
+          "nombre_pt": "Gema Ardente",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+175 Vida máxima",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+175 Vida máxima",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "giants_belt",
+          "nombre": "Cinturón de gigante",
+          "nombre_pt": "Cinto do Gigante",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+300 Vida máxima"
+          ],
+          "estadisticas_pt": [
+            "+300 Vida máxima"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "bramble_vest",
+          "nombre": "Chaleco de zarzas",
+          "nombre_pt": "Colete Espinhoso",
+          "coste_oro": 1000,
+          "estadisticas": [],
+          "estadisticas_pt": [],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "",
+              "descripcion": "Refleja daño y reduce la curación enemiga.",
+              "nombre_pt": "",
+              "descripcion_pt": "Reflete dano e reduz a cura inimiga."
+            }
+          ],
+          "nota": "La lista proporcionada no incluye estadísticas numéricas para este objeto."
+        },
+        {
+          "id": "glacial_shroud",
+          "nombre": "Sudario glacial",
+          "nombre_pt": "Proteção Glacial",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+20 Armadura",
+            "+150 Maná máximo",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+20 Armadura",
+            "+150 Mana máximo",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "wardens_mail",
+          "nombre": "Malla del guardián",
+          "nombre_pt": "Armadura de Guarda",
+          "coste_oro": 1050,
+          "estadisticas": [
+            "+35 Armadura"
+          ],
+          "estadisticas_pt": [
+            "+35 Armadura"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Acero frío",
+              "descripcion": "Reduce un 15% la velocidad de ataque del enemigo durante 1,5 s al recibir un ataque.",
+              "nombre_pt": "Aço Frio",
+              "descripcion_pt": "Reduz em 15% a velocidade de ataque do inimigo por 1,5 s ao receber um ataque."
+            }
+          ]
+        },
+        {
+          "id": "catalyst_of_aeons",
+          "nombre": "Catalizador de eones",
+          "nombre_pt": "Catalisador das Eras",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+200 Vida máxima",
+            "+300 Maná máximo"
+          ],
+          "estadisticas_pt": [
+            "+200 Vida máxima",
+            "+300 Mana máximo"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Eternidad",
+              "descripcion": "Restaura maná equivalente a un 15% del daño recibido y regenera vida equivalente a un 20% del maná utilizado, hasta un máximo de 15 de vida por lanzamiento.",
+              "nombre_pt": "Eternidade",
+              "descripcion_pt": "Restaura mana equivalente a 15% do dano recebido e regenera vida equivalente a 20% do mana usado, até um máximo de 15 de vida por conjuração."
+            }
+          ]
+        },
+        {
+          "id": "quicksilver_sash_mid_tier",
+          "nombre": "Fajín de mercurio",
+          "nombre_pt": "Faixa de Mercúrio",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+30 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+30 Resistência mágica"
+          ],
+          "efectos": [
+            {
+              "tipo": "ACTIVA",
+              "nombre": "Fajín de mercurio",
+              "descripcion": "Elimina todas las debilitaciones de control de adversario que te hayan aplicado y otorga inmunidad contra el control de adversario durante 0,25 s. No se puede utilizar mientras te lanzan por los aires o te empujan.",
+              "nombre_pt": "Faixa de Mercúrio",
+              "descripcion_pt": "Remove todos os efeitos debilitantes de controle de grupo aplicados a você e concede imunidade a controle de grupo por 0,25 s. Não pode ser usada enquanto você estiver no ar ou sendo empurrado."
+            },
+            {
+              "tipo": "PASIVA",
+              "nombre": "Perseverancia",
+              "descripcion": "Cuando termina el efecto de Fajín, otorga un 30% de tenacidad y un 30% de resistencia a las ralentizaciones durante 1,5 s. Enfriamiento de 60 s.",
+              "nombre_pt": "Perseverança",
+              "descripcion_pt": "Quando o efeito da Faixa termina, concede 30% de tenacidade e 30% de resistência a lentidão por 1,5 s. Tempo de recarga de 60 s."
+            }
+          ]
+        },
+        {
+          "id": "spectres_cowl",
+          "nombre": "Hábito del espectro",
+          "nombre_pt": "Capuz do Espectro",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+175 Vida máxima",
+            "+20 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+175 Vida máxima",
+            "+20 Resistência mágica"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Visita espectral",
+              "descripcion": "Otorga un 150% de regeneración de vida durante 10 s al recibir daño de un campeón.",
+              "nombre_pt": "Visita Espectral",
+              "descripcion_pt": "Concede 150% de regeneração de vida por 10 s ao receber dano de um campeão."
+            }
+          ]
+        },
+        {
+          "id": "bamis_cinder",
+          "nombre": "Rescoldo de Bami",
+          "nombre_pt": "Brasa de Bami",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+250 Vida máxima",
+            "+5 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+250 Vida máxima",
+            "+5 Aceleração de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Cenizas",
+              "descripcion": "Inflige de 10 a 20 de daño mágico por segundo a enemigos cercanos. Inflige un 115% de daño a súbditos y monstruos.",
+              "nombre_pt": "Cinzas",
+              "descripcion_pt": "Causa de 10 a 20 de dano mágico por segundo a inimigos próximos. Causa 115% de dano a tropas e monstros."
+            }
+          ]
+        },
+        {
+          "id": "jaurims_fist",
+          "nombre": "Puño de Jaurim",
+          "nombre_pt": "Punho de Jaurim",
+          "coste_oro": 1200,
+          "estadisticas": [
+            "+200 Vida máxima",
+            "+15 Daño de ataque"
+          ],
+          "estadisticas_pt": [
+            "+200 Vida máxima",
+            "+15 Dano de ataque"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "seekers_armguard",
+          "nombre": "Brazalete de la buscadora",
+          "nombre_pt": "Braçadeira da Caçadora",
+          "coste_oro": 1400,
+          "estadisticas": [
+            "+20 Armadura",
+            "+35 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+20 Armadura",
+            "+35 Poder de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "ACTIVA",
+              "nombre": "Éstasis",
+              "descripcion": "Te vuelve invulnerable e inalcanzable durante 2,5 s, sin permitirte moverte, atacar ni lanzar hechizos. Enfriamiento de 150 s.",
+              "nombre_pt": "Estase",
+              "descripcion_pt": "Torna você invulnerável e inalvejável por 2,5 s, sem permitir movimento, ataques ou conjuração de feitiços. Tempo de recarga de 150 s."
+            }
+          ]
+        },
+        {
+          "id": "verdant_barrier",
+          "nombre": "Barrera frondosa",
+          "nombre_pt": "Barreira Verdejante",
+          "coste_oro": 1600,
+          "estadisticas": [
+            "+40 Poder de habilidad",
+            "+25 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+40 Poder de habilidade",
+            "+25 Resistência mágica"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Anular",
+              "descripcion": "Otorga un escudo de hechizos que bloquea la siguiente habilidad enemiga. Enfriamiento de 65 s.",
+              "nombre_pt": "Anular",
+              "descripcion_pt": "Concede um escudo de feitiço que bloqueia a próxima habilidade inimiga. Tempo de recarga de 65 s."
+            }
+          ]
+        }
+      ]
+    },
+    "APOYO": {
+      "Básico": [],
+      "Nivel Medio": [
+        {
+          "id": "forbidden_idol",
+          "nombre": "Ídolo prohibido",
+          "nombre_pt": "Ídolo Proibido",
+          "coste_oro": 700,
+          "estadisticas": [
+            "+25% Regeneración de maná",
+            "+6% Poder de curaciones y escudos"
+          ],
+          "estadisticas_pt": [
+            "+25% Regeneração de mana",
+            "+6% Poder de cura e escudo"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "blasting_wand",
+          "nombre": "Vara explosiva",
+          "nombre_pt": "Varinha Explosiva",
+          "coste_oro": 800,
+          "estadisticas": [
+            "+40 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+40 Poder de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "bandleglass_mirror",
+          "nombre": "Espejo de cristal de Bandle",
+          "nombre_pt": "Espelho de Vidro de Bandópolis",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+20 Poder de habilidad",
+            "+50% Regeneración de maná",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+20 Poder de habilidade",
+            "+50% Regeneração de mana",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "fiendish_codex",
+          "nombre": "Códice diabólico",
+          "nombre_pt": "Códex Demoníaco",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+25 Poder de habilidad",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+25 Poder de habilidade",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "oblivion_orb",
+          "nombre": "Orbe del olvido",
+          "nombre_pt": "Orbe do Oblívio",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+35 Poder de habilidad"
+          ],
+          "estadisticas_pt": [
+            "+35 Poder de habilidade"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Heridas graves",
+              "descripcion": "Infligir daño mágico aplica un 40% de heridas graves durante 3 s.",
+              "nombre_pt": "Feridas Dolorosas",
+              "descripcion_pt": "Causar dano mágico aplica 40% de Feridas Dolorosas por 3 s."
+            }
+          ]
+        },
+        {
+          "id": "chain_vest",
+          "nombre": "Chaleco de cadenas",
+          "nombre_pt": "Cota de Malha",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+40 Armadura"
+          ],
+          "estadisticas_pt": [
+            "+40 Armadura"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "negatron_cloak",
+          "nombre": "Capa negatrón",
+          "nombre_pt": "Capa Negatron",
+          "coste_oro": 900,
+          "estadisticas": [
+            "+40 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+40 Resistência mágica"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "aether_wisp",
+          "nombre": "Brisa de éter",
+          "nombre_pt": "Éter Fogo",
+          "coste_oro": 950,
+          "estadisticas": [
+            "+35 Poder de habilidad",
+            "+4% Velocidad de movimiento"
+          ],
+          "estadisticas_pt": [
+            "+35 Poder de habilidade",
+            "+4% Velocidade de movimento"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "void_amethyst",
+          "nombre": "Amatista del Vacío",
+          "nombre_pt": "Ametista do Vazio",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+20 Poder de habilidad",
+            "+10% Penetración mágica"
+          ],
+          "estadisticas_pt": [
+            "+20 Poder de habilidade",
+            "+10% Penetração mágica"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "kindlegem",
+          "nombre": "Gema avivadora",
+          "nombre_pt": "Gema Ardente",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+175 Vida máxima",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+175 Vida máxima",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "giants_belt",
+          "nombre": "Cinturón de gigante",
+          "nombre_pt": "Cinto do Gigante",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+300 Vida máxima"
+          ],
+          "estadisticas_pt": [
+            "+300 Vida máxima"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "bramble_vest",
+          "nombre": "Chaleco de zarzas",
+          "nombre_pt": "Colete Espinhoso",
+          "coste_oro": 1000,
+          "estadisticas": [],
+          "estadisticas_pt": [],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "",
+              "descripcion": "Refleja daño y reduce la curación enemiga.",
+              "nombre_pt": "",
+              "descripcion_pt": "Reflete dano e reduz a cura inimiga."
+            }
+          ],
+          "nota": "La lista proporcionada no incluye estadísticas numéricas para este objeto."
+        },
+        {
+          "id": "glacial_shroud",
+          "nombre": "Sudario glacial",
+          "nombre_pt": "Proteção Glacial",
+          "coste_oro": 1000,
+          "estadisticas": [
+            "+20 Armadura",
+            "+150 Maná máximo",
+            "+10 Velocidad de habilidades"
+          ],
+          "estadisticas_pt": [
+            "+20 Armadura",
+            "+150 Mana máximo",
+            "+10 Aceleração de habilidade"
+          ],
+          "efectos": []
+        },
+        {
+          "id": "wardens_mail",
+          "nombre": "Malla del guardián",
+          "nombre_pt": "Armadura de Guarda",
+          "coste_oro": 1050,
+          "estadisticas": [
+            "+35 Armadura"
+          ],
+          "estadisticas_pt": [
+            "+35 Armadura"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Acero frío",
+              "descripcion": "Reduce un 15% la velocidad de ataque del enemigo durante 1,5 s al recibir un ataque.",
+              "nombre_pt": "Aço Frio",
+              "descripcion_pt": "Reduz em 15% a velocidade de ataque do inimigo por 1,5 s ao receber um ataque."
+            }
+          ]
+        },
+        {
+          "id": "spectres_cowl",
+          "nombre": "Hábito del espectro",
+          "nombre_pt": "Capuz do Espectro",
+          "coste_oro": 1100,
+          "estadisticas": [
+            "+175 Vida máxima",
+            "+20 Resistencia mágica"
+          ],
+          "estadisticas_pt": [
+            "+175 Vida máxima",
+            "+20 Resistência mágica"
+          ],
+          "efectos": [
+            {
+              "tipo": "PASIVA",
+              "nombre": "Visita espectral",
+              "descripcion": "Otorga un 150% de regeneración de vida durante 10 s al recibir daño de un campeón.",
+              "nombre_pt": "Visita Espectral",
+              "descripcion_pt": "Concede 150% de regeneração de vida por 10 s ao receber dano de um campeão."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

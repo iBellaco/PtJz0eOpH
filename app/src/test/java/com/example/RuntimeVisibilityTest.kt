@@ -53,7 +53,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -139,6 +139,7 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen.startsWith("component-catalog-") -> ItemsCatalogTab()
             screen == "history-receipts" -> Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(12.dp)) {
                 listOf(
                     SubscriptionRecord(id = "blue-gift",timestamp = fixedGrantNow,planName = "Regalo de Esencias",status = "Añadido por Administrador",amount = "+100 EA",source = "ADMIN_ESSENCE_ADJUSTMENT"),
@@ -282,6 +283,26 @@ class RuntimeVisibilityTest(private val screen: String) {
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
         if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
+        if (screen.startsWith("component-catalog-")) {
+            val section = mapOf("luchador" to "Luchador","asesino" to "Asesino","tirador" to "Tirador","magico" to "Mágico","defensa" to "Defensa","apoyo" to "Apoyo").getValue(screen.removePrefix("component-catalog-"))
+            compose.onNodeWithTag("catalog_section_$section").performClick()
+            compose.onNodeWithContentDescription(appTr("Minimizar filtros")).performClick()
+            compose.onNodeWithTag("catalog_level_1").performScrollTo().performClick()
+            if (section == "Apoyo") compose.onNodeWithTag("catalog_group_${section}_Básico").assertDoesNotExist()
+            else {
+                compose.onNodeWithTag("catalog_group_${section}_Básico").assertExists()
+                val first = com.example.data.WildRiftComponentItemsData.getItems(section,"Básico").first()
+                compose.onNodeWithText(first.getLocalizedName("pt"),useUnmergedTree=true).assertExists()
+            }
+            compose.onNodeWithTag("catalog_group_${section}_Nivel Medio").assertDoesNotExist()
+            inspect("basic")
+            compose.onNodeWithTag("catalog_level_2").performScrollTo().performClick()
+            compose.onNodeWithTag("catalog_group_${section}_Nivel Medio").assertExists()
+            compose.onNodeWithTag("catalog_group_${section}_Básico").assertDoesNotExist()
+            val first = com.example.data.WildRiftComponentItemsData.getItems(section,"Nivel Medio").first()
+            compose.onNodeWithText(first.getLocalizedName("pt"),useUnmergedTree=true).assertExists()
+            inspect("medium")
+        }
         when (screen) {
             "history-receipts" -> {
                 compose.onNodeWithText("+100 EA").assertExists()
