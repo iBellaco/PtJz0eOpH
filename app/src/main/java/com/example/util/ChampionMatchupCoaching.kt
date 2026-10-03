@@ -150,7 +150,12 @@ object ChampionMatchupCoaching {
         val lane = role.getLocalizedName(lang)
         val primary = champion.skill("1")?.let { if (pt) "sua H1 (${it.getLocalizedName(lang)})" else "su H1 (${it.getLocalizedName(lang)})" }
             ?: if (pt) "sua Habilidade 1 (H1)" else "su Habilidad 1 (H1)"
-        val escape = label(champion.skill("3"), lang)
+        // H3 is not an escape for every champion: choose an actual movement/defensive tool.
+        val retreat = champion.skills.firstOrNull { it.slot in listOf("1", "2", "3") &&
+            it.matches("se desplaza", "se teletransporta", "salta hacia", "se desliza", "se vuelve invisible") }
+            ?: champion.skills.firstOrNull { it.slot in listOf("1", "2", "3") &&
+                it.matches("escudo", "inmovil", "aturd", "ralentiza", "bloquea") }
+        val escape = retreat?.let { label(it, lang) } ?: if (pt) "o posicionamento junto da cobertura aliada" else "el posicionamiento junto a la cobertura aliada"
         val ultimate = champion.skill("4")?.let { if (pt) "sua Definitiva (${it.getLocalizedName(lang)})" else "su Definitiva (${it.getLocalizedName(lang)})" }
             ?: if (pt) "sua Definitiva (H4)" else "su Definitiva (H4)"
         val danger = enemy?.let { label(it.threat(), lang) }

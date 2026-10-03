@@ -265,5 +265,7 @@
   "Proyección con tu tarifa": "Projeção com sua tarifa",
   "CPM configurado:": "CPM configurado:",
   "Guardar tarifa configurada": "Salvar tarifa configurada",
-  "Guardar tarifa": "Salvar tarifa"
+  "Guardar tarifa": "Salvar tarifa",
+  "Guardar tarifa (${0})": "Salvar tarifa (${0})",
+  "el posicionamiento junto a la cobertura aliada": "o posicionamento junto da cobertura aliada"
 }

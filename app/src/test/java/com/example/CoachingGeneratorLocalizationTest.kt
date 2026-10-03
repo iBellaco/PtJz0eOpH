@@ -43,4 +43,27 @@ class CoachingGeneratorLocalizationTest {
         assertTrue(analysis.contains("sua Definitiva (H4)"))
         assertFalse(analysis.contains("Habilidad 1"))
     }
+    @Test fun `retreat advice uses the kit instead of assuming H3 is mobility`() {
+        val immobile = Champion(id = "test", name = "Test", skills = listOf(
+            ChampionSkill(slot = "2", name = "Protección", description = "Otorga un escudo."),
+            ChampionSkill(slot = "3", name = "Explosión", description = "Inflige daño en área.")
+        ))
+        val analysis = CoachingGenerator.generateTacticalAnalysis(immobile, LaneRole.MID, "es")
+        assertTrue(analysis, analysis.contains("guarda H2 · Protección"))
+        assertFalse(analysis, analysis.contains("salida con H3"))
+    }
+
+    @Test fun `recommendations refresh when champion advice changes and keep the selected language`() {
+        val original = champion.copy(tacticalAdvice = "Usa tu control antes de comprometerte.")
+        val first = CoachingGenerator.generateTacticalAdvice(original, LaneRole.MID, "es")
+        val changed = original.copy(tacticalAdvice = "Espera al escudo rival antes del control.")
+        val second = CoachingGenerator.generateTacticalAdvice(changed, LaneRole.MID, "es")
+        assertNotEquals(first, second)
+        assertTrue(second.contains(changed.tacticalAdvice))
+        val portuguese = CoachingGenerator.generateTacticalAdvice(changed, LaneRole.MID, "pt")
+        assertTrue(portuguese.contains("Decisão Soberano"))
+        assertFalse(portuguese.contains("Decisión Soberano"))
+        assertEquals(second, CoachingGenerator.generateTacticalAdvice(changed, LaneRole.MID, "es"))
+    }
+
 }

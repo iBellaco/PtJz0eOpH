@@ -223,7 +223,7 @@ jobs:
                    'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
                    'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
                    'premium-editor', 'premium-status', 'creator-reader',
-                   'profile-admin-notifications', 'panel-notification', 'essence-plans', 'cash-redemption', 'saved-data-statistics', 'inbox-circle', 'premium-purchase', 'usdt-wallet', 'support-admin-notification', 'required-item-mercurial_scimitar', 'required-item-fiendhunter_bolts', 'required-item-kraken_slayer', 'required-item-nashor_s_tooth', 'required-item-imperial_mandate', 'required-item-terminus', 'required-item-yordle_trap', 'required-item-rabadon_s_deathcap']
+                   'profile-admin-notifications', 'panel-notification', 'essence-plans', 'cash-redemption', 'saved-data-statistics', 'storage-summary', 'matchup', 'inbox-circle', 'premium-purchase', 'usdt-wallet', 'support-admin-notification', 'required-item-mercurial_scimitar', 'required-item-fiendhunter_bolts', 'required-item-kraken_slayer', 'required-item-nashor_s_tooth', 'required-item-imperial_mandate', 'required-item-terminus', 'required-item-yordle_trap', 'required-item-rabadon_s_deathcap']
           for file in source.glob('*.png'):
               if any(file.stem.startswith(name) for name in names):
                   shutil.copy2(file, target / file.name)

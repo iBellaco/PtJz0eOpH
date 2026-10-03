@@ -47,6 +47,11 @@ def main(check=False):
     parts=[read(p) for p in paths]; champions={c['id']:c for part in parts for c in part}
     assert len(champions)==142 and len(builds)==300
     translations=read(ASSETS/'translations_pt.json')
+    phrases=read(ASSETS/'build_catalog_translations_pt.json')
+    # Remove the previous generated advice before replacing it; never leave stale bilingual variants.
+    for key in list(translations):
+        if any(key.startswith(c['name']+' · ') and ' · H1' in key for c in champions.values()):
+            del translations[key]
     by_lane={}
     for build in builds:
         champ=champions[build['championId']]
@@ -66,16 +71,16 @@ def main(check=False):
         skills={x['slot']:x for x in champ.get('skills',[])}
         skill=skills.get('1',{})
         h_es='H1'+(' · '+skill['name'] if skill.get('name') else '')
-        h_pt='H1'+(' · '+skill.get('namePt',skill.get('name','')) if skill.get('namePt',skill.get('name','')) else '')
+        h_pt='H1'+(' · '+phrases.get(skill.get('name',''),skill.get('namePt') or skill.get('name','')) if skill.get('name') else '')
         def entry(name, situational=False):
             assert name in items, (champ['id'],name)
-            item=items[name]; namept=item.get('namePt') or translations.get(name,name)
-            stats=item.get('stats',''); statspt=item.get('statsPt') or translations.get(stats,stats)
-            effect=item.get('passive','').split('\n')[0]; effectpt=item.get('passivePt','').split('\n')[0]
+            item=items[name]; namept=phrases.get(name,item.get('namePt') or translations.get(name,name))
+            stats=item.get('stats',''); statspt=phrases.get(stats,item.get('statsPt') or translations.get(stats,stats))
+            effect=item.get('passive','').split('\n')[0]; effectpt=phrases.get(effect,item.get('passivePt','').split('\n')[0])
             condition_es='Reemplaza un espacio solo si el daño o la defensa rival justifican este efecto.' if situational else 'Completa esta compra cuando puedas aprovechar su efecto en tu siguiente ventana de combate.'
             condition_pt='Substitua um espaço apenas se o dano ou a defesa rival justificarem este efeito.' if situational else 'Complete esta compra quando puder aproveitar seu efeito na próxima janela de combate.'
             es=f"{champ['name']} · {LANES[lane]} · {h_es}. {name}: {stats}. {effect} {condition_es}"
-            pt=f"{champ.get('namePt') or champ['name']} · {PT_LANES[lane]} · {h_pt}. {namept}: {statspt}. {effectpt} {condition_pt}"
+            pt=f"{translations.get(champ.get('namePt') or champ['name'],champ.get('namePt') or champ['name'])} · {PT_LANES[lane]} · {h_pt}. {namept}: {statspt}. {effectpt} {condition_pt}"
             translations[es]=pt
             return {'itemName':name,'description':es}
         build['coreItemsWithDesc']=[entry(n) for n in core]
