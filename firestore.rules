@@ -122,9 +122,9 @@ service cloud.firestore {
       }
       match /subscription_history/{id} {
         allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
-        allow create: if signedIn() && request.auth.uid == userId
+        allow create: if isAdmin() || (signedIn() && request.auth.uid == userId
           && !exists(/databases/$(database)/documents/users/$(userId)/economy_operations/$(id))
-          && request.resource.data == getAfter(/databases/$(database)/documents/users/$(userId)/economy_operations/$(id)).data.receipt;
+          && request.resource.data == getAfter(/databases/$(database)/documents/users/$(userId)/economy_operations/$(id)).data.receipt);
         allow update: if isAdmin();
         allow delete: if false;
       }

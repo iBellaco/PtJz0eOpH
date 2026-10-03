@@ -4870,7 +4870,7 @@
   "Peligrosa pero encantadoramente precoz, Annie es una pequeña maga con un inmenso poder pirománt...": "Perigosa mas maravilhosamente precoce, Annie é uma pequena maga com um imenso poder piromant...",
   "Peligrosa pero encantadoramente precoz, Annie es una pequeña maga con un inmenso poder piromántico. Incluso en los parajes montañosos al norte de Noxus es una hechicera sin precedentes. Su afinidad natural con el fuego se manifestó a temprana edad en...": "Perigosa, mas adoravelmente precoce, Annie é uma pequena maga com imenso poder piromaníaco. Mesmo isolada nas sombras das montanhas ao norte de Noxus, ela causa estranhamento com sua magia. Sua afinidade natural com o fogo já era evidente desde a...",
   "Pendiente": "Pendente",
-  "Pendiente de Aprobación": "Verificação de Aprovação",
+  "Pendiente de Aprobación": "Pendente de aprovação",
   "Pendiente de consulta": "Verificação de consulta",
   "Penetra armadura masiva (+36%) y destroza a enemigos que acumulan mucha vida adicional mediante daño porcentual.": "Penetra armadura massiva (+36%) e destrói inimigos com grande acúmulo de vida ou defesas pesadas.",
   "Penetración & Ralentización": "Penetração e Lentidão",
@@ -9781,5 +9781,15 @@
   "Ráfaga: Al infligir daño crítico, otorga un 35% de velocidad de ataque adicional durante 4 s (25 s de enfriamiento).\nHojas sangrientas: Los impactos críticos aplican un sangrado que inflige daño físico adicional durante 2 s.": "A Prática Faz o Assassino: Ao atacar, você recebe chance de acerto crítico permanente, 0,4% para campeões corpo a corpo e 0,2% para campeões de ataque à distância por ataque, até 25%.\nRajada: Ao atacar um campeão inimigo, você recebe 35% de velocidade de ataque por 6 s, tempo de recarga de 25 s. Os ataques reduzem o tempo de recarga em 1 s ou em 2 s se forem acertos críticos.",
   "+40 Daño de ataque • +30% Velocidad de ataque • +40 Poder de habilidad • +4% Velocidad de movimiento": "+40 Dano de ataque • +30% Velocidade de ataque • +40 Poder de habilidade • +4% Velocidade de movimento",
   "Electrochoque: Los ataques otorgan 5 acumulaciones de vigor adicionales.\nElectrochispa: Moverte y atacar genera un ataque con vigor que emite rayos que rebotan a 4-7 objetivos, lo que inflige 60 de daño mágico, aumenta hasta 90 de daño mágico contra súbditos y monstruos y aplica efectos de impacto al rebotar a otros objetivos.": "Eletrochoque: Os ataques concedem 5 acúmulos adicionais de energia.\nEletrofaísca: Mover-se e atacar gera um ataque energizado que dispara raios que saltam entre 4-7 alvos, causando 60 de dano mágico, aumentado para 90 de dano mágico contra tropas e monstros, e aplica efeitos de contato ao atingir outros alvos.",
-  "Magnificación: Inflige un 0-10% de daño adicional con ataques, según la distancia a la que se encuentre el enemigo, daño máximo a 550 de alcance.\nPuntería arcana: Cuando un campeón al que has infligido daño en los últimos 3 s muere, otorga 100 de alcance de ataque adicional durante 8 s.": "Ampliação: Causa 0-10% de dano adicional com ataques conforme a distância do inimigo, com dano máximo a 550 de alcance.\nPontaria Arcana: Quando um campeão ao qual você causou dano nos últimos 3 s morre, concede 100 de alcance de ataque adicional por 8 s."
+  "Magnificación: Inflige un 0-10% de daño adicional con ataques, según la distancia a la que se encuentre el enemigo, daño máximo a 550 de alcance.\nPuntería arcana: Cuando un campeón al que has infligido daño en los últimos 3 s muere, otorga 100 de alcance de ataque adicional durante 8 s.": "Ampliação: Causa 0-10% de dano adicional com ataques conforme a distância do inimigo, com dano máximo a 550 de alcance.\nPontaria Arcana: Quando um campeão ao qual você causou dano nos últimos 3 s morre, concede 100 de alcance de ataque adicional por 8 s.",
+  "Recibe USDT • Revisión manual de 24 a 72 horas": "Receba USDT • Análise manual de 24 a 72 horas",
+  "Elige tu plan y confirma antes de descontar esencias.": "Escolha seu plano e confirme antes de descontar essências.",
+  "Más tiempo, mejor valor": "Mais tempo, melhor custo-benefício",
+  "Tu próximo nivel en Coach": "Seu próximo nível no Coach",
+  "Herramientas para analizar tus partidas y personalizar tu experiencia.": "Ferramentas para analisar suas partidas e personalizar sua experiência.",
+  "Regalo de Esencias": "Presente de Essências",
+  "Ajuste de Esencias": "Ajuste de Essências",
+  "Se han acreditado": "Foram creditadas",
+  "Se han acreditado +{0} {1} a tu cuenta de Coach.": "Foram creditadas +{0} {1} na sua conta do Coach.",
+  "Se ha realizado un ajuste de {0} {1} en tu saldo por parte del equipo de administración.": "A equipe de administração realizou um ajuste de {0} {1} no seu saldo."
 }

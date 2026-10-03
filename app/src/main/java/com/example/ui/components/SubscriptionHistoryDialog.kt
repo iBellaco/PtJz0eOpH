@@ -30,6 +30,7 @@ import com.example.ui.theme.*
 import com.example.util.SubscriptionHistoryManager
 import com.example.util.tr
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.ensureActive
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,19 +44,29 @@ fun SubscriptionHistoryDialog(
     var isLoading by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
 
+    var loadJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     fun loadHistory() {
-        scope.launch {
+        loadJob?.cancel()
+        loadJob = scope.launch {
             isLoading = true
-            history = SubscriptionHistoryManager.getHistory(userId = userId, userEmail = userEmail)
+            val records = SubscriptionHistoryManager.getHistory(userId = userId, userEmail = userEmail)
+            coroutineContext.ensureActive()
+            history = records
             isLoading = false
         }
     }
 
     val targetUid = userId ?: com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
     DisposableEffect(targetUid) {
+        var previousHistory: List<Any?>? = null
         val listener = targetUid?.let { uid -> com.google.firebase.firestore.FirebaseFirestore.getInstance()
             .collection("users").document(uid).addSnapshotListener { snapshot, error ->
-                if (error == null && snapshot != null) loadHistory()
+                if (error == null && snapshot != null) {
+                    val relevant = listOf(snapshot.get("subscriptionHistory"), snapshot.get("subscriptionPlan"),
+                        snapshot.get("lastModifiedByAdmin"), (snapshot.get("privateMessages") as? List<*>)
+                            .orEmpty().filterIsInstance<Map<String, Any>>().mapNotNull(com.example.data.AccountHistoryPolicy::notificationReceipt))
+                    if (previousHistory != relevant) { previousHistory = relevant; loadHistory() }
+                }
             } }
         val recordsListener = targetUid?.let { uid -> com.google.firebase.firestore.FirebaseFirestore.getInstance()
             .collection("users").document(uid).collection("subscription_history").addSnapshotListener { _, error -> if (error == null) loadHistory() } }

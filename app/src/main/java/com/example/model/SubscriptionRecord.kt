@@ -55,7 +55,7 @@ data class SubscriptionRecord(
                 status.contains("Azul", ignoreCase = true)
 
     val isFromAdmin: Boolean
-        get() = source == "ADMIN_GIFT" || planName.contains("Admin", ignoreCase = true) ||
+        get() = source.startsWith("ADMIN_") || planName.contains("Admin", ignoreCase = true) ||
                 status.contains("Admin", ignoreCase = true) ||
                 planName.contains("Asignación Manual", ignoreCase = true) ||
                 planName.contains("Regalo Admin", ignoreCase = true)
@@ -70,8 +70,15 @@ data class SubscriptionRecord(
     companion object {
         fun fromDocument(doc: DocumentSnapshot): SubscriptionRecord? {
             return try {
-                val data = doc.data ?: return null
+                fromData(doc.id, doc.data ?: return null)
+            } catch (e: Exception) {
+                Log.w("SubscriptionRecord", "Failed to parse subscription document", e)
+                null
+            }
+        }
 
+        fun fromData(id: String, data: Map<String, Any>): SubscriptionRecord? {
+            return try {
                 // Parse timestamp with flexible support for Long, Double, Timestamp, Date, String
                 val rawTimestamp = data["timestamp"] ?: data["created_at"] ?: data["date"] ?: data["time"]
                 val timestamp: Long = when (rawTimestamp) {
@@ -107,8 +114,8 @@ data class SubscriptionRecord(
                 }
 
                 SubscriptionRecord(
-                    id = doc.id,
-                    timestamp = if (timestamp > 0L) timestamp else System.currentTimeMillis(),
+                    id = id,
+                    timestamp = timestamp,
                     durationMillis = durationMillis,
                     planName = planName.ifEmpty { "Suscripción Premium" },
                     status = status,
@@ -116,7 +123,7 @@ data class SubscriptionRecord(
                     source = data["source"] as? String ?: ""
                 )
             } catch (e: Exception) {
-                Log.w("SubscriptionRecord", "Failed to parse subscription doc ${doc.id}", e)
+                Log.w("SubscriptionRecord", "Failed to parse subscription record", e)
                 null
             }
         }

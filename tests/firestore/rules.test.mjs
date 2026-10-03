@@ -452,5 +452,20 @@ try {
     await assertFails(updateDoc(doc(db('occupied-gift-user'),'users','occupied-gift-user'),{premiumUntil:expected+86400000}));
     await assertFails(updateDoc(doc(moderator,'users','occupied-gift-user'),{premiumUntil:expected+86400000}));
   });
+
+  await test('own panel reads persist without granting roles or acknowledging another user', async () => {
+    await assertSucceeds(updateDoc(doc(user,'users/user'),{panelReadKeys:['sponsor-seen']}));
+    assert.deepEqual((await getDoc(doc(user,'users/user'))).data().panelReadKeys,['sponsor-seen']);
+    await assertFails(updateDoc(doc(other,'users/user'),{panelReadKeys:['stolen']}));
+    await assertFails(updateDoc(doc(user,'users/user'),{panelReadKeys:[],role:'admin'}));
+  });
+  await test('essence gifts save balances and receipts together and cannot be self awarded', async () => {
+    const ref=doc(admin,'users/user'), receipt={id:'actual-gift',timestamp:Date.now(),durationMillis:0,planName:'Regalo de Esencias',amount:'+25 EN',source:'ADMIN_ESSENCE_ADJUSTMENT'};
+    await assertSucceeds(runTransaction(admin,async tx=>{await tx.get(ref);tx.update(ref,{orangeEssence:25,subscriptionHistory:[receipt]});}));
+    const own=(await getDoc(doc(user,'users/user'))).data(); assert.equal(own.orangeEssence,25);assert.equal(own.subscriptionHistory[0].amount,'+25 EN');
+    await assertSucceeds(setDoc(doc(admin,'users/user/subscription_history/admin-gift'),receipt));
+    await assertFails(setDoc(doc(user,'users/user/subscription_history/self-gift'),receipt));
+    await assertFails(updateDoc(doc(user,'users/user'),{orangeEssence:50,subscriptionHistory:[receipt]}));
+  });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }

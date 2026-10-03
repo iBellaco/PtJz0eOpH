@@ -28,20 +28,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.R
-import com.example.util.SubscriptionHistoryManager
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 @Composable
 fun AdminGiveEssenceDialog(
     userUid: String,
     onDismiss: () -> Unit,
-    onSuccess: () -> Unit
+    onSuccess: () -> Unit,
+    onBalancesUpdated: (Map<String, Any>) -> Unit = {}
 ) {
+    val scope = rememberCoroutineScope()
+    var failed by remember { mutableStateOf(false) }
     var amount by remember { mutableStateOf("") }
     var selectedCurrency by remember { mutableStateOf("BLUE") } // "BLUE" or "ORANGE"
     var isAddition by remember { mutableStateOf(true) } // true: Añadir (+), false: Descontar (-)
@@ -368,6 +365,8 @@ fun AdminGiveEssenceDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                if (failed) Text(tr("No se pudo completar la operación. Comprueba tu conexión y vuelve a intentarlo."), color = Color(0xFFEF4444))
+
                 // Actions buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -382,89 +381,12 @@ fun AdminGiveEssenceDialog(
                             val parsed = amount.toLongOrNull()
                             if (parsed != null && parsed > 0) {
                                 isProcessing = true
-                                val fieldName = if (selectedCurrency == "BLUE") "blueEssence" else "orangeEssence"
-                                val currTag = if (selectedCurrency == "BLUE") "EA" else "EN"
-                                val status = if (isAddition) "Añadido por Administrador" else "Descontado por Administrador"
-
-                                val db = FirebaseFirestore.getInstance()
-                                val userDocRef = db.collection("users").document(userUid)
-
-                                userDocRef.get().addOnSuccessListener { documentSnapshot ->
-                                    val currentBlue = documentSnapshot.getLong("blueEssence") ?: 0L
-                                    val currentOrange = documentSnapshot.getLong("orangeEssence") ?: 0L
-                                    val currentBalance = if (selectedCurrency == "BLUE") currentBlue else currentOrange
-
-                                    val finalDelta = if (isAddition) {
-                                        parsed
-                                    } else {
-                                        if (currentBalance <= 0L) {
-                                            0L
-                                        } else if (currentBalance < parsed) {
-                                            -currentBalance
-                                        } else {
-                                            -parsed
-                                        }
-                                    }
-
-                                    if (finalDelta == 0L && !isAddition) {
-                                        isProcessing = false
-                                        onDismiss()
-                                        return@addOnSuccessListener
-                                    }
-
-                                    val actualDeltaText = if (finalDelta > 0) "+$finalDelta" else "$finalDelta"
-                                    val amountStr = "$actualDeltaText $currTag"
-
-                                    userDocRef.update(fieldName, FieldValue.increment(finalDelta))
-                                        .addOnSuccessListener {
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                SubscriptionHistoryManager.addRecordForUser(
-                                                    uid = userUid,
-                                                    durationMillis = 0L,
-                                                    planName = "Ajuste de Administrador",
-                                                    status = status,
-                                                    amount = amountStr
-                                                )
-                                            }
-
-                                            // Optional Inbox Notification Message
-                                            if (notifyUser && effectiveBody.isNotBlank()) {
-                                                val messageId = UUID.randomUUID().toString()
-                                                val messageData = hashMapOf<String, Any>(
-                                                    "id" to messageId,
-                                                    "title" to effectiveTitle,
-                                                    "content" to effectiveBody,
-                                                    "tag" to if (isAddition) "oferta" else "aviso", "panel" to "HISTORY",
-                                                    "timestamp" to System.currentTimeMillis(),
-                                                    "isRead" to false
-                                                )
-
-                                                userDocRef.collection("messages").document(messageId)
-                                                    .set(messageData)
-                                                    .addOnCompleteListener {
-                                                        userDocRef.set(
-                                                            hashMapOf(
-                                                                "hasUnreadMessages" to true,
-                                                                "unreadMessagesCount" to FieldValue.increment(1),
-                                                                "privateMessages" to FieldValue.arrayUnion(messageData)
-                                                            ),
-                                                            com.google.firebase.firestore.SetOptions.merge()
-                                                        ).addOnCompleteListener {
-                                                            isProcessing = false
-                                                            onSuccess()
-                                                            onDismiss()
-                                                        }
-                                                    }
-                                            } else {
-                                                isProcessing = false
-                                                onSuccess()
-                                                onDismiss()
-                                            }
-                                        }
-                                        .addOnFailureListener {
-                                            isProcessing = false
-                                        }
-                                }.addOnFailureListener {
+                                failed = false
+                                scope.launch {
+                                    runCatching { com.example.data.AdminEssenceAdjustment.apply(userUid, parsed, selectedCurrency,
+                                        isAddition, notifyUser, effectiveTitle, if (isCustomMessage) effectiveBody else null) }
+                                        .onSuccess { updated -> onBalancesUpdated(updated); onSuccess(); onDismiss() }
+                                        .onFailure { failed = true }
                                     isProcessing = false
                                 }
                             }

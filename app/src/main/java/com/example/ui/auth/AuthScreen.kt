@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.LocalActivity
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.SupportAgent
@@ -443,15 +444,13 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 // Top-Right: History button
                 com.example.ui.components.CircularPanelNotificationButton(
                     notifications.count(com.example.data.NotificationPanel.HISTORY), com.example.data.NotificationPanel.HISTORY,
-                    historyLabel, Icons.Default.Refresh) { showHistoryDialog = true }
+                    historyLabel, Icons.Default.History) { showHistoryDialog = true }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             val redemptionBalance by SubscriptionManager.orangeEssence.collectAsState()
-            if (redemptionBalance > 0) TextButton(onClick = { showRedemptionDialog = true }) {
-                Text(tr("Canjear Esencia Naranja"))
-            }
+            com.example.ui.components.OrangeEssenceRedemptionEntry(redemptionBalance) { showRedemptionDialog = true }
 
             AuthHeader(
                 title = "Perfil de Invocador",

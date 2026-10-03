@@ -33,6 +33,7 @@ import com.example.ui.theme.*
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AdminSponsorModerationDialog(
     onDismiss: () -> Unit
@@ -102,7 +103,7 @@ fun AdminSponsorModerationDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Verified, contentDescription = null, tint = HextechGold, modifier = Modifier.size(28.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
@@ -152,10 +153,9 @@ fun AdminSponsorModerationDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Filtros de navegación
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     FilterChip(
                         selected = selectedFilter == "PENDING",
@@ -233,11 +233,13 @@ fun AdminSponsorModerationDialog(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AdminSponsorNoticeItem(
     notice: AppNotice,
     onApprove: () -> Unit,
-    onReject: () -> Unit
+    onReject: () -> Unit,
+    readAction: (suspend (String) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -352,12 +354,8 @@ fun AdminSponsorNoticeItem(
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(com.example.util.tr(notice.title), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(com.example.util.tr(notice.title), modifier = Modifier.fillMaxWidth(), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 Surface(
                     shape = RoundedCornerShape(4.dp),
                     color = statusColor.copy(alpha = 0.2f)
@@ -552,13 +550,9 @@ fun AdminSponsorNoticeItem(
                 }
             } else null
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(com.example.util.tr("Patrocinador: ${if (notice.sponsorEmail.isNotBlank()) notice.sponsorEmail else "N/D"}"), color = HextechCyan, fontSize = 11.sp)
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(com.example.util.tr("Patrocinador: ${if (notice.sponsorEmail.isNotBlank()) notice.sponsorEmail else "N/D"}"), color = HextechCyan, fontSize = 11.sp, lineHeight = 16.sp, maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth())
                     Text(com.example.util.tr("Presupuesto: $${String.format(Locale.US, "%.2f", notice.budget)} USD"), color = TextSecondary, fontSize = 11.sp)
                     Text(com.example.util.tr("Duración: ${notice.durationValue} $unitLabel"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                     if (expirationStr != null) {
@@ -566,7 +560,7 @@ fun AdminSponsorNoticeItem(
                     }
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FlowRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Button(
                         onClick = { showDmDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = HextechSurfaceVariant),
@@ -582,10 +576,9 @@ fun AdminSponsorNoticeItem(
                     if (!notice.isApproved && com.example.data.PanelReadRepository.key("notice:${notice.id}") !in reads) {
                         TextButton(enabled = !readBusy, onClick = {
                             readBusy = true
-                            scope.launch { readError = runCatching { com.example.data.PanelReadRepository.acknowledge("notice:${notice.id}") }.isFailure; readBusy = false }
+                            scope.launch { readError = runCatching { if (readAction != null) readAction("notice:${notice.id}") else com.example.data.PanelReadRepository.acknowledge("notice:${notice.id}") }.isFailure; readBusy = false }
                         }) { Text(tr("Marcar como leído")) }
                     }
-                    if (readError) Text(tr("No se pudo marcar como leído. Vuelve a intentarlo."), color = DangerRed)
                     if (!notice.isApproved) {
                         Button(
                             onClick = onApprove,
@@ -609,6 +602,7 @@ fun AdminSponsorNoticeItem(
                         Text(tr("Eliminar"), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
+                if (readError) Text(tr("No se pudo marcar como leído. Vuelve a intentarlo."), color = DangerRed, modifier = Modifier.fillMaxWidth())
             }
         }
     }

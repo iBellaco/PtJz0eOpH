@@ -1,6 +1,14 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,18 +39,15 @@ fun SubscriptionPlansBottomSheet(onDismiss: () -> Unit) {
     if (selected == null) {
         ModalBottomSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = HextechDarkBg) {
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text(tr("Suscripción Premium"), style = MaterialTheme.typography.headlineSmall, color = HextechGold)
+                PremiumPlansOverview(blue, orange)
                 PanelReadControl(NotificationPanel.PLANS)
-                Text(tr("Saldo: $blue EA • $orange EN"), color = HextechCyan)
-                Text(tr("Escáner Automático del draft"), color = TextPrimary)
-                Text(tr("Historial del draft"), color = TextPrimary)
-                Text(tr("Campeones Favoritos • Temas Exclusivos • Avatares Exclusivos"), color = TextPrimary)
                 if (PremiumAccessPolicy.isLifetime(role, secondary, claim)) Text(tr("Tu acceso premium es vitalicio"), color = HextechGold)
                 else EssencePlanOptions(blue, orange, !busy) { plan, currency ->
                     operationId = java.util.UUID.randomUUID().toString(); feedback = null; selected = plan to currency
                 }
                 feedback?.let { Text(tr(it), color = HextechCyan) }
-                TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
+                Text(tr("Elige tu plan y confirma antes de descontar esencias."), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                TextButton(onClick = onDismiss, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(tr("Cerrar")) }
             }
         }
     }
@@ -67,16 +72,23 @@ fun SubscriptionPlansBottomSheet(onDismiss: () -> Unit) {
 @Composable
 fun EssencePlanOptions(blue: Long, orange: Long, enabled: Boolean = true,
     onChoose: (EssencePremiumPlan, EssenceCurrency) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         EssencePremiumPlan.entries.forEach { plan ->
-            Surface(color = HextechSurface, border = BorderStroke(1.dp, HextechGold), shape = MaterialTheme.shapes.medium) {
+            Surface(color = HextechSurface, border = BorderStroke(1.dp, if (plan == EssencePremiumPlan.ANNUAL) HextechGold else HextechCyan.copy(alpha = 0.6f)), shape = RoundedCornerShape(20.dp)) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(tr(if (plan == EssencePremiumPlan.MONTHLY) "Mensual" else "Anual"), color = HextechGold, style = MaterialTheme.typography.titleLarge)
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Icon(if (plan == EssencePremiumPlan.MONTHLY) Icons.Default.DateRange else Icons.Default.WorkspacePremium,
+                            contentDescription = null, tint = if (plan == EssencePremiumPlan.MONTHLY) HextechCyan else HextechGold)
+                        Text(tr(if (plan == EssencePremiumPlan.MONTHLY) "Mensual" else "Anual"), color = TextPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    }
+                    if (plan == EssencePremiumPlan.ANNUAL) Text(tr("Más tiempo, mejor valor"), color = HextechGold, style = MaterialTheme.typography.labelMedium)
                     Text(tr("${plan.days} días de Premium"), color = TextSecondary)
                     Button(onClick = { onChoose(plan, EssenceCurrency.BLUE) }, enabled = enabled && blue >= plan.blueCost,
-                        modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_BLUE")) { Text(tr("${plan.blueCost} Esencias Azules")) }
-                    if (orange > 0) Button(onClick = { onChoose(plan, EssenceCurrency.ORANGE) }, enabled = enabled && orange >= plan.orangeCost,
-                        modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_ORANGE")) { Text(tr("${plan.orangeCost} Esencias Naranjas")) }
+                        modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_BLUE"),
+                        shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = HextechCyan, contentColor = HextechDarkBg)) { Text(tr("${plan.blueCost} Esencias Azules")) }
+                    if (orange > 0) OutlinedButton(onClick = { onChoose(plan, EssenceCurrency.ORANGE) }, enabled = enabled && orange >= plan.orangeCost,
+                        modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_ORANGE"), shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Color(0xFFFF9E1B)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFF9E1B))) { Text(tr("${plan.orangeCost} Esencias Naranjas")) }
                     if (blue < plan.blueCost && orange < plan.orangeCost) Text(tr("Esencias insuficientes"), color = TextMuted)
                 }
             }
@@ -89,4 +101,23 @@ internal fun economyFailure(error: Throwable?): String = when {
         "No se pudo autorizar la operación. No se descontaron esencias."
     error?.message?.contains("Esencias insuficientes") == true -> "Esencias insuficientes"
     else -> "No se pudo completar la operación. Comprueba tu conexión y vuelve a intentarlo."
+}
+
+@Composable
+internal fun PremiumPlansOverview(blue: Long, orange: Long) {
+    Column(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(HextechGold.copy(alpha = 0.15f), HextechSurface)), RoundedCornerShape(24.dp))
+        .padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = HextechGold, modifier = Modifier.size(36.dp))
+        Text(tr("Tu próximo nivel en Coach"), color = HextechGold, style = MaterialTheme.typography.labelLarge)
+        Text(tr("Suscripción Premium"), color = TextPrimary, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(tr("Herramientas para analizar tus partidas y personalizar tu experiencia."), color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
+        HorizontalDivider(color = HextechGold.copy(alpha = 0.25f))
+        Text(tr("Saldo: $blue EA • $orange EN"), color = HextechCyan, style = MaterialTheme.typography.labelLarge)
+        listOf("Escáner Automático del draft", "Historial del draft", "Campeones Favoritos", "Temas Exclusivos", "Avatares Exclusivos").forEach { benefit ->
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = HextechGold, modifier = Modifier.size(18.dp))
+                Text(tr(benefit), color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
 }

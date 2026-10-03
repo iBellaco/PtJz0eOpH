@@ -13,6 +13,10 @@ android {
     localeFilters += listOf("es", "pt")
   }
 
+  // Compress all native libraries in the download; Android extracts the same
+  // binaries for the installed device. Keep every supported architecture.
+  packaging { jniLibs.useLegacyPackaging = true }
+
   namespace = "com.example"
   compileSdk = 36
 
@@ -20,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 874
-    versionName = "1.1.10.158"
+    versionCode = 875
+    versionName = "1.1.10.159"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
