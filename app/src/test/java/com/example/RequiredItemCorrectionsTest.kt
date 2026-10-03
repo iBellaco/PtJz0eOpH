@@ -30,7 +30,7 @@ class RequiredItemCorrectionsTest(private val id: String) {
         private fun expectations() = JSONObject(RequiredItemCorrectionsTest::class.java
             .getResourceAsStream("/item-corrections-158.json")!!.bufferedReader().use { it.readText() })
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun items() = expectations().keys().asSequence().map { arrayOf(it) }.toList()
+        fun items() = expectations().keys().asSequence().sorted().map { arrayOf(it) }.toList()
     }
     @get:Rule val compose = createComposeRule()
     private val context get() = RuntimeEnvironment.getApplication()
