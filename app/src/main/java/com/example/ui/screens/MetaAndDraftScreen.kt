@@ -88,6 +88,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ScrollableTabRow
@@ -138,6 +139,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -821,7 +824,7 @@ fun MetaAndDraftScreen(
                             var insertPos = allySlots.indexOfFirst { roleOrder.indexOf(it.assignedRole) > targetOrder }
                             if (insertPos < 0) insertPos = allySlots.size
                             if (allySlots.size >= 5) allySlots.removeAt(allySlots.size - 1)
-                            allySlots.add(insertPos, DraftSlot(champ, selfRole))
+                            allySlots.add(insertPos.coerceAtMost(allySlots.size), DraftSlot(champ, selfRole))
                         }
                     }
                     "ALLY" -> {
@@ -833,7 +836,7 @@ fun MetaAndDraftScreen(
                             var insertPos = allySlots.indexOfFirst { roleOrder.indexOf(it.assignedRole) > targetOrder }
                             if (insertPos < 0) insertPos = allySlots.size
                             if (allySlots.size >= 5) allySlots.removeAt(allySlots.size - 1)
-                            allySlots.add(insertPos, DraftSlot(champ, targetRole))
+                            allySlots.add(insertPos.coerceAtMost(allySlots.size), DraftSlot(champ, targetRole))
                         }
                     }
                     "ENEMY" -> {
@@ -845,7 +848,7 @@ fun MetaAndDraftScreen(
                             var insertPos = enemySlots.indexOfFirst { roleOrder.indexOf(it.assignedRole) > targetOrder }
                             if (insertPos < 0) insertPos = enemySlots.size
                             if (enemySlots.size >= 5) enemySlots.removeAt(enemySlots.size - 1)
-                            enemySlots.add(insertPos, DraftSlot(champ, targetRole))
+                            enemySlots.add(insertPos.coerceAtMost(enemySlots.size), DraftSlot(champ, targetRole))
                         }
                     }
                 }
@@ -891,6 +894,7 @@ fun ChampionsCatalogTab(
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedRoleFilter by remember { mutableStateOf<LaneRole?>(null) }
+
     var selectedTierFilter by remember { mutableStateOf<String?>(null) }
     var showOnlyFavorites by remember { mutableStateOf(false) }
     var isGridView by remember { mutableStateOf(true) }
@@ -5245,6 +5249,7 @@ private fun DraftChampionPickerSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var search by remember { mutableStateOf("") }
     var selectedRoleFilter by remember { mutableStateOf<LaneRole?>(null) }
+    val dragHandleLabel = tr("Arrastra para cerrar")
 
     val availableChamps = remember(search, alreadySelected, selectedRoleFilter, WildRiftRepository.champions.toList()) {
         val list = WildRiftRepository.champions.filter { champ ->
@@ -5276,7 +5281,12 @@ private fun DraftChampionPickerSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = HextechSurfaceVariant
+        containerColor = HextechSurfaceVariant,
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(
+                modifier = Modifier.clearAndSetSemantics { contentDescription = dragHandleLabel }
+            )
+        }
     ) {
         Column(
             modifier = Modifier
