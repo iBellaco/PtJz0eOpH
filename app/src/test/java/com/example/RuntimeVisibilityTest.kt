@@ -231,7 +231,10 @@ class RuntimeVisibilityTest(private val screen: String) {
             }.filter { it.isNotBlank() }.distinct()
         Assert.assertTrue(strings.isNotEmpty())
         File(output, "$screen-$step.json").writeText(JSONArray(strings).toString(2))
-        compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = File(output, "$screen-$step.png").path)
+        val capture = if (screen == "premium-purchase-confirm" && step == "confirmation")
+            compose.onNode(isRoot() and hasAnyDescendant(hasTestTag("premium_purchase_confirm")))
+            else compose.onAllNodes(isRoot()).onLast()
+        capture.captureRoboImage(filePath = File(output, "$screen-$step.png").path)
         val interfaceStrings = nodes.flatMap {
             val text = if (it.config.getOrNull(SemanticsProperties.TestTag) == "streamer_channel_name") emptyList()
                 else it.config.getOrNull(SemanticsProperties.Text).orEmpty().map { value -> value.text }
