@@ -3,7 +3,9 @@ package com.example.data
 import java.util.Locale
 
 object SupportConversationPolicy {
-    const val SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí."
+    // Keep the accepted wire greeting compatible; UI renders the full localized privacy notice.
+    const val LEGACY_SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí."
+    const val SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal."
     fun isSponsor(tag: String): Boolean = tag.trim().uppercase(Locale.ROOT) in setOf("PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD")
     fun ticketTag(data: Map<String, Any>, fallback: String = "SOPORTE"): String {
         val tags = listOf("tag", "type", "category").mapNotNull { (data[it] as? String)?.takeIf(String::isNotBlank) }
@@ -25,7 +27,7 @@ object SupportConversationPolicy {
         legacyReply: String = "", legacyAuthor: String = "Soporte Coach", legacyTimestamp: Long = timestamp): List<SupportMessageEntry> {
         val initial = listOf(
             SupportMessageEntry(id = "${reportId}_initial", senderName = userName, senderRole = "USER", text = text, timestampMillis = timestamp),
-            SupportMessageEntry(id = "${reportId}_system", senderName = "Sistema Coach", senderRole = "SYSTEM", text = SYSTEM_GREETING, timestampMillis = timestamp + 1, isGreeting = true)
+            SupportMessageEntry(id = "${reportId}_system", senderName = "Sistema Coach", senderRole = "SYSTEM", text = LEGACY_SYSTEM_GREETING, timestampMillis = timestamp + 1, isGreeting = true)
         )
         val answers = legacyReply.split("\n\n---\n\n").map { it.trim() }
             .filter { it.isNotBlank() && !SupportReplyManager.isDefaultGreeting(it) }

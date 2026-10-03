@@ -3,7 +3,7 @@
     <string name="support_you">Tú</string>
     <string name="support_close_conversation">Cerrar conversación</string>
     <string name="support_close_explanation">Al cerrarla, el usuario ya no podrá responder. El historial se conserva.</string>
-    <string name="support_system_greeting">Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.</string>
+    <string name="support_system_greeting">Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.</string>
     <string name="support_system_name">Sistema Coach</string>
     <string name="streamer_panel">Panel de streamer</string>
     <string name="streamer_name">Nombre del canal</string>

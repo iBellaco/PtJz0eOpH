@@ -50,10 +50,13 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
+    private var grantResult: ((Result<Map<String, Any>>) -> Unit)? = null
+    private var grantedAccount: Map<String, Any>? = null
+    private var renewed = false
     private val context get() = RuntimeEnvironment.getApplication()
     private val output = File("build/reports/portuguese-rendered").apply { mkdirs() }
 
@@ -79,16 +82,18 @@ class RuntimeVisibilityTest(private val screen: String) {
         org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
         val field = AuthManager::class.java.getDeclaredField("_isSignedIn").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
-        (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered")
+        (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered") || screen == "creator-reader"
         SubscriptionManager.userRole.value
         fun setFlow(target: Any, name: String, value: Any) {
             val variable = target.javaClass.getDeclaredField(name).apply { isAccessible = true }
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any>).value = value
         }
-        setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin")) "admin" else "free")
+        setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin") || screen == "premium-editor-grant") "admin" else "free")
         setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
         setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
+        if (screen == "creator-reader") setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
+            com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
         if (screen.startsWith("champion")) setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
             com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
         if (screen.startsWith("profile-admin")) setFlow(SubscriptionManager, "_isPremium", true)
@@ -143,6 +148,11 @@ class RuntimeVisibilityTest(private val screen: String) {
                 Mockito.`when`(user.displayName).thenReturn("Coach Teste")
                 AuthenticatedProfilePanel(user) {}
             }
+            screen == "creator-reader" -> AdminCreatorBuildsDialog {}
+            screen == "premium-status-near-expiry" -> PremiumStatusCard("premium", until = System.currentTimeMillis() + 65000L, onRenew = { renewed = true })
+            screen == "premium-editor-admin" -> UserDetailManagementDialog(mapOf("uid" to "local-admin", "role" to "admin"), {}, {}, {}, {})
+            screen == "premium-editor-grant" -> UserDetailManagementDialog(mapOf("uid" to "local-gift", "role" to "free"), {}, { grantedAccount = it }, {}, {},
+                premiumGrantAction = { _, _, complete -> grantResult = complete })
             screen.startsWith("premium-editor") -> UserDetailManagementDialog(mapOf("uid" to "local-test", "name" to "Teste",
                 "role" to if (screen == "premium-editor-secondary") "creador" else "premium",
                 "secondaryRole" to if (screen == "premium-editor-secondary") "moderador" else "",
@@ -338,6 +348,34 @@ class RuntimeVisibilityTest(private val screen: String) {
                 inspect("role-buttons")
                 compose.onNodeWithText(appTr("Panel de Soporte y Moderación")).performScrollTo().performClick()
                 compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()
+            }
+            "creator-reader" -> {
+                compose.onNodeWithTag("creator_create_build").assertDoesNotExist()
+                compose.onNodeWithText(appTr("Panel de Creador")).assertExists()
+                compose.onAllNodes(hasTestTag("creator_build_list"), useUnmergedTree = true).assertCountEquals(0)
+            }
+            "premium-editor-admin" -> {
+                compose.onNodeWithTag("premium_status_card").assertExists()
+                compose.onNodeWithText(appTr("Gestión de Suscripción Premium")).assertDoesNotExist()
+                compose.onNodeWithTag("premium_duration_+1 Día").assertDoesNotExist()
+            }
+            "premium-status-near-expiry" -> {
+                compose.onNodeWithTag("premium_remaining_time").assertExists()
+                compose.onNodeWithTag("premium_expiry_warning").assertExists()
+                compose.onNodeWithTag("premium_renew_button").performClick()
+                Assert.assertTrue(renewed)
+            }
+            "premium-editor-grant" -> {
+                compose.onNodeWithTag("premium_duration_+1 Día").performScrollTo().performClick()
+                compose.onNodeWithTag("premium_duration_+1 Día").assertIsNotEnabled()
+                compose.runOnIdle {
+                    val update = com.example.data.PremiumGrantPolicy.apply(mapOf("uid" to "local-gift", "role" to "free"), 1, true, System.currentTimeMillis(), "gift-ui")
+                    grantResult!!(Result.success(update))
+                }
+                compose.onNodeWithTag("premium_duration_+1 Día").assertIsEnabled()
+                compose.onNodeWithTag("premium_remaining_time").performScrollTo().assertExists()
+                Assert.assertEquals("premium", grantedAccount!!["role"])
+                Assert.assertEquals(1, (grantedAccount!!["subscriptionHistory"] as List<*>).size)
             }
             "premium-editor", "premium-editor-secondary" -> {
                 if (screen == "premium-editor-secondary") compose.onNodeWithText(appTr("Acceso Moderador (Vitalicio)")).performScrollTo().assertExists()

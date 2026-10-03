@@ -15,7 +15,13 @@ object RolePanelAccess {
             RolePanel.MODERATION -> "moderador" in roles
             RolePanel.STREAMER -> "streamer" in roles
             RolePanel.SPONSOR -> "patrocinador" in roles
-            RolePanel.CREATOR -> roles.any { it in setOf("moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") }
+            RolePanel.CREATOR -> roles.none { it in setOf("banned", "guest") }
         }
+    }
+
+    fun canCreateBuild(role: String, secondaryRole: String = "", adminClaim: Boolean = false): Boolean {
+        if (role == "banned") return false
+        if (isAdministrator(role, adminClaim)) return true
+        return setOf(role, secondaryRole).any { it in setOf("moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") }
     }
 }

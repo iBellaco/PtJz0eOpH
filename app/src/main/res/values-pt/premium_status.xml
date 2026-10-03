@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="premium_active_label">Premium ativo</string>
+    <string name="premium_free_label">Plano gratuito</string>
+    <string name="premium_lifetime_label">Premium vitalício do sistema</string>
+    <string name="premium_expired_label">Sua assinatura Premium expirou.</string>
+    <string name="premium_remaining_time">Tempo restante: %1$s</string>
+    <string name="premium_expiry_warning">Seu Premium está prestes a expirar. Renove para manter suas ferramentas e temas ativos.</string>
+    <string name="premium_renew_label">Renovar Premium</string>
+    <string name="support_privacy_notice">Nenhum membro da equipe pedirá informações privadas sobre sua conta de jogo ou sua vida pessoal.</string>
+</resources>

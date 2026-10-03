@@ -34,6 +34,7 @@ object SubscriptionManager {
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
 
+    private var premiumPlan = ""
     private val _premiumUntil = MutableStateFlow<Long?>(null)
     val premiumUntil: StateFlow<Long?> = _premiumUntil.asStateFlow()
 
@@ -54,6 +55,8 @@ object SubscriptionManager {
 
     private val _unreadMessagesCount = MutableStateFlow(0)
     val unreadMessagesCount: StateFlow<Int> = _unreadMessagesCount.asStateFlow()
+    private val _unreadMessageIds = MutableStateFlow<Set<String>>(emptySet())
+    val unreadMessageIds: StateFlow<Set<String>> = _unreadMessageIds.asStateFlow()
 
     private val _unreadModeratorSupportCount = MutableStateFlow(0)
     val unreadModeratorSupportCount: StateFlow<Int> = _unreadModeratorSupportCount.asStateFlow()
@@ -67,9 +70,9 @@ object SubscriptionManager {
     private var heartbeatJob: kotlinx.coroutines.Job? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    private var unreadMessagesSubcollection = 0
-    private var unreadSupportReports = 0
-    private var unreadPrivateArray = 0
+    private var unreadMessagesSubcollection = emptySet<String>()
+    private var unreadSupportReports = emptySet<String>()
+    private var unreadPrivateArray = emptySet<String>()
     private var unreadModeratorSupportReports = 0
     private var hasUnreadFromDoc = false
     private var docUnreadCount = 0
@@ -79,11 +82,14 @@ object SubscriptionManager {
         val user = auth?.currentUser
         if (user == null || AuthManager.isGuestOrUnauthenticated(user)) {
             _unreadMessagesCount.value = 0
+            _unreadMessageIds.value = emptySet()
             _unreadModeratorSupportCount.value = 0
             return
         }
 
-        val actualPersonalUnread = (unreadMessagesSubcollection + unreadSupportReports + unreadPrivateArray).coerceAtLeast(0)
+        val unique = unreadMessagesSubcollection + unreadSupportReports + unreadPrivateArray
+        val actualPersonalUnread = unique.size
+        _unreadMessageIds.value = unique
         _unreadMessagesCount.value = actualPersonalUnread
 
         if (actualPersonalUnread == 0 && (hasUnreadFromDoc || docUnreadCount > 0)) {
@@ -104,21 +110,16 @@ object SubscriptionManager {
         }
     }
 
-    fun setUnreadMessagesCount(count: Int) {
-        val clean = count.coerceAtLeast(0)
-        unreadMessagesSubcollection = clean
-        unreadSupportReports = 0
-        unreadPrivateArray = clean
-        docUnreadCount = clean
-        hasUnreadFromDoc = (clean > 0)
-        _unreadMessagesCount.value = clean
+    fun setUnreadMessageIds(ids: Set<String>) {
+        _unreadMessageIds.value = ids
+        _unreadMessagesCount.value = ids.size
     }
 
     init {
         scope.launch {
             AuthManager.isAdminClaim.collect { claim ->
                 _isPremium.value = com.example.model.PremiumAccessPolicy.isActive(_userRole.value, _premiumUntil.value,
-                    secondary = _secondaryRole.value, adminClaim = claim, banned = _isBanned.value)
+                    secondary = _secondaryRole.value, adminClaim = claim, banned = _isBanned.value, granted = com.example.model.PremiumAccessPolicy.hasGrant(premiumPlan))
             }
         }
         com.example.util.AuthManager.getAuth()?.addAuthStateListener {
@@ -137,10 +138,12 @@ object SubscriptionManager {
                 _blueEssence.value = 0L
                 _orangeEssence.value = 0L
                 _unreadMessagesCount.value = 0
+                _unreadMessageIds.value = emptySet()
+                premiumPlan = ""
                 _unreadModeratorSupportCount.value = 0
-                unreadMessagesSubcollection = 0
-                unreadSupportReports = 0
-                unreadPrivateArray = 0
+                unreadMessagesSubcollection = emptySet()
+                unreadSupportReports = emptySet()
+                unreadPrivateArray = emptySet()
                 unreadModeratorSupportReports = 0
                 hasUnreadFromDoc = false
                 docUnreadCount = 0
@@ -274,9 +277,8 @@ object SubscriptionManager {
                 .collection("messages")
                 .addSnapshotListener { snapshot, error ->
                     if (error == null && snapshot != null) {
-                        unreadMessagesSubcollection = snapshot.documents.count { doc ->
-                            doc.getBoolean("isRead") == false
-                        }
+                        unreadMessagesSubcollection = com.example.data.InboxNotificationPolicy.unreadKeys(
+                            snapshot.documents.map { it.data.orEmpty() + ("id" to it.id) })
                         recalculateUnreadCount()
                     }
                 }
@@ -284,10 +286,11 @@ object SubscriptionManager {
             supportReportsListener?.remove()
             supportReportsEmailListener?.remove()
 
-            val unreadSupportMap = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+            var unreadSupportByUid = emptySet<String>()
+            var unreadSupportByEmail = emptySet<String>()
 
             fun checkAndUpdateSupportUnread() {
-                unreadSupportReports = unreadSupportMap.values.count { it }
+                unreadSupportReports = unreadSupportByUid + unreadSupportByEmail
                 recalculateUnreadCount()
             }
 
@@ -322,9 +325,7 @@ object SubscriptionManager {
                 .whereEqualTo("userId", user.uid)
                 .addSnapshotListener { snapshot, error ->
                     if (error == null && snapshot != null) {
-                        for (doc in snapshot.documents) {
-                            unreadSupportMap[doc.id] = isReportUnreadForUser(doc)
-                        }
+                        unreadSupportByUid = snapshot.documents.filter(::isReportUnreadForUser).map { "support:${it.id}" }.toSet()
                         checkAndUpdateSupportUnread()
                     }
                 }
@@ -335,9 +336,7 @@ object SubscriptionManager {
                     .whereEqualTo("userEmail", uEmail.trim())
                     .addSnapshotListener { snapshot, error ->
                         if (error == null && snapshot != null) {
-                            for (doc in snapshot.documents) {
-                                unreadSupportMap[doc.id] = isReportUnreadForUser(doc)
-                            }
+                            unreadSupportByEmail = snapshot.documents.filter(::isReportUnreadForUser).map { "support:${it.id}" }.toSet()
                             checkAndUpdateSupportUnread()
                         }
                     }
@@ -366,7 +365,8 @@ object SubscriptionManager {
                     val avatarId = listenSnapshot.getString("avatarId") ?: "default_poro"
                     val rankBorder = listenSnapshot.getString("rankBorder") ?: "NONE"
                     val blueEs = listenSnapshot.getLong("blueEssence") ?: 0L
-                    val until = listenSnapshot.getLong("premiumUntil")
+                    val until = com.example.model.PremiumAccessPolicy.deadline(listenSnapshot.get("premiumUntil"))
+                    premiumPlan = listenSnapshot.getString("subscriptionPlan").orEmpty()
                     @Suppress("UNCHECKED_CAST")
                     val unlocked = listenSnapshot.get("unlockedAvatars") as? List<String> ?: listOf("default_poro")
 
@@ -385,13 +385,13 @@ object SubscriptionManager {
 
                     premiumExpirationJob?.cancel()
                     _isPremium.value = com.example.model.PremiumAccessPolicy.isActive(role, until,
-                        secondary = _secondaryRole.value, adminClaim = isAdminClaim, banned = banned)
+                        secondary = _secondaryRole.value, adminClaim = isAdminClaim, banned = banned, granted = com.example.model.PremiumAccessPolicy.hasGrant(premiumPlan))
                     if (until != null && until > System.currentTimeMillis() &&
                         !com.example.model.PremiumAccessPolicy.isLifetime(role, _secondaryRole.value, isAdminClaim)) {
                         premiumExpirationJob = scope.launch {
                             kotlinx.coroutines.delay((until - System.currentTimeMillis()).coerceAtLeast(1L))
                             _isPremium.value = com.example.model.PremiumAccessPolicy.isActive(_userRole.value, _premiumUntil.value,
-                                secondary = _secondaryRole.value, adminClaim = AuthManager.isAdminClaim.value, banned = _isBanned.value)
+                                secondary = _secondaryRole.value, adminClaim = AuthManager.isAdminClaim.value, banned = _isBanned.value, granted = com.example.model.PremiumAccessPolicy.hasGrant(premiumPlan))
                         }
                     }
                     _currentAvatarId.value = avatarId
@@ -403,7 +403,7 @@ object SubscriptionManager {
                     val remoteDocCount = listenSnapshot.getLong("unreadMessagesCount")?.toInt() ?: if (hasUnread) 1 else 0
                     @Suppress("UNCHECKED_CAST")
                     val privateMsgs = listenSnapshot.get("privateMessages") as? List<Map<String, Any>>
-                    val unreadInArray = privateMsgs?.count { (it["isRead"] as? Boolean) == false } ?: 0
+                    val unreadInArray = com.example.data.InboxNotificationPolicy.unreadKeys(privateMsgs.orEmpty())
 
                     hasUnreadFromDoc = hasUnread
                     docUnreadCount = remoteDocCount

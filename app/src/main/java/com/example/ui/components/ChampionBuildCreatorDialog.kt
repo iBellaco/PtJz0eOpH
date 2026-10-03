@@ -87,6 +87,8 @@ fun ChampionBuildCreatorDialog(
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsStateWithLifecycle()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsStateWithLifecycle()
     val userRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val secondaryRole by SubscriptionManager.secondaryRole.collectAsStateWithLifecycle()
+    val adminClaim by AuthManager.isAdminClaim.collectAsStateWithLifecycle()
     val authUser = remember { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser }
 
     var selectedChampion by remember {
@@ -1220,6 +1222,10 @@ fun ChampionBuildCreatorDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
+                            if (!com.example.model.RolePanelAccess.canCreateBuild(userRole, secondaryRole, adminClaim)) {
+                                Toast.makeText(context, com.example.util.appTr("Tu rol permite ver builds, pero no crearlas ni editarlas."), Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
                             val champ = selectedChampion ?: champions.firstOrNull()
                             if (champ == null) {
                                 Toast.makeText(context, com.example.util.appTr("Selecciona un campeón"), Toast.LENGTH_SHORT).show()

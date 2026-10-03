@@ -11,7 +11,8 @@ data class SubscriptionRecord(
     val durationMillis: Long = 0L,
     val planName: String = "",
     val status: String = "",
-    val amount: String = ""
+    val amount: String = "",
+    val source: String = ""
 ) {
     val isDeduction: Boolean
         get() = amount.startsWith("-") ||
@@ -54,7 +55,7 @@ data class SubscriptionRecord(
                 status.contains("Azul", ignoreCase = true)
 
     val isFromAdmin: Boolean
-        get() = planName.contains("Admin", ignoreCase = true) ||
+        get() = source == "ADMIN_GIFT" || planName.contains("Admin", ignoreCase = true) ||
                 status.contains("Admin", ignoreCase = true) ||
                 planName.contains("Asignación Manual", ignoreCase = true) ||
                 planName.contains("Regalo Admin", ignoreCase = true)
@@ -111,7 +112,8 @@ data class SubscriptionRecord(
                     durationMillis = durationMillis,
                     planName = planName.ifEmpty { "Suscripción Premium" },
                     status = status,
-                    amount = amount
+                    amount = amount,
+                    source = data["source"] as? String ?: ""
                 )
             } catch (e: Exception) {
                 Log.w("SubscriptionRecord", "Failed to parse subscription doc ${doc.id}", e)
@@ -120,4 +122,3 @@ data class SubscriptionRecord(
         }
     }
 }
-

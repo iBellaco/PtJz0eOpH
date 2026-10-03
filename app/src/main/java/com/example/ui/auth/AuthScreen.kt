@@ -220,17 +220,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
     var showSignOutConfirm by remember { mutableStateOf(false) }
     val activeProfile by com.example.data.AccountProfileManager.activeProfile.collectAsState()
 
-    val isExpiringSoon = remember(premiumUntil, isPremium, userRole) {
-        SubscriptionManager.isExpiringSoon()
-    }
-    var remainingFormatted by remember(language) { mutableStateOf(SubscriptionManager.getRemainingPremiumTimeFormatted()) }
-
-    LaunchedEffect(premiumUntil, isPremium, userRole, language) {
-        while (true) {
-            remainingFormatted = SubscriptionManager.getRemainingPremiumTimeFormatted()
-            kotlinx.coroutines.delay(1000)
-        }
-    }
 
     if (showAvatarDialog) {
         com.example.ui.components.AvatarSelectionBottomSheet(
@@ -1085,71 +1074,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            // Alerta de suscripción por vencer (si aplica)
-            if (isExpiringSoon) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(com.example.ui.theme.DangerRed.copy(alpha = 0.15f))
-                        .border(1.dp, com.example.ui.theme.DangerRed.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = com.example.ui.theme.DangerRed,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = com.example.util.tr("${tr("Suscripción por Vencer")} ($remainingFormatted)"),
-                                color = com.example.ui.theme.DangerRed,
-                                fontSize = 13.sp,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = tr("Renueva tu pase para mantener tus herramientas y temas activos."),
-                            color = com.example.ui.theme.TextSecondary,
-                            fontSize = 11.5.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        com.example.ui.components.HextechAnimatedButton(
-                            onClick = { showPlansDialog = true },
-                            backgroundColor = com.example.ui.theme.DangerRed,
-                            borderColor = com.example.ui.theme.HextechGold,
-                            glowColor = com.example.ui.theme.DangerRed,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(42.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            enableShimmer = true,
-                            enablePulse = true,
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = androidx.compose.ui.graphics.Color.White
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                tr("Renovar / Extender Suscripción"),
-                                fontSize = 12.sp,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                color = androidx.compose.ui.graphics.Color.White
-                            )
-                        }
-                    }
-                }
-            }
-
+            com.example.ui.components.PremiumStatusCard(userRole, secondaryRole, premiumUntil, adminClaim,
+                banned = SubscriptionManager.isBanned.collectAsState().value, granted = isPremium,
+                onRenew = { showPlansDialog = true })
             Spacer(modifier = Modifier.height(10.dp))
 
             // Animated button for Plans
@@ -1189,15 +1116,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
             Spacer(modifier = Modifier.height(10.dp))
 
             // Botón Creador (Panel de Usuario)
-            val creatorToastMessage = tr("Panel exclusivo para Creadores de Build oficiales (Admin, Moderador, Streamer o Creador)")
             com.example.ui.components.HextechAnimatedButton(
                 onClick = {
-                    val hasCreatorRole = com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.CREATOR, userRole, secondaryRole, adminClaim)
-                    if (hasCreatorRole) {
-                        showAdminCreatorDialog = true
-                    } else {
-                        Toast.makeText(context, com.example.util.appTr(creatorToastMessage), Toast.LENGTH_LONG).show()
-                    }
+                    showAdminCreatorDialog = true
                 },
                 backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
                     listOf(HextechGold, Color(0xFFD4AF37))

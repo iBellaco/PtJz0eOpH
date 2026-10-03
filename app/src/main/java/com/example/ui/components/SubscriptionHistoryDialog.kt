@@ -51,9 +51,15 @@ fun SubscriptionHistoryDialog(
         }
     }
 
-    LaunchedEffect(userId, userEmail) {
-        loadHistory()
+    val targetUid = userId ?: com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+    DisposableEffect(targetUid) {
+        val listener = targetUid?.let { uid -> com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            .collection("users").document(uid).addSnapshotListener { snapshot, error ->
+                if (error == null && snapshot != null) loadHistory()
+            } }
+        onDispose { listener?.remove() }
     }
+    LaunchedEffect(userId, userEmail) { loadHistory() }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -88,7 +94,7 @@ fun SubscriptionHistoryDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = com.example.util.tr("Historial de Suscripciones"),
+                                text = com.example.util.tr("Historial"),
                                 color = HextechCyan,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
