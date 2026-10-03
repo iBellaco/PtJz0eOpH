@@ -224,8 +224,22 @@ fun AdminPrivateMessageDialog(
                                             "isRead" to false
                                         )
                                         val userDocRef = db.collection("users").document(userUid)
-                                        userDocRef.collection("messages").document(messageId)
-                                            .set(messageData)
+                                        val batch = db.batch()
+                                        if (selectedTag in setOf(MessageTag.PAGO, MessageTag.SUPPORT)) {
+                                            val sender = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                                            val entry = com.example.data.SupportMessageEntry(id = "${messageId}_staff", senderName = com.example.util.SubscriptionManager.userName.value,
+                                                senderRole = "SUPPORT", text = content.trim(), timestampMillis = System.currentTimeMillis())
+                                            messageData.putAll(mapOf("reportId" to messageId, "userId" to userUid,
+                                                "userEmail" to "", "type" to if (selectedTag == MessageTag.PAGO) "PAGO" else "SOPORTE",
+                                                "tag" to if (selectedTag == MessageTag.PAGO) "PAGO" else "SOPORTE",
+                                                "description" to content.trim(), "status" to "READ", "staffRead" to true,
+                                                "staffVisible" to (selectedTag != MessageTag.PAGO), "userRead" to false,
+                                                "hasNewAdminReply" to true, "userCanReply" to true,
+                                                "conversation" to listOf(com.example.data.SupportConversationPolicy.encode(entry,sender?.uid.orEmpty()))))
+                                            batch.set(db.collection("support_reports").document(messageId), messageData)
+                                        }
+                                        batch.set(userDocRef.collection("messages").document(messageId),messageData)
+                                        batch.commit()
                                             .addOnSuccessListener {
                                                 userDocRef.update(
                                                     "hasUnreadMessages", true,
@@ -239,16 +253,8 @@ fun AdminPrivateMessageDialog(
                                                 }
                                             }
                                             .addOnFailureListener {
-                                                userDocRef.update(
-                                                    "hasUnreadMessages", true,
-                                                    "unreadMessagesCount", FieldValue.increment(1),
-                                                    "privateMessages", FieldValue.arrayUnion(messageData)
-                                                ).addOnCompleteListener {
-                                                    isProcessing = false
-                                                    Toast.makeText(context, com.example.util.appTr("¡Mensaje enviado!"), Toast.LENGTH_SHORT).show()
-                                                    onSuccess()
-                                                    onDismiss()
-                                                }
+                                                isProcessing = false
+                                                statusText = "No se pudo enviar el mensaje. Vuelve a intentarlo."
                                             }
                                     }
 

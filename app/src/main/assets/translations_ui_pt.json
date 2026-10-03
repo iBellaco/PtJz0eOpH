@@ -230,5 +230,15 @@
   "Encaje:": "Adequação:",
   "Balance de Daño Aliado (orientativo)": "Distribuição de dano aliado (estimativa)",
   "Balance de Daño Rival (orientativo)": "Distribuição de dano rival (estimativa)",
-  "La proporción cambia con la build y la partida.": "A proporção muda conforme a configuração e a partida."
+  "La proporción cambia con la build y la partida.": "A proporção muda conforme a configuração e a partida.",
+  "No se pudo enviar el mensaje. Vuelve a intentarlo.": "Não foi possível enviar a mensagem. Tente novamente.",
+  "Suscripciones premium activas": "Assinaturas premium ativas",
+  "Acceso vigente por tiempo o por función del usuario.": "Acesso ativo por prazo ou pela função do usuário.",
+  "Esencias Azules guardadas": "Essências Azuis salvas",
+  "Esencias Naranjas guardadas": "Essências Laranja salvas",
+  "Suma de los saldos actuales de todas las cuentas.": "Soma dos saldos atuais de todas as contas.",
+  "Dispositivos registrados": "Dispositivos registrados",
+  "Dispositivos diferentes que ocupan espacios en las cuentas.": "Dispositivos diferentes que ocupam espaços nas contas.",
+  "Saldos y dispositivos": "Saldos e dispositivos",
+  "Resumen de los datos de las cuentas.": "Resumo dos dados das contas."
 }

@@ -52,7 +52,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -128,6 +128,7 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen == "cash-redemption-confirm" -> CashRedemptionConfirmation(25,com.example.data.UsdtNetwork.ERC20,"0x1111111111111111111111111111111111111111",false,onConfirm={copiedSummary="confirmed"},onDismiss={copiedSummary="cancelled"})
             screen == "premium-purchase-confirm" -> SubscriptionPlansBottomSheet {}
             screen == "usdt-wallet-fields" -> UsdtWalletFields(com.example.data.UsdtNetwork.ERC20,"0x1111111111111111111111111111111111111111",true,{},{})
             screen == "support-admin-notification" -> {
@@ -248,6 +249,13 @@ class RuntimeVisibilityTest(private val screen: String) {
         if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
         when (screen) {
+            "cash-redemption-confirm" -> {
+                compose.onNodeWithText(appTr("Confirmar canje")).assertExists()
+                compose.onNodeWithTag("cash_redemption_confirm").assertIsEnabled()
+                compose.onNodeWithTag("cash_redemption_cancel").performClick()
+                Assert.assertEquals("cancelled",copiedSummary)
+            }
+
             "premium-purchase-confirm" -> {
                 compose.onNodeWithTag("premium_MONTHLY_ORANGE").performScrollTo().performClick()
                 compose.onNodeWithText(appTr("Confirmar suscripción")).assertExists()

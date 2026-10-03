@@ -38,18 +38,15 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
         onDispose { listener.remove() }
     }
     amount?.let { selected ->
-        AlertDialog(onDismissRequest = { if (!busy) amount = null }, title = { Text(tr("Confirmar canje")) },
-            text = { Column { Text(tr("Se descontarán $selected EN para recibir $selected USDT. El pago es manual y demora de 24 a 72 horas.")); Text("USDT • ${network.name}"); Text(wallet); feedback?.let { Text(tr(it), color = DangerRed) } } },
-            confirmButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("cash_redemption_confirm"), onClick = {
-                busy = true; feedback = null
-                scope.launch {
-                    val result = EssenceEconomyRepository.redeem(id, selected, network, wallet.trim())
-                    busy = false
-                    if (result.isSuccess) { amount = null; feedback = "Solicitud de canje registrada" }
-                    else feedback = economyFailure(result.exceptionOrNull())
-                }
-            }) { Text(tr(if (busy) "Procesando…" else "Confirmar")) } },
-            dismissButton = { TextButton(enabled = !busy, onClick = { amount = null; feedback = null }) { Text(tr("Cancelar")) } })
+        CashRedemptionConfirmation(selected,network,wallet,busy,feedback,onConfirm = {
+            busy = true; feedback = null
+            scope.launch {
+                val result = EssenceEconomyRepository.redeem(id, selected, network, wallet.trim())
+                busy = false
+                if (result.isSuccess) { amount = null; feedback = "Solicitud de canje registrada" }
+                else feedback = economyFailure(result.exceptionOrNull())
+            }
+        },onDismiss = { amount = null; feedback = null })
     }
     Dialog(onDismissRequest = { if (!busy) onDismiss() }) {
         Surface(color = HextechDarkBg, shape = MaterialTheme.shapes.large) {
@@ -147,4 +144,14 @@ fun UsdtWalletFields(network: UsdtNetwork, wallet: String, enabled: Boolean,
         Text(tr("Comprueba que la dirección corresponde a la red seleccionada. No envíes claves privadas ni frases de recuperación."), color = TextSecondary)
         if (wallet.isNotBlank() && !UsdtWalletPolicy.valid(network, wallet.trim())) Text(tr("Billetera USDT no válida"), color = DangerRed)
     }
+}
+
+
+@Composable
+fun CashRedemptionConfirmation(amount: Long, network: UsdtNetwork, wallet: String, busy: Boolean,
+    feedback: String? = null, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(tr("Confirmar canje")) },
+        text = { Column { Text(tr("Se descontarán $amount EN para recibir $amount USDT. El pago es manual y demora de 24 a 72 horas.")); Text("USDT • ${network.name}"); Text(wallet); feedback?.let { Text(tr(it), color = DangerRed) } } },
+        confirmButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("cash_redemption_confirm"), onClick = onConfirm) { Text(tr(if (busy) "Procesando…" else "Confirmar")) } },
+        dismissButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("cash_redemption_cancel"), onClick = onDismiss) { Text(tr("Cancelar")) } })
 }

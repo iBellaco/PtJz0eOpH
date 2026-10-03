@@ -1,6 +1,7 @@
 package com.example.data
 
 import com.google.firebase.firestore.AggregateSource
+import com.google.firebase.firestore.Source
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -24,6 +25,15 @@ object DatabaseStatisticsRepository {
             Triple("cash_redemptions", "Solicitudes de canje", "Importes solicitados, pagos manuales y devoluciones."),
             Triple("system_config", "Configuración compartida", "Avisos, canales activos, builds publicadas y preferencias generales.")
         )
+        val accountTotals = async {
+            runCatching {
+                val accounts = db.collection("users").get(Source.SERVER).await().documents.mapNotNull { it.data }
+                listOf(SavedDataStatistic("Suscripciones premium activas", "Acceso vigente por tiempo o por función del usuario.", accounts.count { com.example.model.PremiumAccessPolicy.isActiveAccount(it) }.toLong()),
+                    SavedDataStatistic("Esencias Azules guardadas", "Suma de los saldos actuales de todas las cuentas.", accounts.sumOf { (it["blueEssence"] as? Number)?.toLong() ?: 0L }),
+                    SavedDataStatistic("Esencias Naranjas guardadas", "Suma de los saldos actuales de todas las cuentas.", accounts.sumOf { (it["orangeEssence"] as? Number)?.toLong() ?: 0L }),
+                    SavedDataStatistic("Dispositivos registrados", "Dispositivos diferentes que ocupan espacios en las cuentas.", accounts.sumOf { (it["registeredDevices"] as? List<*>)?.filterIsInstance<String>()?.distinct()?.size?.toLong() ?: 0L }))
+            }.getOrElse { listOf(SavedDataStatistic("Saldos y dispositivos", "Resumen de los datos de las cuentas.", failed=true)) }
+        }
         categories.map { (path, label, description) -> async {
             runCatching { SavedDataStatistic(label, description, db.collection(path).count().get(AggregateSource.SERVER).await().count) }
                 .getOrElse { SavedDataStatistic(label, description, failed = true) }
@@ -31,6 +41,6 @@ object DatabaseStatisticsRepository {
             .map { (path, label) -> async {
                 runCatching { SavedDataStatistic(label, "Registros guardados y sincronizados entre dispositivos.", db.collectionGroup(path).count().get(AggregateSource.SERVER).await().count) }
                     .getOrElse { SavedDataStatistic(label, "Registros guardados y sincronizados entre dispositivos.", failed = true) }
-            } }.awaitAll()
+            } }.awaitAll() + accountTotals.await()
     }
 }
