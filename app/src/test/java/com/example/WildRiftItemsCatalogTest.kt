@@ -26,6 +26,8 @@ class WildRiftItemsCatalogTest {
         assertTrue(components.getItems("Apoyo","Básico").isEmpty())
         assertEquals(listOf("spectral_sickle","relic_shield"),WildRiftItemsData.getCatalogGroups("Apoyo").first { it.level == "Inicial" }.items.map { it.id })
         assertNull(WildRiftItemsData.getItemByName("objeto inexistente zzz987"))
+        assertEquals("quicksilver_sash_mid_tier", WildRiftItemsData.getItemByName("quicksilver sash")?.id)
+        assertEquals("quicksilver_sash_mid_tier", WildRiftItemsData.getItemByName("fajin de mercurio")?.id)
         assertEquals(300, WildRiftItemsData.getItemById("revelation_ring")!!.goldCost)
         val bramble = WildRiftItemsData.getItemById("bramble_vest")!!
         assertTrue(bramble.stats.isEmpty())

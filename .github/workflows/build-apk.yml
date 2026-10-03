@@ -177,6 +177,19 @@ jobs:
           python3 tools/generate-component-items.py --check
           bash tools/audit-portuguese.sh
 
+      - name: Check core regressions
+        env:
+          CI: "true"
+        run: gradle :app:testDebugUnitTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.SupportAndStreamerPolicyTest --tests com.example.WildRiftItemsCatalogTest --stacktrace --no-daemon
+
+      - name: Upload core regression results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-regression-audit
+          path: app/build/test-results/testDebugUnitTest/TEST-*.xml
+          retention-days: 14
+
       - name: Inspect rendered Portuguese screens
         env:
           CI: "true"
@@ -228,7 +241,7 @@ jobs:
           CI: "true"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          gradle :app:testDebugUnitTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.SupportAndStreamerPolicyTest --tests com.example.WildRiftItemsCatalogTest :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace --no-daemon -x lint -x lintVitalRelease
+          gradle :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace --no-daemon -x lint -x lintVitalRelease
           
           EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$EXPECTED_APK" ]; then

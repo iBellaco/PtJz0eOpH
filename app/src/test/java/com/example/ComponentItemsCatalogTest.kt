@@ -91,7 +91,7 @@ class ComponentItemsCatalogTest(private val id: String) {
             Regex("\\b(?:você|não|habilidade|dano|campeões|velocidade|adicionais|inimigos|acertos)\\b", RegexOption.IGNORE_CASE).containsMatchIn(it)
         })
         File(output, "component-item-$id-$language.json").writeText(JSONArray(visible).toString(2))
-        if (id in setOf("tear_of_the_goddess", "quicksilver_sash", "bramble_vest", "mejais_soulstealer")) {
+        if (id in setOf("tear_of_the_goddess", "quicksilver_sash_mid_tier", "bramble_vest", "mejais_soulstealer")) {
             if (passive.isNotBlank()) compose.onNodeWithText(passive, useUnmergedTree = true).performScrollTo()
             compose.onAllNodes(isRoot(), useUnmergedTree = true).onLast()
                 .captureRoboImage(filePath = File(output, "component-item-$id-$language.png").path)

@@ -152,7 +152,7 @@
           ]
         },
         {
-          "id": "quicksilver_sash",
+          "id": "quicksilver_sash_mid_tier",
           "nombre": "Fajín de mercurio",
           "nombre_pt": "Faixa de Mercúrio",
           "coste_oro": 1100,
@@ -385,7 +385,7 @@
           "efectos": []
         },
         {
-          "id": "quicksilver_sash",
+          "id": "quicksilver_sash_mid_tier",
           "nombre": "Fajín de mercurio",
           "nombre_pt": "Faixa de Mercúrio",
           "coste_oro": 1100,
@@ -613,7 +613,7 @@
           ]
         },
         {
-          "id": "quicksilver_sash",
+          "id": "quicksilver_sash_mid_tier",
           "nombre": "Fajín de mercurio",
           "nombre_pt": "Faixa de Mercúrio",
           "coste_oro": 1100,
@@ -1410,7 +1410,7 @@
           ]
         },
         {
-          "id": "quicksilver_sash",
+          "id": "quicksilver_sash_mid_tier",
           "nombre": "Fajín de mercurio",
           "nombre_pt": "Faixa de Mercúrio",
           "coste_oro": 1100,

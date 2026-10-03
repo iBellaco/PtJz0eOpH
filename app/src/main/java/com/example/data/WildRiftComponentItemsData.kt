@@ -70,7 +70,7 @@ object WildRiftComponentItemsData {
             passivePt = "Fúria: Ao contato, os ataques concedem 20 de velocidade de movimento por 2 s. O bônus não se acumula. Campeões de ataque à distância recebem metade do valor.", iconUrl = ""
         ),
         WildRiftItem(
-            id = "quicksilver_sash", name = "Fajín de mercurio", namePt = "Faixa de Mercúrio",
+            id = "quicksilver_sash_mid_tier", name = "Fajín de mercurio", namePt = "Faixa de Mercúrio",
             category = "Nivel Medio", goldCost = 1100,
             stats = "+30 Resistencia mágica",
             statsPt = "+30 Resistência mágica",
@@ -426,15 +426,15 @@ object WildRiftComponentItemsData {
     val sectionItemIds: Map<String, Map<String, List<String>>> = mapOf(
         "Luchador" to mapOf(
             "Básico" to listOf("tear_of_the_goddess", "dagger", "long_sword", "brawlers_gloves"),
-            "Nivel Medio" to listOf("pickaxe", "sheen", "executioners_calling", "phage", "quicksilver_sash", "hearthbound_axe", "vampiric_scepter", "last_whisper", "hexdrinker", "caulfields_warhammer"),
+            "Nivel Medio" to listOf("pickaxe", "sheen", "executioners_calling", "phage", "quicksilver_sash_mid_tier", "hearthbound_axe", "vampiric_scepter", "last_whisper", "hexdrinker", "caulfields_warhammer"),
         ),
         "Asesino" to mapOf(
             "Básico" to listOf("tear_of_the_goddess", "long_sword", "brawlers_gloves"),
-            "Nivel Medio" to listOf("pickaxe", "sheen", "executioners_calling", "serrated_dirk", "quicksilver_sash", "last_whisper", "caulfields_warhammer"),
+            "Nivel Medio" to listOf("pickaxe", "sheen", "executioners_calling", "serrated_dirk", "quicksilver_sash_mid_tier", "last_whisper", "caulfields_warhammer"),
         ),
         "Tirador" to mapOf(
             "Básico" to listOf("tear_of_the_goddess", "dagger", "long_sword", "brawlers_gloves"),
-            "Nivel Medio" to listOf("pickaxe", "sheen", "kircheis_shard", "executioners_calling", "recurve_bow", "quicksilver_sash", "hearthbound_axe", "vampiric_scepter", "last_whisper", "caulfields_warhammer", "noonquiver", "zeal", "bf_sword"),
+            "Nivel Medio" to listOf("pickaxe", "sheen", "kircheis_shard", "executioners_calling", "recurve_bow", "quicksilver_sash_mid_tier", "hearthbound_axe", "vampiric_scepter", "last_whisper", "caulfields_warhammer", "noonquiver", "zeal", "bf_sword"),
         ),
         "Mágico" to mapOf(
             "Básico" to listOf("revelation_ring", "tear_of_the_goddess", "ruby_crystal", "amplifying_tome"),
@@ -442,7 +442,7 @@ object WildRiftComponentItemsData {
         ),
         "Defensa" to mapOf(
             "Básico" to listOf("tear_of_the_goddess", "ruby_crystal", "cloth_armor", "null_magic_mantle"),
-            "Nivel Medio" to listOf("sheen", "chain_vest", "winged_moonplate", "negatron_cloak", "kindlegem", "giants_belt", "bramble_vest", "glacial_shroud", "wardens_mail", "catalyst_of_aeons", "quicksilver_sash", "spectres_cowl", "bamis_cinder", "jaurims_fist", "seekers_armguard", "verdant_barrier"),
+            "Nivel Medio" to listOf("sheen", "chain_vest", "winged_moonplate", "negatron_cloak", "kindlegem", "giants_belt", "bramble_vest", "glacial_shroud", "wardens_mail", "catalyst_of_aeons", "quicksilver_sash_mid_tier", "spectres_cowl", "bamis_cinder", "jaurims_fist", "seekers_armguard", "verdant_barrier"),
         ),
         "Apoyo" to mapOf(
             "Básico" to listOf(),

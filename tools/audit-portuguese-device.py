@@ -187,7 +187,7 @@ tap("Itens")
 tap("Recolher filtros")
 components = json.loads(Path('app/src/main/assets/wild_rift_component_items.json').read_text())
 component_by_id = {entry['id']: entry for groups in components['secciones'].values() for entries in groups.values() for entry in entries}
-for item_id in ['tear_of_the_goddess', 'quicksilver_sash']:
+for item_id in ['tear_of_the_goddess', 'quicksilver_sash_mid_tier']:
     expected = component_by_id[item_id]
     tap('Buscar item por nome ou estatísticas...')
     adb('shell', 'input', 'text', item_id)
@@ -264,7 +264,7 @@ for item_id in ['mercurial_scimitar', 'fiendhunter_bolts', 'kraken_slayer', 'nas
     snapshot('required-item-' + item_id + '-passive')
     back()
     tap('Cerrar')  # Clear only the catalog search field after closing the dialog.
-for item_id in ['tear_of_the_goddess', 'quicksilver_sash']:
+for item_id in ['tear_of_the_goddess', 'quicksilver_sash_mid_tier']:
     expected = component_by_id[item_id]
     tap('Buscar objeto por nombre o estadísticas...')
     adb('shell', 'input', 'text', item_id)
