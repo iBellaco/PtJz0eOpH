@@ -267,6 +267,7 @@ class RuntimeBehaviorTest {
         val report = message + mapOf("id" to "ticket", "type" to "SOPORTE")
         val mirror = message + mapOf("id" to "mirror", "reportId" to "ticket")
         assertEquals(setOf("support:ticket"), InboxNotificationPolicy.unreadKeys(listOf(report, mirror)) + setOf("support:ticket"))
+        assertEquals(setOf("support:ticket"), InboxNotificationPolicy.unreadKeys(listOf(report, message + mapOf("id" to "ticket", "tag" to "REPORTE", "adminReply" to "Resposta"))))
         assertTrue(InboxNotificationPolicy.unreadKeys(listOf(message + ("isRead" to true), message + ("deleted" to true))).isEmpty())
         assertTrue(SupportReplyManager.isDefaultGreeting(SupportConversationPolicy.SYSTEM_GREETING))
         assertTrue(SupportReplyManager.isDefaultGreeting("Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí."))

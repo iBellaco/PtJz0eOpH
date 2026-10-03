@@ -39,6 +39,7 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class, qualifiers = "w330dp-h720dp-xhdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
+@org.robolectric.annotation.SQLiteMode(org.robolectric.annotation.SQLiteMode.Mode.NATIVE)
 class HubChampionNavigationTest {
     @get:Rule val compose = createComposeRule()
 

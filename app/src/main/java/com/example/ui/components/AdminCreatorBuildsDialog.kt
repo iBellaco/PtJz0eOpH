@@ -101,7 +101,7 @@ fun AdminCreatorBuildsDialog(
     val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsStateWithLifecycle()
     val canCreate = com.example.model.RolePanelAccess.canCreateBuild(currentUserRole, secondaryRole, adminClaim)
     val isAdministrator = com.example.model.RolePanelAccess.isAdministrator(currentUserRole, adminClaim)
-    val myUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+    val myUid = com.example.util.AuthManager.getAuth()?.currentUser?.uid.orEmpty()
     val myBuildsCount = remember(customBuilds, currentUserName) {
         customBuilds.count { it.creatorName.equals(currentUserName, ignoreCase = true) }
     }

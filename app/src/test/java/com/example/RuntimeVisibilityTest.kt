@@ -42,6 +42,7 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(ParameterizedRobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class, qualifiers = "w411dp-h891dp-xxhdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
+@org.robolectric.annotation.SQLiteMode(org.robolectric.annotation.SQLiteMode.Mode.NATIVE)
 class RuntimeVisibilityTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")

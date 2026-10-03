@@ -5,7 +5,7 @@ object InboxNotificationPolicy {
     fun key(message: Map<String, Any>): String? {
         val id = (message["id"] as? String).orEmpty()
         val reportId = (message["reportId"] as? String).orEmpty()
-        val support = reportId.isNotBlank() || message["conversation"] != null ||
+        val support = FeedbackRepository.isSupportMessage(message) || reportId.isNotBlank() || message["conversation"] != null ||
             (message["type"] as? String).orEmpty().uppercase(java.util.Locale.ROOT) in setOf("SOPORTE", "SUPPORT")
         val canonical = reportId.ifBlank { id }
         return canonical.takeIf { it.isNotBlank() }?.let { (if (support) "support:" else "message:") + it }
