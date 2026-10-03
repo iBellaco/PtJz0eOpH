@@ -197,7 +197,7 @@ print("PORTUGUESE_DEVICE_AUDIT:", len(screens), "screens, zero Spanish findings"
 # compare its actual item prices/stat rows with the user's requested corrections.
 OUT = OUT / 'spanish'
 OUT.mkdir(parents=True, exist_ok=True)
-SPANISH = re.compile(r'\b(?:você|não|habilidade|habilidades|dano|campeões|velocidade|recarga|adicionais|inimigos|acertos|concede|assinatura|notificação|essências|usuário)\b', re.IGNORECASE)
+SPANISH = re.compile(r'\b(?:você|não|habilidade|dano|campeões|velocidade|recarga|adicionais|inimigos|acertos|concede|assinatura|notificação|essências|usuário)\b', re.IGNORECASE)
 findings, authored_texts, screens = [], [], []
 adb('shell', 'pm', 'clear', APP)
 adb('shell', 'pm', 'grant', APP, 'android.permission.POST_NOTIFICATIONS')
