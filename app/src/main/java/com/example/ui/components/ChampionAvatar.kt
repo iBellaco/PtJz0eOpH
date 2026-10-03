@@ -266,7 +266,7 @@ fun AppAssetImage(
     ) {
         // Initials are decorative; expose the full localized name when no image exists.
         Text(
-            modifier = Modifier.clearAndSetSemantics { if (modelData == null) contentDescription = localizedDescription },
+            modifier = Modifier.clearAndSetSemantics { if (modelData == null) this.contentDescription = localizedDescription },
             text = localizedFallback.take(2).uppercase(),
             color = borderColor.copy(alpha = 0.7f),
             fontSize = 11.sp,
