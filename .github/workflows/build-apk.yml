@@ -97,27 +97,15 @@ jobs:
           gradle-version: '9.3.1'
           cache-disabled: false
 
+      - name: Validate signing publication policy
+        run: python3 -m unittest discover -s .github/scripts -p test_prepare_debug_signing.py
+
       - name: Restore persistent debug keystore
-        run: |
-          if [ -f "./debug.keystore.base64" ]; then
-            echo "Restoring persistent debug keystore from base64..."
-            tr -d '\r\n ' < ./debug.keystore.base64 | base64 -d > ./debug.keystore || true
-          fi
-          if [ ! -s "./debug.keystore" ]; then
-            echo "Generating fallback debug keystore..."
-            keytool -genkey -v \
-              -keystore ./debug.keystore \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -dname "CN=Wild Rift Drafting,O=Coach,C=US" \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000
-          fi
-          cp ./debug.keystore ./github.keystore 2>/dev/null || true
-          mkdir -p ~/.android
-          cp ./debug.keystore ~/.android/debug.keystore 2>/dev/null || true
+        env:
+          COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
+          COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
+          COACH_REQUIRE_PERSISTENT_SIGNING: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
+        run: python3 .github/scripts/prepare-debug-signing.py
 
       - name: Create google-services.json
         run: |
