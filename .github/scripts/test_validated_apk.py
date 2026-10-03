@@ -9,7 +9,7 @@ spec.loader.exec_module(validated)
 
 class ValidatedApkTest(unittest.TestCase):
     repository = 'example/coach'
-    run = {'id': 42, 'status': 'completed', 'conclusion': 'success', 'event': 'pull_request',
+    fixture_run = {'id': 42, 'status': 'completed', 'conclusion': 'success', 'event': 'pull_request',
            'head_branch': 'pruebas', 'head_repository': {'full_name': repository}, 'head_sha': 'a' * 40}
 
     def invoke(self, changed_tree=False, failed_job=False, expired=False, run=None):
@@ -17,7 +17,7 @@ class ValidatedApkTest(unittest.TestCase):
             if '/git/commits/' in path:
                 return {'tree': {'sha': 'different' if changed_tree and path.endswith('a' * 40) else 'same'}}
             if '/workflows/' in path:
-                return {'workflow_runs': [run or self.run]}
+                return {'workflow_runs': [run or self.fixture_run]}
             if '/jobs?' in path:
                 return {'jobs': [{'name': name, 'conclusion': 'failure' if failed_job and name == 'installed-audit' else 'success'} for name in validated.REQUIRED_JOBS]}
             if '/artifacts?' in path:
@@ -41,7 +41,7 @@ class ValidatedApkTest(unittest.TestCase):
         for change in [{'status': 'in_progress'}, {'conclusion': 'failure'}, {'event': 'push'},
                        {'head_branch': 'other'}, {'head_repository': {'full_name': 'other/coach'}},
                        {'head_sha': 'invalid'}]:
-            self.assertEqual(('', ''), self.invoke(run={**self.run, **change}))
+            self.assertEqual(('', ''), self.invoke(run={**self.fixture_run, **change}))
 
 
 if __name__ == '__main__':
