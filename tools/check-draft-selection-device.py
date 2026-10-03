@@ -23,7 +23,7 @@ try:
         raise AssertionError("Champion grid entry not visible: " + name)
 
     def field(team, role):
-        title = "EQUIPE ALIADA" if team == "ally" else "EQUIPE RIVAL"
+        title = "EQUIPE ALIADA" if team == "ally" else "EQUIPE INIMIGA"
         for attempt in range(7):
             root = ET.fromstring(window())
             candidates = []
@@ -44,6 +44,7 @@ try:
                 time.sleep(0.6)
             else:
                 scroll()
+        snapshot("missing-draft-field-" + team + "-" + role)
         raise AssertionError("Draft field not visible: " + team + "/" + role)
 
     teams = {
@@ -62,6 +63,11 @@ try:
             snapshot("draft-search-" + name.replace(" ", "-"))
             champion(name)
             snapshot("draft-assigned-" + team + "-" + role)
+            assigned = app_nodes(window())
+            if any(n.get("class") == "android.widget.EditText" for n in assigned):
+                raise AssertionError("Champion picker remained open after choosing " + name)
+            if not any(name in (n.get("text"), n.get("content-desc")) for n in assigned):
+                raise AssertionError("Chosen champion did not appear in its field: " + name)
             if not adb("shell", "pidof", APP).strip():
                 raise AssertionError("Application process died after selecting " + name)
     field("ally", "TOP")
@@ -72,10 +78,18 @@ try:
     back()
     champion("Teemo")
     snapshot("draft-replaced-top")
+    (OUT / "draft-selection-summary.json").write_text(json.dumps({
+        "selected_fields": 10, "replacement": "Teemo", "application_alive": bool(adb("shell", "pidof", APP).strip()),
+        "portuguese_findings": findings,
+    }, ensure_ascii=False, indent=2))
+    if findings:
+        raise AssertionError("Spanish text remained in the Portuguese draft: " + repr(findings))
 
 finally:
     out = Path("app/build/reports/portuguese-device")
     out.mkdir(parents=True, exist_ok=True)
     logs = subprocess.run(["adb", "logcat", "-d", "-b", "crash"], capture_output=True, text=True, timeout=40)
     (out / "draft-crash-logcat.txt").write_text(logs.stdout)
+    full_logs = subprocess.run(["adb", "logcat", "-d"], capture_output=True, text=True, timeout=40)
+    (out / "draft-full-logcat.txt").write_text(full_logs.stdout)
     print(logs.stdout[-12000:], flush=True)

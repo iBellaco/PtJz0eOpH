@@ -67,7 +67,9 @@ class DraftChampionSelectionTest(private val language: String) {
 
     private fun choose(name: String) {
         compose.onNode(hasSetTextAction()).performTextInput(name)
-        compose.onNode(hasText(name) and !hasSetTextAction()).performClick()
+        // Recommendations behind the modal can contain the same champion name.
+        // Send the actual touch to the picker, rather than to the background screen.
+        compose.onNode(hasText(name) and !hasSetTextAction() and hasAnyAncestor(isDialog())).performClick()
         compose.waitForIdle()
         compose.onNode(hasSetTextAction()).assertDoesNotExist()
     }
