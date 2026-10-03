@@ -53,7 +53,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -139,6 +139,15 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen == "history-receipts" -> Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(12.dp)) {
+                listOf(
+                    SubscriptionRecord(id = "blue-gift",timestamp = fixedGrantNow,planName = "Regalo de Esencias",status = "Añadido por Administrador",amount = "+100 EA",source = "ADMIN_ESSENCE_ADJUSTMENT"),
+                    SubscriptionRecord(id = "orange-gift",timestamp = fixedGrantNow,planName = "Regalo de Esencias",status = "Añadido por Administrador",amount = "+25 EN",source = "ADMIN_ESSENCE_ADJUSTMENT"),
+                    SubscriptionRecord(id = "premium-gift",timestamp = fixedGrantNow,planName = "Suscripción Premium regalada",status = "Completado",amount = "Regalo",source = "ADMIN_GIFT",durationMillis = 30L*86400000),
+                    SubscriptionRecord(id = "monthly",timestamp = fixedGrantNow,planName = "Suscripción Premium mensual",status = "Completado",amount = "-9 EN",source = "ESSENCE_PURCHASE",durationMillis = 30L*86400000),
+                    SubscriptionRecord(id = "payment",timestamp = fixedGrantNow,planName = "Canje de Esencia Naranja",status = "Pendiente",amount = "-25 EN",source = "CASH_REDEMPTION")
+                ).forEach { SubscriptionHistoryItem(it) }
+            }
             screen.startsWith("sponsor-layout") || screen == "sponsor-read-retry" -> Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(12.dp)) {
                 AdminSponsorNoticeItem(com.example.data.AppNotice(id = "local-sponsor", title = "Teste de anúncio", content = "Conteúdo do anúncio",
                     sponsorEmail = "barbachavezdiego@example.invalid", isApproved = false, budget = 25.0, durationValue = 3), {}, {},
@@ -274,8 +283,15 @@ class RuntimeVisibilityTest(private val screen: String) {
         if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
         when (screen) {
+            "history-receipts" -> {
+                compose.onNodeWithText("+100 EA").assertExists()
+                compose.onNodeWithText("-25 EN").performScrollTo().assertIsDisplayed()
+                inspect("cash")
+                compose.onNodeWithText("+100 EA").performScrollTo()
+            }
             "sponsor-layout-small", "sponsor-layout-large" -> {
                 val email = compose.onNodeWithText(appTr("Patrocinador: barbachavezdiego@example.invalid")).performScrollTo().fetchSemanticsNode().boundsInRoot
+                inspect("email")
                 Assert.assertTrue("Sponsor email must retain usable width", email.width > context.resources.displayMetrics.density * 170)
                 Assert.assertTrue("No one-letter column", email.height < context.resources.displayMetrics.density * 100)
                 compose.onNodeWithText(appTr("Marcar como leído")).performScrollTo().assertIsDisplayed()
@@ -294,7 +310,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText(appTr("ASPIRANTE")).assertExists()
             }
             "managed-user-balance-live" -> {
-                compose.onNodeWithTag("managed_user_blue_balance").performScrollTo().assertTextEquals("1 EA")
+                compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_user_blue_balance"))
+                compose.onNodeWithTag("managed_user_blue_balance").assertTextEquals("1 EA")
                 FirebaseFirestore.getInstance().collection("users").document("local-managed").update(mapOf("blueEssence" to 35L, "orangeEssence" to 10L))
                 compose.waitUntil(10000) { compose.onNodeWithTag("managed_user_blue_balance").fetchSemanticsNode().config[SemanticsProperties.Text].first().text == "35 EA" }
                 compose.onNodeWithTag("managed_user_orange_balance").assertTextEquals("10 EN")
@@ -302,7 +319,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.waitUntil(10000) { compose.onNodeWithTag("managed_user_blue_balance").fetchSemanticsNode().config[SemanticsProperties.Text].first().text == "5 EA" }
             }
             "history-circle-notification" -> {
-                compose.onNodeWithTag("panel_notification_badge_HISTORY",useUnmergedTree = true).assertTextEquals("3")
+                compose.onNodeWithTag("panel_notification_badge_HISTORY",useUnmergedTree = true).onChildren().onFirst().assertTextEquals("3")
                 compose.onNodeWithTag("panel_notification_icon_HISTORY",useUnmergedTree = true).assertExists()
             }
             "redemption-entry-visible" -> {

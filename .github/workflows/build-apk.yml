@@ -203,7 +203,7 @@ jobs:
               shutil.copy2(file, target / file.name)
           for file in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml'):
               shutil.copy2(file, target / file.name)
-          names = ['sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
+          names = ['sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
                    'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
                    'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
                    'premium-editor', 'premium-status', 'creator-reader',

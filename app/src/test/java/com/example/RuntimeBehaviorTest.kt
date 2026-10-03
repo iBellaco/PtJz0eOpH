@@ -486,4 +486,13 @@ class RuntimeBehaviorTest {
         }
     }
 
+    @Test fun `read markers accept a newer real mirror and reject an unseen notification`() {
+        val old = mapOf<String, Any>("id" to "notice", "timestamp" to 10L, "isRead" to false)
+        val current = old + ("timestamp" to 20L)
+        val unseen = current + ("timestamp" to 30L)
+        assertTrue(com.example.data.UserMessageReadRepository.canAcknowledge(listOf(old,current),current))
+        assertFalse(com.example.data.UserMessageReadRepository.canAcknowledge(listOf(old,current,unseen),current))
+        assertFalse(com.example.data.UserMessageReadRepository.canAcknowledge(emptyList(),current))
+    }
+
 }

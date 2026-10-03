@@ -70,7 +70,7 @@ data class SubscriptionRecord(
     companion object {
         fun fromDocument(doc: DocumentSnapshot): SubscriptionRecord? {
             return try {
-                return fromData(doc.id, doc.data ?: return null)
+                fromData(doc.id, doc.data ?: return null)
             } catch (e: Exception) {
                 Log.w("SubscriptionRecord", "Failed to parse subscription document", e)
                 null

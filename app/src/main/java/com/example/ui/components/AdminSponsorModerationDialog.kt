@@ -354,12 +354,8 @@ fun AdminSponsorNoticeItem(
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(com.example.util.tr(notice.title), modifier = Modifier.weight(1f), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(com.example.util.tr(notice.title), modifier = Modifier.fillMaxWidth(), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 Surface(
                     shape = RoundedCornerShape(4.dp),
                     color = statusColor.copy(alpha = 0.2f)
@@ -556,7 +552,7 @@ fun AdminSponsorNoticeItem(
 
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(com.example.util.tr("Patrocinador: ${if (notice.sponsorEmail.isNotBlank()) notice.sponsorEmail else "N/D"}"), color = HextechCyan, fontSize = 11.sp)
+                    Text(com.example.util.tr("Patrocinador: ${if (notice.sponsorEmail.isNotBlank()) notice.sponsorEmail else "N/D"}"), color = HextechCyan, fontSize = 11.sp, lineHeight = 16.sp, maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth())
                     Text(com.example.util.tr("Presupuesto: $${String.format(Locale.US, "%.2f", notice.budget)} USD"), color = TextSecondary, fontSize = 11.sp)
                     Text(com.example.util.tr("Duración: ${notice.durationValue} $unitLabel"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                     if (expirationStr != null) {
