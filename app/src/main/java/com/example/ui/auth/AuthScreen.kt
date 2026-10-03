@@ -190,7 +190,9 @@ fun AuthFlowContainer(
 }
 
 @Composable
-fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSignOut: () -> Unit) {
+fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
+    panelNotifications: com.example.data.PanelNotificationState? = null, onSignOut: () -> Unit) {
+    val notifications = panelNotifications ?: com.example.ui.components.userPanelNotificationSummary()
     val context = LocalContext.current
     val language = com.example.util.currentAppLanguage()
     val activeTheme = AppThemeManager.currentTheme
@@ -330,49 +332,15 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Top-Left: Inbox button
-                val unreadCount by SubscriptionManager.unreadMessagesCount.collectAsState()
-                val infiniteTransition = rememberInfiniteTransition(label = "inboxBtnAnim")
-                val scaleAnim by infiniteTransition.animateFloat(
-                    initialValue = 0.94f,
-                    targetValue = 1.06f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(durationMillis = 900, easing = FastOutSlowInEasing),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "inboxScale"
-                )
                 com.example.ui.components.HextechAnimatedIconButton(
-                    onClick = { showInboxDialog = true },
-                    size = 40.dp,
-                    backgroundColor = activeTheme.surfaceVariant,
-                    borderColor = if (unreadCount > 0) com.example.ui.theme.HextechGold else activeTheme.cardBorder,
-                    glowColor = if (unreadCount > 0) com.example.ui.theme.HextechGold else activeTheme.primary,
-                    enablePulse = unreadCount > 0,
-                    modifier = if (unreadCount > 0) {
-                        Modifier.graphicsLayer {
-                            scaleX = scaleAnim
-                            scaleY = scaleAnim
-                        }
-                    } else Modifier
+                    onClick = { showInboxDialog = true }, size = 40.dp,
+                    backgroundColor = activeTheme.surfaceVariant, borderColor = activeTheme.cardBorder,
+                    glowColor = activeTheme.primary
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = if (unreadCount > 0) Icons.Default.MarkEmailUnread else Icons.Default.Message,
-                            contentDescription = tr("Bandeja de Entrada"),
-                            tint = if (unreadCount > 0) com.example.ui.theme.HextechGold else activeTheme.secondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        if (unreadCount > 0) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .align(Alignment.TopEnd)
-                                    .clip(CircleShape)
-                                    .background(DangerRed)
-                                    .border(1.dp, activeTheme.surfaceVariant, CircleShape)
-                            )
-                        }
-                    }
+                    if (notifications.count(com.example.data.NotificationPanel.INBOX) > 0) {
+                        com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.INBOX), com.example.data.NotificationPanel.INBOX)
+                    } else Icon(Icons.Default.Message, contentDescription = tr("Bandeja de Entrada"),
+                        tint = activeTheme.secondary, modifier = Modifier.size(18.dp))
                 }
 
                 // Top-Center: Blue Essence & Orange Essence side-by-side badges
@@ -474,18 +442,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
 
                 // Top-Right: History button
                 com.example.ui.components.HextechAnimatedIconButton(
-                    onClick = { showHistoryDialog = true },
-                    size = 40.dp,
-                    backgroundColor = activeTheme.surfaceVariant,
-                    borderColor = activeTheme.cardBorder,
+                    onClick = { showHistoryDialog = true }, size = 40.dp,
+                    backgroundColor = activeTheme.surfaceVariant, borderColor = activeTheme.cardBorder,
                     glowColor = activeTheme.secondary
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = tr("Historial"),
-                        tint = activeTheme.textSecondary,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    if (notifications.count(com.example.data.NotificationPanel.HISTORY) > 0) {
+                        com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.HISTORY), com.example.data.NotificationPanel.HISTORY)
+                    } else Icon(Icons.Default.Refresh, contentDescription = tr("Historial"),
+                        tint = activeTheme.textSecondary, modifier = Modifier.size(18.dp))
                 }
             }
 
@@ -1106,11 +1070,15 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = com.example.util.tr(if (isPremium) tr("Planes / Pase") else tr("Ver Planes Pro")),
+                    modifier = Modifier.weight(1f, fill = false),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     color = activeTheme.primary,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
                     fontSize = 13.sp,
                     maxLines = 1
                 )
+                Spacer(Modifier.width(8.dp))
+                com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.PLANS), com.example.data.NotificationPanel.PLANS)
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -1141,10 +1109,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = tr("Creador"),
+                    modifier = Modifier.weight(1f, fill = false),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     color = HextechDarkBg,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp
                 )
+                Spacer(Modifier.width(8.dp))
+                com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.CREATOR), com.example.data.NotificationPanel.CREATOR)
             }
 
             if (showHistoryDialog) {
@@ -1167,7 +1139,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 ) {
                     Icon(Icons.Default.Videocam, contentDescription = null, tint = Color.White)
                     Spacer(Modifier.width(8.dp))
-                    Text(com.example.util.localizedString(com.example.R.string.streamer_panel), color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(com.example.util.localizedString(com.example.R.string.streamer_panel), modifier = Modifier.weight(1f, fill = false), textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = Color.White, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.width(8.dp))
+                    com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.STREAMER), com.example.data.NotificationPanel.STREAMER)
                 }
                 Spacer(Modifier.height(10.dp))
             }
@@ -1196,25 +1170,24 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = tr("Panel de Administración"),
+                    modifier = Modifier.weight(1f, fill = false),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         color = Color.White,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                     )
+                    Spacer(Modifier.width(8.dp))
+                    com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.ADMINISTRATION), com.example.data.NotificationPanel.ADMINISTRATION)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // Panel de Moderador / Patrocinios (Solo para Administradores)
-                val allNoticesForSponsor by com.example.data.AppNoticeManager.notices.collectAsState()
-                val hasPendingSponsorsForAuth = remember(allNoticesForSponsor) {
-                    allNoticesForSponsor.any { (it.tag.equals("Publicidad", true) || it.sponsorEmail.isNotBlank()) && !it.isApproved }
-                }
-
                 com.example.ui.components.HextechAnimatedButton(
                     onClick = { showSponsorModerationDialog = true },
                     backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        if (hasPendingSponsorsForAuth) listOf(Color(0xFFEF4444), Color(0xFFB91C1C)) else listOf(Color(0xFFF97316), Color(0xFFEA580C))
+                        listOf(Color(0xFFF97316), Color(0xFFEA580C))
                     ),
-                    borderColor = if (hasPendingSponsorsForAuth) Color(0xFFFFD700) else com.example.ui.theme.HextechGold,
-                    glowColor = if (hasPendingSponsorsForAuth) Color(0xFFFF4500) else Color(0xFFF97316),
+                    borderColor = com.example.ui.theme.HextechGold,
+                    glowColor = Color(0xFFF97316),
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 52.dp),
@@ -1222,23 +1195,16 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     enableShimmer = true,
                     enablePulse = true
                 ) {
-                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center) {
-                            Icon(Icons.Default.Verified, contentDescription = null, tint = Color.White,
-                                modifier = Modifier.size(24.dp).testTag("moderator_panel_icon"))
-                            Text(text = tr("Panel de Moderador"),
-                                modifier = Modifier.padding(start = 8.dp).weight(1f, fill = false).testTag("moderator_panel_title"),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                color = Color.White, fontWeight = FontWeight.Bold)
-                        }
-                        if (hasPendingSponsorsForAuth) Row(verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Badge(containerColor = Color.White, contentColor = Color.Red) { Text("!") }
-                            Text(com.example.util.localizedString(com.example.R.string.moderator_pending_request),
-                                color = Color.White, fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                        }
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center) {
+                        Icon(Icons.Default.Verified, contentDescription = null, tint = Color.White,
+                            modifier = Modifier.size(24.dp).testTag("moderator_panel_icon"))
+                        Text(text = tr("Panel de Moderador"),
+                            modifier = Modifier.padding(start = 8.dp).weight(1f, fill = false).testTag("moderator_panel_title"),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            color = Color.White, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.width(8.dp))
+                        com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.SPONSOR_MODERATION), com.example.data.NotificationPanel.SPONSOR_MODERATION)
                     }
                 }
             }
@@ -1268,9 +1234,13 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = tr("Panel de Soporte y Moderación"),
+                    modifier = Modifier.weight(1f, fill = false),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         color = Color.White,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                     )
+                    Spacer(Modifier.width(8.dp))
+                    com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.SUPPORT), com.example.data.NotificationPanel.SUPPORT)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -1292,7 +1262,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser, onSig
                 ) {
                     Icon(Icons.Default.Campaign, contentDescription = null, tint = Color.White)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(tr("Panel de Patrocinador"), color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(tr("Panel de Patrocinador"), modifier = Modifier.weight(1f, fill = false), textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = Color.White, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.width(8.dp))
+                    com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.SPONSOR), com.example.data.NotificationPanel.SPONSOR)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }

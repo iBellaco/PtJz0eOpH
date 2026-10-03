@@ -11,58 +11,61 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import com.example.util.tr
 
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.*
-import com.example.model.RolePanel
 import com.example.model.RolePanelAccess
 import com.example.util.AuthManager
 import com.example.util.SubscriptionManager
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
-/** Observe only queues authorized for this account; listeners are removed on role/session changes. */
+/** One shared queue subscription supplies both navigation and the individual panel buttons. */
 @Composable
-fun userPanelNotificationCount(): Int {
-    val unreadIds by SubscriptionManager.unreadMessageIds.collectAsStateWithLifecycle()
+fun userPanelNotificationSummary(): PanelNotificationState {
+    val unread by SubscriptionManager.unreadMessageIds.collectAsStateWithLifecycle()
+    val routes by SubscriptionManager.unreadMessageRoutes.collectAsStateWithLifecycle()
+    val uid by SubscriptionManager.currentUserUid.collectAsStateWithLifecycle()
     val role by SubscriptionManager.userRole.collectAsStateWithLifecycle()
     val secondary by SubscriptionManager.secondaryRole.collectAsStateWithLifecycle()
-    val adminClaim by AuthManager.isAdminClaim.collectAsStateWithLifecycle()
+    val claim by AuthManager.isAdminClaim.collectAsStateWithLifecycle()
     val signedIn by AuthManager.isSignedIn.collectAsStateWithLifecycle()
     val notices by AppNoticeManager.notices.collectAsStateWithLifecycle()
-    val uid = if (signedIn) FirebaseAuth.getInstance().currentUser?.uid.orEmpty() else ""
-    var queues by remember(uid, role, secondary, adminClaim) { mutableStateOf<Map<String, Set<String>>>(emptyMap()) }
-    val admin = RolePanelAccess.isAdministrator(role, adminClaim)
-    DisposableEffect(uid, role, secondary, adminClaim) {
-        val listeners = mutableListOf<com.google.firebase.firestore.ListenerRegistration>()
-        if (uid.isNotBlank()) {
-            val db = FirebaseFirestore.getInstance()
-            if (RolePanelAccess.canOpen(RolePanel.MODERATION, role, secondary, adminClaim)) {
-                val query = if (admin) db.collection("support_reports") else db.collection("support_reports").whereEqualTo("staffVisible", true)
-                listeners += query.addSnapshotListener { snapshot, error ->
-                    queues = queues + ("support" to if (error == null) snapshot?.documents.orEmpty().filter { doc ->
-                        val data = doc.data.orEmpty()
-                        UserPanelNotificationPolicy.staffNeedsAttention(data, admin) && data["userId"] != uid
-                    }.map { "support:${it.id}" }.toSet() else emptySet())
-                }
-            }
-            if (admin) {
-                listeners += db.collection("moderator_requests").whereEqualTo("status", "PENDIENTE").addSnapshotListener { snapshot, error ->
-                    queues = queues + ("roles" to if (error == null) snapshot?.documents.orEmpty().map { "support:${it.id}" }.toSet() else emptySet())
-                }
-                listeners += StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, error ->
-                    queues = queues + ("streamers" to if (error == null) snapshot?.documents.orEmpty()
-                        .filterNot { StreamerPublicationPolicy.isExpired(it.data.orEmpty()) }.map { "streamer:${it.id}" }.toSet() else emptySet())
-                }
-            }
-        }
-        onDispose { listeners.forEach { it.remove() } }
+    val queues by PanelNotificationStore.queues.collectAsStateWithLifecycle()
+    val key = remember(uid, signedIn, role, secondary, claim) { PanelNotificationStore.Key(if (signedIn) uid else "", role, secondary, claim) }
+    DisposableEffect(key) {
+        PanelNotificationStore.acquire(key)
+        onDispose { PanelNotificationStore.release(key) }
     }
-    if (uid.isBlank()) return 0
-    val pendingAds = if (admin) notices.filter { !it.isApproved }.map { "notice:${it.id}" } else emptyList()
-    return (unreadIds + queues.values.flatten() + pendingAds).size
+    if (key.uid.isBlank()) return PanelNotificationState()
+    val sponsors = if (RolePanelAccess.isAdministrator(role, claim)) notices.filter {
+        (it.tag.equals("Publicidad", true) || it.sponsorEmail.isNotBlank()) && !it.isApproved
+    }.map { "notice:${it.id}" }.toSet() else emptySet()
+    return PanelNotificationPolicy.combine(unread, routes, queues, sponsors)
+}
+
+@Composable
+fun userPanelNotificationCount(): Int = userPanelNotificationSummary().total
+
+/** The same animated red bell and counter is used on every panel. */
+@Composable
+fun PanelNotificationBadge(count: Int, panel: NotificationPanel) {
+    if (count <= 0) return
+    val transition = rememberInfiniteTransition(label = "panelBellPulse")
+    val scale by transition.animateFloat(0.90f, 1.15f,
+        infiniteRepeatable(tween(600, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "panelBellScale")
+    val description = com.example.util.localizedString(com.example.R.string.panel_pending_notifications, count)
+    androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp),
+        modifier = Modifier.testTag("panel_notification_badge_${panel.name}").semantics {
+            contentDescription = description
+        }) {
+        Icon(Icons.Default.Notifications, contentDescription = null, tint = com.example.ui.theme.DangerRed,
+            modifier = Modifier.size(16.dp).testTag("panel_notification_icon_${panel.name}").graphicsLayer { scaleX = scale; scaleY = scale })
+        Badge(containerColor = com.example.ui.theme.DangerRed, contentColor = Color.White) { Text(count.toString()) }
+    }
 }
 
 /** Same bell pulse as the inbox, including draw-layer scaling without layout churn. */

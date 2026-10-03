@@ -292,15 +292,35 @@ try {
     const gift={id:'gift-one',timestamp,durationMillis:86400000,source:'ADMIN_GIFT',amount:'Regalo'};
     await assertSucceeds(runTransaction(admin, async transaction => {
       const account=await transaction.get(ref);
-      transaction.update(ref,{role:'premium',premiumUntil:timestamp+86400000,subscriptionPlan:'ADMIN_GIFT',lastModifiedByAdmin:timestamp,subscriptionHistory:[...(account.data().subscriptionHistory||[]),gift]});
+      transaction.update(ref,{premiumUntil:timestamp+86400000,subscriptionPlan:'ADMIN_GIFT',lastModifiedByAdmin:timestamp,subscriptionHistory:[...(account.data().subscriptionHistory||[]),gift]});
     }));
     const own=db('gift-user'), data=(await assertSucceeds(getDoc(doc(own,'users','gift-user')))).data();
-    assert.equal(data.role,'premium'); assert.equal(data.subscriptionHistory.length,1);
+    assert.equal(data.role,'free'); assert.equal(data.subscriptionHistory.length,1);
     await assertFails(updateDoc(doc(own,'users','gift-user'),{subscriptionHistory:[]}));
     await assertFails(updateDoc(doc(own,'users','gift-user'),{subscriptionPlan:'Admin Grant (100 days)',premiumUntil:timestamp+8640000000}));
     await assertFails(updateDoc(doc(moderator,'users','gift-user'),{subscriptionHistory:[]}));
     await assertSucceeds(updateDoc(ref,{subscriptionHistory:[gift,{...gift,id:'gift-two'}]}));
     assert.equal((await getDoc(doc(own,'users','gift-user'))).data().subscriptionHistory.length,2);
+  });
+  await test('timed Premium extensions preserve two occupied roles and owners cannot grant themselves time', async () => {
+    const inherited=Date.parse('2030-11-18T19:27:00Z'), ref=doc(admin,'users','occupied-gift-user');
+    await env.withSecurityRulesDisabled(async context => setDoc(doc(context.firestore(),'users','occupied-gift-user'),
+      {role:'creador',secondaryRole:'streamer',premiumUntil:inherited,registeredDevices:[]}));
+    let expected=inherited;
+    for (const days of [1,7,30,90,365]) {
+      const timestamp=Date.now(), gift={id:`duration-${days}`,timestamp,durationMillis:days*86400000,source:'ADMIN_GIFT'};
+      await assertSucceeds(runTransaction(admin, async transaction => {
+        const data=(await transaction.get(ref)).data();
+        transaction.update(ref,{premiumUntil:data.premiumUntil+days*86400000,subscriptionPlan:'ADMIN_GIFT',
+          lastModifiedByAdmin:timestamp,subscriptionHistory:[...(data.subscriptionHistory||[]),gift]});
+      }));
+      expected+=days*86400000;
+      const data=(await getDoc(ref)).data();
+      assert.equal(data.premiumUntil,expected); assert.equal(data.role,'creador'); assert.equal(data.secondaryRole,'streamer');
+    }
+    assert.equal((await getDoc(ref)).data().subscriptionHistory.length,5);
+    await assertFails(updateDoc(doc(db('occupied-gift-user'),'users','occupied-gift-user'),{premiumUntil:expected+86400000}));
+    await assertFails(updateDoc(doc(moderator,'users','occupied-gift-user'),{premiumUntil:expected+86400000}));
   });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }

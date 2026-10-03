@@ -103,7 +103,7 @@ object StreamerRepository {
             transaction.set(db.collection("users").document(uid).collection("messages").document(messageId),
                 mapOf("id" to messageId, "title" to "Publicación de streamer",
                     "content" to if (approve) "Tu publicación fue aceptada y el canal ya está visible." else "Tu publicación fue rechazada. Puedes enviar una nueva solicitud.",
-                    "tag" to "GENERAL", "timestamp" to reviewedAt, "isRead" to false))
+                    "tag" to "GENERAL", "panel" to "STREAMER", "timestamp" to reviewedAt, "isRead" to false))
             if (archive) {
                 val archived = (request.data.orEmpty() + reviewed).toMutableMap()
                 if (approve) archived.remove("streamerHistoryDeleteAt")

@@ -434,7 +434,7 @@ fun AdminGiveEssenceDialog(
                                                     "id" to messageId,
                                                     "title" to effectiveTitle,
                                                     "content" to effectiveBody,
-                                                    "tag" to if (isAddition) "oferta" else "aviso",
+                                                    "tag" to if (isAddition) "oferta" else "aviso", "panel" to "HISTORY",
                                                     "timestamp" to System.currentTimeMillis(),
                                                     "isRead" to false
                                                 )

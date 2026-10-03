@@ -52,7 +52,7 @@ object CreatorSubscriptionManager {
                     "id" to messageId,
                     "title" to "¡Límite de Suscriptores Alcanzado!",
                     "content" to "Hola $creatorName, un usuario intentó suscribirse a tu perfil pero has alcanzado el límite máximo de suscriptores permitido para tu nivel actual. Te sugerimos mejorar tu plan para ampliar tu límite y seguir recibiendo suscriptores.",
-                    "tag" to "GENERAL",
+                    "tag" to "GENERAL", "panel" to "CREATOR",
                     "timestamp" to System.currentTimeMillis(),
                     "isRead" to false
                 )
@@ -233,7 +233,7 @@ object CreatorSubscriptionManager {
                         "id" to messageId,
                         "title" to "¡Nueva Suscripción con Esencia Naranja!",
                         "content" to "¡Felicidades! El invocador $subscriberName se ha suscrito a tu perfil con Esencia Naranja. De acuerdo con tu nivel de creador ($creatorRole), has recibido un pago de $enRewarded Esencias Naranjas (el ${ (percentage * 100).toInt() }% de la suscripción). ¡Sigue publicando builds grandiosas!",
-                        "tag" to "GENERAL",
+                        "tag" to "GENERAL", "panel" to "CREATOR",
                         "timestamp" to System.currentTimeMillis(),
                         "isRead" to false
                     )

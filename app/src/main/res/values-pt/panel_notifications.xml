@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="panel_pending_notifications">%1$d notificações pendentes</string>
+    <string name="premium_duration_hint">Os botões + acrescentam dias ao vencimento ativo. Dias personalizados define um novo prazo a partir de agora. O Premium não ocupa seus cargos e mantém o prazo ao alterá-los.</string>
+</resources>

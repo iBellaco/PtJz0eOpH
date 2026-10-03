@@ -255,9 +255,7 @@ fun AdminPrivateMessageDialog(
                                             val now = System.currentTimeMillis()
                                             val targetDocs = snapshot.documents.filter { doc ->
                                                 if (targetAudience == MessageAudienceTarget.PREMIUM_ONLY) {
-                                                    val role = doc.getString("role") ?: "free"
-                                                    val until = doc.getLong("premiumUntil")
-                                                    com.example.model.PremiumAccessPolicy.isActive(role, until, now)
+                                                    com.example.model.PremiumAccessPolicy.isActiveAccount(doc.data.orEmpty(), now)
                                                 } else {
                                                     true
                                                 }

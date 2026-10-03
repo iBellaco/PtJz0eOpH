@@ -206,7 +206,8 @@ jobs:
           names = ['creator-after-delete-pt', 'champion-guest-account-hint',
                    'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
                    'streamer-live-animation', 'streamer-history', 'user-notification',
-                   'premium-editor', 'premium-status', 'creator-reader']
+                   'premium-editor', 'premium-status', 'creator-reader',
+                   'profile-admin-notifications', 'panel-notification']
           for file in source.glob('*.png'):
               if any(file.stem.startswith(name) for name in names):
                   shutil.copy2(file, target / file.name)
