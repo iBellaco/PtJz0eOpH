@@ -63,7 +63,7 @@ class RequiredItemCorrectionsTest(private val id: String) {
         val visible = texts()
         if (language == "pt") assertFalse("Spanish in $id: $visible", visible.any { SpanishUiResidue.pattern.containsMatchIn(it) })
         else assertFalse("Portuguese in $id: $visible", visible.any {
-            Regex("\\b(?:você|não|habilidade|dano|campeões|velocidade|recarga|adicionais|inimigos|acertos|concede)\\b", RegexOption.IGNORE_CASE).containsMatchIn(it)
+            Regex("\\b(?:você|não|habilidade|dano|campeões|velocidade|adicionais|inimigos|acertos)\\b", RegexOption.IGNORE_CASE).containsMatchIn(it)
         })
         File(output, "required-item-$id-$language.json").writeText(JSONArray(visible).toString(2))
         if (language == "es" || language == "pt") {

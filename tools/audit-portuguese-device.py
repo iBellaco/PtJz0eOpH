@@ -197,7 +197,8 @@ print("PORTUGUESE_DEVICE_AUDIT:", len(screens), "screens, zero Spanish findings"
 # compare its actual item prices/stat rows with the user's requested corrections.
 OUT = OUT / 'spanish'
 OUT.mkdir(parents=True, exist_ok=True)
-SPANISH = re.compile(r'\b(?:você|não|habilidade|dano|campeões|velocidade|recarga|adicionais|inimigos|acertos|concede|assinatura|notificação|essências|usuário)\b', re.IGNORECASE)
+# Shared words such as habilidades, recarga and concede are valid Spanish too.
+SPANISH = re.compile(r'\b(?:você|não|habilidade|dano|campeões|velocidade|adicionais|inimigos|acertos|assinatura|notificação|essências|usuário)\b', re.IGNORECASE)
 findings, authored_texts, screens = [], [], []
 adb('shell', 'pm', 'clear', APP)
 adb('shell', 'pm', 'grant', APP, 'android.permission.POST_NOTIFICATIONS')
@@ -219,6 +220,7 @@ for tab in ['Selección', 'Tier List', 'Catálogo', 'Usuario']:
     snapshot('dashboard-' + tab)
 tap('Catálogo')
 tap('Objetos')
+tap('Minimizar filtros')  # Leave results visible even on the small 320dp emulator.
 snapshot('catalog-spanish')
 expectations = json.loads(Path('app/src/test/resources/item-corrections-158.json').read_text())
 items_source = Path('app/src/main/java/com/example/data/WildRiftItemsData.kt').read_text()
