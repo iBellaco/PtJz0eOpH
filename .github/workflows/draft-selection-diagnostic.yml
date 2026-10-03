@@ -2,7 +2,7 @@ name: Diagnose installed draft selection
 on:
   push:
     branches: [pruebas]
-    paths: [.github/workflows/draft-selection-diagnostic.yml]
+    paths: [.github/workflows/draft-selection-diagnostic.yml, tools/check-draft-selection-device.py]
 permissions:
   contents: read
 jobs:

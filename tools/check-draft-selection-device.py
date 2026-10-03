@@ -14,7 +14,7 @@ try:
     snapshot("draft-picker-open")
     # The first available champion is sufficient to exercise assigning a field.
     nodes = app_nodes(window())
-    names = [n.get("text") for n in nodes if n.get("text") in ("Garen", "Ahri", "Aatrox", "Darius", "Lux", "Yasuo")]
+    names = [n.get("text") for n in nodes if n.get("text") in ("Shen", "Hwei", "Nocturne", "Garen", "Ahri", "Aatrox", "Darius", "Lux", "Yasuo")]
     if not names:
         raise AssertionError("No champion visible in draft picker")
     tap(names[0])
