@@ -59,7 +59,7 @@ object SupportReplyManager {
      * Identifica si un texto coincide con el saludo predeterminado del soporte de Coach.
      */
     fun isDefaultGreeting(text: String): Boolean {
-        if (text.trim() == SupportConversationPolicy.SYSTEM_GREETING) return true
+        if (text.trim() == SupportConversationPolicy.SYSTEM_GREETING || text.trim() == "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.") return true
         val clean = text.trim()
         val isGreetingPrefix = clean.startsWith("👋 Hola", ignoreCase = true) || 
                                clean.startsWith("Hola", ignoreCase = true) ||

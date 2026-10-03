@@ -47,7 +47,7 @@ class RuntimeBehaviorTest {
         for (panel in RolePanel.entries) {
             assertTrue(panel.name, RolePanelAccess.canOpen(panel, "admin"))
             assertTrue(panel.name, RolePanelAccess.canOpen(panel, "free", adminClaim = true))
-            assertFalse(panel.name, RolePanelAccess.canOpen(panel, "free"))
+            assertEquals(panel.name, panel == RolePanel.CREATOR, RolePanelAccess.canOpen(panel, "free"))
         }
         assertTrue(RolePanelAccess.canOpen(RolePanel.STREAMER, "free", "streamer"))
         assertFalse(RolePanelAccess.canOpen(RolePanel.ADMINISTRATION, "moderador"))
@@ -208,6 +208,71 @@ class RuntimeBehaviorTest {
         assertTrue(UserPanelNotificationPolicy.staffNeedsAttention(pending + mapOf("status" to "READ", "staffRead" to false), false))
         assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(pending + ("status" to "SOLVED"), true))
         assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(pending + mapOf("status" to "READ", "staffRead" to true), false))
+    }
+
+    @Test fun `creator panel readers cannot publish builds without a creator staff or streamer role`() {
+        for (role in listOf("free", "premium", "patrocinador")) {
+            assertTrue(RolePanelAccess.canOpen(RolePanel.CREATOR, role))
+            assertFalse(RolePanelAccess.canCreateBuild(role))
+        }
+        for (role in listOf("creador", "creador_lvl2", "creador_lvl5", "streamer", "moderador", "admin")) {
+            assertTrue(RolePanelAccess.canCreateBuild(role))
+            if (role != "admin") assertTrue(RolePanelAccess.canCreateBuild("free", role))
+        }
+        assertFalse(RolePanelAccess.canOpen(RolePanel.CREATOR, "guest"))
+        assertFalse(RolePanelAccess.canCreateBuild("banned", "streamer"))
+    }
+
+    @Test fun `Premium gift activates free accounts and extends history without losing older gifts`() {
+        val first = PremiumGrantPolicy.apply(mapOf("role" to "free"), 1, true, now, "gift-one")
+        assertEquals("premium", first["role"])
+        assertEquals(now + PremiumAccessPolicy.DAY_MILLIS, first["premiumUntil"])
+        assertTrue(PremiumAccessPolicy.isActiveAccount(first, now))
+        val second = PremiumGrantPolicy.apply(first, 2, true, now, "gift-two")
+        assertEquals(now + 3 * PremiumAccessPolicy.DAY_MILLIS, second["premiumUntil"])
+        val history = second["subscriptionHistory"] as List<*>
+        assertEquals(2, history.size)
+        assertEquals("gift-one", (history[0] as Map<*, *>)["id"])
+        assertEquals("ADMIN_GIFT", (history[1] as Map<*, *>)["source"])
+        assertTrue(SubscriptionRecord(source = "ADMIN_GIFT", amount = "Regalo").isFromAdmin)
+        assertFalse(SubscriptionRecord(source = "ADMIN_GIFT", amount = "Regalo").isEssenceTransaction)
+    }
+
+    @Test fun `gifts preserve a creator role and protect system lifetime administration`() {
+        val creator = PremiumGrantPolicy.apply(mapOf("role" to "creador"), 1, false, now, "creator-gift")
+        assertEquals("creador", creator["role"])
+        assertEquals("premium", creator["secondaryRole"])
+        assertTrue(PremiumAccessPolicy.isActiveAccount(creator, now))
+        for (account in listOf(mapOf<String, Any>("role" to "admin"), mapOf("role" to "free", "admin" to true),
+            mapOf("role" to "banned"), mapOf("role" to "creador", "secondaryRole" to "streamer"))) {
+            assertTrue(runCatching { PremiumGrantPolicy.apply(account, 1, true, now, "blocked") }.isFailure)
+        }
+    }
+
+    @Test fun `legacy paid access and Timestamp deadlines are classified consistently`() {
+        val account = mapOf<String, Any>("role" to "free", "subscriptionPlan" to "Admin Grant (7 days)",
+            "premiumUntil" to com.google.firebase.Timestamp(java.util.Date(now + 70000)))
+        assertTrue(PremiumAccessPolicy.isActiveAccount(account, now))
+        assertFalse(PremiumAccessPolicy.isActiveAccount(account + ("subscriptionPlan" to ""), now))
+        assertFalse(PremiumAccessPolicy.isActiveAccount(account + ("banned" to true), now))
+        assertFalse(PremiumAccessPolicy.isActiveAccount(account, now + 70000))
+        assertEquals("0d 0h 1m 5s", PremiumAccessPolicy.remaining(now + 65000, now))
+        assertTrue(PremiumAccessPolicy.isExpiringSoon(now + 3 * PremiumAccessPolicy.DAY_MILLIS, now))
+        assertFalse(PremiumAccessPolicy.isExpiringSoon(now, now))
+    }
+
+    @Test fun `message mirrors and support queues count a single notification per conversation`() {
+        val message = mapOf<String, Any>("id" to "one", "isRead" to false)
+        assertEquals(setOf("message:one"), InboxNotificationPolicy.unreadKeys(listOf(message, message)))
+        val report = message + mapOf("id" to "ticket", "type" to "SOPORTE")
+        val mirror = message + mapOf("id" to "mirror", "reportId" to "ticket")
+        assertEquals(setOf("support:ticket"), InboxNotificationPolicy.unreadKeys(listOf(report, mirror)) + setOf("support:ticket"))
+        assertEquals(setOf("support:ticket"), InboxNotificationPolicy.unreadKeys(listOf(report, message + mapOf("id" to "ticket", "tag" to "REPORTE", "adminReply" to "Resposta"))))
+        assertTrue(InboxNotificationPolicy.unreadKeys(listOf(message + ("isRead" to true), message + ("deleted" to true))).isEmpty())
+        assertTrue(SupportReplyManager.isDefaultGreeting(SupportConversationPolicy.SYSTEM_GREETING))
+        assertTrue(SupportReplyManager.isDefaultGreeting("Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí."))
+        assertTrue(SupportConversationPolicy.SYSTEM_GREETING.contains("cuenta de juego"))
+        assertTrue(SupportConversationPolicy.SYSTEM_GREETING.contains("vida personal"))
     }
 
 }

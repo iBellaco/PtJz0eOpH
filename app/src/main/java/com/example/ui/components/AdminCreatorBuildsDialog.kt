@@ -93,9 +93,15 @@ fun AdminCreatorBuildsDialog(
     val context = LocalContext.current
     val deletionScope = rememberCoroutineScope()
     var deletingBuildId by remember { mutableStateOf<String?>(null) }
-    val customBuilds by CustomChampionBuildsManager.customBuilds.collectAsStateWithLifecycle()
+    val allBuilds by CustomChampionBuildsManager.customBuilds.collectAsStateWithLifecycle()
+    val customBuilds = remember(allBuilds) { allBuilds.filterNot { it.creatorName.contains("Coach IA", ignoreCase = true) } }
     val currentUserName by SubscriptionManager.userName.collectAsStateWithLifecycle()
     val currentUserRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val secondaryRole by SubscriptionManager.secondaryRole.collectAsStateWithLifecycle()
+    val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsStateWithLifecycle()
+    val canCreate = com.example.model.RolePanelAccess.canCreateBuild(currentUserRole, secondaryRole, adminClaim)
+    val isAdministrator = com.example.model.RolePanelAccess.isAdministrator(currentUserRole, adminClaim)
+    val myUid = com.example.util.AuthManager.getAuth()?.currentUser?.uid.orEmpty()
     val myBuildsCount = remember(customBuilds, currentUserName) {
         customBuilds.count { it.creatorName.equals(currentUserName, ignoreCase = true) }
     }
@@ -129,47 +135,7 @@ fun AdminCreatorBuildsDialog(
         } catch (_: Exception) {}
     }
 
-    // Fallback en caso de que no haya creadores suficientes para completar el podio de 3
-    val defaultLegends = remember {
-        listOf(
-            CreatorPodiumEntry(
-                name = "Coach Sovereign",
-                avatarId = "avatar_soberano_wr",
-                rankBorder = "CHALLENGER",
-                isAdmin = true,
-                role = "admin",
-                buildsCount = 6,
-                totalVotes = 84,
-                averageRating = 5.0,
-                score = 300.0,
-                subscribersCount = 254
-            ),
-            CreatorPodiumEntry(
-                name = "Wild Rift Pro",
-                avatarId = "avatar_kaisa",
-                rankBorder = "GRANDMASTER",
-                isAdmin = false,
-                role = "creador_lvl2",
-                buildsCount = 4,
-                totalVotes = 52,
-                averageRating = 4.9,
-                score = 220.0,
-                subscribersCount = 142
-            ),
-            CreatorPodiumEntry(
-                name = "Hextech Master",
-                avatarId = "avatar_zed",
-                rankBorder = "MASTER",
-                isAdmin = false,
-                role = "creador",
-                buildsCount = 3,
-                totalVotes = 31,
-                averageRating = 4.8,
-                score = 160.0,
-                subscribersCount = 89
-            )
-        )
-    }
+    val defaultLegends = emptyList<CreatorPodiumEntry>()
 
     // Cálculo dinámico de creadores y métricas para el Podio
     val baseRankingList = remember(customBuilds, registeredUsers) {
@@ -371,7 +337,7 @@ fun AdminCreatorBuildsDialog(
         }
     }
 
-    if (showBuildCreator || buildToEdit != null) {
+    if (canCreate && (showBuildCreator || buildToEdit != null)) {
         ChampionBuildCreatorDialog(
             existingRecord = buildToEdit,
             onDismiss = {
@@ -446,7 +412,7 @@ fun AdminCreatorBuildsDialog(
                         )
                     }
                     Column(Modifier.weight(1f).padding(end = 8.dp)) {
-                        Text(tr("Panel de Creador (Admin)"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(tr("Panel de Creador"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         Text(tr("Gestión de builds, ranking y creadores oficiales"), color = TextSecondary, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     }
                 }
@@ -591,7 +557,7 @@ fun AdminCreatorBuildsDialog(
             }
 
             // Action Button: Crear Build con límites según el nivel de creador
-            Button(
+            if (canCreate) Button(
                 onClick = {
                     val limits = CreatorSubscriptionManager.getCreatorLimits(currentUserRole)
                     if (myBuildsCount >= limits.maxChampions) {
@@ -604,7 +570,7 @@ fun AdminCreatorBuildsDialog(
                         showBuildCreator = true
                     }
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().testTag("creator_create_build"),
                 colors = ButtonDefaults.buttonColors(containerColor = HextechGold),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -754,6 +720,8 @@ fun AdminCreatorBuildsDialog(
                                         }
                                     }
 
+                                    if (canCreate && (isAdministrator || (myUid.isNotBlank() && record.creatorUserId == myUid) ||
+                                        (record.creatorUserId.isBlank() && record.creatorName.equals(currentUserName, ignoreCase = true))))
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         IconButton(
                                             onClick = { buildToEdit = record },

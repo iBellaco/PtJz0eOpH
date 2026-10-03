@@ -156,22 +156,14 @@ private fun LiveStreamerIndicator(red: Color) {
     val transition = rememberInfiniteTransition(label = "streamer-live")
     val wave = transition.animateFloat(0f, 1f,
         infiniteRepeatable(tween(1400, easing = LinearEasing), RepeatMode.Restart), label = "live-wave")
-    val meter = transition.animateFloat(0.25f, 1f,
-        infiniteRepeatable(tween(450), RepeatMode.Reverse), label = "live-meter")
     val frameWave = wave.value
-    val frameMeter = meter.value
-            Canvas(Modifier.size(34.dp).testTag("streamer_live_animation")) {
-                val point = Offset(size.width * 0.32f, size.height / 2)
+            Canvas(Modifier.size(28.dp).testTag("streamer_live_animation")) {
+                val point = Offset(size.width / 2, size.height / 2)
                 repeat(2) { index ->
                     val progress = (frameWave + index * 0.5f) % 1f
                     drawCircle(red.copy(alpha = (1f - progress) * 0.85f),
                         radius = (4f + progress * 9f).dp.toPx(), center = point, style = Stroke(1.6.dp.toPx()))
                 }
                 drawCircle(red, radius = 4.dp.toPx(), center = point)
-                repeat(3) { index ->
-                    val height = (5f + 12f * if (index == 1) frameMeter else 1.25f - frameMeter).dp.toPx()
-                    val x = size.width * 0.73f + index * 4.dp.toPx()
-                    drawLine(red, Offset(x, (size.height - height) / 2), Offset(x, (size.height + height) / 2), 2.dp.toPx())
-                }
             }
 }

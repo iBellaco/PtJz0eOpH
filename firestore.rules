@@ -38,15 +38,16 @@ service cloud.firestore {
       return !closed(resource.data) && next.size() == old.size()+1 && next.removeAll([last]) == old
         && last.senderRole == 'SUPPORT' && last.senderUid == request.auth.uid
         && last.get('isGreeting', false) == false
-        && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.';
+        && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.'
+        && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.';
     }
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if signedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
-        && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin'])
+        && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastModifiedByAdmin'])
         && request.resource.data.get('registeredDevices', []).size() <= 2;
       allow update: if isAdmin() || (signedIn() && request.auth.uid == userId
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','premiumUntil','banned','isVerified','verified','admin'])
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','premiumUntil','banned','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastModifiedByAdmin'])
         && request.resource.data.get('registeredDevices', []).size() <= 2);
       allow delete: if false;
       match /messages/{messageId} {
@@ -84,7 +85,7 @@ service cloud.firestore {
           && request.resource.data.conversation[0].senderRole == 'USER' && request.resource.data.conversation[0].senderUid == request.auth.uid
           && request.resource.data.conversation[1].senderRole == 'SYSTEM'
           && request.resource.data.conversation[1].senderUid == ''
-          && request.resource.data.conversation[1].text == 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.');
+          && request.resource.data.conversation[1].text in ['Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.', 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.']);
       allow read: if ownsTicket(resource.data) || staffTicket(resource.data);
       allow update: if isAdmin() || (staffTicket(resource.data)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId','userEmail','tag','type','staffVisible'])

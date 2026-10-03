@@ -5,7 +5,7 @@ import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, query, 
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8080, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
 const db = uid => env.authenticatedContext(uid, { email: `${uid}@test.invalid` }).firestore();
 const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
-const greeting = 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.';
+const greeting = 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.';
 const initial = id => [{ id: `${id}_initial`, senderRole: 'USER', senderUid: 'user', text: 'Ayuda', timestampMillis: 100 }, { id: `${id}_system`, senderRole: 'SYSTEM', senderUid: '', text: greeting, timestampMillis: 101 }];
 const ticket = (id, tag = 'SOPORTE') => ({ userId: 'user', userEmail: 'user@test.invalid', tag, type: tag, staffVisible: tag !== 'PATROCINADOR', userCanReply:false, status: 'PENDING', conversation: initial(id), userRead: true, isRead: true, hasNewAdminReply: false });
 let count = 0;
@@ -285,6 +285,22 @@ try {
       await setDoc(doc(context.firestore(),`streamer_requests/s2/history/${id}`),{userId:'s2',publicationId:id,submittedAtMillis:submitted,status:'PENDING'});
     });
     await assertSucceeds(deleteDoc(doc(owner,`streamer_requests/s2/history/${id}`)));
+  });
+  await test('administrator grants Premium with access deadline and history atomically', async () => {
+    await env.withSecurityRulesDisabled(async context => setDoc(doc(context.firestore(),'users','gift-user'),{role:'free', registeredDevices:[]}));
+    const ref=doc(admin,'users','gift-user'), timestamp=Date.now();
+    const gift={id:'gift-one',timestamp,durationMillis:86400000,source:'ADMIN_GIFT',amount:'Regalo'};
+    await assertSucceeds(runTransaction(admin, async transaction => {
+      const account=await transaction.get(ref);
+      transaction.update(ref,{role:'premium',premiumUntil:timestamp+86400000,subscriptionPlan:'ADMIN_GIFT',lastModifiedByAdmin:timestamp,subscriptionHistory:[...(account.data().subscriptionHistory||[]),gift]});
+    }));
+    const own=db('gift-user'), data=(await assertSucceeds(getDoc(doc(own,'users','gift-user')))).data();
+    assert.equal(data.role,'premium'); assert.equal(data.subscriptionHistory.length,1);
+    await assertFails(updateDoc(doc(own,'users','gift-user'),{subscriptionHistory:[]}));
+    await assertFails(updateDoc(doc(own,'users','gift-user'),{subscriptionPlan:'Admin Grant (100 days)',premiumUntil:timestamp+8640000000}));
+    await assertFails(updateDoc(doc(moderator,'users','gift-user'),{subscriptionHistory:[]}));
+    await assertSucceeds(updateDoc(ref,{subscriptionHistory:[gift,{...gift,id:'gift-two'}]}));
+    assert.equal((await getDoc(doc(own,'users','gift-user'))).data().subscriptionHistory.length,2);
   });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }

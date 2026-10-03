@@ -144,7 +144,7 @@ class PortugueseGeneratedSurfaceTest {
             assertNotEquals(text, translated)
             assertFalse(translated, SpanishUiResidue.pattern.containsMatchIn(translated))
         }
-        assertEquals("Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá aqui.",
+        assertEquals("Olá. O sistema recebeu sua mensagem. A equipe do Coach responderá aqui. Nenhum membro da equipe pedirá informações privadas sobre sua conta de jogo ou sua vida pessoal.",
             trStr("pt", com.example.data.SupportConversationPolicy.SYSTEM_GREETING))
     }
 

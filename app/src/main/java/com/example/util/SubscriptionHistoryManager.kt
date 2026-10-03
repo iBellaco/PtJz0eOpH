@@ -72,50 +72,29 @@ object SubscriptionHistoryManager {
             }
         }
 
-        // 3. Fallback: If no records were found in the subcollection, inspect the user document itself
-        // for an active/lifetime subscription and construct an active record so the user never sees a false empty state.
-        if (records.isEmpty()) {
-            try {
-                val userDoc = db.collection("users").document(targetUid).get().await()
-                if (userDoc.exists()) {
-                    val role = userDoc.getString("role") ?: "free"
-                    val premiumUntil = userDoc.getLong("premiumUntil")
-                    val isLifetime = role.equals("premium", ignoreCase = true) && (premiumUntil == null || premiumUntil == 0L)
-                    val isTimeLimitedActive = premiumUntil != null && premiumUntil > System.currentTimeMillis()
-
-                    if (isLifetime || isTimeLimitedActive) {
-                        val duration = if (isLifetime) 0L else ((premiumUntil ?: 0L) - System.currentTimeMillis()).coerceAtLeast(0L)
-                        val planTitle = if (isLifetime) "Suscripción Premium (Vitalicia)" else "Suscripción Premium Activa"
-                        val syntheticRecord = SubscriptionRecord(
-                            id = "active_profile_sub",
-                            timestamp = userDoc.getLong("last_active") ?: System.currentTimeMillis(),
-                            durationMillis = duration,
-                            planName = planTitle,
-                            status = "Completado",
-                            amount = "$0.00"
-                        )
-                        records.add(syntheticRecord)
-
-                        // Persist to subcollection so subsequent loads have an official historical document
-                        try {
-                            val recordData = hashMapOf(
-                                "timestamp" to syntheticRecord.timestamp,
-                                "durationMillis" to syntheticRecord.durationMillis,
-                                "planName" to syntheticRecord.planName,
-                                "status" to syntheticRecord.status,
-                                "amount" to syntheticRecord.amount,
-                                "created_at" to syntheticRecord.timestamp
-                            )
-                            db.collection("users").document(targetUid)
-                                .collection("subscription_history")
-                                .add(recordData)
-                                .await()
-                        } catch (_: Exception) {}
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error checking user document fallback for active subscription", e)
+        // Gifts are committed with the account update, including on deployments that
+        // only permit the server to write the billing history subcollection.
+        try {
+            val profile = db.collection("users").document(targetUid).get().await()
+            val embedded = (profile.get("subscriptionHistory") as? List<*>).orEmpty().filterIsInstance<Map<String, Any>>()
+            for (data in embedded) {
+                val id = (data["id"] as? String).orEmpty()
+                if (id.isNotBlank() && seenIds.add(id)) records += SubscriptionRecord(id = id,
+                    timestamp = com.example.model.PremiumAccessPolicy.deadline(data["timestamp"]) ?: 0L,
+                    durationMillis = (data["durationMillis"] as? Number)?.toLong() ?: 0L,
+                    planName = (data["planName"] as? String).orEmpty(), status = (data["status"] as? String).orEmpty(),
+                    amount = (data["amount"] as? String).orEmpty(), source = (data["source"] as? String).orEmpty())
             }
+            // Recover the last legacy gift without inventing a purchase or writing on read.
+            if (records.none { !it.isEssenceTransaction } && com.example.model.PremiumAccessPolicy.hasGrant(profile.getString("subscriptionPlan"))) {
+                val date = com.example.model.PremiumAccessPolicy.deadline(profile.get("lastModifiedByAdmin"))
+                val days = Regex("""\((\d+)""").find(profile.getString("subscriptionPlan").orEmpty())?.groupValues?.get(1)?.toLongOrNull()
+                if (date != null && days != null) records += SubscriptionRecord(id = "legacy_premium_gift_$date", timestamp = date,
+                    durationMillis = days * com.example.model.PremiumAccessPolicy.DAY_MILLIS,
+                    planName = "Suscripción Premium regalada", status = "Completado", amount = "Regalo", source = "ADMIN_GIFT")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not read embedded subscription history", e)
         }
 
         return records.sortedByDescending { it.timestamp }

@@ -26,7 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 /** Observe only queues authorized for this account; listeners are removed on role/session changes. */
 @Composable
 fun userPanelNotificationCount(): Int {
-    val unread by SubscriptionManager.unreadMessagesCount.collectAsStateWithLifecycle(0)
+    val unreadIds by SubscriptionManager.unreadMessageIds.collectAsStateWithLifecycle()
     val role by SubscriptionManager.userRole.collectAsStateWithLifecycle()
     val secondary by SubscriptionManager.secondaryRole.collectAsStateWithLifecycle()
     val adminClaim by AuthManager.isAdminClaim.collectAsStateWithLifecycle()
@@ -61,8 +61,8 @@ fun userPanelNotificationCount(): Int {
         onDispose { listeners.forEach { it.remove() } }
     }
     if (uid.isBlank()) return 0
-    val pendingAds = if (admin) notices.count { !it.isApproved } else 0
-    return unread.coerceAtLeast(0) + queues.values.flatten().distinct().size + pendingAds
+    val pendingAds = if (admin) notices.filter { !it.isApproved }.map { "notice:${it.id}" } else emptyList()
+    return (unreadIds + queues.values.flatten() + pendingAds).size
 }
 
 /** Same bell pulse as the inbox, including draw-layer scaling without layout churn. */

@@ -260,7 +260,8 @@ fun UserInboxDialog(
             val isThisOne = (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId))
             if (isThisOne) false else ((m["isRead"] as? Boolean) == false)
         }
-        SubscriptionManager.setUnreadMessagesCount(remainingUnread)
+        SubscriptionManager.setUnreadMessageIds(com.example.data.InboxNotificationPolicy.unreadKeys(messages)
+            .filterNot { it == "message:$id" || it == "support:$reportId" }.toSet())
 
         // Persistir en Firestore de forma segura con merge
         val db = FirebaseFirestore.getInstance()
@@ -497,6 +498,8 @@ fun UserInboxDialog(
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Divider(color = activeTheme.cardBorder)
+                Text(com.example.util.localizedString(com.example.R.string.support_privacy_notice),
+                    color = activeTheme.textSecondary, fontSize = 11.sp, modifier = Modifier.padding(vertical = 8.dp))
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Box(modifier = Modifier.fillMaxSize()) {
@@ -606,6 +609,8 @@ fun UserInboxDialog(
                 }
 
                 Divider(color = activeTheme.cardBorder)
+                Text(com.example.util.localizedString(com.example.R.string.support_privacy_notice),
+                    color = activeTheme.textSecondary, fontSize = 11.sp, modifier = Modifier.padding(vertical = 8.dp))
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (isLoading) {
