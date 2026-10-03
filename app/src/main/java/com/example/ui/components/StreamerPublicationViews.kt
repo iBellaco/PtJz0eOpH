@@ -22,6 +22,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
@@ -45,16 +46,17 @@ internal fun streamerClock(): Long {
     return now
 }
 
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun LiveStreamerChip(channelName: String, onClick: () -> Unit) {
     val liveDescription = localizedString(R.string.streamer_live_description)
     val red = Color(0xFFFF6B6B)
-    AssistChip(onClick = onClick, modifier = Modifier.heightIn(min = 54.dp).testTag("live_streamer_chip").semantics { stateDescription = liveDescription },
+    AssistChip(onClick = onClick, modifier = Modifier.heightIn(min = 54.dp).testTag("live_streamer_chip").semantics { stateDescription = liveDescription; testTagsAsResourceId = true },
         leadingIcon = {
             LiveStreamerIndicator(red)
         }, label = {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(channelName, color = Color(0xFFD4AF37), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(channelName, modifier = Modifier.testTag("streamer_channel_name"), color = Color(0xFFD4AF37), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(localizedString(R.string.streamer_live_label), color = red,
                     fontSize = 10.sp, modifier = Modifier.testTag("streamer_live_label"))
             }

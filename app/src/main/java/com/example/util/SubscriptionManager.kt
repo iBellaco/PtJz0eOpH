@@ -55,6 +55,12 @@ object SubscriptionManager {
 
     private val _unreadMessagesCount = MutableStateFlow(0)
     val unreadMessagesCount: StateFlow<Int> = _unreadMessagesCount.asStateFlow()
+    private val _currentUserUid = MutableStateFlow("")
+    val currentUserUid: StateFlow<String> = _currentUserUid.asStateFlow()
+    private val _unreadMessageRoutes = MutableStateFlow<Map<String, Set<com.example.data.NotificationPanel>>>(emptyMap())
+    val unreadMessageRoutes: StateFlow<Map<String, Set<com.example.data.NotificationPanel>>> = _unreadMessageRoutes.asStateFlow()
+    private var inboxDocuments = emptyList<Map<String, Any>>()
+    private var inboxArray = emptyList<Map<String, Any>>()
     private val _unreadMessageIds = MutableStateFlow<Set<String>>(emptySet())
     val unreadMessageIds: StateFlow<Set<String>> = _unreadMessageIds.asStateFlow()
 
@@ -90,6 +96,9 @@ object SubscriptionManager {
         val unique = unreadMessagesSubcollection + unreadSupportReports + unreadPrivateArray
         val actualPersonalUnread = unique.size
         _unreadMessageIds.value = unique
+        _unreadMessageRoutes.value = (inboxArray + inboxDocuments).mapNotNull { data ->
+            com.example.data.InboxNotificationPolicy.key(data)?.takeIf { it in unique }?.let { it to com.example.data.PanelNotificationPolicy.messagePanels(data) }
+        }.groupBy({ it.first }, { it.second }).mapValues { (_, panels) -> panels.flatten().toSet() }
         _unreadMessagesCount.value = actualPersonalUnread
 
         if (actualPersonalUnread == 0 && (hasUnreadFromDoc || docUnreadCount > 0)) {
@@ -124,6 +133,7 @@ object SubscriptionManager {
         }
         com.example.util.AuthManager.getAuth()?.addAuthStateListener {
             val user = it.currentUser
+            _currentUserUid.value = if (AuthManager.isGuestOrUnauthenticated(user)) "" else user?.uid.orEmpty()
             if (AuthManager.isGuestOrUnauthenticated(user)) {
                 _userRole.value = "free"
                 _secondaryRole.value = ""
@@ -139,6 +149,8 @@ object SubscriptionManager {
                 _orangeEssence.value = 0L
                 _unreadMessagesCount.value = 0
                 _unreadMessageIds.value = emptySet()
+                _unreadMessageRoutes.value = emptyMap()
+                inboxArray = emptyList(); inboxDocuments = emptyList()
                 premiumPlan = ""
                 _unreadModeratorSupportCount.value = 0
                 unreadMessagesSubcollection = emptySet()
@@ -207,6 +219,7 @@ object SubscriptionManager {
     fun init(context: Context) {
         val auth = AuthManager.getAuth()
         val user = auth?.currentUser
+        _currentUserUid.value = if (AuthManager.isGuestOrUnauthenticated(user)) "" else user?.uid.orEmpty()
 
         if (AuthManager.isGuestOrUnauthenticated(user)) {
             _userRole.value = "free"
@@ -277,8 +290,8 @@ object SubscriptionManager {
                 .collection("messages")
                 .addSnapshotListener { snapshot, error ->
                     if (error == null && snapshot != null) {
-                        unreadMessagesSubcollection = com.example.data.InboxNotificationPolicy.unreadKeys(
-                            snapshot.documents.map { it.data.orEmpty() + ("id" to it.id) })
+                        inboxDocuments = snapshot.documents.map { it.data.orEmpty() + ("id" to it.id) }
+                        unreadMessagesSubcollection = com.example.data.InboxNotificationPolicy.unreadKeys(inboxDocuments)
                         recalculateUnreadCount()
                     }
                 }
@@ -403,7 +416,8 @@ object SubscriptionManager {
                     val remoteDocCount = listenSnapshot.getLong("unreadMessagesCount")?.toInt() ?: if (hasUnread) 1 else 0
                     @Suppress("UNCHECKED_CAST")
                     val privateMsgs = listenSnapshot.get("privateMessages") as? List<Map<String, Any>>
-                    val unreadInArray = com.example.data.InboxNotificationPolicy.unreadKeys(privateMsgs.orEmpty())
+                    inboxArray = privateMsgs.orEmpty()
+                    val unreadInArray = com.example.data.InboxNotificationPolicy.unreadKeys(inboxArray)
 
                     hasUnreadFromDoc = hasUnread
                     docUnreadCount = remoteDocCount

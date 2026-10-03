@@ -129,7 +129,8 @@ class RuntimeBehaviorTest {
         assertFalse(PremiumAccessPolicy.isActive("premium", now, now))
         assertTrue(PremiumAccessPolicy.isActive("premium", now + 1, now))
         for (role in listOf("free", "streamer", "patrocinador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5")) {
-            assertFalse(role, PremiumAccessPolicy.isActive(role, now + 1000, now))
+            assertTrue(role, PremiumAccessPolicy.isActive(role, now + 1000, now))
+            assertFalse(role, PremiumAccessPolicy.isActive(role, null, now))
         }
         assertTrue(PremiumAccessPolicy.isActive("streamer", now + 1, now, secondary = "premium"))
         assertTrue(PremiumAccessPolicy.isActive("streamer", null, now, secondary = "moderador"))
@@ -140,7 +141,7 @@ class RuntimeBehaviorTest {
         for (role in listOf("streamer", "moderador", "creador", "free", "premium"))
             assertEquals(until, PremiumAccessPolicy.deadlineForRole(role, until, now))
         assertEquals(now - 1, PremiumAccessPolicy.deadlineForRole("premium", now - 1, now))
-        assertEquals(now + 30 * PremiumAccessPolicy.DAY_MILLIS, PremiumAccessPolicy.deadlineForRole("premium", 0, now))
+        assertEquals(0L, PremiumAccessPolicy.deadlineForRole("premium", 0, now))
         assertEquals(until + PremiumAccessPolicy.DAY_MILLIS, PremiumAccessPolicy.extend(until, 1, now))
         assertEquals(now + PremiumAccessPolicy.DAY_MILLIS, PremiumAccessPolicy.extend(null, 1, now))
     }
@@ -225,7 +226,7 @@ class RuntimeBehaviorTest {
 
     @Test fun `Premium gift activates free accounts and extends history without losing older gifts`() {
         val first = PremiumGrantPolicy.apply(mapOf("role" to "free"), 1, true, now, "gift-one")
-        assertEquals("premium", first["role"])
+        assertEquals("free", first["role"])
         assertEquals(now + PremiumAccessPolicy.DAY_MILLIS, first["premiumUntil"])
         assertTrue(PremiumAccessPolicy.isActiveAccount(first, now))
         val second = PremiumGrantPolicy.apply(first, 2, true, now, "gift-two")
@@ -241,10 +242,10 @@ class RuntimeBehaviorTest {
     @Test fun `gifts preserve a creator role and protect system lifetime administration`() {
         val creator = PremiumGrantPolicy.apply(mapOf("role" to "creador"), 1, false, now, "creator-gift")
         assertEquals("creador", creator["role"])
-        assertEquals("premium", creator["secondaryRole"])
+        assertNull(creator["secondaryRole"])
         assertTrue(PremiumAccessPolicy.isActiveAccount(creator, now))
         for (account in listOf(mapOf<String, Any>("role" to "admin"), mapOf("role" to "free", "admin" to true),
-            mapOf("role" to "banned"), mapOf("role" to "creador", "secondaryRole" to "streamer"))) {
+            mapOf("role" to "banned"), mapOf("role" to "free", "banned" to true), mapOf("role" to "creador", "secondaryRole" to "banned"))) {
             assertTrue(runCatching { PremiumGrantPolicy.apply(account, 1, true, now, "blocked") }.isFailure)
         }
     }
@@ -253,7 +254,7 @@ class RuntimeBehaviorTest {
         val account = mapOf<String, Any>("role" to "free", "subscriptionPlan" to "Admin Grant (7 days)",
             "premiumUntil" to com.google.firebase.Timestamp(java.util.Date(now + 70000)))
         assertTrue(PremiumAccessPolicy.isActiveAccount(account, now))
-        assertFalse(PremiumAccessPolicy.isActiveAccount(account + ("subscriptionPlan" to ""), now))
+        assertTrue(PremiumAccessPolicy.isActiveAccount(account + ("subscriptionPlan" to ""), now))
         assertFalse(PremiumAccessPolicy.isActiveAccount(account + ("banned" to true), now))
         assertFalse(PremiumAccessPolicy.isActiveAccount(account, now + 70000))
         assertEquals("0d 0h 1m 5s", PremiumAccessPolicy.remaining(now + 65000, now))
@@ -273,6 +274,59 @@ class RuntimeBehaviorTest {
         assertTrue(SupportReplyManager.isDefaultGreeting("Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí."))
         assertTrue(SupportConversationPolicy.SYSTEM_GREETING.contains("cuenta de juego"))
         assertTrue(SupportConversationPolicy.SYSTEM_GREETING.contains("vida personal"))
+    }
+
+    @Test fun `all advertised Premium durations preserve both occupied roles and inherited deadlines`() {
+        val inherited = java.time.Instant.parse("2030-11-18T19:27:00Z").toEpochMilli()
+        val account = mapOf<String, Any>("role" to "creador", "secondaryRole" to "streamer",
+            "premiumUntil" to com.google.firebase.Timestamp(java.util.Date(inherited)))
+        assertTrue(PremiumAccessPolicy.isActiveAccount(account, now))
+        for (days in listOf(1, 7, 30, 90, 365)) {
+            val gift = PremiumGrantPolicy.apply(account, days, true, now, "gift-$days")
+            assertEquals(inherited + days * PremiumAccessPolicy.DAY_MILLIS, gift["premiumUntil"])
+            assertEquals("creador", gift["role"])
+            assertEquals("streamer", gift["secondaryRole"])
+            assertTrue(PremiumAccessPolicy.isActiveAccount(gift, now))
+            assertEquals(days * PremiumAccessPolicy.DAY_MILLIS,
+                ((gift["subscriptionHistory"] as List<*>).single() as Map<*, *>)["durationMillis"])
+            val custom = PremiumGrantPolicy.apply(account, days, false, now, "custom-$days")
+            assertEquals(now + days * PremiumAccessPolicy.DAY_MILLIS, custom["premiumUntil"])
+            val expired = PremiumGrantPolicy.apply(account + ("premiumUntil" to now - 1), days, true, now, "expired-$days")
+            assertEquals(now + days * PremiumAccessPolicy.DAY_MILLIS, expired["premiumUntil"])
+        }
+        for (role in listOf("free", "creador", "creador_lvl5", "streamer", "patrocinador", "premium")) {
+            val changed = account + ("role" to role)
+            assertTrue(PremiumAccessPolicy.isActiveAccount(changed, now))
+            assertEquals(inherited, PremiumAccessPolicy.deadlineForRole(role, inherited, now))
+            assertFalse(PremiumAccessPolicy.isActiveAccount(changed + ("premiumUntil" to now), now))
+        }
+        assertFalse(PremiumAccessPolicy.isActive("free", inherited, now, secondary = "banned"))
+        for (days in listOf(0, -1, 36501)) assertTrue(runCatching {
+            PremiumGrantPolicy.apply(account, days, true, now, "invalid")
+        }.isFailure)
+    }
+
+    @Test fun `panel notifications route shared messages without duplicating navigation counts`() {
+        val streamer = mapOf<String, Any>("id" to "streamer_review_one", "isRead" to false)
+        val creator = mapOf<String, Any>("id" to "creator-one", "title" to "Límite de Suscriptores", "isRead" to false)
+        val history = mapOf<String, Any>("id" to "gift-one", "panel" to "HISTORY", "isRead" to false)
+        val sponsor = mapOf<String, Any>("id" to "ad-one", "panel" to "SPONSOR", "isRead" to false)
+        val messages = listOf(streamer, streamer, creator, history, sponsor)
+        val keys = InboxNotificationPolicy.unreadKeys(messages)
+        val routes = messages.associate { "message:${it["id"]}" to com.example.data.PanelNotificationPolicy.messagePanels(it) }
+        val queue = mapOf(com.example.data.NotificationPanel.SUPPORT to setOf("support:thread-one"),
+            com.example.data.NotificationPanel.ADMINISTRATION to setOf("streamer:approval-one"))
+        val summary = com.example.data.PanelNotificationPolicy.combine(keys, routes, queue, setOf("notice:ad-review"))
+        assertEquals(7, summary.total)
+        assertEquals(4, summary.count(com.example.data.NotificationPanel.INBOX))
+        for (panel in listOf(com.example.data.NotificationPanel.STREAMER, com.example.data.NotificationPanel.CREATOR,
+            com.example.data.NotificationPanel.HISTORY, com.example.data.NotificationPanel.SPONSOR,
+            com.example.data.NotificationPanel.ADMINISTRATION, com.example.data.NotificationPanel.SUPPORT,
+            com.example.data.NotificationPanel.SPONSOR_MODERATION)) assertEquals(panel.name, 1, summary.count(panel))
+        val read = com.example.data.PanelNotificationPolicy.combine(emptySet(), routes, emptyMap(), emptySet())
+        assertEquals(0, read.total)
+        com.example.data.NotificationPanel.entries.forEach { assertEquals(0, read.count(it)) }
+        assertEquals(setOf(com.example.data.NotificationPanel.INBOX), com.example.data.PanelNotificationPolicy.messagePanels(mapOf("title" to "Mensaje")))
     }
 
 }

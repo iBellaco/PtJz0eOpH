@@ -3265,12 +3265,13 @@ fun UserDetailManagementDialog(
 
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(tr("Editar o extender tiempo premium:"), color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Text(com.example.util.localizedString(com.example.R.string.premium_duration_hint), color = TextMuted, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
                                 Spacer(modifier = Modifier.height(6.dp))
 
                                 // Grid de Duraciones Rápidas
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     DurationButton(
-                                        enabled = isAdmin && !isProcessing,
+                                        enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+1 Día",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
@@ -3278,7 +3279,7 @@ fun UserDetailManagementDialog(
                                         }
                                     )
                                     DurationButton(
-                                        enabled = isAdmin && !isProcessing,
+                                        enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+7 Días",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
@@ -3286,7 +3287,7 @@ fun UserDetailManagementDialog(
                                         }
                                     )
                                     DurationButton(
-                                        enabled = isAdmin && !isProcessing,
+                                        enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+30 Días",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
@@ -3299,7 +3300,7 @@ fun UserDetailManagementDialog(
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     DurationButton(
-                                        enabled = isAdmin && !isProcessing,
+                                        enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+90 Días (3m)",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
@@ -3307,7 +3308,7 @@ fun UserDetailManagementDialog(
                                         }
                                     )
                                     DurationButton(
-                                        enabled = isAdmin && !isProcessing,
+                                        enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+1 Año (365d)",
                                         modifier = Modifier.weight(1f),
                                         onClick = {
@@ -3322,7 +3323,7 @@ fun UserDetailManagementDialog(
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     // Personalizado en días
                                     OutlinedButton(
-                                        enabled = isAdmin && !isProcessing,
+                                        enabled = isAdmin && !isProcessing && !currentBanned,
                                         onClick = { showCustomDaysDialog = true },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(6.dp),
@@ -5085,7 +5086,7 @@ private fun applyPremiumDuration(context: Context, uid: String, days: Int, exten
     db.runTransaction { transaction ->
         val account = transaction.get(userRef)
         val updated = com.example.data.PremiumGrantPolicy.apply(account.data.orEmpty(), days, extendExisting, grantedAt, grantId)
-        val fields = setOf("premiumUntil", "subscriptionPlan", "lastModifiedByAdmin", "subscriptionHistory", "role", "secondaryRole")
+        val fields = setOf("premiumUntil", "subscriptionPlan", "lastModifiedByAdmin", "subscriptionHistory")
         transaction.update(userRef, updated.filterKeys { it in fields })
         updated + ("uid" to uid)
     }.addOnSuccessListener { updated ->
@@ -5298,7 +5299,7 @@ private fun updateUserRoleInCloud(
     val userRef = db.collection("users").document(uid)
     db.runTransaction { transaction ->
         val account = transaction.get(userRef)
-        val inherited = account.getLong("premiumUntil")
+        val inherited = com.example.model.PremiumAccessPolicy.deadline(account.get("premiumUntil"))
         val deadline = com.example.model.PremiumAccessPolicy.deadlineForRole(targetRoleId, inherited, System.currentTimeMillis())
         if (deadline != inherited && deadline != null) updatePayload["premiumUntil"] = deadline
         transaction.update(userRef, updatePayload)

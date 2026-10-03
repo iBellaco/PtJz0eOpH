@@ -14,6 +14,7 @@ literal = re.search(r'val pattern = Regex\(\s*("(?:[^"\\]|\\.)*")', source).grou
 pattern = json.loads(literal).replace(r"\p{L}\p{N}_", r"\w").replace(r"\p{L}", r"[^\W\d_]")
 SPANISH = re.compile(pattern, re.IGNORECASE)
 findings = []
+authored_texts = []
 screens = []
 
 
@@ -47,6 +48,22 @@ def app_nodes(xml):
     return [n for n in ET.fromstring(xml).iter("node") if n.get("package") == APP]
 
 
+def is_channel_name(node):
+    # Channel brands are authored content; their exact names must survive localization.
+    return node.get("resource-id", "").rsplit("/", 1)[-1] == "streamer_channel_name"
+
+
+def ui_text_candidates(nodes):
+    result = []
+    for node in nodes:
+        if not is_channel_name(node) and node.get("text"):
+            result.append(node.get("text"))
+        # Accessibility labels are still application UI even on an authored name.
+        if node.get("content-desc"):
+            result.append(node.get("content-desc"))
+    return list(dict.fromkeys(result))
+
+
 def snapshot(name):
     xml = window()
     (OUT / (name + ".xml")).write_text(xml)
@@ -55,7 +72,9 @@ def snapshot(name):
     if not strings:
         raise AssertionError("No application texts rendered: " + name)
     (OUT / (name + ".json")).write_text(json.dumps(strings, ensure_ascii=False, indent=2))
-    findings.extend({"screen": name, "text": s} for s in strings if len(s) > 2 and SPANISH.search(s.replace("Lee Sin", "LeeSin")))
+    nodes = app_nodes(xml)
+    authored_texts.extend({"screen": name, "text": n.get("text"), "kind": "channel_name"} for n in nodes if is_channel_name(n) and n.get("text"))
+    findings.extend({"screen": name, "text": s} for s in ui_text_candidates(nodes) if len(s) > 2 and SPANISH.search(s.replace("Lee Sin", "LeeSin")))
     screens.append(name)
     print("PORTUGUESE_DEVICE_SCREEN:", name, len(strings), "texts", flush=True)
 
@@ -167,7 +186,7 @@ adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
 tap("Início")
 tap("Informação")
 snapshot("restart-retains-portuguese")
-(OUT / "summary.json").write_text(json.dumps({"screens": screens, "findings": findings}, ensure_ascii=False, indent=2))
+(OUT / "summary.json").write_text(json.dumps({"screens": screens, "findings": findings, "authored_texts": authored_texts}, ensure_ascii=False, indent=2))
 if findings:
     for finding in findings:
         print("PORTUGUESE_DEVICE_RESIDUE:", finding, flush=True)

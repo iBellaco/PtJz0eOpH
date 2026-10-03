@@ -51,13 +51,18 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
     private var grantResult: ((Result<Map<String, Any>>) -> Unit)? = null
     private var grantedAccount: Map<String, Any>? = null
     private var renewed = false
+    private val fixedGrantNow = java.time.Instant.parse("2026-10-03T12:00:00Z").toEpochMilli()
+    private val inheritedDeadline = java.time.Instant.parse("2030-11-18T19:27:00Z").toEpochMilli()
+    private var occupiedAccount = mapOf<String, Any>("uid" to "local-occupied", "role" to "creador", "secondaryRole" to "streamer", "premiumUntil" to inheritedDeadline)
+    private var requestedDays = 0
+    private var requestedExtension = false
     private val context get() = RuntimeEnvironment.getApplication()
     private val output = File("build/reports/portuguese-rendered").apply { mkdirs() }
 
@@ -90,7 +95,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any>).value = value
         }
-        setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin") || screen == "premium-editor-grant") "admin" else "free")
+        setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else "free")
         setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
         setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
         if (screen == "creator-reader") setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
@@ -115,6 +120,7 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen == "panel-notification-animation" -> PanelNotificationBadge(3, com.example.data.NotificationPanel.CREATOR)
             screen.startsWith("user-notification") -> UserNotificationIcon(if (screen == "user-notification-empty") 0 else 3)
             screen == "streamer-guest-live" -> Column { LiveStreamersRow() }
             screen == "streamer-approved-review" -> ApprovedStreamerReviewCard(mapOf("channelName" to "Canal Aprovado", "channelUrl" to "https://www.google.com"), true, { copiedSummary = it }, {})
@@ -129,7 +135,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 myChampion = WildRiftRepository.champions.first { it.id == screen.removePrefix("matchup-") },
                 enemyOpponent = WildRiftRepository.champions.first { it.id == "smolder" },
                 activeRole = if (screen == "matchup-garen") LaneRole.TOP else LaneRole.ADC, onDismiss = {})
-            screen == "streamer-live" -> LiveStreamerChip("Canal Coach") {}
+            screen in listOf("streamer-live", "streamer-live-name-preserved") -> LiveStreamerChip(if (screen == "streamer-live-name-preserved") "hola" else "Canal Coach") {}
             screen == "streamer-feedback" -> StreamerSubmissionFeedback(false, true)
             screen == "streamer-history" -> {
                 val now = System.currentTimeMillis()
@@ -147,11 +153,18 @@ class RuntimeVisibilityTest(private val screen: String) {
                 Mockito.`when`(user.uid).thenReturn("local-profile-test")
                 Mockito.`when`(user.email).thenReturn("coach@example.invalid")
                 Mockito.`when`(user.displayName).thenReturn("Coach Teste")
-                AuthenticatedProfilePanel(user) {}
+                val panels = when (screen) {
+                    "profile-admin-notifications" -> com.example.data.PanelNotificationState(com.example.data.NotificationPanel.entries.associateWith { setOf("event:${it.name}") })
+                    "profile-admin-large" -> com.example.data.PanelNotificationState(mapOf(com.example.data.NotificationPanel.SPONSOR_MODERATION to setOf("notice:local-pending")))
+                    else -> com.example.data.PanelNotificationState()
+                }
+                AuthenticatedProfilePanel(user, panelNotifications = panels) {}
             }
             screen == "creator-reader" -> AdminCreatorBuildsDialog {}
             screen == "premium-status-near-expiry" -> PremiumStatusCard("premium", until = System.currentTimeMillis() + 65000L, onRenew = { renewed = true })
             screen == "premium-editor-admin" -> UserDetailManagementDialog(mapOf("uid" to "local-admin", "role" to "admin"), {}, {}, {}, {})
+            screen == "premium-editor-occupied" -> UserDetailManagementDialog(occupiedAccount, {}, { occupiedAccount = it; grantedAccount = it }, {}, {},
+                premiumGrantAction = { days, extend, complete -> requestedDays = days; requestedExtension = extend; grantResult = complete })
             screen == "premium-editor-grant" -> UserDetailManagementDialog(mapOf("uid" to "local-gift", "role" to "free"), {}, { grantedAccount = it }, {}, {},
                 premiumGrantAction = { _, _, complete -> grantResult = complete })
             screen.startsWith("premium-editor") -> UserDetailManagementDialog(mapOf("uid" to "local-test", "name" to "Teste",
@@ -182,24 +195,29 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     private fun inspect(step: String) {
         compose.waitForIdle()
-        val strings = compose.onAllNodes(SemanticsMatcher("all") { true }, useUnmergedTree = true)
-            .fetchSemanticsNodes().flatMap {
+        val nodes = compose.onAllNodes(SemanticsMatcher("all") { true }, useUnmergedTree = true).fetchSemanticsNodes()
+        val strings = nodes.flatMap {
                 it.config.getOrNull(SemanticsProperties.Text).orEmpty().map { text -> text.text } +
                     it.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty()
             }.filter { it.isNotBlank() }.distinct()
         Assert.assertTrue(strings.isNotEmpty())
         File(output, "$screen-$step.json").writeText(JSONArray(strings).toString(2))
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = File(output, "$screen-$step.png").path)
-        val failures = strings.filter { SpanishUiResidue.pattern.containsMatchIn(it.replace("Lee Sin", "LeeSin")) }
+        val interfaceStrings = nodes.flatMap {
+            val text = if (it.config.getOrNull(SemanticsProperties.TestTag) == "streamer_channel_name") emptyList()
+                else it.config.getOrNull(SemanticsProperties.Text).orEmpty().map { value -> value.text }
+            text + it.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty()
+        }
+        val failures = interfaceStrings.filter { SpanishUiResidue.pattern.containsMatchIn(it.replace("Lee Sin", "LeeSin")) }
         Assert.assertTrue("Spanish on $screen: ${failures.joinToString()}", failures.isEmpty())
     }
 
     @Test fun `visibility and Portuguese wording follow actual selections and account access`() {
         // Enable animation frames before composition: the test framework cancels
         // infinite animations while its clock advances automatically.
-        if (screen == "streamer-live") compose.mainClock.autoAdvance = false
+        if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.autoAdvance = false
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
-        if (screen == "streamer-live") compose.mainClock.advanceTimeBy(32)
+        if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
         when (screen) {
             "user-notification" -> {
@@ -270,6 +288,10 @@ class RuntimeVisibilityTest(private val screen: String) {
                     compose.onNodeWithText("Cadastre-se").performScrollTo().performClick()
                     compose.onNodeWithText("Criar uma conta").assertExists()
                 }
+            }
+            "streamer-live-name-preserved" -> {
+                compose.onNodeWithTag("streamer_channel_name", useUnmergedTree = true).assertTextEquals("hola")
+                compose.onNodeWithText("Ao vivo").assertExists()
             }
             "streamer-live" -> {
                 compose.onNodeWithText("Canal Coach").assertExists()
@@ -345,7 +367,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val title = compose.onNodeWithTag("moderator_panel_title", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 val maximumGap = 16f * context.resources.displayMetrics.density
                 Assert.assertTrue("Moderator icon must sit beside its title: $icon $title", title.left >= icon.right && title.left - icon.right <= maximumGap)
-                if (screen == "profile-admin-large") compose.onNodeWithText("Solicitação pendente").assertExists()
+                compose.onNodeWithText("Solicitação pendente").assertDoesNotExist()
+                if (screen == "profile-admin-large") compose.onNodeWithTag("panel_notification_badge_SPONSOR_MODERATION", useUnmergedTree = true).assertExists()
                 inspect("role-buttons")
                 compose.onNodeWithText(appTr("Panel de Soporte y Moderación")).performScrollTo().performClick()
                 compose.onNodeWithText(appTr("Bandeja de Moderación")).assertExists()
@@ -375,8 +398,44 @@ class RuntimeVisibilityTest(private val screen: String) {
                 }
                 compose.onNodeWithTag("premium_duration_+1 Día").assertIsEnabled()
                 compose.onNodeWithTag("premium_remaining_time").performScrollTo().assertExists()
-                Assert.assertEquals("premium", grantedAccount!!["role"])
+                Assert.assertEquals("free", grantedAccount!!["role"])
                 Assert.assertEquals(1, (grantedAccount!!["subscriptionHistory"] as List<*>).size)
+            }
+            "premium-editor-occupied" -> {
+                compose.onNodeWithTag("premium_remaining_time").performScrollTo().assertExists()
+                for ((label, days) in listOf("+1 Día" to 1, "+7 Días" to 7, "+30 Días" to 30, "+90 Días (3m)" to 90, "+1 Año (365d)" to 365)) {
+                    val before = occupiedAccount["premiumUntil"] as Long
+                    compose.onNodeWithTag("premium_duration_$label").performScrollTo().performClick()
+                    compose.onNodeWithTag("premium_duration_$label").assertIsNotEnabled()
+                    Assert.assertEquals(days, requestedDays)
+                    Assert.assertTrue(requestedExtension)
+                    compose.runOnIdle {
+                        grantResult!!(Result.success(com.example.data.PremiumGrantPolicy.apply(occupiedAccount, requestedDays,
+                            requestedExtension, fixedGrantNow, "occupied-$days")))
+                    }
+                    compose.onNodeWithTag("premium_duration_$label").assertIsEnabled()
+                    Assert.assertEquals(before + days * PremiumAccessPolicy.DAY_MILLIS, occupiedAccount["premiumUntil"])
+                    Assert.assertEquals("creador", occupiedAccount["role"])
+                    Assert.assertEquals("streamer", occupiedAccount["secondaryRole"])
+                    inspect("added-$days-days")
+                }
+                Assert.assertEquals(5, (occupiedAccount["subscriptionHistory"] as List<*>).size)
+            }
+            "profile-admin-notifications" -> {
+                for (panel in com.example.data.NotificationPanel.entries) {
+                    compose.onNodeWithTag("panel_notification_badge_${panel.name}", useUnmergedTree = true).performScrollTo().assertExists()
+                    inspect("panel-${panel.name.lowercase()}")
+                }
+                compose.onNodeWithText("Solicitação pendente").assertDoesNotExist()
+            }
+            "panel-notification-animation" -> {
+                compose.onNodeWithTag("panel_notification_badge_CREATOR", useUnmergedTree = true).assertExists()
+                compose.onNodeWithContentDescription("3 notificações pendentes", useUnmergedTree = true).assertExists()
+                inspect("animation-start")
+                compose.mainClock.advanceTimeBy(480)
+                inspect("animation-next")
+                Assert.assertFalse(File(output, "$screen-animation-start.png").readBytes().contentEquals(File(output, "$screen-animation-next.png").readBytes()))
+                compose.mainClock.autoAdvance = true
             }
             "premium-editor", "premium-editor-secondary" -> {
                 if (screen == "premium-editor-secondary") compose.onNodeWithText(appTr("Acceso Moderador (Vitalicio)")).performScrollTo().assertExists()
