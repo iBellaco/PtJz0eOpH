@@ -41,7 +41,7 @@ class ComponentItemsCatalogTest(private val id: String) {
                         fun rows(key: String) = entry.getJSONArray(key).let { array -> (0 until array.length()).joinToString(" • ") { array.getString(it) } }
                         fun effects(suffix: String) = entry.getJSONArray("efectos").let { array -> (0 until array.length()).joinToString("\n") {
                             val effect = array.getJSONObject(it)
-                            effect.getString("nombre$suffix") + ": " + effect.getString("descripcion$suffix")
+                            effect.getString("nombre$suffix").let { if (it.isBlank()) "" else "$it: " } + effect.getString("descripcion$suffix")
                         } }
                         result.put(entry.getString("id"), JSONObject().put("goldCost",entry.getInt("coste_oro")).put("category",level)
                             .put("name",entry.getString("nombre")).put("namePt",entry.getString("nombre_pt"))
