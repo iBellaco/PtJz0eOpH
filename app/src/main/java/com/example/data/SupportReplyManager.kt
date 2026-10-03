@@ -249,7 +249,7 @@ object SupportReplyManager {
                 check(owner.isNotBlank() && owner != "anonimo") { "No se pudo identificar al destinatario" }
                 check(!SupportConversationPolicy.isClosed(snapshot.getString("status").orEmpty())) { "Ticket cerrado" }
                 val actualTag = SupportConversationPolicy.ticketTag(snapshot.data.orEmpty(), tag)
-                check(SupportTicketAccess.isAdmin() || !SupportConversationPolicy.isSponsor(actualTag)) { "Ticket exclusivo del administrador" }
+                check(SupportTicketAccess.isAdmin() || !SupportConversationPolicy.isAdministratorOnly(actualTag)) { "Ticket exclusivo del administrador" }
                 val previous = SupportConversationPolicy.decode(snapshot.get("conversation")).ifEmpty {
                     SupportConversationPolicy.initial(reportId, snapshot.getString("userName") ?: "Invocador",
                         snapshot.getString("description") ?: reportDescription.orEmpty(), snapshot.getTimestamp("createdAt")?.toDate()?.time ?: entry.timestampMillis,
@@ -271,7 +271,7 @@ object SupportReplyManager {
                     "status" to status, "isCompleted" to SupportConversationPolicy.isClosed(status),
                     "isRead" to false, "userRead" to false, "hasNewAdminReply" to true, "hasNewReply" to true,
                     "staffRead" to markAsRead, "userCanReply" to true, "tag" to actualTag, "type" to (snapshot.getString("type") ?: actualTag),
-                    "staffVisible" to !SupportConversationPolicy.isSponsor(actualTag))
+                    "staffVisible" to !SupportConversationPolicy.isAdministratorOnly(actualTag))
                 if (!snapshot.exists()) data["createdAt"] = Timestamp.now()
                 transaction.set(ref, data, com.google.firebase.firestore.SetOptions.merge())
                 transaction.set(db.collection("users").document(owner).collection("messages").document(reportId),

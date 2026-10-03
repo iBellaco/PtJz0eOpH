@@ -1490,7 +1490,7 @@ fun ChampionDetailSheet(
                             .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val advantageList = roleProfile.advantageAgainst.distinct().take(maxMatchupCount)
+                        val advantageList = com.example.data.MatchupKnowledge.related(roleProfile, WildRiftRepository.champions, com.example.data.MatchupRelation.FAVORABLE).map { it.name }.take(maxMatchupCount)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1588,7 +1588,7 @@ fun ChampionDetailSheet(
                             .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val counteredList = roleProfile.counteredBy.distinct().take(maxMatchupCount)
+                        val counteredList = com.example.data.MatchupKnowledge.related(roleProfile, WildRiftRepository.champions, com.example.data.MatchupRelation.UNFAVORABLE).map { it.name }.take(maxMatchupCount)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,

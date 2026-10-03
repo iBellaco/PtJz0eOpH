@@ -25,7 +25,7 @@ object SupportTicketAccess {
         val documents = db.collection("support_reports").get().await().documents
         documents.forEach { doc ->
             val report = SupportReportDecoder.decode(doc.id, doc.data.orEmpty()) ?: return@forEach
-            val visible = !SupportConversationPolicy.isSponsor(SupportConversationPolicy.ticketTag(doc.data.orEmpty()))
+            val visible = !SupportConversationPolicy.isAdministratorOnly(SupportConversationPolicy.ticketTag(doc.data.orEmpty()))
             var owner = report.userId
             if (owner.isBlank() && !doc.getString("userEmail").isNullOrBlank()) {
                 owner = db.collection("users").whereEqualTo("email", doc.getString("userEmail")).limit(1).get().await().documents.firstOrNull()?.id.orEmpty()
@@ -35,7 +35,7 @@ object SupportTicketAccess {
                     val latest = transaction.get(doc.reference)
                     if (latest.exists()) {
                         val patch = mutableMapOf<String, Any>()
-                        val latestVisible = !SupportConversationPolicy.isSponsor(SupportConversationPolicy.ticketTag(latest.data.orEmpty()))
+                        val latestVisible = !SupportConversationPolicy.isAdministratorOnly(SupportConversationPolicy.ticketTag(latest.data.orEmpty()))
                         if (latest.getBoolean("staffVisible") != latestVisible) patch["staffVisible"] = latestVisible
                         val latestOwner = latest.getString("userId").orEmpty().ifBlank { owner }
                         if (latest.getString("userId").isNullOrBlank() && latestOwner.isNotBlank()) patch["userId"] = latestOwner

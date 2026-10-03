@@ -7,12 +7,13 @@ object SupportConversationPolicy {
     const val LEGACY_SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí."
     const val SYSTEM_GREETING = "Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal."
     fun isSponsor(tag: String): Boolean = tag.trim().uppercase(Locale.ROOT) in setOf("PATROCINADOR", "PATROCINIO", "SPONSOR", "PUBLICIDAD")
+    fun isAdministratorOnly(tag: String): Boolean = isSponsor(tag) || tag.trim().uppercase(Locale.ROOT) in setOf("PAGO", "PAYMENT", "PAGAMENTO")
     fun ticketTag(data: Map<String, Any>, fallback: String = "SOPORTE"): String {
         val tags = listOf("tag", "type", "category").mapNotNull { (data[it] as? String)?.takeIf(String::isNotBlank) }
-        return tags.firstOrNull(::isSponsor) ?: tags.firstOrNull() ?: fallback
+        return tags.firstOrNull(::isAdministratorOnly) ?: tags.firstOrNull() ?: fallback
     }
     fun isClosed(status: String): Boolean = status.trim().uppercase(Locale.ROOT) in setOf("SOLVED", "SOLUCIONADO", "RESUELTO", "CLOSED", "CERRADO", "COMPLETED", "COMPLETADO")
-    fun canView(role: String, tag: String): Boolean = role == "admin" || (role == "moderador" && !isSponsor(tag))
+    fun canView(role: String, tag: String): Boolean = role == "admin" || (role == "moderador" && !isAdministratorOnly(tag))
     fun hasStaffAnswer(messages: List<SupportMessageEntry>): Boolean = messages.any {
         it.senderRole.uppercase(Locale.ROOT) in setOf("SUPPORT", "ADMIN", "MODERATOR", "MODERADOR") &&
             !it.isGreeting && it.text.isNotBlank() && !SupportReplyManager.isDefaultGreeting(it.text)

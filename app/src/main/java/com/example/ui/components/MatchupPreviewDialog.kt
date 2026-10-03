@@ -48,17 +48,9 @@ fun MatchupPreviewDialog(
     val coaching = remember(myChampion, enemyOpponent, activeRole, language) {
         com.example.util.ChampionMatchupCoaching.forDuel(myChampion, enemyOpponent, activeRole, language)
     }
-    val isMyCounter = enemyOpponent.counteredBy.any {
-        it.equals(myChampion.name, ignoreCase = true) || it.equals(myChampion.id, ignoreCase = true)
-    } || myChampion.advantageAgainst.any {
-        it.equals(enemyOpponent.name, ignoreCase = true) || it.equals(enemyOpponent.id, ignoreCase = true)
-    }
-
-    val isEnemyCounter = myChampion.counteredBy.any {
-        it.equals(enemyOpponent.name, ignoreCase = true) || it.equals(enemyOpponent.id, ignoreCase = true)
-    } || enemyOpponent.advantageAgainst.any {
-        it.equals(myChampion.name, ignoreCase = true) || it.equals(myChampion.id, ignoreCase = true)
-    }
+    val relation = com.example.data.MatchupKnowledge.relation(myChampion,enemyOpponent)
+    val isMyCounter = relation == com.example.data.MatchupRelation.FAVORABLE
+    val isEnemyCounter = relation == com.example.data.MatchupRelation.UNFAVORABLE
 
     val matchupFavor = when {
         isMyCounter && !isEnemyCounter -> "FAVORABLE"

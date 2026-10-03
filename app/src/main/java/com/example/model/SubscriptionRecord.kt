@@ -34,13 +34,13 @@ data class SubscriptionRecord(
                 (planName.contains("Ajuste de Administrador", ignoreCase = true) && !amount.startsWith("-")))
 
     val isEssenceTransaction: Boolean
-        get() = isDeduction || isAddition ||
+        get() = source != "ESSENCE_PURCHASE" && (isDeduction || isAddition ||
                 amount.contains("EA", ignoreCase = true) ||
                 amount.contains("EN", ignoreCase = true) ||
                 planName.contains("Esencia", ignoreCase = true) ||
                 status.contains("Esencia", ignoreCase = true) ||
                 status.contains("Descontad", ignoreCase = true) ||
-                status.contains("Añadid", ignoreCase = true)
+                status.contains("Añadid", ignoreCase = true))
 
     val isOrangeEssence: Boolean
         get() = amount.contains("EN", ignoreCase = true) ||

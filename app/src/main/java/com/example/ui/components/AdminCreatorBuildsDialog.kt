@@ -389,6 +389,7 @@ fun AdminCreatorBuildsDialog(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            PanelReadControl(com.example.data.NotificationPanel.CREATOR)
             // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),

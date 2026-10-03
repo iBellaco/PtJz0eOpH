@@ -57,7 +57,9 @@ fun SubscriptionHistoryDialog(
             .collection("users").document(uid).addSnapshotListener { snapshot, error ->
                 if (error == null && snapshot != null) loadHistory()
             } }
-        onDispose { listener?.remove() }
+        val recordsListener = targetUid?.let { uid -> com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            .collection("users").document(uid).collection("subscription_history").addSnapshotListener { _, error -> if (error == null) loadHistory() } }
+        onDispose { listener?.remove(); recordsListener?.remove() }
     }
     LaunchedEffect(userId, userEmail) { loadHistory() }
 
@@ -75,6 +77,7 @@ fun SubscriptionHistoryDialog(
             border = BorderStroke(1.dp, HextechCardBorder)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
+                PanelReadControl(com.example.data.NotificationPanel.HISTORY)
                 // Header
                 Row(
                     modifier = Modifier

@@ -156,8 +156,8 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
             historyError = error != null
             if (error == null && snapshot != null) publications = com.example.data.StreamerHistoryCache.merge(context, uid, snapshot.documents.mapNotNull { it.data })
         }
-        val metricsListener = StreamerRepository.metrics.whereEqualTo("userId", uid).addSnapshotListener { snapshot, error ->
-            clicksAvailable = error == null && snapshot != null
+        val metricsListener = StreamerRepository.metrics.whereEqualTo("userId", uid).addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
+            clicksAvailable = error == null && snapshot != null && !snapshot.metadata.isFromCache
             if (clicksAvailable) clickMetrics = snapshot!!.documents.associate { it.id to (it.getLong("clickCount") ?: 0L) }
         }
         onDispose { listener.remove(); historyListener.remove(); metricsListener.remove() }
@@ -176,6 +176,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
         Surface(Modifier.fillMaxWidth(0.95f).heightIn(max = 650.dp), shape = RoundedCornerShape(16.dp), color = StreamBackground, border = BorderStroke(1.dp, StreamGold)) {
             Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(localizedString(R.string.streamer_panel), color = StreamGold, style = MaterialTheme.typography.titleLarge)
+                PanelReadControl(com.example.data.NotificationPanel.STREAMER)
                 Text(localizedString(R.string.streamer_requirement), color = Color.White)
                 Text(localizedString(R.string.streamer_expiry_notice), color = Color.LightGray)
                 StreamerSubmissionFeedback(busy && submitting, submitted)
@@ -203,6 +204,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                     else item
                 }
                 StreamerPublicationHistory(history, now)
+                if (!clicksAvailable && history.any { it["status"] == "APPROVED" || it["status"] == "ENDED" }) Text(com.example.util.tr("No se pudieron consultar los clics. Vuelve a intentarlo."), color = Color(0xFFFF8A80))
                 if (historyError) Text(localizedString(R.string.streamer_history_error), color = Color(0xFFFF8A80))
                 TextButton(onClick = onDismiss, enabled = !busy) { Text(localizedString(R.string.streamer_close)) }
             }
@@ -221,6 +223,7 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     val uri = LocalUriHandler.current
     val now = streamerClock()
+    LaunchedEffect(entries) { if (entries.isNotEmpty()) { val repair = StreamerRepository.repairMetrics(); if (repair.isFailure) result = repair } }
     val expiredRequests = requests.filter { StreamerPublicationPolicy.isExpired(it, now) }
     val pendingRequests = requests.filterNot { StreamerPublicationPolicy.isExpired(it, now) }
     LaunchedEffect(expiredRequests.map { it["id"] }) {
@@ -237,6 +240,7 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
         onDispose { listener.remove() }
     }
     Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        PanelReadControl(com.example.data.NotificationPanel.ADMINISTRATION)
         Text(localizedString(R.string.streamer_requirement), color = Color.White)
         Text(localizedString(R.string.streamer_count, entries.size), color = StreamGold)
         if (entries.size >= 5) Text(localizedString(R.string.streamer_max), color = StreamGold)

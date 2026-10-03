@@ -17,6 +17,127 @@ try {
     for (const [uid, role] of [['user','free'],['other','free'],['mod','moderador'],['admin','admin'],['s1','streamer'],['s2','streamer']]) await setDoc(doc(store, 'users', uid), { role, email: `${uid}@test.invalid`, registeredDevices: [] });
     await setDoc(doc(store, 'system_config', 'streamer_live'), { entries: [] });
   });
+  const economy = db('economy');
+  const future = Date.now() + 86400000 * 90;
+  await env.withSecurityRulesDisabled(async context => {
+    const store=context.firestore();
+    await setDoc(doc(store, 'users/economy'), { role:'creador', secondaryRole:'streamer', email:'economy@test.invalid', blueEssence:2000, orangeEssence:120, premiumUntil:Timestamp.fromMillis(future) });
+    await setDoc(doc(store, 'users/concurrent'), {role:'free', email:'concurrent@test.invalid', orangeEssence:10});
+  });
+  function purchase(store, uid, id, plan='MONTHLY', currency='BLUE', override={}) {
+    return runTransaction(store, async tx => {
+      const profile = doc(store, `users/${uid}`), operation = doc(store, `users/${uid}/economy_operations/${id}`);
+      if ((await tx.get(operation)).exists()) return;
+      const account = (await tx.get(profile)).data(), timestamp=Date.now();
+      const field=currency==='BLUE'?'blueEssence':'orangeEssence', days=plan==='MONTHLY'?30:365;
+      const cost=plan==='MONTHLY'?(currency==='BLUE'?100:9):(currency==='BLUE'?1100:95);
+      const old=account.premiumUntil instanceof Timestamp?account.premiumUntil.toMillis():(account.premiumUntil||0);
+      const until=Math.max(timestamp,old)+days*86400000;
+      const receipt={id,timestamp,durationMillis:days*86400000,planName:'Premium',status:'Completado',amount:`-${cost}`,source:'ESSENCE_PURCHASE'};
+      tx.set(operation,{id,userId:uid,kind:'PREMIUM',plan,currency,cost,premiumUntil:until,timestamp,createdAt:serverTimestamp(),receipt,...override});
+      tx.update(profile,{[field]:(account[field]||0)-cost,premiumUntil:until,subscriptionPlan:receipt.planName,lastEconomyOperation:id});
+      tx.set(doc(store,`users/${uid}/subscription_history/${id}`),receipt);
+    });
+  }
+  await test('essence plans use exact prices and inherit time without changing either role',async()=>{
+    for(const [id,plan,currency,days,price] of [['monthly-blue','MONTHLY','BLUE',30,100],['monthly-orange','MONTHLY','ORANGE',30,9],['annual-blue','ANNUAL','BLUE',365,1100],['annual-orange','ANNUAL','ORANGE',365,95]]) {
+      const before=(await getDoc(doc(economy,'users/economy'))).data();
+      await assertSucceeds(purchase(economy,'economy',id,plan,currency));
+      const after=(await getDoc(doc(economy,'users/economy'))).data();
+      const old=before.premiumUntil instanceof Timestamp?before.premiumUntil.toMillis():before.premiumUntil;
+      assert.equal(after.premiumUntil,old+days*86400000);assert.equal(after.role,'creador');assert.equal(after.secondaryRole,'streamer');
+      const field=currency==='BLUE'?'blueEssence':'orangeEssence'; assert.equal(after[field],before[field]-price);
+      assert.equal((await getDoc(doc(economy,`users/economy/economy_operations/${id}`))).data().cost,price);
+    }
+  });
+  await test('purchase retries are idempotent and receipts cannot be overwritten',async()=>{
+    const before=(await getDoc(doc(economy,'users/economy'))).data();
+    await assertSucceeds(purchase(economy,'economy','monthly-blue'));
+    assert.deepEqual((await getDoc(doc(economy,'users/economy'))).data(),before);
+    await assertFails(updateDoc(doc(economy,'users/economy/economy_operations/monthly-blue'),{cost:0}));
+    await assertFails(updateDoc(doc(economy,'users/economy/subscription_history/monthly-blue'),{amount:'0'}));
+  });
+  await test('users cannot credit essence, forge purchases or change entitlement separately',async()=>{
+    await assertFails(updateDoc(doc(economy,'users/economy'),{orangeEssence:100000}));
+    await assertFails(purchase(economy,'economy','wrong-price','MONTHLY','BLUE',{cost:1}));
+    await assertFails(purchase(economy,'economy','wrong-duration','MONTHLY','BLUE',{premiumUntil:Date.now()+999999999999}));
+    await assertFails(setDoc(doc(economy,'users/economy/economy_operations/standalone'),{userId:'economy',id:'standalone',createdAt:serverTimestamp(),receipt:{}}));
+    await assertFails(setDoc(doc(economy,'users/economy/subscription_history/fake'),{source:'ESSENCE_PURCHASE',amount:'-9 EN'}));
+    assert.equal((await getDoc(doc(economy,'users/economy/economy_operations/wrong-price'))).exists(),false);
+  });
+  await test('concurrent purchases cannot overdraw a balance',async()=>{
+    const store=db('concurrent');
+    const result=await Promise.allSettled([purchase(store,'concurrent','first','MONTHLY','ORANGE'),purchase(store,'concurrent','second','MONTHLY','ORANGE')]);
+    assert.equal(result.filter(r=>r.status==='fulfilled').length,1);
+    assert.equal((await getDoc(doc(store,'users/concurrent'))).data().orangeEssence,1);
+    assert.equal((await getDocs(collection(store,'users/concurrent/subscription_history'))).size,1);
+  });
+  function redeem(id, amount, override={}) {
+    return runTransaction(economy,async tx=>{
+      const profile=doc(economy,'users/economy'),operation=doc(economy,`users/economy/economy_operations/${id}`);
+      if((await tx.get(operation)).exists())return;
+      const account=(await tx.get(profile)).data(),timestamp=Date.now();
+      const receipt={id,timestamp,durationMillis:0,planName:'Canje de Esencia Naranja',status:'Pendiente',amount:`-${amount} EN`,source:'CASH_REDEMPTION'};
+      tx.set(operation,{id,userId:'economy',kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',timestamp,createdAt:serverTimestamp(),receipt});
+      tx.update(profile,{orangeEssence:account.orangeEssence-amount,lastEconomyOperation:id});
+      tx.set(doc(economy,`cash_redemptions/${id}`),{id,userId:'economy',email:'economy@test.invalid',amount,usd:amount,paymentCurrency:'USDT',network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override});
+      tx.set(doc(economy,`users/economy/subscription_history/${id}`),receipt);
+    });
+  }
+  await test('cash requests debit atomically and keep owner-only receipts',async()=>{
+    await assertSucceeds(redeem('cash-ten',10));
+    const before=(await getDoc(doc(economy,'users/economy'))).data();
+    await assertSucceeds(redeem('cash-ten',10));
+    assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before.orangeEssence);
+    await assertSucceeds(getDoc(doc(admin,'cash_redemptions/cash-ten')));
+    await assertFails(getDoc(doc(other,'cash_redemptions/cash-ten')));
+    await assertFails(getDocs(collection(other,'cash_redemptions')));
+    await assertSucceeds(getDocs(query(collection(economy,'cash_redemptions'),where('userId','==','economy'))));
+  });
+  await test('cash amount, paid status and refunds cannot be forged by a user',async()=>{
+    await assertFails(redeem('wrong-cash-amount',3));
+    await assertFails(redeem('fake-paid',10,{status:'PAID'}));
+    await assertFails(redeem('fake-usd',10,{usd:1000}));
+    await assertFails(redeem('fake-wallet',10,{wallet:'wrong-wallet'}));
+    await assertFails(redeem('fake-network',10,{network:'UNKNOWN'}));
+    await assertFails(updateDoc(doc(economy,'cash_redemptions/cash-ten'),{status:'PAID'}));
+    await assertFails(deleteDoc(doc(economy,'cash_redemptions/cash-ten')));
+    await assertFails(redeem('insufficient',50));
+  });
+  await test('staff can reject a cash request and refund once in one transaction',async()=>{
+    const before=(await getDoc(doc(admin,'users/economy'))).data().orangeEssence;
+    await assertSucceeds(runTransaction(admin,async tx=>{
+      const request=doc(admin,'cash_redemptions/cash-ten'),profile=doc(admin,'users/economy');
+      const r=await tx.get(request),p=await tx.get(profile);assert.equal(r.data().status,'PENDING');
+      tx.update(profile,{orangeEssence:p.data().orangeEssence+r.data().amount});
+      tx.update(request,{status:'REJECTED',resolvedAt:serverTimestamp()});
+      tx.update(doc(admin,'users/economy/subscription_history/cash-ten'),{status:'Rechazado y reembolsado'});
+    }));
+    assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before+10);
+  });
+  await test('payment conversation is private to its owner and the administrator',async()=>{
+    const data={...ticket('payment','PAGO'),staffVisible:false};
+    await assertSucceeds(setDoc(doc(user,'support_reports/payment'),data));
+    await assertSucceeds(getDoc(doc(admin,'support_reports/payment')));
+    await assertFails(getDoc(doc(moderator,'support_reports/payment')));
+    await assertFails(getDoc(doc(other,'support_reports/payment')));
+    await assertFails(setDoc(doc(user,'support_reports/payment-exposed'),{...data,staffVisible:true}));
+  });
+  await test('all cash request amounts debit the exact one-to-one USDT value',async()=>{
+    await updateDoc(doc(admin,'users/economy'),{orangeEssence:100});
+    for(const amount of [25,50]) {
+      const before=(await getDoc(doc(economy,'users/economy'))).data().orangeEssence;
+      await assertSucceeds(redeem(`cash-${amount}`,amount));
+      assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before-amount);
+      assert.equal((await getDoc(doc(economy,`cash_redemptions/cash-${amount}`))).data().usd,amount);
+    }
+  });
+  await test('read acknowledgements synchronize without changing pending sponsorships',async()=>{
+    await assertSucceeds(setDoc(doc(user,'users/user/panel_reads/sponsor-read'),{event:'notice:sponsor',revision:'',readAt:serverTimestamp()}));
+    await assertSucceeds(getDoc(doc(db('user'),'users/user/panel_reads/sponsor-read')));
+    await assertFails(getDoc(doc(other,'users/user/panel_reads/sponsor-read')));
+    await assertFails(setDoc(doc(other,'users/user/panel_reads/forged'),{event:'notice:sponsor',revision:'',readAt:serverTimestamp()}));
+  });
   await test('ticket and inbox mirror are created atomically with one system greeting', async () => {
     const batch = writeBatch(user); batch.set(doc(user, 'support_reports', 'ticket'), ticket('ticket')); batch.set(doc(user, 'users/user/messages/ticket'), ticket('ticket')); await assertSucceeds(batch.commit());
   });

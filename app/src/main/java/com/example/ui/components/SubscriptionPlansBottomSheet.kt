@@ -1,391 +1,90 @@
 package com.example.ui.components
 
-import com.example.util.tr
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.data.*
+import com.example.model.PremiumAccessPolicy
 import com.example.ui.theme.*
-import android.widget.Toast
-import com.example.util.SubscriptionManager
+import com.example.util.*
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubscriptionPlansBottomSheet(
-    onDismiss: () -> Unit
-) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+fun SubscriptionPlansBottomSheet(onDismiss: () -> Unit) {
+    val blue by SubscriptionManager.blueEssence.collectAsState()
+    val orange by SubscriptionManager.orangeEssence.collectAsState()
+    val role by SubscriptionManager.userRole.collectAsState()
+    val secondary by SubscriptionManager.secondaryRole.collectAsState()
+    val claim by AuthManager.isAdminClaim.collectAsState()
+    var selected by remember { mutableStateOf<Pair<EssencePremiumPlan, EssenceCurrency>?>(null) }
+    var operationId by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    var feedback by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    val context = androidx.compose.ui.platform.LocalContext.current
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = HextechDarkBg,
-        tonalElevation = 0.dp
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = Icons.Default.WorkspacePremium,
-                contentDescription = null,
-                tint = HextechGold,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(bottom = 8.dp)
-            )
-
-            Text(
-                text = tr("Desbloquea tu Máximo Potencial"),
-                color = TextPrimary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.ExtraBold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Text(
-                text = tr("Elige el plan que mejor se adapte a tu estilo de juego: pases temporales por horas/días o suscripción continua."),
-                color = TextSecondary,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-
-            val premiumFeatures = listOf(
-                FeatureItem("Acceso al asistente", true, isHighlight = false, icon = Icons.Default.Check),
-                FeatureItem("Escáner Automático del draft", true, isHighlight = true, icon = Icons.Default.AutoAwesome),
-                FeatureItem("Historial del draft", true, isHighlight = true, icon = Icons.Default.Save),
-                FeatureItem("Win Rate personal", true, isHighlight = true, icon = Icons.Default.Star),
-                FeatureItem("Campeones Favoritos", true, isHighlight = true, icon = Icons.Default.Star),
-                FeatureItem("Temas Exclusivos", true, isHighlight = true, icon = Icons.Default.Palette),
-                FeatureItem("Avatares Exclusivos", true, isHighlight = true, icon = Icons.Default.WorkspacePremium)
-            )
-
-            // Free Card (Primero)
-            FreePlanCard(
-                title = "Plan Gratuito",
-                price = "Gratis",
-                features = listOf(
-                    FeatureItem("Acceso al asistente", true),
-                    FeatureItem("Escáner Automático del draft", false),
-                    FeatureItem("Historial del draft", false),
-                    FeatureItem("Win Rate personal", false),
-                    FeatureItem("Campeones Favoritos", false),
-                    FeatureItem("Temas Exclusivos", false),
-                    FeatureItem("Avatares Exclusivos", false)
-                )
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Premium Card (Mensual)
-            PremiumPlanCard(
-                title = "Coach Premium (Mensual)",
-                price = "$10.00",
-                period = "/ mes",
-                isPopular = false,
-                features = premiumFeatures,
-                onCancel = onDismiss,
-                onSubscribe = {
-                    Toast.makeText(context, com.example.util.appTr("Servicio de suscripción temporalmente fuera de servicio"), Toast.LENGTH_LONG).show()
+    selected?.let { (plan, currency) ->
+        val planLabel = tr(if (plan == EssencePremiumPlan.MONTHLY) "Mensual" else "Anual")
+        AlertDialog(onDismissRequest = { if (!busy) selected = null },
+            title = { Text(tr("Confirmar suscripción")) },
+            text = { Column { Text(tr("Se descontarán ${plan.cost(currency)} ${currency.abbreviation}. El plan $planLabel añade ${plan.days} días a tu tiempo premium.")); feedback?.let { Text(tr(it), color = DangerRed) } } },
+            confirmButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("premium_purchase_confirm"), onClick = {
+                busy = true; feedback = null
+                scope.launch {
+                    val result = EssenceEconomyRepository.purchase(operationId, plan, currency)
+                    busy = false
+                    if (result.isSuccess) { selected = null; feedback = "Suscripción activada" }
+                    else feedback = economyFailure(result.exceptionOrNull())
                 }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Premium Anual Card
-            PremiumPlanCard(
-                title = "Coach Premium (Anual)",
-                price = "$110.00",
-                period = "/ año",
-                isPopular = true,
-                features = premiumFeatures,
-                onCancel = onDismiss,
-                onSubscribe = {
-                    Toast.makeText(context, com.example.util.appTr("Servicio de suscripción temporalmente fuera de servicio"), Toast.LENGTH_LONG).show()
-                }
-            )
-
-            Spacer(modifier = Modifier.height(40.dp))
-        }
+            }) { Text(tr(if (busy) "Procesando…" else "Confirmar")) } },
+            dismissButton = { TextButton(enabled = !busy, onClick = { selected = null; feedback = null }) { Text(tr("Cancelar")) } })
     }
-}
-
-data class FeatureItem(
-    val text: String,
-    val isIncluded: Boolean,
-    val isHighlight: Boolean = false,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector? = null
-)
-
-@Composable
-private fun PremiumPlanCard(
-    title: String,
-    price: String,
-    period: String,
-    isPopular: Boolean = false,
-    features: List<FeatureItem>,
-    onCancel: () -> Unit,
-    onSubscribe: () -> Unit
-) {
-    val gradientBrush = Brush.linearGradient(
-        colors = listOf(HextechGold, HextechCyan)
-    )
-
-    val bgGradientBrush = Brush.linearGradient(
-        colors = listOf(HextechGold.copy(alpha = 0.15f), HextechCyan.copy(alpha = 0.05f))
-    )
-
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp), // Space for the floating badge
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-            border = BorderStroke(2.dp, gradientBrush)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(bgGradientBrush)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = com.example.util.tr(title),
-                                color = HextechGold,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                            Row(verticalAlignment = Alignment.Bottom) {
-                                Text(
-                                    text = com.example.util.tr(price),
-                                    color = TextPrimary,
-                                    fontSize = 28.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
-                                Text(
-                                    text = com.example.util.tr(period),
-                                    color = TextSecondary,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                    HorizontalDivider(color = HextechGold.copy(alpha = 0.3f))
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    features.forEach { feature ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(if (feature.isHighlight) HextechGold.copy(alpha = 0.2f) else Color.Transparent),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = feature.icon ?: Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = if (feature.isHighlight) HextechGold else HextechCyan,
-                                    modifier = Modifier.size(if (feature.isHighlight) 16.dp else 20.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = com.example.util.tr(feature.text),
-                                color = if (feature.isHighlight) HextechGold else TextPrimary,
-                                fontSize = 14.sp,
-                                fontWeight = if (feature.isHighlight) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedButton(
-                            onClick = onCancel,
-                            modifier = Modifier
-                                .weight(0.35f)
-                                .height(54.dp),
-                            shape = RoundedCornerShape(14.dp),
-                            border = BorderStroke(1.dp, Color.Gray),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.LightGray)
-                        ) {
-                            Text(
-                                text = tr("Cancelar"),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        HextechAnimatedButton(
-                            onClick = onSubscribe,
-                            backgroundBrush = Brush.horizontalGradient(listOf(HextechGold, HextechGoldLight)),
-                            borderColor = HextechCyan,
-                            glowColor = HextechGold,
-                            modifier = Modifier
-                                .weight(0.65f)
-                                .height(54.dp),
-                            shape = RoundedCornerShape(14.dp),
-                            enableShimmer = true,
-                            enablePulse = true
-                        ) {
-                            Text(
-                                text = tr("Suscribirse"),
-                                color = HextechDarkBg,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                        }
-                    }
-                }
+    ModalBottomSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = HextechDarkBg) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text(tr("Suscripción Premium"), style = MaterialTheme.typography.headlineSmall, color = HextechGold)
+            PanelReadControl(NotificationPanel.PLANS)
+            Text(tr("Saldo: $blue EA • $orange EN"), color = HextechCyan)
+            Text(tr("Escáner Automático del draft"), color = TextPrimary)
+            Text(tr("Historial del draft"), color = TextPrimary)
+            Text(tr("Campeones Favoritos • Temas Exclusivos • Avatares Exclusivos"), color = TextPrimary)
+            if (PremiumAccessPolicy.isLifetime(role, secondary, claim)) Text(tr("Tu acceso premium es vitalicio"), color = HextechGold)
+            else EssencePlanOptions(blue, orange, !busy) { plan, currency ->
+                operationId = java.util.UUID.randomUUID().toString(); feedback = null; selected = plan to currency
             }
-        }
-
-        // Floating Badge
-        if (isPopular) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .background(gradientBrush, RoundedCornerShape(50))
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
-            ) {
-                Text(
-                    text = tr("MÁS POPULAR"),
-                    color = HextechDarkBg,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.sp
-                )
-            }
+            feedback?.let { Text(tr(it), color = HextechCyan) }
+            TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
         }
     }
 }
 
 @Composable
-private fun FreePlanCard(
-    title: String,
-    price: String,
-    features: List<FeatureItem>
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = HextechSurface),
-        border = BorderStroke(1.dp, TextMuted.copy(alpha = 0.2f))
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = com.example.util.tr(title),
-                        color = TextSecondary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = com.example.util.tr(price),
-                        color = TextMuted,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = TextMuted.copy(alpha = 0.1f))
-            Spacer(modifier = Modifier.height(16.dp))
-
-            features.forEach { feature ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (feature.isIncluded) Icons.Default.Check else Icons.Default.Close,
-                        contentDescription = null,
-                        tint = if (feature.isIncluded) TextSecondary else DangerRed.copy(alpha = 0.7f),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = com.example.util.tr(feature.text),
-                        color = if (feature.isIncluded) TextSecondary else TextMuted,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Normal
-                    )
+fun EssencePlanOptions(blue: Long, orange: Long, enabled: Boolean = true,
+    onChoose: (EssencePremiumPlan, EssenceCurrency) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        EssencePremiumPlan.entries.forEach { plan ->
+            Surface(color = HextechSurface, border = BorderStroke(1.dp, HextechGold), shape = MaterialTheme.shapes.medium) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(tr(if (plan == EssencePremiumPlan.MONTHLY) "Mensual" else "Anual"), color = HextechGold, style = MaterialTheme.typography.titleLarge)
+                    Text(tr("${plan.days} días de Premium"), color = TextSecondary)
+                    Button(onClick = { onChoose(plan, EssenceCurrency.BLUE) }, enabled = enabled && blue >= plan.blueCost,
+                        modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_BLUE")) { Text(tr("${plan.blueCost} Esencias Azules")) }
+                    if (orange > 0) Button(onClick = { onChoose(plan, EssenceCurrency.ORANGE) }, enabled = enabled && orange >= plan.orangeCost,
+                        modifier = Modifier.fillMaxWidth().testTag("premium_${plan.name}_ORANGE")) { Text(tr("${plan.orangeCost} Esencias Naranjas")) }
+                    if (blue < plan.blueCost && orange < plan.orangeCost) Text(tr("Esencias insuficientes"), color = TextMuted)
                 }
             }
         }
     }
+}
+
+internal fun economyFailure(error: Throwable?): String = when {
+    generateSequence(error) { it.cause }.any { it is com.google.firebase.firestore.FirebaseFirestoreException && it.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED } ->
+        "No se pudo autorizar la operación. No se descontaron esencias."
+    error?.message?.contains("Esencias insuficientes") == true -> "Esencias insuficientes"
+    else -> "No se pudo completar la operación. Comprueba tu conexión y vuelve a intentarlo."
 }

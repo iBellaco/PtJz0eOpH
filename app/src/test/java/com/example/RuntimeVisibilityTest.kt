@@ -19,6 +19,7 @@ import com.example.ui.auth.AuthenticatedProfilePanel
 import com.google.firebase.auth.FirebaseUser
 import org.mockito.Mockito
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.Message
 import com.example.ui.theme.MyApplicationTheme
 import com.example.util.*
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -51,7 +52,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -88,14 +89,21 @@ class RuntimeVisibilityTest(private val screen: String) {
         org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
         val field = AuthManager::class.java.getDeclaredField("_isSignedIn").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
-        (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered") || screen == "creator-reader"
+        (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered") || screen == "creator-reader" || screen == "support-admin-notification"
         SubscriptionManager.userRole.value
         fun setFlow(target: Any, name: String, value: Any) {
             val variable = target.javaClass.getDeclaredField(name).apply { isAccessible = true }
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any>).value = value
         }
-        setFlow(SubscriptionManager, "_userRole", if (screen == "moderation-admin" || screen.startsWith("profile-admin") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else "free")
+        setFlow(SubscriptionManager, "_userRole", if (screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("profile-admin") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else "free")
+        if (screen == "premium-purchase-confirm") { setFlow(SubscriptionManager,"_blueEssence",1200L); setFlow(SubscriptionManager,"_orangeEssence",100L) }
+        else { setFlow(SubscriptionManager,"_blueEssence",0L); setFlow(SubscriptionManager,"_orangeEssence",0L) }
+        setFlow(SubscriptionManager,"_currentUserUid",if (screen == "support-admin-notification") "local-notification-admin" else "")
+        if (screen == "support-admin-notification") {
+            database.collection("support_reports").document("admin-new-message").set(mapOf("userId" to "other-user", "status" to "PENDING", "staffRead" to false,
+                "conversation" to listOf(mapOf("id" to "new-message", "senderRole" to "USER", "text" to "Ajuda"))))
+        }
         setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
         setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
         if (screen == "creator-reader") setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
@@ -120,6 +128,26 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen == "premium-purchase-confirm" -> SubscriptionPlansBottomSheet {}
+            screen == "usdt-wallet-fields" -> UsdtWalletFields(com.example.data.UsdtNetwork.ERC20,"0x1111111111111111111111111111111111111111",true,{},{})
+            screen == "support-admin-notification" -> {
+                val summary = userPanelNotificationSummary()
+                Column {
+                    PanelNotificationBadge(summary.count(com.example.data.NotificationPanel.SUPPORT),com.example.data.NotificationPanel.SUPPORT)
+                    UserNotificationIcon(summary.total)
+                }
+            }
+            screen.startsWith("essence-plans") -> Column(Modifier.verticalScroll(rememberScrollState())) {
+                EssencePlanOptions(if (screen == "essence-plans-insufficient") 99 else 1200,
+                    if (screen == "essence-plans-blue") 0 else if (screen == "essence-plans-insufficient") 8 else 100) { plan, currency -> copiedSummary = "${plan.name}:${currency.name}" }
+            }
+            screen == "cash-redemption-options" -> CashRedemptionOptions(25) { copiedSummary = it.toString() }
+            screen == "saved-data-statistics" -> SavedDataStatisticsContent(listOf(
+                com.example.data.SavedDataStatistic("Cuentas registradas", "Perfiles, roles, saldos, suscripciones y dispositivos registrados.", 42),
+                com.example.data.SavedDataStatistic("Contadores de streamers", "Clics acumulados de cada publicación.", 0),
+                com.example.data.SavedDataStatistic("Solicitudes de canje", "Importes solicitados, pagos manuales y devoluciones.", failed = true)))
+            screen == "inbox-circle-badge" -> Box(Modifier.padding(16.dp)) { CircularPanelNotificationButton(12, com.example.data.NotificationPanel.INBOX,
+                tr("Bandeja de Entrada"), androidx.compose.material.icons.Icons.Default.Message) { copiedSummary = "opened" } }
             screen == "panel-notification-animation" -> PanelNotificationBadge(3, com.example.data.NotificationPanel.CREATOR)
             screen.startsWith("user-notification") -> UserNotificationIcon(if (screen == "user-notification-empty") 0 else 3)
             screen == "streamer-guest-live" -> Column { LiveStreamersRow() }
@@ -220,6 +248,60 @@ class RuntimeVisibilityTest(private val screen: String) {
         if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
         when (screen) {
+            "premium-purchase-confirm" -> {
+                compose.onNodeWithTag("premium_MONTHLY_ORANGE").performScrollTo().performClick()
+                compose.onNodeWithText(appTr("Confirmar suscripción")).assertExists()
+                compose.onNodeWithTag("premium_purchase_confirm").assertIsEnabled()
+                inspect("confirmation")
+                compose.onNodeWithText(appTr("Cancelar")).performClick()
+                compose.onNodeWithTag("premium_purchase_confirm").assertDoesNotExist()
+                compose.onNodeWithTag("premium_MONTHLY_ORANGE").assertExists()
+            }
+            "usdt-wallet-fields" -> {
+                compose.onNodeWithTag("usdt_wallet").assertTextContains("0x1111111111111111111111111111111111111111")
+                compose.onNodeWithText(appTr("Billetera USDT no válida")).assertDoesNotExist()
+            }
+            "support-admin-notification" -> {
+                compose.waitUntil(10000) { compose.onAllNodesWithTag("panel_notification_badge_SUPPORT",useUnmergedTree=true).fetchSemanticsNodes().isNotEmpty() }
+                compose.onNodeWithTag("panel_notification_badge_SUPPORT",useUnmergedTree=true).assertExists()
+                compose.onNodeWithTag("user_navigation_badge",useUnmergedTree=true).assertExists()
+            }
+
+            "essence-plans-blue" -> {
+                compose.onNodeWithTag("premium_MONTHLY_BLUE").assertIsEnabled()
+                compose.onNodeWithTag("premium_ANNUAL_BLUE").performScrollTo().assertIsEnabled()
+                compose.onNodeWithTag("premium_MONTHLY_ORANGE").assertDoesNotExist()
+                compose.onNodeWithTag("premium_ANNUAL_ORANGE").assertDoesNotExist()
+            }
+            "essence-plans-orange" -> {
+                compose.onNodeWithTag("premium_MONTHLY_ORANGE").performScrollTo().assertIsEnabled().performClick()
+                Assert.assertEquals("MONTHLY:ORANGE", copiedSummary)
+                compose.onNodeWithTag("premium_ANNUAL_ORANGE").performScrollTo().assertIsEnabled().performClick()
+                Assert.assertEquals("ANNUAL:ORANGE", copiedSummary)
+            }
+            "essence-plans-insufficient" -> {
+                for (plan in listOf("MONTHLY", "ANNUAL")) for (currency in listOf("BLUE", "ORANGE"))
+                    compose.onNodeWithTag("premium_${plan}_$currency").performScrollTo().assertIsNotEnabled()
+            }
+            "cash-redemption-options" -> {
+                compose.onNodeWithTag("cash_redemption_10").assertIsEnabled()
+                compose.onNodeWithTag("cash_redemption_25").assertIsEnabled().performClick()
+                Assert.assertEquals("25", copiedSummary)
+                compose.onNodeWithTag("cash_redemption_50").assertIsNotEnabled()
+            }
+            "saved-data-statistics" -> {
+                compose.onNodeWithTag("saved_data_count_0").assertTextEquals("42")
+                compose.onNodeWithTag("saved_data_count_1").assertTextEquals("0")
+                compose.onNodeWithTag("saved_data_count_2").assertTextEquals(appTr("No disponible"))
+            }
+            "inbox-circle-badge" -> {
+                val icon = compose.onNodeWithTag("panel_notification_icon_INBOX", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val badge = compose.onNodeWithTag("panel_notification_badge_INBOX", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                Assert.assertTrue("Count is outside the bell", badge.left > icon.right)
+                compose.onNodeWithContentDescription(appTr("Bandeja de Entrada")).performClick()
+                Assert.assertEquals("opened", copiedSummary)
+            }
+
             "user-notification" -> {
                 compose.onNodeWithTag("user_navigation_badge").assertExists()
                 compose.onNodeWithText("3").assertExists()

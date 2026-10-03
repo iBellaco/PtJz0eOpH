@@ -79,7 +79,7 @@ object FeedbackRepository {
                 "userName" to (userName ?: "Usuario"),
                 "userEmail" to account.email.orEmpty(),
                 "contactEmail" to email.orEmpty(), "userId" to account.uid,
-                "staffVisible" to !SupportConversationPolicy.isSponsor(type), "userCanReply" to false,
+                "staffVisible" to !SupportConversationPolicy.isAdministratorOnly(type), "userCanReply" to false,
                 "conversation" to history.map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") account.uid else "") },
                 "userRead" to true, "isRead" to true, "hasNewAdminReply" to false, "staffRead" to false,
                 "appVersion" to appVersion,
