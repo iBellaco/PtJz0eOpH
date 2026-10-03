@@ -4968,6 +4968,13 @@ fun DraftAnalysisTab(
 
             // Secondary Recommendations
             val otherRecs = analysis.recommendations.filter { it.champion.id != topPick?.champion?.id }
+            // Keep the floating assistant's existing rendering path. The application
+            // loads alternatives progressively instead of laying out every long card
+            // while the champion picker is being dismissed.
+            var visibleRecommendationCount by remember(activeRole, selectedAllySlots, selectedEnemySlots, isFirstPick) {
+                mutableIntStateOf(4)
+            }
+            val visibleOtherRecs = if (isOverlay) otherRecs else otherRecs.take(visibleRecommendationCount)
             if (otherRecs.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
@@ -4985,10 +4992,11 @@ fun DraftAnalysisTab(
                 }
                 Spacer(modifier = Modifier.height(6.dp))
 
-                otherRecs.forEach { rec ->
+                visibleOtherRecs.forEach { rec ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .testTag("draft_secondary_recommendation")
                             .padding(vertical = 4.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .clickable { onSelectChampion(rec.champion) },
@@ -5062,6 +5070,20 @@ fun DraftAnalysisTab(
                 }
             }
             Spacer(modifier = Modifier.height(30.dp))
+            if (!isOverlay && visibleOtherRecs.size < otherRecs.size) {
+                androidx.compose.material3.OutlinedButton(
+                    onClick = { visibleRecommendationCount = (visibleRecommendationCount + 5).coerceAtMost(otherRecs.size) },
+                    modifier = Modifier.fillMaxWidth().testTag("draft_more_recommendations"),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = HextechCyan),
+                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.7f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(tr("Ver más recomendaciones"), fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.width(6.dp))
+                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, modifier = Modifier.size(18.dp))
+                }
+                Spacer(Modifier.height(16.dp))
+            }
         }
     }
 }

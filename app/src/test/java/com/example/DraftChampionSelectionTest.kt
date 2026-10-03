@@ -91,6 +91,15 @@ class DraftChampionSelectionTest(private val language: String) {
             val slots = if (team == "ally") DraftSessionManager.allySlots else DraftSessionManager.enemySlots
             Assert.assertEquals(names[index], slots.single { it.assignedRole == role }.champion.name)
             Assert.assertEquals(5, slots.size)
+            if (team == "ally" && index == 0) {
+                compose.onAllNodesWithTag("draft_secondary_recommendation").assertCountEquals(4)
+                compose.onNodeWithTag("draft_more_recommendations").performScrollTo().performClick()
+                compose.waitForIdle()
+                compose.onAllNodesWithTag("draft_secondary_recommendation").assertCountEquals(9)
+            } else if (team == "ally" && index == 1) {
+                // A changed draft starts with the best five again, keeping the first frame small.
+                compose.onAllNodesWithTag("draft_secondary_recommendation").assertCountEquals(4)
+            }
         }
         val originalEnemies = DraftSessionManager.enemySlots.toList()
         openField("ally", LaneRole.TOP)
