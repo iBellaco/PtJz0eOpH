@@ -3058,6 +3058,10 @@ fun UserDetailManagementDialog(
     var showGiveEssenceDialog by remember { mutableStateOf(false) }
     var showPrivateMessageDialog by remember { mutableStateOf(false) }
     var showUserMessagesViewerDialog by remember { mutableStateOf(false) }
+    var showManagedHistory by remember(uid) { mutableStateOf(false) }
+    if (isAdmin && showManagedHistory) {
+        SubscriptionHistoryDialog(userId = uid, userEmail = email, onDismiss = { showManagedHistory = false })
+    }
 
     val registeredDevices = (user["registeredDevices"] as? List<*>) ?: emptyList<Any>()
     var currentDeviceCount by remember { mutableStateOf(registeredDevices.size) }
@@ -3169,7 +3173,7 @@ fun UserDetailManagementDialog(
                                     modifier = Modifier.testTag("managed_user_secondary_role"))
                             }
                             Text(
-                                text = com.example.util.tr(email.ifBlank { "UID: $uid" }),
+                                text = com.example.util.tr(if (isAdmin) email.ifBlank { "UID: $uid" } else "UID: $uid"),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextMuted,
                                 fontSize = 11.sp
@@ -3193,8 +3197,15 @@ fun UserDetailManagementDialog(
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    if (isAdmin) item {
+                        OutlinedButton(onClick = { showManagedHistory = true }, modifier = Modifier.fillMaxWidth().testTag("managed_user_history")) {
+                            Icon(Icons.Default.History, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(tr("Historial"))
+                        }
+                    }
                     // SECCIÓN: EDITAR CORREO ELECTRÓNICO
-                    item {
+                    if (isAdmin) item {
                         Surface(
                             color = HextechSurfaceBg,
                             shape = RoundedCornerShape(10.dp),
@@ -4375,10 +4386,12 @@ fun UserDetailManagementDialog(
                             currentRole = newRole
                             currentBanned = isBanned
                             currentPremiumUntil = inheritedUntil
+                            if (newRole == "free") currentPremiumPlan = "FREE"
                             onUserUpdated(user.toMutableMap().apply {
                                 put("role", newRole)
                                 put("banned", isBanned)
                                 if (inheritedUntil != null) put("premiumUntil", inheritedUntil)
+                                if (newRole == "free") put("subscriptionPlan", "FREE")
                             })
                             onReloadAll()
                         }
@@ -5338,6 +5351,17 @@ private fun updateUserRoleInCloud(
         val inherited = com.example.model.PremiumAccessPolicy.deadline(account.get("premiumUntil"))
         val deadline = com.example.model.PremiumAccessPolicy.deadlineForRole(targetRoleId, inherited, System.currentTimeMillis())
         if (deadline != inherited && deadline != null) updatePayload["premiumUntil"] = deadline
+        if (targetRoleId == "free") {
+            updatePayload["premiumUntil"] = 0L
+            updatePayload["subscriptionPlan"] = "FREE"
+            if (inherited != null && inherited > 0L) {
+                updatePayload["subscriptionHistory"] = com.google.firebase.firestore.FieldValue.arrayUnion(mapOf(
+                    "id" to "premium_revoked_" + java.util.UUID.randomUUID(),
+                    "timestamp" to System.currentTimeMillis(), "durationMillis" to 0L,
+                    "planName" to "Suscripción Premium retirada", "status" to "Completado",
+                    "amount" to "0", "source" to "ADMIN_REVOCATION"))
+            }
+        }
         transaction.update(userRef, updatePayload)
         deadline
     }

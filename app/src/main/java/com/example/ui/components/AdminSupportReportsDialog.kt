@@ -242,7 +242,7 @@ fun AdminSupportReportsDialog(
             val matchesSearch = if (searchQuery.isBlank()) true else {
                 item.title.contains(searchQuery, ignoreCase = true) ||
                 item.description.contains(searchQuery, ignoreCase = true) ||
-                item.userEmail.contains(searchQuery, ignoreCase = true) ||
+                (isAdmin && item.userEmail.contains(searchQuery, ignoreCase = true)) ||
                 item.userName.contains(searchQuery, ignoreCase = true) ||
                 item.device.contains(searchQuery, ignoreCase = true)
             }
@@ -1058,8 +1058,8 @@ private fun UnifiedReportAdminCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val emailOrName = when {
-                    report.userEmail.isNotBlank() -> report.userEmail
-                    report.userName.isNotBlank() -> report.userName
+                    isAdmin && report.userEmail.isNotBlank() -> report.userEmail
+                    report.userName.isNotBlank() && (isAdmin || !report.userName.contains("@")) -> report.userName
                     else -> "Usuario de la App"
                 }
 
@@ -1429,8 +1429,8 @@ private fun UnifiedReportAdminCard(
                         )
 
                         // Información del moderador que respondió
-                        val authorName = report.repliedBy.takeIf { it.isNotBlank() } ?: "Equipo Coach"
-                        val authorMail = report.repliedEmail.takeIf { it.isNotBlank() }
+                        val authorName = report.repliedBy.takeIf { it.isNotBlank() && (isAdmin || !it.contains("@")) } ?: "Equipo Coach"
+                        val authorMail = report.repliedEmail.takeIf { isAdmin && it.isNotBlank() }
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -1486,7 +1486,7 @@ private fun UnifiedReportAdminCard(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(tr("Copiar"), color = TextSecondary, fontSize = 10.sp)
                             }
-                            if (report.userEmail.isNotBlank()) {
+                            if (isAdmin && report.userEmail.isNotBlank()) {
                                 OutlinedButton(
                                     onClick = {
                                         try {

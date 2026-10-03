@@ -1,382 +1,447 @@
 name: Build and Release APK
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
-
 concurrency:
   group: coach-apk-${{ github.ref }}
   cancel-in-progress: true
-
 permissions:
   actions: write
   contents: write
   packages: write
-
 jobs:
-  build-and-release:
+  build-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    timeout-minutes: 20
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Validate signing publication policy
-        run: python3 -m unittest discover -s .github/scripts -p test_prepare_debug_signing.py
-
-      - name: Check publication signing configuration
-        if: github.ref == 'refs/heads/main'
-        env:
-          COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
-          COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
-        run: |
-          python3 - <<'PYSIGN'
-          import os, re
-          from pathlib import Path
-          key_present = bool(os.environ.get('COACH_DEBUG_KEYSTORE_BASE64', '').strip())
-          certificate_valid = bool(re.fullmatch(r'[0-9a-fA-F]{64}', os.environ.get('COACH_SIGNING_CERT_SHA256', '').strip()))
-          if not key_present or not certificate_valid:
-              summary = 'Publicación bloqueada: falta la configuración de firma persistente.\n\nConfigurar el secreto `COACH_DEBUG_KEYSTORE_BASE64` con la clave original y la variable pública `COACH_SIGNING_CERT_SHA256` con su huella. Las fusiones ya realizadas no requieren intervención manual. Una firma nueva no puede actualizar instalaciones anteriores.\n\n[Instrucciones de firma](https://github.com/iBellaco/PtJz0eOpH/blob/main/docs/persistent-apk-signing.md)\n'
-              Path(os.environ['GITHUB_STEP_SUMMARY']).write_text(summary)
-              raise SystemExit('Falta la clave persistente de firma o su huella. Consulta el resumen del flujo.')
-          PYSIGN
-
-      - name: Remove any legacy wrapper binaries
-        run: |
-          rm -f gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties gradlew gradlew.bat || true
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Configure Android SDK Environment
-        run: |
-          ANDROID_ROOT="/usr/local/lib/android/sdk"
-          if [ ! -d "$ANDROID_ROOT" ]; then
-            ANDROID_ROOT="$HOME/Android/Sdk"
+    - &id001
+      name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - name: Validate signing publication policy
+      run: python3 -m unittest discover -s .github/scripts -p test_prepare_debug_signing.py
+    - name: Check publication signing configuration
+      if: github.ref == 'refs/heads/main'
+      env:
+        COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
+        COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
+      run: |
+        python3 - <<'PYSIGN'
+        import os, re
+        from pathlib import Path
+        key_present = bool(os.environ.get('COACH_DEBUG_KEYSTORE_BASE64', '').strip())
+        certificate_valid = bool(re.fullmatch(r'[0-9a-fA-F]{64}', os.environ.get('COACH_SIGNING_CERT_SHA256', '').strip()))
+        if not key_present or not certificate_valid:
+            summary = 'Publicación bloqueada: falta la configuración de firma persistente.\n\nConfigurar el secreto `COACH_DEBUG_KEYSTORE_BASE64` con la clave original y la variable pública `COACH_SIGNING_CERT_SHA256` con su huella. Las fusiones ya realizadas no requieren intervención manual. Una firma nueva no puede actualizar instalaciones anteriores.\n\n[Instrucciones de firma](https://github.com/iBellaco/PtJz0eOpH/blob/main/docs/persistent-apk-signing.md)\n'
+            Path(os.environ['GITHUB_STEP_SUMMARY']).write_text(summary)
+            raise SystemExit('Falta la clave persistente de firma o su huella. Consulta el resumen del flujo.')
+        PYSIGN
+    - name: Remove any legacy wrapper binaries
+      run: |
+        rm -f gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties gradlew gradlew.bat || true
+    - &id002
+      name: Set up Java 21
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '21'
+    - &id006
+      name: Configure Android SDK Environment
+      run: |
+        SDK_ROOT="/usr/local/lib/android/sdk"
+        echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+        echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+        echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+    - &id003
+      name: Prepare environment files
+      run: |
+        if [ ! -f ".env" ]; then
+          if [ -f ".env.example" ]; then
+            cp .env.example .env
+            echo "Created .env from .env.example"
+          else
+            touch .env
+            echo "Created fallback .env"
           fi
-          # Ensure current runner user has full ownership and permissions of the Android SDK directory
-          sudo chown -R $USER:$USER "$ANDROID_ROOT" 2>/dev/null || true
-          chmod -R u+rwX "$ANDROID_ROOT" 2>/dev/null || true
-
-          echo "ANDROID_HOME=$ANDROID_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_ROOT" >> $GITHUB_ENV
-          
-          mkdir -p "$ANDROID_ROOT/licenses"
-          mkdir -p "$HOME/.android/licenses"
-          
-          # Accept all standard and preview Android SDK licenses
-          echo -e "\n89337d125679637817a3880e5490d21a99ab6439\n24333f8a63b1d79430e4539e1e06834d0a6e4eb3\nd56f5187479451eabf01fb78af6dfcb131a6481e\n84831b9409646a256e307347618222608606e85a\n601085b94cd77f0b54ff86406955499f34350d24" | tee "$ANDROID_ROOT/licenses/android-sdk-license" > "$HOME/.android/licenses/android-sdk-license"
-          echo -e "\n84831b9409646a256e307347618222608606e85a\n601085b94cd77f0b54ff86406955499f34350d24" | tee "$ANDROID_ROOT/licenses/android-sdk-preview-license" > "$HOME/.android/licenses/android-sdk-preview-license"
-          echo -e "\nd975f751698a77b662f1254ddbeed3901e0684d3" | tee "$ANDROID_ROOT/licenses/intel-android-extra-license" > "$HOME/.android/licenses/intel-android-extra-license"
-          echo -e "\ne9acab5b5fbb560a72cfa4f69c30ed2e08dce373" | tee "$ANDROID_ROOT/licenses/mips-android-sysimage-license" > "$HOME/.android/licenses/mips-android-sysimage-license"
-          echo -e "\n33b6a2b64607f11b759f320ef9dff4ae5c47d97a" | tee "$ANDROID_ROOT/licenses/google-gdk-license" > "$HOME/.android/licenses/google-gdk-license"
-
-          # Find sdkmanager
-          SDKMANAGER_PATH=$(find $ANDROID_ROOT/cmdline-tools -name sdkmanager 2>/dev/null | head -n 1)
-          if [ -z "$SDKMANAGER_PATH" ]; then
-            SDKMANAGER_PATH=$(which sdkmanager || true)
-          fi
-          
-          if [ -n "$SDKMANAGER_PATH" ]; then
-            SDK_BIN_DIR=$(dirname "$SDKMANAGER_PATH")
-            echo "$SDK_BIN_DIR" >> $GITHUB_PATH
-            echo "Using sdkmanager from: $SDKMANAGER_PATH"
-            yes | "$SDKMANAGER_PATH" --licenses || true
-            yes | "$SDKMANAGER_PATH" --channel=3 "platforms;android-36" "build-tools;36.0.0" "platform-tools" || true
-            yes | "$SDKMANAGER_PATH" "platforms;android-36" "build-tools;36.0.0" "platform-tools" || true
-            yes | "$SDKMANAGER_PATH" "platforms;android-35" "build-tools;35.0.0" || true
-          fi
-
-      - name: Prepare environment files
-        run: |
-          if [ ! -f ".env" ]; then
-            if [ -f ".env.example" ]; then
-              cp .env.example .env
-              echo "Created .env from .env.example"
-            else
-              touch .env
-              echo "Created fallback .env"
-            fi
-          fi
-          cp .env app/.env 2>/dev/null || true
-
-      - name: Set up Gradle 9.3.1
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.3.1'
-          cache-disabled: false
-
-      - name: Restore persistent debug keystore
-        env:
-          COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
-          COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
-          COACH_REQUIRE_PERSISTENT_SIGNING: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
-        run: python3 .github/scripts/prepare-debug-signing.py
-
-      - name: Create google-services.json
-        run: |
-          cat << 'EOF' > app/google-services.json
-          {
-            "project_info": {
-              "project_number": "500606030430",
-              "project_id": "wild-rift-drafting",
-              "storage_bucket": "wild-rift-drafting.firebasestorage.app"
-            },
-            "client": [
-              {
-                "client_info": {
-                  "mobilesdk_app_id": "1:500606030430:android:d32178b0d793e97aa7dacf",
-                  "android_client_info": {
-                    "package_name": "com.Coach"
-                  }
-                },
-                "oauth_client": [],
-                "api_key": [
-                  {
-                    "current_key": "AIzaSyDFUZjKmw2K5IJT-p6E6vBvQ9Ons6xUhck"
-                  }
-                ],
-                "services": {
-                  "appinvite_service": {
-                    "other_platform_oauth_client": []
-                  }
+        fi
+        cp .env app/.env 2>/dev/null || true
+    - &id004
+      name: Set up Gradle 9.3.1
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: 9.3.1
+        cache-disabled: false
+    - name: Restore persistent debug keystore
+      env:
+        COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
+        COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
+        COACH_REQUIRE_PERSISTENT_SIGNING: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
+      run: python3 .github/scripts/prepare-debug-signing.py
+    - &id005
+      name: Create google-services.json
+      run: |
+        cat << 'EOF' > app/google-services.json
+        {
+          "project_info": {
+            "project_number": "500606030430",
+            "project_id": "wild-rift-drafting",
+            "storage_bucket": "wild-rift-drafting.firebasestorage.app"
+          },
+          "client": [
+            {
+              "client_info": {
+                "mobilesdk_app_id": "1:500606030430:android:d32178b0d793e97aa7dacf",
+                "android_client_info": {
+                  "package_name": "com.Coach"
                 }
               },
-              {
-                "client_info": {
-                  "mobilesdk_app_id": "1:500606030430:android:d32178b0d793e97aa7dacf",
-                  "android_client_info": {
-                    "package_name": "com.aistudio.wildriftdrafting.wrdftx"
-                  }
-                },
-                "oauth_client": [],
-                "api_key": [
-                  {
-                    "current_key": "AIzaSyDFUZjKmw2K5IJT-p6E6vBvQ9Ons6xUhck"
-                  }
-                ],
-                "services": {
-                  "appinvite_service": {
-                    "other_platform_oauth_client": []
-                  }
+              "oauth_client": [],
+              "api_key": [
+                {
+                  "current_key": "AIzaSyDFUZjKmw2K5IJT-p6E6vBvQ9Ons6xUhck"
+                }
+              ],
+              "services": {
+                "appinvite_service": {
+                  "other_platform_oauth_client": []
                 }
               }
-            ],
-            "configuration_version": "1"
-          }
-          EOF
+            },
+            {
+              "client_info": {
+                "mobilesdk_app_id": "1:500606030430:android:d32178b0d793e97aa7dacf",
+                "android_client_info": {
+                  "package_name": "com.aistudio.wildriftdrafting.wrdftx"
+                }
+              },
+              "oauth_client": [],
+              "api_key": [
+                {
+                  "current_key": "AIzaSyDFUZjKmw2K5IJT-p6E6vBvQ9Ons6xUhck"
+                }
+              ],
+              "services": {
+                "appinvite_service": {
+                  "other_platform_oauth_client": []
+                }
+              }
+            }
+          ],
+          "configuration_version": "1"
+        }
+        EOF
+    - name: Audit Portuguese text sinks
+      run: |
+        python3 tools/generate-component-items.py --check
+        python3 tools/import-component-icons.py --check
+        python3 tools/update-champion-builds.py --check
+        bash tools/audit-portuguese.sh
+    - name: Build Debug APK
+      env:
+        CI: 'true'
+      run: |
+        rm -rf app/build/outputs/apk/ || true
+        gradle :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace --no-daemon -x lint -x lintVitalRelease
 
-      - name: Audit Portuguese text sinks
-        run: |
-          python3 tools/generate-component-items.py --check
-          python3 tools/import-component-icons.py --check
-          python3 tools/update-champion-builds.py --check
-          bash tools/audit-portuguese.sh
+        EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
+        if [ ! -f "$EXPECTED_APK" ]; then
+          echo "Searching for any generated apk files..."
+          find app/build/outputs/ -name "*.apk" || true
+          echo "ERROR: Expected APK not found at $EXPECTED_APK"
+          exit 1
+        fi
+    - name: Verify APK
+      run: |
+        EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
+        if [ -f "$EXPECTED_APK" ] && [ -s "$EXPECTED_APK" ]; then
+          echo "Confirmed valid debug APK at: $EXPECTED_APK"
+          ls -lh "$EXPECTED_APK"
+        else
+          echo "ERROR: Expected APK not found at $EXPECTED_APK"
+          find app/build/outputs/ -name "*.apk" || true
+          exit 1
+        fi
+    - name: Upload debug APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug.apk
+        path: app/build/outputs/apk/debug/app-debug.apk
+        if-no-files-found: error
+        retention-days: 14
+    - name: Upload APKs for the parallel device audit
+      uses: actions/upload-artifact@v4
+      with:
+        name: installed-audit-apks
+        path: app/build/outputs/apk/
+        if-no-files-found: error
+        retention-days: 3
+    - name: Extract App Version from Gradle
+      id: app_version
+      run: |
+        VERSION_NAME=$(grep 'versionName =' app/build.gradle.kts | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/' | tr -d '[:space:]')
+        VERSION_CODE=$(grep 'versionCode =' app/build.gradle.kts | head -n 1 | sed -E 's/.*=[[:space:]]*([0-9]+).*/\1/' | tr -d '[:space:]')
 
-      - name: Check core regressions
-        env:
-          CI: "true"
-        run: gradle :app:testDebugUnitTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.SupportAndStreamerPolicyTest --tests com.example.WildRiftItemsCatalogTest --stacktrace --no-daemon
+        if [ -z "$VERSION_NAME" ]; then
+          VERSION_NAME="1.0"
+        fi
+        if [ -z "$VERSION_CODE" ]; then
+          VERSION_CODE="${{ github.run_number }}"
+        fi
 
-      - name: Upload core regression results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: core-regression-audit
-          path: app/build/test-results/testDebugUnitTest/TEST-*.xml
-          retention-days: 14
+        echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+        echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+        echo "App Version Name: $VERSION_NAME"
+        echo "App Version Code: $VERSION_CODE"
+    - name: Prepare APK release asset
+      id: prepare_asset
+      run: |
+        ASSET_DIR="${RUNNER_TEMP}/apk_release_asset"
+        mkdir -p "$ASSET_DIR"
+        VERSION_NAME="${{ steps.app_version.outputs.version_name }}"
+        VERSION_CODE="${{ steps.app_version.outputs.version_code }}"
+        ASSET_NAME="Coach-v${VERSION_NAME}-build-${VERSION_CODE}-debug.apk"
+        ASSET_PATH="${ASSET_DIR}/${ASSET_NAME}"
+        cp app/build/outputs/apk/debug/app-debug.apk "$ASSET_PATH"
+        echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
+        echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
+    - name: Publish early review APK
+      if: github.event_name == 'pull_request' || github.ref == 'refs/heads/pruebas'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG="review-v${{ steps.app_version.outputs.version_name }}-b${{ steps.app_version.outputs.version_code }}"
+        cat > review-notes.md <<'NOTES'
+        Coach: APK de revisión temprana. Las comprobaciones de pantallas y del APK instalado siguen en ejecución.
+        Este archivo tiene una firma temporal de pruebas si la firma persistente no está configurada; en ese caso no actualiza una instalación anterior. No es una publicación final validada.
+        NOTES
+        gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease --target "${{ github.event.pull_request.head.sha || github.sha }}" --title "Coach: revisión temprana ${{ steps.app_version.outputs.version_name }}" --notes-file review-notes.md
+        gh release upload "$TAG" "${{ steps.prepare_asset.outputs.asset_path }}" --clobber
+        printf 'APK de revisión disponible. Las comprobaciones completas siguen ejecutándose.\n' >> "$GITHUB_STEP_SUMMARY"
+  core-and-rendered:
+    needs:
+    - build-apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - *id001
+    - *id002
+    - *id003
+    - *id004
+    - *id005
+    - name: Check core regressions
+      env:
+        CI: 'true'
+      run: gradle :app:testDebugUnitTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest
+        --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests
+        com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests
+        com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.SupportAndStreamerPolicyTest
+        --tests com.example.WildRiftItemsCatalogTest --stacktrace --no-daemon
+    - name: Upload core regression results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: core-regression-audit
+        path: app/build/test-results/testDebugUnitTest/TEST-*.xml
+        retention-days: 14
+    - name: Inspect rendered Portuguese screens
+      env:
+        CI: 'true'
+      run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests
+        com.example.HubChampionNavigationTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests
+        com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.RequiredItemCorrectionsTest --tests com.example.ComponentItemsCatalogTest
+        -Proborazzi.test.record=true --stacktrace --no-daemon
+    - name: Upload Portuguese screenshots and rendered texts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: portuguese-rendered-audit
+        path: |
+          app/build/reports/portuguese-rendered/
+          app/build/test-results/testDebugUnitTest/
+        retention-days: 14
+    - name: Prepare focused Portuguese evidence
+      if: always()
+      run: |
+        python3 -m pip install --quiet Pillow
+        python3 - <<'PYFOCUS'
+        from pathlib import Path
+        import shutil
+        from PIL import Image
+        source = Path('app/build/reports/portuguese-rendered')
+        target = Path('app/build/reports/portuguese-focused')
+        target.mkdir(parents=True, exist_ok=True)
+        for file in source.glob('*.json'):
+            shutil.copy2(file, target / file.name)
+        for file in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml'):
+            shutil.copy2(file, target / file.name)
+        names = ['champion-situational-boot', 'champion-premium', 'champion-guest', 'champion-registered', 'component-catalog', 'component-item-tear_of_the_goddess', 'component-item-quicksilver_sash', 'component-item-bramble_vest', 'component-item-mejais_soulstealer', 'sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
+                 'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
+                 'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
+                 'premium-editor', 'premium-status', 'creator-reader',
+                 'profile-admin-notifications', 'panel-notification', 'essence-plans', 'cash-redemption', 'saved-data-statistics', 'storage-summary', 'matchup', 'inbox-circle', 'premium-purchase', 'usdt-wallet', 'support-admin-notification', 'required-item-mercurial_scimitar', 'required-item-fiendhunter_bolts', 'required-item-kraken_slayer', 'required-item-nashor_s_tooth', 'required-item-imperial_mandate', 'required-item-terminus', 'required-item-yordle_trap', 'required-item-rabadon_s_deathcap']
+        for file in source.glob('*.png'):
+            if any(file.stem.startswith(name) for name in names):
+                with Image.open(file) as picture:
+                    if picture.height > 2400:
+                        picture.thumbnail((640, 4096))
+                        picture.save(target / file.name, optimize=True)
+                    else:
+                        shutil.copy2(file, target / file.name)
+        PYFOCUS
+    - name: Upload focused Portuguese evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: portuguese-focused-audit
+        path: app/build/reports/portuguese-focused/
+        retention-days: 14
+  installed-audit:
+    needs:
+    - build-apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+    - *id001
+    - *id002
+    - *id006
+    - name: Download APKs for installed verification
+      uses: actions/download-artifact@v4
+      with:
+        name: installed-audit-apks
+        path: app/build/outputs/apk/
+    - name: Enable Android virtual device acceleration
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Revisit installed APK in Portuguese
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        arch: x86_64
+        target: default
+        disable-animations: true
+        emulator-boot-timeout: 300
+        script: |
+          python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
+          python3 tools/audit-portuguese-device.py
+          python3 tools/verify-native-ocr-device.py
+    - name: Upload installed APK Portuguese evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: portuguese-device-audit
+        path: app/build/reports/portuguese-device/
+        retention-days: 14
+  build-and-release:
+    if: always()
+    needs:
+    - build-apk
+    - core-and-rendered
+    - installed-audit
+    runs-on: ubuntu-latest
+    steps:
+    - name: Require all validations to pass
+      env:
+        BUILD_RESULT: ${{ needs.build-apk.result }}
+        RENDERED_RESULT: ${{ needs.core-and-rendered.result }}
+        DEVICE_RESULT: ${{ needs.installed-audit.result }}
+      run: |
+        python3 - <<'PYRESULT'
+        import os
+        results = {key: os.environ[key] for key in ('BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT')}
+        print(results)
+        if any(value != 'success' for value in results.values()):
+            raise SystemExit('Las comprobaciones no han terminado correctamente. No se publica el APK final.')
+        PYRESULT
+    - *id001
+    - name: Download validated APK
+      if: github.ref == 'refs/heads/main'
+      uses: actions/download-artifact@v4
+      with:
+        name: app-debug.apk
+        path: app/build/outputs/apk/debug/
+    - name: Extract App Version from Gradle
+      id: app_version
+      run: |
+        VERSION_NAME=$(grep 'versionName =' app/build.gradle.kts | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/' | tr -d '[:space:]')
+        VERSION_CODE=$(grep 'versionCode =' app/build.gradle.kts | head -n 1 | sed -E 's/.*=[[:space:]]*([0-9]+).*/\1/' | tr -d '[:space:]')
 
-      - name: Inspect rendered Portuguese screens
-        env:
-          CI: "true"
-        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests com.example.HubChampionNavigationTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.RequiredItemCorrectionsTest --tests com.example.ComponentItemsCatalogTest -Proborazzi.test.record=true --stacktrace --no-daemon
+        if [ -z "$VERSION_NAME" ]; then
+          VERSION_NAME="1.0"
+        fi
+        if [ -z "$VERSION_CODE" ]; then
+          VERSION_CODE="${{ github.run_number }}"
+        fi
 
-      - name: Upload Portuguese screenshots and rendered texts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: portuguese-rendered-audit
-          path: |
-            app/build/reports/portuguese-rendered/
-            app/build/test-results/testDebugUnitTest/
-          retention-days: 14
+        echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+        echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+        echo "App Version Name: $VERSION_NAME"
+        echo "App Version Code: $VERSION_CODE"
+      if: github.ref == 'refs/heads/main'
+    - name: Prepare APK release asset
+      id: prepare_asset
+      run: |
+        ASSET_DIR="${RUNNER_TEMP}/apk_release_asset"
+        mkdir -p "$ASSET_DIR"
+        VERSION_NAME="${{ steps.app_version.outputs.version_name }}"
+        VERSION_CODE="${{ steps.app_version.outputs.version_code }}"
+        ASSET_NAME="Coach-v${VERSION_NAME}-build-${VERSION_CODE}-debug.apk"
+        ASSET_PATH="${ASSET_DIR}/${ASSET_NAME}"
+        cp app/build/outputs/apk/debug/app-debug.apk "$ASSET_PATH"
+        echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
+        echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
+      if: github.ref == 'refs/heads/main'
+    - name: Create or Update GitHub Release
+      if: github.ref == 'refs/heads/main'
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG_NAME="v${{ steps.app_version.outputs.version_name }}-b${{ steps.app_version.outputs.version_code }}"
+        RELEASE_NAME="Coach v${{ steps.app_version.outputs.version_name }} (Build #${{ steps.app_version.outputs.version_code }})"
 
-      - name: Prepare focused Portuguese evidence
-        if: always()
-        run: |
-          python3 - <<'PYFOCUS'
-          from pathlib import Path
-          import shutil
-          source = Path('app/build/reports/portuguese-rendered')
-          target = Path('app/build/reports/portuguese-focused')
-          target.mkdir(parents=True, exist_ok=True)
-          for file in source.glob('*.json'):
-              shutil.copy2(file, target / file.name)
-          for file in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml'):
-              shutil.copy2(file, target / file.name)
-          names = ['component-catalog', 'component-item-tear_of_the_goddess', 'component-item-quicksilver_sash', 'component-item-bramble_vest', 'component-item-mejais_soulstealer', 'sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
-                   'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
-                   'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
-                   'premium-editor', 'premium-status', 'creator-reader',
-                   'profile-admin-notifications', 'panel-notification', 'essence-plans', 'cash-redemption', 'saved-data-statistics', 'storage-summary', 'matchup', 'inbox-circle', 'premium-purchase', 'usdt-wallet', 'support-admin-notification', 'required-item-mercurial_scimitar', 'required-item-fiendhunter_bolts', 'required-item-kraken_slayer', 'required-item-nashor_s_tooth', 'required-item-imperial_mandate', 'required-item-terminus', 'required-item-yordle_trap', 'required-item-rabadon_s_deathcap']
-          for file in source.glob('*.png'):
-              if any(file.stem.startswith(name) for name in names):
-                  shutil.copy2(file, target / file.name)
-          PYFOCUS
+        echo "Creando release: $TAG_NAME"
 
-      - name: Upload focused Portuguese evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: portuguese-focused-audit
-          path: app/build/reports/portuguese-focused/
-          retention-days: 14
+        # Delete if it already exists to overwrite
+        gh release delete "$TAG_NAME" --cleanup-tag -y 2>/dev/null || true
 
-      - name: Build Debug APK
-        env:
-          CI: "true"
-        run: |
-          rm -rf app/build/outputs/apk/ || true
-          gradle :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace --no-daemon -x lint -x lintVitalRelease
-          
-          EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
-          if [ ! -f "$EXPECTED_APK" ]; then
-            echo "Searching for any generated apk files..."
-            find app/build/outputs/ -name "*.apk" || true
-            echo "ERROR: Expected APK not found at $EXPECTED_APK"
-            exit 1
-          fi
+        cat << NOTE_EOF > release_notes.md
+        ### Coach - APK de Pruebas (Debug)
+        - **Versión de la app:** v${{ steps.app_version.outputs.version_name }}
+        - **Código de versión:** ${{ steps.app_version.outputs.version_code }}
+        - **Ejecución GitHub Actions:** #${{ github.run_number }}
+        - **Commit:** ${{ github.sha }}
 
-      - name: Verify APK
-        run: |
-          EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
-          if [ -f "$EXPECTED_APK" ] && [ -s "$EXPECTED_APK" ]; then
-            echo "Confirmed valid debug APK at: $EXPECTED_APK"
-            ls -lh "$EXPECTED_APK"
-          else
-            echo "ERROR: Expected APK not found at $EXPECTED_APK"
-            find app/build/outputs/ -name "*.apk" || true
-            exit 1
-          fi
+        Descarga el archivo APK directamente en tu teléfono Android desde los archivos adjuntos (Assets) abajo.
+        NOTE_EOF
 
-      - name: Upload debug APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Enable Android virtual device acceleration
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Revisit installed APK in Portuguese
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          arch: x86_64
-          target: default
-          disable-animations: true
-          emulator-boot-timeout: 300
-          script: |
-            python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
-            python3 tools/audit-portuguese-device.py
-            python3 tools/verify-native-ocr-device.py
-
-      - name: Upload installed APK Portuguese evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: portuguese-device-audit
-          path: app/build/reports/portuguese-device/
-          retention-days: 14
-
-      - name: Extract App Version from Gradle
-        id: app_version
-        run: |
-          VERSION_NAME=$(grep 'versionName =' app/build.gradle.kts | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/' | tr -d '[:space:]')
-          VERSION_CODE=$(grep 'versionCode =' app/build.gradle.kts | head -n 1 | sed -E 's/.*=[[:space:]]*([0-9]+).*/\1/' | tr -d '[:space:]')
-          
-          if [ -z "$VERSION_NAME" ]; then
-            VERSION_NAME="1.0"
-          fi
-          if [ -z "$VERSION_CODE" ]; then
-            VERSION_CODE="${{ github.run_number }}"
-          fi
-          
-          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
-          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
-          echo "App Version Name: $VERSION_NAME"
-          echo "App Version Code: $VERSION_CODE"
-
-      - name: Prepare APK release asset
-        id: prepare_asset
-        run: |
-          ASSET_DIR="${RUNNER_TEMP}/apk_release_asset"
-          mkdir -p "$ASSET_DIR"
-          VERSION_NAME="${{ steps.app_version.outputs.version_name }}"
-          VERSION_CODE="${{ steps.app_version.outputs.version_code }}"
-          ASSET_NAME="Coach-v${VERSION_NAME}-build-${VERSION_CODE}-debug.apk"
-          ASSET_PATH="${ASSET_DIR}/${ASSET_NAME}"
-          cp app/build/outputs/apk/debug/app-debug.apk "$ASSET_PATH"
-          echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
-          echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
-
-      - name: Create or Update GitHub Release
-        if: github.ref == 'refs/heads/main'
-        id: create_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG_NAME="v${{ steps.app_version.outputs.version_name }}-b${{ steps.app_version.outputs.version_code }}"
-          RELEASE_NAME="Coach v${{ steps.app_version.outputs.version_name }} (Build #${{ steps.app_version.outputs.version_code }})"
-          
-          echo "Creando release: $TAG_NAME"
-          
-          # Delete if it already exists to overwrite
-          gh release delete "$TAG_NAME" --cleanup-tag -y 2>/dev/null || true
-          
-          cat << NOTE_EOF > release_notes.md
-          ### Coach - APK de Pruebas (Debug)
-          - **Versión de la app:** v${{ steps.app_version.outputs.version_name }}
-          - **Código de versión:** ${{ steps.app_version.outputs.version_code }}
-          - **Ejecución GitHub Actions:** #${{ github.run_number }}
-          - **Commit:** ${{ github.sha }}
-          
-          Descarga el archivo APK directamente en tu teléfono Android desde los archivos adjuntos (Assets) abajo.
-          NOTE_EOF
-          
-          # Create new release with the APK attached
-          gh release create "$TAG_NAME" "${{ steps.prepare_asset.outputs.asset_path }}" \
-             --title "$RELEASE_NAME" \
-             --target "${{ github.sha }}" \
-             --notes-file release_notes.md
-
+        # Create new release with the APK attached
+        gh release create "$TAG_NAME" "${{ steps.prepare_asset.outputs.asset_path }}" \
+           --title "$RELEASE_NAME" \
+           --target "${{ github.sha }}" \
+           --notes-file release_notes.md
   cleanup-history:
     if: always()
-    needs: [build-and-release]
+    needs:
+    - build-apk
+    - core-and-rendered
+    - installed-audit
+    - build-and-release
     runs-on: ubuntu-latest
     concurrency:
       group: coach-actions-history
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
-      - name: Keep at most 15 completed workflow runs
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await require('./.github/scripts/cleanup-completed-runs.cjs')({ github, context, core });
+    - uses: actions/checkout@v4
+    - name: Keep at most 15 completed workflow runs
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await require('./.github/scripts/cleanup-completed-runs.cjs')({ github, context, core });
+'on':
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch: null

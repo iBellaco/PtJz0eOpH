@@ -22,8 +22,10 @@ object EssenceEconomyPolicy {
         check(remaining >= 0) { "Esencias insuficientes" }
         return remaining to PremiumAccessPolicy.extend(PremiumAccessPolicy.deadline(account["premiumUntil"]), plan.days, now)
     }
-    fun redeem(account: Map<String, Any>, amount: Long): Long {
+    fun redeem(account: Map<String, Any>, amount: Long, adminClaim: Boolean = false): Long {
         check(account["banned"] != true && account["role"] != "banned" && account["secondaryRole"] != "banned") { "Cuenta suspendida" }
+        check(com.example.model.RolePanelAccess.canRedeemEssence(
+            (account["role"] as? String).orEmpty(), (account["secondaryRole"] as? String).orEmpty(), adminClaim)) { "Canje no disponible para este rol" }
         require(amount in redemptionAmounts)
         return (balance(account, EssenceCurrency.ORANGE) - amount).also { check(it >= 0) { "Esencias insuficientes" } }
     }

@@ -45,7 +45,7 @@ import com.example.ui.theme.*
 import com.example.util.tr
 
 @Composable
-fun AuthHeader(title: String, subtitle: String) {
+fun AuthHeader(title: String, subtitle: String, compact: Boolean = false) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
@@ -53,7 +53,7 @@ fun AuthHeader(title: String, subtitle: String) {
         // App Logo Placeholder (using a stylized Icon)
         Box(
             modifier = Modifier
-                .size(58.dp)
+                .size(if (compact) 42.dp else 58.dp)
                 .clip(CircleShape)
                 .background(HextechCyan.copy(alpha = 0.1f))
                 .border(2.dp, HextechGold, CircleShape),
@@ -63,7 +63,7 @@ fun AuthHeader(title: String, subtitle: String) {
                 imageVector = Icons.Filled.Lock,
                 contentDescription = tr("Logo"),
                 tint = HextechCyan,
-                modifier = Modifier.size(34.dp)
+                modifier = Modifier.size(if (compact) 24.dp else 34.dp)
             )
         }
         Spacer(modifier = Modifier.height(16.dp))

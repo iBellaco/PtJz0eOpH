@@ -42,12 +42,12 @@ class RuntimeBehaviorTest {
             inspect(analysis)
             assertFalse("Known opponents override blind selection", analysis.isFirstPickMode)
             val available = roster.filter { it.id != enemy.id && (it.primaryRole == role || role in it.secondaryRoles) }
-            val alternatives = available.any { MatchupKnowledge.relation(it,enemy) != MatchupRelation.UNFAVORABLE }
+            val alternatives = available.any { MatchupKnowledge.relation(it,enemy,role) != MatchupRelation.UNFAVORABLE }
             for (recommendation in analysis.recommendations) {
                 val champion = recommendation.champion
                 assertTrue(champion.primaryRole == role || role in champion.secondaryRoles)
                 assertNotEquals(enemy.id,champion.id)
-                if (alternatives) assertNotEquals("${champion.name} versus ${enemy.name}",MatchupRelation.UNFAVORABLE,MatchupKnowledge.relation(champion,enemy))
+                if (alternatives) assertNotEquals("${champion.name} versus ${enemy.name}",MatchupRelation.UNFAVORABLE,MatchupKnowledge.relation(champion,enemy,role))
                 val evaluation = WildRiftRepository.evaluateChampion(champion,role,emptyList(),listOf(enemy),enemy,"pt")
                 assertEquals(evaluation.draftFitScore,recommendation.draftFitScore,0.001)
                 assertEquals(champion.winrate,recommendation.estimatedWinrate,0.001)
@@ -58,6 +58,45 @@ class RuntimeBehaviorTest {
         java.io.File("build/reports/portuguese-rendered").apply { mkdirs() }.resolve("draft-coherence-texts.json")
             .writeText(org.json.JSONArray(renderedTexts.toList()).toString(2))
         println("DRAFT_COHERENCE_AUDIT: ${roster.size} champions; $checked lane recommendations")
+    }
+
+    @Test fun `every champion and lane exposes exactly three six and twelve unique relations`() {
+        WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
+        val roster = WildRiftRepository.baseChampionsList
+        assertEquals(142, roster.size)
+        var profiles = 0
+        for (champion in roster) for (role in (listOf(champion.primaryRole) + champion.secondaryRoles).distinct()) {
+            val result = com.example.util.ChampionRoleMatchupAdvisor.getMatchups(champion, role)
+            for (names in listOf(result.advantages, result.counters, result.synergies)) {
+                assertEquals("${champion.id}/$role: $names", 12, names.size)
+                assertEquals(names.size, names.distinct().size)
+                assertFalse(champion.name in names)
+                assertTrue(names.all { name -> roster.any { it.name == name } })
+                for ((signedIn, premium, expected) in listOf(Triple(false, false, 3), Triple(true, false, 6), Triple(true, true, 12))) {
+                    assertEquals(expected, names.take(com.example.util.BuildChoiceRules.matchupLimit(premium, signedIn)).size)
+                }
+            }
+            assertTrue(result.advantages.intersect(result.counters.toSet()).isEmpty())
+            if (role == champion.primaryRole) for (name in result.counters) {
+                assertEquals(MatchupRelation.UNFAVORABLE, MatchupKnowledge.relation(champion, roster.first { it.name == name }))
+            }
+            profiles++
+        }
+        println("MATCHUP_ACCESS_AUDIT: ${roster.size} champions; $profiles lane profiles; exact 3/6/12 in every category")
+    }
+
+    @Test fun `orange redemption is restricted by both roles and suspended users are excluded`() {
+        for (role in listOf("admin", "moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5")) {
+            assertTrue(RolePanelAccess.canRedeemEssence(role))
+            assertEquals(role != "admin", RolePanelAccess.canRedeemEssence("free", role))
+            assertEquals(40L, EssenceEconomyPolicy.redeem(mapOf("role" to role, "orangeEssence" to 50L), 10L))
+        }
+        for (role in listOf("free", "premium", "patrocinador", "guest", "banned")) {
+            assertFalse(RolePanelAccess.canRedeemEssence(role))
+            assertTrue(runCatching { EssenceEconomyPolicy.redeem(mapOf("role" to role, "orangeEssence" to 100L), 10L) }.isFailure)
+        }
+        assertFalse(RolePanelAccess.canRedeemEssence("banned", "streamer", true))
+        assertEquals(40L, EssenceEconomyPolicy.redeem(mapOf("role" to "free", "orangeEssence" to 50L), 10L, adminClaim = true))
     }
 
     @Test fun `damage profiles and rounding never invent pure true damage`() {
@@ -121,7 +160,7 @@ class RuntimeBehaviorTest {
         val poor = mapOf<String, Any>("role" to "free", "blueEssence" to 99L, "orangeEssence" to 8L)
         assertTrue(runCatching { EssenceEconomyPolicy.purchase(poor, EssencePremiumPlan.MONTHLY, EssenceCurrency.BLUE, now) }.isFailure)
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor, 10) }.isFailure)
-        for (amount in listOf(10L, 25L, 50L)) assertEquals(60L - amount, EssenceEconomyPolicy.redeem(poor + ("orangeEssence" to 60L), amount))
+        for (amount in listOf(10L, 25L, 50L)) assertEquals(60L - amount, EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 60L, "role" to "streamer"), amount))
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 100L, "role" to "banned"), 10) }.isFailure)
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + ("orangeEssence" to 100L), 11) }.isFailure)
     }
@@ -260,8 +299,9 @@ class RuntimeBehaviorTest {
     }
     @Test fun `role transitions retain an expiry without inheriting staff lifetime`() {
         val until = now + 7 * PremiumAccessPolicy.DAY_MILLIS
-        for (role in listOf("streamer", "moderador", "creador", "free", "premium"))
+        for (role in listOf("streamer", "moderador", "creador", "premium"))
             assertEquals(until, PremiumAccessPolicy.deadlineForRole(role, until, now))
+        assertEquals(0L, PremiumAccessPolicy.deadlineForRole("free", until, now))
         assertEquals(now - 1, PremiumAccessPolicy.deadlineForRole("premium", now - 1, now))
         assertEquals(0L, PremiumAccessPolicy.deadlineForRole("premium", 0, now))
         assertEquals(until + PremiumAccessPolicy.DAY_MILLIS, PremiumAccessPolicy.extend(until, 1, now))
@@ -419,7 +459,7 @@ class RuntimeBehaviorTest {
         for (role in listOf("free", "creador", "creador_lvl5", "streamer", "patrocinador", "premium")) {
             val changed = account + ("role" to role)
             assertTrue(PremiumAccessPolicy.isActiveAccount(changed, now))
-            assertEquals(inherited, PremiumAccessPolicy.deadlineForRole(role, inherited, now))
+            assertEquals(if (role == "free") 0L else inherited, PremiumAccessPolicy.deadlineForRole(role, inherited, now))
             assertFalse(PremiumAccessPolicy.isActiveAccount(changed + ("premiumUntil" to now), now))
         }
         assertFalse(PremiumAccessPolicy.isActive("free", inherited, now, secondary = "banned"))

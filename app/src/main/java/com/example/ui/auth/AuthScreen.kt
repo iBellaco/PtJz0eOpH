@@ -450,11 +450,14 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
             Spacer(modifier = Modifier.height(8.dp))
 
             val redemptionBalance by SubscriptionManager.orangeEssence.collectAsState()
-            com.example.ui.components.OrangeEssenceRedemptionEntry(redemptionBalance) { showRedemptionDialog = true }
+            if (com.example.model.RolePanelAccess.canRedeemEssence(userRole, secondaryRole, adminClaim)) {
+                com.example.ui.components.OrangeEssenceRedemptionEntry(redemptionBalance) { showRedemptionDialog = true }
+            }
 
             AuthHeader(
                 title = "Perfil de Invocador",
-                subtitle = "Sesión iniciada correctamente"
+                subtitle = "Sesión iniciada correctamente",
+                compact = true
             )
 
             Spacer(modifier = Modifier.height(if (hasRoleFrame) 2.dp else 12.dp))

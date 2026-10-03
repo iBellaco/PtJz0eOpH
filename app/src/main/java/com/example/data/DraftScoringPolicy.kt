@@ -13,8 +13,15 @@ object MatchupKnowledge {
     private fun normalized(value: String): String = names.computeIfAbsent(value) { java.text.Normalizer.normalize(it, java.text.Normalizer.Form.NFD)
         .lowercase(java.util.Locale.ROOT).replace(alphabet, "") }
     fun matches(value: String, champion: Champion) = normalized(value) in setOf(normalized(champion.id), normalized(champion.name))
-    fun relation(own: Champion, rival: Champion): MatchupRelation {
+    fun relation(own: Champion, rival: Champion, role: LaneRole = own.primaryRole): MatchupRelation {
         if (own.id == rival.id) return MatchupRelation.UNKNOWN
+        // Catalog relationships are the same complete lists rendered in the champion sheet.
+        // A displayed weakness always penalizes that pick, including conflicting source opinions.
+        if (WildRiftRepository.getBaseChampion(own.id) != null && WildRiftRepository.getBaseChampion(rival.id) != null) {
+            val known = com.example.util.ChampionRoleMatchupAdvisor.getMatchups(own, role)
+            if (known.counters.any { matches(it, rival) }) return MatchupRelation.UNFAVORABLE
+            if (known.advantages.any { matches(it, rival) }) return MatchupRelation.FAVORABLE
+        }
         val positive = own.advantageAgainst.any { matches(it, rival) } || rival.counteredBy.any { matches(it, own) }
         val negative = own.counteredBy.any { matches(it, rival) } || rival.advantageAgainst.any { matches(it, own) }
         return when { positive && negative -> MatchupRelation.VARIABLE; negative -> MatchupRelation.UNFAVORABLE; positive -> MatchupRelation.FAVORABLE; else -> MatchupRelation.UNKNOWN }
@@ -80,20 +87,20 @@ object DraftScoringPolicy {
         score += when { champion.primaryRole == role -> 3.0; role in champion.secondaryRoles -> 1.0; else -> -18.0 }
         score += when (champion.tier) { "S+" -> 2.0; "S" -> 1.2; "A+" -> 0.7; "A" -> 0.3; else -> 0.0 }
         val lane = opponent?.takeIf { it.id != "empty" }
-        score += when (lane?.let { MatchupKnowledge.relation(champion,it) }) {
+        score += when (lane?.let { MatchupKnowledge.relation(champion,it,role) }) {
             MatchupRelation.FAVORABLE -> 12.0; MatchupRelation.UNFAVORABLE -> -14.0; MatchupRelation.VARIABLE -> -2.0; else -> 0.0
         }
         val others = activeEnemies.filter { it.id != lane?.id }
-        score += others.count { MatchupKnowledge.relation(champion,it) == MatchupRelation.FAVORABLE } * 1.5
-        score -= others.count { MatchupKnowledge.relation(champion,it) == MatchupRelation.UNFAVORABLE } * 2.0
+        score += others.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.FAVORABLE } * 1.5
+        score -= others.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.UNFAVORABLE } * 2.0
         score += (MatchupKnowledge.synergies(champion,activeAllies).size * 1.8).coerceAtMost(5.0)
         score += DraftDamagePolicy.balanceGain(champion,activeAllies)
         if (activeAllies.isNotEmpty() && activeAllies.none { it.isFrontline } && champion.isFrontline) score += 2.0
         if (activeEnemies.count { it.isFrontline } >= 2) score += (DraftDamagePolicy.profile(champion).trueDamage / 10).coerceAtMost(3.0)
         if (firstPick && activeEnemies.isEmpty() && lane == null) {
             val possible = roster.filter { it.primaryRole == role || role in it.secondaryRoles }.distinctBy { it.id }
-            val losses = possible.count { MatchupKnowledge.relation(champion,it) == MatchupRelation.UNFAVORABLE }
-            val wins = possible.count { MatchupKnowledge.relation(champion,it) == MatchupRelation.FAVORABLE }
+            val losses = possible.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.UNFAVORABLE }
+            val wins = possible.count { MatchupKnowledge.relation(champion,it,role) == MatchupRelation.FAVORABLE }
             score += ((wins-losses).toDouble() / (wins+losses).coerceAtLeast(4) * 2).coerceIn(-2.0,2.0)
         }
         return (kotlin.math.round(score.coerceIn(0.0,100.0) * 10) / 10)

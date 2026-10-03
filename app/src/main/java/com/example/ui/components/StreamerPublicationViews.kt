@@ -129,6 +129,7 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
                             Text(statusText, color = color)
                         }
                         Text(clickText, color = Color.White, modifier = Modifier.testTag("streamer_clicks_${StreamerPublicationPolicy.publicationId(item)}"))
+                        if (item["clicksLive"] == false) Text(localizedString(R.string.streamer_clicks_cached), color = Color.LightGray)
                         if (expiresText.isNotBlank()) Text(expiresText, color = Color.LightGray)
                         if (item["rejectionReason"] == "TIMEOUT" || StreamerPublicationPolicy.isExpired(item, now)) {
                             Text(localizedString(R.string.streamer_expired), color = Color.LightGray)

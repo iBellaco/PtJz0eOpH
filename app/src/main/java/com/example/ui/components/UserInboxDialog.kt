@@ -1178,7 +1178,7 @@ fun UserSupportThreadCard(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            if (isUserMsg) com.example.util.localizedString(com.example.R.string.support_you) else if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_name) else com.example.util.tr("🛡️ ${msg.senderName}"),
+                                            if (isUserMsg) com.example.util.localizedString(com.example.R.string.support_you) else if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_name) else com.example.util.tr("🛡️ ${msg.senderName.takeUnless { it.contains("@") } ?: "Soporte Coach"}"),
                                             color = if (isUserMsg) Color(0xFFD4AF37) else Color(0xFF38BDF8),
                                             fontSize = 10.5.sp,
                                             fontWeight = FontWeight.Bold,

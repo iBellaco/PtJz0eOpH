@@ -88,7 +88,9 @@ fun SubscriptionHistoryDialog(
             border = BorderStroke(1.dp, HextechCardBorder)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                PanelReadControl(com.example.data.NotificationPanel.HISTORY)
+                if (targetUid == com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid) {
+                    PanelReadControl(com.example.data.NotificationPanel.HISTORY)
+                }
                 // Header
                 Row(
                     modifier = Modifier
