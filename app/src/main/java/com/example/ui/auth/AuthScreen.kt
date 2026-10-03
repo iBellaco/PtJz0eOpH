@@ -42,6 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.draw.clip
@@ -196,6 +198,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
     val context = LocalContext.current
     val language = com.example.util.currentAppLanguage()
     val activeTheme = AppThemeManager.currentTheme
+    val inboxLabel = tr("Bandeja de Entrada")
+    val historyLabel = tr("Historial")
     val isPremium by SubscriptionManager.isPremium.collectAsState()
     val isVerified by SubscriptionManager.isVerified.collectAsState()
     val userRole by SubscriptionManager.userRole.collectAsState()
@@ -334,6 +338,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 // Top-Left: Inbox button
                 com.example.ui.components.HextechAnimatedIconButton(
                     onClick = { showInboxDialog = true }, size = 40.dp,
+                    modifier = Modifier.semantics { contentDescription = inboxLabel },
                     backgroundColor = activeTheme.surfaceVariant, borderColor = activeTheme.cardBorder,
                     glowColor = activeTheme.primary
                 ) {
@@ -443,6 +448,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 // Top-Right: History button
                 com.example.ui.components.HextechAnimatedIconButton(
                     onClick = { showHistoryDialog = true }, size = 40.dp,
+                    modifier = Modifier.semantics { contentDescription = historyLabel },
                     backgroundColor = activeTheme.surfaceVariant, borderColor = activeTheme.cardBorder,
                     glowColor = activeTheme.secondary
                 ) {

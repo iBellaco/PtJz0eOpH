@@ -2,6 +2,8 @@ package com.example.ui.components
 
 import androidx.compose.runtime.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -63,7 +65,7 @@ fun PanelNotificationBadge(count: Int, panel: NotificationPanel) {
             contentDescription = description
         }) {
         Icon(Icons.Default.Notifications, contentDescription = null, tint = com.example.ui.theme.DangerRed,
-            modifier = Modifier.size(16.dp).testTag("panel_notification_icon_${panel.name}").graphicsLayer { scaleX = scale; scaleY = scale })
+            modifier = Modifier.size(16.dp).background(com.example.ui.theme.HextechDarkBg, CircleShape).testTag("panel_notification_icon_${panel.name}").graphicsLayer { scaleX = scale; scaleY = scale })
         Badge(containerColor = com.example.ui.theme.DangerRed, contentColor = Color.White) { Text(count.toString()) }
     }
 }
