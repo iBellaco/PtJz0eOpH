@@ -66,55 +66,55 @@ fun formatWildRiftDescription(text: String, defaultColor: Color = TextPrimary): 
 
             // 1. Daño Verdadero (Mayor prioridad para evitar que "daño" genérico lo solape)
             highlightMatches(
-                Regex("(?i)\\b(daño verdadero( adicional)?|dano verdadeiro( adicional)?|true damage)\\b"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(daño verdadero( adicional)?|dano verdadeiro( adicional)?|true damage)(?![\\p{L}\\p{N}_])"),
                 WildRiftDamageColors.TrueDamage
             )
 
             // 2. Daño Adaptable / Fuerza Adaptable
             highlightMatches(
-                Regex("(?i)\\b(daño adaptable( adicional)?|fuerza adaptable|adaptable|força adaptativa|dano adaptativo( adicional)?|adaptive force|adaptive damage)\\b"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(daño adaptable( adicional)?|fuerza adaptable|adaptable|força adaptativa|dano adaptativo( adicional)?|adaptive force|adaptive damage)(?![\\p{L}\\p{N}_])"),
                 WildRiftDamageColors.AdaptiveDamage
             )
 
             // 3. Daño Mágico / Poder de Habilidad / PH / AP
             highlightMatches(
-                Regex("(?i)\\b(daño mágico( adicional)?|daño magico( adicional)?|poder de habilidad|PH|dano mágico( adicional)?|poder de habilidade|resistência mágica|penetração mágica|magic damage|AP|resistencia mágica|resistencia magica|penetración mágica|penetracion magica)\\b"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(daño mágico( adicional)?|daño magico( adicional)?|poder de habilidad|(?-i:PH)|dano mágico( adicional)?|poder de habilidade|resistência mágica|penetração mágica|magic damage|(?-i:AP)|resistencia mágica|resistencia magica|penetración mágica|penetracion magica)(?![\\p{L}\\p{N}_])"),
                 WildRiftDamageColors.MagicDamage
             )
 
             // 4. Daño Físico / Daño de Ataque / DA / AD
             highlightMatches(
-                Regex("(?i)\\b(daño físico( adicional)?|daño fisico( adicional)?|daño de ataque|DA|dano físico( adicional)?|dano de ataque|letalidade|penetração de armadura|physical damage|AD|letalidad|armadura|penetración de armadura|penetracion de armadura)\\b"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(daño físico( adicional)?|daño fisico( adicional)?|daño de ataque|(?-i:DA)|dano físico( adicional)?|dano de ataque|letalidade|penetração de armadura|physical damage|(?-i:AD)|letalidad|armadura|penetración de armadura|penetracion de armadura)(?![\\p{L}\\p{N}_])"),
                 WildRiftDamageColors.PhysicalDamage
             )
 
             // 5. Curación, Vida, Escudo
             highlightMatches(
-                Regex("(?i)\\b(cura|curação|curación|curacion|vida restaurada|vida adicional|vida máxima|vida maxima|salud máxima|salud maxima|escudo(s)?|roubo de vida|onivampirismo|salud|omnisucción|omnisuccion|robo de vida|succión física|succion fisica|vampiro( físico| mágico)?|vampirismo)\\b"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(cura|curação|curación|curacion|vida restaurada|vida adicional|vida máxima|vida maxima|salud máxima|salud maxima|escudo(s)?|roubo de vida|onivampirismo|salud|omnisucción|omnisuccion|robo de vida|succión física|succion fisica|vampiro( físico| mágico)?|vampirismo)(?![\\p{L}\\p{N}_])"),
                 WildRiftDamageColors.HealingAndLife
             )
 
             // 5.5. Críticos
             highlightMatches(
-                Regex("(?i)\\b(acerto(s)? crítico(s)?|dano crítico|chance de acerto crítico|tasa crítica|tasa critica|daño crítico|daño critico|golpe(s)? crítico(s)?|impacto(s)? crítico(s)?|probabilidad de (golpe )?crítico)\\b"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(acerto(s)? crítico(s)?|dano crítico|chance de acerto crítico|tasa crítica|tasa critica|daño crítico|daño critico|golpe(s)? crítico(s)?|impacto(s)? crítico(s)?|probabilidad de (golpe )?crítico)(?![\\p{L}\\p{N}_])"),
                 WildRiftDamageColors.CriticalColor
             )
 
             // 6. Velocidades y Aceleración
             highlightMatches(
-                Regex("(?i)\\b(velocidade de ataque|velocidade de movimento|aceleração de habilidade(s)?|tempo de recarga|velocidad de ataque|velocidad de movimiento|velocidad de habilidades( básicas)?|aceleración de habilidad(es)?|enfriamiento)\\b"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(velocidade de ataque|velocidade de movimento|aceleração (de habilidade(s)?|da habilidade ultimate)|tempo de recarga|velocidad de ataque|velocidad de movimiento|velocidad de habilidades( básicas)?|velocidad de habilidad definitiva|aceleración de habilidad(es)?|enfriamiento)(?![\\p{L}\\p{N}_])"),
                 WildRiftDamageColors.AttackSpeed
             )
 
             // 7. Maná / Energía
             highlightMatches(
-                Regex("(?i)\\b(maná( máximo)?|mana|regeneração de mana|energía|energia|regeneración de maná|regeneracion de mana)\\b"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(maná( máximo)?|mana|regeneração de mana|energía|energia|regeneración de maná|regeneracion de mana)(?![\\p{L}\\p{N}_])"),
                 WildRiftDamageColors.ManaColor
             )
 
             // 8. Support Item Restriction Warning
             highlightMatches(
-                Regex("(?i)\\b(Este objeto es para los apoyos.*?activará\\.)"),
+                Regex("(?i)(?<![\\p{L}\\p{N}_])(Este objeto es para los apoyos.*?activará\\.)"),
                 WildRiftDamageColors.CriticalColor
             )
 

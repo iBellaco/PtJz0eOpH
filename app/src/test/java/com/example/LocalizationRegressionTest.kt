@@ -53,6 +53,23 @@ class LocalizationRegressionTest {
         }
     }
 
+    @Test fun `description colours recognize complete terms without Portuguese article or accented word fragments`() {
+        val text = "Após usar uma habilidade, o efeito da Faixa causa dano mágico adicional e dano verdadeiro adicional. Aceleração da habilidade ultimate."
+        val styled = com.example.ui.components.formatWildRiftDescription(text)
+        val colors = com.example.ui.components.WildRiftDamageColors
+        fun colourAt(word: String, color: androidx.compose.ui.graphics.Color): Boolean {
+            val offset = text.indexOf(word)
+            return styled.spanStyles.any { offset >= it.start && offset < it.end && it.item.color == color }
+        }
+        assertFalse(colourAt("Após", colors.MagicDamage))
+        assertFalse(colourAt("da Faixa", colors.PhysicalDamage))
+        assertTrue(colourAt("dano mágico", colors.MagicDamage))
+        assertTrue(colourAt("dano verdadeiro", colors.TrueDamage))
+        assertTrue(colourAt("Aceleração", colors.AttackSpeed))
+        val spanish = com.example.ui.components.formatWildRiftDescription("20 de velocidad de habilidad definitiva")
+        assertTrue(spanish.spanStyles.any { it.item.color == colors.AttackSpeed })
+    }
+
     @Test fun `full sentence templates preserve runtime values`() {
         assertEquals("Selecionar Runa Secundária (3/4)", trStr("pt", "Seleccionar Runa Secundaria (3/4)"))
         assertEquals("Dano Inimigo: AD 60% | AP 40%", trStr("pt", "Daño Enemigo: AD 60% | AP 40%"))
