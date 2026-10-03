@@ -16,5 +16,8 @@ result = subprocess.run([str(tools[-1]), 'verify', '--verbose', '--print-certs',
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 fingerprints = re.findall(r'Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]{64})', result.stdout)
 if result.returncode or fingerprints != [expected]:
+    print('Verificador:', tools[-1].parent.name, 'Código:', result.returncode,
+          'Certificados públicos detectados:', fingerprints)
+    print('Salida pública del verificador de APK:', result.stdout[:3500], result.stderr[:2000])
     raise SystemExit('La firma del APK no coincide con la identidad persistente restaurada.')
 print('APK verificado con firma persistente: ' + expected)
