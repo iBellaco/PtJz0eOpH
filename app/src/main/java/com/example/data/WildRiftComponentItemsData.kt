@@ -11,7 +11,7 @@ object WildRiftComponentItemsData {
             stats = "+200 Maná máximo",
             statsPt = "+200 Mana máximo",
             passive = "Asombro: Recuperas un 10% del maná gastado.\nCarga de maná: Aumenta el maná máximo en 5 cada vez que se gaste maná, hasta un máximo de 700 de maná adicional. Se activa hasta 3 veces cada 10 s. Solo se puede tener 1 objeto de Lágrima de la diosa.",
-            passivePt = "Espanto: Recupera 10% do mana gasto.\nCarga de Mana: Aumenta o mana máximo em 5 sempre que mana é gasto, até um máximo de 700 de mana adicional. Pode ser ativada até 3 vezes a cada 10 s. Só é possível possuir 1 item de Lágrima da Deusa.", iconUrl = ""
+            passivePt = "Espanto: Recupera 10% do mana gasto.\nCarga de Mana: Aumenta o mana máximo em 5 sempre que mana é gasto, até um máximo de 700 de mana adicional. Pode ser ativada até 3 vezes a cada 10 s. Só é possível possuir 1 item de Lágrima da Deusa.", iconUrl = "file:///android_asset/component_icons/tear_of_the_goddess.webp"
         ),
         WildRiftItem(
             id = "dagger", name = "Daga", namePt = "Adaga",
@@ -19,7 +19,7 @@ object WildRiftComponentItemsData {
             stats = "+12% Velocidad de ataque",
             statsPt = "+12% Velocidade de ataque",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/dagger.webp"
         ),
         WildRiftItem(
             id = "long_sword", name = "Espada larga", namePt = "Espada Longa",
@@ -27,7 +27,7 @@ object WildRiftComponentItemsData {
             stats = "+12 Daño de ataque",
             statsPt = "+12 Dano de ataque",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/long_sword.webp"
         ),
         WildRiftItem(
             id = "brawlers_gloves", name = "Guantes de pelea", namePt = "Luvas de Briga",
@@ -35,7 +35,7 @@ object WildRiftComponentItemsData {
             stats = "+10% Probabilidad de crítico",
             statsPt = "+10% Chance de acerto crítico",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/brawlers_gloves.webp"
         ),
         WildRiftItem(
             id = "pickaxe", name = "Pico", namePt = "Picareta",
@@ -43,7 +43,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Daño de ataque",
             statsPt = "+20 Dano de ataque",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/pickaxe.webp"
         ),
         WildRiftItem(
             id = "sheen", name = "Brillo", namePt = "Brilho",
@@ -51,7 +51,7 @@ object WildRiftComponentItemsData {
             stats = "+10 Velocidad de habilidades",
             statsPt = "+10 Aceleração de habilidade",
             passive = "Hoja encantada: Tras usar una habilidad, el siguiente ataque básico en los próximos 10 s inflige daño físico adicional equivalente al 100% del daño de ataque básico. Enfriamiento de 1,5 s. Inflige daño reducido contra estructuras.",
-            passivePt = "Lâmina Encantada: Após usar uma habilidade, o próximo ataque básico nos próximos 10 s causa dano físico adicional equivalente a 100% do dano de ataque base. Tempo de recarga de 1,5 s. Causa dano reduzido contra estruturas.", iconUrl = ""
+            passivePt = "Lâmina Encantada: Após usar uma habilidade, o próximo ataque básico nos próximos 10 s causa dano físico adicional equivalente a 100% do dano de ataque base. Tempo de recarga de 1,5 s. Causa dano reduzido contra estruturas.", iconUrl = "file:///android_asset/component_icons/sheen.webp"
         ),
         WildRiftItem(
             id = "executioners_calling", name = "Llamada del verdugo", namePt = "Chamado do Carrasco",
@@ -59,7 +59,7 @@ object WildRiftComponentItemsData {
             stats = "+15 Daño de ataque",
             statsPt = "+15 Dano de ataque",
             passive = "Golpe devastador: Infligir daño físico a campeones enemigos aplica un 40% de heridas graves durante 3 s.",
-            passivePt = "Golpe Devastador: Causar dano físico a campeões inimigos aplica 40% de Feridas Dolorosas por 3 s.", iconUrl = ""
+            passivePt = "Golpe Devastador: Causar dano físico a campeões inimigos aplica 40% de Feridas Dolorosas por 3 s.", iconUrl = "file:///android_asset/component_icons/executioners_calling.webp"
         ),
         WildRiftItem(
             id = "phage", name = "Bacteriófago", namePt = "Fago",
@@ -67,7 +67,7 @@ object WildRiftComponentItemsData {
             stats = "+150 Vida máxima • +15 Daño de ataque",
             statsPt = "+150 Vida máxima • +15 Dano de ataque",
             passive = "Furia: Al impactar, los ataques otorgan 20 de velocidad de movimiento durante 2 s. La bonificación no se acumula. Los campeones a distancia obtienen la mitad.",
-            passivePt = "Fúria: Ao contato, os ataques concedem 20 de velocidade de movimento por 2 s. O bônus não se acumula. Campeões de ataque à distância recebem metade do valor.", iconUrl = ""
+            passivePt = "Fúria: Ao contato, os ataques concedem 20 de velocidade de movimento por 2 s. O bônus não se acumula. Campeões de ataque à distância recebem metade do valor.", iconUrl = "file:///android_asset/component_icons/phage.webp"
         ),
         WildRiftItem(
             id = "quicksilver_sash_mid_tier", name = "Fajín de mercurio", namePt = "Faixa de Mercúrio",
@@ -75,7 +75,7 @@ object WildRiftComponentItemsData {
             stats = "+30 Resistencia mágica",
             statsPt = "+30 Resistência mágica",
             passive = "Fajín de mercurio: Elimina todas las debilitaciones de control de adversario que te hayan aplicado y otorga inmunidad contra el control de adversario durante 0,25 s. No se puede utilizar mientras te lanzan por los aires o te empujan.\nPerseverancia: Cuando termina el efecto de Fajín, otorga un 30% de tenacidad y un 30% de resistencia a las ralentizaciones durante 1,5 s. Enfriamiento de 60 s.",
-            passivePt = "Faixa de Mercúrio: Remove todos os efeitos debilitantes de controle de grupo aplicados a você e concede imunidade a controle de grupo por 0,25 s. Não pode ser usada enquanto você estiver no ar ou sendo empurrado.\nPerseverança: Quando o efeito da Faixa termina, concede 30% de tenacidade e 30% de resistência a lentidão por 1,5 s. Tempo de recarga de 60 s.", iconUrl = ""
+            passivePt = "Faixa de Mercúrio: Remove todos os efeitos debilitantes de controle de grupo aplicados a você e concede imunidade a controle de grupo por 0,25 s. Não pode ser usada enquanto você estiver no ar ou sendo empurrado.\nPerseverança: Quando o efeito da Faixa termina, concede 30% de tenacidade e 30% de resistência a lentidão por 1,5 s. Tempo de recarga de 60 s.", iconUrl = "file:///android_asset/component_icons/quicksilver_sash_mid_tier.webp"
         ),
         WildRiftItem(
             id = "hearthbound_axe", name = "Hacha hogareña", namePt = "Machado Termestre",
@@ -83,7 +83,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Daño de ataque • +15% Velocidad de ataque",
             statsPt = "+20 Dano de ataque • +15% Velocidade de ataque",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/hearthbound_axe.webp"
         ),
         WildRiftItem(
             id = "vampiric_scepter", name = "Cetro vampírico", namePt = "Cetro Vampírico",
@@ -91,7 +91,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Daño de ataque • +8% Robo de vida",
             statsPt = "+20 Dano de ataque • +8% Roubo de vida",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/vampiric_scepter.webp"
         ),
         WildRiftItem(
             id = "last_whisper", name = "Últimas palabras", namePt = "Último Sussurro",
@@ -99,7 +99,7 @@ object WildRiftComponentItemsData {
             stats = "+15 Daño de ataque • +15% Penetración de armadura",
             statsPt = "+15 Dano de ataque • +15% Penetração de armadura",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/last_whisper.webp"
         ),
         WildRiftItem(
             id = "hexdrinker", name = "Sorbemaleficios", namePt = "Hexdrinker",
@@ -107,7 +107,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Daño de ataque • +20 Resistencia mágica",
             statsPt = "+20 Dano de ataque • +20 Resistência mágica",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/hexdrinker.webp"
         ),
         WildRiftItem(
             id = "caulfields_warhammer", name = "Martillo de guerra de Caulfield", namePt = "Martelo de Guerra de Caulfield",
@@ -115,7 +115,7 @@ object WildRiftComponentItemsData {
             stats = "+25 Daño de ataque • +10 Velocidad de habilidades",
             statsPt = "+25 Dano de ataque • +10 Aceleração de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/caulfields_warhammer.webp"
         ),
         WildRiftItem(
             id = "serrated_dirk", name = "Daga dentada", namePt = "Punhal Serrilhado",
@@ -123,7 +123,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Daño de ataque • +8 Penetración de armadura",
             statsPt = "+20 Dano de ataque • +8 Penetração de armadura",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/serrated_dirk.webp"
         ),
         WildRiftItem(
             id = "kircheis_shard", name = "Fragmento de Kircheis", namePt = "Fragmento de Kircheis",
@@ -131,7 +131,7 @@ object WildRiftComponentItemsData {
             stats = "+20% Velocidad de ataque",
             statsPt = "+20% Velocidade de ataque",
             passive = "Descarga: Inflige 40 de daño mágico adicional al dañar a un campeón enemigo. Enfriamiento de 25 s, que se reduce en 1 s por cada ataque.",
-            passivePt = "Descarga: Causa 40 de dano mágico adicional ao causar dano a um campeão inimigo. Tempo de recarga de 25 s, reduzido em 1 s a cada ataque.", iconUrl = ""
+            passivePt = "Descarga: Causa 40 de dano mágico adicional ao causar dano a um campeão inimigo. Tempo de recarga de 25 s, reduzido em 1 s a cada ataque.", iconUrl = "file:///android_asset/component_icons/kircheis_shard.webp"
         ),
         WildRiftItem(
             id = "recurve_bow", name = "Arco curvo", namePt = "Arco Recurvo",
@@ -139,7 +139,7 @@ object WildRiftComponentItemsData {
             stats = "+20% Velocidad de ataque",
             statsPt = "+20% Velocidade de ataque",
             passive = "Refuerzo: Los ataques infligen 15 de daño físico adicional al impactar.",
-            passivePt = "Reforço: Os ataques causam 15 de dano físico adicional ao contato.", iconUrl = ""
+            passivePt = "Reforço: Os ataques causam 15 de dano físico adicional ao contato.", iconUrl = "file:///android_asset/component_icons/recurve_bow.webp"
         ),
         WildRiftItem(
             id = "noonquiver", name = "Carcaj del mediodía", namePt = "Aljava do Meio-Dia",
@@ -147,7 +147,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Daño de ataque • +15% Probabilidad de crítico",
             statsPt = "+20 Dano de ataque • +15% Chance de acerto crítico",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/noonquiver.webp"
         ),
         WildRiftItem(
             id = "zeal", name = "Fervor", namePt = "Zelo",
@@ -155,7 +155,7 @@ object WildRiftComponentItemsData {
             stats = "+15% Probabilidad de crítico • +15% Velocidad de ataque • +4% Velocidad de movimiento",
             statsPt = "+15% Chance de acerto crítico • +15% Velocidade de ataque • +4% Velocidade de movimento",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/zeal.webp"
         ),
         WildRiftItem(
             id = "bf_sword", name = "Espadón", namePt = "Espada G. p. C.",
@@ -163,7 +163,7 @@ object WildRiftComponentItemsData {
             stats = "+40 Daño de ataque",
             statsPt = "+40 Dano de ataque",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/bf_sword.webp"
         ),
         WildRiftItem(
             id = "revelation_ring", name = "Anillo de la revelación", namePt = "Anel da Revelação",
@@ -171,7 +171,7 @@ object WildRiftComponentItemsData {
             stats = "+5 Velocidad de habilidades",
             statsPt = "+5 Aceleração de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/revelation_ring.webp"
         ),
         WildRiftItem(
             id = "ruby_crystal", name = "Cristal de rubí", namePt = "Cristal de Rubi",
@@ -179,7 +179,7 @@ object WildRiftComponentItemsData {
             stats = "+150 Vida máxima",
             statsPt = "+150 Vida máxima",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/ruby_crystal.webp"
         ),
         WildRiftItem(
             id = "amplifying_tome", name = "Tomo amplificador", namePt = "Tomo Amplificador",
@@ -187,7 +187,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Poder de habilidad",
             statsPt = "+20 Poder de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/amplifying_tome.webp"
         ),
         WildRiftItem(
             id = "forbidden_idol", name = "Ídolo prohibido", namePt = "Ídolo Proibido",
@@ -195,7 +195,7 @@ object WildRiftComponentItemsData {
             stats = "+25% Regeneración de maná • +6% Poder de curaciones y escudos",
             statsPt = "+25% Regeneração de mana • +6% Poder de cura e escudo",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/forbidden_idol.webp"
         ),
         WildRiftItem(
             id = "blasting_wand", name = "Vara explosiva", namePt = "Varinha Explosiva",
@@ -203,7 +203,7 @@ object WildRiftComponentItemsData {
             stats = "+40 Poder de habilidad",
             statsPt = "+40 Poder de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/blasting_wand.webp"
         ),
         WildRiftItem(
             id = "bandleglass_mirror", name = "Espejo de cristal de Bandle", namePt = "Espelho de Vidro de Bandópolis",
@@ -211,7 +211,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Poder de habilidad • +50% Regeneración de maná • +10 Velocidad de habilidades",
             statsPt = "+20 Poder de habilidade • +50% Regeneração de mana • +10 Aceleração de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/bandleglass_mirror.webp"
         ),
         WildRiftItem(
             id = "fated_ashes", name = "Cenizas predestinadas", namePt = "Cinzas Predestinadas",
@@ -219,7 +219,7 @@ object WildRiftComponentItemsData {
             stats = "+40 Poder de habilidad",
             statsPt = "+40 Poder de habilidade",
             passive = "Inflamar: Las habilidades infligen 5 de daño mágico adicional durante 3 s; infligen 15 de daño adicional a monstruos.",
-            passivePt = "Inflamar: As habilidades causam 5 de dano mágico adicional por 3 s; causam 15 de dano adicional a monstros.", iconUrl = ""
+            passivePt = "Inflamar: As habilidades causam 5 de dano mágico adicional por 3 s; causam 15 de dano adicional a monstros.", iconUrl = "file:///android_asset/component_icons/fated_ashes.webp"
         ),
         WildRiftItem(
             id = "fiendish_codex", name = "Códice diabólico", namePt = "Códex Demoníaco",
@@ -227,7 +227,7 @@ object WildRiftComponentItemsData {
             stats = "+25 Poder de habilidad • +10 Velocidad de habilidades",
             statsPt = "+25 Poder de habilidade • +10 Aceleração de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/fiendish_codex.webp"
         ),
         WildRiftItem(
             id = "oblivion_orb", name = "Orbe del olvido", namePt = "Orbe do Oblívio",
@@ -235,7 +235,7 @@ object WildRiftComponentItemsData {
             stats = "+35 Poder de habilidad",
             statsPt = "+35 Poder de habilidade",
             passive = "Heridas graves: Infligir daño mágico aplica un 40% de heridas graves durante 3 s.",
-            passivePt = "Feridas Dolorosas: Causar dano mágico aplica 40% de Feridas Dolorosas por 3 s.", iconUrl = ""
+            passivePt = "Feridas Dolorosas: Causar dano mágico aplica 40% de Feridas Dolorosas por 3 s.", iconUrl = "file:///android_asset/component_icons/oblivion_orb.webp"
         ),
         WildRiftItem(
             id = "aether_wisp", name = "Brisa de éter", namePt = "Éter Fogo",
@@ -243,7 +243,7 @@ object WildRiftComponentItemsData {
             stats = "+35 Poder de habilidad • +4% Velocidad de movimiento",
             statsPt = "+35 Poder de habilidade • +4% Velocidade de movimento",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/aether_wisp.webp"
         ),
         WildRiftItem(
             id = "void_amethyst", name = "Amatista del Vacío", namePt = "Ametista do Vazio",
@@ -251,7 +251,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Poder de habilidad • +10% Penetración mágica",
             statsPt = "+20 Poder de habilidade • +10% Penetração mágica",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/void_amethyst.webp"
         ),
         WildRiftItem(
             id = "kindlegem", name = "Gema avivadora", namePt = "Gema Ardente",
@@ -259,7 +259,7 @@ object WildRiftComponentItemsData {
             stats = "+175 Vida máxima • +10 Velocidad de habilidades",
             statsPt = "+175 Vida máxima • +10 Aceleração de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/kindlegem.webp"
         ),
         WildRiftItem(
             id = "catalyst_of_aeons", name = "Catalizador de eones", namePt = "Catalisador das Eras",
@@ -267,7 +267,7 @@ object WildRiftComponentItemsData {
             stats = "+200 Vida máxima • +300 Maná máximo",
             statsPt = "+200 Vida máxima • +300 Mana máximo",
             passive = "Eternidad: Restaura maná equivalente a un 15% del daño recibido y regenera vida equivalente a un 20% del maná utilizado, hasta un máximo de 15 de vida por lanzamiento.",
-            passivePt = "Eternidade: Restaura mana equivalente a 15% do dano recebido e regenera vida equivalente a 20% do mana usado, até um máximo de 15 de vida por conjuração.", iconUrl = ""
+            passivePt = "Eternidade: Restaura mana equivalente a 15% do dano recebido e regenera vida equivalente a 20% do mana usado, até um máximo de 15 de vida por conjuração.", iconUrl = "file:///android_asset/component_icons/catalyst_of_aeons.webp"
         ),
         WildRiftItem(
             id = "hextech_alternator", name = "Alternador hextech", namePt = "Alternador Hextec",
@@ -275,7 +275,7 @@ object WildRiftComponentItemsData {
             stats = "+45 Poder de habilidad",
             statsPt = "+45 Poder de habilidade",
             passive = "Revolucionado: Las habilidades de daño y los ataques potenciados infligen de 25 a 60 de daño mágico adicional. Enfriamiento de 20 s.",
-            passivePt = "Revitalizado: As habilidades de dano e os ataques fortalecidos causam de 25 a 60 de dano mágico adicional. Tempo de recarga de 20 s.", iconUrl = ""
+            passivePt = "Revitalizado: As habilidades de dano e os ataques fortalecidos causam de 25 a 60 de dano mágico adicional. Tempo de recarga de 20 s.", iconUrl = "file:///android_asset/component_icons/hextech_alternator.webp"
         ),
         WildRiftItem(
             id = "lost_chapter", name = "Capítulo perdido", namePt = "Capítulo Perdido",
@@ -283,7 +283,7 @@ object WildRiftComponentItemsData {
             stats = "+35 Poder de habilidad • +200 Maná máximo • +10 Velocidad de habilidades",
             statsPt = "+35 Poder de habilidade • +200 Mana máximo • +10 Aceleração de habilidade",
             passive = "Iluminar: Al subir de nivel, recupera un 20% del maná máximo a lo largo de 3 s.",
-            passivePt = "Iluminar: Ao subir de nível, recupera 20% do mana máximo ao longo de 3 s.", iconUrl = ""
+            passivePt = "Iluminar: Ao subir de nível, recupera 20% do mana máximo ao longo de 3 s.", iconUrl = "file:///android_asset/component_icons/lost_chapter.webp"
         ),
         WildRiftItem(
             id = "haunting_guise", name = "Disfraz encantado", namePt = "Máscara Assustadora",
@@ -291,7 +291,7 @@ object WildRiftComponentItemsData {
             stats = "+200 Vida máxima • +30 Poder de habilidad",
             statsPt = "+200 Vida máxima • +30 Poder de habilidade",
             passive = "Demencia: Inflige un 2% de daño adicional por cada segundo en combate contra campeones, hasta un máximo de un 6%.",
-            passivePt = "Demência: Causa 2% de dano adicional a cada segundo em combate contra campeões, até um máximo de 6%.", iconUrl = ""
+            passivePt = "Demência: Causa 2% de dano adicional a cada segundo em combate contra campeões, até um máximo de 6%.", iconUrl = "file:///android_asset/component_icons/haunting_guise.webp"
         ),
         WildRiftItem(
             id = "needlessly_large_rod", name = "Vara innecesariamente grande", namePt = "Bastão Desnecessariamente Grande",
@@ -299,7 +299,7 @@ object WildRiftComponentItemsData {
             stats = "+65 Poder de habilidad",
             statsPt = "+65 Poder de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/needlessly_large_rod.webp"
         ),
         WildRiftItem(
             id = "seekers_armguard", name = "Brazalete de la buscadora", namePt = "Braçadeira da Caçadora",
@@ -307,7 +307,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Armadura • +35 Poder de habilidad",
             statsPt = "+20 Armadura • +35 Poder de habilidade",
             passive = "Éstasis: Te vuelve invulnerable e inalcanzable durante 2,5 s, sin permitirte moverte, atacar ni lanzar hechizos. Enfriamiento de 150 s.",
-            passivePt = "Estase: Torna você invulnerável e inalvejável por 2,5 s, sem permitir movimento, ataques ou conjuração de feitiços. Tempo de recarga de 150 s.", iconUrl = ""
+            passivePt = "Estase: Torna você invulnerável e inalvejável por 2,5 s, sem permitir movimento, ataques ou conjuração de feitiços. Tempo de recarga de 150 s.", iconUrl = "file:///android_asset/component_icons/seekers_armguard.webp"
         ),
         WildRiftItem(
             id = "verdant_barrier", name = "Barrera frondosa", namePt = "Barreira Verdejante",
@@ -315,7 +315,7 @@ object WildRiftComponentItemsData {
             stats = "+40 Poder de habilidad • +25 Resistencia mágica",
             statsPt = "+40 Poder de habilidade • +25 Resistência mágica",
             passive = "Anular: Otorga un escudo de hechizos que bloquea la siguiente habilidad enemiga. Enfriamiento de 65 s.",
-            passivePt = "Anular: Concede um escudo de feitiço que bloqueia a próxima habilidade inimiga. Tempo de recarga de 65 s.", iconUrl = ""
+            passivePt = "Anular: Concede um escudo de feitiço que bloqueia a próxima habilidade inimiga. Tempo de recarga de 65 s.", iconUrl = "file:///android_asset/component_icons/verdant_barrier.webp"
         ),
         WildRiftItem(
             id = "mejais_soulstealer", name = "Robaalmas de Mejai", namePt = "Ladrão de Almas de Mejai",
@@ -323,7 +323,7 @@ object WildRiftComponentItemsData {
             stats = "+70 Vida máxima • +25 Poder de habilidad",
             statsPt = "+70 Vida máxima • +25 Poder de habilidade",
             passive = "Gloria: Obtienes hasta 30 acumulaciones por asesinatos y asistencias. Pierdes 10 acumulaciones al morir.\nTerror: Otorga 5 de poder de habilidad por cada acumulación de Gloria. Con 10 o más acumulaciones, otorga un 10% de velocidad de movimiento.",
-            passivePt = "Glória: Recebe até 30 acúmulos por abates e assistências. Perde 10 acúmulos ao morrer.\nTerror: Concede 5 de poder de habilidade por acúmulo de Glória. Com 10 ou mais acúmulos, concede 10% de velocidade de movimento.", iconUrl = ""
+            passivePt = "Glória: Recebe até 30 acúmulos por abates e assistências. Perde 10 acúmulos ao morrer.\nTerror: Concede 5 de poder de habilidade por acúmulo de Glória. Com 10 ou mais acúmulos, concede 10% de velocidade de movimento.", iconUrl = "file:///android_asset/component_icons/mejais_soulstealer.webp"
         ),
         WildRiftItem(
             id = "cloth_armor", name = "Armadura de tela", namePt = "Armadura de Pano",
@@ -331,7 +331,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Armadura",
             statsPt = "+20 Armadura",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/cloth_armor.webp"
         ),
         WildRiftItem(
             id = "null_magic_mantle", name = "Manto de anulación de magia", namePt = "Manto Anula-Magia",
@@ -339,7 +339,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Resistencia mágica",
             statsPt = "+20 Resistência mágica",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/null_magic_mantle.webp"
         ),
         WildRiftItem(
             id = "chain_vest", name = "Chaleco de cadenas", namePt = "Cota de Malha",
@@ -347,7 +347,7 @@ object WildRiftComponentItemsData {
             stats = "+40 Armadura",
             statsPt = "+40 Armadura",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/chain_vest.webp"
         ),
         WildRiftItem(
             id = "winged_moonplate", name = "Armadura lunar alada", namePt = "Placa Lunar Alada",
@@ -355,7 +355,7 @@ object WildRiftComponentItemsData {
             stats = "+150 Vida máxima • +4% Velocidad de movimiento",
             statsPt = "+150 Vida máxima • +4% Velocidade de movimento",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/winged_moonplate.webp"
         ),
         WildRiftItem(
             id = "negatron_cloak", name = "Capa negatrón", namePt = "Capa Negatron",
@@ -363,7 +363,7 @@ object WildRiftComponentItemsData {
             stats = "+40 Resistencia mágica",
             statsPt = "+40 Resistência mágica",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/negatron_cloak.webp"
         ),
         WildRiftItem(
             id = "giants_belt", name = "Cinturón de gigante", namePt = "Cinto do Gigante",
@@ -371,7 +371,7 @@ object WildRiftComponentItemsData {
             stats = "+300 Vida máxima",
             statsPt = "+300 Vida máxima",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/giants_belt.webp"
         ),
         WildRiftItem(
             id = "bramble_vest", name = "Chaleco de zarzas", namePt = "Colete Espinhoso",
@@ -379,7 +379,7 @@ object WildRiftComponentItemsData {
             stats = "",
             statsPt = "",
             passive = "Refleja daño y reduce la curación enemiga.",
-            passivePt = "Reflete dano e reduz a cura inimiga.", iconUrl = ""
+            passivePt = "Reflete dano e reduz a cura inimiga.", iconUrl = "file:///android_asset/component_icons/bramble_vest.webp"
         ),
         WildRiftItem(
             id = "glacial_shroud", name = "Sudario glacial", namePt = "Proteção Glacial",
@@ -387,7 +387,7 @@ object WildRiftComponentItemsData {
             stats = "+20 Armadura • +150 Maná máximo • +10 Velocidad de habilidades",
             statsPt = "+20 Armadura • +150 Mana máximo • +10 Aceleração de habilidade",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/glacial_shroud.webp"
         ),
         WildRiftItem(
             id = "wardens_mail", name = "Malla del guardián", namePt = "Armadura de Guarda",
@@ -395,7 +395,7 @@ object WildRiftComponentItemsData {
             stats = "+35 Armadura",
             statsPt = "+35 Armadura",
             passive = "Acero frío: Reduce un 15% la velocidad de ataque del enemigo durante 1,5 s al recibir un ataque.",
-            passivePt = "Aço Frio: Reduz em 15% a velocidade de ataque do inimigo por 1,5 s ao receber um ataque.", iconUrl = ""
+            passivePt = "Aço Frio: Reduz em 15% a velocidade de ataque do inimigo por 1,5 s ao receber um ataque.", iconUrl = "file:///android_asset/component_icons/wardens_mail.webp"
         ),
         WildRiftItem(
             id = "spectres_cowl", name = "Hábito del espectro", namePt = "Capuz do Espectro",
@@ -403,7 +403,7 @@ object WildRiftComponentItemsData {
             stats = "+175 Vida máxima • +20 Resistencia mágica",
             statsPt = "+175 Vida máxima • +20 Resistência mágica",
             passive = "Visita espectral: Otorga un 150% de regeneración de vida durante 10 s al recibir daño de un campeón.",
-            passivePt = "Visita Espectral: Concede 150% de regeneração de vida por 10 s ao receber dano de um campeão.", iconUrl = ""
+            passivePt = "Visita Espectral: Concede 150% de regeneração de vida por 10 s ao receber dano de um campeão.", iconUrl = "file:///android_asset/component_icons/spectres_cowl.webp"
         ),
         WildRiftItem(
             id = "bamis_cinder", name = "Rescoldo de Bami", namePt = "Brasa de Bami",
@@ -411,7 +411,7 @@ object WildRiftComponentItemsData {
             stats = "+250 Vida máxima • +5 Velocidad de habilidades",
             statsPt = "+250 Vida máxima • +5 Aceleração de habilidade",
             passive = "Cenizas: Inflige de 10 a 20 de daño mágico por segundo a enemigos cercanos. Inflige un 115% de daño a súbditos y monstruos.",
-            passivePt = "Cinzas: Causa de 10 a 20 de dano mágico por segundo a inimigos próximos. Causa 115% de dano a tropas e monstros.", iconUrl = ""
+            passivePt = "Cinzas: Causa de 10 a 20 de dano mágico por segundo a inimigos próximos. Causa 115% de dano a tropas e monstros.", iconUrl = "file:///android_asset/component_icons/bamis_cinder.webp"
         ),
         WildRiftItem(
             id = "jaurims_fist", name = "Puño de Jaurim", namePt = "Punho de Jaurim",
@@ -419,7 +419,7 @@ object WildRiftComponentItemsData {
             stats = "+200 Vida máxima • +15 Daño de ataque",
             statsPt = "+200 Vida máxima • +15 Dano de ataque",
             passive = "",
-            passivePt = "", iconUrl = ""
+            passivePt = "", iconUrl = "file:///android_asset/component_icons/jaurims_fist.webp"
         ),
     )
 

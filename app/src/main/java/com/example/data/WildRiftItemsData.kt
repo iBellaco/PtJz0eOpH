@@ -2329,14 +2329,16 @@ WildRiftItem(
     /** Component memberships remain independent of completed-item memberships. */
     data class CatalogGroup(val section: String, val level: String, val items: List<WildRiftItem>)
     fun getCatalogGroups(section: String): List<CatalogGroup> {
-        val result = listOf("Básico", "Nivel Medio").mapNotNull { level ->
-            WildRiftComponentItemsData.getItems(section, level).takeIf { it.isNotEmpty() }?.let { CatalogGroup(section, level, it) }
-        }.toMutableList()
+        val result = mutableListOf<CatalogGroup>()
         val original = getItemsForCategory(section)
         val starters = if (section == "Apoyo") original.filter { it.id in setOf("spectral_sickle", "relic_shield") } else emptyList()
-        if (starters.isNotEmpty()) result += CatalogGroup(section, "Inicial", starters)
         val completed = original.filter { it !in starters }
         if (completed.isNotEmpty()) result += CatalogGroup(section, "Completos", completed)
+        listOf("Nivel Medio", "Básico").forEach { level ->
+            WildRiftComponentItemsData.getItems(section, level).takeIf { it.isNotEmpty() }
+                ?.let { result += CatalogGroup(section, level, it) }
+        }
+        if (starters.isNotEmpty()) result += CatalogGroup(section, "Inicial", starters)
         return result
     }
 

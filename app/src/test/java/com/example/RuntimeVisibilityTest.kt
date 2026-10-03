@@ -290,7 +290,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             val section = mapOf("luchador" to "Luchador","asesino" to "Asesino","tirador" to "Tirador","magico" to "Mágico","defensa" to "Defensa","apoyo" to "Apoyo").getValue(screen.removePrefix("component-catalog-"))
             compose.onNodeWithTag("catalog_section_$section").performClick()
             compose.onNodeWithContentDescription(appTr("Minimizar filtros")).performClick()
-            compose.onNodeWithTag("catalog_level_1").performScrollTo().performClick()
+            compose.onNodeWithTag("catalog_level_3").performScrollTo().performClick()
             if (section == "Apoyo") compose.onNodeWithTag("catalog_group_${section}_Básico").assertDoesNotExist()
             else {
                 compose.onNodeWithTag("catalog_group_${section}_Básico").assertExists()
@@ -305,6 +305,20 @@ class RuntimeVisibilityTest(private val screen: String) {
             val first = com.example.data.WildRiftComponentItemsData.getItems(section,"Nivel Medio").first()
             compose.onNodeWithText(first.getLocalizedName("pt"),useUnmergedTree=true).assertExists()
             inspect("medium")
+            compose.onNodeWithTag("catalog_level_0").performScrollTo().performClick()
+            compose.onAllNodesWithTag("catalog_panel_$section").assertCountEquals(1)
+            val groups = com.example.data.WildRiftItemsData.getCatalogGroups(section)
+            val headers = groups.map { group ->
+                val node = compose.onNodeWithTag("catalog_group_${section}_${group.level}", useUnmergedTree = true).fetchSemanticsNode()
+                var ancestor = node.parent
+                while (ancestor != null && ancestor.config.getOrNull(SemanticsProperties.TestTag) != "catalog_panel_$section") ancestor = ancestor.parent
+                Assert.assertNotNull("Every level must belong to the same section panel", ancestor)
+                // boundsInRoot clips offscreen headers to zero. Use their placed
+                // positions to check order inside a panel taller than the viewport.
+                node.positionInRoot.y
+            }
+            Assert.assertEquals("Completed, medium, then starting items", headers.sorted(), headers)
+            inspect("unified")
         }
         when (screen) {
             "history-receipts" -> {

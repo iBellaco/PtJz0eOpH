@@ -100,6 +100,11 @@ class ComponentItemsCatalogTest(private val id: String) {
     @Test fun `required balance survives actual catalog rendering and both language switches`() {
         val item = WildRiftItemsData.getItemById(id)!!
         val expected = expectations().getJSONObject(id)
+        assertEquals("file:///android_asset/component_icons/$id.webp", item.iconUrl)
+        val bitmap = context.assets.open("component_icons/$id.webp").use { android.graphics.BitmapFactory.decodeStream(it) }
+            ?: throw AssertionError("Icon must decode offline on Android: $id")
+        assertTrue(bitmap.width in 1..128 && bitmap.height in 1..128)
+        bitmap.recycle()
         if (expected.has("goldCost")) assertEquals(expected.getInt("goldCost"), item.goldCost)
         if (expected.has("category")) assertEquals(expected.getString("category"), item.category)
         assertEquals(id, WildRiftItemsData.getItemByName(expected.getString("name"))?.id)

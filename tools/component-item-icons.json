@@ -1,0 +1,470 @@
+{
+  "tear_of_the_goddess": {
+    "source": "https://wr-meta.com/uploads/posts/2021-01/1611442459_tear-of-the-goddess.png",
+    "asset": "component_icons/tear_of_the_goddess.webp",
+    "sha256": "4aeb135d02f555d91cc224f9f26ed4b197a832edcb22eb070cc1bdc4e92b6ce0",
+    "width": 60,
+    "height": 60,
+    "source_bytes": 7595,
+    "bytes": 1274
+  },
+  "dagger": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753390550_dagger.webp",
+    "asset": "component_icons/dagger.webp",
+    "sha256": "fe7d48f4a9ab07955a6bb03e4a02046874455ffb1594a645f05974595dfe4108",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 5424,
+    "bytes": 2190
+  },
+  "long_sword": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753390561_long-sword.webp",
+    "asset": "component_icons/long_sword.webp",
+    "sha256": "4a7de7fa87c8616d99705f799df19562d6d4ce2f2b11289997cc7663c7dbba84",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 6508,
+    "bytes": 2658
+  },
+  "brawlers_gloves": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753390558_brawlers-gloves.webp",
+    "asset": "component_icons/brawlers_gloves.webp",
+    "sha256": "2b7efc41e8789c5169e95a0560eb299422122ce8c82efa77fd4aeaeee0e23dbc",
+    "width": 120,
+    "height": 120,
+    "source_bytes": 6684,
+    "bytes": 2902
+  },
+  "revelation_ring": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753390605_ring-of-revelation.webp",
+    "asset": "component_icons/revelation_ring.webp",
+    "sha256": "244a1f0d33b531d417c8fd3f4bdb9ae1e96dd97a73fcc52e1425434b01a3ce7d",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 6496,
+    "bytes": 2820
+  },
+  "amplifying_tome": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753390572_amplifying-tome.webp",
+    "asset": "component_icons/amplifying_tome.webp",
+    "sha256": "cac96d0be758eddc2f4eab97ef36cac158dc3197c2eb7bd4b1c6420ca0b7244e",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 8140,
+    "bytes": 3612
+  },
+  "ruby_crystal": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753390626_ruby-crystal.webp",
+    "asset": "component_icons/ruby_crystal.webp",
+    "sha256": "30b4364d565f484e612f67fca14895a7a1cc6eadc6b025353844ad9693e907ba",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 6164,
+    "bytes": 2854
+  },
+  "cloth_armor": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753390581_cloth-armor.webp",
+    "asset": "component_icons/cloth_armor.webp",
+    "sha256": "ba4db7ab3bb228b4cf2fa0a637d499557e6c4d1679fc9113c93007b4f60def2a",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 6634,
+    "bytes": 2790
+  },
+  "null_magic_mantle": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753390606_null-magic-mantle.webp",
+    "asset": "component_icons/null_magic_mantle.webp",
+    "sha256": "f9ba9b72e1f2ac389beda741e9373829d83e8780614cba519239644a02dcfe03",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 7970,
+    "bytes": 3610
+  },
+  "pickaxe": {
+    "source": "https://wr-meta.com/uploads/posts/2026-09/1789126671_pickaxe.webp",
+    "asset": "component_icons/pickaxe.webp",
+    "sha256": "d7541120e8437125dcfe48abe8d183c1ad789e7fff399c38df02da285c557edf",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 6892,
+    "bytes": 2868
+  },
+  "sheen": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985975_3057.png",
+    "asset": "component_icons/sheen.webp",
+    "sha256": "26f4711c80da7f85c1b019f01ce5ea9cbed317ee2ed36c146dfbce0eb9ccffeb",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6217,
+    "bytes": 1672
+  },
+  "executioners_calling": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985718_3123.png",
+    "asset": "component_icons/executioners_calling.webp",
+    "sha256": "9c4a1788afc5102556520237a74e8343b78187a14f3c4e9626e65549e7b9d916",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6504,
+    "bytes": 1780
+  },
+  "phage": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985701_3044.png",
+    "asset": "component_icons/phage.webp",
+    "sha256": "fa4dbbcb95712e1b48a8b4ee5e2dd6470e9c34b625c3ff45d42c00ab1f81ba4d",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 7084,
+    "bytes": 1790
+  },
+  "quicksilver_sash_mid_tier": {
+    "source": "https://wr-meta.com/uploads/posts/2025-07/1753389685_quicksilver-enchant.webp",
+    "asset": "component_icons/quicksilver_sash_mid_tier.webp",
+    "sha256": "39f882412dac0ea741ffd7812412d4b8ee6efd2375739dd91b50ea7798f689fd",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 6640,
+    "bytes": 2552
+  },
+  "hearthbound_axe": {
+    "source": "https://wr-meta.com/uploads/posts/2026-09/1789127000_heartbound-axe.webp",
+    "asset": "component_icons/hearthbound_axe.webp",
+    "sha256": "99723632607b925d2591465fdee453eb4196d9a701fc6dd9154ff25a098e3fef",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 8096,
+    "bytes": 3714
+  },
+  "vampiric_scepter": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985546_1053.png",
+    "asset": "component_icons/vampiric_scepter.webp",
+    "sha256": "c4114b8b5776166c164f07f40aab6c52876d3a71e0ffc11d966f562a669fbc5f",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 5406,
+    "bytes": 1658
+  },
+  "last_whisper": {
+    "source": "https://wr-meta.com/uploads/posts/2021-01/1611440927_last-whisper.png",
+    "asset": "component_icons/last_whisper.webp",
+    "sha256": "a7e2d48a564a0a47b464d8766076e2ff10d91fc537b7c5afe7abce02dfa0f837",
+    "width": 60,
+    "height": 60,
+    "source_bytes": 6514,
+    "bytes": 984
+  },
+  "hexdrinker": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986547_3155.png",
+    "asset": "component_icons/hexdrinker.webp",
+    "sha256": "a57080e10115133e1b851a437586bdd25d5dee511d8b28ba09cfd39b2004ae5d",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 5413,
+    "bytes": 1532
+  },
+  "caulfields_warhammer": {
+    "source": "https://wr-meta.com/uploads/posts/2021-01/1611441611_caulfields-warhammer.png",
+    "asset": "component_icons/caulfields_warhammer.webp",
+    "sha256": "079772ed0494aef804a2c6f79ecb42d929ee334c835bea5546565923c50df96e",
+    "width": 60,
+    "height": 60,
+    "source_bytes": 8211,
+    "bytes": 1318
+  },
+  "serrated_dirk": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985626_3134.png",
+    "asset": "component_icons/serrated_dirk.webp",
+    "sha256": "94bc64a415033c6ee4ed1c34bbe2470aa74900345259c001140e2f87e7acb295",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 5232,
+    "bytes": 1320
+  },
+  "kircheis_shard": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985587_2015.png",
+    "asset": "component_icons/kircheis_shard.webp",
+    "sha256": "a6df34d07fe8afd2977fb31c385c840519287acc5600641e3b7542d8f1375d1a",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6489,
+    "bytes": 2042
+  },
+  "recurve_bow": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985621_1043.png",
+    "asset": "component_icons/recurve_bow.webp",
+    "sha256": "3971747b9b54271dafda830ba37fba3d0df0b34e1dfc3a1bd2c31accc7e86fb5",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 5814,
+    "bytes": 1490
+  },
+  "noonquiver": {
+    "source": "https://wr-meta.com/uploads/posts/2023-05/1685137714_noonquiver_item.webp",
+    "asset": "component_icons/noonquiver.webp",
+    "sha256": "82319c128974b6a9c713bcd1fe012ca6f0c153cbbbe61b4baa227e701d47f954",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 3082,
+    "bytes": 2038
+  },
+  "zeal": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985588_3086.png",
+    "asset": "component_icons/zeal.webp",
+    "sha256": "a74c7fad55747d35eeb71e4840f808c07a4ecf23da3bbbb8d52a112a7f4e151b",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6116,
+    "bytes": 2018
+  },
+  "bf_sword": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985610_1038.png",
+    "asset": "component_icons/bf_sword.webp",
+    "sha256": "a4aa0278e52765ea969b59c9e8c5586870eb2ad82331db718a9538bd7f7e5ba3",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 4983,
+    "bytes": 1486
+  },
+  "forbidden_idol": {
+    "source": "https://wr-meta.com/uploads/posts/2024-12/1735325004_forbidden_idol_item_hd.webp",
+    "asset": "component_icons/forbidden_idol.webp",
+    "sha256": "696875a3465fec68dceef7e59d9cbb76900aace236ccc333c5431796ac9d5791",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 2164,
+    "bytes": 1676
+  },
+  "blasting_wand": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985924_1026.png",
+    "asset": "component_icons/blasting_wand.webp",
+    "sha256": "7c7863a52f188a12e146ca9cb252cc6dbdc930851c0aa1198a93e570e7b4974d",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 4671,
+    "bytes": 1382
+  },
+  "bandleglass_mirror": {
+    "source": "https://wr-meta.com/uploads/posts/2026-09/1789999155_bandleglass_mirror_item_hd.webp",
+    "asset": "component_icons/bandleglass_mirror.webp",
+    "sha256": "6d718218419ffa3a173cdc605ffd0bf698488dcf5656d6ff587d2146ab32205f",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 6280,
+    "bytes": 4952
+  },
+  "fated_ashes": {
+    "source": "https://wr-meta.com/uploads/posts/2026-07/1783190595_fated-ashes.webp",
+    "asset": "component_icons/fated_ashes.webp",
+    "sha256": "961cf13d77ef95f7f3db62ebe5a99f1e3c98e7d0c7d140e0f091b1fbd37415d7",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 8036,
+    "bytes": 4624
+  },
+  "fiendish_codex": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985893_3108.png",
+    "asset": "component_icons/fiendish_codex.webp",
+    "sha256": "f3344db32d690fdf3ebd3c09e6bacf1c25a1df39a36a08aaafdcf1431fe22a51",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6650,
+    "bytes": 1740
+  },
+  "oblivion_orb": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985971_3916.png",
+    "asset": "component_icons/oblivion_orb.webp",
+    "sha256": "600c06a93b8e85db2be2d89b9b7386d6b918e2ef4146161e4166da882d5f0fd4",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6443,
+    "bytes": 1684
+  },
+  "aether_wisp": {
+    "source": "https://wr-meta.com/uploads/posts/2021-01/1611442631_aether-wisp.png",
+    "asset": "component_icons/aether_wisp.webp",
+    "sha256": "fb80a4fbb98bef74b80389481ed4a3daf29be7b17cf697d30be2bfe8f50b8801",
+    "width": 60,
+    "height": 60,
+    "source_bytes": 6217,
+    "bytes": 1006
+  },
+  "void_amethyst": {
+    "source": "https://wr-meta.com/uploads/posts/2026-07/1783190939_void_amethyst.webp",
+    "asset": "component_icons/void_amethyst.webp",
+    "sha256": "1e4cfce8d85544c491280e9614bcead89caaebdc5d5d7810c201b63e049cc771",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 6132,
+    "bytes": 3358
+  },
+  "catalyst_of_aeons": {
+    "source": "https://wr-meta.com/uploads/posts/2021-01/1611444645_catalyst-of-aeons.png",
+    "asset": "component_icons/catalyst_of_aeons.webp",
+    "sha256": "a351d9afecee80aba9b8af546b3227917238af837ce55fe16e10b97268d09718",
+    "width": 60,
+    "height": 60,
+    "source_bytes": 7893,
+    "bytes": 1372
+  },
+  "mejais_soulstealer": {
+    "source": "https://wr-meta.com/uploads/posts/2023-10/1698177176_mejai27s_soulstealer_item_hd.webp",
+    "asset": "component_icons/mejais_soulstealer.webp",
+    "sha256": "4c9ea1cea893c871e0949a33a121e846ede251d8d0a30f094e8a765deb13d4c5",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 2260,
+    "bytes": 1770
+  },
+  "verdant_barrier": {
+    "source": "https://wr-meta.com/uploads/posts/2026-07/1783191133_verdant_barrier_item_hd_11zon.png",
+    "asset": "component_icons/verdant_barrier.webp",
+    "sha256": "d7090565ffa8dcb5161d7493cc1af6ab983fca5cda9e7778875e4621227f1d77",
+    "width": 128,
+    "height": 128,
+    "source_bytes": 33651,
+    "bytes": 4130
+  },
+  "seekers_armguard": {
+    "source": "https://wr-meta.com/uploads/posts/2022-01/1641809649_seekers-armguard.png",
+    "asset": "component_icons/seekers_armguard.webp",
+    "sha256": "ad7614c95cfec451fecccffb557c69fa6375857cdc0ffc49bceb97114e2bee90",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 13286,
+    "bytes": 1758
+  },
+  "needlessly_large_rod": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985984_1058.png",
+    "asset": "component_icons/needlessly_large_rod.webp",
+    "sha256": "52e2cf8b7af48b0268fa016f3fc28ad6258373b3f26dcbc2730b55fd4427ed83",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 5943,
+    "bytes": 1816
+  },
+  "haunting_guise": {
+    "source": "https://wr-meta.com/uploads/posts/2021-01/1611443224_haunting-guise.png",
+    "asset": "component_icons/haunting_guise.webp",
+    "sha256": "6e26de2dff29b889a7c0b3aabf7e0d6b152a1a7d1baeda5cd4895469f3916281",
+    "width": 60,
+    "height": 60,
+    "source_bytes": 9381,
+    "bytes": 1786
+  },
+  "lost_chapter": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616985899_3802.png",
+    "asset": "component_icons/lost_chapter.webp",
+    "sha256": "146eabe5fea7f687aa7b0791b22f2951299c32c5f7b95ce1bd1e482b7ac471ca",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6389,
+    "bytes": 1938
+  },
+  "hextech_alternator": {
+    "source": "https://wr-meta.com/uploads/posts/2023-10/1698176528_hextech_alternator_item.webp",
+    "asset": "component_icons/hextech_alternator.webp",
+    "sha256": "68faaae8d503e8cb1c735b0d6d399c78420921978f2569f4d689ef72329b4eea",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 2734,
+    "bytes": 1764
+  },
+  "kindlegem": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986347_3067.png",
+    "asset": "component_icons/kindlegem.webp",
+    "sha256": "a38c24a7446f6ce5fe085fe513368bbf0e579d25e4be34b71b742e647905c714",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6255,
+    "bytes": 1948
+  },
+  "chain_vest": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986413_1031.png",
+    "asset": "component_icons/chain_vest.webp",
+    "sha256": "a82a74a5077a380820907f3fd185850cff89e73bfb2ba30d7df62a6231f27035",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6332,
+    "bytes": 1910
+  },
+  "winged_moonplate": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616981123_winged_moonplate_item_hd-min.png",
+    "asset": "component_icons/winged_moonplate.webp",
+    "sha256": "da7715134081fdf3dbde826f0e9098ae215c1121ee506fb963120a68e3a20042",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 5507,
+    "bytes": 2224
+  },
+  "negatron_cloak": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986529_1057.png",
+    "asset": "component_icons/negatron_cloak.webp",
+    "sha256": "fd8d8e71343833854dcf9a66aba884eb5b4bda2e58753dbde8a2b0fc032b2e1e",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6307,
+    "bytes": 2006
+  },
+  "giants_belt": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986359_1011.png",
+    "asset": "component_icons/giants_belt.webp",
+    "sha256": "875bd11d0c17216b01f2554b6cf727819848a5aeb93511a3bd423928e31b5c77",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 5874,
+    "bytes": 1780
+  },
+  "bramble_vest": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986594_3076.png",
+    "asset": "component_icons/bramble_vest.webp",
+    "sha256": "b2961f3abb242785e683740ac9dec5d7769c46530dc547c454819f51f0784766",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 7197,
+    "bytes": 2120
+  },
+  "glacial_shroud": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986572_3024.png",
+    "asset": "component_icons/glacial_shroud.webp",
+    "sha256": "5046305739f45a7db5cdda86e502ae6ae8d13b1bb5f0995f89fec1ca6c2be970",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 5845,
+    "bytes": 1908
+  },
+  "wardens_mail": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986370_3082.png",
+    "asset": "component_icons/wardens_mail.webp",
+    "sha256": "85c14dc79ea6e9b926d600a7b0a7fe6cf54f3bdee48b39f9b29cd59880eb67b0",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6703,
+    "bytes": 2032
+  },
+  "spectres_cowl": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986306_3211.png",
+    "asset": "component_icons/spectres_cowl.webp",
+    "sha256": "0775dbb3c9c228eb4a4818898b7f51610e3ed8b87fad53e31a4f2915df0e1468",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6014,
+    "bytes": 1692
+  },
+  "bamis_cinder": {
+    "source": "https://wr-meta.com/uploads/posts/2021-03/1616986281_6660.png",
+    "asset": "component_icons/bamis_cinder.webp",
+    "sha256": "699f016591f7c4499ad8b5c5f000d9478fc987ee9ab55d08a1aeca99f04c0f8f",
+    "width": 64,
+    "height": 64,
+    "source_bytes": 6052,
+    "bytes": 1856
+  },
+  "jaurims_fist": {
+    "source": "https://wr-meta.com/uploads/posts/2021-01/1611444901_jaurims-fist.png",
+    "asset": "component_icons/jaurims_fist.webp",
+    "sha256": "d18cd9659c177d1abd797ddeacdf85ce49ef8cdf41337c51b7605295aafb9904",
+    "width": 60,
+    "height": 60,
+    "source_bytes": 7992,
+    "bytes": 1276
+  }
+}
