@@ -28,22 +28,6 @@ fun SubscriptionPlansBottomSheet(onDismiss: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    selected?.let { (plan, currency) ->
-        val planLabel = tr(if (plan == EssencePremiumPlan.MONTHLY) "Mensual" else "Anual")
-        AlertDialog(onDismissRequest = { if (!busy) selected = null },
-            title = { Text(tr("Confirmar suscripción")) },
-            text = { Column { Text(tr("Se descontarán ${plan.cost(currency)} ${currency.abbreviation}. El plan $planLabel añade ${plan.days} días a tu tiempo premium.")); feedback?.let { Text(tr(it), color = DangerRed) } } },
-            confirmButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("premium_purchase_confirm"), onClick = {
-                busy = true; feedback = null
-                scope.launch {
-                    val result = EssenceEconomyRepository.purchase(operationId, plan, currency)
-                    busy = false
-                    if (result.isSuccess) { selected = null; feedback = "Suscripción activada" }
-                    else feedback = economyFailure(result.exceptionOrNull())
-                }
-            }) { Text(tr(if (busy) "Procesando…" else "Confirmar")) } },
-            dismissButton = { TextButton(enabled = !busy, onClick = { selected = null; feedback = null }) { Text(tr("Cancelar")) } })
-    }
     ModalBottomSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = HextechDarkBg) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(tr("Suscripción Premium"), style = MaterialTheme.typography.headlineSmall, color = HextechGold)
@@ -59,6 +43,22 @@ fun SubscriptionPlansBottomSheet(onDismiss: () -> Unit) {
             feedback?.let { Text(tr(it), color = HextechCyan) }
             TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
         }
+    }
+    selected?.let { (plan, currency) ->
+        val planLabel = tr(if (plan == EssencePremiumPlan.MONTHLY) "Mensual" else "Anual")
+        AlertDialog(onDismissRequest = { if (!busy) selected = null },
+            title = { Text(tr("Confirmar suscripción")) },
+            text = { Column { Text(tr("Se descontarán ${plan.cost(currency)} ${currency.abbreviation}. El plan $planLabel añade ${plan.days} días a tu tiempo premium.")); feedback?.let { Text(tr(it), color = DangerRed) } } },
+            confirmButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("premium_purchase_confirm"), onClick = {
+                busy = true; feedback = null
+                scope.launch {
+                    val result = EssenceEconomyRepository.purchase(operationId, plan, currency)
+                    busy = false
+                    if (result.isSuccess) { selected = null; feedback = "Suscripción activada" }
+                    else feedback = economyFailure(result.exceptionOrNull())
+                }
+            }) { Text(tr(if (busy) "Procesando…" else "Confirmar")) } },
+            dismissButton = { TextButton(enabled = !busy, onClick = { selected = null; feedback = null }) { Text(tr("Cancelar")) } })
     }
 }
 

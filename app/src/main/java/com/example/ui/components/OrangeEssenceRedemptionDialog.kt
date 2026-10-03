@@ -37,17 +37,6 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
         }
         onDispose { listener.remove() }
     }
-    amount?.let { selected ->
-        CashRedemptionConfirmation(selected,network,wallet,busy,feedback,onConfirm = {
-            busy = true; feedback = null
-            scope.launch {
-                val result = EssenceEconomyRepository.redeem(id, selected, network, wallet.trim())
-                busy = false
-                if (result.isSuccess) { amount = null; feedback = "Solicitud de canje registrada" }
-                else feedback = economyFailure(result.exceptionOrNull())
-            }
-        },onDismiss = { amount = null; feedback = null })
-    }
     Dialog(onDismissRequest = { if (!busy) onDismiss() }) {
         Surface(color = HextechDarkBg, shape = MaterialTheme.shapes.large) {
             Column(Modifier.fillMaxWidth().heightIn(max = 650.dp).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -69,6 +58,17 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                 TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
             }
         }
+    }
+    amount?.let { selected ->
+        CashRedemptionConfirmation(selected,network,wallet,busy,feedback,onConfirm = {
+            busy = true; feedback = null
+            scope.launch {
+                val result = EssenceEconomyRepository.redeem(id, selected, network, wallet.trim())
+                busy = false
+                if (result.isSuccess) { amount = null; feedback = "Solicitud de canje registrada" }
+                else feedback = economyFailure(result.exceptionOrNull())
+            }
+        },onDismiss = { amount = null; feedback = null })
     }
 }
 

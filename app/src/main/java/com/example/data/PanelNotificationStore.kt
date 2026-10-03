@@ -14,7 +14,7 @@ object PanelNotificationStore {
     val queues = _queues.asStateFlow()
     private var key: Key? = null
     private var consumers = 0
-    private var queueVersions = emptyMap<String, String>()
+    private var queueVersions = emptyMap<NotificationPanel, Map<String, String>>()
     private val listeners = mutableListOf<ListenerRegistration>()
 
     @Synchronized fun acquire(next: Key) {
@@ -60,8 +60,9 @@ object PanelNotificationStore {
 
     @Synchronized private fun publish(source: Key, panel: NotificationPanel, events: Map<String, String>) {
         if (key == source) {
-            queueVersions = queueVersions + events
-            PanelReadRepository.updateVersions(queueVersions)
+            queueVersions = queueVersions + (panel to events)
+            // A pending payment shares its event with support. The latest conversation wins.
+            PanelReadRepository.updateVersions(queueVersions[NotificationPanel.ADMINISTRATION].orEmpty() + queueVersions[NotificationPanel.SUPPORT].orEmpty())
             _queues.value = _queues.value + (panel to events.keys)
         }
     }
