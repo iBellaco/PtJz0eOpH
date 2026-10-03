@@ -175,12 +175,13 @@ jobs:
       - name: Audit Portuguese text sinks
         run: |
           python3 tools/generate-component-items.py --check
+          python3 tools/update-champion-builds.py --check
           bash tools/audit-portuguese.sh
 
       - name: Check core regressions
         env:
           CI: "true"
-        run: gradle :app:testDebugUnitTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.SupportAndStreamerPolicyTest --tests com.example.WildRiftItemsCatalogTest --stacktrace --no-daemon
+        run: gradle :app:testDebugUnitTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.SupportAndStreamerPolicyTest --tests com.example.WildRiftItemsCatalogTest --stacktrace --no-daemon
 
       - name: Upload core regression results
         if: always()

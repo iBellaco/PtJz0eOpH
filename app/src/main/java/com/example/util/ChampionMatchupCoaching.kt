@@ -142,26 +142,47 @@ object ChampionMatchupCoaching {
     } else if (lang == "pt") "Espere ${label(enemy.threat(), lang)} ser gasto antes de iniciar."
         else "Espera a que gaste ${label(enemy.threat(), lang)} antes de iniciar."
 
-    fun championPlan(champion: Champion, role: LaneRole, language: String): String {
+    /** Four mandatory sections, grounded in the actual kit and observable game state. */
+    fun sovereignFeedback(champion: Champion, role: LaneRole, language: String, enemy: Champion? = null): String {
         val lang = AppLanguage.normalize(language)
-        fun title(slot: String): String {
-            val skill = champion.skill(slot)
-            return when (slot) {
-                "1" -> if (lang == "pt") skill?.let { "sua H1 (${it.getLocalizedName(lang)})" } ?: "sua Habilidade 1 (H1)"
-                    else skill?.let { "su H1 (${it.getLocalizedName(lang)})" } ?: "su Habilidad 1 (H1)"
-                "4" -> if (lang == "pt") skill?.let { "sua Definitiva (${it.getLocalizedName(lang)})" } ?: "sua Definitiva (H4)"
-                    else skill?.let { "su Definitiva (${it.getLocalizedName(lang)})" } ?: "su Definitiva (H4)"
-                else -> label(skill, lang)
-            }
+        val pt = lang == "pt"
+        val me = champion.getLocalizedName(lang)
+        val lane = role.getLocalizedName(lang)
+        val primary = champion.skill("1")?.let { if (pt) "sua H1 (${it.getLocalizedName(lang)})" else "su H1 (${it.getLocalizedName(lang)})" }
+            ?: if (pt) "sua Habilidade 1 (H1)" else "su Habilidad 1 (H1)"
+        val escape = label(champion.skill("3"), lang)
+        val ultimate = champion.skill("4")?.let { if (pt) "sua Definitiva (${it.getLocalizedName(lang)})" else "su Definitiva (${it.getLocalizedName(lang)})" }
+            ?: if (pt) "sua Definitiva (H4)" else "su Definitiva (H4)"
+        val danger = enemy?.let { label(it.threat(), lang) }
+        val diagnostic = if (enemy != null) {
+            if (pt) "$me contra ${enemy.getLocalizedName(lang)} em $lane: a janela depende de $danger. A seleção não informa vida, recargas nem posição do caçador; não presuma vantagem de troca apenas pelo confronto."
+            else "$me contra ${enemy.getLocalizedName(lang)} en $lane: la ventana depende de $danger. El draft no informa vida, enfriamientos ni posición del jungla; no asumas ventaja de intercambio solo por el enfrentamiento."
+        } else if (pt) "$me em $lane: perder o tempo entre a pressão da onda e a compra deixa sua condição de vitória sem recursos. Sem uma partida observada, isto é um risco a verificar, não um erro atribuído ao jogador."
+            else "$me en $lane: perder el tempo entre la presión de la oleada y la compra deja tu condición de victoria sin recursos. Sin una partida observada, este es un riesgo por verificar, no un error atribuido al jugador."
+        val decision = enemy?.let { interaction(champion, it, lang) } ?: if (pt)
+            "Execute o mecanismo de $me: ${advice(champion, lang)} Reserve $ultimate para a janela em que seu alvo não possa neutralizá-la."
+            else "Ejecuta el mecanismo de $me: ${advice(champion, lang)} Reserva $ultimate para la ventana en que tu objetivo no pueda neutralizarla."
+        val macro = when (role) {
+            LaneRole.JUNGLE -> if (pt) "Antes de cruzar o rio, confirme a prioridade das duas rotas próximas e a última posição do caçador rival. Sem prioridade, troque o objetivo por campos ou pressão no lado oposto; não inicie uma disputa sem informação do Castigo rival."
+                else "Antes de cruzar el río, confirma la prioridad de las dos líneas cercanas y la última posición del jungla rival. Sin prioridad, intercambia el objetivo por campamentos o presión en el lado opuesto; no inicies una disputa sin información del Castigo rival."
+            LaneRole.SUPPORT -> if (pt) "Saia da rota após uma onda entrar na torre rival ou no retorno combinado do atirador. Se a onda congelar contra seu aliado, resolva-a antes de abandonar a rota; preserve $escape para proteger a retirada."
+                else "Sal de línea después de un crash contra la torre rival o durante el regreso coordinado del tirador. Si congelan la oleada contra tu aliado, resuélvela antes de abandonar la línea; conserva $escape para proteger la retirada."
+            else -> if (pt) "Com o caçador rival sem localização, mantenha a onda no seu lado e preserve $escape. Para voltar à base ou rotacionar, forme uma onda lenta e faça o crash completo; se o rival segurar a onda fora da torre, cancele a saída até resolvê-la."
+                else "Con el jungla rival sin localizar, conserva la oleada en tu lado y guarda $escape. Para regresar a base o rotar, forma un slow push y completa el crash; si el rival retiene la oleada fuera de torre, cancela la salida hasta resolverla."
         }
-        val slots = (champion.skills.map { it.slot } + listOf("1", "4")).distinct()
-        return "${champion.getLocalizedName(lang)} · ${role.getLocalizedName(lang)}\n${advice(champion, lang)}\n\n" +
-            slots.joinToString("\n\n") { slot ->
-                val skill = champion.skill(slot)
-                val details = fact(skill, lang).ifBlank {
-                    if (lang == "pt") "Descrição não disponível para este campeão." else "Descripción no disponible para este campeón."
-                }
-                "${title(slot)}: $details"
-            }
+        val detail = "$primary: ${fact(champion.skill("1"), lang)}\n$ultimate: ${fact(champion.skill("4"), lang)}\n$macro\n" +
+            if (pt) "Use o contador visível do objetivo: planeje sua compra e o trajeto antes de disputar. Confirme recargas na partida; não substitua o valor observado por um tempo fixo."
+            else "Usa el contador visible del objetivo: planea la compra y el recorrido antes de disputar. Confirma los enfriamientos en partida; no sustituyas el dato observado por un tiempo fijo."
+        val rule = if (pt) "Onda resolvida → recurso disponível → informação do caçador → decisão. Com $me, não transforme $primary em compromisso sem uma saída com $escape ou cobertura aliada."
+            else "Oleada resuelta → recurso disponible → información del jungla → decisión. Con $me, no conviertas $primary en un compromiso sin salida con $escape o cobertura aliada."
+        return listOf(
+            (if (pt) "Diagnóstico do erro/situação" else "Diagnóstico del error/situación") to diagnostic,
+            (if (pt) "Decisão Soberano" else "Decisión Soberano") to decision,
+            (if (pt) "Micro e Macro detalhe" else "Micro y Macro detalle") to detail,
+            (if (pt) "Regra aplicável" else "Regla aplicable") to rule
+        ).joinToString("\n\n") { (title, body) -> "$title\n$body" }
     }
+
+    fun championPlan(champion: Champion, role: LaneRole, language: String): String =
+        sovereignFeedback(champion, role, language)
 }

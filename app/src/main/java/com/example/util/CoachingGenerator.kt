@@ -9,8 +9,7 @@ object CoachingGenerator {
         val isPt = AppLanguage.normalize(lang) == "pt"
         val targetChamp = com.example.data.WildRiftRepository.getChampionByName(target)
         if (targetChamp != null && type in listOf("Ventaja", "Debilidad")) {
-            val plan = ChampionMatchupCoaching.forDuel(champion, targetChamp, activeRole, lang)
-            return if (type == "Ventaja") plan.early + "\n\n" + plan.winCondition else plan.rival + "\n\n" + plan.ultimate
+            return ChampionMatchupCoaching.sovereignFeedback(champion, activeRole, lang, targetChamp)
         }
         return when (type) {
             "Situacional" -> {
@@ -39,12 +38,6 @@ object CoachingGenerator {
     }
 
     fun generateTacticalAdvice(champion: Champion, activeRole: LaneRole, lang: String): String {
-        val language = AppLanguage.normalize(lang)
-        val specific = trStr(language, champion.tacticalAdvice).ifBlank {
-            champion.skills.firstOrNull { it.slot == "1" }?.getLocalizedDescription(language).orEmpty()
-        }.ifBlank {
-            if (language == "pt") "Descrição não disponível para este campeão." else "Descripción no disponible para este campeón."
-        }
-        return "${champion.getLocalizedName(language)} · ${activeRole.getLocalizedName(language)}: $specific"
+        return ChampionMatchupCoaching.sovereignFeedback(champion, activeRole, lang)
     }
 }

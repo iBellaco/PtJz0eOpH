@@ -1155,12 +1155,9 @@ private fun FloatingOverlayContent(
                     val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
                     // Garantizar ciclo de sincronización global periódico o continuo si el visor está abierto
-                    val isGlobalSyncCycle = when {
-                        isDraftComplete || !hasActiveTurns -> true
-                        confirmedPicksCount >= 9 -> false
-                        isTenthPickActive -> loopCycleCounter % 12L == 0L
-                        else -> loopCycleCounter % 4L == 0L
-                    }
+                    val isGlobalSyncCycle = com.example.service.screen.DraftSyncCadence.globalCycle(
+                        confirmedPicksCount, hasActiveTurns, isTenthPickActive, loopCycleCounter)
+
 
                     val dynamicLoopDelay = when {
                         showLiteRTViewer -> 50L // 20 Hz ultra-fluido en vivo para pruebas del usuario

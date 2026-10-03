@@ -40,12 +40,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Mandato imperial"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp"
     ],
@@ -415,12 +415,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -839,7 +839,7 @@
       "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -1400,7 +1400,7 @@
       "file:///android_asset/offline_images/856d8989c3c87e50fc7b8e997f9facbc.webp",
       "file:///android_asset/offline_images/06c122abcc307025bf2aacd5667ddaad.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2400,7 +2400,7 @@
       "file:///android_asset/offline_images/0ec5d7a3b173c4f04ca3cc32e35c2e43.webp",
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -2599,12 +2599,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Filo fantasmal de Youmuu",
       "Filoscuro de Draktharr"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/f1b8c4afd751ba63ea7b8f0ff5f2c981.webp",
       "file:///android_asset/offline_images/d23e07c846f67b0006a5e83797744539.webp"
     ],
@@ -2786,12 +2786,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -2991,7 +2991,7 @@
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/a01f7976459d788cbb0a763155cb39b8.webp",
       "file:///android_asset/offline_images/0e47792257d27c16e79a36c746d6c82e.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp",
+      "file:///android_asset/offline_images/amaranths_twinguard.webp",
       "file:///android_asset/offline_images/446cb1deb4616fba85f68c078be08339.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
@@ -3160,12 +3160,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -4333,7 +4333,7 @@
       "file:///android_asset/offline_images/c341133522f4f2bf164b1b823a13249c.webp",
       "file:///android_asset/offline_images/5069d1174a4d1b3b70d631d7bb61731e.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -4517,7 +4517,7 @@
       "Fauces de Malmortius"
     ],
     "situationalItemsIcons": [
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
@@ -4689,12 +4689,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Cetro de cristal de Rylai"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/da88ffd23441e3d461aec00c69f066b3.webp"
     ],
@@ -5487,7 +5487,7 @@
       "file:///android_asset/offline_images/3e9ae4d161ed330f5ba83c71d2b2a637.webp",
       "file:///android_asset/offline_images/856d8989c3c87e50fc7b8e997f9facbc.webp",
       "file:///android_asset/offline_images/3e238358c02090087ae206fc310ad98a.webp",
-      "https://wr-meta.com/uploads/posts/2025-07/1753389236_amaranths-twinguard.webp"
+      "file:///android_asset/offline_images/amaranths_twinguard.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -5842,14 +5842,14 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Filo Infinito",
-      "Puñal de Statikk",
-      "Recuerdos de Lord Dominik"
+      "Flechas de los Yun Tal",
+      "Filoveloz de Navori",
+      "Filo Infinito"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130448_statikk-shiv.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
+      "file:///android_asset/offline_images/ddb7b42ff818a8e2d2f541c9dc96a0fc.webp",
+      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
     ],
     "situationalItems": [
       "Sanguinaria",
@@ -5859,9 +5859,9 @@
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -5924,14 +5924,14 @@
         "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -5955,14 +5955,14 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -6221,7 +6221,7 @@
       "Recuerdos de Lord Dominik"
     ],
     "coreItemsIcons": [
-      "https://wr-meta.com/uploads/posts/2026-09/1790080912_essence_reaver_item_hd.webp",
+      "file:///android_asset/offline_images/essence_reaver.webp",
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
     ],
@@ -6232,7 +6232,7 @@
       "Fauces de Malmortius"
     ],
     "situationalItemsIcons": [
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
       "file:///android_asset/offline_images/fde3101c1b0cf8002454b75c285cd1fe.webp"
@@ -6403,12 +6403,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Incensario ardiente"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp"
     ],
@@ -6590,12 +6590,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Incensario ardiente"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp"
     ],
@@ -7744,12 +7744,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Baluarte de la montaña",
+      "Escudo reliquia",
       "Convergencia de Zeke",
       "Promesa de caballero"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/90729ecdec9a7cb238b1156edbce22f6.webp",
+      "file:///android_asset/offline_images/relic_shield.webp",
       "file:///android_asset/offline_images/0685ea68cf8f32ccbd8e016af1c0b7b4.webp",
       "file:///android_asset/offline_images/5f92d9e55433af69c2d2e91adfca0284.webp"
     ],
@@ -7931,14 +7931,14 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Filo Infinito",
-      "Puñal de Statikk",
-      "Recuerdos de Lord Dominik"
+      "Flechas de los Yun Tal",
+      "Filoveloz de Navori",
+      "Filo Infinito"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130448_statikk-shiv.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
+      "file:///android_asset/offline_images/ddb7b42ff818a8e2d2f541c9dc96a0fc.webp",
+      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
     ],
     "situationalItems": [
       "Sanguinaria",
@@ -7948,9 +7948,9 @@
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -8013,14 +8013,14 @@
         "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -8044,14 +8044,14 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -8511,7 +8511,7 @@
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -9072,7 +9072,7 @@
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11116,14 +11116,14 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Filo Infinito",
-      "Puñal de Statikk",
-      "Recuerdos de Lord Dominik"
+      "Flechas de los Yun Tal",
+      "Filoveloz de Navori",
+      "Filo Infinito"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130448_statikk-shiv.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
+      "file:///android_asset/offline_images/ddb7b42ff818a8e2d2f541c9dc96a0fc.webp",
+      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
     ],
     "situationalItems": [
       "Cañón de Fuego Rápido",
@@ -11132,10 +11132,10 @@
       "Arcoescudo Inmortal"
     ],
     "situationalItemsIcons": [
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11198,14 +11198,14 @@
         "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Cañón de Fuego Rápido",
@@ -11229,14 +11229,14 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Filoveloz de Navori",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Cañón de Fuego Rápido",
@@ -11498,7 +11498,7 @@
     "coreItemsIcons": [
       "file:///android_asset/offline_images/537435e5e6691bd654c89dba3aa169ef.webp",
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "situationalItems": [
       "Baile de la muerte",
@@ -11716,7 +11716,7 @@
     "coreItemsIcons": [
       "file:///android_asset/offline_images/537435e5e6691bd654c89dba3aa169ef.webp",
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "situationalItems": [
       "Baile de la muerte",
@@ -11896,14 +11896,14 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Filo Infinito",
-      "Puñal de Statikk",
-      "Recuerdos de Lord Dominik"
+      "Flechas de los Yun Tal",
+      "Huracán de Runaan",
+      "Filo Infinito"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130448_statikk-shiv.webp",
-      "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png"
+      "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
+      "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp",
+      "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
     ],
     "situationalItems": [
       "Sanguinaria",
@@ -11913,9 +11913,9 @@
     ],
     "situationalItemsIcons": [
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789129391_rapid-firecannon.webp",
+      "file:///android_asset/offline_images/rapid_firecannon.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -11978,14 +11978,14 @@
         "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Huracán de Runaan",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Huracán de Runaan",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -12009,14 +12009,14 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Huracán de Runaan",
+          "Filo Infinito"
         ],
         "items": [
-          "Filo Infinito",
-          "Puñal de Statikk",
-          "Recuerdos de Lord Dominik"
+          "Flechas de los Yun Tal",
+          "Huracán de Runaan",
+          "Filo Infinito"
         ],
         "situationalItems": [
           "Sanguinaria",
@@ -12083,12 +12083,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Incensario ardiente"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/9910505e11aafddc30dd943ecf79b0d8.webp"
     ],
@@ -12457,12 +12457,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Fuerza de trinidad",
+      "Flechas de los Yun Tal",
       "Huracán de Runaan",
       "Filo Infinito"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/1475e9776e1486a548893bcbfba5b0ce.webp",
+      "file:///android_asset/offline_images/yun_tal_wildarrows.webp",
       "file:///android_asset/offline_images/1a1634a965cf3e181449d31fb2d9f1b3.webp",
       "file:///android_asset/offline_images/277520aa7c2716fe0e494a9f2fa55e2a.webp"
     ],
@@ -12476,7 +12476,7 @@
       "file:///android_asset/offline_images/22544e382529f38069d660a78e6df20e.png",
       "file:///android_asset/offline_images/926efbca7b9ae9f241ddf7cd3c250273.webp",
       "file:///android_asset/offline_images/a9e382435db8c5b4d3dada562fa99d42.webp",
-      "https://wr-meta.com/uploads/posts/2026-09/1789130273_immortal-shieldbow.webp"
+      "file:///android_asset/offline_images/immortal_shieldbow.webp"
     ],
     "skillOrder": "Habilidad 1 > Habilidad 2 > Habilidad 3 (Priorizar Definitiva)",
     "skills": [
@@ -12539,12 +12539,12 @@
         "title": "Build Línea de Dragón • Criterio Coach",
         "role": "adc",
         "coreItems": [
-          "Fuerza de trinidad",
+          "Flechas de los Yun Tal",
           "Huracán de Runaan",
           "Filo Infinito"
         ],
         "items": [
-          "Fuerza de trinidad",
+          "Flechas de los Yun Tal",
           "Huracán de Runaan",
           "Filo Infinito"
         ],
@@ -12570,12 +12570,12 @@
         "title": "Build Línea Central (Línea Flex) • Criterio Coach",
         "role": "mid",
         "coreItems": [
-          "Fuerza de trinidad",
+          "Flechas de los Yun Tal",
           "Huracán de Runaan",
           "Filo Infinito"
         ],
         "items": [
-          "Fuerza de trinidad",
+          "Flechas de los Yun Tal",
           "Huracán de Runaan",
           "Filo Infinito"
         ],
@@ -12831,12 +12831,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Eco armónico",
       "Mandato imperial"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/d872a816297fba72325d5b0b2e6858c8.webp",
       "file:///android_asset/offline_images/516c29e1d0b53fc59197feeb6201c965.webp"
     ],
@@ -13206,12 +13206,12 @@
     ],
     "spellsIcons": [],
     "coreItems": [
-      "Guadaña de la Niebla Negra",
+      "Hoz espectral",
       "Tormento de Liandry",
       "Cetro de cristal de Rylai"
     ],
     "coreItemsIcons": [
-      "file:///android_asset/offline_images/905380f9e777f9fb79a8ade29433cf27.webp",
+      "file:///android_asset/offline_images/spectral_sickle.webp",
       "file:///android_asset/offline_images/206e3eef90b44d6334533e14005a29b6.webp",
       "file:///android_asset/offline_images/da88ffd23441e3d461aec00c69f066b3.webp"
     ],

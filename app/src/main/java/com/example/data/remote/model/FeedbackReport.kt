@@ -21,7 +21,8 @@ data class FeedbackReport(
     @SerialName("admin_reply") val adminReply: String? = null,
     @SerialName("replied_at") val repliedAt: String? = null,
     @SerialName("replied_by") val repliedBy: String? = null,
-    @SerialName("replied_email") val repliedEmail: String? = null
+    @SerialName("replied_email") val repliedEmail: String? = null,
+    val lastActivityAtMillis: Long = 0L
 ) {
     val hasAdminReply: Boolean
         get() = !adminReply.isNullOrBlank()

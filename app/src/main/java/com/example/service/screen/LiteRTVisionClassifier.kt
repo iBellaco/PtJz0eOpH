@@ -103,6 +103,7 @@ object LiteRTVisionClassifier {
     private var indexedIds: Set<String> = emptySet()
     private var lastValidFrameAt = 0L
     private var targetKey: String? = null
+    private var manuallyConfirmedChampion: Champion? = null
 
     @Synchronized
     fun ensureIndexed(context: Context? = null) {
@@ -172,6 +173,12 @@ object LiteRTVisionClassifier {
                 slotDescription = slotDesc, evaluatedPicksCount = confirmedPicksCount,
                 decisionReason = "Línea aliada visible; esperando selección.")
             return@withContext null
+        }
+        manuallyConfirmedChampion?.takeIf { it.id !in confirmedChampionIds }?.let { champion ->
+            _reportFlow.value = _reportFlow.value.copy(status = EngineStatus.COMPLETED,
+                pickedChampion = champion, confidencePercent = 100, isConfirmed = true,
+                slotDescription = slotDesc, evaluatedPicksCount = confirmedPicksCount)
+            return@withContext champion to 100
         }
         val previous = _reportFlow.value
         val now = android.os.SystemClock.elapsedRealtime()
@@ -300,14 +307,16 @@ object LiteRTVisionClassifier {
     }
 
     fun manuallyConfirmTenthPick(champion: Champion) {
+        manuallyConfirmedChampion = champion
         _reportFlow.value = _reportFlow.value.copy(status = EngineStatus.COMPLETED,
-            pickedChampion = champion, isConfirmed = true,
+            pickedChampion = champion, confidencePercent = 100, isConfirmed = true,
             decisionReason = "Confirmado manualmente: ${champion.name}")
     }
 
     fun reset() {
         resetStabilityTracker()
         targetKey = null
+        manuallyConfirmedChampion = null
         lastValidFrameAt = 0L
         _reportFlow.value = LiteRTInferenceReport()
     }

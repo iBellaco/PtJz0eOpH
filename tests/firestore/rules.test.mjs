@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8080, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
 const db = uid => env.authenticatedContext(uid, { email: `${uid}@test.invalid` }).firestore();
 const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
@@ -16,6 +16,16 @@ try {
     const store = context.firestore();
     for (const [uid, role] of [['user','free'],['other','free'],['mod','moderador'],['admin','admin'],['s1','streamer'],['s2','streamer']]) await setDoc(doc(store, 'users', uid), { role, email: `${uid}@test.invalid`, registeredDevices: [] });
     await setDoc(doc(store, 'system_config', 'streamer_live'), { entries: [] });
+  });
+  await test('only the administrator can aggregate publication history and save consumption samples', async()=>{
+    await env.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(),'streamer_requests/s1/history/storage-test'),{status:'REJECTED',channelName:'Canal'});
+    });
+    await assertSucceeds(getDocs(collectionGroup(admin,'history')));
+    await assertFails(getDocs(collectionGroup(moderator,'history')));
+    await assertFails(getDocs(collectionGroup(user,'history')));
+    await assertSucceeds(setDoc(doc(admin,'system_config/saved_data_consumption'),{estimatedContentBytes:2048,sampledAt:Date.now()}));
+    await assertFails(setDoc(doc(user,'system_config/saved_data_consumption'),{estimatedContentBytes:0}));
   });
   const economy = db('economy');
   const future = Date.now() + 86400000 * 90;

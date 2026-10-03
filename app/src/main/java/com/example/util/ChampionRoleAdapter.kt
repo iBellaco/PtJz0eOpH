@@ -288,13 +288,13 @@ object ChampionRoleAdapter {
         val isPrimary = targetRole == champion.primaryRole
 
         if (isPrimary) {
-            return buildPrimaryProfile(champion)
+            return buildPrimaryProfile(champion, language)
         }
 
         return buildFlexRoleProfile(champion, targetRole, language)
     }
 
-    private fun buildPrimaryProfile(champ: Champion): ChampionRoleProfile {
+    private fun buildPrimaryProfile(champ: Champion, language: String): ChampionRoleProfile {
         val isSpecialDamageSupport = champ.primaryRole == LaneRole.SUPPORT && (champ.name.equals("Pyke", ignoreCase = true) || champ.name.equals("Senna", ignoreCase = true))
         val (build8, baseBoot, bootUpgrade) = generate8ItemBuild(
             champ.coreItems,
@@ -404,7 +404,7 @@ object ChampionRoleAdapter {
             advantageAgainst = resolvedAdvantage,
             counteredBy = resolvedCountered,
             synergies = resolvedSynergies,
-            tacticalAdvice = champ.tacticalAdvice,
+            tacticalAdvice = CoachingGenerator.generateTacticalAnalysis(champ, champ.primaryRole, language),
             build8Items = build8,
             bootBase = baseBoot,
             bootUpgrade = bootUpgrade,
@@ -461,17 +461,17 @@ object ChampionRoleAdapter {
         }
 
         val (build8, baseBoot, bootUpgrade) = generate8ItemBuild(
-            rawFlexCore,
-            champ.situationalItems,
+            champ.builds.firstOrNull { it.role.equals(role.name, true) }?.coreItems ?: rawFlexCore,
+            champ.builds.firstOrNull { it.role.equals(role.name, true) }?.situationalItems ?: champ.situationalItems,
             champ.damageType,
             isTank,
             isMarksman,
             role
         )
 
-        val completedCoreItems = build8.take(6)
+        val completedCoreItems = build8.take(3)
         val coreIcons = completedCoreItems.map { WildRiftItemsData.getItemIconByName(it) }
-        val situationalItems = build8.drop(6).take(2)
+        val situationalItems = build8.drop(3).take(4)
         val situationalIcons = situationalItems.map { WildRiftItemsData.getItemIconByName(it) }
 
         val (opt1Runes, opt2Runes) = generateRunesOptions(champ, role)

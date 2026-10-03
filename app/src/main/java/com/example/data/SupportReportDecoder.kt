@@ -75,7 +75,8 @@ object SupportReportDecoder {
             adminReply = reply.takeIf { it.isNotBlank() },
             repliedBy = text("repliedBy", "replied_by").takeIf { it.isNotBlank() },
             repliedEmail = text("repliedEmail", "replied_email").takeIf { it.isNotBlank() },
-            repliedAt = date("repliedAt", "replied_at")
+            repliedAt = date("repliedAt", "replied_at"),
+            lastActivityAtMillis = InboxMessageOrder.latestMessageAt(data)
         )
     }
 }

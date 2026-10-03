@@ -70,10 +70,16 @@ object StreamerRepository {
         check(SupportTicketAccess.isAdmin()) { "streamer_error" }
         val ref = requests.document(uid)
         val archive = historyAvailable(uid)
+        val countClicks = metricsAvailable(uid)
         db.runTransaction { transaction ->
             val request = transaction.get(ref)
             val live = entries(transaction.get(registry).get("entries"))
             val account = transaction.get(db.collection("users").document(uid))
+            val publicationId = StreamerPublicationPolicy.publicationId(request.data.orEmpty())
+            val metricRef = metrics.document(publicationId)
+            val metric = if (approve && countClicks) transaction.get(metricRef) else null
+            // A repeated tap or a retry after a committed operation must not reset counters.
+            if (StreamerReviewPolicy.isAlreadyApplied(request.data.orEmpty(), live, approve)) return@runTransaction
             check(request.getString("status") == "PENDING") { "streamer_error" }
             check(!StreamerPublicationPolicy.isExpired(request.data.orEmpty())) { "streamer_expired" }
             if (approve) {
@@ -87,7 +93,7 @@ object StreamerRepository {
                     "channelUrl" to channel.url, "platform" to channel.platform, "approvedAtMillis" to System.currentTimeMillis(),
                     "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()))
                 transaction.set(registry, mapOf("entries" to StreamerPublicationPolicy.approve(live, entry)), SetOptions.merge())
-                transaction.set(metrics.document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())),
+                if (countClicks && metric?.exists() != true) transaction.set(metricRef,
                     mapOf("userId" to uid, "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()),
                         "submittedAtMillis" to StreamerPublicationPolicy.submittedAt(request.data.orEmpty()), "clickCount" to 0L,
                         "status" to "APPROVED"))

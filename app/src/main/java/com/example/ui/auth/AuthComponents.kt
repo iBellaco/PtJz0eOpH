@@ -53,7 +53,7 @@ fun AuthHeader(title: String, subtitle: String) {
         // App Logo Placeholder (using a stylized Icon)
         Box(
             modifier = Modifier
-                .size(72.dp)
+                .size(58.dp)
                 .clip(CircleShape)
                 .background(HextechCyan.copy(alpha = 0.1f))
                 .border(2.dp, HextechGold, CircleShape),
@@ -63,7 +63,7 @@ fun AuthHeader(title: String, subtitle: String) {
                 imageVector = Icons.Filled.Lock,
                 contentDescription = tr("Logo"),
                 tint = HextechCyan,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(34.dp)
             )
         }
         Spacer(modifier = Modifier.height(16.dp))

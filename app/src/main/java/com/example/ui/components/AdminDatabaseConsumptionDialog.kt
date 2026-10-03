@@ -30,7 +30,10 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit, onOpenCashRequests: ((
             busy = false
         }
     }
-    LaunchedEffect(Unit) { refresh() }
+    val consumption by DatabaseStatisticsRepository.consumption.collectAsState()
+    LaunchedEffect(Unit) {
+        while (true) { refresh(); kotlinx.coroutines.delay(300_000) }
+    }
     Dialog(onDismissRequest = onDismiss) {
         Surface(color = HextechDarkBg, shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, HextechGold)) {
             Column(Modifier.fillMaxWidth().heightIn(max = 700.dp).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -38,6 +41,7 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit, onOpenCashRequests: ((
                 Text(tr("Recuento consultado en la nube. Cada categoría indica qué información está guardada."), color = TextSecondary)
                 if (busy) CircularProgressIndicator(color = HextechCyan)
                 if (failed) Text(tr("No se pudieron consultar los datos. Vuelve a intentarlo."), color = DangerRed)
+                StorageConsumptionSummary(consumption)
                 SavedDataStatisticsContent(rows)
                 Button(onClick = { refresh() }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(tr("Actualizar")) }
                 if (onOpenCashRequests != null) TextButton(onClick = onOpenCashRequests) { Text(tr("Solicitudes de canje")) }
@@ -60,6 +64,20 @@ fun SavedDataStatisticsContent(rows: List<SavedDataStatistic>) {
                     if (row.failed) Text(tr("No se pudo consultar esta categoría."), color = DangerRed)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun StorageConsumptionSummary(consumption: StorageConsumption) {
+    Surface(color = HextechSurface, shape = MaterialTheme.shapes.medium) {
+        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(tr("Tu almacenamiento"), color = HextechGold, style = MaterialTheme.typography.titleMedium)
+            Text(tr("Contenido guardado estimado") + ": " + (consumption.estimatedBytes?.let(StorageConsumptionPolicy::formatBytes) ?: tr("No disponible")), color = HextechCyan)
+            Text(tr("Crecimiento diario aproximado") + ": " + (consumption.dailyGrowthBytes?.let { StorageConsumptionPolicy.formatBytes(it) + " / " + tr("día") } ?: tr("Calculando con las próximas muestras")), color = TextPrimary)
+            Text(tr("Límite del plan: consulta del proveedor no conectada"), color = TextSecondary)
+            Text(tr("Actualización automática cada 6 horas. Estimación del contenido de documentos; excluye índices, archivos externos y tráfico de lecturas y escrituras."), color = TextSecondary)
+            if (!consumption.complete) Text(tr("Muestra parcial: algunas categorías no se pudieron consultar."), color = HextechGold)
         }
     }
 }

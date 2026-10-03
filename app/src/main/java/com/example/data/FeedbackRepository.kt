@@ -363,7 +363,7 @@ object FeedbackRepository {
     fun feedbacksFromSnapshot(snapshot: com.google.firebase.firestore.QuerySnapshot): List<FeedbackReport> =
         snapshot.documents.mapNotNull { doc ->
             SupportReportDecoder.decode(doc.id, doc.data.orEmpty())
-        }.distinctBy { it.id }.sortedByDescending { SupportReportDecoder.timestampMillis(it.createdAt) ?: 0L }
+        }.distinctBy { it.id }.sortedWith(compareByDescending<FeedbackReport> { it.lastActivityAtMillis }.thenBy { it.id.orEmpty() })
 
     /** Bulk removal touches only solved tickets; pending and read messages remain. */
     suspend fun clearSolvedFeedbacks(): Result<Unit> = withContext(Dispatchers.IO) {

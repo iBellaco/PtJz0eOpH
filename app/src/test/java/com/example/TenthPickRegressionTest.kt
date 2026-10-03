@@ -81,6 +81,23 @@ class TenthPickRegressionTest {
     }
 
     @Test
+    fun explicitTenthSelectionSurvivesFurtherValidFrames() = runBlocking {
+        val portrait = android.graphics.Bitmap.createBitmap(64, 64, android.graphics.Bitmap.Config.ARGB_8888)
+        for (isAlly in listOf(true, false)) {
+            LiteRTVisionClassifier.reset()
+            LiteRTVisionClassifier.manuallyConfirmTenthPick(vi)
+            repeat(3) {
+                val decision = LiteRTVisionClassifier.executeTenthPickInference(portrait, isAlly,
+                    emptySet(), confirmedPicksCount = 9)
+                assertEquals(vi, decision?.first)
+                assertTrue(LiteRTVisionClassifier.reportFlow.value.isConfirmed)
+                assertEquals(100, decision?.second)
+            }
+        }
+        portrait.recycle()
+    }
+
+    @Test
     fun knownTenthChampionReplacesStaleVisualReportOnEitherSide() = runBlocking {
         for (isAlly in listOf(true, false)) {
             LiteRTVisionClassifier.manuallyConfirmTenthPick(Champion(id = "graves", name = "Graves"))

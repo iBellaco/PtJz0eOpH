@@ -227,188 +227,22 @@ fun MatchupPreviewDialog(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // 1. Fase de Líneas (Niveles 1-5 y Power Spikes)
-                    Text(
-                        text = com.example.util.tr("⏱️ " + tr("Ventanas de Poder & Fase de Líneas")),
-                        color = HextechGold,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant.copy(alpha = 0.6f)),
-                        border = BorderStroke(0.8.dp, HextechCardBorder)
-                    ) {
-                        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            // Niveles 1-3
-                            Row(verticalAlignment = Alignment.Top) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(HextechCyan.copy(alpha = 0.2f))
-                                        .border(0.8.dp, HextechCyan, RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 5.dp, vertical = 2.dp)
-                                ) {
-                                    Text(tr("Nv. 1-3"), color = HextechCyan, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = coaching.early,
-                                    color = TextPrimary,
-                                    fontSize = 11.sp,
-                                    lineHeight = 14.5.sp
-                                )
-                            }
-
-                            // Nivel 5 (Ultimate Spike)
-                            Row(verticalAlignment = Alignment.Top) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(HextechGold.copy(alpha = 0.2f))
-                                        .border(0.8.dp, HextechGold, RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 5.dp, vertical = 2.dp)
-                                ) {
-                                    Text("H4", color = HextechGold, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = coaching.ultimate,
-                                    color = TextPrimary,
-                                    fontSize = 11.sp,
-                                    lineHeight = 14.5.sp
-                                )
-                            }
-
-                            // Mid/Late Game Scaling
-                            Row(verticalAlignment = Alignment.Top) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(TierSPlusColor.copy(alpha = 0.2f))
-                                        .border(0.8.dp, TierSPlusColor, RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 5.dp, vertical = 2.dp)
-                                ) {
-                                    Text(tr("Mid/Late"), color = TierSPlusColor, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = coaching.late,
-                                    color = TextPrimary,
-                                    fontSize = 11.sp,
-                                    lineHeight = 14.5.sp
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // 2. Cooldowns Clave & Habilidades a Esquivar
-                    Text(
-                        text = com.example.util.tr("🎯 " + tr("Análisis Táctico del Rival")),
-                        color = HextechGold,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = CardDefaults.cardColors(containerColor = DangerRedSurface),
-                        border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.6f))
-                    ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Shield, contentDescription = null, tint = DangerRed, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = coaching.rivalHeading,
-                                    color = DangerRed,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = coaching.rival,
-                                color = TextPrimary,
-                                fontSize = 11.sp,
-                                lineHeight = 14.sp
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-                    // 3. Sinergias y Macro Wild Rift
-                    Text(
-                        text = com.example.util.tr("🤝 " + tr("Sinergias y Macro (Wild Rift)")),
-                        color = HextechCyan,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                        border = BorderStroke(0.8.dp, HextechCyan.copy(alpha = 0.6f))
+                        border = BorderStroke(0.8.dp, HextechGold)
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Text(
-                                text = tr("Condición de Victoria Móvil:"),
-                                color = HextechCyan,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.5.sp
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = coaching.winCondition,
-                                color = TextPrimary,
-                                fontSize = 11.sp,
-                                lineHeight = 14.5.sp
-                            )
-                        }
+                        Text(
+                            text = com.example.util.ChampionMatchupCoaching.sovereignFeedback(
+                                myChampion, activeRole, language, enemyOpponent),
+                            color = TextPrimary,
+                            fontSize = 12.sp,
+                            lineHeight = 18.sp,
+                            modifier = Modifier.padding(14.dp)
+                        )
                     }
 
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Veredicto del Coach
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(HextechGold.copy(alpha = 0.2f), HextechCyan.copy(alpha = 0.2f))
-                                )
-                            )
-                            .border(1.dp, HextechGold, RoundedCornerShape(10.dp))
-                            .padding(10.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.SportsEsports, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = com.example.util.tr("Veredicto del Coach Soberano:"),
-                                    color = HextechGold,
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.Black
-                                )
-                                Text(
-                                    text = coaching.verdict,
-                                    color = TextPrimary,
-                                    fontSize = 11.sp,
-                                    lineHeight = 14.5.sp
-                                )
-                            }
-                        }
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
