@@ -3023,6 +3023,22 @@ fun UserDetailManagementDialog(
     var currentVerified by remember { mutableStateOf((user["isVerified"] as? Boolean) == true || (user["verified"] as? Boolean) == true || currentRole == "admin" || currentRole == "moderador") }
     var currentPremiumUntil by remember { mutableStateOf(com.example.model.PremiumAccessPolicy.deadline(user["premiumUntil"])) }
     var currentPremiumPlan by remember { mutableStateOf((user["subscriptionPlan"] as? String).orEmpty()) }
+    var currentBlueEssence by remember(uid) { mutableStateOf((user["blueEssence"] as? Number)?.toLong() ?: 0L) }
+    var currentOrangeEssence by remember(uid) { mutableStateOf((user["orangeEssence"] as? Number)?.toLong() ?: 0L) }
+    LaunchedEffect(user) {
+        currentBlueEssence = (user["blueEssence"] as? Number)?.toLong() ?: currentBlueEssence
+        currentOrangeEssence = (user["orangeEssence"] as? Number)?.toLong() ?: currentOrangeEssence
+    }
+    DisposableEffect(uid) {
+        val listener = if (uid.isNotBlank()) FirebaseFirestore.getInstance().collection("users").document(uid)
+            .addSnapshotListener { snapshot, error ->
+                if (error == null && snapshot != null && snapshot.exists()) {
+                    currentBlueEssence = snapshot.getLong("blueEssence") ?: 0L
+                    currentOrangeEssence = snapshot.getLong("orangeEssence") ?: 0L
+                }
+            } else null
+        onDispose { listener?.remove() }
+    }
     val avatarId = user["avatarId"] as? String ?: "default_poro"
     val rankBorder = user["rankBorder"] as? String ?: "NONE"
 
@@ -3122,7 +3138,7 @@ fun UserDetailManagementDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                         UserAvatarView(
                             avatarId = avatarId,
                             size = 48.dp,
@@ -3147,6 +3163,11 @@ fun UserDetailManagementDialog(
                                 isBanned = currentBanned,
                                 size = RoleBadgeSize.NORMAL
                             )
+                            if (currentSecondaryRole.isNotBlank() && AppUserRole.fromId(currentSecondaryRole) != AppUserRole.FREE) {
+                                Spacer(Modifier.height(5.dp))
+                                RoleBadge(role = currentSecondaryRole, size = RoleBadgeSize.NORMAL,
+                                    modifier = Modifier.testTag("managed_user_secondary_role"))
+                            }
                             Text(
                                 text = com.example.util.tr(email.ifBlank { "UID: $uid" }),
                                 style = MaterialTheme.typography.bodySmall,
@@ -4096,8 +4117,6 @@ fun UserDetailManagementDialog(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        val currentBlueEssence = (user["blueEssence"] as? Number)?.toLong() ?: 0L
-                                        val currentOrangeEssence = (user["orangeEssence"] as? Number)?.toLong() ?: 0L
 
                                         Surface(
                                             color = HextechDarkBg,
@@ -4115,7 +4134,7 @@ fun UserDetailManagementDialog(
                                                 )
                                                 Spacer(modifier = Modifier.width(3.dp))
                                                 Text(
-                                                    text = com.example.util.tr("$currentBlueEssence EA"),
+                                                    text = com.example.util.tr("$currentBlueEssence EA"), modifier = Modifier.testTag("managed_user_blue_balance"),
                                                     fontSize = 10.5.sp,
                                                     color = Color(0xFF38BDF8),
                                                     fontWeight = FontWeight.Bold
@@ -4139,7 +4158,7 @@ fun UserDetailManagementDialog(
                                                 )
                                                 Spacer(modifier = Modifier.width(3.dp))
                                                 Text(
-                                                    text = com.example.util.tr("$currentOrangeEssence EN"),
+                                                    text = com.example.util.tr("$currentOrangeEssence EN"), modifier = Modifier.testTag("managed_user_orange_balance"),
                                                     fontSize = 10.5.sp,
                                                     color = Color(0xFFFFB74D),
                                                     fontWeight = FontWeight.Bold
@@ -4190,6 +4209,11 @@ fun UserDetailManagementDialog(
         AdminGiveEssenceDialog(
             userUid = uid,
             onDismiss = { showGiveEssenceDialog = false },
+            onBalancesUpdated = { updated ->
+                currentBlueEssence = (updated["blueEssence"] as? Number)?.toLong() ?: currentBlueEssence
+                currentOrangeEssence = (updated["orangeEssence"] as? Number)?.toLong() ?: currentOrangeEssence
+                onUserUpdated(user + updated)
+            },
             onSuccess = {
                 Toast.makeText(context, com.example.util.appTr("Esencias actualizadas con éxito."), Toast.LENGTH_SHORT).show()
             }

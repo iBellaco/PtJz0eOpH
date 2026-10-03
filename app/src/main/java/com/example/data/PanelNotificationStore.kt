@@ -23,8 +23,19 @@ object PanelNotificationStore {
             _queues.value = emptyMap(); queueVersions = emptyMap(); PanelReadRepository.updateVersions(emptyMap()); PanelReadRepository.updateRead(emptySet()); consumers = 0; key = next
             if (next.uid.isNotBlank()) {
                 val db = FirebaseFirestore.getInstance()
+                var legacyReads = emptySet<String>()
+                var profileReads = emptySet<String>()
+                listeners += db.collection("users").document(next.uid).addSnapshotListener { snapshot, error ->
+                    if (key == next && error == null) {
+                        profileReads = (snapshot?.get("panelReadKeys") as? List<*>)?.filterIsInstance<String>().orEmpty().toSet()
+                        PanelReadRepository.updateRead(legacyReads + profileReads)
+                    }
+                }
                 listeners += db.collection("users").document(next.uid).collection("panel_reads").addSnapshotListener { snapshot, error ->
-                    if (key == next && error == null) PanelReadRepository.updateRead(snapshot?.documents.orEmpty().map { it.id }.toSet())
+                    if (key == next && error == null) {
+                        legacyReads = snapshot?.documents.orEmpty().map { it.id }.toSet()
+                        PanelReadRepository.updateRead(legacyReads + profileReads)
+                    }
                 }
                 val admin = RolePanelAccess.isAdministrator(next.role, next.adminClaim)
                 if (RolePanelAccess.canOpen(RolePanel.MODERATION, next.role, next.secondary, next.adminClaim)) {

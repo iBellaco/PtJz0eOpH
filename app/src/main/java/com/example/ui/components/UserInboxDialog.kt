@@ -179,7 +179,7 @@ fun UserInboxDialog(
             val isSupport = FeedbackRepository.isSupportMessage(m)
             val isRead = resolveIsRead(m, id, reportId)
             val canonicalId = if (isSupport) reportId else id
-            if (!all.containsKey(canonicalId)) all[canonicalId] = m.toMutableMap().apply { put("id", canonicalId); put("isRead", isRead) }
+            if (!all.containsKey(canonicalId) || !isSupport) all[canonicalId] = m.toMutableMap().apply { put("id", canonicalId); put("isRead", isRead) }
         }
 
         for (m in arrayMessages) {
@@ -195,130 +195,38 @@ fun UserInboxDialog(
         })
     }
 
-    fun markMessageAsRead(id: String) {
-        val targetMsg = messages.find { (it["id"] as? String) == id }
-        val reportId = (targetMsg?.get("reportId") as? String ?: "").takeIf { it.isNotBlank() } ?: id
-        if (targetMsg != null && (targetMsg["reportId"] != null || targetMsg["conversation"] != null)) {
-            val observed = com.example.data.SupportConversationPolicy.decode(targetMsg["conversation"]).lastOrNull()?.id
-            coroutineScope.launch {
-                if (!SupportReplyManager.markUserRead(reportId, observed)) {
-                    android.widget.Toast.makeText(context, com.example.util.appTr("No se pudo sincronizar la lectura. Vuelve a abrir el mensaje."), android.widget.Toast.LENGTH_SHORT).show()
-                }
+    val readingIds = remember { mutableStateListOf<String>() }
+    fun markMessageAsRead(id: String): kotlinx.coroutines.Job? {
+        val target = messages.find { it["id"] == id } ?: return null
+        if (id in readingIds) return null
+        readingIds += id
+        return coroutineScope.launch {
+            val reportId = (target["reportId"] as? String)?.takeIf(String::isNotBlank) ?: id
+            val ticket = target["conversation"] != null || supportReportMessages.any { it["id"] == reportId }
+            val result = runCatching {
+                if (ticket) SupportReplyManager.markUserRead(reportId,
+                    com.example.data.SupportConversationPolicy.decode(target["conversation"]).lastOrNull()?.id)
+                else com.example.data.UserMessageReadRepository.mark(userUid, id, target)
             }
-            return
-        }
-        val now = System.currentTimeMillis()
-        val newRead = localReadIds + id + reportId
-        localReadIds = newRead
-        inboxPrefs.edit()
-            .putStringSet("read_ids", newRead)
-            .putLong("last_read_ts_$id", now)
-            .putLong("last_read_ts_$reportId", now)
-            .apply()
-
-        // Actualizar listas en memoria de forma inmediata
-        subcollectionMessages = subcollectionMessages.map { m ->
-            val mId = m["id"] as? String ?: ""
-            val rId = m["reportId"] as? String ?: ""
-            if (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId)) {
-                m.toMutableMap().apply {
-                    put("isRead", true)
-                    put("userRead", true)
-                    put("hasNewAdminReply", false)
-                    put("hasNewReply", false)
+            if (result.getOrDefault(false)) {
+                fun updated(values: List<Map<String, Any>>) = values.map {
+                    if (it["id"] == id || it["id"] == reportId || it["reportId"] == reportId)
+                        it + mapOf("isRead" to true, "userRead" to true, "hasNewAdminReply" to false, "hasNewReply" to false)
+                    else it
                 }
-            } else m
-        }
-        arrayMessages = arrayMessages.map { m ->
-            val mId = m["id"] as? String ?: ""
-            val rId = m["reportId"] as? String ?: ""
-            if (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId)) {
-                m.toMutableMap().apply {
-                    put("isRead", true)
-                    put("userRead", true)
-                    put("hasNewAdminReply", false)
-                    put("hasNewReply", false)
-                }
-            } else m
-        }
-        supportReportMessages = supportReportMessages.map { m ->
-            val mId = m["id"] as? String ?: ""
-            val rId = m["reportId"] as? String ?: ""
-            if (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId)) {
-                m.toMutableMap().apply {
-                    put("isRead", true)
-                    put("userRead", true)
-                    put("hasNewAdminReply", false)
-                    put("hasNewReply", false)
-                }
-            } else m
-        }
-
-        val remainingUnread = messages.count { m ->
-            val mId = m["id"] as? String ?: ""
-            val rId = m["reportId"] as? String ?: ""
-            val isThisOne = (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId))
-            if (isThisOne) false else ((m["isRead"] as? Boolean) == false)
-        }
-        SubscriptionManager.setUnreadMessageIds(com.example.data.InboxNotificationPolicy.unreadKeys(messages)
-            .filterNot { it == "message:$id" || it == "support:$reportId" }.toSet())
-
-        // Persistir en Firestore de forma segura con merge
-        val db = FirebaseFirestore.getInstance()
-        val uRef = db.collection("users").document(userUid)
-        val readUpdate = mapOf(
-            "isRead" to true,
-            "userRead" to true,
-            "hasNewAdminReply" to false,
-            "hasNewReply" to false
-        )
-        uRef.collection("messages").document(id).set(readUpdate, com.google.firebase.firestore.SetOptions.merge())
-        if (reportId.isNotBlank() && reportId != id) {
-            uRef.collection("messages").document(reportId).set(readUpdate, com.google.firebase.firestore.SetOptions.merge())
-        }
-        try { db.collection("support_reports").document(id).set(readUpdate, com.google.firebase.firestore.SetOptions.merge()) } catch (_: Exception) {}
-        if (reportId.isNotBlank() && reportId != id) {
-            try { db.collection("support_reports").document(reportId).set(readUpdate, com.google.firebase.firestore.SetOptions.merge()) } catch (_: Exception) {}
-        }
-
-        uRef.get().addOnSuccessListener { snap ->
-            @Suppress("UNCHECKED_CAST")
-            val pMsgs = snap.get("privateMessages") as? List<Map<String, Any>>
-            if (pMsgs != null) {
-                val updated = pMsgs.map { m ->
-                    val mId = m["id"] as? String ?: ""
-                    val rId = m["reportId"] as? String ?: ""
-                    if (mId == id || mId == reportId || rId == id || (reportId.isNotBlank() && rId == reportId)) {
-                        m.toMutableMap().apply { put("isRead", true) }
-                    } else m
-                }
-                val remaining = updated.count {
-                    val mId = it["id"] as? String ?: ""
-                    val rId = it["reportId"] as? String ?: ""
-                    (it["isRead"] as? Boolean) == false && !newRead.contains(mId) && !newRead.contains(rId)
-                }
-                uRef.set(
-                    mapOf(
-                        "privateMessages" to updated,
-                        "hasUnreadMessages" to (remaining > 0),
-                        "unreadMessagesCount" to remaining
-                    ),
-                    com.google.firebase.firestore.SetOptions.merge()
-                )
-            } else {
-                uRef.set(
-                    mapOf(
-                        "hasUnreadMessages" to false,
-                        "unreadMessagesCount" to 0
-                    ),
-                    com.google.firebase.firestore.SetOptions.merge()
-                )
-            }
+                subcollectionMessages = updated(subcollectionMessages)
+                arrayMessages = updated(arrayMessages)
+                supportReportMessages = updated(supportReportMessages)
+                localReadIds = localReadIds + id + reportId
+                SubscriptionManager.setUnreadMessageIds(com.example.data.InboxNotificationPolicy.unreadKeys(updated(messages)))
+            } else Toast.makeText(context, com.example.util.appTr("No se pudo sincronizar la lectura. Vuelve a abrir el mensaje."), Toast.LENGTH_SHORT).show()
+            readingIds -= id
         }
     }
 
     fun markAllAsRead() {
-        messages.forEach { message -> (message["id"] as? String)?.let { markMessageAsRead(it) } }
+        val ids = messages.filter { it["isRead"] == false }.mapNotNull { it["id"] as? String }
+        coroutineScope.launch { ids.forEach { markMessageAsRead(it)?.join() } }
     }
 
     fun deleteMessage(id: String) {

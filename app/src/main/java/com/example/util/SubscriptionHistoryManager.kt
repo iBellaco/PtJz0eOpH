@@ -44,7 +44,7 @@ object SubscriptionHistoryManager {
         }
 
         // 2. Cross-reference other UID documents that share the same email (e.g. duplicate accounts)
-        if (!targetEmail.isNullOrBlank()) {
+        if (!targetEmail.isNullOrBlank() && com.example.data.SupportTicketAccess.isAdmin()) {
             try {
                 val emailMatches = db.collection("users")
                     .whereEqualTo("email", targetEmail)
@@ -79,11 +79,15 @@ object SubscriptionHistoryManager {
             val embedded = (profile.get("subscriptionHistory") as? List<*>).orEmpty().filterIsInstance<Map<String, Any>>()
             for (data in embedded) {
                 val id = (data["id"] as? String).orEmpty()
-                if (id.isNotBlank() && seenIds.add(id)) records += SubscriptionRecord(id = id,
-                    timestamp = com.example.model.PremiumAccessPolicy.deadline(data["timestamp"]) ?: 0L,
-                    durationMillis = (data["durationMillis"] as? Number)?.toLong() ?: 0L,
-                    planName = (data["planName"] as? String).orEmpty(), status = (data["status"] as? String).orEmpty(),
-                    amount = (data["amount"] as? String).orEmpty(), source = (data["source"] as? String).orEmpty())
+                if (id.isNotBlank() && seenIds.add(id)) SubscriptionRecord.fromData(id, data)?.let(records::add)
+            }
+            // Recover earlier essence adjustments from their original notification. Custom
+            // messages without receipt metadata are not guessed or rewritten.
+            val legacy = (profile.get("privateMessages") as? List<*>).orEmpty().filterIsInstance<Map<String, Any>>()
+            legacy.forEach { message ->
+                val receipt = com.example.data.AccountHistoryPolicy.notificationReceipt(message)
+                val id = receipt?.get("id") as? String
+                if (receipt != null && !id.isNullOrBlank() && seenIds.add(id)) SubscriptionRecord.fromData(id, receipt)?.let(records::add)
             }
             // Recover the last legacy gift without inventing a purchase or writing on read.
             if (records.none { !it.isEssenceTransaction } && com.example.model.PremiumAccessPolicy.hasGrant(profile.getString("subscriptionPlan"))) {

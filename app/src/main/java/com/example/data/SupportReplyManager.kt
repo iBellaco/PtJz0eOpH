@@ -352,20 +352,28 @@ object SupportReplyManager {
     }
 
     suspend fun markUserRead(reportId: String, observedLastMessageId: String?): Boolean = withContext(Dispatchers.IO) {
-        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser ?: return@withContext false
+        val user = com.example.util.AuthManager.getAuth()?.currentUser ?: return@withContext false
         try {
             val db = FirebaseFirestore.getInstance()
             val ref = db.collection("support_reports").document(reportId)
+            val profile = db.collection("users").document(user.uid)
             db.runTransaction { transaction ->
                 val source = transaction.get(ref)
-                check(source.exists())
+                val account = transaction.get(profile)
+                val mirror = transaction.get(profile.collection("messages").document(reportId))
+                check(source.exists()) { "Ticket no disponible" }
                 check(source.getString("userId") == user.uid || (source.getString("userId").isNullOrBlank() && source.getString("userEmail") == user.email))
                 val latest = SupportConversationPolicy.decode(source.get("conversation")).lastOrNull()?.id
-                if (observedLastMessageId != null && latest != observedLastMessageId) return@runTransaction false
+                if (latest != observedLastMessageId) return@runTransaction false
                 val data = mapOf<String, Any>("userRead" to true, "isRead" to true, "hasNewAdminReply" to false,
                     "hasNewReply" to false, "userReadAtMillis" to System.currentTimeMillis())
+                val originals = (account.get("privateMessages") as? List<*>).orEmpty().filterIsInstance<Map<String, Any>>()
+                val updated = originals.map { if (it["id"] == reportId || it["reportId"] == reportId) it + data else it }
                 transaction.update(ref, data)
-                transaction.set(db.collection("users").document(user.uid).collection("messages").document(reportId), data, com.google.firebase.firestore.SetOptions.merge())
+                if (mirror.exists()) transaction.update(mirror.reference, data)
+                if (updated != originals) transaction.update(profile, mapOf("privateMessages" to updated,
+                    "hasUnreadMessages" to updated.any { it["isRead"] == false },
+                    "unreadMessagesCount" to updated.count { it["isRead"] == false }))
                 true
             }.await()
         } catch (error: Exception) { Log.w(TAG, "No se pudo sincronizar la lectura", error); false }

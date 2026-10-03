@@ -451,4 +451,39 @@ class RuntimeBehaviorTest {
         assertEquals(setOf(com.example.data.NotificationPanel.INBOX), com.example.data.PanelNotificationPolicy.messagePanels(mapOf("title" to "Mensaje")))
     }
 
+    @Test fun `essence adjustments clamp deductions and reject overflow before a commit`() {
+        org.junit.Assert.assertEquals(7L, com.example.data.AdminEssenceAdjustment.delta(9, 7, true))
+        org.junit.Assert.assertEquals(-9L, com.example.data.AdminEssenceAdjustment.delta(9, 30, false))
+        org.junit.Assert.assertEquals(0L, com.example.data.AdminEssenceAdjustment.delta(0, 30, false))
+        try { com.example.data.AdminEssenceAdjustment.delta(Long.MAX_VALUE, 1, true); org.junit.Assert.fail("Overflow must fail") } catch (_: ArithmeticException) {}
+    }
+    @Test fun `history restores actual old gifts and preserves their original timestamp`() {
+        val message = mapOf<String, Any>("id" to "legacy-gift", "title" to "¡Recompensa de Esencias!", "timestamp" to 123456789L,
+            "content" to "¡Felicidades! Se han acreditado +25 Esencias Naranjas (EN) a tu cuenta de Coach.")
+        val data = com.example.data.AccountHistoryPolicy.notificationReceipt(message)!!
+        val record = com.example.model.SubscriptionRecord.fromData("legacy-gift", data)!!
+        org.junit.Assert.assertEquals(123456789L, record.timestamp); org.junit.Assert.assertEquals("+25 EN", record.amount)
+        org.junit.Assert.assertTrue(record.isFromAdmin && record.isAddition && record.isOrangeEssence)
+        org.junit.Assert.assertNull(com.example.data.AccountHistoryPolicy.notificationReceipt(message + ("title" to "Mensaje personal")))
+        org.junit.Assert.assertNull(com.example.data.AccountHistoryPolicy.notificationReceipt(message - "timestamp"))
+    }
+    @Test fun `payment and purchased subscriptions retain their distinct history categories`() {
+        val cash = com.example.model.SubscriptionRecord(source = "CASH_REDEMPTION", amount = "-25 EN", planName = "Canje de Esencia Naranja")
+        val subscription = com.example.model.SubscriptionRecord(source = "ESSENCE_PURCHASE", amount = "-9 EN", planName = "Suscripción Premium mensual")
+        org.junit.Assert.assertTrue(cash.isEssenceTransaction && cash.isDeduction)
+        org.junit.Assert.assertFalse(subscription.isEssenceTransaction)
+        org.junit.Assert.assertTrue(subscription.isFromSubscription)
+    }
+    @Test fun `system role colors remain fixed and creator colors no longer duplicate secondary ranks`() {
+        org.junit.Assert.assertEquals(androidx.compose.ui.graphics.Color(0xFFFFD700), com.example.model.AppUserRole.ADMIN.primaryColor)
+        org.junit.Assert.assertEquals(androidx.compose.ui.graphics.Color(0xFF10B981), com.example.model.AppUserRole.MODERATOR.primaryColor)
+        val ranks = listOf(com.example.model.AppUserRole.ESMERALDA, com.example.model.AppUserRole.DIAMANTE, com.example.model.AppUserRole.MAESTRO,
+            com.example.model.AppUserRole.GRAN_MAESTRO, com.example.model.AppUserRole.ASPIRANTE, com.example.model.AppUserRole.SOBERANO)
+        for (role in listOf(com.example.model.AppUserRole.CREATOR, com.example.model.AppUserRole.CREATOR_LVL2, com.example.model.AppUserRole.CREATOR_LVL3,
+            com.example.model.AppUserRole.CREATOR_LVL4, com.example.model.AppUserRole.CREATOR_LVL5, com.example.model.AppUserRole.STREAMER,
+            com.example.model.AppUserRole.PATROCINADOR, com.example.model.AppUserRole.PREMIUM)) {
+            org.junit.Assert.assertTrue(ranks.none { it.primaryColor == role.primaryColor })
+        }
+    }
+
 }

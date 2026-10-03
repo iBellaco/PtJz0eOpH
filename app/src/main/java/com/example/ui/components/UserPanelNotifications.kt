@@ -125,7 +125,7 @@ fun CircularPanelNotificationButton(count: Int, panel: NotificationPanel, label:
             modifier = Modifier.align(androidx.compose.ui.Alignment.BottomStart).semantics { contentDescription = label }, enablePulse = count > 0,
             borderColor = if (count > 0) com.example.ui.theme.DangerRed else com.example.ui.theme.HextechCardBorder,
             glowColor = com.example.ui.theme.DangerRed) {
-            Icon(if (count > 0) Icons.Default.Notifications else inactiveIcon, contentDescription = null,
+            Icon(if (count > 0 && panel != NotificationPanel.HISTORY) Icons.Default.Notifications else inactiveIcon, contentDescription = null,
                 tint = if (count > 0) com.example.ui.theme.DangerRed else com.example.ui.theme.HextechCyan,
                 modifier = Modifier.size(20.dp).testTag("panel_notification_icon_${panel.name}"))
         }
