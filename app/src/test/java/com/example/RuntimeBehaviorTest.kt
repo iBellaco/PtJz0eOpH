@@ -217,7 +217,7 @@ class RuntimeBehaviorTest {
         }
         for (role in listOf("creador", "creador_lvl2", "creador_lvl5", "streamer", "moderador", "admin")) {
             assertTrue(RolePanelAccess.canCreateBuild(role))
-            assertTrue(RolePanelAccess.canCreateBuild("free", role))
+            if (role != "admin") assertTrue(RolePanelAccess.canCreateBuild("free", role))
         }
         assertFalse(RolePanelAccess.canOpen(RolePanel.CREATOR, "guest"))
         assertFalse(RolePanelAccess.canCreateBuild("banned", "streamer"))

@@ -29,7 +29,7 @@ fun PremiumStatusCard(role: String, secondary: String = "", until: Long?, adminC
     val soon = active && !lifetime && PremiumAccessPolicy.isExpiringSoon(until, now)
     val expired = !lifetime && until != null && until > 0 && until <= now
     Surface(modifier = Modifier.fillMaxWidth().testTag("premium_status_card"), shape = RoundedCornerShape(10.dp),
-        color = com.example.ui.theme.HextechSurfaceBg,
+        color = com.example.ui.theme.HextechDarkBg,
         border = BorderStroke(1.dp, if (soon || expired) Color(0xFFFBBF24) else com.example.ui.theme.HextechGold.copy(alpha = 0.4f))) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(localizedString(when { lifetime -> R.string.premium_lifetime_label; active -> R.string.premium_active_label;
