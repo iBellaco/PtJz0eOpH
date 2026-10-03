@@ -123,6 +123,24 @@ def back():
     time.sleep(0.8)
 
 
+def enter_search_text(value):
+    # Android key injection can outrun Compose/IME commits. Pace it and verify the actual value.
+    for attempt in range(3):
+        if attempt:
+            tap('Fechar')
+            tap('Buscar item por nome ou estatísticas...')
+        for letter in value:
+            adb('shell', 'input', 'text', letter)
+            time.sleep(0.08)
+        back()
+        actual = next((n.get('text', '') for n in app_nodes(window()) if n.get('class') == 'android.widget.EditText'), None)
+        if actual == value:
+            return
+        print('SEARCH_INPUT_RETRY:', value, actual, flush=True)
+    snapshot('search-input-failure')
+    raise AssertionError('Android did not commit the complete search input: ' + value)
+
+
 adb("install", "-r", "app/build/outputs/apk/debug/app-debug.apk")
 adb("shell", "pm", "clear", APP)
 adb("shell", "pm", "grant", APP, "android.permission.POST_NOTIFICATIONS")
@@ -190,8 +208,7 @@ component_by_id = {entry['id']: entry for groups in components['secciones'].valu
 for item_id in ['tear_of_the_goddess', 'quicksilver_sash_mid_tier']:
     expected = component_by_id[item_id]
     tap('Buscar item por nome ou estatísticas...')
-    adb('shell', 'input', 'text', item_id)
-    back()
+    enter_search_text(item_id)
     tap(expected['nombre_pt'], scrolling=3)
     snapshot('component-item-' + item_id)
     actual = [n.get('text', '') for n in app_nodes(window())]
@@ -248,8 +265,7 @@ items_source = Path('app/src/main/java/com/example/data/WildRiftItemsData.kt').r
 for item_id in ['mercurial_scimitar', 'fiendhunter_bolts', 'kraken_slayer', 'nashor_s_tooth',
                 'imperial_mandate', 'terminus', 'yordle_trap', 'rabadon_s_deathcap']:
     tap('Buscar objeto por nombre o estadísticas...')
-    adb('shell', 'input', 'text', item_id)
-    back()  # Dismiss the keyboard, retaining the search result.
+    enter_search_text(item_id)  # Dismiss the keyboard, retaining the search result.
     name = re.search(r'id = "' + re.escape(item_id) + r'",\s*name = "([^"]+)"', items_source).group(1)
     tap(name, scrolling=3)
     snapshot('required-item-' + item_id)
@@ -267,8 +283,7 @@ for item_id in ['mercurial_scimitar', 'fiendhunter_bolts', 'kraken_slayer', 'nas
 for item_id in ['tear_of_the_goddess', 'quicksilver_sash_mid_tier']:
     expected = component_by_id[item_id]
     tap('Buscar objeto por nombre o estadísticas...')
-    adb('shell', 'input', 'text', item_id)
-    back()
+    enter_search_text(item_id)
     tap(expected['nombre'], scrolling=3)
     snapshot('component-item-' + item_id)
     actual = [n.get('text', '') for n in app_nodes(window())]

@@ -42,12 +42,13 @@ object EssenceEconomyRepository {
         check(!AuthManager.isGuestOrUnauthenticated(user)) { "Inicia sesión" }
         check(UsdtWalletPolicy.valid(network, wallet)) { "Billetera USDT no válida" }
         val profile = db.collection("users").document(user!!.uid)
+        val adminClaim = user.getIdToken(false).await().claims["admin"] == true
         val operation = profile.collection("economy_operations").document(id)
         db.runTransaction { tx ->
             val previous = tx.get(operation)
             if (!previous.exists()) {
                 val account = tx.get(profile).data.orEmpty()
-                val remaining = EssenceEconomyPolicy.redeem(account, amount)
+                val remaining = EssenceEconomyPolicy.redeem(account, amount, adminClaim)
                 val now = System.currentTimeMillis()
                 val receipt = mapOf("id" to id, "timestamp" to now, "durationMillis" to 0L, "planName" to "Canje de Esencia Naranja",
                     "status" to "Pendiente", "amount" to "-$amount EN", "source" to "CASH_REDEMPTION")

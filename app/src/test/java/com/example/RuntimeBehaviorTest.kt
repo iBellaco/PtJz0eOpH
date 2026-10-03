@@ -42,12 +42,12 @@ class RuntimeBehaviorTest {
             inspect(analysis)
             assertFalse("Known opponents override blind selection", analysis.isFirstPickMode)
             val available = roster.filter { it.id != enemy.id && (it.primaryRole == role || role in it.secondaryRoles) }
-            val alternatives = available.any { MatchupKnowledge.relation(it,enemy) != MatchupRelation.UNFAVORABLE }
+            val alternatives = available.any { MatchupKnowledge.relation(it,enemy,role) != MatchupRelation.UNFAVORABLE }
             for (recommendation in analysis.recommendations) {
                 val champion = recommendation.champion
                 assertTrue(champion.primaryRole == role || role in champion.secondaryRoles)
                 assertNotEquals(enemy.id,champion.id)
-                if (alternatives) assertNotEquals("${champion.name} versus ${enemy.name}",MatchupRelation.UNFAVORABLE,MatchupKnowledge.relation(champion,enemy))
+                if (alternatives) assertNotEquals("${champion.name} versus ${enemy.name}",MatchupRelation.UNFAVORABLE,MatchupKnowledge.relation(champion,enemy,role))
                 val evaluation = WildRiftRepository.evaluateChampion(champion,role,emptyList(),listOf(enemy),enemy,"pt")
                 assertEquals(evaluation.draftFitScore,recommendation.draftFitScore,0.001)
                 assertEquals(champion.winrate,recommendation.estimatedWinrate,0.001)
@@ -88,7 +88,7 @@ class RuntimeBehaviorTest {
     @Test fun `orange redemption is restricted by both roles and suspended users are excluded`() {
         for (role in listOf("admin", "moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5")) {
             assertTrue(RolePanelAccess.canRedeemEssence(role))
-            assertTrue(RolePanelAccess.canRedeemEssence("free", role))
+            assertEquals(role != "admin", RolePanelAccess.canRedeemEssence("free", role))
             assertEquals(40L, EssenceEconomyPolicy.redeem(mapOf("role" to role, "orangeEssence" to 50L), 10L))
         }
         for (role in listOf("free", "premium", "patrocinador", "guest", "banned")) {
@@ -96,6 +96,7 @@ class RuntimeBehaviorTest {
             assertTrue(runCatching { EssenceEconomyPolicy.redeem(mapOf("role" to role, "orangeEssence" to 100L), 10L) }.isFailure)
         }
         assertFalse(RolePanelAccess.canRedeemEssence("banned", "streamer", true))
+        assertEquals(40L, EssenceEconomyPolicy.redeem(mapOf("role" to "free", "orangeEssence" to 50L), 10L, adminClaim = true))
     }
 
     @Test fun `damage profiles and rounding never invent pure true damage`() {
