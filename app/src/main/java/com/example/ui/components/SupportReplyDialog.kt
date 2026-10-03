@@ -195,13 +195,17 @@ fun SupportReplyDialog(
 
     val displayUserName = resolvedUserName.ifBlank { "Invocador" }
 
-    val quickTemplates = remember(displayUserName) {
-        listOf(
-            "✅ ¡Problema solucionado! Esta incidencia fue corregida en la última actualización de Coach. Te sugerimos actualizar tu app.",
-            "🔄 Te sugerimos cerrar sesión, reiniciar la app y volver a ingresar para sincronizar tus configuraciones de forma óptima.",
-            "🛡️ Hemos verificado la configuración de tu cuenta y optimizado tus datos. Por favor confirma si el problema persiste.",
-            "🔍 Tu reporte está siendo analizado detalladamente por nuestro equipo técnico prioritario. Te notificaremos cualquier avance.",
-            "💡 Recuerda que puedes consultar la sección de guías y optimización en el menú principal para aprovechar al máximo las funciones de Coach."
+    val quickTemplates = remember(displayUserName, tag) {
+        if (com.example.data.SupportConversationPolicy.isAdministratorOnly(tag) && tag.uppercase() in setOf("PAGO", "PAYMENT", "PAGAMENTO")) listOf(
+            "Recibimos tu solicitud de pago USDT. La revisión y el pago manual pueden demorar de 24 a 72 horas.",
+            "Estamos comprobando el importe, la red y la dirección de tu billetera USDT. Te confirmaremos el resultado en esta conversación.",
+            "Comprueba que la billetera indicada corresponde a la red seleccionada. No envíes claves privadas ni frases de recuperación."
+        ) else listOf(
+            "Gracias por tu reporte. Estamos revisando lo que nos indicas y te responderemos en esta conversación.",
+            "Indica qué pantalla abriste y los pasos previos al problema para que podamos reproducirlo. No compartas datos privados de tu cuenta de juego ni de tu vida personal.",
+            "Prueba cerrando y abriendo Coach. Si el problema continúa, cuéntanos qué ocurrió.",
+            "Comprueba que utilizas la versión más reciente de Coach e indícanos el número de versión que aparece en la app.",
+            "¿El problema sigue ocurriendo después de la última indicación? Puedes responder aquí para continuar la revisión."
         )
     }
     val hasPriorSupportReply = remember(conversationMessages) {

@@ -85,6 +85,7 @@ fun ModeratorDashboardDialog(
                     .fillMaxSize()
                     .systemBarsPadding()
             ) {
+                PanelReadControl(com.example.data.NotificationPanel.SUPPORT)
                 // Header
                 Surface(
                     color = HextechSurface,

@@ -4644,7 +4644,7 @@ fun DraftAnalysisTab(
         // Ally Damage distribution
         if (selectedAllySlots.isNotEmpty()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(tr("Balance de Daño Aliado"), color = HextechGold, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(tr("Balance de Daño Aliado (orientativo)"), color = HextechGold, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 if (analysis.allyCompositionWarning != null) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(Icons.Default.Warning, contentDescription = null, tint = DangerRed, modifier = Modifier.size(14.dp))
@@ -4675,7 +4675,8 @@ fun DraftAnalysisTab(
 
         // Damage distribution
         if (selectedEnemySlots.isNotEmpty()) {
-            Text(tr("Balance de Daño Rival"), color = HextechGold, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(tr("La proporción cambia con la build y la partida."), color = TextSecondary, fontSize = 10.sp)
+            Text(tr("Balance de Daño Rival (orientativo)"), color = HextechGold, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(6.dp))
             Row(modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp))) {
                 if (analysis.physicalDamagePercent > 0) {
@@ -4708,11 +4709,10 @@ fun DraftAnalysisTab(
                 lang = draftLanguage
             )
             val isOffRole = activeRole != null && myChamp.primaryRole != activeRole && !myChamp.secondaryRoles.contains(activeRole)
-            val isDirectLaneWeakness = selectedEnemyChampion != null && (
-                myChamp.counteredBy.any { it.equals(selectedEnemyChampion.name, ignoreCase = true) || it.equals(selectedEnemyChampion.id, ignoreCase = true) } ||
-                selectedEnemyChampion.advantageAgainst.any { it.equals(myChamp.name, ignoreCase = true) || it.equals(myChamp.id, ignoreCase = true) }
-            )
-            val shouldChange = isOffRole || myEval.advantageBadge.contains("ATÍPICA") || (myEval.estimatedWinrate < 48.0) || (isDirectLaneWeakness && myEval.estimatedWinrate < 50.0)
+            val isDirectLaneWeakness = selectedEnemyChampion?.let {
+                com.example.data.MatchupKnowledge.relation(myEval.champion,it) == com.example.data.MatchupRelation.UNFAVORABLE
+            } == true
+            val shouldChange = isOffRole || myEval.advantageBadge.contains("ATÍPICA") || (myEval.draftFitScore < 48.0) || (isDirectLaneWeakness && myEval.draftFitScore < 50.0)
 
             val recommendationText = when {
                 shouldChange -> tr("️ Considera cambiarlo")
@@ -4748,7 +4748,7 @@ fun DraftAnalysisTab(
                             )
                         }
                         Text(
-                            text = com.example.util.tr(tr("Winrate Est.:") + " ${myEval.estimatedWinrate}%"),
+                            text = com.example.util.tr(tr("Encaje en el draft:") + " ${myEval.draftFitScore}/100"),
                             color = if (shouldChange) DangerRed else HextechCyan,
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold
@@ -4886,7 +4886,7 @@ fun DraftAnalysisTab(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = com.example.util.tr(if (isFirstPick) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival")),
+                    text = com.example.util.tr(if (analysis.isFirstPickMode) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival")),
                     color = HextechGold,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
@@ -4913,13 +4913,13 @@ fun DraftAnalysisTab(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = com.example.util.tr(if (isFirstPick) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA")),
+                                text = com.example.util.tr(if (analysis.isFirstPickMode) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA")),
                                 color = HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Text(
-                                text = com.example.util.tr(tr("Winrate Est.:") + " ${topPick.estimatedWinrate}%"),
+                                text = com.example.util.tr(tr("Encaje en el draft:") + " ${topPick.draftFitScore}/100"),
                                 color = HextechCyan,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold
@@ -5090,7 +5090,7 @@ fun DraftAnalysisTab(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(com.example.util.tr(rec.champion.name), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text(com.example.util.tr("WR: ${rec.estimatedWinrate}%"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                        Text(com.example.util.tr(tr("Encaje:") + " ${rec.draftFitScore}/100"), color = HextechGold, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Text(tr(rec.advantageBadge), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.height(2.dp))

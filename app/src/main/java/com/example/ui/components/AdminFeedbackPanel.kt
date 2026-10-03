@@ -73,6 +73,7 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.QuestionAnswer
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Reply
@@ -202,6 +203,7 @@ fun getFeedbackCategory(report: FeedbackReport): String {
     val title = report.title
 
     return when {
+        rawType in listOf("PAGO", "PAYMENT", "PAGAMENTO") -> "PAGO"
         com.example.data.SupportConversationPolicy.isSponsor(rawType) -> "PATROCINADOR"
         rawType in listOf("BUG", "ERROR", "BUG_REPORT", "BUG / ERROR") -> "BUG"
         rawType in listOf("BUILD_SUGGESTION", "BUILD", "SUGERIR BUILD", "SUGERENCIA DE BUILD") || parseBuildSuggestionFromText(desc, title) != null -> "BUILD"
@@ -308,7 +310,7 @@ fun AdminFeedbackBottomSheet(
 
     // Reportes visibles según el rol del usuario (Los reportes de Patrocinador son exclusivos del Administrador)
     val visibleReports = remember(reports, isAdmin) {
-        if (isAdmin) reports else reports.filter { getFeedbackCategory(it) != "PATROCINADOR" }
+        if (isAdmin) reports else reports.filter { getFeedbackCategory(it) !in setOf("PATROCINADOR", "PAGO") }
     }
 
     val availableTabs = remember(isAdmin) {
@@ -445,6 +447,7 @@ fun AdminFeedbackBottomSheet(
                     )
                 )
         ) {
+            PanelReadControl(com.example.data.NotificationPanel.SUPPORT)
             // Header del Panel con partículas rúnicas resplandecientes
             Box(
                 modifier = Modifier
@@ -888,7 +891,7 @@ fun AdminFeedbackBottomSheet(
             userName = rep.parsedUserName ?: "",
             userId = rep.userId,
             initialReply = "",
-            tag = if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
+            tag = if (rep.type.uppercase() in setOf("PAGO", "PAYMENT", "PAGAMENTO")) "PAGO" else if (isSponsorItem) "PATROCINADOR" else "SOPORTE",
             isFirestoreDoc = false,
             onDismiss = { reportToReply = null },
             onReplySent = { newReply, markedAsRead ->
@@ -1273,7 +1276,7 @@ internal fun ComprehensiveFeedbackCard(
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     val itemCategory = remember(report) { getFeedbackCategory(report) }
-    val isBugOrSupport = itemCategory in setOf("BUG", "SUPPORT", "PATROCINADOR")
+    val isBugOrSupport = itemCategory in setOf("BUG", "SUPPORT", "PATROCINADOR", "PAGO")
     val canContinueConversation = onReply != null && !com.example.data.SupportConversationPolicy.isClosed(currentStatus)
 
     val isReadOrSolved = currentStatus == FeedbackRepository.STATUS_READ ||
@@ -1299,6 +1302,7 @@ internal fun ComprehensiveFeedbackCard(
 
     // Información del tipo
     val (typeColor, typeIcon, typeLabel) = when (itemCategory) {
+        "PAGO" -> Triple(HextechGold, Icons.Default.Payments, "Pago")
         "PATROCINADOR" -> Triple(HextechGold, Icons.Default.Star, "PATROCINADOR")
         "BUG" -> Triple(DangerRed, Icons.Default.BugReport, "BUG / ERROR")
         "SUPPORT" -> Triple(HextechCyan, Icons.Default.SupportAgent, "SOPORTE")

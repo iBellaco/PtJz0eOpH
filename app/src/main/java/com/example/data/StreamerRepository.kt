@@ -70,7 +70,6 @@ object StreamerRepository {
         check(SupportTicketAccess.isAdmin()) { "streamer_error" }
         val ref = requests.document(uid)
         val archive = historyAvailable(uid)
-        val countClicks = archive && metricsAvailable(uid)
         db.runTransaction { transaction ->
             val request = transaction.get(ref)
             val live = entries(transaction.get(registry).get("entries"))
@@ -88,7 +87,7 @@ object StreamerRepository {
                     "channelUrl" to channel.url, "platform" to channel.platform, "approvedAtMillis" to System.currentTimeMillis(),
                     "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()))
                 transaction.set(registry, mapOf("entries" to StreamerPublicationPolicy.approve(live, entry)), SetOptions.merge())
-                if (countClicks) transaction.set(metrics.document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())),
+                transaction.set(metrics.document(StreamerPublicationPolicy.publicationId(request.data.orEmpty())),
                     mapOf("userId" to uid, "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()),
                         "submittedAtMillis" to StreamerPublicationPolicy.submittedAt(request.data.orEmpty()), "clickCount" to 0L,
                         "status" to "APPROVED"))
@@ -118,7 +117,7 @@ object StreamerRepository {
         check(user.uid == uid || SupportTicketAccess.isAdmin()) { "streamer_error" }
         val ref = requests.document(uid)
         val archive = historyAvailable(uid)
-        val countClicks = archive && metricsAvailable(uid)
+        val countClicks = metricsAvailable(uid)
         db.runTransaction { transaction ->
             val live = entries(transaction.get(registry).get("entries"))
             val request = transaction.get(ref)
@@ -155,6 +154,33 @@ object StreamerRepository {
                         transaction.set(history(uid).document(StreamerPublicationPolicy.publicationId(data)), rejected)
                     transaction.delete(ref)
                 } else transaction.update(ref, rejected)
+            }
+        }.await()
+        Unit
+    } }
+
+    /** Upgrade published legacy entries and initialise missing counters without resetting existing clicks. */
+    suspend fun repairMetrics(): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
+        check(SupportTicketAccess.isAdmin())
+        db.runTransaction { tx ->
+            val snapshot = tx.get(registry)
+            val live = entries(snapshot.get("entries"))
+            val legacyRequests = live.associate { entry -> entry.getValue("userId") to tx.get(requests.document(entry["userId"] as String)).data.orEmpty() }
+            val upgraded = live.map { entry ->
+                if ((entry["publicationId"] as? String).isNullOrBlank()) {
+                    val request = legacyRequests[entry["userId"]].orEmpty()
+                    val id = if (request["status"] == "APPROVED" && request["channelUrl"] == entry["channelUrl"])
+                        StreamerPublicationPolicy.publicationId(request) else "legacy_${entry["userId"]}_${entry["approvedAtMillis"]}"
+                    entry + ("publicationId" to id)
+                } else entry
+            }
+            val missing = upgraded.map { entry -> entry to tx.get(metrics.document(entry["publicationId"] as String)) }.filterNot { it.second.exists() }
+            if (live != upgraded) tx.set(registry, mapOf("entries" to upgraded), SetOptions.merge())
+            missing.forEach { (entry, _) ->
+                val id = entry["publicationId"] as String
+                tx.set(metrics.document(id), mapOf("userId" to entry.getValue("userId"), "publicationId" to id,
+                    "submittedAtMillis" to ((entry["approvedAtMillis"] as? Number)?.toLong() ?: System.currentTimeMillis()),
+                    "clickCount" to 0L, "status" to "APPROVED"))
             }
         }.await()
         Unit

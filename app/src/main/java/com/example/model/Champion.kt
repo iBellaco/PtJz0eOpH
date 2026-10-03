@@ -314,7 +314,8 @@ data class DraftRecommendation(
     val tacticalReason: String,
     val runes: String,
     val synergyDetails: String = "",
-    val counterDetails: String = ""
+    val counterDetails: String = "",
+    val draftFitScore: Double = estimatedWinrate
 )
 
 @Serializable

@@ -59,6 +59,7 @@ fun AdminSponsorModerationDialog(
         allNotices.filter { it.tag.equals("Publicidad", true) || it.sponsorEmail.isNotBlank() || !it.isApproved }
     }
 
+    val reads by com.example.data.PanelReadRepository.read.collectAsState()
     val pendingCount = remember(sponsorNotices) { sponsorNotices.count { !it.isApproved } }
     val approvedCount = remember(sponsorNotices) { sponsorNotices.count { it.isApproved } }
 
@@ -124,6 +125,8 @@ fun AdminSponsorModerationDialog(
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
+
+                PanelReadControl(com.example.data.NotificationPanel.SPONSOR_MODERATION)
 
                 // Banner Informativo de Flujo
                 Surface(
@@ -237,6 +240,10 @@ fun AdminSponsorNoticeItem(
     onReject: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val reads by com.example.data.PanelReadRepository.read.collectAsState()
+    var readError by remember { mutableStateOf(false) }
+    var readBusy by remember { mutableStateOf(false) }
     val statusText = if (notice.isApproved) "Aprobado (Visible)" else "Pendiente de Aprobación"
     val statusColor = if (notice.isApproved) Color(0xFF10B981) else Color(0xFFF59E0B)
 
@@ -572,6 +579,13 @@ fun AdminSponsorNoticeItem(
                         Text(tr("DM"), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
 
+                    if (!notice.isApproved && com.example.data.PanelReadRepository.key("notice:${notice.id}") !in reads) {
+                        TextButton(enabled = !readBusy, onClick = {
+                            readBusy = true
+                            scope.launch { readError = runCatching { com.example.data.PanelReadRepository.acknowledge("notice:${notice.id}") }.isFailure; readBusy = false }
+                        }) { Text(tr("Marcar como leído")) }
+                    }
+                    if (readError) Text(tr("No se pudo marcar como leído. Vuelve a intentarlo."), color = DangerRed)
                     if (!notice.isApproved) {
                         Button(
                             onClick = onApprove,

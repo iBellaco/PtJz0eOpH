@@ -223,9 +223,12 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
     var showSponsorPanel by remember { mutableStateOf(false) }
     var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showBuyEssenceDialog by remember { mutableStateOf(false) }
+    var showRedemptionDialog by remember { mutableStateOf(false) }
     var showSignOutConfirm by remember { mutableStateOf(false) }
     val activeProfile by com.example.data.AccountProfileManager.activeProfile.collectAsState()
 
+
+    if (showRedemptionDialog) { com.example.ui.components.OrangeEssenceRedemptionDialog { showRedemptionDialog = false } }
 
     if (showAvatarDialog) {
         com.example.ui.components.AvatarSelectionBottomSheet(
@@ -336,17 +339,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Top-Left: Inbox button
-                com.example.ui.components.HextechAnimatedIconButton(
-                    onClick = { showInboxDialog = true }, size = 40.dp,
-                    modifier = Modifier.semantics { contentDescription = inboxLabel },
-                    backgroundColor = activeTheme.surfaceVariant, borderColor = activeTheme.cardBorder,
-                    glowColor = activeTheme.primary
-                ) {
-                    if (notifications.count(com.example.data.NotificationPanel.INBOX) > 0) {
-                        com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.INBOX), com.example.data.NotificationPanel.INBOX)
-                    } else Icon(Icons.Default.Message, contentDescription = tr("Bandeja de Entrada"),
-                        tint = activeTheme.secondary, modifier = Modifier.size(18.dp))
-                }
+                com.example.ui.components.CircularPanelNotificationButton(
+                    notifications.count(com.example.data.NotificationPanel.INBOX), com.example.data.NotificationPanel.INBOX,
+                    inboxLabel, Icons.Default.Message) { showInboxDialog = true }
 
                 // Top-Center: Blue Essence & Orange Essence side-by-side badges
                 val currentBlueEssence by SubscriptionManager.blueEssence.collectAsState()
@@ -446,20 +441,17 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 }
 
                 // Top-Right: History button
-                com.example.ui.components.HextechAnimatedIconButton(
-                    onClick = { showHistoryDialog = true }, size = 40.dp,
-                    modifier = Modifier.semantics { contentDescription = historyLabel },
-                    backgroundColor = activeTheme.surfaceVariant, borderColor = activeTheme.cardBorder,
-                    glowColor = activeTheme.secondary
-                ) {
-                    if (notifications.count(com.example.data.NotificationPanel.HISTORY) > 0) {
-                        com.example.ui.components.PanelNotificationBadge(notifications.count(com.example.data.NotificationPanel.HISTORY), com.example.data.NotificationPanel.HISTORY)
-                    } else Icon(Icons.Default.Refresh, contentDescription = tr("Historial"),
-                        tint = activeTheme.textSecondary, modifier = Modifier.size(18.dp))
-                }
+                com.example.ui.components.CircularPanelNotificationButton(
+                    notifications.count(com.example.data.NotificationPanel.HISTORY), com.example.data.NotificationPanel.HISTORY,
+                    historyLabel, Icons.Default.Refresh) { showHistoryDialog = true }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            val redemptionBalance by SubscriptionManager.orangeEssence.collectAsState()
+            if (redemptionBalance > 0) TextButton(onClick = { showRedemptionDialog = true }) {
+                Text(tr("Canjear Esencia Naranja"))
+            }
 
             AuthHeader(
                 title = "Perfil de Invocador",

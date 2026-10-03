@@ -147,7 +147,7 @@ class LocalizationSurfaceTest {
         compose.runOnIdle { assertEquals("pt", AppLanguage.current.value) }
         compose.onNodeWithText("Informação").assertExists()
         compose.onNodeWithText("Información").assertDoesNotExist()
-        compose.onNodeWithText("1. Compatibilidade e Patch Oficial").performScrollTo().assertExists()
+        compose.onNodeWithText("1. Compatibilidade e Atualização Oficial").performScrollTo().assertExists()
         compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").performScrollTo().assertExists()
         compose.onNodeWithText("Passo 4: Consulta de Builds e Runas").performScrollTo().assertExists()
         compose.onNodeWithText("Informações Legais e Privacidade").performScrollTo().assertExists()

@@ -18,6 +18,128 @@ import org.robolectric.annotation.Config
 class RuntimeBehaviorTest {
     private val now = 1_790_000_000_000L
 
+    @Test fun `every champion recommendation agrees with the build matchup knowledge`() {
+        val context = RuntimeEnvironment.getApplication()
+        DynamicTranslations.loadSync(context)
+        WildRiftRepository.initChampions(context, forceReload = true)
+        val roster = WildRiftRepository.champions.filter { it.id != "empty" }.distinctBy { it.id }
+        assertTrue("Complete champion roster", roster.size >= 142)
+        var checked = 0
+        val renderedTexts = linkedSetOf<String>()
+        fun inspect(analysis: DraftAnalysisResult) {
+            val texts = listOfNotNull(analysis.allyCompositionWarning,analysis.frontlineStatus,analysis.directMatchupWarning,analysis.directCounterBestPick) +
+                analysis.recommendations.flatMap { listOf(it.advantageBadge,it.tacticalReason,it.synergyDetails,it.counterDetails,it.runes) }
+            for (source in texts) {
+                val localized = com.example.util.trStr("pt",source)
+                assertFalse("Draft Portuguese: $localized",SpanishUiResidue.pattern.containsMatchIn(localized.replace("Lee Sin","LeeSin")))
+                renderedTexts.add(localized)
+            }
+        }
+        for (role in LaneRole.entries) inspect(WildRiftRepository.analyzeDraft(role,emptyList(),emptyList(),null,true,"pt"))
+        for (enemy in roster) {
+            val role = enemy.primaryRole
+            val analysis = WildRiftRepository.analyzeDraft(role, emptyList(), listOf(enemy), enemy, true, "pt")
+            inspect(analysis)
+            assertFalse("Known opponents override blind selection", analysis.isFirstPickMode)
+            val available = roster.filter { it.id != enemy.id && (it.primaryRole == role || role in it.secondaryRoles) }
+            val alternatives = available.any { MatchupKnowledge.relation(it,enemy) != MatchupRelation.UNFAVORABLE }
+            for (recommendation in analysis.recommendations) {
+                val champion = recommendation.champion
+                assertTrue(champion.primaryRole == role || role in champion.secondaryRoles)
+                assertNotEquals(enemy.id,champion.id)
+                if (alternatives) assertNotEquals("${champion.name} versus ${enemy.name}",MatchupRelation.UNFAVORABLE,MatchupKnowledge.relation(champion,enemy))
+                val evaluation = WildRiftRepository.evaluateChampion(champion,role,emptyList(),listOf(enemy),enemy,"pt")
+                assertEquals(evaluation.draftFitScore,recommendation.draftFitScore,0.001)
+                assertEquals(champion.winrate,recommendation.estimatedWinrate,0.001)
+                checked++
+            }
+            assertEquals(analysis.recommendations.map { it.champion.id }.distinct().size,analysis.recommendations.size)
+        }
+        java.io.File("build/reports/portuguese-rendered").apply { mkdirs() }.resolve("draft-coherence-texts.json")
+            .writeText(org.json.JSONArray(renderedTexts.toList()).toString(2))
+        println("DRAFT_COHERENCE_AUDIT: ${roster.size} champions; $checked lane recommendations")
+    }
+
+    @Test fun `damage profiles and rounding never invent pure true damage`() {
+        val context = RuntimeEnvironment.getApplication()
+        WildRiftRepository.initChampions(context,forceReload=true)
+        val roster = WildRiftRepository.champions.filter { it.id != "empty" }
+        for (champion in roster) {
+            val percentages = DraftDamagePolicy.composition(listOf(champion))
+            assertEquals(100,percentages.sum())
+            assertTrue(percentages.all { it in 0..100 })
+        }
+        val vayne = roster.first { it.id == "vayne" }
+        assertEquals(listOf(75,0,25),DraftDamagePolicy.composition(listOf(vayne)))
+        val corki = roster.first { it.id == "corki" }
+        assertEquals(listOf(35,65,0),DraftDamagePolicy.composition(listOf(corki)))
+        assertEquals(listOf(0,0,0),DraftDamagePolicy.composition(emptyList()))
+        assertEquals(100,DraftDamagePolicy.composition(listOf(vayne,corki,roster.first())).sum())
+    }
+
+    @Test fun `conflicting matchup claims are variable and never a guaranteed counter`() {
+        val context = RuntimeEnvironment.getApplication()
+        WildRiftRepository.initChampions(context,forceReload=true)
+        val first=WildRiftRepository.champions.first().copy(advantageAgainst=listOf("rival"),counteredBy=listOf("rival"))
+        val rival=first.copy(id="rival",name="Rival",advantageAgainst=emptyList(),counteredBy=emptyList())
+        assertEquals(MatchupRelation.VARIABLE,MatchupKnowledge.relation(first,rival))
+        assertEquals(MatchupRelation.VARIABLE,MatchupKnowledge.relation(rival,first))
+    }
+
+    @Test fun `read support clears its badge until a real followup arrives and payment remains administrator only`() {
+        assertTrue(UserPanelNotificationPolicy.staffNeedsAttention(mapOf("status" to "PENDING", "staffRead" to false),true))
+        assertFalse(UserPanelNotificationPolicy.staffNeedsAttention(mapOf("status" to "PENDING", "staffRead" to true),true))
+        assertTrue(UserPanelNotificationPolicy.staffNeedsAttention(mapOf("status" to "READ", "staffRead" to true, "hasNewUserReply" to true),true))
+        assertFalse(SupportConversationPolicy.canView("moderador","PAGO"))
+        assertTrue(SupportConversationPolicy.canView("admin","PAGO"))
+    }
+
+    @Test fun `USDT address validation checks network format checksum and excludes token contracts`() {
+        assertTrue(UsdtWalletPolicy.valid(UsdtNetwork.TRC20,"TJRabPrwbZy45sbavfcjinPJC18kjpRTv8"))
+        assertFalse(UsdtWalletPolicy.valid(UsdtNetwork.TRC20,"TJRabPrwbZy45sbavfcjinPJC18kjpRTv9"))
+        assertFalse(UsdtWalletPolicy.valid(UsdtNetwork.TRC20,"TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"))
+        assertTrue(UsdtWalletPolicy.valid(UsdtNetwork.ERC20,"0x1111111111111111111111111111111111111111"))
+        assertFalse(UsdtWalletPolicy.valid(UsdtNetwork.ERC20,"0x0000000000000000000000000000000000000000"))
+        assertFalse(UsdtWalletPolicy.valid(UsdtNetwork.BEP20,"0xdAC17F958D2ee523a2206206994597C13D831ec7"))
+    }
+
+    @Test fun `subscription price and inherited deadlines depend on selected plan and currency`() {
+        val account = mapOf<String, Any>("role" to "creador", "secondaryRole" to "streamer", "premiumUntil" to now + 1000L,
+            "blueEssence" to 1200L, "orangeEssence" to 100L)
+        val cases = listOf(Triple(EssencePremiumPlan.MONTHLY, EssenceCurrency.BLUE, 100L),
+            Triple(EssencePremiumPlan.MONTHLY, EssenceCurrency.ORANGE, 9L),
+            Triple(EssencePremiumPlan.ANNUAL, EssenceCurrency.BLUE, 1100L), Triple(EssencePremiumPlan.ANNUAL, EssenceCurrency.ORANGE, 95L))
+        for ((plan, currency, price) in cases) {
+            val (balance, deadline) = EssenceEconomyPolicy.purchase(account, plan, currency, now)
+            assertEquals(EssenceEconomyPolicy.balance(account, currency) - price, balance)
+            assertEquals(now + 1000L + plan.days * PremiumAccessPolicy.DAY_MILLIS, deadline)
+        }
+        assertEquals("creador", account["role"]); assertEquals("streamer", account["secondaryRole"])
+    }
+
+    @Test fun `insufficient balance and banned accounts cannot purchase or redeem`() {
+        val poor = mapOf<String, Any>("role" to "free", "blueEssence" to 99L, "orangeEssence" to 8L)
+        assertTrue(runCatching { EssenceEconomyPolicy.purchase(poor, EssencePremiumPlan.MONTHLY, EssenceCurrency.BLUE, now) }.isFailure)
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor, 10) }.isFailure)
+        for (amount in listOf(10L, 25L, 50L)) assertEquals(60L - amount, EssenceEconomyPolicy.redeem(poor + ("orangeEssence" to 60L), amount))
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 100L, "role" to "banned"), 10) }.isFailure)
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + ("orangeEssence" to 100L), 11) }.isFailure)
+    }
+
+    @Test fun `same installation and its legacy aliases consume only one slot across repeated logins`() {
+        var devices = listOf("legacy-install", "another-phone", "hardware-current")
+        val aliases = setOf("legacy-install", "hardware-current")
+        repeat(5) { devices = DeviceSlotPolicy.register(devices, "legacy-install", aliases, false) }
+        assertEquals(listOf("legacy-install", "another-phone"), devices)
+        assertTrue(runCatching { DeviceSlotPolicy.register(devices, "third-phone", setOf("third-phone"), false) }.isFailure)
+    }
+
+    @Test fun `reading one revision never hides a subsequent reply`() {
+        val first = mapOf<String, Any>("conversation" to listOf(mapOf("id" to "reply-one")))
+        val next = mapOf<String, Any>("conversation" to listOf(mapOf("id" to "reply-one"), mapOf("id" to "reply-two")))
+        assertNotEquals(PanelReadRepository.key("support:one", PanelReadRepository.revision(first)), PanelReadRepository.key("support:one", PanelReadRepository.revision(next)))
+    }
+
     @Test fun `support reply raises old ticket ahead of a newer creation`() {
         val old = mapOf<String, Any>("id" to "old", "timestamp" to now - 30_000,
             "conversation" to listOf(mapOf("text" to "Resposta", "senderRole" to "SUPPORT", "timestampMillis" to now)))

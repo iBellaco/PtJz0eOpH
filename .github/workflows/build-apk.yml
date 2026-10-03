@@ -207,7 +207,7 @@ jobs:
                    'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
                    'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
                    'premium-editor', 'premium-status', 'creator-reader',
-                   'profile-admin-notifications', 'panel-notification']
+                   'profile-admin-notifications', 'panel-notification', 'essence-plans', 'cash-redemption', 'saved-data-statistics', 'inbox-circle', 'premium-purchase', 'usdt-wallet', 'support-admin-notification']
           for file in source.glob('*.png'):
               if any(file.stem.startswith(name) for name in names):
                   shutil.copy2(file, target / file.name)

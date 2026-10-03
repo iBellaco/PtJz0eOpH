@@ -174,6 +174,7 @@ fun AdminDashboardDialog(
     var showBroadcastDialog by remember { mutableStateOf(false) }
     var showNoticeConfigDialog by remember { mutableStateOf(false) }
     var showCpmAnalyticsDialog by remember { mutableStateOf(false) }
+    var showCashRequests by remember { mutableStateOf(false) }
     var showDatabaseConsumptionDialog by remember { mutableStateOf(false) }
     var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
@@ -264,8 +265,19 @@ fun AdminDashboardDialog(
         AdminCpmAnalyticsDialog(onDismiss = { showCpmAnalyticsDialog = false })
     }
 
+    if (showCashRequests) {
+        Dialog(onDismissRequest = { showCashRequests = false }) {
+            Surface(color = HextechDarkBg, shape = RoundedCornerShape(16.dp)) {
+                Column(Modifier.fillMaxWidth().heightIn(max = 650.dp).verticalScroll(rememberScrollState()).padding(16.dp)) {
+                    PanelReadControl(com.example.data.NotificationPanel.ADMINISTRATION)
+                    CashRedemptionReviewPanel()
+                    TextButton(onClick = { showCashRequests = false }) { Text(tr("Cerrar")) }
+                }
+            }
+        }
+    }
     if (showDatabaseConsumptionDialog) {
-        AdminDatabaseConsumptionDialog(onDismiss = { showDatabaseConsumptionDialog = false })
+        AdminDatabaseConsumptionDialog(onDismiss = { showDatabaseConsumptionDialog = false }, onOpenCashRequests = { showCashRequests = true })
     }
 
     if (showSponsorModerationDialog) {
@@ -5569,6 +5581,7 @@ fun AdminModeratorRequestsDialog(
     val db = FirebaseFirestore.getInstance()
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var showPayments by remember { mutableStateOf(false) }
     var showStreamers by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
 
@@ -5678,9 +5691,14 @@ fun AdminModeratorRequestsDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = { showStreamers = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers) HextechGold else TextSecondary) }
-                    TextButton(onClick = { showStreamers = true }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
+                    TextButton(onClick = { showStreamers = false; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers) HextechGold else TextSecondary) }
+                    TextButton(onClick = { showStreamers = true; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
                 }
+                TextButton(onClick = { showPayments = true; showStreamers = false }) { Text(tr("Pagos USDT")) }
+                PanelReadControl(com.example.data.NotificationPanel.ADMINISTRATION)
+                if (showPayments) {
+                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) { CashRedemptionReviewPanel() }
+                } else
                 if (showStreamers) {
                     StreamerReviewPanel(Modifier.weight(1f).fillMaxWidth())
                 } else {

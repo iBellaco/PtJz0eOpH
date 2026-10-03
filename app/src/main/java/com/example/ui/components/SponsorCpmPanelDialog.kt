@@ -294,6 +294,7 @@ fun SponsorCpmPanelDialog(
                     .fillMaxSize()
                     .padding(20.dp)
             ) {
+            PanelReadControl(com.example.data.NotificationPanel.SPONSOR)
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),

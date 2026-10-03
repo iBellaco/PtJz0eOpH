@@ -653,7 +653,7 @@ fun UserInboxDialog(
                             val activityAt = com.example.data.InboxMessageOrder.latestMessageAt(msg)
                             val dateStr = if (activityAt > 0) sdf.format(Date(activityAt)) else "Fecha no disponible"
 
-                            val isSupportReply = messageTag == MessageTag.SUPPORT && !isRead
+                            val isSupportReply = messageTag in setOf(MessageTag.SUPPORT, MessageTag.PAGO) && !isRead
 
                             Card(
                                 colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant),
@@ -704,7 +704,7 @@ fun UserInboxDialog(
                                     val isSupportTicket = rawTag.equals("SUPPORT", ignoreCase = true) ||
                                         (msg["reportId"] as? String)?.isNotBlank() == true ||
                                         (msg["ticketId"] as? String)?.isNotBlank() == true ||
-                                        messageTag == MessageTag.SUPPORT ||
+                                        messageTag in setOf(MessageTag.SUPPORT, MessageTag.PAGO) ||
                                         FeedbackRepository.isSupportMessage(msg) ||
                                         conversationEntries.isNotEmpty() ||
                                         adminReply.isNotBlank() ||

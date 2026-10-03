@@ -393,162 +393,45 @@ object WildRiftRepository {
     }
 
     fun evaluateChampion(
-        champ: Champion,
-        myRole: LaneRole,
-        allies: List<Champion>,
-        enemies: List<Champion>,
-        enemyLaneOpponent: Champion? = null,
-        lang: String = "es"
+        champ: Champion, myRole: LaneRole, allies: List<Champion>, enemies: List<Champion>,
+        enemyLaneOpponent: Champion? = null, lang: String = "es"
     ): DraftRecommendation {
-        val otherAllies = allies.filter { it.id != champ.id }
-        val allyPhysCount = otherAllies.count { it.damageType == DamageType.PHYSICAL }
-        val allyMagicCount = otherAllies.count { it.damageType == DamageType.MAGIC }
-        val isAllyFullAd = otherAllies.isNotEmpty() && allyPhysCount >= 3 && allyMagicCount == 0
-        val isAllyFullAp = otherAllies.isNotEmpty() && allyMagicCount >= 3 && allyPhysCount == 0
-        val frontlineAllies = otherAllies.count { it.isFrontline }
-        var score = champ.winrate
-        var badge = ""
-        val reasonParts = mutableListOf<String>()
-        var synergyText = ""
-        var counterText = ""
-        val isPt = lang.lowercase().startsWith("pt")
-
-
-        // Check for Off-role / Troll pick
-        val isOffRole = champ.primaryRole != myRole && !champ.secondaryRoles.contains(myRole)
-        if (isOffRole) {
-            score -= 15.0 // heavy penalty
-            badge = if (isPt) " ESCOLHA ATÍPICA (OFF-META)" else " SELECCIÓN ATÍPICA (OFF-META)"
-            val msgEs = "Llevar a ${champ.getLocalizedName(lang)} a ${com.example.util.trStr(lang, myRole.displayName)} es una selección atípica (off-meta). Sus habilidades no están diseñadas para ganar esta línea. ${com.example.util.trStr(lang, champ.tacticalAdvice)}"
-            val msgPt = "Levar ${champ.getLocalizedName(lang)} para ${com.example.util.trStr(lang, myRole.displayName)} é uma escolha atípica (off-meta). Suas habilidades não foram projetadas para esta rota. ${com.example.util.trStr(lang, champ.tacticalAdvice)}"
-
-            reasonParts.add(if (isPt) msgPt else msgEs)
+        val activeAllies = allies.filter { it.id != "empty" && it.id != champ.id }.distinctBy { it.id }
+        val activeEnemies = (enemies + listOfNotNull(enemyLaneOpponent)).filter { it.id != "empty" }.distinctBy { it.id }
+        val favorable = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.FAVORABLE }
+        val unfavorable = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.UNFAVORABLE }
+        val variable = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.VARIABLE }
+        val synergies = MatchupKnowledge.synergies(champ,activeAllies)
+        val lane = enemyLaneOpponent?.takeIf { it.id != "empty" }
+        val laneRelation = lane?.let { MatchupKnowledge.relation(champ,it) }
+        val offRole = champ.primaryRole != myRole && myRole !in champ.secondaryRoles
+        fun names(values: List<Champion>) = values.joinToString { it.getLocalizedName(lang) }
+        val badge = when {
+            offRole -> t(lang, "ESCOLHA ATÍPICA", "SELECCIÓN ATÍPICA")
+            laneRelation == MatchupRelation.UNFAVORABLE -> t(lang, "CONFRONTO DESFAVORÁVEL", "ENFRENTAMIENTO DESFAVORABLE")
+            laneRelation == MatchupRelation.VARIABLE -> t(lang, "CONFRONTO VARIÁVEL", "ENFRENTAMIENTO VARIABLE")
+            laneRelation == MatchupRelation.FAVORABLE -> t(lang, "VANTAGEM NA ROTA", "VENTAJA EN LÍNEA")
+            unfavorable.isNotEmpty() -> t(lang, "CUIDADO COM ${names(unfavorable)}", "CUIDADO CON ${names(unfavorable)}")
+            favorable.isNotEmpty() -> t(lang, "VANTAGEM NO CONFRONTO", "VENTAJA EN EL ENFRENTAMIENTO")
+            synergies.isNotEmpty() -> t(lang, "SINERGIA DE EQUIPE", "SINERGIA DE EQUIPO")
+            else -> t(lang, "ESCOLHA EQUILIBRADA", "ELECCIÓN EQUILIBRADA")
         }
-
-
-        val directCounters = champ.advantageAgainst.filter { adv ->
-            enemies.any { it.name.equals(adv, ignoreCase = true) || it.id.equals(adv, ignoreCase = true) }
-        }.toMutableList()
-        enemies.forEach { enemy ->
-            if (enemy.counteredBy.any { it.equals(champ.name, ignoreCase = true) || it.equals(champ.id, ignoreCase = true) }) {
-                if (!directCounters.any { it.equals(enemy.name, ignoreCase = true) }) {
-                    directCounters.add(enemy.name)
-                }
-            }
-        }
-
-        val directWeaknesses = champ.counteredBy.filter { weak ->
-            enemies.any { it.name.equals(weak, ignoreCase = true) || it.id.equals(weak, ignoreCase = true) }
-        }.toMutableList()
-        enemies.forEach { enemy ->
-            if (enemy.advantageAgainst.any { it.equals(champ.name, ignoreCase = true) || it.equals(champ.id, ignoreCase = true) }) {
-                if (!directWeaknesses.any { it.equals(enemy.name, ignoreCase = true) }) {
-                    directWeaknesses.add(enemy.name)
-                }
-            }
-        }
-
-        val directSynergies = champ.synergies.filter { syn ->
-            otherAllies.any { it.name.equals(syn, ignoreCase = true) || it.id.equals(syn, ignoreCase = true) }
-        }.toMutableList()
-        otherAllies.forEach { ally ->
-            if (ally.synergies.any { it.equals(champ.name, ignoreCase = true) || it.equals(champ.id, ignoreCase = true) }) {
-                if (!directSynergies.any { it.equals(ally.name, ignoreCase = true) }) {
-                    directSynergies.add(ally.name)
-                }
-            }
-        }
-
-        // Ponderación de counters y sinergias generales
-        score += (directCounters.size * 2.8)
-        score -= (directWeaknesses.size * 2.2)
-        score += (directSynergies.size * 2.2)
-
-        // Análisis específico del rival directo de línea (Matchup de carril)
-        if (enemyLaneOpponent != null) {
-            val opponent = enemyLaneOpponent
-            val isDirectLaneCounter = champ.advantageAgainst.any { it.equals(opponent.name, ignoreCase = true) || it.equals(opponent.id, ignoreCase = true) } ||
-                    opponent.counteredBy.any { it.equals(champ.name, ignoreCase = true) || it.equals(champ.id, ignoreCase = true) }
-            val isDirectLaneWeakness = champ.counteredBy.any { it.equals(opponent.name, ignoreCase = true) || it.equals(opponent.id, ignoreCase = true) } ||
-                    opponent.advantageAgainst.any { it.equals(champ.name, ignoreCase = true) || it.equals(champ.id, ignoreCase = true) }
-
-            if (isDirectLaneCounter) {
-                score += 5.0
-                if (badge.isBlank()) badge = if (isPt) " DOMINA A ROTA (${champ.getLocalizedName(lang)} vs ${opponent.getLocalizedName(lang)})" else " DOMINAS LÍNEA (${champ.getLocalizedName(lang)} vs ${opponent.getLocalizedName(lang)})"
-                reasonParts.add(if (isPt) "Vantagem direta de rota contra ${opponent.getLocalizedName(lang)}. Você tem superioridade nas trocas e escalonamento." else "Ventaja directa de carril contra ${opponent.getLocalizedName(lang)}. Tienes superioridad en tradeos y escalado.")
-            } else if (isDirectLaneWeakness) {
-                score -= 4.0
-                if (badge.isBlank()) badge = if (isPt) "️ CONFRONTO DESFAVORÁVEL (${opponent.getLocalizedName(lang)})" else "️ MATCHUP DESFAVORABLE (${opponent.getLocalizedName(lang)})"
-                reasonParts.add(if (isPt) "Rota difícil contra ${opponent.getLocalizedName(lang)}. Evite trocas longas no início e solicite apoio do caçador." else "Línea difícil contra ${opponent.getLocalizedName(lang)}. Evita tradeos largos en early y solicita apoyo del jungla.")
-            }
-
-            // Caso especial: ADC / Rango en línea de Barón (Top)
-            if (myRole == LaneRole.TOP && opponent.isRanged && !champ.isRanged) {
-                reasonParts.add(if (isPt) "Rival com alcance (${opponent.getLocalizedName(lang)} no Top): Jogue recuado nos níveis 1-3, compre Escudo de Doran / Ventos Revigorantes e faça all-in quando o rival gastar sua habilidade de fuga." else "Rival con rango (${opponent.getLocalizedName(lang)} en Top): Juega pasivo niveles 1-3, compra Escudo de Doran / Segundo Aire y all-in cuando gaste su habilidad de escape.")
-            } else if (myRole == LaneRole.TOP && champ.isRanged && !opponent.isRanged) {
-                reasonParts.add(if (isPt) "Vantagem de alcance no Top: Pressione ${opponent.getLocalizedName(lang)} nos níveis 1-2 mas congele perto da sua torre para evitar emboscadas." else "Ventaja de rango en Top: Acosa a ${opponent.getLocalizedName(lang)} en niveles 1-2 pero congela cerca de tu torre para evitar gankeos.")
-            }
-        }
-
-        if (isAllyFullAd && champ.damageType == DamageType.MAGIC) { score += 3.5 }
-        else if (isAllyFullAp && champ.damageType == DamageType.PHYSICAL) { score += 3.5 }
-        if (frontlineAllies == 0 && champ.isFrontline) { score += 2.8 }
-
-        if (badge.isBlank()) {
-            if (directCounters.isNotEmpty() && directCounters.size >= directWeaknesses.size) {
-                badge = if (isPt) " COUNTER FORTE (+${directCounters.size})" else " COUNTER FUERTE (+${directCounters.size})"
-                reasonParts.add(if (isPt) "Você tem vantagem sobre ${directCounters.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}." else "Tienes ventaja sobre ${directCounters.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}.")
-            } else if (directWeaknesses.isNotEmpty() && directWeaknesses.size > directCounters.size) {
-                badge = if (isPt) "️ PERIGO NO CONFRONTO (-${directWeaknesses.size})" else "️ PELIGRO MATCHUP (-${directWeaknesses.size})"
-                reasonParts.add(if (isPt) "Cuidado: Sofre contra ${directWeaknesses.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}." else "Cuidado: Sufres contra ${directWeaknesses.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}.")
-            } else if (directSynergies.isNotEmpty()) {
-                badge = if (isPt) " SINERGIA COM EQUIPE (+${directSynergies.size})" else " SINERGIA CON EQUIPO (+${directSynergies.size})"
-                reasonParts.add(if (isPt) "Sinergia excelente com ${directSynergies.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}." else "Sinergia óptima con ${directSynergies.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}.")
-            } else if (isAllyFullAd && champ.damageType == DamageType.MAGIC) {
-                badge = if (isPt) " DANO MÁGICO ESSENCIAL" else " APERTURA MÁGICA"
-                reasonParts.add(if (isPt) "Fornece o dano mágico necessário para evitar que acumulem armadura." else "Aportas el daño mágico necesario para evitar que apilen armadura.")
-            } else if (isAllyFullAp && champ.damageType == DamageType.PHYSICAL) {
-                badge = if (isPt) "️ DANO FÍSICO ESSENCIAL" else "️ APERTURA FÍSICA"
-                reasonParts.add(if (isPt) "Fornece dano físico para evitar resistência mágica." else "Aportas daño físico para evitar resistencia mágica.")
-            } else if (frontlineAllies == 0 && champ.isFrontline) {
-                badge = if (isPt) "️ LINHA DE FRENTE ESSENCIAL" else "️ SALVADOR FRONTLINE"
-                reasonParts.add(if (isPt) "Cobre a falta de tanques e iniciação da equipe." else "Cubres la falta de tanques e iniciación.")
-            } else {
-                badge = if (isPt) "️ ESCOLHA CONSISTENTE" else "️ SELECCIÓN ESTÁNDAR"
-                reasonParts.add(if (isPt) "Opção neutra e consistente neste cenário." else "Opción neutral y consistente en este escenario.")
-            }
-        }
-
-        val mainSkill = (champ.skills.find { it.slot == "1" } ?: champ.skills.firstOrNull())?.getLocalizedName(lang) ?: com.example.util.trStr(lang, "habilidades")
-        synergyText = if (directSynergies.isNotEmpty()) {
-            if (isPt) "Sincronize suas iniciações e combine $mainSkill junto com ${directSynergies.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }} para dominar as lutas de equipe."
-            else "Sincroniza tus engages y combina $mainSkill junto con ${directSynergies.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }} para dominar las peleas de equipo."
-        } else {
-            if (isPt) "Campeão independente. Priorize seu próprio escalonamento e $mainSkill."
-            else "Campeón independiente. Prioriza tu propio escalado y $mainSkill."
-        }
-
-        counterText = if (directCounters.isNotEmpty()) {
-            if (isPt) "Use sua $mainSkill para anular: ${directCounters.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}."
-            else "Usa tu $mainSkill para anular completamente a: ${directCounters.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}."
-        } else if (directWeaknesses.isNotEmpty()) {
-            if (isPt) "Cuidado com ${directWeaknesses.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}, podem interromper sua $mainSkill facilmente."
-            else "Cuidado con ${directWeaknesses.joinToString(", ") { name -> getChampionByName(name)?.getLocalizedName(lang) ?: com.example.util.trStr(lang, name) }}, pueden interrumpir tu $mainSkill fácilmente."
-        } else {
-            if (isPt) "Confronto estável sem counters diretos à vista."
-            else "Enfrentamiento estable sin counters directos a la vista."
-        }
-
-        val localizedTacticalAdvice = com.example.util.trStr(lang, champ.tacticalAdvice)
-        return DraftRecommendation(
-            champion = champ,
-            estimatedWinrate = ((score * 10).toInt() / 10.0).coerceIn(35.0, 72.0),
-            advantageBadge = badge,
-            tacticalReason = (localizedTacticalAdvice + " " + reasonParts.joinToString(" ")).trim(),
-            runes = champ.recommendedRunes,
-            synergyDetails = synergyText,
-            counterDetails = counterText
-        )
+        val reasons = mutableListOf(com.example.util.CoachingGenerator.generateTacticalAdvice(champ,myRole,lang))
+        if (laneRelation == MatchupRelation.UNFAVORABLE) reasons += t(lang,
+            "${lane!!.getLocalizedName(lang)} tem vantagem neste confronto. Evite trocas prolongadas e procure apoio da equipe.",
+            "${lane!!.getLocalizedName(lang)} tiene ventaja en este enfrentamiento. Evita intercambios prolongados y busca apoyo del equipo.")
+        if (variable.isNotEmpty()) reasons += t(lang, "Confronto variável contra ${names(variable)}; depende das habilidades e da configuração escolhida.",
+            "Enfrentamiento variable contra ${names(variable)}; depende de las habilidades y la configuración elegida.")
+        val counterText = buildList {
+            if (favorable.isNotEmpty()) add(t(lang,"Vantagem contra: ${names(favorable)}.","Ventaja contra: ${names(favorable)}."))
+            if (unfavorable.isNotEmpty()) add(t(lang,"Risco contra: ${names(unfavorable)}.","Riesgo contra: ${names(unfavorable)}."))
+        }.joinToString(" ").ifBlank { t(lang,"Nenhuma vantagem direta confirmada.","No hay una ventaja directa confirmada.") }
+        val synergyText = if (synergies.isNotEmpty()) t(lang,"Combina com: ${names(synergies)}.","Combina con: ${names(synergies)}.")
+            else t(lang,"Ajuste sua função aos aliados selecionados.","Ajusta tu función a los aliados seleccionados.")
+        return DraftRecommendation(champion=champ,estimatedWinrate=champ.winrate.coerceIn(0.0,100.0),
+            advantageBadge=badge,tacticalReason=reasons.joinToString(" "),runes=champ.recommendedRunes,
+            synergyDetails=synergyText,counterDetails=counterText,
+            draftFitScore=DraftScoringPolicy.score(champ,myRole,activeAllies,activeEnemies,lane,false,champions))
     }
 
     fun analyzeDraft(
@@ -562,66 +445,19 @@ object WildRiftRepository {
         val serverRegion = com.example.data.sync.ChineseMetaSyncService.currentRegion.value
         val rankTier = com.example.data.sync.ChineseMetaSyncService.currentTier.value.displayName
 
-        val activeEnemies = enemies.filter { it.id != "empty" }
-        val activeAllies = allies.filter { it.id != "empty" }
+        val activeEnemies = (enemies + listOfNotNull(enemyLaneOpponent)).filter { it.id != "empty" }.distinctBy { it.id }
+        val activeAllies = allies.filter { it.id != "empty" }.distinctBy { it.id }
 
-        var physCount = 0
-        var magicCount = 0
-        var trueCount = 0
-
-        activeEnemies.forEach { champ ->
-            when (champ.damageType) {
-                DamageType.PHYSICAL -> physCount++
-                DamageType.MAGIC -> magicCount++
-                DamageType.TRUE_HYBRID -> trueCount++
-            }
-        }
-
-        val physPct: Int
-        val magicPct: Int
-        val truePct: Int
-        if (activeEnemies.isEmpty()) {
-            physPct = 0
-            magicPct = 0
-            truePct = 0
-        } else {
-            val totalEnemies = (physCount + magicCount + trueCount).coerceAtLeast(1)
-            physPct = (physCount * 100) / totalEnemies
-            magicPct = (magicCount * 100) / totalEnemies
-            truePct = (100 - (physPct + magicPct)).coerceAtLeast(0)
-        }
-
-        // Ally Damage Profile
-        val allyPhysCount = activeAllies.count { it.damageType == DamageType.PHYSICAL }
-        val allyMagicCount = activeAllies.count { it.damageType == DamageType.MAGIC }
-        val isAllyFullAd = activeAllies.isNotEmpty() && allyPhysCount >= 3 && allyMagicCount == 0
-        val isAllyFullAp = activeAllies.isNotEmpty() && allyMagicCount >= 3 && allyPhysCount == 0
-
-        var allyPhysPct = 0
-        var allyMagicPct = 0
-        var allyTruePct = 0
-        var allyCompositionWarning: String? = null
-        if (activeAllies.isNotEmpty()) {
-            var aPhys = 0
-            var aMag = 0
-            var aTrue = 0
-            activeAllies.forEach {
-                when (it.damageType) {
-                    DamageType.PHYSICAL -> aPhys++
-                    DamageType.MAGIC -> aMag++
-                    DamageType.TRUE_HYBRID -> aTrue++
-                }
-            }
-            val totalAlly = (aPhys + aMag + aTrue).coerceAtLeast(1)
-            allyPhysPct = (aPhys * 100) / totalAlly
-            allyMagicPct = (aMag * 100) / totalAlly
-            allyTruePct = (100 - (allyPhysPct + allyMagicPct)).coerceAtLeast(0)
-
-            if (allyPhysPct >= 80) {
-                allyCompositionWarning = com.example.util.trStr(lang, "Exceso de Daño Físico aliado (AD). El rival acumulará armadura.")
-            } else if (allyMagicPct >= 75) {
-                allyCompositionWarning = com.example.util.trStr(lang, "Exceso de Daño Mágico aliado (AP). El rival acumulará resistencia mágica.")
-            }
+        val enemyDamage = DraftDamagePolicy.composition(activeEnemies)
+        val physPct = enemyDamage[0]; val magicPct = enemyDamage[1]; val truePct = enemyDamage[2]
+        val allyDamage = DraftDamagePolicy.composition(activeAllies)
+        val allyPhysPct = allyDamage[0]; val allyMagicPct = allyDamage[1]; val allyTruePct = allyDamage[2]
+        val isAllyFullAd = activeAllies.size >= 3 && allyPhysPct >= 80
+        val isAllyFullAp = activeAllies.size >= 3 && allyMagicPct >= 75
+        val allyCompositionWarning = when {
+            isAllyFullAd -> com.example.util.trStr(lang,"Exceso de Daño Físico aliado (AD). El rival acumulará armadura.")
+            isAllyFullAp -> com.example.util.trStr(lang,"Exceso de Daño Mágico aliado (AP). El rival acumulará resistencia mágica.")
+            else -> null
         }
 
         val frontlineAllies = activeAllies.count { it.isFrontline }
@@ -632,16 +468,7 @@ object WildRiftRepository {
             else -> "¡Alerta! Falta Frontline e Iniciación aliada"
         }
 
-        val isFirstPickEffective = isFirstPick
-
-        // Known safe blind-picks per role in Wild Rift Meta
-        val safeBlindPicks = mapOf(
-            LaneRole.TOP to listOf("sett", "aatrox", "darius", "renekton", "ornn", "camille", "gwen", "urgot"),
-            LaneRole.JUNGLE to listOf("vi", "lee_sin", "xin_zhao", "viego", "wukong", "kayn", "jarvan_iv", "volibear"),
-            LaneRole.MID to listOf("ahri", "orianna", "syndra", "yone", "karma", "vex", "jayce", "galio", "hwei"),
-            LaneRole.ADC to listOf("varus", "ezreal", "kaisa", "caitlyn", "xayah", "jinx", "lucian", "sivir"),
-            LaneRole.SUPPORT to listOf("thresh", "nautilus", "lulu", "nami", "karma", "morgana", "leona", "rakan", "braum")
-        )
+        val isFirstPickEffective = isFirstPick && activeEnemies.isEmpty() && enemyLaneOpponent?.takeIf { it.id != "empty" } == null
 
         var directMatchupWarning: String? = null
         var directCounterBestPick: String? = null
@@ -697,52 +524,33 @@ object WildRiftRepository {
         }
 
         val availableChampions = champions.filter { champ ->
-            !allies.any { it.id == champ.id } && !enemies.any { it.id == champ.id }
+            champ.id != "empty" &&
+            !activeAllies.any { it.id == champ.id } && !activeEnemies.any { it.id == champ.id }
         }
 
         val candidates = if (myRole != null) {
             availableChampions.filter { champ ->
                 champ.primaryRole == myRole || champ.secondaryRoles.contains(myRole)
-            }.ifEmpty { availableChampions }
+            }
         } else {
             availableChampions
         }
 
+        val lane = enemyLaneOpponent?.takeIf { it.id != "empty" }
+        val uniqueCandidates = candidates.groupBy { it.id }.values.map { profiles -> profiles.firstOrNull { it.primaryRole == myRole } ?: profiles.first() }
+        val compatible = if (lane != null) uniqueCandidates.filter { MatchupKnowledge.relation(it,lane) != MatchupRelation.UNFAVORABLE } else uniqueCandidates
+        val rankedCandidates = compatible.ifEmpty { uniqueCandidates }
         val serverLabel = "Global Meta"
 
-        val recommendations = candidates.map { champ ->
-            var score = champ.winrate
-
+        val recommendations = rankedCandidates.map { champ ->
             val effectiveRole = myRole ?: champ.primaryRole
-            // Role affinity bonus so recommendations vary correctly across lanes
-            if (myRole != null) {
-                if (champ.primaryRole == myRole) {
-                    score += 10.0
-                } else if (champ.secondaryRoles.contains(myRole)) {
-                    score += 5.0
-                } else {
-                    score -= 15.0
-                }
-            }
-
-            // Tier Bonus
-            when (champ.tier) {
-                "S+" -> score += 3.5
-                "S" -> score += 2.2
-                "A+" -> score += 1.2
-                "A" -> score += 0.5
-            }
-
-            // Server-specific tuning
-
-
             var synergyText = ""
             var counterText = ""
 
             val isFlex = myRole != null && champ.primaryRole != myRole
             val dynamicAdvice = com.example.util.CoachingGenerator.generateTacticalAdvice(champ, effectiveRole, lang)
             val roleContextAdvice = if (isFlex) {
-                t(lang, "Flex no ${effectiveRole.displayName}: Vantagem de fator surpresa. Desvantagem: Pode sofrer contra escolhas dominantes naturais desta rota. Dicas: $dynamicAdvice", "Flex en ${effectiveRole.displayName}: Ventaja de factor sorpresa. Desventaja: Puede sufrir contra picks dominantes naturales de la línea. Consejos: $dynamicAdvice")
+                t(lang, "Flex na ${effectiveRole.getLocalizedName(lang)}: Vantagem de fator surpresa. Desvantagem: Pode sofrer contra escolhas dominantes naturais desta rota. Dicas: $dynamicAdvice", "Flex en ${effectiveRole.getLocalizedName(lang)}: Ventaja de factor sorpresa. Desventaja: Puede sufrir contra picks dominantes naturales de la línea. Consejos: $dynamicAdvice")
             } else {
                 dynamicAdvice
             }
@@ -784,41 +592,22 @@ object WildRiftRepository {
             }
 
             if (isFirstPickEffective) {
-                // FIRST PICK / BLIND PICK CALCULATION
-                val roleBlindList = safeBlindPicks[effectiveRole] ?: emptyList()
-                val isSafeBlind = roleBlindList.contains(champ.id)
-                if (isSafeBlind) {
-                    score += 6.5 // High priority bonus for genuine safe blind picks
-                }
-                if (champ.tier == "S+") {
-                    score += 3.0
-                }
+                val badge = if (isFlex) t(lang,"PRIMEIRA SELEÇÃO FLEXÍVEL", "PRIMERA SELECCIÓN FLEXIBLE")
+                    else t(lang,"PRIMEIRA SELEÇÃO PARA ESTA ROTA", "PRIMERA SELECCIÓN PARA ESTA LÍNEA")
 
-                val badge = when {
-                    isSafeBlind && champ.tier == "S+" -> t(lang, "👑 1º PICK PRIORITÁRIO (Meta $serverLabel)", "👑 1ER PICK PRIORITARIO (Meta $serverLabel)")
-                    isSafeBlind -> t(lang, "🛡️ BLIND PICK SEGURO (Versátil)", "🛡️ BLIND PICK SEGURO (Versátil)")
-                    champ.tier == "S+" -> t(lang, "⭐ META S+ ($serverLabel)", "⭐ META S+ ($serverLabel)")
-                    else -> t(lang, "Opção Estável no ${effectiveRole.shortName}", "Opción Estable en ${effectiveRole.shortName}")
-                }
-
-                val reason = when {
-                    isSafeBlind && champ.tier == "S+" ->
-                        t(lang, "Prioridade #1 de Primeiro Pick no ${effectiveRole.displayName} [$serverLabel]: ${champ.name} é o pick às cegas mais seguro e autossuficiente. Domina a rota, resiste a emboscadas e não tem counters abusivos. $roleContextAdvice", "Prioridad #1 de Primer Pick en ${effectiveRole.displayName} [$serverLabel]: ${champ.name} es el pick a ciegas más seguro y autosuficiente. Domina la línea, resiste ganks y no tiene counters abusivos. $roleContextAdvice")
-                    isSafeBlind ->
-                        t(lang, "Excelente escolha às cegas no ${effectiveRole.displayName}: Grande versatilidade e controle de rotas sem risco de counter pesado. $roleContextAdvice", "Excelente selección a ciegas en ${effectiveRole.displayName}: Gran versatilidad y control de oleadas sin riesgo de ser countereado gravemente. $roleContextAdvice")
-                    else -> roleContextAdvice
-                }
-
-                synergyText = if (comboSynergies.isNotEmpty()) {
-                    comboSynergies.joinToString(" • ")
-                } else {
-                    t(lang, "Autossuficiência na rota e escalamento seguro em $serverLabel.", "Autosuficiencia en línea, control de oleadas y escalado en $serverLabel.")
-                }
-                counterText = t(lang, "Sem counters diretos fatais no meta de $serverLabel.", "Sin counters directos fatales en el meta de $serverLabel.")
+                val possibleWeaknesses = MatchupKnowledge.related(champ,champions,MatchupRelation.UNFAVORABLE).take(3)
+                val reason = t(lang,"Seleção inicial de ${champ.getLocalizedName(lang)}: compare a versatilidade, os rivais possíveis e a utilidade para a equipe. $roleContextAdvice",
+                    "Primera selección de ${champ.getLocalizedName(lang)}: compara la versatilidad, los rivales posibles y la utilidad para el equipo. $roleContextAdvice")
+                synergyText = if (comboSynergies.isNotEmpty()) comboSynergies.joinToString(" • ") else roleContextAdvice
+                counterText = if (possibleWeaknesses.isNotEmpty()) t(lang,
+                    "Possíveis confrontos difíceis: ${possibleWeaknesses.joinToString { it.getLocalizedName(lang) }}.",
+                    "Posibles enfrentamientos difíciles: ${possibleWeaknesses.joinToString { it.getLocalizedName(lang) }}.")
+                    else t(lang,"O rival ainda não foi revelado. Reavalie quando ele selecionar.","El rival aún no se ha revelado. Reevalúa cuando seleccione.")
 
                 DraftRecommendation(
                     champion = champ,
-                    estimatedWinrate = ((score * 10).toInt() / 10.0).coerceAtMost(72.0),
+                    estimatedWinrate = champ.winrate.coerceIn(0.0,100.0),
+                    draftFitScore = DraftScoringPolicy.score(champ,effectiveRole,activeAllies,activeEnemies,lane,isFirstPickEffective,champions),
                     advantageBadge = badge,
                     tacticalReason = reason,
                     runes = champ.recommendedRunes,
@@ -827,47 +616,14 @@ object WildRiftRepository {
                 )
             } else {
                 // REACTIVE / COUNTER & SYNERGY DRAFT CALCULATION
-                val directCounters = champ.advantageAgainst.filter { adv ->
-                    enemies.any { it.name.equals(adv, ignoreCase = true) || it.id.equals(adv, ignoreCase = true) }
-                }
-                val directWeaknesses = champ.counteredBy.filter { weak ->
-                    enemies.any { it.name.equals(weak, ignoreCase = true) || it.id.equals(weak, ignoreCase = true) }
-                }
-                val directSynergies = champ.synergies.filter { syn ->
-                    allies.any { it.name.equals(syn, ignoreCase = true) || it.id.equals(syn, ignoreCase = true) }
-                }
-
-                // Enemy Counter Scoring
-                score += (directCounters.size * 3.2)
-                score -= (directWeaknesses.size * 2.5)
-
-                // Ally Synergy Scoring + Combo Bonus
-                score += (directSynergies.size * 2.4)
-                if (comboSynergies.isNotEmpty()) {
-                    score += (comboSynergies.size * 2.8)
-                }
-
-                // Damage Balance compensation
-                if (isAllyFullAd && champ.damageType == DamageType.MAGIC) {
-                    score += 4.0 // Prevents enemy from just building Armor
-                } else if (isAllyFullAp && champ.damageType == DamageType.PHYSICAL) {
-                    score += 4.0 // Prevents enemy from just building Magic Resist
-                }
-
-                // Frontline compensation
-                if (frontlineAllies == 0 && champ.isFrontline) {
-                    score += 3.0 // Needed frontline
-                }
-
-                // Anti-tank or anti-assassin bonus
-                if (enemyTanks.size >= 2 && (champ.id in listOf("vayne", "sett", "gwen", "fiora", "varus", "lillia"))) {
-                    score += 3.5
-                }
-                if (enemyDashHeavy.size >= 2 && (champ.id in listOf("vex", "poppy", "gragas", "taliyah", "nautilus", "malphite"))) {
-                    score += 3.2
-                }
+                val directCounters = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.FAVORABLE }.map { it.getLocalizedName(lang) }
+                val directWeaknesses = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.UNFAVORABLE }.map { it.getLocalizedName(lang) }
+                val directSynergies = MatchupKnowledge.synergies(champ,activeAllies).map { it.getLocalizedName(lang) }
 
                 val badge = when {
+                    lane != null && MatchupKnowledge.relation(champ,lane) == MatchupRelation.UNFAVORABLE -> t(lang,"CONFRONTO DESFAVORÁVEL", "ENFRENTAMIENTO DESFAVORABLE")
+                    lane != null && MatchupKnowledge.relation(champ,lane) == MatchupRelation.VARIABLE -> t(lang,"CONFRONTO VARIÁVEL", "ENFRENTAMIENTO VARIABLE")
+                    directWeaknesses.isNotEmpty() -> t(lang,"RISCO CONTRA ${directWeaknesses.joinToString()}","RIESGO CONTRA ${directWeaknesses.joinToString()}")
                     comboSynergies.isNotEmpty() && directCounters.isNotEmpty() -> t(lang, "🔥 COMBO + COUNTER (+${directCounters.size})", "🔥 COMBO + COUNTER (+${directCounters.size})")
                     comboSynergies.isNotEmpty() -> t(lang, "💥 WOMBO-COMBO ALIADO", "💥 WOMBO-COMBO ALIADO")
                     directCounters.isNotEmpty() && directSynergies.isNotEmpty() -> t(lang, "⭐ #1 SINERGIA + COUNTER", "⭐ #1 SINERGIA + COUNTER")
@@ -885,13 +641,14 @@ object WildRiftRepository {
                 if (directCounters.isNotEmpty()) {
                     reasonParts.add(t(lang, "Vantagem tática direta contra ${directCounters.joinToString(", ")}.", "Ventaja táctica directa contra ${directCounters.joinToString(", ")}."))
                 }
+                if (directWeaknesses.isNotEmpty()) reasonParts.add(t(lang,"Cuidado com ${directWeaknesses.joinToString()}; adapte seu posicionamento.","Cuidado con ${directWeaknesses.joinToString()}; adapta tu posicionamiento."))
                 if (directSynergies.isNotEmpty()) {
                     reasonParts.add(t(lang, "Sinergia comprovada com ${directSynergies.joinToString(", ")}.", "Sinergia comprobada con ${directSynergies.joinToString(", ")}."))
                 }
                 if (isAllyFullAd && champ.damageType == DamageType.MAGIC) {
                     reasonParts.add(t(lang, "Fornece o dano mágico crucial para que o rival não acumule armadura.", "Aporta el daño mágico crucial para que el rival no apile armadura."))
                 }
-                if (frontlineAllies == 0 && champ.isFrontline) {
+                if (activeAllies.isNotEmpty() && frontlineAllies == 0 && champ.isFrontline) {
                     reasonParts.add(t(lang, "Garante a iniciação e resistência que sua equipe precisa.", "Garantiza la iniciación y resistencia que tu equipo necesita."))
                 }
                 if (reasonParts.isEmpty()) {
@@ -908,7 +665,9 @@ object WildRiftRepository {
                     t(lang, "Composição de equipe padrão", "Alineación estándar de equipo")
                 }
 
-                counterText = if (directCounters.isNotEmpty()) {
+                counterText = if (directCounters.isNotEmpty() && directWeaknesses.isNotEmpty()) {
+                    t(lang,"Vantagem contra ${directCounters.joinToString()}; risco contra ${directWeaknesses.joinToString()}.","Ventaja contra ${directCounters.joinToString()}; riesgo contra ${directWeaknesses.joinToString()}.")
+                } else if (directCounters.isNotEmpty()) {
                     t(lang, "Anula: ${directCounters.joinToString(", ")}", "Anula a: ${directCounters.joinToString(", ")}")
                 } else if (directWeaknesses.isNotEmpty()) {
                     t(lang, "Cuidado com: ${directWeaknesses.joinToString(", ")}", "Cuidado con: ${directWeaknesses.joinToString(", ")}")
@@ -918,7 +677,8 @@ object WildRiftRepository {
 
                 DraftRecommendation(
                     champion = champ,
-                    estimatedWinrate = ((score * 10).toInt() / 10.0).coerceAtMost(73.5),
+                    estimatedWinrate = champ.winrate.coerceIn(0.0,100.0),
+                    draftFitScore = DraftScoringPolicy.score(champ,effectiveRole,activeAllies,activeEnemies,lane,isFirstPickEffective,champions),
                     advantageBadge = badge,
                     tacticalReason = reasonParts.joinToString(" "),
                     runes = champ.recommendedRunes,
@@ -926,9 +686,15 @@ object WildRiftRepository {
                     counterDetails = counterText
                 )
             }
-        }.sortedByDescending { it.estimatedWinrate }
+        }.sortedByDescending { it.draftFitScore }
 
         val bestOverall = recommendations.firstOrNull()
+        if (lane != null) {
+            val choices = recommendations.take(3).joinToString { it.champion.getLocalizedName(lang) }
+            directMatchupWarning = t(lang,"Rival na sua rota: ${lane.getLocalizedName(lang)}. Opções para esta rota: $choices.",
+                "Rival en tu línea: ${lane.getLocalizedName(lang)}. Opciones para esta línea: $choices.")
+        }
+        if (recommendations.isNotEmpty()) directCounterBestPick = recommendations.take(3).joinToString { it.champion.getLocalizedName(lang) }
 
         return DraftAnalysisResult(
             physicalDamagePercent = physPct,

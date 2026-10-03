@@ -56,6 +56,16 @@ object DeviceAndSessionManager {
         val userPrefs = appContext.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
         val internalFile = java.io.File(appContext.filesDir, "device_id.txt")
 
+        // Preserve installation identity across signing-key/OS changes and every login.
+        val persisted = listOfNotNull(prefs.getString(KEY_PERSISTENT_DEVICE_ID, null),
+            runCatching { internalFile.takeIf { it.exists() }?.readText()?.trim() }.getOrNull(),
+            userPrefs.getString(KEY_PERSISTENT_DEVICE_ID, null)).firstOrNull { it.isNotBlank() }
+        if (persisted != null) {
+            cachedDeviceId = persisted
+            prefs.edit().putString(KEY_PERSISTENT_DEVICE_ID, persisted).apply()
+            return persisted
+        }
+
         // 1. Hardware-level Android ID (100% estable en el mismo teléfono físico)
         val androidId = try {
             Settings.Secure.getString(appContext.contentResolver, Settings.Secure.ANDROID_ID)
@@ -141,52 +151,28 @@ object DeviceAndSessionManager {
         val db = FirebaseFirestore.getInstance()
         val userRef = db.collection("users").document(user!!.uid)
 
-        userRef.get().addOnSuccessListener { snapshot ->
-            val dbRole = if (snapshot.exists()) snapshot.getString("role") ?: "free" else "free"
-            val isAdmin = dbRole == "admin" || AuthManager.isCurrentUserAdmin()
-            val registeredDevices = if (snapshot.exists()) (snapshot.get("registeredDevices") as? List<*>)?.mapNotNull { it?.toString() } ?: emptyList() else emptyList()
-            val mutableDevices = registeredDevices.toMutableList()
-
-            if (!mutableDevices.contains(deviceId)) {
-                if (mutableDevices.size >= 2 && !isAdmin) {
-                    onError("Límite de dispositivos alcanzado (Máx 2 dispositivos por cuenta).")
-                    return@addOnSuccessListener
-                }
-                if (isAdmin && mutableDevices.size >= 10) mutableDevices.removeAt(0)
-                mutableDevices.add(deviceId)
-            }
-
-            val updatePayload = hashMapOf<String, Any>(
-                "sessionToken" to sessionToken,
-                "lastDeviceId" to deviceId,
-                "last_active" to loginTimestamp,
-                "is_online" to true,
-                "registeredDevices" to mutableDevices
-            )
-
-            userRef.set(updatePayload, SetOptions.merge())
-                .addOnSuccessListener {
-                    onSuccess()
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Error saving session: ${e.message}")
-                    onSuccess()
-                }
-        }.addOnFailureListener { e ->
-            Log.w(TAG, "Error getting user doc, trying set direct: ${e.message}")
-            val updatePayload = hashMapOf<String, Any>(
-                "sessionToken" to sessionToken,
-                "lastDeviceId" to deviceId,
-                "last_active" to loginTimestamp,
-                "is_online" to true,
-                "registeredDevices" to listOf(deviceId)
-            )
-            userRef.set(updatePayload, SetOptions.merge())
-                .addOnSuccessListener { onSuccess() }
-                .addOnFailureListener { innerE ->
-                    Log.e(TAG, "Error saving session fallback: ${innerE.message}")
-                    onSuccess()
-                }
+        val appContext = context.applicationContext ?: context
+        val aliases = buildSet {
+            add(deviceId)
+            appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(KEY_PERSISTENT_DEVICE_ID, null)?.let(::add)
+            appContext.getSharedPreferences("user_preferences", Context.MODE_PRIVATE).getString(KEY_PERSISTENT_DEVICE_ID, null)?.let(::add)
+            runCatching { java.io.File(appContext.filesDir, "device_id.txt").readText().trim() }.getOrNull()?.takeIf { it.isNotBlank() }?.let(::add)
+            runCatching { Settings.Secure.getString(appContext.contentResolver, Settings.Secure.ANDROID_ID) }.getOrNull()
+                ?.takeIf { it.isNotBlank() && it != "9774d56d682e549c" }?.let { add("WRD_DEVICE_${it.trim().lowercase()}") }
+        }
+        db.runTransaction { transaction ->
+            val snapshot = transaction.get(userRef)
+            val role = snapshot.getString("role").orEmpty()
+            val admin = com.example.model.RolePanelAccess.isAdministrator(role, AuthManager.isCurrentUserAdmin())
+            val existing = (snapshot.get("registeredDevices") as? List<*>).orEmpty().filterIsInstance<String>()
+            val devices = com.example.data.DeviceSlotPolicy.register(existing, deviceId, aliases, admin)
+            transaction.set(userRef, mapOf("sessionToken" to sessionToken, "lastDeviceId" to deviceId,
+                "last_active" to loginTimestamp, "is_online" to true, "registeredDevices" to devices), SetOptions.merge())
+        }.addOnSuccessListener { onSuccess() }.addOnFailureListener { error ->
+            // A network failure must neither replace other devices nor pretend registration succeeded.
+            val message = generateSequence(error as Throwable?) { it.cause }.mapNotNull { it.message }
+                .firstOrNull { it.contains("Límite de dispositivos") } ?: "No se pudo registrar el dispositivo. Vuelve a intentarlo."
+            onError(message)
         }
     }
 
