@@ -5299,7 +5299,7 @@ private fun updateUserRoleInCloud(
     val userRef = db.collection("users").document(uid)
     db.runTransaction { transaction ->
         val account = transaction.get(userRef)
-        val inherited = account.getLong("premiumUntil")
+        val inherited = com.example.model.PremiumAccessPolicy.deadline(account.get("premiumUntil"))
         val deadline = com.example.model.PremiumAccessPolicy.deadlineForRole(targetRoleId, inherited, System.currentTimeMillis())
         if (deadline != inherited && deadline != null) updatePayload["premiumUntil"] = deadline
         transaction.update(userRef, updatePayload)
