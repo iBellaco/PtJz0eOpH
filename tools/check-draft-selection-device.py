@@ -13,6 +13,15 @@ try:
     tap("Rota do Meio")
     snapshot("draft-before-field")
 
+    def champion(name):
+        for node in app_nodes(window()):
+            if node.get("class") != "android.widget.EditText" and name in (node.get("text"), node.get("content-desc")):
+                bounds = list(map(int, re.findall(r"\d+", node.get("bounds", ""))))
+                adb("shell", "input", "tap", str((bounds[0]+bounds[2])//2), str((bounds[1]+bounds[3])//2))
+                time.sleep(0.8)
+                return
+        raise AssertionError("Champion grid entry not visible: " + name)
+
     def field(team, role):
         title = "EQUIPE ALIADA" if team == "ally" else "EQUIPE RIVAL"
         for attempt in range(7):
@@ -31,7 +40,7 @@ try:
                 time.sleep(0.8)
                 return
             if team == "ally":
-                adb("shell", "input", "swipe", str(width//2), str(int(height*.25)), str(width//2), str(int(height*.8)), "400")
+                adb("shell", "input", "swipe", str(WIDTH//2), str(int(HEIGHT*.25)), str(WIDTH//2), str(int(HEIGHT*.8)), "400")
                 time.sleep(0.6)
             else:
                 scroll()
@@ -51,7 +60,7 @@ try:
                 time.sleep(0.08)
             back()
             snapshot("draft-search-" + name.replace(" ", "-"))
-            tap(name)
+            champion(name)
             snapshot("draft-assigned-" + team + "-" + role)
             if not adb("shell", "pidof", APP).strip():
                 raise AssertionError("Application process died after selecting " + name)
@@ -61,7 +70,7 @@ try:
         adb("shell", "input", "text", letter)
         time.sleep(0.08)
     back()
-    tap("Teemo")
+    champion("Teemo")
     snapshot("draft-replaced-top")
 
 finally:
