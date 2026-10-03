@@ -205,7 +205,7 @@ jobs:
               shutil.copy2(file, target / file.name)
           names = ['creator-after-delete-pt', 'champion-guest-account-hint',
                    'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
-                   'streamer-live-animation', 'streamer-history', 'user-notification',
+                   'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
                    'premium-editor', 'premium-status', 'creator-reader',
                    'profile-admin-notifications', 'panel-notification']
           for file in source.glob('*.png'):
@@ -270,7 +270,9 @@ jobs:
           target: default
           disable-animations: true
           emulator-boot-timeout: 300
-          script: python3 tools/audit-portuguese-device.py
+          script: |
+            python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
+            python3 tools/audit-portuguese-device.py
 
       - name: Upload installed APK Portuguese evidence
         if: always()

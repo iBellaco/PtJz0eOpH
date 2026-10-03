@@ -51,7 +51,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -135,7 +135,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 myChampion = WildRiftRepository.champions.first { it.id == screen.removePrefix("matchup-") },
                 enemyOpponent = WildRiftRepository.champions.first { it.id == "smolder" },
                 activeRole = if (screen == "matchup-garen") LaneRole.TOP else LaneRole.ADC, onDismiss = {})
-            screen == "streamer-live" -> LiveStreamerChip("Canal Coach") {}
+            screen in listOf("streamer-live", "streamer-live-name-preserved") -> LiveStreamerChip(if (screen == "streamer-live-name-preserved") "hola" else "Canal Coach") {}
             screen == "streamer-feedback" -> StreamerSubmissionFeedback(false, true)
             screen == "streamer-history" -> {
                 val now = System.currentTimeMillis()
@@ -195,15 +195,20 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     private fun inspect(step: String) {
         compose.waitForIdle()
-        val strings = compose.onAllNodes(SemanticsMatcher("all") { true }, useUnmergedTree = true)
-            .fetchSemanticsNodes().flatMap {
+        val nodes = compose.onAllNodes(SemanticsMatcher("all") { true }, useUnmergedTree = true).fetchSemanticsNodes()
+        val strings = nodes.flatMap {
                 it.config.getOrNull(SemanticsProperties.Text).orEmpty().map { text -> text.text } +
                     it.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty()
             }.filter { it.isNotBlank() }.distinct()
         Assert.assertTrue(strings.isNotEmpty())
         File(output, "$screen-$step.json").writeText(JSONArray(strings).toString(2))
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = File(output, "$screen-$step.png").path)
-        val failures = strings.filter { SpanishUiResidue.pattern.containsMatchIn(it.replace("Lee Sin", "LeeSin")) }
+        val interfaceStrings = nodes.flatMap {
+            val text = if (it.config.getOrNull(SemanticsProperties.TestTag) == "streamer_channel_name") emptyList()
+                else it.config.getOrNull(SemanticsProperties.Text).orEmpty().map { value -> value.text }
+            text + it.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty()
+        }
+        val failures = interfaceStrings.filter { SpanishUiResidue.pattern.containsMatchIn(it.replace("Lee Sin", "LeeSin")) }
         Assert.assertTrue("Spanish on $screen: ${failures.joinToString()}", failures.isEmpty())
     }
 
@@ -283,6 +288,10 @@ class RuntimeVisibilityTest(private val screen: String) {
                     compose.onNodeWithText("Cadastre-se").performScrollTo().performClick()
                     compose.onNodeWithText("Criar uma conta").assertExists()
                 }
+            }
+            "streamer-live-name-preserved" -> {
+                compose.onNodeWithTag("streamer_channel_name", useUnmergedTree = true).assertTextEquals("hola")
+                compose.onNodeWithText("Ao vivo").assertExists()
             }
             "streamer-live" -> {
                 compose.onNodeWithText("Canal Coach").assertExists()
