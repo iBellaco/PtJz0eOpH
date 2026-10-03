@@ -550,7 +550,7 @@ object WildRiftRepository {
             val isFlex = myRole != null && champ.primaryRole != myRole
             val dynamicAdvice = com.example.util.CoachingGenerator.generateTacticalAdvice(champ, effectiveRole, lang)
             val roleContextAdvice = if (isFlex) {
-                t(lang, "Flex no ${effectiveRole.displayName}: Vantagem de fator surpresa. Desvantagem: Pode sofrer contra escolhas dominantes naturais desta rota. Dicas: $dynamicAdvice", "Flex en ${effectiveRole.displayName}: Ventaja de factor sorpresa. Desventaja: Puede sufrir contra picks dominantes naturales de la línea. Consejos: $dynamicAdvice")
+                t(lang, "Flex na ${effectiveRole.getLocalizedName(lang)}: Vantagem de fator surpresa. Desvantagem: Pode sofrer contra escolhas dominantes naturais desta rota. Dicas: $dynamicAdvice", "Flex en ${effectiveRole.getLocalizedName(lang)}: Ventaja de factor sorpresa. Desventaja: Puede sufrir contra picks dominantes naturales de la línea. Consejos: $dynamicAdvice")
             } else {
                 dynamicAdvice
             }

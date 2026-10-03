@@ -25,9 +25,21 @@ class RuntimeBehaviorTest {
         val roster = WildRiftRepository.champions.filter { it.id != "empty" }.distinctBy { it.id }
         assertTrue("Complete champion roster", roster.size >= 142)
         var checked = 0
+        val renderedTexts = linkedSetOf<String>()
+        fun inspect(analysis: DraftAnalysisResult) {
+            val texts = listOfNotNull(analysis.allyCompositionWarning,analysis.frontlineStatus,analysis.directMatchupWarning,analysis.directCounterBestPick) +
+                analysis.recommendations.flatMap { listOf(it.advantageBadge,it.tacticalReason,it.synergyDetails,it.counterDetails,it.runes) }
+            for (source in texts) {
+                val localized = com.example.util.trStr("pt",source)
+                assertFalse("Draft Portuguese: $localized",SpanishUiResidue.pattern.containsMatchIn(localized.replace("Lee Sin","LeeSin")))
+                renderedTexts.add(localized)
+            }
+        }
+        for (role in LaneRole.entries) inspect(WildRiftRepository.analyzeDraft(role,emptyList(),emptyList(),null,true,"pt"))
         for (enemy in roster) {
             val role = enemy.primaryRole
             val analysis = WildRiftRepository.analyzeDraft(role, emptyList(), listOf(enemy), enemy, true, "pt")
+            inspect(analysis)
             assertFalse("Known opponents override blind selection", analysis.isFirstPickMode)
             val available = roster.filter { it.id != enemy.id && (it.primaryRole == role || role in it.secondaryRoles) }
             val alternatives = available.any { MatchupKnowledge.relation(it,enemy) != MatchupRelation.UNFAVORABLE }
@@ -43,6 +55,8 @@ class RuntimeBehaviorTest {
             }
             assertEquals(analysis.recommendations.map { it.champion.id }.distinct().size,analysis.recommendations.size)
         }
+        java.io.File("build/reports/portuguese-rendered").apply { mkdirs() }.resolve("draft-coherence-texts.json")
+            .writeText(org.json.JSONArray(renderedTexts.toList()).toString(2))
         println("DRAFT_COHERENCE_AUDIT: ${roster.size} champions; $checked lane recommendations")
     }
 
