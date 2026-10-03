@@ -29,6 +29,17 @@ class ApkCertificateTest(unittest.TestCase):
         self.assertFalse(apk.certificate_matches('', self.expected))
         self.assertFalse(apk.certificate_matches('Number of signers: 2\nSigner #1 certificate SHA-256 digest: ' + self.expected, self.expected))
 
+    def test_unchanged_validated_apk_matches_merged_source(self):
+        current = {'source_tree': 'same', 'apk_sha256': 'hash', 'certificate_sha256': 'cert',
+                   'version_name': '1.1.10.164', 'version_code': 880}
+        self.assertTrue(apk.provenance_matches({'schema': 1, **current}, current))
+
+    def test_changed_source_binary_certificate_or_version_prevents_publication(self):
+        current = {'source_tree': 'same', 'apk_sha256': 'hash', 'certificate_sha256': 'cert',
+                   'version_name': '1.1.10.164', 'version_code': 880}
+        for field in current:
+            self.assertFalse(apk.provenance_matches({'schema': 1, **current, field: 'different'}, current))
+
 
 if __name__ == '__main__':
     unittest.main()

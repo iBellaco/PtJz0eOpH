@@ -185,7 +185,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: app-debug.apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: |
+          app/build/outputs/apk/debug/app-debug.apk
+          app/build/outputs/apk/debug/coach-apk-provenance.json
         if-no-files-found: error
         retention-days: 14
     - name: Upload APKs for the parallel device audit
@@ -391,6 +393,8 @@ jobs:
     - *id006
     - name: Verify the validated APK still carries the persistent signature
       if: github.ref == 'refs/heads/main'
+      env:
+        COACH_REQUIRE_APK_PROVENANCE: 'true'
       run: |
         export COACH_EXPECTED_APK_CERT=$(python3 -c 'import json; print(json.load(open(".github/coach-signing.json"))["certificate_sha256"])')
         python3 .github/scripts/verify-apk-signing.py
