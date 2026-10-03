@@ -28,20 +28,22 @@ fun SubscriptionPlansBottomSheet(onDismiss: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    ModalBottomSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = HextechDarkBg) {
-        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text(tr("Suscripción Premium"), style = MaterialTheme.typography.headlineSmall, color = HextechGold)
-            PanelReadControl(NotificationPanel.PLANS)
-            Text(tr("Saldo: $blue EA • $orange EN"), color = HextechCyan)
-            Text(tr("Escáner Automático del draft"), color = TextPrimary)
-            Text(tr("Historial del draft"), color = TextPrimary)
-            Text(tr("Campeones Favoritos • Temas Exclusivos • Avatares Exclusivos"), color = TextPrimary)
-            if (PremiumAccessPolicy.isLifetime(role, secondary, claim)) Text(tr("Tu acceso premium es vitalicio"), color = HextechGold)
-            else EssencePlanOptions(blue, orange, !busy) { plan, currency ->
-                operationId = java.util.UUID.randomUUID().toString(); feedback = null; selected = plan to currency
+    if (selected == null) {
+        ModalBottomSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = HextechDarkBg) {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text(tr("Suscripción Premium"), style = MaterialTheme.typography.headlineSmall, color = HextechGold)
+                PanelReadControl(NotificationPanel.PLANS)
+                Text(tr("Saldo: $blue EA • $orange EN"), color = HextechCyan)
+                Text(tr("Escáner Automático del draft"), color = TextPrimary)
+                Text(tr("Historial del draft"), color = TextPrimary)
+                Text(tr("Campeones Favoritos • Temas Exclusivos • Avatares Exclusivos"), color = TextPrimary)
+                if (PremiumAccessPolicy.isLifetime(role, secondary, claim)) Text(tr("Tu acceso premium es vitalicio"), color = HextechGold)
+                else EssencePlanOptions(blue, orange, !busy) { plan, currency ->
+                    operationId = java.util.UUID.randomUUID().toString(); feedback = null; selected = plan to currency
+                }
+                feedback?.let { Text(tr(it), color = HextechCyan) }
+                TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
             }
-            feedback?.let { Text(tr(it), color = HextechCyan) }
-            TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
         }
     }
     selected?.let { (plan, currency) ->

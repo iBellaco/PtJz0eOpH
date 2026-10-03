@@ -37,25 +37,27 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
         }
         onDispose { listener.remove() }
     }
-    Dialog(onDismissRequest = { if (!busy) onDismiss() }) {
-        Surface(color = HextechDarkBg, shape = MaterialTheme.shapes.large) {
-            Column(Modifier.fillMaxWidth().heightIn(max = 650.dp).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(tr("Canjear Esencia Naranja"), style = MaterialTheme.typography.titleLarge, color = HextechGold)
-                Text(tr("Saldo: $orange EN"), color = HextechCyan)
-                Text(tr("El pago es manual y demora de 24 a 72 horas. El equipo coordinará el pago contigo desde la bandeja de entrada."), color = TextSecondary)
-                Text(tr("Pago exclusivamente en USDT"), color = HextechGold)
-                UsdtWalletFields(network, wallet, !busy, onNetwork = { network = it }, onWallet = { wallet = it })
-                if (orange > 0) CashRedemptionOptions(orange, !busy && UsdtWalletPolicy.valid(network, wallet.trim())) { selected -> amount = selected; id = java.util.UUID.randomUUID().toString(); feedback = null }
-                feedback?.let { Text(tr(it), color = HextechCyan) }
-                Text(tr("Historial"), color = HextechGold)
-                if (loadError) Text(tr("No se pudo cargar el historial. Vuelve a intentarlo."), color = DangerRed)
-                requests.forEach { request ->
-                    val date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, if (currentAppLanguage() == "pt") java.util.Locale("pt", "BR") else java.util.Locale("es"))
-                        .format(Date((request["requestedAtMillis"] as? Number)?.toLong() ?: 0L))
-                    Text(tr("$date • ${request["amount"]} EN → ${request["usd"]} USDT"), color = TextPrimary)
-                    Text(tr(when (request["status"]) { "PAID" -> "Pagado"; "REJECTED" -> "Rechazado y reembolsado"; else -> "Pendiente" }), color = HextechCyan)
+    if (amount == null) {
+        Dialog(onDismissRequest = { if (!busy) onDismiss() }) {
+            Surface(color = HextechDarkBg, shape = MaterialTheme.shapes.large) {
+                Column(Modifier.fillMaxWidth().heightIn(max = 650.dp).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(tr("Canjear Esencia Naranja"), style = MaterialTheme.typography.titleLarge, color = HextechGold)
+                    Text(tr("Saldo: $orange EN"), color = HextechCyan)
+                    Text(tr("El pago es manual y demora de 24 a 72 horas. El equipo coordinará el pago contigo desde la bandeja de entrada."), color = TextSecondary)
+                    Text(tr("Pago exclusivamente en USDT"), color = HextechGold)
+                    UsdtWalletFields(network, wallet, !busy, onNetwork = { network = it }, onWallet = { wallet = it })
+                    if (orange > 0) CashRedemptionOptions(orange, !busy && UsdtWalletPolicy.valid(network, wallet.trim())) { selected -> amount = selected; id = java.util.UUID.randomUUID().toString(); feedback = null }
+                    feedback?.let { Text(tr(it), color = HextechCyan) }
+                    Text(tr("Historial"), color = HextechGold)
+                    if (loadError) Text(tr("No se pudo cargar el historial. Vuelve a intentarlo."), color = DangerRed)
+                    requests.forEach { request ->
+                        val date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, if (currentAppLanguage() == "pt") java.util.Locale("pt", "BR") else java.util.Locale("es"))
+                            .format(Date((request["requestedAtMillis"] as? Number)?.toLong() ?: 0L))
+                        Text(tr("$date • ${request["amount"]} EN → ${request["usd"]} USDT"), color = TextPrimary)
+                        Text(tr(when (request["status"]) { "PAID" -> "Pagado"; "REJECTED" -> "Rechazado y reembolsado"; else -> "Pendiente" }), color = HextechCyan)
+                    }
+                    TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
                 }
-                TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
             }
         }
     }

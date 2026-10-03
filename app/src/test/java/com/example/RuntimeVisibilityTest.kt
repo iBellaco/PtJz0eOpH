@@ -266,7 +266,8 @@ class RuntimeVisibilityTest(private val screen: String) {
 
             "premium-purchase-confirm" -> {
                 compose.onNodeWithTag("premium_MONTHLY_ORANGE").performScrollTo().performClick()
-                compose.onNodeWithText(appTr("Confirmar suscripción")).assertExists()
+                compose.onNodeWithText(appTr("Confirmar suscripción")).assertIsDisplayed()
+                compose.onNodeWithTag("premium_MONTHLY_ORANGE").assertDoesNotExist()
                 compose.onNodeWithTag("premium_purchase_confirm").assertIsEnabled()
                 inspect("confirmation")
                 compose.onNodeWithText(appTr("Cancelar")).performClick()
