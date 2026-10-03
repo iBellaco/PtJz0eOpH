@@ -264,8 +264,9 @@ fun AppAssetImage(
             .border(1.dp, borderColor, shape),
         contentAlignment = Alignment.Center
     ) {
-        // Fallback initials underneath
+        // Initials are decorative; expose the full localized name when no image exists.
         Text(
+            modifier = Modifier.clearAndSetSemantics { if (modelData == null) contentDescription = localizedDescription },
             text = localizedFallback.take(2).uppercase(),
             color = borderColor.copy(alpha = 0.7f),
             fontSize = 11.sp,
