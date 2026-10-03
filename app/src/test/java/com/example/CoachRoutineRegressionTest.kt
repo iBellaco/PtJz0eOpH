@@ -49,4 +49,17 @@ class CoachRoutineRegressionTest {
         assertFalse(StreamerReviewPolicy.isAlreadyApplied(request, live, false))
         assertTrue(StreamerReviewPolicy.isAlreadyApplied(request + ("status" to "REJECTED"), emptyList(), false))
     }
+    @Test fun `clearing metrics removes legacy keys without deleting other notices or tariffs`() {
+        val source = mapOf<String, Any>("baseCpmRate" to 2.5,
+            "metrics" to mapOf("a.b" to mapOf("impressions" to 9L), "other" to mapOf("clicks" to 2L)),
+            "metrics.a.b.impressions" to 8L, "metrics.other.clicks" to 3L)
+        val deleted = clearedCpmData(source, "a.b")
+        assertFalse(deleted.containsKey("metrics.a.b.impressions"))
+        assertEquals(3L, decodedCpmMetrics(deleted)["other"]?.get("clicks"))
+        assertEquals(2.5, deleted["baseCpmRate"])
+        val reset = clearedCpmData(source)
+        assertTrue(decodedCpmMetrics(reset).isEmpty())
+        assertEquals(2.5, reset["baseCpmRate"])
+    }
+
 }

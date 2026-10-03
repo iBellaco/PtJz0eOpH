@@ -48,3 +48,14 @@ fun decodedCpmMetrics(data: Map<String, Any>): Map<String, Map<String, Any>> {
     }
     return result
 }
+
+/** A reset/delete must also remove legacy dotted keys or their counters would reappear. */
+fun clearedCpmData(data: Map<String, Any>, noticeId: String? = null): Map<String, Any> {
+    val result = data.filterKeys { key ->
+        if (!key.startsWith("metrics.")) true
+        else noticeId != null && key.substring(8, key.lastIndexOf('.').coerceAtLeast(8)) != noticeId
+    }.toMutableMap()
+    result["metrics"] = if (noticeId == null) emptyMap<String, Any>()
+        else decodedCpmMetrics(data).filterKeys { it != noticeId }
+    return result
+}

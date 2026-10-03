@@ -484,48 +484,41 @@ object AppNoticeAnalyticsManager {
     }
 
     fun deleteNoticeMetrics(context: Context, noticeId: String) {
-        val currentMap = _metricsMap.value.toMutableMap()
-        currentMap.remove(noticeId)
-        _metricsMap.value = currentMap
-        saveToPrefs(context, currentMap)
-
+        if (noticeId.isBlank()) return
         try {
             val db = FirebaseFirestore.getInstance()
-            val updates = hashMapOf<String, Any>(
-                "metrics.$noticeId" to FieldValue.delete(),
-                "updatedAt" to System.currentTimeMillis()
-            )
-            db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .update(updates)
-        } catch (e: Exception) {
-            Log.w(TAG, "Error eliminando métricas de anuncio en la nube: ${e.message}")
-        }
+            val ref = db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
+            db.runTransaction { tx ->
+                val data = tx.get(ref).data.orEmpty()
+                tx.set(ref, clearedCpmData(data, noticeId) + ("updatedAt" to System.currentTimeMillis()))
+            }.addOnSuccessListener {
+                val current = _metricsMap.value - noticeId
+                _metricsMap.value = current; saveToPrefs(context, current)
+            }.addOnFailureListener { e -> Log.w(TAG, "No se pudieron eliminar las métricas: ${e.message}") }
+        } catch (e: Exception) { Log.w(TAG, "No se pudieron eliminar las métricas: ${e.message}") }
     }
 
-    fun resetMetrics(context: Context) {
-        _metricsMap.value = emptyMap()
-        _trackingStartDate.value = System.currentTimeMillis()
-        try {
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit()
-                .putString(KEY_METRICS_JSON, "{}")
-                .putLong(KEY_START_DATE, _trackingStartDate.value)
-                .apply()
-        } catch (_: Exception) {}
-
-        // Resetear también en la nube para sincronización multi-dispositivo limpia
+    fun resetMetrics(context: Context, onComplete: (Boolean) -> Unit = {}) {
+        val startDate = System.currentTimeMillis()
         try {
             val db = FirebaseFirestore.getInstance()
-            val updates = hashMapOf<String, Any>(
-                "metrics" to hashMapOf<String, Any>(),
-                "trackingStartDate" to _trackingStartDate.value,
-                "updatedAt" to System.currentTimeMillis()
-            )
-            db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
-                .set(CpmPolicy.nestedWrite(updates), SetOptions.merge())
-        } catch (e: Exception) {
-            Log.w(TAG, "Error reseteando métricas en la nube: ${e.message}")
-        }
+            val ref = db.collection(FIRESTORE_COLLECTION).document(FIRESTORE_DOC_ANALYTICS)
+            db.runTransaction { tx ->
+                val data = tx.get(ref).data.orEmpty()
+                tx.set(ref, clearedCpmData(data) + mapOf("trackingStartDate" to startDate,
+                    "baseCpmRate" to _baseCpmRate.value, "updatedAt" to startDate))
+            }.addOnSuccessListener {
+                _metricsMap.value = emptyMap(); _trackingStartDate.value = startDate
+                saveToPrefs(context, emptyMap()); saveStartDateToPrefs(context, startDate)
+                // A new campaign starts a new deduplication window too.
+                val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                val editor = prefs.edit()
+                prefs.all.keys.filter { key -> listOf(KEY_DAILY_IMPRESSIONS_PREFIX,
+                    KEY_DAILY_CLICKS_PREFIX, KEY_DAILY_FULLSCREEN_PREFIX).any { key.startsWith(it) } }
+                    .forEach { editor.remove(it) }
+                editor.apply(); onComplete(true)
+            }.addOnFailureListener { onComplete(false) }
+        } catch (_: Exception) { onComplete(false) }
     }
 
     private fun saveBaseCpmToPrefs(context: Context, rate: Double) {

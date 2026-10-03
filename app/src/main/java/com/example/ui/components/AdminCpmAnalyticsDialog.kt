@@ -318,9 +318,11 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
             confirmButton = {
                 Button(
                     onClick = {
-                        AppNoticeAnalyticsManager.resetMetrics(context)
-                        showResetConfirmDialog = false
-                        Toast.makeText(context, com.example.util.appTr("Métricas restablecidas a cero"), Toast.LENGTH_SHORT).show()
+                        AppNoticeAnalyticsManager.resetMetrics(context) { success ->
+                            if (success) showResetConfirmDialog = false
+                            val message = if (success) "Métricas restablecidas a cero" else "No se pudo sincronizar la operación. Intenta de nuevo."
+                            Toast.makeText(context, com.example.util.appTr(message), Toast.LENGTH_SHORT).show()
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
                 ) {
