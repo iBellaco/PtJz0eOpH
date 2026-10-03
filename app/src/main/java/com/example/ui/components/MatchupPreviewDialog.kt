@@ -45,9 +45,6 @@ fun MatchupPreviewDialog(
     onDismiss: () -> Unit
 ) {
     val language = com.example.util.currentAppLanguage()
-    val coaching = remember(myChampion, enemyOpponent, activeRole, language) {
-        com.example.util.ChampionMatchupCoaching.forDuel(myChampion, enemyOpponent, activeRole, language)
-    }
     val relation = com.example.data.MatchupKnowledge.relation(myChampion,enemyOpponent)
     val isMyCounter = relation == com.example.data.MatchupRelation.FAVORABLE
     val isEnemyCounter = relation == com.example.data.MatchupRelation.UNFAVORABLE

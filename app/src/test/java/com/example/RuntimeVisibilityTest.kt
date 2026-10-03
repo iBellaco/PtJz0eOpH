@@ -543,13 +543,12 @@ class RuntimeVisibilityTest(private val screen: String) {
             "matchup-varus", "matchup-jhin", "matchup-garen" -> {
                 compose.onNodeWithText("Smolder", substring = false).assertExists()
                 val champion = WildRiftRepository.champions.first { it.id == screen.removePrefix("matchup-") }
-                val plan = ChampionMatchupCoaching.forDuel(champion, WildRiftRepository.champions.first { it.id == "smolder" },
-                    if (screen == "matchup-garen") LaneRole.TOP else LaneRole.ADC, "pt")
-                compose.onNodeWithText(plan.early).assertExists()
-                inspect("early")
-                compose.onNodeWithText(plan.winCondition).performScrollTo().assertExists()
-                inspect("condition")
-                compose.onNodeWithText(plan.verdict).performScrollTo().assertExists()
+                val feedback = ChampionMatchupCoaching.sovereignFeedback(champion, if (screen == "matchup-garen") LaneRole.TOP else LaneRole.ADC,
+                    "pt", WildRiftRepository.champions.first { it.id == "smolder" })
+                compose.onNodeWithText(feedback).performScrollTo().assertExists()
+                val titles = listOf("Diagnóstico do erro/situação", "Decisão Soberano", "Micro e Macro detalhe", "Regra aplicável")
+                Assert.assertTrue(titles.zipWithNext().all { (a, b) -> feedback.indexOf(a) < feedback.indexOf(b) })
+                inspect("sovereign-feedback")
             }
             "streamer-feedback" -> compose.onNodeWithText("Solicitação enviada com sucesso. Você será avisado quando ela for analisada.").assertExists()
             "streamer-history" -> {
