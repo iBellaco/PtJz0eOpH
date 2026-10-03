@@ -50,7 +50,7 @@ def main(check=False):
     phrases=read(ASSETS/'build_catalog_translations_pt.json')
     # Remove the previous generated advice before replacing it; never leave stale bilingual variants.
     for key in list(translations):
-        if any(key.startswith(c['name']+' · ') and ' · H1' in key for c in champions.values()):
+        if any((key.startswith(c['name']+' · ') or key.startswith('Diagnóstico del error/situación: '+c['name']+' · ')) and ' · H1' in key for c in champions.values()):
             del translations[key]
     by_lane={}
     for build in builds:
@@ -79,8 +79,17 @@ def main(check=False):
             effect=item.get('passive','').split('\n')[0]; effectpt=phrases.get(effect,item.get('passivePt','').split('\n')[0])
             condition_es='Reemplaza un espacio solo si el daño o la defensa rival justifican este efecto.' if situational else 'Completa esta compra cuando puedas aprovechar su efecto en tu siguiente ventana de combate.'
             condition_pt='Substitua um espaço apenas se o dano ou a defesa rival justificarem este efeito.' if situational else 'Complete esta compra quando puder aproveitar seu efeito na próxima janela de combate.'
-            es=f"{champ['name']} · {LANES[lane]} · {h_es}. {name}: {stats}. {effect} {condition_es}"
-            pt=f"{translations.get(champ.get('namePt') or champ['name'],champ.get('namePt') or champ['name'])} · {PT_LANES[lane]} · {h_pt}. {namept}: {statspt}. {effectpt} {condition_pt}"
+            me_pt=translations.get(champ.get('namePt') or champ['name'],champ.get('namePt') or champ['name'])
+            mechanism=champ['tacticalAdvice']
+            mechanism_pt=translations[mechanism]
+            reason_es='El efecto debe resolver una amenaza concreta del rival antes de sustituir tu compra principal.' if situational else 'Tu siguiente compra debe potenciar la secuencia del campeón, no solo aumentar una estadística aislada.'
+            reason_pt='O efeito deve resolver uma ameaça concreta do rival antes de substituir a compra principal.' if situational else 'A próxima compra deve fortalecer a sequência do campeão, além de aumentar uma estatística isolada.'
+            es=(f"Diagnóstico del error/situación: {champ['name']} · {LANES[lane]} · {h_es}. {reason_es}\n"
+                f"Decisión Soberano: {name}. {mechanism}\n"
+                f"Micro y Macro detalle: {stats}. {effect}\nRegla aplicable: {condition_es}")
+            pt=(f"Diagnóstico do erro/situação: {me_pt} · {PT_LANES[lane]} · {h_pt}. {reason_pt}\n"
+                f"Decisão Soberano: {namept}. {mechanism_pt}\n"
+                f"Micro e Macro detalhe: {statspt}. {effectpt}\nRegra aplicável: {condition_pt}")
             translations[es]=pt
             return {'itemName':name,'description':es}
         build['coreItemsWithDesc']=[entry(n) for n in core]
