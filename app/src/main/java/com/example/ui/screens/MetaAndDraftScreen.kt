@@ -4886,7 +4886,7 @@ fun DraftAnalysisTab(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = com.example.util.tr(if (isFirstPick) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival")),
+                    text = com.example.util.tr(if (analysis.isFirstPickMode) tr("Mejor Primer Pick Seguro para") + " ${com.example.util.tr(activeRole.displayName)}" else tr("Mejor Opción según tu Equipo y el Rival")),
                     color = HextechGold,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
@@ -4913,7 +4913,7 @@ fun DraftAnalysisTab(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = com.example.util.tr(if (isFirstPick) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA")),
+                                text = com.example.util.tr(if (analysis.isFirstPickMode) tr(" #1 RECOMENDACIÓN BLIND PICK") else tr(" #1 MEJOR ELECCIÓN TÁCTICA")),
                                 color = HextechGold,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Black

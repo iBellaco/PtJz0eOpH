@@ -47,7 +47,7 @@ import org.robolectric.annotation.GraphicsMode
 class RuntimeVisibilityTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun screens() = listOf("draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
+        fun screens() = listOf("draft-known-first-pick", "draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered", "champion-item-advice", "champion-spell-advice", "champion-rune-advice",
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
@@ -206,15 +206,15 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val realOwn = WildRiftRepository.champions.first { it.id == "ahri" }
                     .takeIf { screen == "draft-own-only" || screen == "draft-both" || screen == "draft-placeholder-rival" }
                 val realRival = WildRiftRepository.champions.first { it.id == "yasuo" }
-                    .takeIf { screen == "draft-rival-only" || screen == "draft-both" || screen == "draft-placeholder-own" }
+                    .takeIf { screen == "draft-known-first-pick" || screen == "draft-rival-only" || screen == "draft-both" || screen == "draft-placeholder-own" }
                 val own = if (screen in listOf("draft-placeholder", "draft-placeholder-own")) WildRiftRepository.EMPTY_CHAMPION else realOwn
                 val rival = if (screen in listOf("draft-placeholder", "draft-placeholder-rival")) WildRiftRepository.EMPTY_CHAMPION else realRival
                 val allies = own?.let { listOf(DraftSlot(it, LaneRole.MID)) }.orEmpty()
                 val enemies = rival?.let { listOf(DraftSlot(it, LaneRole.MID)) }.orEmpty()
                 val analysis = WildRiftRepository.analyzeDraft(LaneRole.MID, allies.map { it.champion },
-                    enemies.map { it.champion }, rival, lang = "pt")
+                    enemies.map { it.champion }, rival, isFirstPick = screen == "draft-known-first-pick", lang = "pt")
                 DraftAnalysisTab(myChampion = own, activeRole = LaneRole.MID, allySlots = allies,
-                    enemySlots = enemies, analysis = analysis, isFirstPick = false, enemyLaneOpponent = rival,
+                    enemySlots = enemies, analysis = analysis, isFirstPick = screen == "draft-known-first-pick", enemyLaneOpponent = rival,
                     onToggleFirstPick = {}, onChangeRole = {}, onPickAllyRole = {}, onPickEnemyRole = {},
                     onRemoveAllyRole = {}, onRemoveEnemyRole = {}, onPickRecommendation = {},
                     onSelectChampion = {}, onOpenHistory = {}, onClearAll = {})
@@ -249,6 +249,11 @@ class RuntimeVisibilityTest(private val screen: String) {
         if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
         when (screen) {
+            "draft-known-first-pick" -> {
+                compose.onNodeWithTag("draft_recommendations").performScrollTo().assertExists()
+                compose.onNodeWithText(appTr(" #1 RECOMENDACIÓN BLIND PICK")).assertDoesNotExist()
+                compose.onNodeWithText(appTr(" #1 MEJOR ELECCIÓN TÁCTICA")).performScrollTo().assertExists()
+            }
             "cash-redemption-confirm" -> {
                 compose.onNodeWithText(appTr("Confirmar canje")).assertExists()
                 compose.onNodeWithTag("cash_redemption_confirm").assertIsEnabled()

@@ -6,7 +6,6 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
@@ -121,9 +120,9 @@ fun PanelReadControl(panel: NotificationPanel) {
 @Composable
 fun CircularPanelNotificationButton(count: Int, panel: NotificationPanel, label: String,
     inactiveIcon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
-    androidx.compose.foundation.layout.Box(modifier = Modifier.size(48.dp)) {
+    androidx.compose.foundation.layout.Box(modifier = Modifier.size(width = 56.dp, height = 48.dp)) {
         HextechAnimatedIconButton(onClick = onClick, size = 40.dp,
-            modifier = Modifier.semantics { contentDescription = label }, enablePulse = count > 0,
+            modifier = Modifier.align(androidx.compose.ui.Alignment.BottomStart).semantics { contentDescription = label }, enablePulse = count > 0,
             borderColor = if (count > 0) com.example.ui.theme.DangerRed else com.example.ui.theme.HextechCardBorder,
             glowColor = com.example.ui.theme.DangerRed) {
             Icon(if (count > 0) Icons.Default.Notifications else inactiveIcon, contentDescription = null,
@@ -131,6 +130,6 @@ fun CircularPanelNotificationButton(count: Int, panel: NotificationPanel, label:
                 modifier = Modifier.size(20.dp).testTag("panel_notification_icon_${panel.name}"))
         }
         if (count > 0) Badge(containerColor = com.example.ui.theme.DangerRed, contentColor = Color.White,
-            modifier = Modifier.align(androidx.compose.ui.Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp).testTag("panel_notification_badge_${panel.name}")) { Text(count.toString()) }
+            modifier = Modifier.align(androidx.compose.ui.Alignment.TopEnd).testTag("panel_notification_badge_${panel.name}")) { Text(count.toString()) }
     }
 }
