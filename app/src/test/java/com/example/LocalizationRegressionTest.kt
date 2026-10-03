@@ -38,6 +38,21 @@ class LocalizationRegressionTest {
         assertEquals("Cuenta Suspendida", appTr("Cuenta Suspendida"))
     }
 
+    @Test fun `Latin American Spanish stays authoritative for canonical labels and catalog fields`() {
+        AppLanguage.select(context, "pt")
+        AppLanguage.select(context, "es-419")
+        assertEquals("es-419", context.resources.configuration.locales[0].toLanguageTag())
+        assertEquals("es-419", AppLanguage.localizedContext(context).resources.configuration.locales[0].toLanguageTag())
+        for (label in listOf("COPIAR", " Copiar ", "PRINCIPAL", "MINIMIZAR", "PATROCINADOR", "DERROTA")) {
+            assertEquals(label, label, trStr("es-419", label))
+        }
+        com.example.data.WildRiftItemsData.list.forEach { item ->
+            listOf(item.name, item.stats, item.passive, item.coachTip).forEach { source ->
+                assertEquals("Spanish field changed for ${item.id}", source, trStr("es-419", source))
+            }
+        }
+    }
+
     @Test fun `full sentence templates preserve runtime values`() {
         assertEquals("Selecionar Runa Secundária (3/4)", trStr("pt", "Seleccionar Runa Secundaria (3/4)"))
         assertEquals("Dano Inimigo: AD 60% | AP 40%", trStr("pt", "Daño Enemigo: AD 60% | AP 40%"))

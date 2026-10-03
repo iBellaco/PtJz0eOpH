@@ -96,7 +96,7 @@ fun formatWildRiftDescription(text: String, defaultColor: Color = TextPrimary): 
 
             // 5.5. Críticos
             highlightMatches(
-                Regex("(?i)\\b(acerto(s)? crítico(s)?|dano crítico|chance de acerto crítico|tasa crítica|tasa critica|daño crítico|daño critico|golpe(s)? crítico(s)?|probabilidad de golpe crítico)\\b"),
+                Regex("(?i)\\b(acerto(s)? crítico(s)?|dano crítico|chance de acerto crítico|tasa crítica|tasa critica|daño crítico|daño critico|golpe(s)? crítico(s)?|impacto(s)? crítico(s)?|probabilidad de (golpe )?crítico)\\b"),
                 WildRiftDamageColors.CriticalColor
             )
 

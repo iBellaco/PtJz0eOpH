@@ -72,6 +72,10 @@ class TranslationCatalog(private val portuguese: Map<String, String>, private va
         map[text]?.let { return it }
         if (isPt && text in translatedPhrases) return text
         val trimmed = text.trim()
+        // Spanish source labels remain Spanish after case/spacing changes too.
+        // Otherwise a shared label such as COPIAR can match the reverse alias
+        // for Copy and change language when composed inside another label.
+        if (!isPt && trimmed.replace(Regex("\\s+"), " ").lowercase(java.util.Locale.ROOT) in ptFolded) return text
         map[trimmed]?.let { return text.takeWhile { c -> c.isWhitespace() } + it + text.takeLastWhile { c -> c.isWhitespace() } }
         val foldedKey = trimmed.replace(Regex("\\s+"), " ").lowercase(java.util.Locale.ROOT)
         (if (isPt) ptFolded else esFolded)[foldedKey]?.let {

@@ -2709,7 +2709,7 @@ private fun ItemsCatalogTab() {
 }
 
 @Composable
-private fun selectedRuneItemModal(
+internal fun selectedRuneItemModal(
     item: WildRiftItem?,
     onDismiss: () -> Unit
 ) {

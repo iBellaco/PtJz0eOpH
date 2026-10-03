@@ -1,0 +1,217 @@
+{
+  "fiendhunter_bolts": {
+    "passive": "Vigilia nocturna: Otorga 20 de velocidad de habilidad definitiva.\nAndanada inicial: Tras lanzar tu habilidad definitiva, tus siguientes 3 ataques en los próximos 8 s obtienen un 50% de velocidad de ataque y asestan impactos críticos, que infligen un 80% de tu daño de impacto crítico normal. Si un ataque fuera a infligir un impacto crítico, inflige un 15% de daño verdadero adicional, enfriamiento de 45 s.",
+    "passivePt": "Vigília Noturna: Concede 20 de aceleração da habilidade ultimate.\nRajada Inicial: Após conjurar sua ultimate, seus próximos 3 ataques nos próximos 8 s recebem 50% de velocidade de ataque e causam acertos críticos que infligem 80% do seu dano crítico normal. Se um ataque já causaria um acerto crítico, causa 15% de dano verdadeiro adicional, tempo de recarga de 45 s.",
+    "stats": "+25% Probabilidad de crítico • +45% Velocidad de ataque • +4% Velocidad de movimiento",
+    "goldCost": 2650,
+    "statsPt": "+25% Chance de acerto crítico • +45% Velocidade de ataque • +4% Velocidade de movimento"
+  },
+  "stormrazor": {
+    "passive": "Proyectil: Al moverte y atacar generas un ataque con vigor que inflige 120 de daño mágico adicional y otorga un 45% de velocidad de movimiento durante 1,5 s al impactar.",
+    "passivePt": "Projétil: Mover-se e atacar gera um ataque energizado que causa 120 de dano mágico adicional e concede 45% de velocidade de movimento por 1,5 s ao contato.",
+    "stats": "+50 Daño de ataque • +25% Tasa Crítica • +20% Velocidad de Ataque",
+    "goldCost": 3000,
+    "statsPt": "+50 Dano de ataque • +25% Chance de acerto crítico • +20% Velocidade de ataque"
+  },
+  "bloodthirster": {
+    "stats": "+75 Daño de ataque • +15% Robo de vida físico",
+    "statsPt": "+75 Dano de ataque • +15% Roubo de vida físico"
+  },
+  "blade_of_the_ruined_king": {
+    "passive": "Golpes de ruina: Los ataques infligen daño físico adicional equivalente a un 6% de la vida actual del enemigo al golpear, los ataques cuerpo a cuerpo infligen un 8%. Daño mínimo: 15. Daño máximo contra monstruos: 100.\nDrenaje: Golpear a un campeón con 3 ataques o habilidades lo ralentiza un 30% durante 1,5 s, enfriamiento de 30 s.",
+    "passivePt": "Golpes de Ruína: Os ataques causam dano físico adicional equivalente a 6% da vida atual do inimigo ao contato; ataques corpo a corpo causam 8%. Dano mínimo: 15. Dano máximo contra monstros: 100.\nDrenagem: Atingir um campeão com 3 ataques ou habilidades causa 30% de lentidão por 1,5 s, tempo de recarga de 30 s.",
+    "stats": "+40 Daño de ataque • +30% Velocidad de ataque • +12% Robo de vida",
+    "statsPt": "+40 Dano de ataque • +30% Velocidade de ataque • +12% Roubo de vida"
+  },
+  "runaan_s_hurricane": {
+    "passive": "Furia del viento: Los ataques golpean a 2 enemigos cercanos adicionales, lo que inflige un 55% de daño físico. Estos ataques pueden infligir golpes críticos y activan efectos de impacto.",
+    "passivePt": "Fúria do Vento: Os ataques atingem 2 inimigos próximos adicionais, causando 55% de dano físico. Esses ataques podem causar acertos críticos e ativam efeitos de contato.",
+    "stats": "+25% Tasa Crítica • +40% Velocidad de ataque • +4% Velocidad de movimiento",
+    "goldCost": 2650,
+    "statsPt": "+25% Chance de acerto crítico • +40% Velocidade de ataque • +4% Velocidade de movimento"
+  },
+  "infinity_edge": {
+    "passive": "Infinito: Los golpes críticos infligen un 230% de daño en lugar de un 200%.",
+    "passivePt": "Infinito: Os acertos críticos causam 230% de dano em vez de 200%.",
+    "stats": "+75 Daño de ataque • +25% Tasa Crítica",
+    "statsPt": "+75 Dano de ataque • +25% Chance de acerto crítico"
+  },
+  "mortal_reminder": {
+    "passive": "Sepsis: Infligir daño físico a campeones enemigos aplica un 50% de heridas graves durante 3 s.",
+    "passivePt": "Sepse: Causar dano físico a campeões inimigos aplica 50% de feridas dolorosas por 3 s.",
+    "stats": "+35 Daño de ataque • +30% Penetración de armadura • +25% Probabilidad de crítico",
+    "goldCost": 3000,
+    "statsPt": "+35 Dano de ataque • +30% Penetração de armadura • +25% Chance de acerto crítico"
+  },
+  "trinity_force": {
+    "passive": "Valor: Al impactar, los ataques otorgan 20 de velocidad de movimiento durante 2 s. La velocidad de movimiento adicional no se acumula. Los campeones a distancia obtienen la mitad de estos valores.\nHoja encantada: Tras usar una habilidad, el siguiente ataque básico en los próximos 10 s inflige daño físico adicional equivalente al 200% del daño básico, enfriamiento de 1,5 s. El daño es menor contra estructuras.",
+    "passivePt": "Valor: Ao contato, os ataques concedem 20 de velocidade de movimento por 2 s. A velocidade de movimento adicional não acumula. Campeões de ataque à distância recebem metade desses valores.\nLâmina Encantada: Após usar uma habilidade, o próximo ataque básico nos próximos 10 s causa dano físico adicional equivalente a 200% do dano de ataque base, tempo de recarga de 1,5 s. O dano é reduzido contra estruturas."
+  },
+  "phantom_dancer": {
+    "passive": "Vals espectral: Al impactar, tus ataques contra campeones otorgan un 6% de velocidad de ataque y un 1% de velocidad de movimiento durante 6 s. Las bonificaciones se acumulan hasta 5 veces.",
+    "passivePt": "Valsa Espectral: Ao contato, seus ataques contra campeões concedem 6% de velocidade de ataque e 1% de velocidade de movimento por 6 s. Os efeitos acumulam até 5 vezes.",
+    "stats": "+25% Tasa Crítica • +40% Velocidad de ataque • +7% Velocidad de movimiento",
+    "goldCost": 2650,
+    "statsPt": "+25% Chance de acerto crítico • +40% Velocidade de ataque • +7% Velocidade de movimento"
+  },
+  "nashor_s_tooth": {
+    "passive": "Roer: Los ataques infligen 15 más 20% de poder de habilidad adicional de daño mágico como efectos de impacto.",
+    "passivePt": "Roer: Os ataques causam dano mágico adicional equivalente a 15 mais 20% do poder de habilidade como efeito de contato.",
+    "stats": "+50% Velocidad de ataque • +15 Velocidad de habilidades • +80 Poder de habilidad",
+    "category": "Objetos de Daño Mágico",
+    "statsPt": "+50% Velocidade de ataque • +15 Aceleração de habilidade • +80 Poder de habilidade"
+  },
+  "wit_s_end": {
+    "passive": "Punto muerto: Los ataques infligen 40 de daño mágico adicional al impactar.",
+    "passivePt": "Ponto Morto: Os ataques causam 40 de dano mágico adicional ao contato.",
+    "stats": "+50% Velocidad de ataque • +45 Resistencia mágica • +20% Tenacidad",
+    "goldCost": 2800,
+    "statsPt": "+50% Velocidade de ataque • +45 Resistência mágica • +20% Tenacidade"
+  },
+  "essence_reaver": {
+    "passive": "Hoja encantada: Tras utilizar una habilidad, el siguiente ataque que realices en los próximos 10 s inflige daño físico adicional equivalente a un 135% del daño básico más 0-80, aumenta 0,8 por cada 1% de probabilidad de crítico, y recupera un 50% del daño infligido en forma de maná, enfriamiento de 1,5 s.",
+    "passivePt": "Lâmina Encantada: Após usar uma habilidade, seu próximo ataque nos próximos 10 s causa dano físico adicional equivalente a 135% do dano de ataque base mais 0-80, aumentando em 0,8 para cada 1% de chance de acerto crítico, e restaura 50% do dano causado como mana, tempo de recarga de 1,5 s.",
+    "stats": "+50 Daño de ataque • +25% Probabilidad de crítico • +20 Velocidad de habilidades",
+    "statsPt": "+50 Dano de ataque • +25% Chance de acerto crítico • +20 Aceleração de habilidade"
+  },
+  "navori_quickblades": {
+    "passive": "Golpes diestros: Los ataques reducen los enfriamientos restantes de tus habilidades básicas un 15%.",
+    "passivePt": "Golpes Hábeis: Os ataques reduzem em 15% os tempos de recarga restantes das suas habilidades básicas.",
+    "stats": "+25% Probabilidad de crítico • +40% Velocidad de ataque • +4% Velocidad de movimiento",
+    "goldCost": 2650,
+    "statsPt": "+25% Chance de acerto crítico • +40% Velocidade de ataque • +4% Velocidade de movimento"
+  },
+  "the_collector": {
+    "passive": "Muerte e impuestos: Si infliges daño a un campeón enemigo y lo dejas con menos del 5% de su vida máxima, lo ejecutas, el umbral de ejecución según la vida máxima aumenta un 0,1% permanentemente y obtienes 25 de oro adicional.",
+    "passivePt": "Morte e Impostos: Ao causar dano a um campeão inimigo e deixá-lo com menos de 5% da vida máxima, você o executa; o limite de execução em relação à vida máxima aumenta permanentemente em 0,1% e você recebe 25 de ouro adicional."
+  },
+  "terminus": {
+    "passive": "Sombra: Los ataques infligen 30 de daño mágico adicional al impactar.\nYuxtaposición: Alterna entre efectos de luz y oscuridad al atacar. Los ataques luminosos otorgan 5-8 de armadura y resistencia mágica durante 5 s al impactar. Los ataques sombríos otorgan un 10% de penetración de armadura y un 10% de penetración mágica durante 5 s al impactar. Cada efecto de impacto se acumula hasta 3 veces.\nMientras tengas este objeto, el máximo de penetración de armadura y penetración mágica adicionales otorgadas por él será de un 40%.",
+    "passivePt": "Sombra: Os ataques causam 30 de dano mágico adicional ao contato.\nJustaposição: Alterna entre efeitos de luz e escuridão ao atacar. Ataques luminosos concedem 5-8 de armadura e resistência mágica por 5 s ao contato. Ataques sombrios concedem 10% de penetração de armadura e 10% de penetração mágica por 5 s ao contato. Cada efeito de contato acumula até 3 vezes.\nEnquanto você possuir este item, a penetração de armadura e a penetração mágica adicionais concedidas por ele ficam limitadas a 40%.",
+    "stats": "+35 Daño de ataque • +35% Velocidad de ataque",
+    "goldCost": 3000,
+    "statsPt": "+35 Dano de ataque • +35% Velocidade de ataque"
+  },
+  "lord_dominik_s_regards": {
+    "passive": "Verdugo de gigantes: Inflige daño adicional según la vida adicional del campeón enemigo, hasta un máximo de un 12% de daño adicional cuando el campeón enemigo tiene 1200 de vida adicional.",
+    "passivePt": "Matador de Gigantes: Causa dano adicional conforme a vida adicional do campeão inimigo, até 12% de dano adicional quando o campeão inimigo tem 1200 de vida adicional.",
+    "stats": "+35 Daño de Ataque • +25% Tasa Crítica • +35% Penetración de armadura",
+    "goldCost": 3300,
+    "statsPt": "+35 Dano de ataque • +25% Chance de acerto crítico • +35% Penetração de armadura"
+  },
+  "hullbreaker": {
+    "passive": "Cabecilla: Cada 4.º ataque contra campeones o monstruos épicos inflige daño físico adicional equivalente a un 160% del daño básico + 5% de la vida máxima (los campeones a distancia infligen un 40% del daño), lo que aumenta a un 240% del daño básico + 9% de la vida máxima contra estructuras (los campeones a distancia infligen un 40% del daño).",
+    "passivePt": "Líder: Cada 4º ataque contra campeões ou monstros épicos causa dano físico adicional equivalente a 160% do dano de ataque base mais 5% da vida máxima (campeões de ataque à distância causam 40% desse dano), aumentando para 240% do dano de ataque base mais 9% da vida máxima contra estruturas (campeões de ataque à distância causam 40% desse dano)."
+  },
+  "luden_s_echo": {
+    "passive": "Eco: Tu siguiente habilidad de daño o ataque potenciado inflige 75 más 8% de daño mágico al objetivo principal y hasta a 4 enemigos cercanos más, enfriamiento de 9 s. Por cada objetivo secundario que no alcance hasta un máximo, Eco inflige 20 más un 1,2% de daño adicional al objetivo principal.",
+    "passivePt": "Eco: Sua próxima habilidade de dano ou ataque fortalecido causa 75 mais 8% de dano mágico ao alvo principal e a até 4 inimigos próximos adicionais, tempo de recarga de 9 s. Para cada alvo secundário não atingido, até o máximo, Eco causa 20 mais 1,2% de dano adicional ao alvo principal."
+  },
+  "rabadon_s_deathcap": {
+    "passive": "Sobrexplosión: Aumenta el poder de habilidad un 30%.",
+    "passivePt": "Sobre-explosão: Aumenta o poder de habilidade em 30%."
+  },
+  "liandry_s_torment": {
+    "passive": "Tormento: Infligir daño con habilidades y ataques potenciados quema a tus enemigos, lo que inflige un 2% de daño mágico en función de la vida máxima por segundo a lo largo de 3 s.\nDemencia: Inflige un 2% más de daño por cada segundo en combate contra campeones. El límite es de un 6% después de 3 s.",
+    "passivePt": "Tormento: Causar dano com habilidades e ataques fortalecidos queima os inimigos, causando dano mágico equivalente a 2% da vida máxima por segundo durante 3 s.\nDemência: Causa 2% a mais de dano por segundo em combate contra campeões, limitado a 6% após 3 s."
+  },
+  "archangel_s_staff": {
+    "passive": "Asombro: Otorga una cantidad de poder de habilidad equivalente a un 1% del maná máximo y restaura un 25% de todo el maná gastado.\nCarga de maná: Aumenta el maná máximo en 14 cada vez que se gaste maná. El límite de maná adicional es 700, lo que transforma Bastón del arcángel en Abrazo del serafín. Se activa hasta 3 veces cada 10 s. Solo se puede tener 1 objeto de Lágrima de la diosa.",
+    "passivePt": "Admiração: Concede poder de habilidade equivalente a 1% da mana máxima e restaura 25% de toda a mana gasta.\nCarga de Mana: Aumenta a mana máxima em 14 sempre que mana é gasta. O limite de mana adicional é 700, transformando o Cajado do Arcanjo em Abraço de Seraph. Ativa até 3 vezes a cada 10 s. Só é possível ter 1 item de Lágrima da Deusa."
+  },
+  "infinity_orb": {
+    "passive": "Muerte inevitable: Las habilidades y los ataques potenciados asestan golpes críticos que infligen un 20% de daño adicional contra enemigos que se encuentren por debajo del 40% de vida.",
+    "passivePt": "Morte Inevitável: Habilidades e ataques fortalecidos causam acertos críticos com 20% de dano adicional contra inimigos com menos de 40% de vida."
+  },
+  "cosmic_drive": {
+    "passive": "Danza de hechizos: Infligir daño mágico o daño verdadero a campeones te otorga 30 de velocidad de movimiento durante 4 s.",
+    "passivePt": "Dança de Feitiços: Causar dano mágico ou dano verdadeiro a campeões concede 30 de velocidade de movimento por 4 s.",
+    "stats": "+300 de salud máxima • +70 de poder de habilidad • +25 de celeridad de habilidad • +4% Velocidad de movimiento",
+    "statsPt": "+300 de vida máxima • +70 de poder de habilidade • +25 de aceleração de habilidade • +4% Velocidade de movimento"
+  },
+  "guinsoo_s_rageblade": {
+    "passive": "Ira: Los ataques infligen 30 de daño mágico adicional al impactar.\nGolpe furioso: Los ataques otorgan un 8% de velocidad de ataque, que se acumula hasta 4 veces, hasta un máximo de 32% de velocidad de ataque. Con el máximo de acumulaciones, cada 3 ataques aplica dos veces los efectos de impacto 1 vez.",
+    "passivePt": "Ira: Os ataques causam 30 de dano mágico adicional ao contato.\nGolpe Furioso: Os ataques concedem 8% de velocidade de ataque, acumulando até 4 vezes, no máximo 32% de velocidade de ataque. Com o máximo de acúmulos, a cada 3 ataques os efeitos de contato são aplicados duas vezes em um ataque.",
+    "stats": "+30% Velocidad de ataque • +35 Daño de ataque • +30 Poder de habilidad",
+    "statsPt": "+30% Velocidade de ataque • +35 Dano de ataque • +30 Poder de habilidade"
+  },
+  "dusk_and_dawn": {
+    "passive": "Hoja encantada: Tras usar una habilidad, tu siguiente ataque inflige 75% daño básico más 10% poder de habilidad de daño mágico adicional y te restaura 3% vida adicional más 10% poder de habilidad de vida. Tras un breve lapso, aplica efectos de impacto al objetivo 1 vez más, enfriamiento de 1,5 s. Inflige daño reducido a las estructuras.",
+    "passivePt": "Lâmina Encantada: Após usar uma habilidade, seu próximo ataque causa dano mágico adicional equivalente a 75% do dano de ataque base mais 10% do poder de habilidade e restaura vida equivalente a 3% da vida adicional mais 10% do poder de habilidade. Após um breve intervalo, aplica efeitos de contato ao alvo mais 1 vez, tempo de recarga de 1,5 s. Causa dano reduzido contra estruturas.",
+    "stats": "+300 Vida máxima • +20% Velocidad de ataque • +60 Poder de habilidad • +20 Velocidad de habilidades",
+    "statsPt": "+300 Vida máxima • +20% Velocidade de ataque • +60 Poder de habilidade • +20 Aceleração de habilidade"
+  },
+  "dawnshroud": {
+    "passive": "Guerrero del orden: Cuando inmovilizas a un campeón o te inmovilizan a 400 unidades de un campeón enemigo, revela a todos los campeones enemigos cercanos durante 3 s e inflige daño mágico equivalente a 40 más un 2,5% vida adicional. Además, otorga un 20% de armadura y resistencia mágica, enfriamiento de 3 s.",
+    "passivePt": "Guerreiro da Ordem: Quando você imobiliza um campeão ou é imobilizado a 400 unidades de um campeão inimigo, revela todos os campeões inimigos próximos por 3 s e causa dano mágico equivalente a 40 mais 2,5% da vida adicional. Também concede 20% de armadura e resistência mágica, tempo de recarga de 3 s.",
+    "goldCost": 2700
+  },
+  "yordle_trap": {
+    "passive": "Captador: Ralentizar o inmovilizar a un campeón enemigo te potencia durante 8 s, 4 s para campeones a distancia, y otorga 20 de velocidad de movimiento. Durante la potenciación, tanto tú como los campeones aliados cercanos obtienen un 30% de velocidad de ataque, un 20% para campeones a distancia. Obtienes 20 de oro adicional si tus aliados o tú eliminan a un campeón durante la potenciación.",
+    "passivePt": "Captador: Aplicar lentidão ou imobilizar um campeão inimigo fortalece você por 8 s, 4 s para campeões de ataque à distância, e concede 20 de velocidade de movimento. Durante o efeito, você e os campeões aliados próximos recebem 30% de velocidade de ataque, 20% para campeões de ataque à distância. Você recebe 20 de ouro adicional se você ou seus aliados abaterem um campeão durante o efeito."
+  },
+  "imperial_mandate": {
+    "passive": "Control: Obtienes 20 de velocidad de habilidades para tus habilidades de control de adversario.\nOrden: Aplicar control de adversario a un campeón enemigo lo marca durante 4 s, lo que provoca que reciba un 7% más de daño.",
+    "passivePt": "Controle: Concede 20 de aceleração de habilidade para suas habilidades de controle de grupo.\nOrdem: Aplicar controle de grupo a um campeão inimigo o marca por 4 s, fazendo com que receba 7% a mais de dano.",
+    "stats": "+60 Poder de habilidad • +50% Regeneración de maná • +20 Velocidad de habilidades",
+    "goldCost": 2600,
+    "statsPt": "+60 Poder de habilidade • +50% Regeneração de mana • +20 Aceleração de habilidade"
+  },
+  "locket_of_the_iron_solari": {
+    "passive": "Medallón activa: Te otorga un escudo a ti y a todos los campeones aliados cercanos que absorbe de 250 a 370 de daño durante 2,5 s, enfriamiento de 60 s. Este efecto disminuye un 50% si el objetivo se ha visto afectado por otro Medallón en los últimos 20 s.",
+    "passivePt": "Medalhão ativo: Concede a você e a todos os campeões aliados próximos um escudo que absorve 250 a 370 de dano por 2,5 s, tempo de recarga de 60 s. O efeito diminui em 50% se o alvo tiver recebido outro Medalhão nos últimos 20 s.",
+    "stats": "+200 Vida máxima • +30 Armadura • +30 Resistencia mágica • +10 Velocidad de habilidades",
+    "statsPt": "+200 Vida máxima • +30 Armadura • +30 Resistência mágica • +10 Aceleração de habilidade"
+  },
+  "galeforce": {
+    "passive": "Aguacero activa: Te deslizas hacia la dirección seleccionada y disparas 3 misiles al enemigo con menos vida que se encuentre cerca de tu destino, prioriza a los campeones. Inflige daño físico equivalente al 40-125 más 35% del daño de ataque adicional, enfriamiento de 60 s.",
+    "passivePt": "Aguaceiro ativo: Avança na direção selecionada e dispara 3 mísseis contra o inimigo com menos vida próximo do destino, priorizando campeões. Causa dano físico equivalente a 40-125 mais 35% do dano de ataque adicional, tempo de recarga de 60 s.",
+    "stats": "+60 Daño de ataque • +25% Probabilidad de crítico • +4% Velocidad de movimiento",
+    "statsPt": "+60 Dano de ataque • +25% Chance de acerto crítico • +4% Velocidade de movimento"
+  },
+  "mercurial_scimitar": {
+    "passive": "Fajín de mercurio activa: Elimina todas las debilitaciones de control de adversario que te hayan aplicado y te otorga inmunidad contra el control de adversario durante 0,25 s. No se puede utilizar mientras te lanzan por los aires o te empujan.\nPerseverancia pasiva: Cuando el efecto de Fajín termina, otorga un 30% de tenacidad y un 30% de resistencia a las ralentizaciones durante 1,5 s, enfriamiento de 60 s.",
+    "passivePt": "Faixa de Mercúrio ativa: Remove todos os efeitos de controle de grupo aplicados a você e concede imunidade a controle de grupo por 0,25 s. Não pode ser usada durante arremessos ao ar ou empurrões.\nPerseverança passiva: Quando o efeito da Faixa termina, concede 30% de tenacidade e 30% de resistência a lentidão por 1,5 s, tempo de recarga de 60 s."
+  },
+  "kraken_slayer": {
+    "passive": "Abatir: Cada tercer ataque inflige 150-210 de daño físico adicional, 120-168 para campeones a distancia, que aumenta un 0,75% por cada 1% de vida que le falte al objetivo, hasta un 75%.",
+    "passivePt": "Abater: Cada terceiro ataque causa 150-210 de dano físico adicional, 120-168 para campeões de ataque à distância, aumentando em 0,75% para cada 1% de vida perdida do alvo, até 75%.",
+    "stats": "+45 Daño de ataque • +35% Velocidad de ataque • +4% Velocidad de movimiento",
+    "goldCost": 2900,
+    "statsPt": "+45 Dano de ataque • +35% Velocidade de ataque • +4% Velocidade de movimento"
+  },
+  "immortal_shieldbow": {
+    "passive": "Salvavidas: Al recibir daño que te haga bajar del 35% de vida, recibes un escudo durante 3 s. El escudo absorbe 350-650 de daño con campeones cuerpo a cuerpo y 300-550 de daño con campeones a distancia, enfriamiento de 70 s.",
+    "passivePt": "Salva-Vidas: Ao receber dano que deixe sua vida abaixo de 35%, você recebe um escudo por 3 s. O escudo absorve 350-650 de dano para campeões corpo a corpo e 300-550 de dano para campeões de ataque à distância, tempo de recarga de 70 s.",
+    "stats": "+55 Daño de ataque • +25% Probabilidad de crítico",
+    "goldCost": 3000,
+    "statsPt": "+55 Dano de ataque • +25% Chance de acerto crítico"
+  },
+  "rapid_firecannon": {
+    "passive": "Francotirador: Al moverte y atacar generas un ataque con vigor con un 35% de alcance de ataque adicional, máximo 150 de alcance, que inflige 80 de daño mágico adicional.",
+    "passivePt": "Atirador: Mover-se e atacar gera um ataque energizado com 35% de alcance de ataque adicional, limitado a 150 de alcance, que causa 80 de dano mágico adicional.",
+    "stats": "+25% Tasa Crítica • +40% Velocidad de ataque • +4% Velocidad de movimiento",
+    "goldCost": 2650,
+    "statsPt": "+25% Chance de acerto crítico • +40% Velocidade de ataque • +4% Velocidade de movimento"
+  },
+  "yun_tal_wildarrows": {
+    "passive": "La práctica hace al asesino: Al atacar, obtienes probabilidad de crítico permanente, 0,4% para campeones cuerpo a cuerpo y 0,2% para campeones a distancia por ataque, hasta un máximo de 25%.\nRáfaga: Al atacar a un campeón enemigo, obtienes un 35% de velocidad de ataque durante 6 s, enfriamiento de 25 s. Los ataques reducen el enfriamiento 1 s o 2 s si son impactos críticos.",
+    "passivePt": "A Prática Faz o Assassino: Ao atacar, você recebe chance de acerto crítico permanente, 0,4% para campeões corpo a corpo e 0,2% para campeões de ataque à distância por ataque, até 25%.\nRajada: Ao atacar um campeão inimigo, você recebe 35% de velocidade de ataque por 6 s, tempo de recarga de 25 s. Os ataques reduzem o tempo de recarga em 1 s ou em 2 s se forem acertos críticos.",
+    "stats": "+50 Daño de ataque • +35% Velocidad de ataque",
+    "goldCost": 3100,
+    "statsPt": "+50 Dano de ataque • +35% Velocidade de ataque"
+  },
+  "statikk_shiv": {
+    "passive": "Electrochoque: Los ataques otorgan 5 acumulaciones de vigor adicionales.\nElectrochispa: Moverte y atacar genera un ataque con vigor que emite rayos que rebotan a 4-7 objetivos, lo que inflige 60 de daño mágico, aumenta hasta 90 de daño mágico contra súbditos y monstruos y aplica efectos de impacto al rebotar a otros objetivos.",
+    "passivePt": "Eletrochoque: Os ataques concedem 5 acúmulos adicionais de energia.\nEletrofaísca: Mover-se e atacar gera um ataque energizado que dispara raios que saltam entre 4-7 alvos, causando 60 de dano mágico, aumentado para 90 de dano mágico contra tropas e monstros, e aplica efeitos de contato ao atingir outros alvos.",
+    "stats": "+40 Daño de ataque • +30% Velocidad de ataque • +40 Poder de habilidad • +4% Velocidad de movimiento",
+    "statsPt": "+40 Dano de ataque • +30% Velocidade de ataque • +40 Poder de habilidade • +4% Velocidade de movimento"
+  },
+  "hextech_mirror": {
+    "passive": "Magnificación: Inflige un 0-10% de daño adicional con ataques, según la distancia a la que se encuentre el enemigo, daño máximo a 550 de alcance.\nPuntería arcana: Cuando un campeón al que has infligido daño en los últimos 3 s muere, otorga 100 de alcance de ataque adicional durante 8 s.",
+    "passivePt": "Ampliação: Causa 0-10% de dano adicional com ataques conforme a distância do inimigo, com dano máximo a 550 de alcance.\nPontaria Arcana: Quando um campeão ao qual você causou dano nos últimos 3 s morre, concede 100 de alcance de ataque adicional por 8 s.",
+    "stats": "+55 Daño de ataque • +25% Probabilidad de crítico",
+    "goldCost": 2900,
+    "statsPt": "+55 Dano de ataque • +25% Chance de acerto crítico"
+  }
+}

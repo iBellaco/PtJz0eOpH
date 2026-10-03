@@ -178,7 +178,7 @@ jobs:
       - name: Inspect rendered Portuguese screens
         env:
           CI: "true"
-        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests com.example.HubChampionNavigationTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest -Proborazzi.test.record=true --stacktrace --no-daemon
+        run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests com.example.HubChampionNavigationTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.RequiredItemCorrectionsTest -Proborazzi.test.record=true --stacktrace --no-daemon
 
       - name: Upload Portuguese screenshots and rendered texts
         if: always()
@@ -207,7 +207,7 @@ jobs:
                    'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
                    'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
                    'premium-editor', 'premium-status', 'creator-reader',
-                   'profile-admin-notifications', 'panel-notification', 'essence-plans', 'cash-redemption', 'saved-data-statistics', 'inbox-circle', 'premium-purchase', 'usdt-wallet', 'support-admin-notification']
+                   'profile-admin-notifications', 'panel-notification', 'essence-plans', 'cash-redemption', 'saved-data-statistics', 'inbox-circle', 'premium-purchase', 'usdt-wallet', 'support-admin-notification', 'required-item-mercurial_scimitar', 'required-item-fiendhunter_bolts', 'required-item-kraken_slayer', 'required-item-nashor_s_tooth', 'required-item-imperial_mandate', 'required-item-terminus', 'required-item-yordle_trap', 'required-item-rabadon_s_deathcap']
           for file in source.glob('*.png'):
               if any(file.stem.startswith(name) for name in names):
                   shutil.copy2(file, target / file.name)
@@ -226,7 +226,7 @@ jobs:
           CI: "true"
         run: |
           rm -rf app/build/outputs/apk/ || true
-          gradle :app:testDebugUnitTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.SupportAndStreamerPolicyTest :app:assembleDebug --stacktrace --no-daemon -x lint -x lintVitalRelease
+          gradle :app:testDebugUnitTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.SupportAndStreamerPolicyTest --tests com.example.WildRiftItemsCatalogTest :app:assembleDebug --stacktrace --no-daemon -x lint -x lintVitalRelease
           
           EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
           if [ ! -f "$EXPECTED_APK" ]; then
