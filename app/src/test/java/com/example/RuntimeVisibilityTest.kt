@@ -313,7 +313,9 @@ class RuntimeVisibilityTest(private val screen: String) {
                 var ancestor = node.parent
                 while (ancestor != null && ancestor.config.getOrNull(SemanticsProperties.TestTag) != "catalog_panel_$section") ancestor = ancestor.parent
                 Assert.assertNotNull("Every level must belong to the same section panel", ancestor)
-                node.boundsInRoot.top
+                // boundsInRoot clips offscreen headers to zero. Use their placed
+                // positions to check order inside a panel taller than the viewport.
+                node.positionInRoot.y
             }
             Assert.assertEquals("Completed, medium, then starting items", headers.sorted(), headers)
             inspect("unified")
