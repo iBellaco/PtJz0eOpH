@@ -810,7 +810,7 @@ private fun createModeratorApprovalRequest(
         "targetEmail" to targetEmail,
         "newValue" to newValue,
         "requestedByUid" to (moderator?.uid ?: ""),
-        "requestedByName" to (moderator?.displayName ?: moderator?.email?.substringBefore("@") ?: "Moderador"),
+        "requestedByName" to (moderator?.displayName?.takeUnless { it.contains("@") } ?: "Moderador"),
         "status" to "PENDIENTE",
         "timestamp" to System.currentTimeMillis(),
         "createdAt" to com.google.firebase.Timestamp.now()

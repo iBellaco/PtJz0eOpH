@@ -71,6 +71,7 @@ object StreamerRepository {
         val ref = requests.document(uid)
         val archive = historyAvailable(uid)
         val countClicks = metricsAvailable(uid)
+        check(!approve || countClicks) { "streamer_metrics_error" }
         db.runTransaction { transaction ->
             val request = transaction.get(ref)
             val live = entries(transaction.get(registry).get("entries"))
@@ -79,7 +80,13 @@ object StreamerRepository {
             val metricRef = metrics.document(publicationId)
             val metric = if (approve && countClicks) transaction.get(metricRef) else null
             // A repeated tap or a retry after a committed operation must not reset counters.
-            if (StreamerReviewPolicy.isAlreadyApplied(request.data.orEmpty(), live, approve)) return@runTransaction
+            if (StreamerReviewPolicy.isAlreadyApplied(request.data.orEmpty(), live, approve)) {
+                if (approve && metric?.exists() != true) transaction.set(metricRef,
+                    mapOf("userId" to uid, "publicationId" to publicationId,
+                        "submittedAtMillis" to StreamerPublicationPolicy.submittedAt(request.data.orEmpty()),
+                        "clickCount" to 0L, "status" to "APPROVED", "countingStartedAtMillis" to System.currentTimeMillis()))
+                return@runTransaction
+            }
             check(request.getString("status") == "PENDING") { "streamer_error" }
             check(!StreamerPublicationPolicy.isExpired(request.data.orEmpty())) { "streamer_expired" }
             if (approve) {
@@ -186,17 +193,31 @@ object StreamerRepository {
                 val id = entry["publicationId"] as String
                 tx.set(metrics.document(id), mapOf("userId" to entry.getValue("userId"), "publicationId" to id,
                     "submittedAtMillis" to ((entry["approvedAtMillis"] as? Number)?.toLong() ?: System.currentTimeMillis()),
-                    "clickCount" to 0L, "status" to "APPROVED"))
+                    "clickCount" to 0L, "status" to "APPROVED", "countingStartedAtMillis" to System.currentTimeMillis()))
             }
         }.await()
         Unit
     } }
 
-    /** Count successful channel-open actions; no visitor identity is stored and no login is required. */
-    suspend fun recordClick(entry: Map<String, Any>): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
-        val id = (entry["publicationId"] as? String)?.takeIf { it.isNotBlank() } ?: return@runCatching
-        metrics.document(id).update(mapOf("clickCount" to com.google.firebase.firestore.FieldValue.increment(1L),
-            "lastClickedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp())).await()
+    /** An anonymous event has no identity data. The event and increment commit atomically. */
+    suspend fun recordClick(publicationId: String, eventId: String): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
+        require(publicationId.isNotBlank() && eventId.isNotBlank())
+        val metric = metrics.document(publicationId)
+        val event = metric.collection("click_events").document(eventId)
+        if (!event.get(com.google.firebase.firestore.Source.SERVER).await().exists()) {
+            try {
+                val batch = db.batch()
+                batch.set(event, mapOf("publicationId" to publicationId,
+                    "clickedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    "deleteAt" to com.google.firebase.Timestamp(java.util.Date(System.currentTimeMillis() + 8 * 86_400_000L))))
+                batch.update(metric, mapOf("clickCount" to com.google.firebase.firestore.FieldValue.increment(1L),
+                    "lastClickId" to eventId, "lastClickedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()))
+                batch.commit().await()
+            } catch (error: Exception) {
+                // A concurrent retry may have already committed this exact event.
+                if (!event.get(com.google.firebase.firestore.Source.SERVER).await().exists()) throw error
+            }
+        }
         Unit
     } }
 

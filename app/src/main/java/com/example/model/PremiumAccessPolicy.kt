@@ -32,7 +32,7 @@ object PremiumAccessPolicy {
     }
 
     fun deadlineForRole(role: String, inherited: Long?, now: Long): Long? =
-        inherited
+        if (role == "free") 0L else inherited
 
     fun extend(until: Long?, days: Int, now: Long): Long {
         require(days in 1..36500)

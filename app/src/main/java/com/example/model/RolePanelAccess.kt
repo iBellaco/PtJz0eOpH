@@ -4,6 +4,12 @@ enum class RolePanel { ADMINISTRATION, MODERATION, CREATOR, STREAMER, SPONSOR }
 
 /** Administrators inherit every role panel without changing their account role. */
 object RolePanelAccess {
+    fun canRedeemEssence(role: String, secondaryRole: String = "", adminClaim: Boolean = false): Boolean =
+        role != "banned" && secondaryRole != "banned" &&
+            (isAdministrator(role, adminClaim) || setOf(role, secondaryRole).any {
+                it in setOf("moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5")
+            })
+
     fun isAdministrator(role: String, adminClaim: Boolean = false): Boolean =
         role.trim().lowercase(java.util.Locale.ROOT) == "admin" || adminClaim
 

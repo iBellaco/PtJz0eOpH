@@ -241,7 +241,7 @@ object SupportReplyManager {
             if (fallbackUid.isBlank() && SupportTicketAccess.isAdmin() && !userEmail.isNullOrBlank()) {
                 fallbackUid = db.collection("users").whereEqualTo("email", userEmail.trim()).limit(1).get().await().documents.firstOrNull()?.id.orEmpty()
             }
-            val entry = SupportMessageEntry(senderName = author, senderRole = "SUPPORT", senderEmail = authorEmail, text = replyText.trim())
+            val entry = SupportMessageEntry(senderName = author, senderRole = "SUPPORT", senderEmail = null, text = replyText.trim())
             val history = db.runTransaction { transaction ->
                 val snapshot = transaction.get(ref)
                 check(snapshot.exists() || (SupportTicketAccess.isAdmin() && fallbackUid.isNotBlank())) { "Ticket no disponible" }
@@ -266,7 +266,7 @@ object SupportReplyManager {
                     "title" to (snapshot.getString("title") ?: reportTitle.orEmpty()),
                     "description" to (snapshot.getString("description") ?: reportDescription.orEmpty()),
                     "conversation" to rows, "adminReply" to replyText.trim(), "lastAdminReply" to replyText.trim(),
-                    "repliedBy" to author, "repliedEmail" to authorEmail.orEmpty(), "repliedAt" to Timestamp.now(),
+                    "repliedBy" to author, "repliedEmail" to "", "repliedAt" to Timestamp.now(),
                     "lastMessageAt" to Timestamp.now(), "lastReplyRole" to "SUPPORT", "lastReplySenderRole" to "SUPPORT",
                     "status" to status, "isCompleted" to SupportConversationPolicy.isClosed(status),
                     "isRead" to false, "userRead" to false, "hasNewAdminReply" to true, "hasNewReply" to true,

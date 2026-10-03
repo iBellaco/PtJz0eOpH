@@ -49,8 +49,8 @@ class RuntimeVisibilityTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun screens() = listOf("draft-known-first-pick", "draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
-            "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered", "champion-item-advice", "champion-spell-advice", "champion-rune-advice",
-            "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-followup", "support-legacy-followup", "support-closed",
+            "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered", "champion-premium", "champion-situational-boot", "champion-item-advice", "champion-spell-advice", "champion-rune-advice",
+            "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-email-mod", "support-email-admin", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
             "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "storage-summary", "storage-summary-partial", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
@@ -93,6 +93,10 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
         }
         if (screen == "managed-user-balance-live") database.collection("users").document("local-managed").set(mapOf("blueEssence" to 1L, "orangeEssence" to 2L))
+        if (screen.startsWith("support-email-")) database.collection("support_reports").document("email-privacy").set(mapOf(
+            "userId" to "private-target", "userName" to "Cliente", "status" to "READ",
+            "conversation" to listOf(mapOf("id" to "legacy-private-reply", "senderName" to "staff@test.invalid", "senderRole" to "SUPPORT",
+                "senderEmail" to "staff@test.invalid", "text" to "Resposta", "timestampMillis" to fixedGrantNow))))
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
@@ -100,14 +104,14 @@ class RuntimeVisibilityTest(private val screen: String) {
         org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
         val field = AuthManager::class.java.getDeclaredField("_isSignedIn").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
-        (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered") || screen == "creator-reader" || screen == "support-admin-notification"
+        (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered") || screen == "champion-premium" || screen == "champion-situational-boot" || screen == "creator-reader" || screen == "support-admin-notification"
         SubscriptionManager.userRole.value
         fun setFlow(target: Any, name: String, value: Any) {
             val variable = target.javaClass.getDeclaredField(name).apply { isAccessible = true }
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any>).value = value
         }
-        setFlow(SubscriptionManager, "_userRole", if (screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("profile-admin") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else "free")
+        setFlow(SubscriptionManager, "_userRole", if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("profile-admin") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
         if (screen == "premium-purchase-confirm") { setFlow(SubscriptionManager,"_blueEssence",1200L); setFlow(SubscriptionManager,"_orangeEssence",100L) }
         else { setFlow(SubscriptionManager,"_blueEssence",0L); setFlow(SubscriptionManager,"_orangeEssence",0L) }
         setFlow(SubscriptionManager,"_currentUserUid",if (screen == "support-admin-notification") "local-notification-admin" else "")
@@ -121,7 +125,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
         if (screen.startsWith("champion")) setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
             com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
-        if (screen.startsWith("profile-admin")) setFlow(SubscriptionManager, "_isPremium", true)
+        setFlow(SubscriptionManager, "_isPremium", screen.startsWith("profile-admin") || screen == "champion-premium")
         com.example.data.AppNoticeManager.notices.value
         setFlow(com.example.data.AppNoticeManager, "_notices", if (screen == "profile-admin-large")
             listOf(com.example.data.AppNotice(id = "local-pending", title = "Teste", content = "Teste", tag = "Publicidad", isApproved = false)) else emptyList<com.example.data.AppNotice>())
@@ -139,6 +143,9 @@ class RuntimeVisibilityTest(private val screen: String) {
 
     @Composable private fun surface() {
         when {
+            screen.startsWith("support-email-") -> SupportReplyDialog(reportId = "email-privacy", reportTitle = "Teste",
+                reportDescription = "Detalhe", userEmail = "client@test.invalid", userName = "Cliente", userId = "private-target",
+                onDismiss = {}, onReplySent = { _, _ -> })
             screen.startsWith("component-catalog-") -> ItemsCatalogTab()
             screen == "history-receipts" -> Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(12.dp)) {
                 listOf(
@@ -286,6 +293,31 @@ class RuntimeVisibilityTest(private val screen: String) {
         compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
         if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
+        if (screen.startsWith("support-email-")) {
+            if (screen == "support-email-admin") compose.onNodeWithText("client@test.invalid").assertExists()
+            else {
+                compose.onAllNodesWithText("client@test.invalid", substring = true).assertCountEquals(0)
+                compose.onAllNodesWithText("staff@test.invalid", substring = true).assertCountEquals(0)
+                compose.onAllNodesWithText("Via E-mail", substring = true).assertCountEquals(0)
+            }
+            inspect("private-contact")
+        }
+        if (screen == "champion-situational-boot") {
+            val tags = compose.onAllNodes(isRoot(), useUnmergedTree = true).fetchSemanticsNodes().flatMap { root ->
+                fun descendants(node: androidx.compose.ui.semantics.SemanticsNode): List<androidx.compose.ui.semantics.SemanticsNode> = listOf(node) + node.children.flatMap(::descendants)
+                descendants(root).mapNotNull { it.config.getOrNull(SemanticsProperties.TestTag) }
+            }
+            val primary = tags.first { it.startsWith("selected_boot_") }.removePrefix("selected_boot_")
+            val chosenTag = tags.first { it.startsWith("build_boot_") && it != "build_boot_$primary" }
+            val name = chosenTag.removePrefix("build_boot_")
+            compose.onNodeWithTag(chosenTag).performScrollTo().performClick()
+            compose.onNodeWithText("Fechar").performClick()
+            compose.onNodeWithTag("selected_boot_$name").performScrollTo().assertExists()
+            compose.onNodeWithTag("selected_boot_$name").performClick()
+            compose.onNodeWithText("Fechar").performScrollTo().performClick()
+            compose.onNodeWithTag("selected_boot_$name").performScrollTo().assertExists()
+            inspect("selection-preserved")
+        }
         if (screen.startsWith("component-catalog-")) {
             val section = mapOf("luchador" to "Luchador","asesino" to "Asesino","tirador" to "Tirador","magico" to "Mágico","defensa" to "Defensa","apoyo" to "Apoyo").getValue(screen.removePrefix("component-catalog-"))
             compose.onNodeWithTag("catalog_section_$section").performClick()
@@ -467,12 +499,21 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).captureRoboImage(filePath = File(output, "$screen-framed-card.png").path)
             }
             "champion-guest" -> {
+                compose.onNodeWithTag("advantage_insight_card").performScrollTo()
+                compose.onNodeWithText("Vantagem (3)").assertExists()
+                compose.onNodeWithText("Fraca (3)").assertExists()
+                compose.onNodeWithText("Sinergia (3)").assertExists()
                 compose.onNodeWithTag("detailed_trend_graph").assertDoesNotExist()
                 compose.onNodeWithTag("champion_trend_header").assertDoesNotExist()
                 compose.onNodeWithTag("matchup_sign_in_hint").performScrollTo().assertExists()
                 inspect("account-hint")
             }
-            "champion-registered" -> {
+            "champion-premium", "champion-registered" -> {
+                val amount = if (screen == "champion-premium") 12 else 6
+                compose.onNodeWithTag("advantage_insight_card").performScrollTo()
+                compose.onNodeWithText("Vantagem ($amount)").assertExists()
+                compose.onNodeWithText("Fraca ($amount)").assertExists()
+                compose.onNodeWithText("Sinergia ($amount)").assertExists()
                 compose.onNodeWithTag("champion_trend_header").performScrollTo().assertExists()
                 compose.onNodeWithTag("detailed_trend_graph").performScrollTo().assertExists()
                 compose.onNodeWithTag("matchup_sign_in_hint").assertDoesNotExist()
@@ -544,7 +585,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText(com.example.util.appTr("Abrir canal")).performClick()
                 Assert.assertEquals("https://www.google.com", copiedSummary)
             }
-            "support-followup", "support-legacy-followup", "support-closed" -> {
+            "support-email-mod", "support-email-admin", "support-followup", "support-legacy-followup", "support-closed" -> {
                 compose.onNodeWithContentDescription("Expandir").performClick()
                 compose.onNodeWithText("Encerrar conversa").assertExists()
                 if (screen == "support-closed") compose.onNodeWithTag("support_continue_reply").assertDoesNotExist()

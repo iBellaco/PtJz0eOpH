@@ -69,6 +69,7 @@ private fun operationError(result: Result<Unit>?): String? {
     if (result == null || result.isSuccess) return null
     val cause = generateSequence(result.exceptionOrNull()) { it.cause }.mapNotNull { it.message }.joinToString(" ")
     val id = when {
+        cause.contains("streamer_metrics_error") -> R.string.streamer_metrics_error
         cause.contains("streamer_history_error") -> R.string.streamer_history_error
         cause.contains("streamer_expired") -> R.string.streamer_expired
         cause.contains("streamer_max") -> R.string.streamer_max
@@ -85,9 +86,9 @@ private fun operationError(result: Result<Unit>?): String? {
 fun LiveStreamersRow() {
     val (entries, _) = liveEntries()
     val uri = LocalUriHandler.current
-    val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
     LiveStreamersContent(entries) { item, url ->
-        if (runCatching { uri.openUri(url) }.isSuccess) scope.launch { StreamerRepository.recordClick(item) }
+        if (runCatching { uri.openUri(url) }.isSuccess) com.example.data.StreamerClickWorker.enqueue(context, item)
     }
 }
 
@@ -158,7 +159,9 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
         }
         val metricsListener = StreamerRepository.metrics.whereEqualTo("userId", uid).addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             clicksAvailable = error == null && snapshot != null && !snapshot.metadata.isFromCache
-            if (clicksAvailable) clickMetrics = snapshot!!.documents.associate { it.id to (it.getLong("clickCount") ?: 0L) }
+            if (error == null && snapshot != null) {
+                clickMetrics = snapshot.documents.mapNotNull { doc -> doc.getLong("clickCount")?.let { doc.id to it } }.toMap()
+            }
         }
         onDispose { listener.remove(); historyListener.remove(); metricsListener.remove() }
     }
@@ -199,7 +202,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 val history = (publications + listOfNotNull(request.takeIf { it.isNotEmpty() })).distinctBy { StreamerPublicationPolicy.publicationId(it) }.map { item ->
                     val id = StreamerPublicationPolicy.publicationId(item)
                     val count = clickMetrics[id]
-                    if (clicksAvailable && count != null) item + ("clickCount" to count)
+                    if (count != null) item + mapOf("clickCount" to count, "clicksLive" to clicksAvailable)
                     else if (StreamerPublicationPolicy.historyStatus(item, now) in listOf("PENDING", "REJECTED")) item + ("clickCount" to 0L)
                     else item
                 }

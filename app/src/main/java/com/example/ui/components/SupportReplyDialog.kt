@@ -61,6 +61,7 @@ fun SupportReplyDialog(
     val authUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
     val currentUserRole by com.example.util.SubscriptionManager.userRole.collectAsState()
     val currentUserName by com.example.util.SubscriptionManager.userName.collectAsState()
+    val showPrivateEmail = com.example.data.SupportTicketAccess.isAdmin()
 
     val responderRoleLabel = remember(currentUserRole) {
         when {
@@ -176,7 +177,7 @@ fun SupportReplyDialog(
     LaunchedEffect(reportId, userEmail) {
         try {
             val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-            if (resolvedUserName.isBlank() && userEmail.isNotBlank()) {
+            if (showPrivateEmail && resolvedUserName.isBlank() && userEmail.isNotBlank()) {
                 val userDocs = db.collection("users").whereEqualTo("email", userEmail.trim()).limit(1).get().await()
                 if (!userDocs.isEmpty) {
                     val u = userDocs.documents[0]
@@ -328,7 +329,7 @@ fun SupportReplyDialog(
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1
                                 )
-                                if (userEmail.isNotBlank()) {
+                                if (showPrivateEmail && userEmail.isNotBlank()) {
                                     Text(
                                         text = com.example.util.tr(userEmail),
                                         color = TextMuted,
@@ -419,7 +420,7 @@ fun SupportReplyDialog(
                                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                                 ) {
                                                     Text(
-                                                        text = if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_name) else com.example.util.tr(if (isFromSupport) "🛡️ Soporte Coach (${msg.senderName})" else "👤 $displayUserName"),
+                                                        text = if (msg.senderRole == "SYSTEM") com.example.util.localizedString(com.example.R.string.support_system_name) else com.example.util.tr(if (isFromSupport) "🛡️ Soporte Coach (${msg.senderName.takeUnless { !showPrivateEmail && it.contains("@") } ?: "Soporte Coach"})" else "👤 $displayUserName"),
                                                         color = roleColor,
                                                         fontSize = 11.sp,
                                                         fontWeight = FontWeight.Bold,
@@ -445,7 +446,7 @@ fun SupportReplyDialog(
                                                         }
                                                     }
                                                 }
-                                                if (isFromSupport && !msg.senderEmail.isNullOrBlank()) {
+                                                if (showPrivateEmail && isFromSupport && !msg.senderEmail.isNullOrBlank()) {
                                                     Text(
                                                         text = com.example.util.tr(msg.senderEmail),
                                                         color = TextMuted,
@@ -630,7 +631,7 @@ fun SupportReplyDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Si hay correo disponible, botón adicional para abrir app de email
-                        if (userEmail.isNotBlank()) {
+                        if (showPrivateEmail && userEmail.isNotBlank()) {
                             OutlinedButton(
                                 onClick = {
                                     val cleanReply = replyText.trim()

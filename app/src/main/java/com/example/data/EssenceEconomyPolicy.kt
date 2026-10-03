@@ -24,6 +24,8 @@ object EssenceEconomyPolicy {
     }
     fun redeem(account: Map<String, Any>, amount: Long): Long {
         check(account["banned"] != true && account["role"] != "banned" && account["secondaryRole"] != "banned") { "Cuenta suspendida" }
+        check(com.example.model.RolePanelAccess.canRedeemEssence(
+            (account["role"] as? String).orEmpty(), (account["secondaryRole"] as? String).orEmpty())) { "Canje no disponible para este rol" }
         require(amount in redemptionAmounts)
         return (balance(account, EssenceCurrency.ORANGE) - amount).also { check(it >= 0) { "Esencias insuficientes" } }
     }

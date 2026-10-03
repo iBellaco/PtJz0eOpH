@@ -369,6 +369,30 @@ try {
     await assertFails(getDoc(doc(guest,'streamer_click_metrics',counterId)));
     await assertFails(getDoc(doc(other,'streamer_click_metrics',counterId)));
   });
+  await test('durable guest click retries and concurrent devices count every event once',async()=>{
+    const guest=env.unauthenticatedContext().firestore(), owner=db('s2');
+    async function click(store,eventId) {
+      const event=doc(store,`streamer_click_metrics/${counterId}/click_events/${eventId}`);
+      if ((await getDoc(event)).exists()) return;
+      const batch=writeBatch(store);
+      batch.set(event,{publicationId:counterId,clickedAt:serverTimestamp(),deleteAt:Timestamp.fromMillis(Date.now()+8*86400000)});
+      batch.update(doc(store,'streamer_click_metrics',counterId),{clickCount:increment(1),lastClickedAt:serverTimestamp(),lastClickId:eventId});
+      try { await batch.commit(); } catch(error) { if (!(await getDoc(event)).exists()) throw error; }
+    }
+    await assertSucceeds(click(guest,'durable-first'));
+    await assertSucceeds(click(guest,'durable-first'));
+    await Promise.all([click(user,'concurrent-a'),click(guest,'concurrent-a'),click(other,'concurrent-b')]);
+    assert.equal((await getDoc(doc(owner,'streamer_click_metrics',counterId))).data().clickCount,7);
+    await assertFails(getDocs(collection(guest,`streamer_click_metrics/${counterId}/click_events`)));
+    await assertFails(setDoc(doc(guest,`streamer_click_metrics/${counterId}/click_events/without-increment`),{publicationId:counterId,clickedAt:serverTimestamp(),deleteAt:Timestamp.fromMillis(Date.now()+86400000)}));
+  });
+  await test('redemption role removal blocks a request without deducting the balance',async()=>{
+    const profile=doc(admin,'users/economy'), before=(await getDoc(profile)).data().orangeEssence;
+    await assertSucceeds(updateDoc(profile,{role:'free',secondaryRole:''}));
+    await assertFails(redeem('role-removed-cash',10));
+    assert.equal((await getDoc(profile)).data().orangeEssence,before);
+    await assertSucceeds(updateDoc(profile,{role:'creador',secondaryRole:'streamer'}));
+  });
   await test('visitors cannot forge counters reset counts alter owners or count an inactive publication', async () => {
     const guest = env.unauthenticatedContext().firestore();
     await assertFails(setDoc(doc(guest,'streamer_click_metrics','forged-counter'),{userId:'s2',publicationId:'forged-counter',submittedAtMillis:Date.now(),clickCount:0}));

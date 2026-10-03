@@ -20,6 +20,10 @@ import java.util.Date
 @Composable
 fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
     val uid = AuthManager.getAuth()?.currentUser?.uid ?: return
+    val role by SubscriptionManager.userRole.collectAsState()
+    val secondary by SubscriptionManager.secondaryRole.collectAsState()
+    val adminClaim by AuthManager.isAdminClaim.collectAsState()
+    if (!com.example.model.RolePanelAccess.canRedeemEssence(role, secondary, adminClaim)) return
     val orange by SubscriptionManager.orangeEssence.collectAsState()
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var loadError by remember { mutableStateOf(false) }

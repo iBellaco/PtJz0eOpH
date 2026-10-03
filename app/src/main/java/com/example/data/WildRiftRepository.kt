@@ -398,12 +398,12 @@ object WildRiftRepository {
     ): DraftRecommendation {
         val activeAllies = allies.filter { it.id != "empty" && it.id != champ.id }.distinctBy { it.id }
         val activeEnemies = (enemies + listOfNotNull(enemyLaneOpponent)).filter { it.id != "empty" }.distinctBy { it.id }
-        val favorable = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.FAVORABLE }
-        val unfavorable = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.UNFAVORABLE }
-        val variable = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.VARIABLE }
+        val favorable = activeEnemies.filter { MatchupKnowledge.relation(champ,it,myRole) == MatchupRelation.FAVORABLE }
+        val unfavorable = activeEnemies.filter { MatchupKnowledge.relation(champ,it,myRole) == MatchupRelation.UNFAVORABLE }
+        val variable = activeEnemies.filter { MatchupKnowledge.relation(champ,it,myRole) == MatchupRelation.VARIABLE }
         val synergies = MatchupKnowledge.synergies(champ,activeAllies)
         val lane = enemyLaneOpponent?.takeIf { it.id != "empty" }
-        val laneRelation = lane?.let { MatchupKnowledge.relation(champ,it) }
+        val laneRelation = lane?.let { MatchupKnowledge.relation(champ,it,myRole) }
         val offRole = champ.primaryRole != myRole && myRole !in champ.secondaryRoles
         fun names(values: List<Champion>) = values.joinToString { it.getLocalizedName(lang) }
         val badge = when {
@@ -538,7 +538,7 @@ object WildRiftRepository {
 
         val lane = enemyLaneOpponent?.takeIf { it.id != "empty" }
         val uniqueCandidates = candidates.groupBy { it.id }.values.map { profiles -> profiles.firstOrNull { it.primaryRole == myRole } ?: profiles.first() }
-        val compatible = if (lane != null) uniqueCandidates.filter { MatchupKnowledge.relation(it,lane) != MatchupRelation.UNFAVORABLE } else uniqueCandidates
+        val compatible = if (lane != null) uniqueCandidates.filter { MatchupKnowledge.relation(it,lane,myRole ?: it.primaryRole) != MatchupRelation.UNFAVORABLE } else uniqueCandidates
         val rankedCandidates = compatible.ifEmpty { uniqueCandidates }
         val serverLabel = "Global Meta"
 
@@ -616,13 +616,13 @@ object WildRiftRepository {
                 )
             } else {
                 // REACTIVE / COUNTER & SYNERGY DRAFT CALCULATION
-                val directCounters = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.FAVORABLE }.map { it.getLocalizedName(lang) }
-                val directWeaknesses = activeEnemies.filter { MatchupKnowledge.relation(champ,it) == MatchupRelation.UNFAVORABLE }.map { it.getLocalizedName(lang) }
+                val directCounters = activeEnemies.filter { MatchupKnowledge.relation(champ,it,effectiveRole) == MatchupRelation.FAVORABLE }.map { it.getLocalizedName(lang) }
+                val directWeaknesses = activeEnemies.filter { MatchupKnowledge.relation(champ,it,effectiveRole) == MatchupRelation.UNFAVORABLE }.map { it.getLocalizedName(lang) }
                 val directSynergies = MatchupKnowledge.synergies(champ,activeAllies).map { it.getLocalizedName(lang) }
 
                 val badge = when {
-                    lane != null && MatchupKnowledge.relation(champ,lane) == MatchupRelation.UNFAVORABLE -> t(lang,"CONFRONTO DESFAVORÁVEL", "ENFRENTAMIENTO DESFAVORABLE")
-                    lane != null && MatchupKnowledge.relation(champ,lane) == MatchupRelation.VARIABLE -> t(lang,"CONFRONTO VARIÁVEL", "ENFRENTAMIENTO VARIABLE")
+                    lane != null && MatchupKnowledge.relation(champ,lane,effectiveRole) == MatchupRelation.UNFAVORABLE -> t(lang,"CONFRONTO DESFAVORÁVEL", "ENFRENTAMIENTO DESFAVORABLE")
+                    lane != null && MatchupKnowledge.relation(champ,lane,effectiveRole) == MatchupRelation.VARIABLE -> t(lang,"CONFRONTO VARIÁVEL", "ENFRENTAMIENTO VARIABLE")
                     directWeaknesses.isNotEmpty() -> t(lang,"RISCO CONTRA ${directWeaknesses.joinToString()}","RIESGO CONTRA ${directWeaknesses.joinToString()}")
                     comboSynergies.isNotEmpty() && directCounters.isNotEmpty() -> t(lang, "🔥 COMBO + COUNTER (+${directCounters.size})", "🔥 COMBO + COUNTER (+${directCounters.size})")
                     comboSynergies.isNotEmpty() -> t(lang, "💥 WOMBO-COMBO ALIADO", "💥 WOMBO-COMBO ALIADO")

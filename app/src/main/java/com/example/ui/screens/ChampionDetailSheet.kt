@@ -1036,7 +1036,8 @@ fun ChampionDetailSheet(
             // ==========================================
             // BOTAS Y MEJORAS + HECHIZOS (DOS COLUMNAS)
             // ==========================================
-            var selectedBootBaseOverride by remember(activeOption) { mutableStateOf<String?>(null) }
+            // Advice dialogs rebuild the option object; selection belongs to its stable identity.
+            var selectedBootBaseOverride by remember(champion.id, selectedRole, activeOption.optionNumber) { mutableStateOf<String?>(null) }
             val primaryBootBase = activeOption.bootBase.ifBlank { "Botas blindadas" }
             val currentBootBase = selectedBootBaseOverride ?: primaryBootBase
             val currentBootUpgrade = if (selectedBootBaseOverride != null) {
@@ -1088,9 +1089,9 @@ fun ChampionDetailSheet(
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(HextechSurfaceVariant)
                                     .border(1.dp, HextechGold, RoundedCornerShape(8.dp))
+                                    .testTag("selected_boot_$currentBootBase")
                                     .clickable {
-                                        if (selectedBootBaseOverride != null) selectedBootBaseOverride = null
-                                        else if (dbBoot1 != null) {
+                                        if (dbBoot1 != null) {
                                             selectedElementAdvice = ""
                                             itemForDetail = dbBoot1
                                         }
@@ -1479,7 +1480,7 @@ fun ChampionDetailSheet(
             ) {
                 // Fuerte Contra (Ventaja)
                 Card(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).testTag("advantage_insight_card"),
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, AllyBlue.copy(alpha = 0.5f))
@@ -1490,7 +1491,7 @@ fun ChampionDetailSheet(
                             .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val advantageList = com.example.data.MatchupKnowledge.related(champion.copy(primaryRole = selectedRole), WildRiftRepository.champions, com.example.data.MatchupRelation.FAVORABLE).map { it.name }.take(maxMatchupCount)
+                        val advantageList = roleProfile.advantageAgainst.distinct().take(maxMatchupCount)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1577,7 +1578,7 @@ fun ChampionDetailSheet(
 
                 // Débil Contra (Debilidad)
                 Card(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).testTag("weakness_insight_card"),
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f))
@@ -1588,7 +1589,7 @@ fun ChampionDetailSheet(
                             .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val counteredList = com.example.data.MatchupKnowledge.related(champion.copy(primaryRole = selectedRole), WildRiftRepository.champions, com.example.data.MatchupRelation.UNFAVORABLE).map { it.name }.take(maxMatchupCount)
+                        val counteredList = roleProfile.counteredBy.distinct().take(maxMatchupCount)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,

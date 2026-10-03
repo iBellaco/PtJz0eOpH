@@ -1235,17 +1235,30 @@ object ChampionRoleMatchupAdvisor {
         val reverseSynergies = catalog.filter { candidate ->
             ReviewedMatchupReferences.byChampion[candidate.id]?.synergies?.any(::matchesSelf) == true
         }.map { it.name }
+        val expanded = ExpandedMatchupReferences.byChampion[champion.id].orEmpty()
+        val acrossMap = (listOfNotNull(expanded[role]) + expanded.filterKeys { it != role }.values +
+            ReviewedLaneMatchups.byChampion[champion.id].orEmpty().filterKeys { it != role }.values).toList()
         val counters = clean((reference?.counters ?: emptyList()) + (laneReference?.counters ?: emptyList()) + known.counters.take(3) +
-            (if (primaryRole) champion.counteredBy.take(3) else emptyList()), true)
+            (if (primaryRole) champion.counteredBy.take(3) else emptyList()), true) + clean(acrossMap.flatMap { it.counters }, false)
         val advantages = clean((reference?.advantages ?: emptyList()) + (laneReference?.advantages ?: emptyList()) + reverseCounters + known.advantages.take(3) +
-            (if (primaryRole) champion.advantageAgainst.take(3) else emptyList()), true)
+            (if (primaryRole) champion.advantageAgainst.take(3) else emptyList()), true) + clean(acrossMap.flatMap { it.advantages }, false)
         val synergies = clean((reference?.synergies ?: emptyList()) + known.synergies.take(3) +
-            champion.synergies.take(3) + reverseSynergies, false)
+            champion.synergies.take(3) + reverseSynergies + acrossMap.flatMap { it.synergies }, false)
         return CoachMatchupRanking.complete(champion, role,
-            MatchupRoleResult(advantages.filterNot { it in counters }.take(12), counters.take(12), synergies.take(12)), catalog)
+            MatchupRoleResult(advantages.distinct().filterNot { it in counters.distinct().take(12) }.take(12), counters.distinct().take(12), synergies.take(12)), catalog)
     }
 
+    private val completed = mutableMapOf<Triple<String, LaneRole, LaneRole>, MatchupRoleResult>()
+    private var rosterIdentity: Champion? = null
+    @Synchronized
     fun getMatchups(champion: Champion, role: LaneRole): MatchupRoleResult {
+        val identity = com.example.data.WildRiftRepository.getBaseChampion("aatrox")
+        if (identity == null) return calculateMatchups(champion, role)
+        if (identity !== rosterIdentity) { completed.clear(); rosterIdentity = identity }
+        return completed.getOrPut(Triple(champion.id, role, champion.primaryRole)) { calculateMatchups(champion, role) }
+    }
+
+    private fun calculateMatchups(champion: Champion, role: LaneRole): MatchupRoleResult {
         val cleanId = champion.id.lowercase().replace("-", "_").replace(" ", "_").replace("'", "")
         val nameId = champion.name.lowercase().replace("-", "_").replace(" ", "_").replace("'", "")
         val ddragon = champion.ddragonId.lowercase().replace("-", "_").replace(" ", "_").replace("'", "")
