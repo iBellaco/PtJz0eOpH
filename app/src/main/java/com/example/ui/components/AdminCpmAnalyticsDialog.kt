@@ -183,7 +183,7 @@ fun AdminCpmAnalyticsDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = HextechGold, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(tr("Algoritmo de CPM Recomendado"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(tr("Criterio de CPM y proyección"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
             },
             text = {
@@ -204,7 +204,7 @@ fun AdminCpmAnalyticsDialog(
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(com.example.util.tr("• Nivel / Calificación: ${dynamicRec.tierName}"), color = HextechCyan, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(3.dp))
-                            Text(com.example.util.tr("• CPM Recomendado Actual: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"), color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text(com.example.util.tr("• CPM configurado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"), color = Color(0xFF00FF66), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(3.dp))
                             Text(com.example.util.tr("• Rango sugerido de venta: $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.first)} - $${String.format(Locale.US, "%.2f", dynamicRec.suggestedPriceRange.second)} USD"), color = HextechGold, fontSize = 11.5.sp)
                             Spacer(modifier = Modifier.height(3.dp))
@@ -228,7 +228,7 @@ fun AdminCpmAnalyticsDialog(
                             onClick = {
                                 val presentationText = """
 PRECIOS PUBLICITARIOS - COACH APP
-CPM Recomendado (por cada 1,000 vistas): ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD
+CPM configurado (por cada 1,000 vistas): ${'$'}${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD
 
 Proyección de Paquetes (Precios Fijos):
 - 1 Día: ${'$'}${String.format(Locale.US, "%.0f", dynamicRec.price1Day)} USD
@@ -290,7 +290,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
                 ) {
-                    Text(com.example.util.tr("Aplicar Recomendado ($${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)})"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                    Text(com.example.util.tr("Guardar tarifa ($${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)})"), color = HextechDarkBg, fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
                 }
             },
             dismissButton = {
@@ -492,7 +492,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = HextechGold, modifier = Modifier.size(16.dp))
                                                 Spacer(modifier = Modifier.width(6.dp))
-                                                Text(tr("CPM Dinámico Recomendado"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                Text(tr("Proyección con tu tarifa"), color = HextechGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
                                             Text(
                                                 text = com.example.util.tr("$${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"),
@@ -520,7 +520,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             modifier = Modifier.fillMaxWidth(),
                                             contentPadding = PaddingValues(vertical = 4.dp)
                                         ) {
-                                            Text(tr("Sincronizar y Aplicar Automático"), fontWeight = FontWeight.Bold, fontSize = 10.5.sp)
+                                            Text(tr("Guardar tarifa configurada"), fontWeight = FontWeight.Bold, fontSize = 10.5.sp)
                                         }
                                     }
                                 }
@@ -1000,7 +1000,7 @@ Métricas de Tráfico y Rendimiento:
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = com.example.util.tr("CPM Recomendado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"),
+                                        text = com.example.util.tr("CPM configurado: $${String.format(Locale.US, "%.2f", dynamicRec.recommendedCpm)} USD"),
                                         color = Color(0xFF00FF66),
                                         fontSize = 12.5.sp,
                                         fontWeight = FontWeight.Bold

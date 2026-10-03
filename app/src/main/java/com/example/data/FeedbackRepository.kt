@@ -302,7 +302,6 @@ object FeedbackRepository {
      */
     suspend fun getAllFeedbacks(): Result<List<FeedbackReport>> = withContext(Dispatchers.IO) {
         val combinedList = mutableListOf<FeedbackReport>()
-        val seenIds = mutableSetOf<String>()
 
         try {
             val db = FirebaseFirestore.getInstance()
@@ -313,7 +312,7 @@ object FeedbackRepository {
 
             combinedList.addAll(feedbacksFromSnapshot(fireSnap))
 
-            combinedList.sortByDescending { it.createdAt }
+            // feedbacksFromSnapshot already orders by the latest conversation activity.
             Result.success(combinedList)
         } catch (e: Exception) {
             Log.e(TAG, "Error general en getAllFeedbacks: ${e.message}", e)

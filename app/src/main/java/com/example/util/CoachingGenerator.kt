@@ -38,6 +38,20 @@ object CoachingGenerator {
     }
 
     fun generateTacticalAdvice(champion: Champion, activeRole: LaneRole, lang: String): String {
-        return ChampionMatchupCoaching.sovereignFeedback(champion, activeRole, lang)
+        val language = AppLanguage.normalize(lang)
+        val pt = language == "pt"
+        val me = champion.getLocalizedName(language)
+        val h1 = champion.skills.firstOrNull { it.slot == "1" }
+        val h4 = champion.skills.firstOrNull { it.slot == "4" }
+        val detail = listOfNotNull(h1, h4).joinToString(" ") {
+            "H${it.slot} · ${it.getLocalizedName(language)}: ${it.getLocalizedDescription(language).substringBefore(". ")}."
+        }
+        val specific = trStr(language, champion.tacticalAdvice)
+        return if (pt) "Diagnóstico do erro/situação: $me · ${activeRole.getLocalizedName(language)}; confirme recursos e recargas antes de comprometer a troca.\n" +
+            "Decisão Soberano: $specific\nMicro e Macro detalhe: $detail\n" +
+            "Regra aplicável: resolva a onda ou o campo antes de rotacionar; sem prioridade, troque a pressão para o lado oposto."
+        else "Diagnóstico del error/situación: $me · ${activeRole.getLocalizedName(language)}; confirma recursos y enfriamientos antes de comprometer el intercambio.\n" +
+            "Decisión Soberano: $specific\nMicro y Macro detalle: $detail\n" +
+            "Regla aplicable: resuelve la oleada o el campamento antes de rotar; sin prioridad, intercambia presión hacia el lado opuesto."
     }
 }

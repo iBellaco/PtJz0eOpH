@@ -260,5 +260,10 @@
   "Límite del plan: consulta del proveedor no conectada": "Limite do plano: consulta do provedor não conectada",
   "Actualización automática cada 6 horas. Estimación del contenido de documentos; excluye índices, archivos externos y tráfico de lecturas y escrituras.": "Atualização automática a cada 6 horas. Estimativa do conteúdo de documentos; exclui índices, arquivos externos e tráfego de leituras e gravações.",
   "Muestra parcial: algunas categorías no se pudieron consultar.": "Amostra parcial: não foi possível consultar algumas categorias.",
-  "Historial de publicaciones": "Histórico de publicações"
+  "Historial de publicaciones": "Histórico de publicações",
+  "Criterio de CPM y proyección": "Critério de CPM e projeção",
+  "Proyección con tu tarifa": "Projeção com sua tarifa",
+  "CPM configurado:": "CPM configurado:",
+  "Guardar tarifa configurada": "Salvar tarifa configurada",
+  "Guardar tarifa": "Salvar tarifa"
 }

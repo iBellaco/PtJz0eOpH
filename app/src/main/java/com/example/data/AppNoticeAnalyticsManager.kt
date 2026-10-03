@@ -216,7 +216,7 @@ object AppNoticeAnalyticsManager {
             val cloudBaseCpm = snapshot.getDouble("baseCpmRate")
             val cloudStartDate = snapshot.getLong("trackingStartDate")
 
-            if (cloudBaseCpm != null && cloudBaseCpm > 0.0) {
+            if (cloudBaseCpm != null && cloudBaseCpm.isFinite() && cloudBaseCpm > 0.0) {
                 _baseCpmRate.value = cloudBaseCpm
                 saveBaseCpmToPrefs(context, cloudBaseCpm)
             }
@@ -227,7 +227,7 @@ object AppNoticeAnalyticsManager {
 
             val metricsRaw = decodedCpmMetrics(snapshot.data.orEmpty())
             if (metricsRaw != null) {
-                val current = _metricsMap.value.toMutableMap()
+                val current = mutableMapOf<String, NoticeMetrics>()
                 for ((k, v) in metricsRaw) {
                     val noticeId = k?.toString() ?: continue
                     val map = v as? Map<*, *> ?: continue
@@ -238,22 +238,15 @@ object AppNoticeAnalyticsManager {
                     val lastViewed = (map["lastViewedTimestamp"] as? Number)?.toLong() ?: System.currentTimeMillis()
                     val customCpmRate = (map["customCpmRate"] as? Number)?.toDouble()
 
-                    val localExisting = current[noticeId]
-                    val mergedImps = maxOf(imps, localExisting?.impressions ?: 0L)
-                    val mergedClicks = maxOf(clicks, localExisting?.clicks ?: 0L)
-                    val mergedRawClicks = maxOf(rawClicks, localExisting?.totalRawClicks ?: 0L)
-                    val mergedFull = maxOf(full, localExisting?.fullscreenViews ?: 0L)
-                    val mergedLastViewed = maxOf(lastViewed, localExisting?.lastViewedTimestamp ?: 0L)
-                    val mergedCustomCpmRate = customCpmRate
 
                     current[noticeId] = NoticeMetrics(
                         noticeId = noticeId,
-                        impressions = mergedImps,
-                        clicks = mergedClicks,
-                        totalRawClicks = mergedRawClicks,
-                        fullscreenViews = mergedFull,
-                        lastViewedTimestamp = mergedLastViewed,
-                        customCpmRate = mergedCustomCpmRate
+                        impressions = imps.coerceAtLeast(0),
+                        clicks = clicks.coerceAtLeast(0),
+                        totalRawClicks = rawClicks.coerceAtLeast(0),
+                        fullscreenViews = full.coerceAtLeast(0),
+                        lastViewedTimestamp = lastViewed,
+                        customCpmRate = customCpmRate?.takeIf { it.isFinite() && it > 0 }
                     )
                 }
                 _metricsMap.value = current
@@ -297,7 +290,8 @@ object AppNoticeAnalyticsManager {
     private fun loadFromLocalStorage(context: Context) {
         try {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val baseCpm = prefs.getFloat(KEY_BASE_CPM, 2.50f).toDouble()
+            val baseCpm = prefs.getString("${KEY_BASE_CPM}_exact", null)?.toDoubleOrNull()
+                ?.takeIf { it.isFinite() && it > 0 } ?: prefs.getFloat(KEY_BASE_CPM, 2.50f).toDouble()
             val startDate = prefs.getLong(KEY_START_DATE, System.currentTimeMillis())
             val jsonStr = prefs.getString(KEY_METRICS_JSON, null)
 
@@ -537,7 +531,7 @@ object AppNoticeAnalyticsManager {
     private fun saveBaseCpmToPrefs(context: Context, rate: Double) {
         try {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit().putFloat(KEY_BASE_CPM, rate.toFloat()).apply()
+            prefs.edit().putString("${KEY_BASE_CPM}_exact", rate.toString()).apply()
         } catch (_: Exception) {}
     }
 
@@ -585,7 +579,7 @@ object AppNoticeAnalyticsManager {
     fun getOverallCtr(): Double {
         val totalImps = getTotalImpressions()
         val totalClicks = getTotalClicks()
-        return if (totalImps > 0) (totalClicks.toDouble() / totalImps.toDouble()) * 100.0 else 0.0
+        return CpmPolicy.ctr(totalImps, totalClicks)
     }
 
     fun generateSummaryReport(notices: List<AppNotice>): String {
