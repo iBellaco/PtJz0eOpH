@@ -7,7 +7,31 @@ permissions:
   contents: write
   packages: write
 jobs:
+  find-validated-apk:
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.validated.outputs.run_id }}
+      source_sha: ${{ steps.validated.outputs.source_sha }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check validated APK reuse policy
+      run: python3 -m unittest discover -s .github/scripts -p test_validated_apk.py
+    - name: Find a fully validated APK with identical source files
+      id: validated
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: python3 .github/scripts/find-validated-apk.py
+    - name: Check access to the persistent signing identity
+      if: github.ref == 'refs/heads/main'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
+        COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
+        COACH_REQUIRE_PERSISTENT_SIGNING: 'true'
+      run: python3 .github/scripts/restore-private-signing.py --check-access
   build-apk:
+    needs: find-validated-apk
+    if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -332,6 +356,7 @@ jobs:
   build-and-release:
     if: always()
     needs:
+    - find-validated-apk
     - build-apk
     - core-and-rendered
     - installed-audit
@@ -342,12 +367,15 @@ jobs:
         BUILD_RESULT: ${{ needs.build-apk.result }}
         RENDERED_RESULT: ${{ needs.core-and-rendered.result }}
         DEVICE_RESULT: ${{ needs.installed-audit.result }}
+        REUSE_RUN: ${{ needs.find-validated-apk.outputs.run_id }}
+        REUSE_RESULT: ${{ needs.find-validated-apk.result }}
       run: |
         python3 - <<'PYRESULT'
         import os
         results = {key: os.environ[key] for key in ('BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT')}
         print(results)
-        if any(value != 'success' for value in results.values()):
+        expected = 'skipped' if os.environ.get('REUSE_RUN') and os.environ.get('REUSE_RESULT') == 'success' else 'success'
+        if any(value != expected for value in results.values()):
             raise SystemExit('Las comprobaciones no han terminado correctamente. No se publica el APK final.')
         PYRESULT
     - *id001
@@ -357,6 +385,15 @@ jobs:
       with:
         name: app-debug.apk
         path: app/build/outputs/apk/debug/
+        run-id: ${{ needs.find-validated-apk.outputs.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - *id002
+    - *id006
+    - name: Verify the validated APK still carries the persistent signature
+      if: github.ref == 'refs/heads/main'
+      run: |
+        export COACH_EXPECTED_APK_CERT=$(python3 -c 'import json; print(json.load(open(".github/coach-signing.json"))["certificate_sha256"])')
+        python3 .github/scripts/verify-apk-signing.py
     - name: Extract App Version from Gradle
       id: app_version
       run: |
