@@ -17,23 +17,15 @@ jobs:
       with:
         fetch-depth: 1
     - name: Validate signing publication policy
-      run: python3 -m unittest discover -s .github/scripts -p test_prepare_debug_signing.py
+      run: python3 -m unittest discover -s .github/scripts -p 'test_*signing.py'
     - name: Check publication signing configuration
       if: github.ref == 'refs/heads/main'
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
         COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
-      run: |
-        python3 - <<'PYSIGN'
-        import os, re
-        from pathlib import Path
-        key_present = bool(os.environ.get('COACH_DEBUG_KEYSTORE_BASE64', '').strip())
-        certificate_valid = bool(re.fullmatch(r'[0-9a-fA-F]{64}', os.environ.get('COACH_SIGNING_CERT_SHA256', '').strip()))
-        if not key_present or not certificate_valid:
-            summary = 'Publicación bloqueada: falta la configuración de firma persistente.\n\nConfigurar el secreto `COACH_DEBUG_KEYSTORE_BASE64` con la clave original y la variable pública `COACH_SIGNING_CERT_SHA256` con su huella. Las fusiones ya realizadas no requieren intervención manual. Una firma nueva no puede actualizar instalaciones anteriores.\n\n[Instrucciones de firma](https://github.com/iBellaco/PtJz0eOpH/blob/main/docs/persistent-apk-signing.md)\n'
-            Path(os.environ['GITHUB_STEP_SUMMARY']).write_text(summary)
-            raise SystemExit('Falta la clave persistente de firma o su huella. Consulta el resumen del flujo.')
-        PYSIGN
+        COACH_REQUIRE_PERSISTENT_SIGNING: 'true'
+      run: python3 .github/scripts/restore-private-signing.py --check-access
     - name: Remove any legacy wrapper binaries
       run: |
         rm -f gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties gradlew gradlew.bat || true
@@ -70,11 +62,14 @@ jobs:
         gradle-version: 9.3.1
         cache-disabled: false
     - name: Restore persistent debug keystore
+      id: signing
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         COACH_DEBUG_KEYSTORE_BASE64: ${{ secrets.COACH_DEBUG_KEYSTORE_BASE64 }}
         COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
         COACH_REQUIRE_PERSISTENT_SIGNING: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
-      run: python3 .github/scripts/prepare-debug-signing.py
+        COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'true' || 'false' }}
+      run: python3 .github/scripts/restore-private-signing.py
     - &id005
       name: Create google-services.json
       run: |
@@ -149,6 +144,8 @@ jobs:
           exit 1
         fi
     - name: Verify APK
+      env:
+        COACH_EXPECTED_APK_CERT: ${{ steps.signing.outputs.certificate_sha256 }}
       run: |
         EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
         if [ -f "$EXPECTED_APK" ] && [ -s "$EXPECTED_APK" ]; then
@@ -159,6 +156,7 @@ jobs:
           find app/build/outputs/ -name "*.apk" || true
           exit 1
         fi
+        python3 .github/scripts/verify-apk-signing.py
     - name: Upload debug APK artifact
       uses: actions/upload-artifact@v4
       with:
@@ -210,7 +208,7 @@ jobs:
         TAG="review-v${{ steps.app_version.outputs.version_name }}-b${{ steps.app_version.outputs.version_code }}"
         cat > review-notes.md <<'NOTES'
         Coach: APK de revisión temprana. Las comprobaciones de pantallas y del APK instalado siguen en ejecución.
-        Este archivo tiene una firma temporal de pruebas si la firma persistente no está configurada; en ese caso no actualiza una instalación anterior. No es una publicación final validada.
+        Coach 164 inicia una nueva firma persistente autorizada. No actualiza directamente instalaciones anteriores con otra firma. Los datos existentes deben conservarse antes de cambiar de instalación. Las versiones siguientes conservarán esta identidad. No es una publicación final validada.
         NOTES
         gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease --target "${{ github.event.pull_request.head.sha || github.sha }}" --title "Coach: revisión temprana ${{ steps.app_version.outputs.version_name }}" --notes-file review-notes.md
         gh release upload "$TAG" "${{ steps.prepare_asset.outputs.asset_path }}" --clobber
@@ -412,6 +410,7 @@ jobs:
         - **Commit:** ${{ github.sha }}
 
         Descarga el archivo APK directamente en tu teléfono Android desde los archivos adjuntos (Assets) abajo.
+        Esta publicación usa la nueva firma persistente autorizada desde Coach 164. No puede actualizar directamente una instalación con una firma anterior. No borres los datos ni desinstales sin conservar lo necesario. Las versiones siguientes mantendrán la nueva firma.
         NOTE_EOF
 
         # Create new release with the APK attached

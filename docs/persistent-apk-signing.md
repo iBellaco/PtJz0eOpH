@@ -1,17 +1,40 @@
 # Firma persistente de Coach
 
-El flujo anterior generaba una clave de depurado en cada ejecución porque no había una clave persistente guardada. Las versiones 160 y 161 tienen certificados diferentes; no pueden actualizarse una sobre otra directamente.
+Coach 164 inicia una identidad nueva, autorizada por el desarrollador después de
+confirmar que no está disponible la clave anterior. La primera instalación no
+puede actualizar un APK firmado con otra clave. No desinstalar ni borrar datos
+automáticamente. Las versiones posteriores reutilizan la nueva identidad.
 
-El flujo exige antes de publicar desde `main`:
+La clave nueva se conserva **únicamente en el cuerpo de un borrador privado de
+GitHub**, identificado en `.github/coach-signing.json`. No está en el repositorio,
+los artefactos de Actions, las cachés ni las publicaciones públicas. Solo los
+colaboradores con acceso de escritura pueden acceder al borrador. Su página
+respondió HTTP 404 sin autenticación al preparar esta migración.
 
-- Secreto de GitHub `COACH_DEBUG_KEYSTORE_BASE64`: archivo de firma original codificado en base64. No guardar claves privadas en el repositorio ni pegarlas en conversaciones.
-- Variable de GitHub `COACH_SIGNING_CERT_SHA256`: SHA-256 del certificado público de esa clave. Sirve para impedir publicar con una identidad equivocada.
-- Archivo compatible con el alias `androiddebugkey` y el formato de depurado usado por Coach. La contraseña estándar de depurado es `android`.
+**Nunca publicar ni eliminar ese borrador.** Publicarlo expondría la clave privada;
+eliminarlo impediría firmar actualizaciones si no existe otra copia. Los flujos de
+publicación de APK usan sus propias etiquetas de versión y nunca publican ese
+identificador. La restauración rechaza cualquier documento que no conserve su
+estado de borrador, su identificador y el certificado previsto. Guardar una copia
+privada adicional con el propietario del proyecto cuando exista un canal seguro.
 
-Las ejecuciones de prueba pueden usar claves temporales. Una publicación exige la clave persistente y su certificado correcto; nunca genera una clave sustituta silenciosamente.
+La huella SHA-256 pública de la identidad nueva es:
+`27dba5165e26d0da19274edfd21a8f0439e6d7d7cc979efd449c7c71c7b4c055`.
+El APK compilado se verifica con `apksigner` contra esa misma huella antes de
+publicarse. La identidad no se regenera en cada ejecución.
 
-La clave privada no se puede recuperar del certificado incluido en un APK. Si no existe una copia de la clave original, hace falta planificar una migración de firma y conservar los datos antes de cambiar de instalación. No borrar datos ni desinstalar la aplicación automáticamente.
+Cuando se disponga de acceso a secretos, puede migrarse **la misma clave**, sin
+cambiar de certificado, al secreto `COACH_DEBUG_KEYSTORE_BASE64` y la variable
+`COACH_SIGNING_CERT_SHA256`. Los secretos configurados tienen prioridad. Esta
+alternativa evita bloquear la publicación por los permisos actuales de la
+conexión, que devuelve HTTP 403 al intentar acceder a secretos y variables.
 
-La comprobación de configuración se ejecuta antes de preparar el SDK y señala los campos que faltan en el resumen del flujo. Una vez configurados, el paso de restauración valida el archivo y su certificado antes de compilar. Las pruebas de una propuesta pueden completarse sin publicar una identidad temporal.
+El archivo usa el alias `androiddebugkey` y el formato de depurado de Coach. Los
+archivos restaurados tienen permisos 0600. Los errores nunca imprimen el cuerpo
+privado, el archivo de firma o la salida privada de `keytool`. Las pruebas de
+propuestas de otros repositorios usan firma efímera y no solicitan la clave.
 
-Estado observado: `main` recibió vacíos el secreto y la variable de firma. No hay una clave disponible en el repositorio o el entorno. La conexión de GitHub devuelve HTTP 403 al acceder a secretos; la publicación queda pendiente de una conexión con acceso a esos secretos o de configurar la clave original de forma segura. La configuración de firma no requiere fusionar manualmente los cambios de aplicación.
+Las versiones antiguas 160 y 161 ya tenían certificados diferentes. Una clave
+privada no puede recuperarse del certificado incluido en el APK. La autorización
+para usar otra firma resuelve la publicación nueva, no la actualización de esas
+instalaciones ni la activación de cambios de permisos en la nube.
