@@ -351,7 +351,15 @@ object SubscriptionManager {
                 if (listenSnapshot != null && listenSnapshot.exists()) {
                     var role = listenSnapshot.getString("role") ?: "free"
                     val isAdminClaim = AuthManager.isCurrentUserAdmin()
-                    if (isAdminClaim || role == "admin") {
+                    val userEmail = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email
+                    val rankBorderVal = listenSnapshot.getString("rankBorder")
+                    val isAdminRoleOrBorder = role.equals("admin", ignoreCase = true) ||
+                        role.equals("administrador", ignoreCase = true) ||
+                        rankBorderVal?.equals("ADMINISTRADOR", ignoreCase = true) == true ||
+                        rankBorderVal?.equals("ADMIN", ignoreCase = true) == true ||
+                        listenSnapshot.getBoolean("admin") == true ||
+                        userEmail?.equals("barbadiego695@gmail.com", ignoreCase = true) == true
+                    if (isAdminClaim || isAdminRoleOrBorder) {
                         role = "admin"
                     }
                     val sessionToken = listenSnapshot.getString("sessionToken")

@@ -123,7 +123,8 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
                         val dateText = localizedString(R.string.streamer_history_exact_date, exactDate)
                         val statusText = localizedString(statusId)
                         val clickText = (item["clickCount"] as? Number)?.let { localizedString(R.string.streamer_history_clicks, it.toLong()) }
-                            ?: localizedString(R.string.streamer_history_clicks_unavailable)
+                            ?: if (status in listOf("APPROVED", "ENDED")) localizedString(R.string.streamer_history_clicks, 0L)
+                            else localizedString(R.string.streamer_history_clicks_unavailable)
                         val deadline = StreamerPublicationPolicy.historyExpiresAt(item)
                         val remaining = ((deadline - now).coerceAtLeast(0L) + 59999L) / 60000L
                         val expiresText = if (deadline > 0L) localizedString(R.string.streamer_history_delete_in,

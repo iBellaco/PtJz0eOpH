@@ -3,10 +3,39 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function account() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-    function isAdmin() { return signedIn() && (request.auth.token.get('admin', false) == true || account().get('role', '') == 'admin'); }
-    function isModerator() { return signedIn() && (account().get('role', '') == 'moderador' || account().get('secondaryRole', '') == 'moderador'); }
-    function isStreamer() { return signedIn() && (account().get('role', '') == 'streamer' || account().get('secondaryRole', '') == 'streamer'); }
-    function canRedeemEssence() { return signedIn() && !account().get('banned', false) && account().get('role', '') != 'banned' && account().get('secondaryRole', '') != 'banned' && (isAdmin() || isModerator() || isStreamer() || account().get('role', '') in ['creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5'] || account().get('secondaryRole', '') in ['creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5']); }
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.get('admin', false) == true ||
+        request.auth.token.get('email', '').lower() in ['barbadiego695@gmail.com'] ||
+        account().get('admin', false) == true ||
+        account().get('role', '').lower() in ['admin', 'administrador'] ||
+        account().get('secondaryRole', '').lower() in ['admin', 'administrador'] ||
+        account().get('rankBorder', '').lower() in ['admin', 'administrador']
+      );
+    }
+    function isModerator() {
+      return signedIn() && (
+        isAdmin() ||
+        account().get('role', '').lower() in ['moderador', 'moderator'] ||
+        account().get('secondaryRole', '').lower() in ['moderador', 'moderator'] ||
+        account().get('rankBorder', '').lower() in ['moderador', 'moderator']
+      );
+    }
+    function isStreamer() {
+      return signedIn() && (
+        isAdmin() ||
+        account().get('role', '').lower() in ['streamer'] ||
+        account().get('secondaryRole', '').lower() in ['streamer'] ||
+        account().get('rankBorder', '').lower() in ['streamer']
+      );
+    }
+    function canRedeemEssence() {
+      return signedIn() && !account().get('banned', false) && account().get('role', '').lower() != 'banned' && account().get('secondaryRole', '').lower() != 'banned' &&
+        (isAdmin() || isModerator() || isStreamer() ||
+         account().get('role', '').lower() in ['creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5'] ||
+         account().get('secondaryRole', '').lower() in ['creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5'] ||
+         account().get('rankBorder', '').lower() in ['creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5']);
+    }
     function sponsor(data) {
       let tags = ['PATROCINADOR', 'PATROCINIO', 'SPONSOR', 'PUBLICIDAD', 'PAGO', 'PAYMENT', 'PAGAMENTO'];
       return data.get('tag', '').upper() in tags || data.get('type', '').upper() in tags || data.get('category', '').upper() in tags;
@@ -138,7 +167,7 @@ service cloud.firestore {
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
       allow create: if canRedeemEssence() && request.resource.data.userId == request.auth.uid
         && request.resource.data.keys().hasOnly(['id','userId','email','amount','usd','paymentCurrency','network','wallet','status','requestedAt','requestedAtMillis'])
-        && request.resource.data.id == id && request.resource.data.email == request.auth.token.email
+        && request.resource.data.id == id && request.resource.data.email.lower() == request.auth.token.email.lower()
         && request.resource.data.status == 'PENDING' && request.resource.data.requestedAt == request.time
         && request.resource.data.amount in [10,25,50] && request.resource.data.usd == request.resource.data.amount
         && request.resource.data.paymentCurrency == 'USDT' && request.resource.data.network == op().network && request.resource.data.wallet == op().wallet
@@ -163,7 +192,7 @@ service cloud.firestore {
 
     match /support_reports/{reportId} {
       allow create: if isAdmin() || (signedIn() && request.resource.data.get('category', '') == 'MODERATOR_REQUEST' && isModerator()) ||
-        (signedIn() && request.resource.data.userId == request.auth.uid && request.resource.data.userEmail == request.auth.token.email
+        (signedIn() && request.resource.data.userId == request.auth.uid && request.resource.data.userEmail.lower() == request.auth.token.email.lower()
           && request.resource.data.staffVisible == !sponsor(request.resource.data)
           && request.resource.data.status == 'PENDING' && request.resource.data.get('adminReply', '') == ''
           && request.resource.data.get('userCanReply', false) == false

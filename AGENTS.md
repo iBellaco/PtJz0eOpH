@@ -18,6 +18,7 @@ Idioma principal del desarrollador: español latino (es-419). Traduce a portugu�
 ### REGLA DE COMMIT MESSAGE Y VERSIÓN DE DEPURADO
 - Siempre que termines una modificación o tarea en el proyecto, debes entregar un mensaje de commit copiable en español.
 - Además de entregar el commit, debes incrementar/modificar la versión de depurado de la aplicación (en `app/build.gradle.kts` incrementando `versionCode` y `versionName`) para que se actualice la versión que aparece en la parte de abajo derecha de la aplicación.
+- Consulta obligatoria de continuidad: Consulta `INSTRUCCIONES_AGENTES.md` para el protocolo maestro de lectura, registro y auditoría de modificaciones entre agentes.
 
 ### REGLA DE REPORTE PARA TESTERS Y RESUMEN COPIABLE (CRÍTICO)
 - Siempre que realices cualquier modificación o tarea en la aplicación, debes entregar directamente un resumen copiable y conciso estructurado para el equipo de pruebas (testers).

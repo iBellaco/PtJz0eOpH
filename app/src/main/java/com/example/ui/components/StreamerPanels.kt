@@ -196,7 +196,18 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 Text(localizedString(R.string.streamer_count, entries.size), color = Color.White)
                 if (maximum) Text(localizedString(R.string.streamer_max), color = StreamGold)
                 when {
-                    active -> Text(localizedString(R.string.streamer_approved), color = Color.White)
+                    active -> {
+                        Text(localizedString(R.string.streamer_approved), color = Color.White)
+                        val activePubId = entries.firstOrNull { it["userId"] == uid }?.let { StreamerPublicationPolicy.publicationId(it) }
+                            ?: StreamerPublicationPolicy.publicationId(request)
+                        val activeClicks = clickMetrics[activePubId] ?: (request["clickCount"] as? Number)?.toLong() ?: 0L
+                        Text(
+                            localizedString(R.string.streamer_history_clicks, activeClicks),
+                            color = StreamGold,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                    }
                     pending -> Text(localizedString(R.string.streamer_pending), color = Color.White)
                     request["status"] == "REJECTED" -> Text(localizedString(R.string.streamer_rejected), color = Color.White)
                 }
@@ -244,12 +255,20 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
             if (expiration.isFailure) result = expiration
         }
     }
+    var clickMetrics by remember { mutableStateOf<Map<String, Long>>(emptyMap()) }
     DisposableEffect(Unit) {
         val listener = StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
             requestAvailable = error == null && snapshot != null && !snapshot.metadata.isFromCache
             if (error == null && snapshot != null) requests = snapshot.documents.mapNotNull { it.data?.plus("id" to it.id) }.sortedBy { (it["submittedAtMillis"] as? Number)?.toLong() ?: 0L }
         }
-        onDispose { listener.remove() }
+        val metricsListener = StreamerRepository.metrics.addSnapshotListener { snapshot, error ->
+            if (error == null && snapshot != null) {
+                clickMetrics = snapshot.documents.mapNotNull { doc ->
+                    doc.getLong("clickCount")?.let { doc.id to it }
+                }.toMap()
+            }
+        }
+        onDispose { listener.remove(); metricsListener.remove() }
     }
     Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         PanelReadControl(com.example.data.NotificationPanel.ADMINISTRATION)
@@ -260,9 +279,15 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
         if (!available || !requestAvailable) Text(localizedString(R.string.streamer_loading), color = Color.White)
         if (metricRepairFailed) Text(localizedString(R.string.streamer_history_clicks_unavailable), color = StreamGold)
         entries.forEach { item ->
-            ApprovedStreamerReviewCard(item, !busy && available,
+            val pubId = StreamerPublicationPolicy.publicationId(item)
+            val clicks = clickMetrics[pubId] ?: (item["clickCount"] as? Number)?.toLong() ?: 0L
+            ApprovedStreamerReviewCard(
+                item = item,
+                enabled = !busy && available,
                 onOpen = { url -> runCatching { uri.openUri(url) } },
-                onEnd = { busy = true; scope.launch { result = StreamerRepository.end(item["userId"] as String); busy = false } })
+                onEnd = { busy = true; scope.launch { result = StreamerRepository.end(item["userId"] as String); busy = false } },
+                clicks = clicks
+            )
         }
         if (requestAvailable && pendingRequests.isEmpty()) Text(localizedString(R.string.streamer_empty), color = Color.White)
         pendingRequests.forEach { request ->
@@ -291,13 +316,19 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
 /** Approved channels remain available for verification after leaving the pending queue. */
 @Composable
 fun ApprovedStreamerReviewCard(item: Map<String, Any>, enabled: Boolean,
-    onOpen: (String) -> Unit, onEnd: () -> Unit) {
+    onOpen: (String) -> Unit, onEnd: () -> Unit, clicks: Long = 0L) {
     val channel = StreamChannelUrl.approved(item["channelUrl"] as? String ?: "")
     Surface(color = Color(0xFF1F2937), shape = RoundedCornerShape(10.dp)) {
         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(item["channelName"] as? String ?: "", color = StreamGold, style = MaterialTheme.typography.titleMedium)
             Text(localizedString(R.string.streamer_review_accepted), color = Color(0xFF2DD4BF))
             Text(item["channelUrl"] as? String ?: "", color = Color.White)
+            Text(
+                localizedString(R.string.streamer_history_clicks, clicks),
+                color = StreamGold,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = { channel?.let { onOpen(it.url) } }, enabled = channel != null) { Text(localizedString(R.string.streamer_open)) }
                 TextButton(onClick = onEnd, enabled = enabled) { Text(localizedString(R.string.streamer_end)) }
