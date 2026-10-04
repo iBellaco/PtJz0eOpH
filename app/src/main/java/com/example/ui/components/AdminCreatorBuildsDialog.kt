@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachFilterChip as FilterChip
+
 import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachOutlinedButton as OutlinedButton
 import com.example.ui.components.CoachIconButton as IconButton
@@ -492,7 +494,7 @@ fun AdminCreatorBuildsDialog(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
                     ) {
                         items(officialCreatorsList) { creator ->
-                            Surface(
+                            com.example.ui.components.CoachClickableSurface(
                                 onClick = {
                                     selectedCreatorForProfile = creator
                                 },
@@ -848,7 +850,7 @@ fun CreatorPodiumCard(
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.35f))
                     ) {
                         Row(modifier = Modifier.padding(2.dp)) {
-                            Surface(
+                            com.example.ui.components.CoachClickableSurface(
                                 onClick = { onTabChange(CreatorPodiumTab.OFFICIAL) },
                                 shape = RoundedCornerShape(14.dp),
                                 color = if (podiumTab == CreatorPodiumTab.OFFICIAL) HextechGold else Color.Transparent
@@ -861,7 +863,7 @@ fun CreatorPodiumCard(
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
                             }
-                            Surface(
+                            com.example.ui.components.CoachClickableSurface(
                                 onClick = { onTabChange(CreatorPodiumTab.POPULARITY) },
                                 shape = RoundedCornerShape(14.dp),
                                 color = if (podiumTab == CreatorPodiumTab.POPULARITY) HextechGold else Color.Transparent

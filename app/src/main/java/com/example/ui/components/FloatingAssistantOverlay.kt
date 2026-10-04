@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachTab as Tab
+
 import com.example.ui.components.coachClickable
 
 import com.example.ui.components.CoachIconButton as IconButton

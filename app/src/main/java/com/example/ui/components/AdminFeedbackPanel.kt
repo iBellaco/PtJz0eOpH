@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachTab as Tab
+
 import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachOutlinedButton as OutlinedButton
 import com.example.ui.components.CoachTextButton as TextButton
@@ -104,7 +106,7 @@ import androidx.compose.material3.ModalBottomSheet
 
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Tab
+
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material.icons.filled.SportsEsports

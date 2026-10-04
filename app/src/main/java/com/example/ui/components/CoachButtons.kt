@@ -103,3 +103,63 @@ fun CoachIconButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled:
     val source = interactionSource ?: remember { MutableInteractionSource() }
     IconButton(onClick, modifier.coachButtonMotion(source, enabled), enabled, colors, source, content = content)
 }
+
+@Composable
+fun CoachFilterChip(selected: Boolean, onClick: () -> Unit, label: @Composable () -> Unit,
+    modifier: Modifier = Modifier, enabled: Boolean = true, leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null, shape: Shape = FilterChipDefaults.shape,
+    colors: SelectableChipColors = FilterChipDefaults.filterChipColors(),
+    elevation: SelectableChipElevation? = FilterChipDefaults.filterChipElevation(),
+    border: BorderStroke? = FilterChipDefaults.filterChipBorder(enabled, selected),
+    interactionSource: MutableInteractionSource? = null) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    FilterChip(selected, onClick, label, modifier.coachButtonMotion(source, enabled), enabled,
+        leadingIcon, trailingIcon, shape, colors, elevation, border, source)
+}
+
+@Composable
+fun CoachAssistChip(onClick: () -> Unit, label: @Composable () -> Unit, modifier: Modifier = Modifier,
+    enabled: Boolean = true, leadingIcon: @Composable (() -> Unit)? = null, trailingIcon: @Composable (() -> Unit)? = null,
+    shape: Shape = AssistChipDefaults.shape, colors: ChipColors = AssistChipDefaults.assistChipColors(),
+    elevation: ChipElevation? = AssistChipDefaults.assistChipElevation(),
+    border: BorderStroke? = AssistChipDefaults.assistChipBorder(enabled), interactionSource: MutableInteractionSource? = null) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    AssistChip(onClick, label, modifier.coachButtonMotion(source, enabled), enabled, leadingIcon, trailingIcon, shape, colors, elevation, border, source)
+}
+
+@Composable
+fun CoachTab(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
+    text: @Composable (() -> Unit)? = null, icon: @Composable (() -> Unit)? = null,
+    selectedContentColor: androidx.compose.ui.graphics.Color = LocalContentColor.current,
+    unselectedContentColor: androidx.compose.ui.graphics.Color = selectedContentColor, interactionSource: MutableInteractionSource? = null) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    Tab(selected, onClick, modifier.coachButtonMotion(source, enabled), enabled, text, icon, selectedContentColor, unselectedContentColor, source)
+}
+
+@Composable
+fun CoachTab(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
+    selectedContentColor: androidx.compose.ui.graphics.Color = LocalContentColor.current,
+    unselectedContentColor: androidx.compose.ui.graphics.Color = selectedContentColor, interactionSource: MutableInteractionSource? = null,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    Tab(selected, onClick, modifier.coachButtonMotion(source, enabled), enabled, selectedContentColor, unselectedContentColor, source, content)
+}
+
+@Composable
+fun RowScope.CoachNavigationBarItem(selected: Boolean, onClick: () -> Unit, icon: @Composable () -> Unit,
+    modifier: Modifier = Modifier, enabled: Boolean = true, label: @Composable (() -> Unit)? = null,
+    alwaysShowLabel: Boolean = true, colors: NavigationBarItemColors = NavigationBarItemDefaults.colors(),
+    interactionSource: MutableInteractionSource? = null) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    NavigationBarItem(selected, onClick, icon, modifier.coachButtonMotion(source, enabled), enabled, label, alwaysShowLabel, colors, source)
+}
+
+@Composable
+fun CoachClickableSurface(onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
+    shape: Shape = androidx.compose.ui.graphics.RectangleShape, color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surface,
+    contentColor: androidx.compose.ui.graphics.Color = contentColorFor(color), tonalElevation: androidx.compose.ui.unit.Dp = 0.dp,
+    shadowElevation: androidx.compose.ui.unit.Dp = 0.dp, border: BorderStroke? = null,
+    interactionSource: MutableInteractionSource? = null, content: @Composable () -> Unit) {
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    Surface(onClick, modifier.coachButtonMotion(source, enabled), enabled, shape, color, contentColor, tonalElevation, shadowElevation, border, source, content)
+}

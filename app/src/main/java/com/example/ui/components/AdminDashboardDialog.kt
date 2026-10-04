@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachFilterChip as FilterChip
+
 import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachOutlinedButton as OutlinedButton
 import com.example.ui.components.CoachTextButton as TextButton
@@ -2243,7 +2245,7 @@ fun EnhancedUserManagementPanel(
 
                 if (isAdminUserForRequests && pendingRequestsCount > 0) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Surface(
+                    com.example.ui.components.CoachClickableSurface(
                         onClick = { showRequestsDialog = true },
                         color = HextechGold.copy(alpha = 0.12f),
                         shape = RoundedCornerShape(10.dp),
@@ -3521,7 +3523,7 @@ fun UserDetailManagementDialog(
                                         primaryRoles.forEach { targetRole ->
                                             val isSelected = (currentRole.equals(targetRole.id, ignoreCase = true) && (!currentBanned || targetRole == AppUserRole.BANNED))
 
-                                            Surface(
+                                            com.example.ui.components.CoachClickableSurface(
                                                 onClick = {
                                                     if (!isSelected && !isChangingRole && isAdmin) {
                                                         roleToConfirm = targetRole
@@ -3687,7 +3689,7 @@ fun UserDetailManagementDialog(
                                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                     // Opción para quitar/limpiar rol secundario
                                     val isSecondaryEmpty = currentSecondaryRole.isBlank()
-                                    Surface(
+                                    com.example.ui.components.CoachClickableSurface(
                                         onClick = {
                                             if (!isSecondaryEmpty && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
                                                 secondaryRoleToConfirm = AppUserRole.FREE
@@ -3735,7 +3737,7 @@ fun UserDetailManagementDialog(
                                     secondaryRoles.forEach { targetRole ->
                                         val isSelected = currentSecondaryRole.equals(targetRole.id, ignoreCase = true)
 
-                                        Surface(
+                                        com.example.ui.components.CoachClickableSurface(
                                             onClick = {
                                                 if (!isSelected && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
                                                     secondaryRoleToConfirm = targetRole

@@ -372,7 +372,7 @@ fun ModeratorUserListPanel() {
                     val isVerified = isUserVerified(user)
                     val secondaryRole = (user["secondaryRole"] as? String ?: user["secRole"] as? String ?: "").trim()
 
-                    Surface(
+                    com.example.ui.components.CoachClickableSurface(
                         onClick = { selectedUserForProposal = user },
                         color = HextechSurface,
                         shape = RoundedCornerShape(10.dp),

@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachFilterChip as FilterChip
+import com.example.ui.components.CoachTab as Tab
+
 import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachTextButton as TextButton
 import com.example.ui.components.CoachIconButton as IconButton
@@ -87,7 +90,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 
@@ -101,7 +104,7 @@ import androidx.compose.material3.Surface
 
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Tab
+
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text

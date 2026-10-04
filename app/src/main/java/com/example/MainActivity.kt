@@ -1,5 +1,7 @@
 package com.example
 
+import com.example.ui.components.CoachNavigationBarItem as NavigationBarItem
+
 import android.content.Context
 import android.Manifest
 import android.content.pm.PackageManager
