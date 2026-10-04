@@ -1,5 +1,9 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -9,7 +13,7 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -322,7 +326,7 @@ private fun DonationCryptoCard(
                     .clip(RoundedCornerShape(6.dp))
                     .background(HextechDarkBg)
                     .padding(horizontal = 8.dp, vertical = 6.dp)
-                    .clickable { onCopy() }
+                    .coachClickable { onCopy() }
             ) {
                 Text(
                     text = com.example.util.tr(address),
@@ -412,7 +416,7 @@ private fun DonationPixCard(
                     .size(160.dp)
                     .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
                     .background(androidx.compose.ui.graphics.Color.White)
-                    .clickable { showQRModal = true }
+                    .coachClickable { showQRModal = true }
                     .border(2.dp, androidx.compose.ui.graphics.Color(0xFF32BCAD).copy(alpha = 0.3f), androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
                     .padding(8.dp),
                 contentAlignment = androidx.compose.ui.Alignment.Center
@@ -432,7 +436,7 @@ private fun DonationPixCard(
 
             androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
 
-            androidx.compose.material3.Button(
+            com.example.ui.components.CoachButton(
                 onClick = { showQRModal = true },
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF32BCAD)),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
@@ -475,7 +479,7 @@ private fun DonationPixCard(
                                 fontSize = 16.sp
                             )
                         }
-                        androidx.compose.material3.IconButton(onClick = { showQRModal = false }, modifier = androidx.compose.ui.Modifier.size(28.dp)) {
+                        com.example.ui.components.CoachIconButton(onClick = { showQRModal = false }, modifier = androidx.compose.ui.Modifier.size(28.dp)) {
                             androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.Close, contentDescription = tr("Cerrar"), tint = TextMuted)
                         }
                     }
@@ -522,7 +526,7 @@ private fun DonationPixCard(
 
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(20.dp))
 
-                    androidx.compose.material3.Button(
+                    com.example.ui.components.CoachButton(
                         onClick = {
                             onCopy()
                             showQRModal = false
@@ -538,7 +542,7 @@ private fun DonationPixCard(
 
                     androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(10.dp))
 
-                    androidx.compose.material3.OutlinedButton(
+                    com.example.ui.components.CoachOutlinedButton(
                         onClick = { downloadQr(context, qrCodeUrl) },
                         modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
                         colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = androidx.compose.ui.graphics.Color(0xFF32BCAD)),
@@ -664,7 +668,7 @@ private fun DonationPixCombinedCard() {
                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
             ) {
                 val isOption1 = selectedOption == 1
-                androidx.compose.material3.OutlinedButton(
+                com.example.ui.components.CoachOutlinedButton(
                     onClick = { selectedOption = 1 },
                     modifier = androidx.compose.ui.Modifier.weight(1f),
                     colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
@@ -677,7 +681,7 @@ private fun DonationPixCombinedCard() {
                 }
 
                 val isOption2 = selectedOption == 2
-                androidx.compose.material3.OutlinedButton(
+                com.example.ui.components.CoachOutlinedButton(
                     onClick = { selectedOption = 2 },
                     modifier = androidx.compose.ui.Modifier.weight(1f),
                     colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
@@ -715,7 +719,7 @@ private fun DonationPixCombinedCard() {
                         .size(160.dp)
                         .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
                         .background(androidx.compose.ui.graphics.Color.White)
-                        .clickable { showQRModal = true }
+                        .coachClickable { showQRModal = true }
                         .border(2.dp, androidx.compose.ui.graphics.Color(0xFF32BCAD).copy(alpha = 0.3f), androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
                         .padding(8.dp),
                     contentAlignment = androidx.compose.ui.Alignment.Center
@@ -734,7 +738,7 @@ private fun DonationPixCombinedCard() {
                 }
                 androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(16.dp))
 
-                androidx.compose.material3.Button(
+                com.example.ui.components.CoachButton(
                     onClick = { copyToClipboard(context, currentPixCode, "Código Pix Copia e Cola") },
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = HextechBlue),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
@@ -805,7 +809,7 @@ private fun DonationPixCombinedCard() {
                 }
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(onClick = { showQRModal = false }) {
+                com.example.ui.components.CoachTextButton(onClick = { showQRModal = false }) {
                     androidx.compose.material3.Text(tr("Cerrar"), color = HextechGold)
                 }
             }

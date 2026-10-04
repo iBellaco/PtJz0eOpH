@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachTextButton as TextButton
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -95,7 +98,8 @@ fun CashRedemptionReviewPanel() {
     var error by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    DisposableEffect(Unit) {
+    var retry by remember { mutableIntStateOf(0) }
+    DisposableEffect(retry) {
         val listener = EssenceEconomyRepository.redemptions.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, failure ->
             if (failure != null) error = "No se pudieron cargar las solicitudes"
             else { error = null; requests = snapshot?.documents.orEmpty().mapNotNull { it.data?.plus("id" to it.id) } }
@@ -104,7 +108,10 @@ fun CashRedemptionReviewPanel() {
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(tr("Solicitudes de canje"), color = HextechGold)
-        error?.let { Text(tr(it), color = DangerRed) }
+        error?.let {
+            Text(tr(it), color = DangerRed)
+            TextButton(onClick = { error = null; retry++ }) { Text(tr("Reintentar")) }
+        }
         requests.forEach { request ->
             var decision by remember(request["id"]) { mutableStateOf<Boolean?>(null) }
             Text(tr("${request["email"]} • ${request["amount"]} EN → ${request["usd"]} USDT"), color = TextPrimary)

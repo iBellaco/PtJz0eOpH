@@ -1,5 +1,9 @@
 package com.example.ui.components
 
+import com.example.ui.components.coachClickable
+
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.utils.parseHtmlColorToAnnotatedString
 
 import androidx.compose.animation.*
@@ -89,7 +93,7 @@ fun FloatingAssistantOverlay(
                         .clip(CircleShape)
                         .background(HextechDarkBg)
                         .border(2.dp, HextechGold, CircleShape)
-                        .clickable { isExpanded = true },
+                        .coachClickable { isExpanded = true },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = com.example.util.trNullable("Open Assistant"), tint = HextechCyan)
@@ -260,7 +264,7 @@ private fun OverlayItemsTabContent(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .background(if (isSelected) HextechCyan else HextechSurface)
-                        .clickable { onCategoryChange(if (isSelected) null else cat) }
+                        .coachClickable { onCategoryChange(if (isSelected) null else cat) }
                         .padding(horizontal = 6.dp, vertical = 3.dp)
                 ) {
                     Text(
@@ -402,7 +406,7 @@ private fun OverlayRunesTabContent(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(HextechSurface)
-                            .clickable { onSelectChampion(champ) }
+                            .coachClickable { onSelectChampion(champ) }
                             .padding(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -621,7 +625,7 @@ private fun OverlaySpellsTabContent(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(HextechSurface)
-                            .clickable { onSelectChampion(champ) }
+                            .coachClickable { onSelectChampion(champ) }
                             .padding(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween

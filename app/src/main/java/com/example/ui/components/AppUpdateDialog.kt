@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachTextButton as TextButton
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*

@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+
 import com.example.util.tr
 
 import android.widget.Toast
@@ -7,7 +9,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -209,7 +211,7 @@ fun BlueEssenceStoreDialog(
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable {
+                                        .coachClickable {
                                             if (selectedCurrency == "BLUE") {
                                                 AccountProfileManager.buyBlueEssence(context, profileId, amount, price)
                                             } else {

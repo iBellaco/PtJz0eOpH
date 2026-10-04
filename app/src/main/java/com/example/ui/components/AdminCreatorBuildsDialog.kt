@@ -1,5 +1,9 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import android.widget.Toast
@@ -12,7 +16,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -458,7 +462,7 @@ fun AdminCreatorBuildsDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { isCreatorsListExpanded = !isCreatorsListExpanded }
+                        .coachClickable { isCreatorsListExpanded = !isCreatorsListExpanded }
                         .padding(top = 2.dp, bottom = 1.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -665,7 +669,7 @@ fun AdminCreatorBuildsDialog(
                             border = BorderStroke(1.dp, HextechCardBorder),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { selectedBuildForDetail = record }
+                                .coachClickable { selectedBuildForDetail = record }
                         ) {
                             Column(
                                 modifier = Modifier
@@ -816,7 +820,7 @@ fun CreatorPodiumCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.clickable { onToggleExpand() }
+                    modifier = Modifier.coachClickable { onToggleExpand() }
                 ) {
                     Icon(
                         imageVector = Icons.Default.EmojiEvents,
@@ -894,7 +898,7 @@ fun CreatorPodiumCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onToggleExpand() }
+                        .coachClickable { onToggleExpand() }
                         .padding(vertical = 2.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -1033,7 +1037,7 @@ private fun PodiumColumn(
 
     Column(
         modifier = modifier
-            .clickable { onClick() }
+            .coachClickable { onClick() }
             .then(
                 if (isSelected) Modifier
                     .background(HextechCyan.copy(alpha = 0.08f), RoundedCornerShape(8.dp))
@@ -1631,7 +1635,7 @@ fun CreatorProfileDialog(
                                 border = BorderStroke(1.dp, HextechCardBorder),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .coachClickable {
                                         onOpenBuild(b)
                                     }
                             ) {

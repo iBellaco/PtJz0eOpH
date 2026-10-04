@@ -1,5 +1,10 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import android.content.ClipData
@@ -11,7 +16,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,20 +37,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.*
@@ -208,13 +213,13 @@ fun LiteRTEngineViewerDialog(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.85f))
-            .clickable { onDismissRequest() },
+            .coachClickable { onDismissRequest() },
         contentAlignment = Alignment.Center
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable(enabled = false) { /* Evitar cerrar al hacer click dentro */ }
+                .coachClickable(enabled = false) { /* Evitar cerrar al hacer click dentro */ }
                 .padding(4.dp)
                 .testTag("litert_viewer_dialog"),
             shape = RoundedCornerShape(14.dp),
@@ -596,7 +601,7 @@ fun LiteRTEngineViewerDialog(
                                             if (isSel) Color(0xFF38BDF8) else Color(0xFF334155),
                                             RoundedCornerShape(6.dp)
                                         )
-                                        .clickable { selectedTarget = target }
+                                        .coachClickable { selectedTarget = target }
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                 ) {
                                     Text(
@@ -664,7 +669,7 @@ fun LiteRTEngineViewerDialog(
                                 Surface(
                                     modifier = Modifier
                                         .size(34.dp)
-                                        .clickable { modifyDetectionCircle(deltaY = -calibrationStep) },
+                                        .coachClickable { modifyDetectionCircle(deltaY = -calibrationStep) },
                                     shape = RoundedCornerShape(6.dp),
                                     color = Color(0xFF0F172A),
                                     border = BorderStroke(1.dp, Color(0xFF38BDF8))
@@ -682,7 +687,7 @@ fun LiteRTEngineViewerDialog(
                                     Surface(
                                         modifier = Modifier
                                             .size(34.dp)
-                                            .clickable { modifyDetectionCircle(deltaX = -calibrationStep) },
+                                            .coachClickable { modifyDetectionCircle(deltaX = -calibrationStep) },
                                         shape = RoundedCornerShape(6.dp),
                                         color = Color(0xFF0F172A),
                                         border = BorderStroke(1.dp, Color(0xFF38BDF8))
@@ -712,7 +717,7 @@ fun LiteRTEngineViewerDialog(
                                     Surface(
                                         modifier = Modifier
                                             .size(34.dp)
-                                            .clickable { modifyDetectionCircle(deltaX = calibrationStep) },
+                                            .coachClickable { modifyDetectionCircle(deltaX = calibrationStep) },
                                         shape = RoundedCornerShape(6.dp),
                                         color = Color(0xFF0F172A),
                                         border = BorderStroke(1.dp, Color(0xFF38BDF8))
@@ -727,7 +732,7 @@ fun LiteRTEngineViewerDialog(
                                 Surface(
                                     modifier = Modifier
                                         .size(34.dp)
-                                        .clickable { modifyDetectionCircle(deltaY = calibrationStep) },
+                                        .coachClickable { modifyDetectionCircle(deltaY = calibrationStep) },
                                     shape = RoundedCornerShape(6.dp),
                                     color = Color(0xFF0F172A),
                                     border = BorderStroke(1.dp, Color(0xFF38BDF8))
@@ -806,7 +811,7 @@ fun LiteRTEngineViewerDialog(
                                                 .clip(RoundedCornerShape(4.dp))
                                                 .background(if (isSel) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFF0F172A))
                                                 .border(0.6.dp, if (isSel) Color(0xFF38BDF8) else Color(0xFF334155), RoundedCornerShape(4.dp))
-                                                .clickable { calibrationStep = value }
+                                                .coachClickable { calibrationStep = value }
                                                 .padding(vertical = 3.dp),
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -1227,7 +1232,7 @@ private fun SavedCropThumbnailCard(
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFF1E293B))
             .border(1.dp, Color(0xFF334155), RoundedCornerShape(8.dp))
-            .clickable { onClick() }
+            .coachClickable { onClick() }
             .padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -1284,13 +1289,13 @@ private fun DiagnosticFrameInspectorDialog(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.88f))
-            .clickable { onDismiss() },
+            .coachClickable { onDismiss() },
         contentAlignment = Alignment.Center
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.92f)
-                .clickable(enabled = false) {}
+                .coachClickable(enabled = false) {}
                 .padding(8.dp),
             shape = RoundedCornerShape(14.dp),
             color = Color(0xFF0F172A),
@@ -1486,7 +1491,7 @@ private fun CandidateRowItem(
             .clip(RoundedCornerShape(8.dp))
             .background(bgColor)
             .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-            .clickable(enabled = onSelect != null) {
+            .coachClickable(enabled = onSelect != null) {
                 onSelect?.invoke(candidate.champion)
             }
             .padding(horizontal = 10.dp, vertical = 8.dp),

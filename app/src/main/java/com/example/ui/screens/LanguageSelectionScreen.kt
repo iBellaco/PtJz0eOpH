@@ -1,8 +1,10 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachButton as Button
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -153,7 +155,7 @@ fun LanguageOption(
             .clip(RoundedCornerShape(12.dp))
             .background(bgColor)
             .border(2.dp, borderColor, RoundedCornerShape(12.dp))
-            .clickable(enabled = isEnabled) { onClick() }
+            .coachClickable(enabled = isEnabled) { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -18,6 +18,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.firestore.FirebaseFirestore
 import org.junit.*
+import org.junit.Assert.*
+import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.runner.RunWith
 import org.robolectric.ParameterizedRobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -49,13 +51,58 @@ class DraftChampionSelectionTest(private val language: String) {
         AppLanguage.select(context, language)
         context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit()
             .putString("saved_active_role", LaneRole.MID.name).commit()
+        setRole("free")
         DraftSessionManager.clearAll()
+    }
+
+    private fun setRole(role: String) {
+        val field = com.example.util.SubscriptionManager::class.java.getDeclaredField("_userRole").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        (field.get(com.example.util.SubscriptionManager) as kotlinx.coroutines.flow.MutableStateFlow<String>).value = role
     }
 
     @After fun release() {
         DraftSessionManager.clearAll()
         CompletableFuture.runAsync { Tasks.await(FirebaseFirestore.getInstance().terminate()) }.get(10, TimeUnit.SECONDS)
         FirebaseApp.getApps(context).forEach { it.delete() }
+    }
+
+    @Test fun missingLaneOpensTheLaneDialogInsteadOfTheChampionPicker() {
+        context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit().remove("saved_active_role").commit()
+        compose.setContent { MyApplicationTheme(animateButtons = true) {
+            MetaAndDraftScreen(mode = MetaScreenMode.DRAFTING, userMainRole = LaneRole.MID, onNavigateBack = {})
+        } }
+        compose.onNodeWithTag("ally_pos_top").performScrollTo().performClick()
+        compose.onNode(hasSetTextAction()).assertDoesNotExist()
+        compose.onNodeWithText(com.example.util.trStr(language, "Selecciona tu Línea para esta Partida")).assertIsDisplayed()
+        assertTrue(DraftSessionManager.allySlots.all { it.champion.id == "empty" })
+        compose.onNode(hasText(com.example.util.trStr(language, LaneRole.MID.displayName)) and hasAnyAncestor(isDialog())).performClick()
+        openField("enemy", LaneRole.TOP)
+        choose("Darius")
+        assertEquals("Darius", DraftSessionManager.enemySlots.single { it.assignedRole == LaneRole.TOP }.champion.name)
+    }
+
+    @Test fun administratorCanFillEverySlotWithDistinctPrimaryLaneChampions() {
+        setRole("admin")
+        compose.setContent { MyApplicationTheme(animateButtons = true) {
+            MetaAndDraftScreen(mode = MetaScreenMode.DRAFTING, userMainRole = LaneRole.MID, onNavigateBack = {})
+        } }
+        compose.onNodeWithTag("random_draft_button").performScrollTo().performClick()
+        compose.waitForIdle()
+        val all = DraftSessionManager.allySlots + DraftSessionManager.enemySlots
+        assertEquals(10, all.map { it.champion.id }.distinct().size)
+        all.forEach { assertEquals(it.champion.primaryRole, it.assignedRole) }
+        assertTrue(com.example.data.RandomDraftPolicy.isWomboTeam(DraftSessionManager.allySlots.map { it.champion }))
+        java.io.File("build/reports/portuguese-rendered").mkdirs()
+        compose.onRoot().captureRoboImage("build/reports/portuguese-rendered/draft-random-$language.png")
+        setRole("free")
+    }
+
+    @Test fun theRandomFillActionIsHiddenForAnOrdinaryAccount() {
+        compose.setContent { MyApplicationTheme(animateButtons = true) {
+            MetaAndDraftScreen(mode = MetaScreenMode.DRAFTING, userMainRole = LaneRole.MID, onNavigateBack = {})
+        } }
+        compose.onNodeWithTag("random_draft_button").assertDoesNotExist()
     }
 
     private fun openField(team: String, role: LaneRole) {

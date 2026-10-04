@@ -18,7 +18,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -441,7 +441,7 @@ fun SupportReportDialog(
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(HextechSurface)
                                     .border(BorderStroke(1.dp, HextechCyan.copy(alpha = 0.6f)), RoundedCornerShape(10.dp))
-                                    .clickable(enabled = !isSubmitting) {
+                                    .coachClickable(enabled = !isSubmitting) {
                                         photoPickerLauncher.launch(
                                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                         )
@@ -493,7 +493,7 @@ fun SupportReportDialog(
                                             contentScale = ContentScale.Crop,
                                             modifier = Modifier
                                                 .fillMaxSize()
-                                                .clickable { previewZoomBitmap = bitmap }
+                                                .coachClickable { previewZoomBitmap = bitmap }
                                         )
                                     }
 
@@ -505,7 +505,7 @@ fun SupportReportDialog(
                                             .size(20.dp)
                                             .clip(CircleShape)
                                             .background(DangerRed)
-                                            .clickable(enabled = !isSubmitting) {
+                                            .coachClickable(enabled = !isSubmitting) {
                                                 base64Photos.removeAt(index)
                                             },
                                         contentAlignment = Alignment.Center
@@ -763,7 +763,7 @@ fun SupportReportDialog(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.9f))
-                    .clickable { previewZoomBitmap = null }
+                    .coachClickable { previewZoomBitmap = null }
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {

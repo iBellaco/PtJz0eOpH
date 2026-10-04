@@ -1,6 +1,6 @@
 package com.example.ui.auth
 
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -74,7 +74,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(34.dp)
-                        .clickable {
+                        .coachClickable {
                             val base = if (email.contains("@")) email.substringBefore("@") else email
                             val cleanBase = if (base.isBlank()) "usuario" else base
                             viewModel.updateEmail(cleanBase + domain)

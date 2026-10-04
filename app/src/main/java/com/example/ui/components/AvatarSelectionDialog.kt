@@ -1,9 +1,12 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -405,7 +408,7 @@ fun AvatarSelectionBottomSheet(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = canEquip || isEquipped) {
+                            .coachClickable(enabled = canEquip || isEquipped) {
                                 if (isEquipped) {
                                     Toast.makeText(context, com.example.util.appTr("Este avatar ya está equipado."), Toast.LENGTH_SHORT).show()
                                 } else {
@@ -662,7 +665,7 @@ fun AvatarSelectionBottomSheet(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .aspectRatio(0.85f)
-                                    .clickable {
+                                    .coachClickable {
                                         SubscriptionManager.changeRankBorder(
                                             borderId = border,
                                             onSuccess = {

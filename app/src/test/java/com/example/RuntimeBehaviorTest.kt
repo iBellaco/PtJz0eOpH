@@ -173,6 +173,56 @@ class RuntimeBehaviorTest {
         assertTrue(runCatching { DeviceSlotPolicy.register(devices, "third-phone", setOf("third-phone"), false) }.isFailure)
     }
 
+    @Test fun `hardware identity survives a fresh installation and replaces legacy installation ids`() {
+        val first = DeviceIdentityPolicy.resolve("ABC123", "WRD_INST_old")
+        val reinstalled = DeviceIdentityPolicy.resolve("ABC123", null)
+        assertEquals("WRD_DEVICE_abc123", first)
+        assertEquals(first, reinstalled)
+        assertEquals(listOf(first, "another-phone"), DeviceSlotPolicy.register(
+            listOf("WRD_INST_old", "another-phone"), first, setOf("WRD_INST_old", first), false))
+        assertEquals(listOf(first, "another-phone"), DeviceSlotPolicy.register(
+            listOf(first, "another-phone"), reinstalled, setOf(reinstalled), false))
+        assertNotEquals(first, DeviceIdentityPolicy.resolve("different-phone", null))
+        assertTrue(runCatching { DeviceIdentityPolicy.resolve(null, null) }.isFailure)
+        assertTrue(runCatching { DeviceIdentityPolicy.resolve("9774d56d682e549c", null) }.isFailure)
+    }
+
+    @Test fun `two hardware slots apply to administrators and do not rotate on login`() {
+        for (administrator in listOf(false, true)) {
+            val devices = DeviceSlotPolicy.register(listOf("first"), "second", setOf("second"), administrator)
+            assertEquals(listOf("first", "second"), devices)
+            assertEquals(devices, DeviceSlotPolicy.register(devices, "first", setOf("first"), administrator))
+            assertTrue(runCatching { DeviceSlotPolicy.register(devices, "third", setOf("third"), administrator) }.isFailure)
+        }
+    }
+
+    @Test fun `session replacement uses token ownership without clock gaps or role exceptions`() {
+        assertTrue(DeviceSessionPolicy.owns("new", "second", "new", "second"))
+        assertFalse(DeviceSessionPolicy.displaced("new", "second", "new", "second", true))
+        assertTrue(DeviceSessionPolicy.displaced("old", "first", "new", "second", true))
+        assertTrue(DeviceSessionPolicy.displaced("old", "same", "new", "same", true))
+        assertFalse(DeviceSessionPolicy.displaced("old", "first", "new", "second", false))
+        assertFalse(DeviceSessionPolicy.displaced("old", "first", null, "second", true))
+        assertFalse(DeviceSessionPolicy.owns(null, "first", null, "first"))
+    }
+
+    @Test fun `random drafts have ten unique primary lane picks and a connected allied wombo combo`() {
+        WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
+        val roster = WildRiftRepository.baseChampionsList
+        val combinations = mutableSetOf<List<String>>()
+        repeat(120) { seed ->
+            val draft = RandomDraftPolicy.generate(roster, kotlin.random.Random(seed))
+            val all = draft.allies + draft.enemies
+            assertEquals(10, all.map { it.champion.id }.distinct().size)
+            assertEquals(LaneRole.entries.toList(), draft.allies.map { it.assignedRole })
+            assertEquals(LaneRole.entries.toList(), draft.enemies.map { it.assignedRole })
+            all.forEach { assertEquals(it.champion.primaryRole, it.assignedRole) }
+            assertTrue(RandomDraftPolicy.isWomboTeam(draft.allies.map { it.champion }))
+            combinations += draft.allies.map { it.champion.id }
+        }
+        assertTrue("The fill action must vary, rather than repeat one preset", combinations.size > 20)
+    }
+
     @Test fun `reading one revision never hides a subsequent reply`() {
         val first = mapOf<String, Any>("conversation" to listOf(mapOf("id" to "reply-one")))
         val next = mapOf<String, Any>("conversation" to listOf(mapOf("id" to "reply-one"), mapOf("id" to "reply-two")))

@@ -1,5 +1,10 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -16,7 +21,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,7 +75,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -80,15 +85,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
+
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -164,7 +169,7 @@ private fun AdaptiveHistoryDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.85f))
-                .clickable(
+                .coachClickable(
                     interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                     indication = null,
                     onClick = onDismissRequest
@@ -176,7 +181,7 @@ private fun AdaptiveHistoryDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .widthIn(max = 440.dp)
-                    .clickable(
+                    .coachClickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null,
                         onClick = {}
@@ -582,7 +587,7 @@ fun DraftHistoryScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(HextechDarkBg.copy(alpha = 0.6f))
-                                .clickable { showProfileDropdown = true }
+                                .coachClickable { showProfileDropdown = true }
                                 .padding(horizontal = 6.dp, vertical = 3.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -645,7 +650,7 @@ fun DraftHistoryScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(5.dp))
                                 .background(if (currentHistoryTab == "DRAFTS") HextechGold else Color.Transparent)
-                                .clickable { currentHistoryTab = "DRAFTS" }
+                                .coachClickable { currentHistoryTab = "DRAFTS" }
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
@@ -659,7 +664,7 @@ fun DraftHistoryScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(5.dp))
                                 .background(if (currentHistoryTab == "TIER_LIST") HextechGold else Color.Transparent)
-                                .clickable { currentHistoryTab = "TIER_LIST" }
+                                .coachClickable { currentHistoryTab = "TIER_LIST" }
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
@@ -827,7 +832,7 @@ fun DraftHistoryScreen(
                                                 contentDescription = tr("Editar"),
                                                 modifier = Modifier
                                                     .size(12.dp)
-                                                    .clickable { profileToEdit = prof },
+                                                    .coachClickable { profileToEdit = prof },
                                                 tint = HextechDarkBg
                                             )
                                         }
@@ -859,7 +864,7 @@ fun DraftHistoryScreen(
                             .weight(1f)
                             .clip(RoundedCornerShape(9.dp))
                             .background(if (currentHistoryTab == "DRAFTS") HextechGold else Color.Transparent)
-                            .clickable { currentHistoryTab = "DRAFTS" }
+                            .coachClickable { currentHistoryTab = "DRAFTS" }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -888,7 +893,7 @@ fun DraftHistoryScreen(
                             .weight(1f)
                             .clip(RoundedCornerShape(9.dp))
                             .background(if (currentHistoryTab == "TIER_LIST") HextechGold else Color.Transparent)
-                            .clickable { currentHistoryTab = "TIER_LIST" }
+                            .coachClickable { currentHistoryTab = "TIER_LIST" }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -1379,7 +1384,7 @@ fun DraftHistoryScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(HextechSurfaceVariant)
-                            .clickable {
+                            .coachClickable {
                                 val isAdmin = com.example.util.AuthManager.isCurrentUserAdmin()
                                 if (isAdmin) {
                                     showBlueEssenceStore = prof.id
@@ -1778,7 +1783,7 @@ fun DraftHistoryScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(HextechSurfaceVariant)
-                            .clickable { importMergeMode = true }
+                            .coachClickable { importMergeMode = true }
                             .padding(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -1802,7 +1807,7 @@ fun DraftHistoryScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(HextechSurfaceVariant)
-                            .clickable { importMergeMode = false }
+                            .coachClickable { importMergeMode = false }
                             .padding(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -1909,7 +1914,7 @@ private fun SavedDraftCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .clickable { onClick() }
+            .coachClickable { onClick() }
             .testTag("saved_draft_card_${draft.id}"),
         colors = CardDefaults.cardColors(containerColor = HextechSurface),
         border = BorderStroke(1.dp, HextechCardBorder)
@@ -2011,7 +2016,7 @@ private fun SavedDraftCard(
                         color = resultBg,
                         shape = RoundedCornerShape(6.dp),
                         border = BorderStroke(1.dp, resultBorder),
-                        modifier = Modifier.clickable { resultMenuExpanded = true }
+                        modifier = Modifier.coachClickable { resultMenuExpanded = true }
                     ) {
                         Text(
                             text = com.example.util.tr(resultLabel),
@@ -2240,7 +2245,7 @@ private fun DraftDetailBottomSheet(
             modifier = Modifier
                 .fillMaxSize()
                 .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.85f))
-                .clickable(
+                .coachClickable(
                     interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                     indication = null,
                     onClick = onDismiss
@@ -2251,7 +2256,7 @@ private fun DraftDetailBottomSheet(
             Card(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable(
+                    .coachClickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null,
                         onClick = {}
@@ -2327,7 +2332,7 @@ private fun DraftDetailInnerContent(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .background(HextechSurface)
-                        .clickable { onDismiss() }
+                        .coachClickable { onDismiss() }
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -2406,7 +2411,7 @@ private fun DraftDetailInnerContent(
                         color = HextechGold.copy(alpha = 0.15f),
                         shape = RoundedCornerShape(6.dp),
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f)),
-                        modifier = Modifier.clickable { accountMenuExpanded = true }
+                        modifier = Modifier.coachClickable { accountMenuExpanded = true }
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

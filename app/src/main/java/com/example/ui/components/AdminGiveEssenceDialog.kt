@@ -1,5 +1,9 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+
 import com.example.util.tr
 
 import androidx.compose.animation.AnimatedVisibility

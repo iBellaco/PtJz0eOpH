@@ -1,5 +1,10 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -8,7 +13,7 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -520,7 +525,7 @@ fun SupportReplyDialog(
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(HextechSurfaceVariant)
                                     .border(0.8.dp, HextechCardBorder, RoundedCornerShape(8.dp))
-                                    .clickable {
+                                    .coachClickable {
                                         replyText = SupportReplyManager.sanitizePlainText(com.example.util.appTr(tpl), 500)
                                     }
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
@@ -584,7 +589,7 @@ fun SupportReplyDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { markAsRead = !markAsRead },
+                            .coachClickable { markAsRead = !markAsRead },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(

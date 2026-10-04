@@ -1,5 +1,10 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import android.content.ClipData
@@ -20,7 +25,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,19 +64,18 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
+
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -441,7 +445,7 @@ fun AdminSupportReportsDialog(
                                         if (isSelected) activeColor else HextechCardBorder,
                                         RoundedCornerShape(8.dp)
                                     )
-                                    .clickable { selectedFilter = filterKey }
+                                    .coachClickable { selectedFilter = filterKey }
                                     .padding(vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -790,7 +794,7 @@ fun AdminSupportReportsDialog(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.94f))
-                    .clickable { previewZoomBitmap = null }
+                    .coachClickable { previewZoomBitmap = null }
                     .padding(12.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -1143,7 +1147,7 @@ private fun UnifiedReportAdminCard(
                                     .size(56.dp)
                                     .clip(RoundedCornerShape(8.dp))
                                     .border(1.dp, HextechCardBorder, RoundedCornerShape(8.dp))
-                                    .clickable { onImageClick(bmp) }
+                                    .coachClickable { onImageClick(bmp) }
                             ) {
                                 Image(
                                     bitmap = bmp.asImageBitmap(),

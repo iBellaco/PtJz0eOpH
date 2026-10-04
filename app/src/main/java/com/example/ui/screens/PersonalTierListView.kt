@@ -1,10 +1,13 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,13 +51,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -158,7 +161,7 @@ fun PersonalTierListView(
                     .clip(RoundedCornerShape(8.dp))
                     .background(HextechSurface)
                     .border(1.dp, HextechGold.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
-                    .clickable { isFiltersExpanded = true }
+                    .coachClickable { isFiltersExpanded = true }
                     .padding(horizontal = 8.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -446,7 +449,7 @@ fun PersonalTierListView(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(if (viewMode == "TIERS") HextechGold else Color.Transparent)
-                                    .clickable { viewMode = "TIERS" }
+                                    .coachClickable { viewMode = "TIERS" }
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
@@ -460,7 +463,7 @@ fun PersonalTierListView(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(if (viewMode == "TABLE") HextechGold else Color.Transparent)
-                                    .clickable { viewMode = "TABLE" }
+                                    .coachClickable { viewMode = "TABLE" }
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
@@ -600,7 +603,7 @@ private fun PersonalOverviewCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded },
+                    .coachClickable { isExpanded = !isExpanded },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -999,7 +1002,7 @@ private fun ChampionTierPill(
     Surface(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .clickable { onClick() }
+            .coachClickable { onClick() }
             .testTag("tier_pill_${stats.championId}"),
         color = HextechSurfaceVariant,
         shape = RoundedCornerShape(10.dp),
@@ -1084,7 +1087,7 @@ private fun PersonalChampionDetailedCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .clickable { onClick() }
+            .coachClickable { onClick() }
             .testTag("personal_champ_card_${stats.championId}"),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = HextechSurface),
@@ -1391,7 +1394,7 @@ private fun PersonalChampionDetailModal(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(6.dp))
-                                    .clickable { onSelectDraft(draft) },
+                                    .coachClickable { onSelectDraft(draft) },
                                 color = HextechSurfaceVariant,
                                 border = BorderStroke(0.8.dp, if (isWin) Color(0xFF81C784).copy(alpha = 0.4f) else DangerRed.copy(alpha = 0.4f)),
                                 shape = RoundedCornerShape(6.dp)

@@ -1,5 +1,10 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ContentValues
@@ -29,7 +34,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -87,16 +92,16 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
+
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Tab
@@ -107,7 +112,7 @@ import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -1055,7 +1060,7 @@ fun AdminFeedbackBottomSheet(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black)
-                    .clickable(
+                    .coachClickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null
                     ) {
@@ -1231,7 +1236,7 @@ private fun StatusFilterChip(
                 color = if (isSelected) color else HextechCardBorder.copy(alpha = 0.6f),
                 shape = RoundedCornerShape(8.dp)
             )
-            .clickable(onClick = onClick)
+            .coachClickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -1460,7 +1465,7 @@ internal fun ComprehensiveFeedbackCard(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { expanded = !expanded }
+                        .coachClickable { expanded = !expanded }
                 )
                 IconButton(
                     onClick = {
@@ -1512,7 +1517,7 @@ internal fun ComprehensiveFeedbackCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { expanded = !expanded }
+                            .coachClickable { expanded = !expanded }
                     )
                     IconButton(
                         onClick = {
@@ -1560,7 +1565,7 @@ internal fun ComprehensiveFeedbackCard(
                                 .size(58.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .border(1.dp, HextechGold.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
-                                .clickable { onOpenImage(bmp) }
+                                .coachClickable { onOpenImage(bmp) }
                         ) {
                             Image(
                                 bitmap = bmp.asImageBitmap(),
@@ -1814,7 +1819,7 @@ internal fun ComprehensiveFeedbackCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(4.dp))
-                            .clickable {
+                            .coachClickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboard.setPrimaryClip(ClipData.newPlainText("Dispositivo", cleanDeviceInfo))
                                 Toast.makeText(context, com.example.util.appTr(" Dispositivo copiado"), Toast.LENGTH_SHORT).show()
@@ -1837,7 +1842,7 @@ internal fun ComprehensiveFeedbackCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(4.dp))
-                            .clickable {
+                            .coachClickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboard.setPrimaryClip(ClipData.newPlainText("Versión", report.appVersion))
                                 Toast.makeText(context, com.example.util.appTr(" Versión copiada"), Toast.LENGTH_SHORT).show()
@@ -1862,7 +1867,7 @@ internal fun ComprehensiveFeedbackCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(4.dp))
-                                .clickable {
+                                .coachClickable {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     clipboard.setPrimaryClip(ClipData.newPlainText("Correo", report.parsedEmail))
                                     Toast.makeText(context, com.example.util.appTr("️ Correo copiado"), Toast.LENGTH_SHORT).show()
@@ -1916,7 +1921,7 @@ private fun StatusActionButton(
                 color = if (isSelected) activeColor else HextechCardBorder.copy(alpha = 0.5f),
                 shape = RoundedCornerShape(6.dp)
             )
-            .clickable(onClick = onClick)
+            .coachClickable(onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 5.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -2689,7 +2694,7 @@ private fun BuildItemSlot(
             .clip(RoundedCornerShape(6.dp))
             .background(HextechSurface)
             .border(1.dp, HextechCardBorder, RoundedCornerShape(6.dp))
-            .clickable(onClick = onClick)
+            .coachClickable(onClick = onClick)
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)

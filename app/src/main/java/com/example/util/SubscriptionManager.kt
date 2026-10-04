@@ -175,19 +175,14 @@ object SubscriptionManager {
         }
     }
 
+    private var presenceContext: Context? = null
+
     fun startHeartbeat(uid: String) {
         heartbeatJob?.cancel()
         heartbeatJob = scope.launch {
             while (true) {
                 try {
-                    FirebaseFirestore.getInstance().collection("users").document(uid)
-                        .set(
-                            mapOf(
-                                "last_active" to System.currentTimeMillis(),
-                                "is_online" to true
-                            ),
-                            SetOptions.merge()
-                        )
+                    presenceContext?.let { DeviceAndSessionManager.updatePresence(uid, it, true) }
                 } catch (e: Exception) {
                     Log.w("SubscriptionManager", "Heartbeat update failed: ${e.message}")
                 }
@@ -203,20 +198,14 @@ object SubscriptionManager {
         if (targetUid != null) {
             scope.launch {
                 try {
-                    FirebaseFirestore.getInstance().collection("users").document(targetUid)
-                        .set(
-                            mapOf(
-                                "last_active" to System.currentTimeMillis(),
-                                "is_online" to false
-                            ),
-                            SetOptions.merge()
-                        )
+                    presenceContext?.let { DeviceAndSessionManager.updatePresence(targetUid, it, false) }
                 } catch (_: Exception) {}
             }
         }
     }
 
     fun init(context: Context) {
+        presenceContext = context.applicationContext
         val auth = AuthManager.getAuth()
         val user = auth?.currentUser
         _currentUserUid.value = if (AuthManager.isGuestOrUnauthenticated(user)) "" else user?.uid.orEmpty()
@@ -261,7 +250,7 @@ object SubscriptionManager {
                         "avatarId" to "default_poro",
                         "unlockedAvatars" to listOf("default_poro"),
                         "last_active" to System.currentTimeMillis(),
-                        "is_online" to true
+                        "is_online" to false
                     )
                     userRef.set(userData, SetOptions.merge())
                 } else {
@@ -277,11 +266,7 @@ object SubscriptionManager {
                     val dbUnlocked = snapshot.get("unlockedAvatars") as? List<String> ?: listOf("default_poro")
                     _unlockedAvatars.value = dbUnlocked
 
-                    val updateData = hashMapOf<String, Any>(
-                        "last_active" to System.currentTimeMillis(),
-                        "is_online" to true
-                    )
-                    userRef.set(updateData, SetOptions.merge())
+
                 }
             }
             
@@ -371,8 +356,11 @@ object SubscriptionManager {
                     }
                     val sessionToken = listenSnapshot.getString("sessionToken")
                     val remoteDeviceId = listenSnapshot.getString("lastDeviceId")
-                    val remoteTimestamp = listenSnapshot.getLong("lastActiveTimestamp") ?: 0L
-                    com.example.util.DeviceAndSessionManager.handleSessionChanged(sessionToken, remoteDeviceId, remoteTimestamp, context)
+                    // Cached/local snapshots cannot revoke a session before its server confirmation.
+                    if (!listenSnapshot.metadata.isFromCache && !listenSnapshot.metadata.hasPendingWrites()) {
+                        com.example.util.DeviceAndSessionManager.handleSessionChanged(sessionToken, remoteDeviceId, context = context,
+                            active = listenSnapshot.getBoolean("is_online") == true)
+                    }
                     val banned = listenSnapshot.getBoolean("banned") ?: false
                     val name = listenSnapshot.getString("name") ?: ""
                     val avatarId = listenSnapshot.getString("avatarId") ?: "default_poro"

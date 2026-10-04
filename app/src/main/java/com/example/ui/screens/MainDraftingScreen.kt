@@ -1,5 +1,10 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.app.Activity
 import android.widget.Toast
 import java.util.Locale
@@ -8,7 +13,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
@@ -55,9 +60,9 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
@@ -81,11 +86,10 @@ import com.example.ui.theme.DangerRed
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
+
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 
@@ -804,7 +808,7 @@ fun MainDraftingScreen(
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(if (currentLanguage == "es") HextechCyan.copy(alpha = 0.15f) else HextechSurface)
                                 .border(1.5.dp, if (currentLanguage == "es") HextechCyan else HextechCardBorder.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                                .clickable {
+                                .coachClickable {
                                     onLanguageChange("es")
                                     showLanguageDialog = false
                                 }
@@ -828,7 +832,7 @@ fun MainDraftingScreen(
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(if (currentLanguage == "pt") HextechCyan.copy(alpha = 0.15f) else HextechSurface)
                                 .border(1.5.dp, if (currentLanguage == "pt") HextechCyan else HextechCardBorder.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                                .clickable {
+                                .coachClickable {
                                     onLanguageChange("pt")
                                     showLanguageDialog = false
                                 }
@@ -1121,7 +1125,7 @@ fun NoticeCategoryCard(
                                         .size(if (isSelected) 8.dp else 6.dp)
                                         .clip(CircleShape)
                                         .background(if (isSelected) tagColor else tagColor.copy(alpha = 0.3f))
-                                        .clickable {
+                                        .coachClickable {
                                             slideDirection = if (idx > currentIndex) 1 else -1
                                             currentIndex = idx
                                             autoTimerTrigger++

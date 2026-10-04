@@ -342,7 +342,7 @@ class MainActivity : ComponentActivity() {
         com.example.util.SubscriptionManager.init(this)
         val currentAuthUser = com.example.util.AuthManager.getAuth()?.currentUser
         if (currentAuthUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(currentAuthUser)) {
-            com.example.util.DeviceAndSessionManager.registerDeviceAndSession(this, onError = { msg ->
+            com.example.util.DeviceAndSessionManager.resumeDeviceAndSession(this, onError = { msg ->
                 if (msg.contains("Límite de dispositivos", ignoreCase = true)) {
                     android.widget.Toast.makeText(this, com.example.util.appTr(msg), android.widget.Toast.LENGTH_LONG).show()
                     com.example.util.AuthManager.getAuth()?.signOut()
@@ -363,7 +363,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
+            MyApplicationTheme(animateButtons = true) {
                 com.example.ui.components.BlurredMeshBackground(
                     modifier = Modifier.fillMaxSize()
                 ) {

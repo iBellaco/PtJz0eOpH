@@ -1,5 +1,9 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 import android.net.Uri
 import android.widget.Toast
@@ -8,7 +12,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -302,7 +306,7 @@ fun ChampionBuildCreatorDialog(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { showChampionPicker = true },
+                            .coachClickable { showChampionPicker = true },
                         shape = RoundedCornerShape(8.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
                         border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.5f))
@@ -351,7 +355,7 @@ fun ChampionBuildCreatorDialog(
                             Card(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clickable { selectedRole = role },
+                                    .coachClickable { selectedRole = role },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (isSelected) HextechGold.copy(alpha = 0.25f) else HextechDarkBg
@@ -1398,7 +1402,7 @@ fun ChampionBuildCreatorDialog(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .coachClickable {
                                         selectedChampion = champ
                                         showChampionPicker = false
                                         searchFilterQuery = ""
@@ -1523,7 +1527,7 @@ fun ChampionBuildCreatorDialog(
                                  Row(
                                      modifier = Modifier
                                          .fillMaxWidth()
-                                         .clickable {
+                                         .coachClickable {
                                              val entry = EditableItemEntry(item.name, item.iconUrl)
                                              when {
                                                  showItemPickerForCore -> {
@@ -1653,7 +1657,7 @@ fun ChampionBuildCreatorDialog(
                                  Row(
                                      modifier = Modifier
                                          .fillMaxWidth()
-                                         .clickable {
+                                         .coachClickable {
                                              if (showRunePickerForKeystone) {
                                                  coreKeystone = EditableRuneEntry(rune.name, rune.iconUrl)
                                                  showRunePickerForKeystone = false
@@ -1732,7 +1736,7 @@ fun ChampionBuildCreatorDialog(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .coachClickable {
                                         if (showSpellPickerForCore) {
                                             coreSpells.add(EditableSpellEntry(spell.name, spell.iconUrl))
                                             showSpellPickerForCore = false

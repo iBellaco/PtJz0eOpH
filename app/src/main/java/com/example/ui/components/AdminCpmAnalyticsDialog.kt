@@ -1,5 +1,10 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import android.content.ClipData
@@ -10,7 +15,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -385,7 +390,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                 Surface(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .clickable {
+                                        .coachClickable {
                                             cpmInputText = String.format(Locale.US, "%.2f", rate)
                                         },
                                     color = HextechSurfaceVariant,
@@ -681,7 +686,7 @@ Estos precios están calculados en base a nuestras analíticas activas y engagem
                                             Surface(
                                                 modifier = Modifier
                                                     .weight(1f)
-                                                    .clickable {
+                                                    .coachClickable {
                                                         cpmInputText = String.format(Locale.US, "%.2f", rate)
                                                     },
                                                 color = HextechSurfaceVariant,
@@ -967,7 +972,7 @@ Métricas de Tráfico y Rendimiento:
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { showRecommendationInfoDialog = true },
+                        .coachClickable { showRecommendationInfoDialog = true },
                     color = HextechSurfaceVariant,
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.2.dp, Brush.horizontalGradient(listOf(HextechGold, Color(0xFF00FF66))))
@@ -1062,7 +1067,7 @@ Métricas de Tráfico y Rendimiento:
                             }
 
                             Surface(
-                                modifier = Modifier.clickable {
+                                modifier = Modifier.coachClickable {
                                     cpmInputText = String.format(Locale.US, "%.2f", baseCpmRate)
                                     showEditCpmDialog = true
                                 },
@@ -1626,7 +1631,7 @@ private fun NoticeAnalyticsItemCard(
                         Surface(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
-                                .clickable { onEditBudget() },
+                                .coachClickable { onEditBudget() },
                             color = HextechGold.copy(alpha = 0.15f),
                             border = BorderStroke(0.8.dp, HextechGold.copy(alpha = 0.5f))
                         ) {
@@ -1758,7 +1763,7 @@ private fun NoticeAnalyticsItemCard(
                             tint = HextechGold,
                             modifier = Modifier
                                 .size(12.dp)
-                                .clickable { onEditCustomCpm() }
+                                .coachClickable { onEditCustomCpm() }
                         )
                     }
                     Text(
