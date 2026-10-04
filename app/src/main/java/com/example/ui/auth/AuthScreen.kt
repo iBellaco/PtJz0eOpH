@@ -204,7 +204,7 @@ fun AuthFlowContainer(
 }
 
 @Composable
-fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
+fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = null,
     panelNotifications: com.example.data.PanelNotificationState? = null, onSignOut: () -> Unit) {
     val notifications = panelNotifications ?: com.example.ui.components.userPanelNotificationSummary()
     val context = LocalContext.current
@@ -239,6 +239,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
     var showRedemptionDialog by remember { mutableStateOf(false) }
     var showSignOutConfirm by remember { mutableStateOf(false) }
     val activeProfile by com.example.data.AccountProfileManager.activeProfile.collectAsState()
+
+    val effectiveUserUid = user?.uid ?: activeProfile.id.ifBlank { "local-profile-test" }
+    val effectiveEmail = user?.email ?: "coach@example.invalid"
 
 
     if (showRedemptionDialog) { com.example.ui.components.OrangeEssenceRedemptionDialog { showRedemptionDialog = false } }
@@ -476,7 +479,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
 
             if (showInboxDialog) {
                 com.example.ui.components.UserInboxDialog(
-                    userUid = user.uid,
+                    userUid = effectiveUserUid,
                     onDismiss = { showInboxDialog = false }
                 )
             }
@@ -586,9 +589,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
 
             // Summoner Crest Avatar
             val finalUserName = savedUserName.takeIf { it.isNotBlank() }
-                ?: user.displayName?.takeIf { it.isNotBlank() }
-                ?: user.email?.substringBefore("@")
-                ?: "Invocador"
+                ?: user?.displayName?.takeIf { it.isNotBlank() }
+                ?: effectiveEmail.substringBefore("@").ifBlank { "Invocador" }
 
             val equippedAvatar = AvatarCatalog.getAvatarById(currentAvatarId)
 
@@ -811,7 +813,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = com.example.util.tr(if (isEmailVisible) (user.email ?: "") else "••••••••@••••.com"),
+                    text = com.example.util.tr(if (isEmailVisible) effectiveEmail else "••••••••@••••.com"),
                     color = activeTheme.textSecondary,
                     fontSize = 13.5.sp
                 )
@@ -829,15 +831,19 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
             // Connected Devices panel right below email
             var registeredDevicesCount by remember { mutableStateOf(1) }
             var isSecurityExpanded by remember { mutableStateOf(false) }
-            LaunchedEffect(user.uid) {
-                com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(user.uid)
-                    .get()
-                    .addOnSuccessListener { doc ->
-                        val devs = doc.get("registeredDevices") as? List<*> ?: emptyList<Any>()
-                        registeredDevicesCount = devs.size.coerceAtLeast(1)
-                    }
+            LaunchedEffect(effectiveUserUid) {
+                if (effectiveUserUid.isNotBlank() && com.google.firebase.FirebaseApp.getApps(context).isNotEmpty()) {
+                    try {
+                        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(effectiveUserUid)
+                            .get()
+                            .addOnSuccessListener { doc ->
+                                val devs = doc.get("registeredDevices") as? List<*> ?: emptyList<Any>()
+                                registeredDevicesCount = devs.size.coerceAtLeast(1)
+                            }
+                    } catch (_: Exception) {}
+                }
             }
 
             Card(
@@ -1138,8 +1144,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
 
             if (showHistoryDialog) {
                 com.example.ui.components.SubscriptionHistoryDialog(
-                    userId = user.uid,
-                    userEmail = user.email,
+                    userId = effectiveUserUid,
+                    userEmail = effectiveEmail,
                     onDismiss = { showHistoryDialog = false }
                 )
             }

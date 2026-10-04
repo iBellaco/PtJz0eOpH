@@ -16,8 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import com.example.ui.screens.*
 import com.example.ui.auth.AuthenticatedProfilePanel
-import com.google.firebase.auth.FirebaseUser
-import org.mockito.Mockito
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Message
@@ -226,16 +224,12 @@ class RuntimeVisibilityTest(private val screen: String) {
             screen.startsWith("streamer") -> Column { StreamerUrlRecommendations(screen == "streamer-admin") {} }
             screen.startsWith("moderation") -> ModeratorDashboardDialog {}
             screen.startsWith("profile-admin") -> {
-                val user = Mockito.mock(FirebaseUser::class.java)
-                Mockito.`when`(user.uid).thenReturn("local-profile-test")
-                Mockito.`when`(user.email).thenReturn("coach@example.invalid")
-                Mockito.`when`(user.displayName).thenReturn("Coach Teste")
                 val panels = when (screen) {
                     "profile-admin-notifications" -> com.example.data.PanelNotificationState(com.example.data.NotificationPanel.entries.associateWith { setOf("event:${it.name}") })
                     "profile-admin-large" -> com.example.data.PanelNotificationState(mapOf(com.example.data.NotificationPanel.SPONSOR_MODERATION to setOf("notice:local-pending")))
                     else -> com.example.data.PanelNotificationState()
                 }
-                AuthenticatedProfilePanel(user, panelNotifications = panels) {}
+                AuthenticatedProfilePanel(user = null, panelNotifications = panels) {}
             }
             screen == "creator-reader" -> AdminCreatorBuildsDialog {}
             screen == "premium-status-near-expiry" -> PremiumStatusCard("premium", until = System.currentTimeMillis() + 65000L, onRenew = { renewed = true })

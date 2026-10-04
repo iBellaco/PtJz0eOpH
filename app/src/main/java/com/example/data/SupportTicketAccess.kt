@@ -14,7 +14,7 @@ object SupportTicketAccess {
     fun isAdmin() = SubscriptionManager.userRole.value.equals("admin", ignoreCase = true) ||
         SubscriptionManager.userRole.value.equals("administrador", ignoreCase = true) ||
         AuthManager.isCurrentUserAdmin() ||
-        com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email?.equals("barbadiego695@gmail.com", ignoreCase = true) == true
+        AuthManager.getAuth()?.currentUser?.email?.equals("barbadiego695@gmail.com", ignoreCase = true) == true
     fun staffQuery(): Query {
         val collection = FirebaseFirestore.getInstance().collection("support_reports")
         return if (isAdmin()) collection else collection.whereEqualTo("staffVisible", true)
@@ -22,7 +22,7 @@ object SupportTicketAccess {
     /** Admin backfill gives existing tickets the same visibility as new tickets. */
     suspend fun migrateLegacyVisibility() = migrationMutex.withLock {
         if (!isAdmin()) return@withLock
-        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return@withLock
+        val uid = AuthManager.getAuth()?.currentUser?.uid ?: return@withLock
         if (migratedForUid == uid) return@withLock
         val db = FirebaseFirestore.getInstance()
         val documents = db.collection("support_reports").get().await().documents
