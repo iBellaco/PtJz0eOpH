@@ -53,7 +53,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-email-mod", "support-email-admin", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "storage-summary", "storage-summary-partial", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "profile-admin-secondary-frame", "profile-admin-secondary-frame-es", "profile-admin-image-frame", "profile-admin-image-frame-es", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "storage-summary", "storage-summary-partial", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -99,7 +99,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 "senderEmail" to "staff@test.invalid", "text" to "Resposta", "timestampMillis" to fixedGrantNow))))
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
-        AppLanguage.select(context, "pt")
+        AppLanguage.select(context, if (screen.endsWith("frame-es")) "es" else "pt")
         AuthManager.isSignedIn.value
         org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
         val field = AuthManager::class.java.getDeclaredField("_isSignedIn").apply { isAccessible = true }
@@ -111,7 +111,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any>).value = value
         }
-        setFlow(SubscriptionManager, "_userRole", if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("profile-admin") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
+        setFlow(SubscriptionManager, "_userRole", if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("profile-admin") && !screen.startsWith("profile-admin-image-frame") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
         if (screen == "premium-purchase-confirm") { setFlow(SubscriptionManager,"_blueEssence",1200L); setFlow(SubscriptionManager,"_orangeEssence",100L) }
         else { setFlow(SubscriptionManager,"_blueEssence",0L); setFlow(SubscriptionManager,"_orangeEssence",0L) }
         setFlow(SubscriptionManager,"_currentUserUid",if (screen == "support-admin-notification") "local-notification-admin" else "")
@@ -119,7 +119,12 @@ class RuntimeVisibilityTest(private val screen: String) {
             database.collection("support_reports").document("admin-new-message").set(mapOf("userId" to "other-user", "status" to "PENDING", "staffRead" to false,
                 "conversation" to listOf(mapOf("id" to "new-message", "senderRole" to "USER", "text" to "Ajuda"))))
         }
-        setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else "")
+        setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else if (screen.startsWith("profile-admin-secondary-frame")) "soberano" else "")
+        setFlow(SubscriptionManager, "_currentRankBorder", when {
+            screen.startsWith("profile-admin-secondary-frame") -> "SOBERANO"
+            screen.startsWith("profile-admin-image-frame") -> "ESMERALDA"
+            else -> "NONE"
+        })
         setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
         if (screen == "creator-reader") setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
             com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
@@ -283,7 +288,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             text + it.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty()
         }
         val failures = interfaceStrings.filter { SpanishUiResidue.pattern.containsMatchIn(it.replace("Lee Sin", "LeeSin")) }
-        Assert.assertTrue("Spanish on $screen: ${failures.joinToString()}", failures.isEmpty())
+        if (!screen.endsWith("frame-es")) Assert.assertTrue("Spanish on $screen: ${failures.joinToString()}", failures.isEmpty())
     }
 
     @Test fun `visibility and Portuguese wording follow actual selections and account access`() {
@@ -629,6 +634,18 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText(appTr("Abrir Reportes de Soporte")).performClick()
                 compose.onNodeWithText(appTr("Panel de Reportes & Sugerencias")).assertExists()
                 if (screen != "moderation-secondary") compose.onNodeWithContentDescription(appTr("Eliminar solucionados")).assertExists()
+            }
+            "profile-admin-secondary-frame", "profile-admin-secondary-frame-es", "profile-admin-image-frame", "profile-admin-image-frame-es" -> {
+                compose.mainClock.advanceTimeBy(2400)
+                val avatar = compose.onNodeWithTag("profile_avatar", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val area = compose.onNodeWithTag("profile_avatar_frame_area", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val name = compose.onNodeWithTag("profile_user_name", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                val density = context.resources.displayMetrics.density
+                Assert.assertEquals(140f * density, avatar.width, density)
+                Assert.assertEquals(196f * density, area.width, density)
+                Assert.assertTrue("Frame space must precede the username: $area $name", area.bottom < name.top)
+                if (screen.startsWith("profile-admin-image-frame")) Assert.assertEquals("free", SubscriptionManager.userRole.value)
+                inspect("expanded-avatar")
             }
             "profile-admin", "profile-admin-large" -> {
                 for (label in listOf("Painel de streamer", appTr("Panel de Administración"), appTr("Panel de Soporte y Moderación"), appTr("Panel de Patrocinador"))) {

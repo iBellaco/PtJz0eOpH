@@ -221,7 +221,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
-    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") || secondaryRole.isNotBlank()
+    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") || secondaryRole.isNotBlank() ||
+        currentRankBorder.isNotBlank() && currentRankBorder.uppercase(java.util.Locale.ROOT) !in setOf("NONE", "DEFAULT")
     var showAvatarDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
@@ -625,6 +626,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
             // Avatar in center
             Box(
                 modifier = Modifier
+                    .size(if (hasRoleFrame) 196.dp else 92.dp)
+                    .testTag("profile_avatar_frame_area")
                     .padding(
                         top = if (hasRoleFrame) 0.dp else 6.dp,
                         bottom = if (hasRoleFrame) 0.dp else 6.dp,
@@ -668,7 +671,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 UserAvatarView(
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
-                    size = if (hasRoleFrame) 112.dp else 76.dp,
+                    modifier = Modifier.testTag("profile_avatar"),
+                    size = if (hasRoleFrame) 140.dp else 76.dp,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser,
                     secondaryRole = secondaryRole,
@@ -704,7 +708,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 }
             }
 
-            Spacer(modifier = Modifier.height(if (hasRoleFrame) 22.dp else 12.dp))
+            Spacer(modifier = Modifier.height(if (hasRoleFrame) 36.dp else 12.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -713,6 +717,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
             ) {
                 Text(
                     text = com.example.util.tr(finalUserName),
+                    modifier = Modifier.testTag("profile_user_name"),
                     color = activeTheme.secondary,
                     fontSize = 20.sp,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
