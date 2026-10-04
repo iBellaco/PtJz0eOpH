@@ -12,14 +12,14 @@ class ValidatedApkTest(unittest.TestCase):
     fixture_run = {'id': 42, 'status': 'completed', 'conclusion': 'success', 'event': 'pull_request',
            'head_branch': 'pruebas', 'head_repository': {'full_name': repository}, 'head_sha': 'a' * 40}
 
-    def invoke(self, changed_tree=False, failed_job=False, expired=False, run=None):
+    def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None):
         def request(path):
             if '/git/commits/' in path:
                 return {'tree': {'sha': 'different' if changed_tree and path.endswith('a' * 40) else 'same'}}
             if '/workflows/' in path:
                 return {'workflow_runs': [run or self.fixture_run]}
             if '/jobs?' in path:
-                return {'jobs': [{'name': name, 'conclusion': 'failure' if failed_job and name == 'installed-audit' else 'success'} for name in validated.REQUIRED_JOBS]}
+                return {'jobs': [{'name': name, 'conclusion': 'failure' if failed_job == name else 'success'} for name in validated.REQUIRED_JOBS]}
             if '/artifacts?' in path:
                 return {'artifacts': [{'name': 'app-release.apk', 'expired': expired}]}
             self.fail(path)
@@ -32,7 +32,10 @@ class ValidatedApkTest(unittest.TestCase):
         self.assertEqual(('', ''), self.invoke(changed_tree=True))
 
     def test_failed_installed_audit_prevents_reuse(self):
-        self.assertEqual(('', ''), self.invoke(failed_job=True))
+        self.assertEqual(('', ''), self.invoke(failed_job='installed-audit'))
+
+    def test_failed_spanish_overlay_audit_prevents_reuse(self):
+        self.assertEqual(('', ''), self.invoke(failed_job='installed-spanish'))
 
     def test_expired_artifact_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(expired=True))

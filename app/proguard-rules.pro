@@ -117,3 +117,24 @@
 }
 -keep class com.example.service.** { *; }
 -dontwarn androidx.work.**
+
+# Exercise the installed history UI in a real service-style window, including its theme.
+-keep class com.example.ui.screens.DraftHistoryScreenKt { public static void DraftHistoryScreen(...); }
+-keep class com.example.ui.theme.ThemeKt { public static void MyApplicationTheme(...); }
+-keep class com.example.util.AppLanguage { *; }
+
+# The release instrumentation hosts an actual service-style Compose window.
+# Keep only the lifecycle/saved-state API it calls; Coach's own code stays obfuscated.
+-keep class androidx.savedstate.SavedStateRegistryController** { *; }
+-keep class androidx.savedstate.SavedStateRegistryOwner { *; }
+-keep class androidx.savedstate.SavedStateRegistry { *; }
+-keep class androidx.savedstate.ViewTreeSavedStateRegistryOwner { *; }
+-keep class androidx.lifecycle.Lifecycle { *; }
+-keep class androidx.lifecycle.Lifecycle$Event { *; }
+-keep class androidx.lifecycle.Lifecycle$State { *; }
+-keep class androidx.lifecycle.LifecycleOwner { *; }
+-keep class androidx.lifecycle.LifecycleRegistry { *; }
+-keep class androidx.lifecycle.ViewModelStore { *; }
+-keep class androidx.lifecycle.ViewModelStoreOwner { *; }
+-keep class androidx.lifecycle.ViewTreeLifecycleOwner { *; }
+-keep class androidx.lifecycle.ViewTreeViewModelStoreOwner { *; }

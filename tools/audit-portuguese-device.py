@@ -1,12 +1,17 @@
 """Navigate the installed, signed-out APK and retain actual Android UI evidence."""
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import time
 import xml.etree.ElementTree as ET
 
-OUT = Path("app/build/reports/portuguese-device")
+MODE = os.environ.get("COACH_AUDIT_LANGUAGE", "both")
+if MODE not in ("both", "pt", "es"):
+    raise ValueError("COACH_AUDIT_LANGUAGE must be both, pt or es")
+CURRENT_LANGUAGE = "pt"
+OUT = Path("app/build/reports/spanish-device" if MODE == "es" else "app/build/reports/portuguese-device")
 OUT.mkdir(parents=True, exist_ok=True)
 APP = "com.Coach"
 source = Path("app/src/test/java/com/example/SpanishUiResidue.kt").read_text()
@@ -127,8 +132,8 @@ def enter_search_text(value):
     # Android key injection can outrun Compose/IME commits. Pace it and verify the actual value.
     for attempt in range(3):
         if attempt:
-            tap('Fechar')
-            tap('Buscar item por nome ou estatísticas...')
+            tap('Fechar' if CURRENT_LANGUAGE == 'pt' else 'Cerrar')
+            tap('Buscar item por nome ou estatísticas...' if CURRENT_LANGUAGE == 'pt' else 'Buscar objeto por nombre o estadísticas...')
         for letter in value:
             adb('shell', 'input', 'text', letter)
             time.sleep(0.08)
@@ -141,168 +146,171 @@ def enter_search_text(value):
     raise AssertionError('Android did not commit the complete search input: ' + value)
 
 
-adb("install", "-r", "app/build/outputs/apk/release/app-release.apk")
-adb("shell", "pm", "clear", APP)
-adb("shell", "pm", "grant", APP, "android.permission.POST_NOTIFICATIONS")
-adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
-adb("shell", "wm", "dismiss-keyguard")
-adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
-tap(("Português", "Portugués"))
-snapshot("language-portuguese")
-tap("Continuar em Português")
-snapshot("privacy")
-for tab in ["Termos", "Terceiros", "Privacidade"]:
-    tap(tab)
-    snapshot("legal-" + tab)
-tap("Aceitar e Entrar")
-for page in range(4):
-    snapshot("onboarding-" + str(page + 1))
-    tap("Seguinte" if page < 3 else "Começar agora!")
-snapshot("home")
-tap("Informação")
-snapshot("information")
-for page in range(3):
-    scroll()
-    snapshot("information-scroll-" + str(page + 1))
-tap("Perguntas Frequentes (FAQ)", scrolling=6)
-snapshot("faq")
-tap("Como funciona o overlay flutuante durante a partida?")
-snapshot("faq-answer")
-tap("Entendido")
-# FAQ returns directly to the dashboard; a second Back opens the exit dialog.
-back()
-for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
-    tap(tab)
-    snapshot("dashboard-" + tab)
-    if tab == "Seleção":
-        for page in range(3):
-            scroll()
-            snapshot("draft-empty-scroll-" + str(page + 1))
-        texts = [n.get("text", "") for n in app_nodes(window())]
-        if any("Melhor Opção segundo" in text for text in texts):
-            raise AssertionError("Empty draft must not show team recommendations")
-    if tab == "Tier List":
-        tap("Entrar ou cadastrar-se", scrolling=3)
-        snapshot("tier-login")
-        tap("Cadastre-se", scrolling=3)
-        snapshot("tier-registration")
-        back()
-        for page in range(2):
-            scroll()
-            snapshot("tier-guest-scroll-" + str(page + 1))
-    if tab == "Catálogo":
-        for catalog in ["Itens", "Runas", "Feitiços"]:
-            tap(catalog)
-            snapshot("catalog-" + catalog)
-            scroll()
-            snapshot("catalog-scroll-" + catalog)
-    if tab == "Usuário":
-        scroll()
-        snapshot("user-scroll")
-# Validate new components in the real installed APK while Portuguese remains selected.
-tap("Catálogo")
-tap("Itens")
-tap("Recolher filtros")
 components = json.loads(Path('app/src/main/assets/wild_rift_component_items.json').read_text())
 component_by_id = {entry['id']: entry for groups in components['secciones'].values() for entries in groups.values() for entry in entries}
-for item_id in ['tear_of_the_goddess', 'quicksilver_sash_mid_tier']:
-    expected = component_by_id[item_id]
-    tap('Buscar item por nome ou estatísticas...')
-    enter_search_text(item_id)
-    tap(expected['nombre_pt'], scrolling=3)
-    snapshot('component-item-' + item_id)
-    actual = [n.get('text', '') for n in app_nodes(window())]
-    for stat in expected['estadisticas_pt']:
-        if stat not in actual:
-            raise AssertionError('Component Portuguese stat missing: ' + item_id + ': ' + stat)
-    scroll()
-    snapshot('component-item-' + item_id + '-passive')
+adb("install", "-r", "app/build/outputs/apk/release/app-release.apk")
+if MODE in ("pt", "both"):
+    adb("shell", "pm", "clear", APP)
+    adb("shell", "pm", "grant", APP, "android.permission.POST_NOTIFICATIONS")
+    adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
+    adb("shell", "wm", "dismiss-keyguard")
+    adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
+    tap(("Português", "Portugués"))
+    snapshot("language-portuguese")
+    tap("Continuar em Português")
+    snapshot("privacy")
+    for tab in ["Termos", "Terceiros", "Privacidade"]:
+        tap(tab)
+        snapshot("legal-" + tab)
+    tap("Aceitar e Entrar")
+    for page in range(4):
+        snapshot("onboarding-" + str(page + 1))
+        tap("Seguinte" if page < 3 else "Começar agora!")
+    snapshot("home")
+    tap("Informação")
+    snapshot("information")
+    for page in range(3):
+        scroll()
+        snapshot("information-scroll-" + str(page + 1))
+    tap("Perguntas Frequentes (FAQ)", scrolling=6)
+    snapshot("faq")
+    tap("Como funciona o overlay flutuante durante a partida?")
+    snapshot("faq-answer")
+    tap("Entendido")
+    # FAQ returns directly to the dashboard; a second Back opens the exit dialog.
     back()
-    tap('Fechar')
-adb("shell", "am", "force-stop", APP)
-adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
-tap("Início")
-tap("Informação")
-snapshot("restart-retains-portuguese")
-(OUT / "summary.json").write_text(json.dumps({"screens": screens, "findings": findings, "authored_texts": authored_texts}, ensure_ascii=False, indent=2))
-if findings:
-    for finding in findings:
-        print("PORTUGUESE_DEVICE_RESIDUE:", finding, flush=True)
-    raise AssertionError("Spanish text remains in installed APK")
-print("PORTUGUESE_DEVICE_AUDIT:", len(screens), "screens, zero Spanish findings", flush=True)
+    for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
+        tap(tab)
+        snapshot("dashboard-" + tab)
+        if tab == "Seleção":
+            for page in range(3):
+                scroll()
+                snapshot("draft-empty-scroll-" + str(page + 1))
+            texts = [n.get("text", "") for n in app_nodes(window())]
+            if any("Melhor Opção segundo" in text for text in texts):
+                raise AssertionError("Empty draft must not show team recommendations")
+        if tab == "Tier List":
+            tap("Entrar ou cadastrar-se", scrolling=3)
+            snapshot("tier-login")
+            tap("Cadastre-se", scrolling=3)
+            snapshot("tier-registration")
+            back()
+            for page in range(2):
+                scroll()
+                snapshot("tier-guest-scroll-" + str(page + 1))
+        if tab == "Catálogo":
+            for catalog in ["Itens", "Runas", "Feitiços"]:
+                tap(catalog)
+                snapshot("catalog-" + catalog)
+                scroll()
+                snapshot("catalog-scroll-" + catalog)
+        if tab == "Usuário":
+            scroll()
+            snapshot("user-scroll")
+    # Validate new components in the real installed APK while Portuguese remains selected.
+    tap("Catálogo")
+    tap("Itens")
+    tap("Recolher filtros")
+    for item_id in ['tear_of_the_goddess', 'quicksilver_sash_mid_tier']:
+        expected = component_by_id[item_id]
+        tap('Buscar item por nome ou estatísticas...')
+        enter_search_text(item_id)
+        tap(expected['nombre_pt'], scrolling=3)
+        snapshot('component-item-' + item_id)
+        actual = [n.get('text', '') for n in app_nodes(window())]
+        for stat in expected['estadisticas_pt']:
+            if stat not in actual:
+                raise AssertionError('Component Portuguese stat missing: ' + item_id + ': ' + stat)
+        scroll()
+        snapshot('component-item-' + item_id + '-passive')
+        back()
+        tap('Fechar')
+    adb("shell", "am", "force-stop", APP)
+    adb("shell", "am", "start", "-W", "-n", APP + "/com.example.MainActivity")
+    tap("Início")
+    tap("Informação")
+    snapshot("restart-retains-portuguese")
+    (OUT / "summary.json").write_text(json.dumps({"screens": screens, "findings": findings, "authored_texts": authored_texts}, ensure_ascii=False, indent=2))
+    if findings:
+        for finding in findings:
+            print("PORTUGUESE_DEVICE_RESIDUE:", finding, flush=True)
+        raise AssertionError("Spanish text remains in installed APK")
+    print("PORTUGUESE_DEVICE_AUDIT:", len(screens), "screens, zero Spanish findings", flush=True)
 
 # Reinstalling is unnecessary: inspect the same APK with Spanish selected and
 # compare its actual item prices/stat rows with the user's requested corrections.
-OUT = OUT / 'spanish'
-OUT.mkdir(parents=True, exist_ok=True)
-# Shared words such as habilidades, recarga and concede are valid Spanish too.
-SPANISH = re.compile(r'\b(?:você|não|habilidade|dano|campeões|velocidade|adicionais|inimigos|acertos|assinatura|notificação|essências|usuário)\b', re.IGNORECASE)
-findings, authored_texts, screens = [], [], []
-adb('shell', 'pm', 'clear', APP)
-adb('shell', 'pm', 'grant', APP, 'android.permission.POST_NOTIFICATIONS')
-adb('shell', 'am', 'start', '-W', '-n', APP + '/com.example.MainActivity')
-tap('Español')
-snapshot('language-spanish')
-tap('Continuar en Español')
-snapshot('privacy-spanish')
-for tab in ['Términos', 'Terceros', 'Privacidad']:
-    tap(tab)
-    snapshot('legal-' + tab)
-tap('Aceptar y Entrar')
-for page in range(4):
-    snapshot('onboarding-' + str(page + 1))
-    tap('Siguiente' if page < 3 else '¡Comenzar ahora!')
-snapshot('home-spanish')
-for tab in ['Selección', 'Tier List', 'Catálogo', 'Usuario']:
-    tap(tab)
-    snapshot('dashboard-' + tab)
-tap('Catálogo')
-tap('Objetos')
-tap('Minimizar filtros')  # Leave results visible even on the small 320dp emulator.
-snapshot('catalog-spanish')
-expectations = json.loads(Path('app/src/test/resources/item-corrections-158.json').read_text())
-items_source = Path('app/src/main/java/com/example/data/WildRiftItemsData.kt').read_text()
-for item_id in ['mercurial_scimitar', 'fiendhunter_bolts', 'kraken_slayer', 'nashor_s_tooth',
-                'imperial_mandate', 'terminus', 'yordle_trap', 'rabadon_s_deathcap']:
-    tap('Buscar objeto por nombre o estadísticas...')
-    enter_search_text(item_id)  # Dismiss the keyboard, retaining the search result.
-    name = re.search(r'id = "' + re.escape(item_id) + r'",\s*name = "([^"]+)"', items_source).group(1)
-    tap(name, scrolling=3)
-    snapshot('required-item-' + item_id)
-    actual = [n.get('text', '') for n in app_nodes(window())]
-    expected = expectations[item_id]
-    if 'goldCost' in expected and not any(str(expected['goldCost']) in s for s in actual):
-        raise AssertionError('Updated item price missing in installed APK: ' + item_id)
-    for stat in expected.get('stats', '').split(' • '):
-        if stat and stat not in actual:
-            raise AssertionError('Updated item stat missing in installed APK: ' + item_id + ': ' + stat)
-    scroll()
-    snapshot('required-item-' + item_id + '-passive')
-    back()
-    tap('Cerrar')  # Clear only the catalog search field after closing the dialog.
-for item_id in ['tear_of_the_goddess', 'quicksilver_sash_mid_tier']:
-    expected = component_by_id[item_id]
-    tap('Buscar objeto por nombre o estadísticas...')
-    enter_search_text(item_id)
-    tap(expected['nombre'], scrolling=3)
-    snapshot('component-item-' + item_id)
-    actual = [n.get('text', '') for n in app_nodes(window())]
-    for stat in expected['estadisticas']:
-        if stat not in actual:
-            raise AssertionError('Component Spanish stat missing: ' + item_id + ': ' + stat)
-    scroll()
-    snapshot('component-item-' + item_id + '-passive')
-    back()
-    tap('Cerrar')
-adb('shell', 'am', 'force-stop', APP)
-adb('shell', 'am', 'start', '-W', '-n', APP + '/com.example.MainActivity')
-tap('Inicio')
-tap('Información')
-snapshot('restart-retains-spanish')
-(OUT / 'summary.json').write_text(json.dumps({'language': 'es-419', 'screens': screens,
-    'findings': findings, 'authored_texts': authored_texts}, ensure_ascii=False, indent=2))
-if findings:
-    for finding in findings:
-        print('SPANISH_DEVICE_RESIDUE:', finding, flush=True)
-    raise AssertionError('Portuguese text remains in Spanish screens of installed APK')
-print('SPANISH_DEVICE_AUDIT:', len(screens), 'screens, zero Portuguese findings', flush=True)
+if MODE in ("es", "both"):
+    CURRENT_LANGUAGE = 'es'
+    OUT = OUT / 'spanish'
+    OUT.mkdir(parents=True, exist_ok=True)
+    # Shared words such as habilidades, recarga and concede are valid Spanish too.
+    SPANISH = re.compile(r'\b(?:você|não|habilidade|dano|campeões|velocidade|adicionais|inimigos|acertos|assinatura|notificação|essências|usuário)\b', re.IGNORECASE)
+    findings, authored_texts, screens = [], [], []
+    adb('shell', 'pm', 'clear', APP)
+    adb('shell', 'pm', 'grant', APP, 'android.permission.POST_NOTIFICATIONS')
+    adb('shell', 'am', 'start', '-W', '-n', APP + '/com.example.MainActivity')
+    tap('Español')
+    snapshot('language-spanish')
+    tap('Continuar en Español')
+    snapshot('privacy-spanish')
+    for tab in ['Términos', 'Terceros', 'Privacidad']:
+        tap(tab)
+        snapshot('legal-' + tab)
+    tap('Aceptar y Entrar')
+    for page in range(4):
+        snapshot('onboarding-' + str(page + 1))
+        tap('Siguiente' if page < 3 else '¡Comenzar ahora!')
+    snapshot('home-spanish')
+    for tab in ['Selección', 'Tier List', 'Catálogo', 'Usuario']:
+        tap(tab)
+        snapshot('dashboard-' + tab)
+    tap('Catálogo')
+    tap('Objetos')
+    tap('Minimizar filtros')  # Leave results visible even on the small 320dp emulator.
+    snapshot('catalog-spanish')
+    expectations = json.loads(Path('app/src/test/resources/item-corrections-158.json').read_text())
+    items_source = Path('app/src/main/java/com/example/data/WildRiftItemsData.kt').read_text()
+    for item_id in ['mercurial_scimitar', 'fiendhunter_bolts', 'kraken_slayer', 'nashor_s_tooth',
+                    'imperial_mandate', 'terminus', 'yordle_trap', 'rabadon_s_deathcap']:
+        tap('Buscar objeto por nombre o estadísticas...')
+        enter_search_text(item_id)  # Dismiss the keyboard, retaining the search result.
+        name = re.search(r'id = "' + re.escape(item_id) + r'",\s*name = "([^"]+)"', items_source).group(1)
+        tap(name, scrolling=3)
+        snapshot('required-item-' + item_id)
+        actual = [n.get('text', '') for n in app_nodes(window())]
+        expected = expectations[item_id]
+        if 'goldCost' in expected and not any(str(expected['goldCost']) in s for s in actual):
+            raise AssertionError('Updated item price missing in installed APK: ' + item_id)
+        for stat in expected.get('stats', '').split(' • '):
+            if stat and stat not in actual:
+                raise AssertionError('Updated item stat missing in installed APK: ' + item_id + ': ' + stat)
+        scroll()
+        snapshot('required-item-' + item_id + '-passive')
+        back()
+        tap('Cerrar')  # Clear only the catalog search field after closing the dialog.
+    for item_id in ['tear_of_the_goddess', 'quicksilver_sash_mid_tier']:
+        expected = component_by_id[item_id]
+        tap('Buscar objeto por nombre o estadísticas...')
+        enter_search_text(item_id)
+        tap(expected['nombre'], scrolling=3)
+        snapshot('component-item-' + item_id)
+        actual = [n.get('text', '') for n in app_nodes(window())]
+        for stat in expected['estadisticas']:
+            if stat not in actual:
+                raise AssertionError('Component Spanish stat missing: ' + item_id + ': ' + stat)
+        scroll()
+        snapshot('component-item-' + item_id + '-passive')
+        back()
+        tap('Cerrar')
+    adb('shell', 'am', 'force-stop', APP)
+    adb('shell', 'am', 'start', '-W', '-n', APP + '/com.example.MainActivity')
+    tap('Inicio')
+    tap('Información')
+    snapshot('restart-retains-spanish')
+    (OUT / 'summary.json').write_text(json.dumps({'language': 'es-419', 'screens': screens,
+        'findings': findings, 'authored_texts': authored_texts}, ensure_ascii=False, indent=2))
+    if findings:
+        for finding in findings:
+            print('SPANISH_DEVICE_RESIDUE:', finding, flush=True)
+        raise AssertionError('Portuguese text remains in Spanish screens of installed APK')
+    print('SPANISH_DEVICE_AUDIT:', len(screens), 'screens, zero Portuguese findings', flush=True)

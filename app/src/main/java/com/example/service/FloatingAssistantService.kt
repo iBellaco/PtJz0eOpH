@@ -1059,6 +1059,26 @@ private fun FloatingOverlayContent(
         changes
     }
 
+    val confirmedHudPicks = { (allies.toList() + enemies.toList()).filterNotNull().takeIf { it.size == 9 }.orEmpty() }
+    val commitLastPickToHud: (com.example.service.screen.DraftScanResult) -> Unit = { result ->
+        val champion = result.lastPickChampion
+        if (result.tenthPickIsAlly == true) {
+            val physical = result.tenthPickSlotIndex
+            val role = physical?.let { result.allyRolesBySlot[it] }
+            val expected = role?.let { defaultRoles.indexOf(it).takeIf { index -> index >= 0 } }
+            // Allied positions require their detected lane; never move a teammate to make space.
+            if (expected != null) {
+                com.example.service.screen.TenthPickHudPolicy.targetIndex(result.isLastPickConfirmed,
+                    champion, allies.toList(), enemies.toList(), manualLockedAllySlots.filterValues { it }.keys,
+                    expected)?.let { index -> allies[index] = champion }
+            }
+        } else if (result.tenthPickIsAlly == false) {
+            com.example.service.screen.TenthPickHudPolicy.targetIndex(result.isLastPickConfirmed,
+                champion, enemies.toList(), allies.toList(), manualLockedEnemySlots.filterValues { it }.keys
+            )?.let { index -> assignEnemySlot(index, champion!!, 100) }
+        }
+    }
+
     var isScanning by state::isScanning
     var autoScanEnabled by state::autoScanEnabled
     var scanNoticeMessage by state::scanNoticeMessage
@@ -1185,7 +1205,7 @@ private fun FloatingOverlayContent(
                                     // -----------------------------------------------------------------
                                     val detectedPicks = mutableListOf<Pair<DraftPickTurn, Champion>>()
                                     for (turn in activeTurns) {
-                                        val activeResult = DraftVisionScanner.scanActiveSlotDirectly(bitmap, turn, context)
+                                        val activeResult = DraftVisionScanner.scanActiveSlotDirectly(bitmap, turn, context, confirmedHudPicks())
                                         val champ = activeResult?.champion
                                         if (champ != null) {
                                             detectedPicks.add(turn to champ)
@@ -1234,7 +1254,7 @@ private fun FloatingOverlayContent(
                                     // -----------------------------------------------------------------
                                     // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
                                     // -----------------------------------------------------------------
-                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
+                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole, confirmedHudPicks())
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
                                             if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
@@ -1256,7 +1276,7 @@ private fun FloatingOverlayContent(
                                                 }
                                             }
 
-                                            // Both teams, including pick ten, were already assigned by role.
+                                            commitLastPickToHud(result)
 
                                             val currentAllyPicks = allies.count { it != null }
                                             val currentEnemyPicks = enemies.count { it != null }
@@ -1369,7 +1389,7 @@ private fun FloatingOverlayContent(
         coroutineScope.launch(Dispatchers.IO) {
             val bitmap = screenCaptureManager?.captureCurrentFrame()
             if (bitmap != null) {
-                val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole)
+                val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole, confirmedHudPicks())
                 withContext(Dispatchers.Main) {
                     if (result.isSuccessful) {
                         // Sincronizar primera selección si se detectó y no ha sido fijada manualmente
@@ -1388,6 +1408,7 @@ private fun FloatingOverlayContent(
                             }
                         }
 
+                        commitLastPickToHud(result)
 
                         // Verificación complementaria: si el rival ya tiene picks y aliados no, rival eligió 1º
                         val currentAllyPicks = allies.count { it != null }

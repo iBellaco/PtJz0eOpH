@@ -176,7 +176,7 @@ object DraftVisionScanner {
         return active
     }
 
-    suspend fun scanActiveSlotDirectly(bitmap: Bitmap, turn: DraftPickTurn, context: Context? = null): ScannedSlotInfo? {
+    suspend fun scanActiveSlotDirectly(bitmap: Bitmap, turn: DraftPickTurn, context: Context? = null, confirmedHudPicks: List<Champion> = emptyList()): ScannedSlotInfo? {
         if (turn.turnNumber == 10) {
             val w = bitmap.width
             val h = bitmap.height
@@ -190,7 +190,7 @@ object DraftVisionScanner {
                 config = calib
             ) ?: return null
 
-            val otherPicks = getConfirmedPicksExcept(turn)
+            val otherPicks = getConfirmedPicksExcept(turn, confirmedHudPicks)
             val confirmedChampIds = otherPicks.map { it.id }.toSet() + detectedBannedChampionIds
             val targetChampion = if (turn.isAlly) {
                 allySlotConfirmedChampions.getOrNull(turn.slotIndex)
@@ -225,12 +225,16 @@ object DraftVisionScanner {
         return null
     }
 
-    internal fun getConfirmedPicksExcept(turn: DraftPickTurn): List<Champion> {
-        return allySlotConfirmedChampions.filterIndexed { index, _ ->
+    internal fun getConfirmedPicksExcept(turn: DraftPickTurn, confirmedHudPicks: List<Champion> = emptyList()): List<Champion> {
+        val target = (if (turn.isAlly) allySlotConfirmedChampions else enemySlotConfirmedChampions).getOrNull(turn.slotIndex)
+        val remembered = allySlotConfirmedChampions.filterIndexed { index, _ ->
             !turn.isAlly || index != turn.slotIndex
         }.filterNotNull() + enemySlotConfirmedChampions.filterIndexed { index, _ ->
             turn.isAlly || index != turn.slotIndex
         }.filterNotNull()
+        // Only a complete, unique set of nine HUD picks can recover a transient OCR gap.
+        val hud = confirmedHudPicks.takeIf { it.size == 9 && it.map { c -> c.id }.distinct().size == 9 }.orEmpty()
+        return (remembered + hud).filter { it.id != target?.id }.distinctBy { it.id }
     }
 
     internal fun getRememberedAllyRoles(currentRoles: Map<Int, LaneRole>): Map<Int, LaneRole> {
@@ -384,7 +388,8 @@ object DraftVisionScanner {
         bitmap: Bitmap,
         context: android.content.Context? = null,
         currentIsFirstPick: Boolean? = null,
-        currentActiveRole: LaneRole? = null
+        currentActiveRole: LaneRole? = null,
+        confirmedHudPicks: List<Champion> = emptyList()
     ): DraftScanResult {
         if (bitmap.isRecycled || bitmap.width < bitmap.height) {
             return DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Orientación no horizontal")
@@ -1288,7 +1293,7 @@ object DraftVisionScanner {
         val tenthIsAlly = tenthTurn.isAlly
         val tenthSlotIndex = tenthTurn.slotIndex
 
-        val otherPicks = getConfirmedPicksExcept(tenthTurn)
+        val otherPicks = getConfirmedPicksExcept(tenthTurn, confirmedHudPicks)
         val confirmedPicksCount = otherPicks.size
         val confirmedChampIds = otherPicks.map { it.id }.toSet() + detectedBannedChampionIds
 
@@ -1497,7 +1502,7 @@ object DraftVisionScanner {
             isLegendaryRanked = isLegendaryRanked,
             isPreparationPhase = isPreparationPhase,
             hasDraftActivity = hasDraftActivity,
-            isSuccessful = hasDraftActivity,
+            isSuccessful = hasDraftActivity || isTenthConfirmed,
             statusMessage = statusMsg
         )
         } catch (t: Throwable) {
