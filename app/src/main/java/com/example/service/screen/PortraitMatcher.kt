@@ -20,11 +20,20 @@ internal object PortraitMatcher {
         val values = FloatArray(samples.size * 3)
         val means = FloatArray(3)
         samples.forEachIndexed { i, (x, y) ->
-            val px = ((0.5f + x * scale + dx) * width).toInt().coerceIn(0, width - 1)
-            val py = ((0.5f + y * scale + dy) * height).toInt().coerceIn(0, height - 1)
-            val color = pixels[py * width + px]
+            // Match pixel centers at subpixel precision. Nearest-neighbor sampling aliases
+            // small JPEG slot portraits against the larger local reference (notably Vi).
+            val px = ((0.5f + x * scale + dx) * width - 0.5f).coerceIn(0f, (width - 1).toFloat())
+            val py = ((0.5f + y * scale + dy) * height - 0.5f).coerceIn(0f, (height - 1).toFloat())
+            val x0 = px.toInt(); val y0 = py.toInt()
+            val x1 = (x0 + 1).coerceAtMost(width - 1)
+            val y1 = (y0 + 1).coerceAtMost(height - 1)
+            val fx = px - x0; val fy = py - y0
             for (c in 0..2) {
-                val value = ((color ushr (16 - c * 8)) and 255) / 255f
+                val shift = 16 - c * 8
+                fun channel(x: Int, y: Int) = ((pixels[y * width + x] ushr shift) and 255).toFloat()
+                val top = channel(x0, y0) * (1f - fx) + channel(x1, y0) * fx
+                val bottom = channel(x0, y1) * (1f - fx) + channel(x1, y1) * fx
+                val value = (top * (1f - fy) + bottom * fy) / 255f
                 values[i * 3 + c] = value
                 means[c] += value
             }

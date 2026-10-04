@@ -263,7 +263,7 @@ fun UserAvatarView(
                 contentDescription = com.example.util.tr("Marco de Perfil"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.35f else 1.15f)
+                    .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.40f else 1.15f)
                     .align(Alignment.Center)
             )
         } else if (isAdmin) {
@@ -273,7 +273,7 @@ fun UserAvatarView(
                     contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.35f else 1.15f)
+                        .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.40f else 1.15f)
                         .align(Alignment.Center)
                 )
             } else if (!adminFrameUrl.isNullOrBlank()) {
@@ -287,7 +287,7 @@ fun UserAvatarView(
                     contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.35f else 1.15f)
+                        .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.40f else 1.15f)
                         .align(Alignment.Center)
                 )
             }
