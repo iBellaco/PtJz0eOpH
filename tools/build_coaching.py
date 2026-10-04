@@ -5,6 +5,9 @@ from pathlib import Path
 
 PROFILES = {row[0]: row[1:] for row in csv.reader(
     Path(__file__).with_name('champion_coaching_profiles.tsv').read_text().splitlines(), delimiter='|')}
+MNEMONICS = {row[0]: row[1:] for row in csv.reader(
+    Path(__file__).with_name('champion_coaching_mnemonics.tsv').read_text().splitlines(), delimiter='|')}
+assert set(MNEMONICS) == set(PROFILES)
 
 def profile(champion, pt=False):
     risk_es, risk_pt, rule_es, rule_pt = PROFILES[champion['id']]
@@ -16,7 +19,7 @@ def overview(champion, lane, lane_name, translations, pt=False):
     steps = rule.split('; ', 1)
     decision = steps[0].rstrip('.')
     detail = steps[-1][0].upper() + steps[-1][1:] if len(steps) == 2 else rule
-    name = champion.get('namePt') or champion['name'] if pt else champion['name']
+    name = champion.get('namePt') or champion['name'].replace('Nunu y Willump', 'Nunu e Willump') if pt else champion['name']
     titles = ('Diagnóstico do erro/situação', 'Decisão Soberano', 'Micro e Macro detalhe', 'Regra aplicável') if pt else (
         'Diagnóstico del error/situación', 'Decisión Soberano', 'Micro y Macro detalle', 'Regla aplicable')
     lane_rules = {
@@ -27,7 +30,8 @@ def overview(champion, lane, lane_name, translations, pt=False):
         'SUPPORT': ('Tu salida de línea depende de la seguridad del tirador y del recurso citado; vuelve antes de que la oleada lo deje expuesto.', 'Sua saída da rota depende da segurança do atirador e do recurso citado; volte antes de a onda deixá-lo exposto.'),
     }
     return '\n'.join(f'{title}: {body}' for title, body in zip(titles, (
-        f'{name} · {lane_name}. {risk}', decision + '.', detail, lane_rules[lane][int(pt)])))
+        f'{name} · {lane_name}. {risk}', decision + '.',
+        detail + ' ' + lane_rules[lane][int(pt)], MNEMONICS[champion['id']][int(pt)])))
 
 # Each choice answers a different combat problem. Values are decisions, not stat recitations.
 ITEM_POLICIES = {
@@ -193,7 +197,7 @@ def element(champion, lane_name, name, kind, pt=False, display_name=None):
         table = RUNE_POLICIES if kind == 'rune' else SPELL_POLICIES
         action = table[name][int(pt)]
         need = risk
-    me = (champion.get('namePt') or champion['name']) if pt else champion['name']
+    me = (champion.get('namePt') or champion['name'].replace('Nunu y Willump', 'Nunu e Willump')) if pt else champion['name']
     titles = ('Diagnóstico do erro/situação','Decisão Soberano','Micro e Macro detalhe','Regra aplicável') if pt else ('Diagnóstico del error/situación','Decisión Soberano','Micro y Macro detalle','Regla aplicable')
     return '\n'.join(f'{t}: {v}' for t, v in zip(titles, (
         f'{me} · {lane_name} · {display_name or name}. {need}', action, anchor + '.', continuation[0].upper() + continuation[1:])))

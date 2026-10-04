@@ -127,7 +127,7 @@ object CustomChampionBuildsManager {
         ensureAuthAndSync(appContext)
     }
 
-    private fun isBundledOfficialBuild(record: CustomChampionBuildRecord): Boolean {
+    internal fun isBundledOfficialBuild(record: CustomChampionBuildRecord): Boolean {
         return record.creatorName.contains("Coach IA", ignoreCase = true) ||
             (record.creatorUserId.isBlank() && record.creatorName == "Coach (Criterio Táctico)")
     }
