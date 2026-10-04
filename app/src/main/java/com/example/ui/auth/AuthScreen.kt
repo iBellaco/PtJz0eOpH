@@ -98,6 +98,16 @@ fun AuthFlowContainer(
     val context = LocalContext.current
     var currentUser by remember { mutableStateOf(auth?.currentUser) }
 
+    DisposableEffect(auth) {
+        val listener = com.google.firebase.auth.FirebaseAuth.AuthStateListener { changed ->
+            // A new login waits for hardware/session registration before showing the profile.
+            // A remotely displaced session must immediately show the signed-out flow.
+            if (AuthManager.isGuestOrUnauthenticated(changed.currentUser)) currentUser = changed.currentUser
+        }
+        auth?.addAuthStateListener(listener)
+        onDispose { auth?.removeAuthStateListener(listener) }
+    }
+
     LaunchedEffect(Unit) {
         currentUser = auth?.currentUser
     }

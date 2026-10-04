@@ -388,6 +388,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        val user = com.example.util.AuthManager.getAuth()?.currentUser
+        if (user != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(user)) {
+            com.example.util.SubscriptionManager.startHeartbeat(user.uid)
+        }
+    }
+
     override fun onStop() {
         super.onStop()
         com.example.util.SubscriptionManager.stopHeartbeat()
