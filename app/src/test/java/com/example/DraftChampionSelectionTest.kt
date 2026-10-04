@@ -77,7 +77,8 @@ class DraftChampionSelectionTest(private val language: String) {
         } }
         val role = compose.onNodeWithTag("draft_active_role_pill")
         role.assertIsDisplayed()
-        assertTrue("The lane card expanded vertically", role.getUnclippedBoundsInRoot().height < 110.dp)
+        val bounds = role.getUnclippedBoundsInRoot()
+        assertTrue("The lane card expanded vertically", bounds.bottom - bounds.top < 110.dp)
         compose.onNodeWithText(com.example.util.trStr(language, "Cambiar")).assertIsDisplayed()
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = "build/reports/portuguese-rendered/draft-narrow-$language.png")
     }
