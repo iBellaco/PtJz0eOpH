@@ -92,6 +92,10 @@ android {
     buildConfig = true
   }
 
+  // Instrument the same R8 variant delivered to users. AGP rewrites test
+  // references with the release mapping; debug tests cannot target it safely.
+  testBuildType = "release"
+
   testOptions {
     unitTests {
       isIncludeAndroidResources = true

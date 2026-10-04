@@ -160,7 +160,7 @@ jobs:
         CI: 'true'
       run: |
         rm -rf app/build/outputs/apk/ || true
-        gradle :app:assembleRelease :app:assembleDebugAndroidTest --stacktrace --no-daemon -x lint -x lintVitalRelease
+        gradle :app:assembleRelease :app:assembleReleaseAndroidTest --stacktrace --no-daemon -x lint -x lintVitalRelease
 
         EXPECTED_APK="app/build/outputs/apk/release/app-release.apk"
         if [ ! -f "$EXPECTED_APK" ]; then
@@ -350,9 +350,9 @@ jobs:
         emulator-boot-timeout: 300
         script: |
           python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
+          python3 tools/verify-native-ocr-device.py
           python3 tools/check-draft-selection-device.py
           python3 tools/audit-portuguese-device.py
-          python3 tools/verify-native-ocr-device.py
     - name: Upload installed APK Portuguese evidence
       if: always()
       uses: actions/upload-artifact@v4
