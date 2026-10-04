@@ -433,8 +433,14 @@ jobs:
             raise SystemExit('Las comprobaciones no han terminado correctamente. No se publica el APK final.')
         PYRESULT
     - *id001
-    - name: Download validated APK
-      if: github.ref == 'refs/heads/main'
+    - name: Download validated APK (current run)
+      if: github.ref == 'refs/heads/main' && needs.find-validated-apk.outputs.run_id == ''
+      uses: actions/download-artifact@v4
+      with:
+        name: app-release.apk
+        path: app/build/outputs/apk/release/
+    - name: Download validated APK (reused run)
+      if: github.ref == 'refs/heads/main' && needs.find-validated-apk.outputs.run_id != ''
       uses: actions/download-artifact@v4
       with:
         name: app-release.apk
