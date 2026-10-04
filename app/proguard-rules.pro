@@ -64,6 +64,10 @@
 -keep class androidx.compose.** { *; }
 -dontwarn androidx.compose.**
 
+# AndroidJUnitRunner uses this shared dependency from the tested APK. It may
+# otherwise be removed because production code does not call its public API.
+-keep class androidx.tracing.Trace { *; }
+
 # Coroutines & Kotlin Reflection
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
@@ -107,4 +111,3 @@
 }
 -keep class com.example.service.** { *; }
 -dontwarn androidx.work.**
-
