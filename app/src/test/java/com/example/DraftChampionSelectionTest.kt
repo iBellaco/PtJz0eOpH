@@ -2,6 +2,8 @@ package com.example
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
@@ -65,6 +67,20 @@ class DraftChampionSelectionTest(private val language: String) {
         DraftSessionManager.clearAll()
         CompletableFuture.runAsync { Tasks.await(FirebaseFirestore.getInstance().terminate()) }.get(10, TimeUnit.SECONDS)
         FirebaseApp.getApps(context).forEach { it.delete() }
+    }
+
+    @Test fun roleControlsStayCompactAndReadableOnNarrowScreens() {
+        compose.setContent { MyApplicationTheme(animateButtons = true) {
+            androidx.compose.foundation.layout.Box(modifier = androidx.compose.ui.Modifier.width(280.dp)) {
+                MetaAndDraftScreen(mode = MetaScreenMode.DRAFTING, userMainRole = LaneRole.MID, onNavigateBack = {})
+            }
+        } }
+        val role = compose.onNodeWithTag("draft_active_role_pill")
+        role.assertIsDisplayed()
+        val bounds = role.getUnclippedBoundsInRoot()
+        assertTrue("The lane card expanded vertically", bounds.bottom - bounds.top < 110.dp)
+        compose.onNodeWithText(com.example.util.trStr(language, "Cambiar")).assertIsDisplayed()
+        compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = "build/reports/portuguese-rendered/draft-narrow-$language.png")
     }
 
     @Test fun missingLaneOpensTheLaneDialogInsteadOfTheChampionPicker() {

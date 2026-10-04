@@ -92,6 +92,29 @@ class HubChampionNavigationTest {
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = "build/reports/portuguese-rendered/creator-after-delete-pt.png")
     }
 
+    @Test fun `history opens and returns without an activity dispatcher`() {
+        val context = RuntimeEnvironment.getApplication()
+        com.example.util.DynamicTranslations.loadSync(context)
+        AppLanguage.select(context, "es")
+        WildRiftRepository.initChampions(context)
+        val serviceView = FrameLayout(context)
+        compose.setContent {
+            CompositionLocalProvider(LocalContext provides context, LocalView provides serviceView) {
+                assertNull(LocalOnBackPressedDispatcherOwner.current)
+                MyApplicationTheme {
+                    var open by remember { mutableStateOf(true) }
+                    if (open) com.example.ui.screens.DraftHistoryScreen(isOverlay = true,
+                        onNavigateBack = { open = false }, onLoadDraft = { _, _, _, _ -> })
+                    else Text("Historial cerrado")
+                }
+            }
+        }
+        compose.onNodeWithTag("draft_history_title").assertIsDisplayed()
+        compose.onAllNodes(isRoot()).onLast().captureRoboImage(filePath = "build/reports/portuguese-rendered/overlay-history-es.png")
+        compose.onNodeWithTag("history_back_button").performClick()
+        compose.onNodeWithText("Historial cerrado").assertIsDisplayed()
+    }
+
     private fun exerciseHub(language: String, backLabel: String) {
         val context = RuntimeEnvironment.getApplication()
         AppLanguage.select(context, language)

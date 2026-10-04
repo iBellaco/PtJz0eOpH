@@ -379,29 +379,31 @@ fun DraftHistoryScreen(
     val effectiveOverlay = isOverlay || context.isOverlayOrNonActivity()
     var isNavMinimized by rememberSaveable { mutableStateOf(effectiveOverlay) }
 
-    androidx.activity.compose.BackHandler {
-        if (selectedDraftForDetail != null) {
-            selectedDraftForDetail = null
-        } else if (draftToDelete != null) {
-            draftToDelete = null
-        } else if (showClearAllConfirm) {
-            showClearAllConfirm = false
-        } else if (profileToClearHistory != null) {
-            profileToClearHistory = null
-        } else if (profileToDeleteProfile != null) {
-            profileToDeleteProfile = null
-        } else if (showCreateProfileDialog) {
-            showCreateProfileDialog = false
-        } else if (profileToEdit != null) {
-            profileToEdit = null
-        } else if (showBlueEssenceStore != null) {
-            showBlueEssenceStore = null
-        } else if (showBackupRestoreDialog) {
-            showBackupRestoreDialog = false
-        } else if (showImportConfirmDialog) {
-            showImportConfirmDialog = false
-        } else {
-            onNavigateBack()
+    if (!effectiveOverlay && androidx.activity.compose.LocalOnBackPressedDispatcherOwner.current != null) {
+        androidx.activity.compose.BackHandler {
+            if (selectedDraftForDetail != null) {
+                selectedDraftForDetail = null
+            } else if (draftToDelete != null) {
+                draftToDelete = null
+            } else if (showClearAllConfirm) {
+                showClearAllConfirm = false
+            } else if (profileToClearHistory != null) {
+                profileToClearHistory = null
+            } else if (profileToDeleteProfile != null) {
+                profileToDeleteProfile = null
+            } else if (showCreateProfileDialog) {
+                showCreateProfileDialog = false
+            } else if (profileToEdit != null) {
+                profileToEdit = null
+            } else if (showBlueEssenceStore != null) {
+                showBlueEssenceStore = null
+            } else if (showBackupRestoreDialog) {
+                showBackupRestoreDialog = false
+            } else if (showImportConfirmDialog) {
+                showImportConfirmDialog = false
+            } else {
+                onNavigateBack()
+            }
         }
     }
 

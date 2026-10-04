@@ -53,3 +53,5 @@ El orden jerárquico de los rangos para consejos tácticos es:
 - Mantener español y portugués como únicos idiomas seleccionables. Revisar las pantallas y el contenido generado en portugués antes de entregar.
 - Después de cualquier modificación, por pequeña que sea, entregar siempre el APK ofuscado y un ZIP mediante enlaces de descarga directos en la conversación, sin obligar al usuario a descargar desde GitHub. Por defecto el ZIP contiene el APK listo para instalar y su suma de comprobación; si el usuario solicita el proyecto, entregar también un ZIP del código fuente sin claves, credenciales ni archivos privados. El código fuente no se presenta como ofuscado.
 - Compilar las entregas con R8 en la variante release y comprobar la ofuscación real, la firma persistente y el funcionamiento del APK instalado antes de fusionar. Nunca entregar una variante sin ofuscación como versión final.
+
+- Mostrar al desarrollador las capturas en español latino. Las capturas portuguesas se muestran únicamente cuando se revisa específicamente ese idioma. Mantener actualizaciones breves de progreso durante el trabajo.
