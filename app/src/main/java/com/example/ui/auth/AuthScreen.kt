@@ -744,7 +744,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
             // Rol visualizado directamente debajo del usuario, únicamente el rol sin tanto contexto
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
                 RoleBadge(
                     role = userRole,

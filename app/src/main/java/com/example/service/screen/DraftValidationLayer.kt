@@ -172,7 +172,7 @@ object DraftValidationLayer {
             "jarvaniv", "jarvan_iv" -> setOf("jarvan", "j4", "jarvaniv")
             "missfortune", "miss_fortune" -> setOf("mf", "missfortune")
             "twistedfate", "twisted_fate" -> setOf("tf", "twistedfate")
-            "nunuandwillump", "nunu_and_willump" -> setOf("nunu", "willump")
+            "nunuwillump", "nunuandwillump" -> setOf("nunu", "willump")
             "aurelionsol", "aurelion_sol" -> setOf("asol", "aurelion")
             "leesin", "lee_sin" -> setOf("lee", "leesin")
             "masteryi", "master_yi" -> setOf("yi", "masteryi")
