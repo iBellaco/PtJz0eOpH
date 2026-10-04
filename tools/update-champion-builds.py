@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Refresh the 142 champions / 300 lane builds from the user-maintained item catalog."""
 import argparse, json, re
+from build_coaching import PROFILES, overview, element
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'app/src/main/assets'
@@ -31,6 +32,7 @@ OVERRIDES = {
 
 def read(path): return json.loads(path.read_text())
 def output(path, value, check):
+    if path.name == 'translations_pt.json': value=dict(sorted(value.items()))
     text=json.dumps(value,ensure_ascii=False,indent=2)+'\n'
     if check:
         assert path.read_text()==text, f'Outdated generated data: {path.relative_to(ROOT)}'
@@ -46,13 +48,15 @@ def main(check=False):
     paths=[RAW/f'champions_part{i}.json' for i in (1,2)]
     parts=[read(p) for p in paths]; champions={c['id']:c for part in parts for c in part}
     assert len(champions)==142 and len(builds)==300
+    assert set(PROFILES)==set(champions), 'Every champion needs an authored coaching profile'
     translations=read(ASSETS/'translations_pt.json')
     phrases=read(ASSETS/'build_catalog_translations_pt.json')
     # Remove the previous generated advice before replacing it; never leave stale bilingual variants.
     for key in list(translations):
-        if any((key.startswith(c['name']+' · ') or key.startswith('Diagnóstico del error/situación: '+c['name']+' · ')) and ' · H1' in key for c in champions.values()):
+        if any(key.startswith('Diagnóstico del error/situación: '+c['name']+' · ') for c in champions.values()):
             del translations[key]
     by_lane={}
+    rune_templates={r['runeName']:dict(r) for b in builds for r in b['coreRunes']}
     for build in builds:
         champ=champions[build['championId']]
         lane=next(k for k,v in LANES.items() if build['role'].split(' (')[0]==v)
@@ -68,30 +72,27 @@ def main(check=False):
             if len(situational)>=4: break
             if name not in core+ situational and name in items: situational.append(name)
         build['situationalItems']=situational
-        skills={x['slot']:x for x in champ.get('skills',[])}
-        skill=skills.get('1',{})
-        h_es='H1'+(' · '+skill['name'] if skill.get('name') else '')
-        h_pt='H1'+(' · '+phrases.get(skill.get('name',''),skill.get('namePt') or skill.get('name','')) if skill.get('name') else '')
-        def entry(name, situational=False):
-            assert name in items, (champ['id'],name)
-            item=items[name]; namept=phrases.get(name,item.get('namePt') or translations.get(name,name))
-            stats=item.get('stats',''); statspt=phrases.get(stats,item.get('statsPt') or translations.get(stats,stats))
-            effect=item.get('passive','').split('\n')[0]; effectpt=phrases.get(effect,item.get('passivePt','').split('\n')[0])
-            condition_es='Reemplaza un espacio solo si el daño o la defensa rival justifican este efecto.' if situational else 'Completa esta compra cuando puedas aprovechar su efecto en tu siguiente ventana de combate.'
-            condition_pt='Substitua um espaço apenas se o dano ou a defesa rival justificarem este efeito.' if situational else 'Complete esta compra quando puder aproveitar seu efeito na próxima janela de combate.'
-            me_pt=translations.get(champ.get('namePt') or champ['name'],champ.get('namePt') or champ['name'])
-            mechanism=champ['tacticalAdvice']
-            mechanism_pt=translations[mechanism]
-            reason_es='El efecto debe resolver una amenaza concreta del rival antes de sustituir tu compra principal.' if situational else 'Tu siguiente compra debe potenciar la secuencia del campeón, no solo aumentar una estadística aislada.'
-            reason_pt='O efeito deve resolver uma ameaça concreta do rival antes de substituir a compra principal.' if situational else 'A próxima compra deve fortalecer a sequência do campeão, além de aumentar uma estatística isolada.'
-            es=(f"Diagnóstico del error/situación: {champ['name']} · {LANES[lane]} · {h_es}. {reason_es}\n"
-                f"Decisión Soberano: {name}. {mechanism}\n"
-                f"Micro y Macro detalle: {stats}. {effect}\nRegla aplicable: {condition_es}")
-            pt=(f"Diagnóstico do erro/situação: {me_pt} · {PT_LANES[lane]} · {h_pt}. {reason_pt}\n"
-                f"Decisão Soberano: {namept}. {mechanism_pt}\n"
-                f"Micro e Macro detalhe: {statspt}. {effectpt}\nRegra aplicável: {condition_pt}")
-            translations[es]=pt
-            return {'itemName':name,'description':es}
+        build['creatorName']='Coach (Criterio Táctico)'
+        def localized(name):
+            item=items.get(name,{})
+            return phrases.get(name,item.get('namePt') or translations.get(name,name))
+        def advice(name,kind):
+            es=element(champ,LANES[lane],name,kind)
+            pt=element(champ,PT_LANES[lane],name,kind,True,localized(name))
+            if es: translations[es]=pt
+            return es
+        def entry(name,situational=False):
+            assert name in items,(champ['id'],name)
+            return {'itemName':name,'description':advice(name,'item')}
+        build['coachAdvice']=overview(champ,lane,LANES[lane],translations)
+        translations[build['coachAdvice']]=overview(champ,lane,PT_LANES[lane],translations,True)
+        role_pt=PT_LANES[lane]+(' (Flex)' if '(Flex)' in build['role'] else '')
+        translations[f"Línea: {build['role']} • Análisis del coach"]=f"Rota: {role_pt} • Análise do coach"
+        if champ['id']=='syndra':
+            build['coreRunes']=[dict(rune_templates['Golpe Bajo']) if r['runeName']=='Impacto Repentino' else r for r in build['coreRunes']]
+        for field,kind,key in [('coreRunes','rune','runeName'),('situationalRunes','rune','runeName'),('coreSpells','spell','spellName'),('situationalSpells','spell','spellName')]:
+            for choice in build[field]: choice['description']=advice(choice[key],kind)
+        build['runes']=', '.join(r['runeName'] for r in build['coreRunes'])
         build['coreItemsWithDesc']=[entry(n) for n in core]
         build['situationalItemsWithDesc']=[entry(n,True) for n in situational]
         for key in ['bootsT2Item','bootsT3Item']:
@@ -103,11 +104,15 @@ def main(check=False):
             build=by_lane[(champ['id'],lane)]
             raw=next((b for b in champ.get('builds',[]) if b['role'].upper()==lane),None)
             assert raw is not None,(champ['id'],lane)
-            raw.update(coreItems=build['coreItems'],items=build['coreItems'],situationalItems=build['situationalItems'])
+            raw.update(coreItems=build['coreItems'],items=build['coreItems'],situationalItems=build['situationalItems'],runes=build['runes'])
         primary=by_lane[(champ['id'],champ['primaryRole'])]
         champ['coreItems']=primary['coreItems']; champ['situationalItems']=primary['situationalItems']
         champ['coreItemsIcons']=[items[n].get('iconUrl','') for n in champ['coreItems']]
         champ['situationalItemsIcons']=[items[n].get('iconUrl','') for n in champ['situationalItems']]
+    translations.update({'CRITERIO COACH':'CRITÉRIO COACH','Análisis del coach':'Análise do coach','Criterio del coach':'Critério do coach','Coach (Criterio Táctico)':'Coach (Critério Tático)'})
+    translations['Criterio del coach • Coach (Criterio Táctico)']='Critério do coach • Coach (Critério Tático)'
+    for lane, label in LANES.items():
+        translations[f'Línea: {label} • Análisis del coach']=f'Rota: {PT_LANES[lane]} • Análise do coach'
     output(ASSETS/'champions_creator_builds.json',builds,check)
     output(ASSETS/'translations_pt.json',translations,check)
     for path,part in zip(paths,parts): output(path,part,check)

@@ -1946,17 +1946,14 @@ private fun SavedDraftCard(
                     )
                     val modeColor = when {
                         draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true) -> Color(0xFFC084FC)
-                        draft.matchMode.equals("NORMAL", ignoreCase = true) -> HextechCyan
                         else -> HextechGold
                     }
                     val modeBg = when {
                         draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true) -> Color(0xFF9333EA).copy(alpha = 0.25f)
-                        draft.matchMode.equals("NORMAL", ignoreCase = true) -> HextechCyan.copy(alpha = 0.15f)
                         else -> HextechGold.copy(alpha = 0.15f)
                     }
                     val modeLabel = when {
                         draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true) -> tr("Legendaria")
-                        draft.matchMode.equals("NORMAL", ignoreCase = true) -> tr("Normal")
                         else -> tr("Clasificatoria")
                     }
                     Spacer(modifier = Modifier.width(5.dp))
@@ -2364,7 +2361,6 @@ private fun DraftDetailInnerContent(
                     )
                     val detailModeText = when {
                         draft.isLegendary || draft.matchMode.equals("LEGENDARY", ignoreCase = true) -> " • 🏆 " + tr("Legendaria")
-                        draft.matchMode.equals("NORMAL", ignoreCase = true) -> " • 🎯 " + tr("Normal")
                         else -> " • ⚔️ " + tr("Clasificatoria")
                     }
                     val detailScoreText = if (draft.myScore.isNotBlank()) " • 🏅 Score: ${draft.myScore}" else ""

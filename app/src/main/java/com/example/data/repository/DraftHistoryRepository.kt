@@ -95,6 +95,8 @@ object DraftHistoryRepository {
         myScore: String = "",
         allowDuplicate: Boolean = false
     ): Long {
+        val normalizedScore = com.example.data.DraftScoreFormat.normalize(myScore)
+        require(matchMode in setOf("RANKED", "LEGENDARY")) { "Modo de partida inválido" }
         val activeProfile = AccountProfileManager.getActiveProfile(context)
         val profileId = accountProfileId ?: activeProfile.id
         val profileName = accountProfileName ?: activeProfile.name
@@ -167,7 +169,7 @@ object DraftHistoryRepository {
             accountProfileName = profileName,
             isLegendary = isLegendary || matchMode == "LEGENDARY",
             matchMode = matchMode,
-            myScore = myScore
+            myScore = normalizedScore
         )
 
         val draftDao = AppDatabase.getDatabase(context).draftDao()
@@ -192,7 +194,7 @@ object DraftHistoryRepository {
                 accountProfileName = profileName,
                 isLegendary = isLegendary || matchMode == "LEGENDARY",
                 matchMode = matchMode,
-                myScore = if (myScore.isNotBlank()) myScore else existingDraft.myScore
+                myScore = if (normalizedScore.isNotBlank()) normalizedScore else existingDraft.myScore
             )
             draftDao.updateDraft(updated)
             existingDraft.id

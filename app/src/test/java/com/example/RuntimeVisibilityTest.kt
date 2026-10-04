@@ -495,8 +495,14 @@ class RuntimeVisibilityTest(private val screen: String) {
                     compose.onAllNodesWithTag("build_item_details", useUnmergedTree = true).onFirst().assertIsDisplayed().performClick()
                 } else compose.onAllNodesWithTag("build_${category}_details", useUnmergedTree = true).onFirst().performScrollTo().performClick()
                 inspect("opened")
-                compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).performScrollTo().assertExists()
-                compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).captureRoboImage(filePath = File(output, "$screen-framed-card.png").path)
+                if (category == "spell") {
+                    // The first spell is Flash; its description remains, but coaching is intentionally absent.
+                    compose.onNodeWithText("Flash").assertExists()
+                    compose.onAllNodesWithTag("build_element_advice_card", useUnmergedTree = true).assertCountEquals(0)
+                } else {
+                    compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).performScrollTo().assertExists()
+                    compose.onNodeWithTag("build_element_advice_card", useUnmergedTree = true).captureRoboImage(filePath = File(output, "$screen-framed-card.png").path)
+                }
             }
             "champion-guest" -> {
                 compose.onNodeWithTag("advantage_insight_card").performScrollTo()

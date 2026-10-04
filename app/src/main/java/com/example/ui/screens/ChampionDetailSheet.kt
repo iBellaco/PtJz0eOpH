@@ -701,12 +701,14 @@ fun ChampionDetailSheet(
                     com.example.util.ChampionBuildOption(
                         optionNumber = 1,
                         title = rec.buildTitle,
-                        subtitle = "Línea: ${rec.role} • Análisis Estadístico & IA",
-                        source = "Cálculo IA & Estadísticas • ${rec.creatorName}",
-                        badge = if (rec.role.contains("Flex", ignoreCase = true)) "FLEX PRO" else "ESTADÍSTICA & IA",
-                        tacticalReason = rec.coreItemsWithDesc.firstOrNull()?.description ?: "Build recomendada por el coach para el meta actual de Wild Rift.",
+                        subtitle = "Línea: ${rec.role} • Análisis del coach",
+                        source = "Criterio del coach • ${rec.creatorName}",
+                        badge = if (rec.role.contains("Flex", ignoreCase = true)) "FLEX PRO" else "CRITERIO COACH",
+                        tacticalReason = rec.coachAdvice.ifBlank { CoachingGenerator.generateTacticalAnalysis(champion, selectedRole, "es") },
                         items = rec.coreItemsWithDesc.map { it.itemName }.ifEmpty { rec.coreItems },
                         bootBase = t2,
+                        bootBaseAdvice = rec.bootsT2Item?.description.orEmpty(),
+                        bootUpgradeAdvice = rec.bootsT3Item?.description.orEmpty(),
                         bootUpgrade = t3,
                         situationalBoots = sitBoots,
                         situationalItems = rec.situationalItemsWithDesc.map { it.itemName }.ifEmpty { rec.situationalItems },
@@ -905,6 +907,7 @@ fun ChampionDetailSheet(
                         Spacer(Modifier.height(4.dp))
                         FormattedWildRiftText(
                             text = tr(activeOption.tacticalReason),
+                            modifier = Modifier.testTag("build_coach_overview"),
                             color = TextPrimary,
                             fontSize = 12.sp
                         )
@@ -1095,7 +1098,7 @@ fun ChampionDetailSheet(
                                     .testTag("selected_boot_$currentBootBase")
                                     .coachClickable {
                                         if (dbBoot1 != null) {
-                                            selectedElementAdvice = ""
+                                            selectedElementAdvice = activeOption.bootBaseAdvice
                                             itemForDetail = dbBoot1
                                         }
                                     }
@@ -1125,7 +1128,7 @@ fun ChampionDetailSheet(
                                     .background(HextechSurfaceVariant)
                                     .border(1.dp, HextechCyan, RoundedCornerShape(8.dp))
                                     .coachClickable { if (dbBoot2 != null) {
-                                        selectedElementAdvice = ""
+                                        selectedElementAdvice = activeOption.bootUpgradeAdvice
                                         itemForDetail = dbBoot2
                                     } }
                             ) {
@@ -1244,7 +1247,7 @@ fun ChampionDetailSheet(
                                         .testTag("build_spell_details")
                                         .coachClickable { if (dbSpell != null) {
                                             selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawSpellName,
-                                                activeOption.coreSpells.map { it.spellName to it.description }, activeOption.tacticalReason)
+                                                activeOption.coreSpells.map { it.spellName to it.description }, "", dbSpell.description)
                                             spellForDetail = dbSpell
                                         } }
                                 ) {
@@ -1337,7 +1340,7 @@ fun ChampionDetailSheet(
                                     .testTag("build_rune_details")
                                     .coachClickable {
                                         selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rName,
-                                            activeOption.coreRunes.map { it.runeName to it.description }, activeOption.tacticalReason)
+                                            activeOption.coreRunes.map { it.runeName to it.description }, "", foundRune?.description.orEmpty())
                                         runeForDetail = foundRune ?: com.example.model.RuneItem(
                                             id = rName.lowercase().replace(" ", "_"),
                                             name = rName,
@@ -2245,7 +2248,7 @@ fun AdaptiveDetailAlertDialog(
                         )
                     }
 
-                    BuildElementCoachAdvice(selectedElementAdvice.ifBlank { item.getLocalizedCoachTip(com.example.util.currentAppLanguage()) })
+                    BuildElementCoachAdvice(selectedElementAdvice)
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
                         modifier = Modifier
@@ -2361,7 +2364,7 @@ fun AdaptiveDetailAlertDialog(
                         text = spell.getLocalizedDescription(com.example.util.currentAppLanguage()),
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
-                    BuildElementCoachAdvice(selectedElementAdvice)
+                    if (!com.example.util.BuildElementAdvice.isFlash(spell.name)) BuildElementCoachAdvice(selectedElementAdvice)
                 }
             },
             confirmButton = {

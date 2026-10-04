@@ -98,7 +98,7 @@ fun SaveDraftDialog(
     var profileDropdownExpanded by remember { mutableStateOf(false) }
 
     var selectedResult by remember { mutableStateOf("PENDING") } // "PENDING", "VICTORY", "DEFEAT"
-    var selectedMatchMode by remember { mutableStateOf("RANKED") } // "RANKED", "LEGENDARY", "NORMAL"
+    var selectedMatchMode by remember { mutableStateOf("RANKED") } // "RANKED", "LEGENDARY"
     val isLegendaryMatch = selectedMatchMode == "LEGENDARY"
     var myScore by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
@@ -340,7 +340,7 @@ fun SaveDraftDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Match Mode Selector (Clasificatoria Normal, Legendaria, Normal)
+                // Ranked and legendary ranked are the supported queues.
                 Text(
                     text = tr("Tipo de Partida"),
                     color = TextPrimary,
@@ -355,8 +355,7 @@ fun SaveDraftDialog(
                 ) {
                     val modes = listOf(
                         Triple("RANKED", tr("Clasificatoria"), HextechGold),
-                        Triple("LEGENDARY", tr("Legendaria"), Color(0xFFAB47BC)),
-                        Triple("NORMAL", tr("Normal"), HextechCyan)
+                        Triple("LEGENDARY", tr("Legendaria"), Color(0xFFAB47BC))
                     )
                     modes.forEach { (mode, label, accentColor) ->
                         val isSel = selectedMatchMode == mode
@@ -526,10 +525,11 @@ fun SaveDraftDialog(
                 // Score Field (Optional)
                 OutlinedTextField(
                     value = myScore,
-                    onValueChange = { myScore = it },
+                    onValueChange = { if (com.example.data.DraftScoreFormat.acceptsInput(it)) myScore = it },
                     label = { Text(tr("Tu Score / KDA (Opcional)"), fontSize = 11.5.sp) },
-                    placeholder = { Text(tr("Ej: 12/2/8 o 5.0 KDA"), fontSize = 11.sp, color = TextMuted) },
-                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(tr("Ej: 12/2/8"), fontSize = 11.sp, color = TextMuted) },
+                    modifier = Modifier.fillMaxWidth().testTag("draft_score_input"),
+                    isError = !com.example.data.DraftScoreFormat.isValid(myScore),
                     shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = HextechGold,
@@ -544,7 +544,7 @@ fun SaveDraftDialog(
                     singleLine = true,
                     supportingText = {
                         Text(
-                            text = tr("Refina el cálculo automático de tu Tier List Personal y enfrentamientos 1v1."),
+                            text = tr(if (com.example.data.DraftScoreFormat.isValid(myScore)) "Eliminaciones / muertes / asistencias. Déjalo vacío si no tienes el resultado." else "Completa las tres cifras: eliminaciones/muertes/asistencias."),
                             fontSize = 10.sp,
                             color = HextechCyan
                         )
@@ -598,9 +598,10 @@ fun SaveDraftDialog(
                     }
 
                     Button(
+                        enabled = com.example.data.DraftScoreFormat.isValid(myScore),
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onSave(selectedResult, notes, selectedProfile.id, selectedProfile.name, isLegendaryMatch, selectedMatchMode, myScore)
+                            onSave(selectedResult, notes, selectedProfile.id, selectedProfile.name, isLegendaryMatch, selectedMatchMode, com.example.data.DraftScoreFormat.normalize(myScore))
                         },
                         modifier = Modifier
                             .weight(1.2f)

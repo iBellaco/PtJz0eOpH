@@ -349,11 +349,18 @@ object DraftVisionScanner {
         }
     }
 
+    private var observedFirstPick: Boolean? = null
+    internal fun recoverFirstPick(allies: Int, rivals: Int, indicator: Boolean? = null): Boolean? {
+        val observed = DraftPickOrderPolicy.inferFirstPick(allies, rivals) ?: indicator ?: observedFirstPick
+        if (observed != null) observedFirstPick = observed
+        return observed
+    }
     private var isLegendaryRankedCache = false
     private val allySlotFilters = Array(5) { SlotTemporalFilter() }
     private val enemySlotFilters = Array(5) { SlotTemporalFilter() }
 
     fun resetSlotMemory() {
+        observedFirstPick = null
         isLegendaryRankedCache = false
         cachedUserSlotIndex = null
         allySlotRolesCache.clear()
@@ -1250,33 +1257,9 @@ object DraftVisionScanner {
         val totalAllyOcr = allySlots.count { it.champion != null }
         val totalEnemyOcr = enemySlots.count { it.champion != null }
 
-        // Inferencia determinista de Primera Selección según la regla exacta del usuario:
-        // Si el equipo aliado selecciona primero (Slot 0 aliado) -> Primera Selección (true)
-        // Si el equipo rival selecciona primero (Slot 0 rival) -> Segunda Selección (false)
-        if (allySlots[0].champion != null && enemySlots[0].champion == null) {
-            detectedFirstPick = true
-            AppLogger.d(TAG, "Inferencia First Pick: Aliados seleccionaron en Slot 0 primero -> Primera Selección (true)")
-        } else if (enemySlots[0].champion != null && allySlots[0].champion == null) {
-            detectedFirstPick = false
-            AppLogger.d(TAG, "Inferencia First Pick: Rival seleccionó en Slot 0 primero -> Segunda Selección (false)")
-        } else if (totalAllyOcr > 0 && totalEnemyOcr == 0) {
-            detectedFirstPick = true
-            AppLogger.d(TAG, "Inferencia First Pick: Aliados tienen $totalAllyOcr picks y Rival 0 -> Primera Selección (true)")
-        } else if (totalEnemyOcr > 0 && totalAllyOcr == 0) {
-            detectedFirstPick = false
-            AppLogger.d(TAG, "Inferencia First Pick: Rival tiene $totalEnemyOcr picks y Aliados 0 -> Segunda Selección (false)")
-        } else if (detectedFirstPick == null) {
-            when {
-                totalAllyOcr == 1 && totalEnemyOcr == 2 -> detectedFirstPick = true
-                totalEnemyOcr == 1 && totalAllyOcr == 2 -> detectedFirstPick = false
-                totalAllyOcr == 3 && totalEnemyOcr == 2 -> detectedFirstPick = true
-                totalAllyOcr == 2 && totalEnemyOcr == 3 -> detectedFirstPick = false
-                totalAllyOcr == 3 && totalEnemyOcr == 4 -> detectedFirstPick = true
-                totalEnemyOcr == 3 && totalAllyOcr == 4 -> detectedFirstPick = false
-                totalAllyOcr == 5 && totalEnemyOcr == 4 -> detectedFirstPick = true
-                totalEnemyOcr == 5 && totalAllyOcr == 4 -> detectedFirstPick = false
-            }
-        }
+        // Recover the order from a valid prefix even when auto-scan starts late.
+        // Ambiguous prefixes preserve observed order; only an explicit manual choice overrides it.
+        detectedFirstPick = recoverFirstPick(totalAllyOcr, totalEnemyOcr, detectedFirstPick)
 
         val effectiveFirstPick = currentIsFirstPick ?: detectedFirstPick ?: false
         isFirstPickState.value = effectiveFirstPick

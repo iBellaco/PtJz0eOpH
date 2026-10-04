@@ -748,7 +748,7 @@ fun CustomBuildDetailDialog(
                                         }
                                         Column {
                                             Text(com.example.util.tr(spell.spellName), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text(com.example.util.tr(spell.description), color = TextSecondary, fontSize = 11.sp)
+                                            if (!com.example.util.BuildElementAdvice.isFlash(spell.spellName)) Text(com.example.util.tr(spell.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }
@@ -793,7 +793,7 @@ fun CustomBuildDetailDialog(
                                         }
                                         Column {
                                             Text(com.example.util.tr(spell.spellName), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                            Text(com.example.util.tr(spell.description), color = TextSecondary, fontSize = 11.sp)
+                                            if (!com.example.util.BuildElementAdvice.isFlash(spell.spellName)) Text(com.example.util.tr(spell.description), color = TextSecondary, fontSize = 11.sp)
                                         }
                                     }
                                 }

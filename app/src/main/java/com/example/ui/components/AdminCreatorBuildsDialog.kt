@@ -100,7 +100,7 @@ fun AdminCreatorBuildsDialog(
     val deletionScope = rememberCoroutineScope()
     var deletingBuildId by remember { mutableStateOf<String?>(null) }
     val allBuilds by CustomChampionBuildsManager.customBuilds.collectAsStateWithLifecycle()
-    val customBuilds = remember(allBuilds) { allBuilds.filterNot { it.creatorName.contains("Coach IA", ignoreCase = true) } }
+    val customBuilds = remember(allBuilds) { allBuilds.filterNot { CustomChampionBuildsManager.isBundledOfficialBuild(it) } }
     val currentUserName by SubscriptionManager.userName.collectAsStateWithLifecycle()
     val currentUserRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
     val secondaryRole by SubscriptionManager.secondaryRole.collectAsStateWithLifecycle()
