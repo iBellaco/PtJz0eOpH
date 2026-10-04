@@ -68,6 +68,12 @@
 # otherwise be removed because production code does not call its public API.
 -keep class androidx.tracing.Trace { *; }
 
+# The installed test APK shares these libraries with the release app. Their
+# public APIs must remain callable by the runner and the real native OCR test.
+# Coach's own implementation classes remain eligible for R8 obfuscation.
+-keep class kotlin.** { *; }
+-keep class com.google.mlkit.** { *; }
+
 # Coroutines & Kotlin Reflection
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
