@@ -3067,7 +3067,7 @@ fun UserDetailManagementDialog(
     var showUserMessagesViewerDialog by remember { mutableStateOf(false) }
     var showManagedHistory by remember(uid) { mutableStateOf(false) }
     if (isAdmin && showManagedHistory) {
-        SubscriptionHistoryDialog(userId = uid, userEmail = email, onDismiss = { showManagedHistory = false })
+        SubscriptionHistoryDialog(userId = uid, userEmail = email, initialBalances = com.example.data.HistoryBalances(currentBlueEssence, currentOrangeEssence), onDismiss = { showManagedHistory = false })
     }
 
     val registeredDevices = (user["registeredDevices"] as? List<*>) ?: emptyList<Any>()

@@ -278,5 +278,11 @@
   "No se pudo identificar este dispositivo. Vuelve a intentarlo.": "Não foi possível identificar este dispositivo. Tente novamente.",
   "No se pudo comprobar la sesión. Vuelve a intentarlo.": "Não foi possível verificar a sessão. Tente novamente.",
   "Reintentar": "Tentar novamente",
-  "Esta función no está habilitada para tu cuenta. No se descontaron esencias.": "Esta função não está habilitada para a sua conta. Nenhuma essência foi descontada."
+  "Esta función no está habilitada para tu cuenta. No se descontaron esencias.": "Esta função não está habilitada para a sua conta. Nenhuma essência foi descontada.",
+  "Suscripción retirada": "Assinatura removida",
+  "Registros independientes sincronizados entre dispositivos. Los datos integrados se incluyen en las cuentas.": "Registros independentes sincronizados entre dispositivos. Os dados integrados estão incluídos nas contas.",
+  "Recuento disponible. No se pudo estimar el tamaño de esta categoría.": "Contagem disponível. Não foi possível estimar o tamanho desta categoria.",
+  "El servicio rechazó el acceso a esta categoría. Sus permisos deben actualizarse.": "O serviço recusou o acesso a esta categoria. As permissões precisam ser atualizadas.",
+  "La sesión no pudo verificarse. Vuelve a iniciar sesión.": "Não foi possível verificar a sessão. Entre novamente.",
+  "El servicio no respondió. Comprueba tu conexión y vuelve a actualizar.": "O serviço não respondeu. Verifique sua conexão e atualize novamente."
 }

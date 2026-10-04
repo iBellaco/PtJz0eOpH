@@ -38,9 +38,14 @@ import java.util.*
 fun SubscriptionHistoryDialog(
     userId: String? = null,
     userEmail: String? = null,
+    initialBalances: com.example.data.HistoryBalances? = null,
     onDismiss: () -> Unit
 ) {
-    var history by remember { mutableStateOf<List<SubscriptionRecord>>(emptyList()) }
+    val viewerUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+    val targetUid = userId ?: viewerUid
+    val ownAccount = com.example.data.HistoryAccountPolicy.isOwnAccount(targetUid, viewerUid)
+    var targetBalances by remember(targetUid) { mutableStateOf(initialBalances) }
+    var history by remember(targetUid) { mutableStateOf<List<SubscriptionRecord>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
 
@@ -56,12 +61,15 @@ fun SubscriptionHistoryDialog(
         }
     }
 
-    val targetUid = userId ?: com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+    LaunchedEffect(targetUid, initialBalances) {
+        if (initialBalances != null) targetBalances = initialBalances
+    }
     DisposableEffect(targetUid) {
         var previousHistory: List<Any?>? = null
         val listener = targetUid?.let { uid -> com.google.firebase.firestore.FirebaseFirestore.getInstance()
             .collection("users").document(uid).addSnapshotListener { snapshot, error ->
                 if (error == null && snapshot != null) {
+                    targetBalances = com.example.data.HistoryAccountPolicy.balances(snapshot.data)
                     val relevant = listOf(snapshot.get("subscriptionHistory"), snapshot.get("subscriptionPlan"),
                         snapshot.get("lastModifiedByAdmin"), (snapshot.get("privateMessages") as? List<*>)
                             .orEmpty().filterIsInstance<Map<String, Any>>().mapNotNull(com.example.data.AccountHistoryPolicy::notificationReceipt))
@@ -88,7 +96,7 @@ fun SubscriptionHistoryDialog(
             border = BorderStroke(1.dp, HextechCardBorder)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                if (targetUid == com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid) {
+                if (ownAccount) {
                     PanelReadControl(com.example.data.NotificationPanel.HISTORY)
                 }
                 // Header
@@ -160,149 +168,19 @@ fun SubscriptionHistoryDialog(
                 }
                 HorizontalDivider(color = HextechCardBorder)
 
-                // Sección de Esencias (Azul y Naranja) y Botón de Recargar dentro del Historial
-                val currentBlueEssence by com.example.util.SubscriptionManager.blueEssence.collectAsState()
-                val currentOrangeEssence by com.example.util.SubscriptionManager.orangeEssence.collectAsState()
-                var buyEssenceCurrency by remember { mutableStateOf("BLUE") }
-                var showBuyEssenceDialogInside by remember { mutableStateOf(false) }
-
-                if (showBuyEssenceDialogInside) {
-                    BuyEssenceDialog(
-                        isAdmin = com.example.util.AuthManager.isCurrentUserAdmin(),
-                        initialCurrency = buyEssenceCurrency,
-                        onDismiss = { showBuyEssenceDialogInside = false }
-                    )
+                val viewerBlue by com.example.util.SubscriptionManager.blueEssence.collectAsState()
+                val viewerOrange by com.example.util.SubscriptionManager.orangeEssence.collectAsState()
+                val balances = com.example.data.HistoryAccountPolicy.visibleBalances(ownAccount,
+                    com.example.data.HistoryBalances(viewerBlue, viewerOrange), targetBalances)
+                var buyEssenceCurrency by remember(targetUid) { mutableStateOf("BLUE") }
+                var showBuyEssenceDialogInside by remember(targetUid) { mutableStateOf(false) }
+                if (ownAccount && showBuyEssenceDialogInside) {
+                    BuyEssenceDialog(isAdmin = com.example.util.AuthManager.isCurrentUserAdmin(),
+                        initialCurrency = buyEssenceCurrency, onDismiss = { showBuyEssenceDialogInside = false })
                 }
-
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = HextechSurfaceVariant.copy(alpha = 0.85f),
-                    border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // Esencias badges (Azul y Naranja)
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            // Chip Esencia Azul
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .coachClickable {
-                                        buyEssenceCurrency = "BLUE"
-                                        showBuyEssenceDialogInside = true
-                                    },
-                                shape = RoundedCornerShape(8.dp),
-                                color = HextechDarkBg.copy(alpha = 0.7f),
-                                border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.4f))
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = com.example.R.drawable.ic_blue_essence),
-                                        contentDescription = com.example.util.tr("Esencia Azul"),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Column {
-                                        Text(
-                                            text = com.example.util.tr("Esencia Azul"),
-                                            color = TextSecondary,
-                                            fontSize = 9.5.sp,
-                                            maxLines = 1
-                                        )
-                                        Text(
-                                            text = com.example.util.tr("$currentBlueEssence EA"),
-                                            color = HextechCyan,
-                                            fontSize = 12.5.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            maxLines = 1
-                                        )
-                                    }
-                                }
-                            }
-
-                            // Chip Esencia Naranja
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .coachClickable {
-                                        buyEssenceCurrency = "ORANGE"
-                                        showBuyEssenceDialogInside = true
-                                    },
-                                shape = RoundedCornerShape(8.dp),
-                                color = HextechDarkBg.copy(alpha = 0.7f),
-                                border = BorderStroke(1.dp, Color(0xFFFF8C00).copy(alpha = 0.45f))
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = com.example.R.drawable.ic_orange_essence),
-                                        contentDescription = com.example.util.tr("Esencia Naranja"),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Column {
-                                        Text(
-                                            text = com.example.util.tr("Esencia Naranja"),
-                                            color = TextSecondary,
-                                            fontSize = 9.5.sp,
-                                            maxLines = 1
-                                        )
-                                        Text(
-                                            text = com.example.util.tr("$currentOrangeEssence EN"),
-                                            color = Color(0xFFFF9E1B),
-                                            fontSize = 12.5.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            maxLines = 1
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        // Botón de Recargar
-                        Surface(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .coachClickable {
-                                    showBuyEssenceDialogInside = true
-                                },
-                            shape = RoundedCornerShape(8.dp),
-                            color = HextechGold,
-                            contentColor = HextechDarkBg
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = com.example.util.tr("+ Recargar"),
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
-                            }
-                        }
-                    }
+                HistoryEssenceBalanceBar(balances, ownAccount) { currency ->
+                    buyEssenceCurrency = currency
+                    showBuyEssenceDialogInside = true
                 }
                 HorizontalDivider(color = HextechCardBorder)
 
@@ -602,11 +480,9 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
         }
     } else {
         // === RENDERIZADO DE SUSCRIPCIÓN TRADICIONAL / MEMBRESÍA VIP ===
-        val isRevocation = record.planName.contains("Revocación", ignoreCase = true) ||
-                record.status.contains("Cancelado", ignoreCase = true) ||
-                record.status.contains("Revocado", ignoreCase = true)
+        val isRevocation = record.isRevocation
 
-        val isGift = record.planName.contains("Regalo Admin", ignoreCase = true) ||
+        val isGift = record.isFromAdmin || record.planName.contains("Regalo Admin", ignoreCase = true) ||
                 record.planName.contains("Asignación Manual", ignoreCase = true) ||
                 record.planName.contains("Admin", ignoreCase = true)
 
@@ -623,7 +499,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
         }
 
         val displayStatus = when {
-            isRevocation -> "Revocado / Cancelado"
+            isRevocation -> "Suscripción retirada"
             isExpired -> "Expirado / Finalizado"
             isLifetime -> "Activo (Vitalicio)"
             isActive -> "Vigente / Activo"
@@ -731,4 +607,143 @@ private fun formatDurationLocal(millis: Long): String {
     if (days >= 365) return "${days / 365} Año(s)"
     if (days > 0) return "$days Día(s)"
     return "Personalizado"
+}
+
+@Composable
+fun HistoryEssenceBalanceBar(
+    balances: com.example.data.HistoryBalances?,
+    canRecharge: Boolean,
+    onRecharge: (String) -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = HextechSurfaceVariant.copy(alpha = 0.85f),
+        border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Esencias badges (Azul y Naranja)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                // Chip Esencia Azul
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .coachClickable(enabled = canRecharge) {
+                            onRecharge("BLUE")
+                        },
+                    shape = RoundedCornerShape(8.dp),
+                    color = HextechDarkBg.copy(alpha = 0.7f),
+                    border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.4f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = com.example.R.drawable.ic_blue_essence),
+                            contentDescription = com.example.util.tr("Esencia Azul"),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Column {
+                            Text(
+                                text = com.example.util.tr("Esencia Azul"),
+                                color = TextSecondary,
+                                fontSize = 9.5.sp,
+                                maxLines = 1
+                            )
+                            Text(
+                                text = balances?.blue?.let { "$it EA" } ?: com.example.util.tr("No disponible"),
+                                color = HextechCyan,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+
+                // Chip Esencia Naranja
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .coachClickable(enabled = canRecharge) {
+                            onRecharge("ORANGE")
+                        },
+                    shape = RoundedCornerShape(8.dp),
+                    color = HextechDarkBg.copy(alpha = 0.7f),
+                    border = BorderStroke(1.dp, Color(0xFFFF8C00).copy(alpha = 0.45f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = com.example.R.drawable.ic_orange_essence),
+                            contentDescription = com.example.util.tr("Esencia Naranja"),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Column {
+                            Text(
+                                text = com.example.util.tr("Esencia Naranja"),
+                                color = TextSecondary,
+                                fontSize = 9.5.sp,
+                                maxLines = 1
+                            )
+                            Text(
+                                text = balances?.orange?.let { "$it EN" } ?: com.example.util.tr("No disponible"),
+                                color = Color(0xFFFF9E1B),
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (canRecharge) {
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Botón de Recargar
+            Surface(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .coachClickable(enabled = canRecharge) {
+                        onRecharge("BLUE")
+                    },
+                shape = RoundedCornerShape(8.dp),
+                color = HextechGold,
+                contentColor = HextechDarkBg
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = com.example.util.tr("+ Recargar"),
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+            }
+            }
+        }
+    }
+
 }

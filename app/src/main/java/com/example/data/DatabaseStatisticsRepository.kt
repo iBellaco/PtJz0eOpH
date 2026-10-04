@@ -2,13 +2,19 @@ package com.example.data
 
 import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.Source
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.FirebaseFirestoreException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
 
-data class SavedDataStatistic(val label: String, val description: String, val count: Long? = null, val failed: Boolean = false, val estimatedBytes: Long? = null)
+data class SavedDataStatistic(val label: String, val description: String, val count: Long? = null, val failed: Boolean = false, val estimatedBytes: Long? = null, val failureReason: String? = null)
 
 data class StorageConsumption(val estimatedBytes: Long? = null, val dailyGrowthBytes: Long? = null,
     val sampledAtMillis: Long = 0, val complete: Boolean = false)
@@ -18,11 +24,11 @@ object DatabaseStatisticsRepository {
     private val mutex = kotlinx.coroutines.sync.Mutex()
     private var cachedRows: List<SavedDataStatistic> = emptyList()
     private var cachedAt = 0L
-    suspend fun load(): List<SavedDataStatistic> {
+    suspend fun load(forceRefresh: Boolean = false): List<SavedDataStatistic> {
         mutex.lock()
         try {
             check(SupportTicketAccess.isAdmin())
-            if (cachedRows.isNotEmpty() && System.currentTimeMillis() - cachedAt < 300_000) return cachedRows
+            if (!forceRefresh && cachedRows.none { it.failed || it.failureReason != null } && cachedRows.isNotEmpty() && System.currentTimeMillis() - cachedAt < 300_000) return cachedRows
             val rows = query()
             val content = rows.filter { it.estimatedBytes != null }
             val now = System.currentTimeMillis()
@@ -63,33 +69,73 @@ object DatabaseStatisticsRepository {
             Triple("cash_redemptions", "Solicitudes de canje", "Importes solicitados, pagos manuales y devoluciones."),
             Triple("system_config", "Configuración compartida", "Avisos, canales activos, builds publicadas y preferencias generales.")
         )
+        // Read each parent registry once. Direct child queries avoid requiring a global
+        // collection-group index/rule when the same authorized records can be read by parent.
+        val accounts = async { readParents(db.collection("users")) }
+        val streamers = async { readParents(db.collection("streamer_requests")) }
         val accountTotals = async {
-            runCatching {
-                val accounts = db.collection("users").get(Source.SERVER).await().documents.mapNotNull { it.data }
-                listOf(SavedDataStatistic("Suscripciones premium activas", "Acceso vigente por tiempo o por función del usuario.", accounts.count { com.example.model.PremiumAccessPolicy.isActiveAccount(it) }.toLong()),
-                    SavedDataStatistic("Esencias Azules guardadas", "Suma de los saldos actuales de todas las cuentas.", accounts.sumOf { (it["blueEssence"] as? Number)?.toLong() ?: 0L }),
-                    SavedDataStatistic("Esencias Naranjas guardadas", "Suma de los saldos actuales de todas las cuentas.", accounts.sumOf { (it["orangeEssence"] as? Number)?.toLong() ?: 0L }),
-                    SavedDataStatistic("Dispositivos registrados", "Dispositivos diferentes que ocupan espacios en las cuentas.", accounts.sumOf { (it["registeredDevices"] as? List<*>)?.filterIsInstance<String>()?.distinct()?.size?.toLong() ?: 0L }))
-            }.getOrElse { listOf(SavedDataStatistic("Saldos y dispositivos", "Resumen de los datos de las cuentas.", failed=true)) }
+            try {
+                val profiles = accounts.await().getOrThrow().documents.mapNotNull { it.data }
+                listOf(SavedDataStatistic("Suscripciones premium activas", "Acceso vigente por tiempo o por función del usuario.", profiles.count { com.example.model.PremiumAccessPolicy.isActiveAccount(it) }.toLong()),
+                    SavedDataStatistic("Esencias Azules guardadas", "Suma de los saldos actuales de todas las cuentas.", profiles.sumOf { (it["blueEssence"] as? Number)?.toLong() ?: 0L }),
+                    SavedDataStatistic("Esencias Naranjas guardadas", "Suma de los saldos actuales de todas las cuentas.", profiles.sumOf { (it["orangeEssence"] as? Number)?.toLong() ?: 0L }),
+                    SavedDataStatistic("Dispositivos registrados", "Dispositivos diferentes que ocupan espacios en las cuentas.", profiles.sumOf { (it["registeredDevices"] as? List<*>)?.filterIsInstance<String>()?.distinct()?.size?.toLong() ?: 0L }))
+            } catch (error: Exception) { failedRow("Saldos y dispositivos", "Resumen de los datos de las cuentas.", error).let(::listOf) }
         }
-        categories.map { (path, label, description) -> async {
-            runCatching {
-                val count = db.collection(path).count().get(AggregateSource.SERVER).await().count
-                val sample = db.collection(path).limit(25).get(Source.SERVER).await().documents
-                SavedDataStatistic(label, description, count, estimatedBytes = StorageConsumptionPolicy.estimate(count,
-                    sample.map { org.json.JSONObject(it.data.orEmpty()).toString().toByteArray(Charsets.UTF_8).size.toLong() }))
-            }
-                .getOrElse { SavedDataStatistic(label, description, failed = true) }
-        } }.awaitAll() + listOf("messages" to "Mensajes de la bandeja de entrada", "subscription_history" to "Movimientos del historial", "history" to "Historial de publicaciones")
+        val topRows = categories.map { (path, label, description) -> async {
+            try {
+                val known = when (path) { "users" -> accounts.await().getOrThrow(); "streamer_requests" -> streamers.await().getOrThrow(); else -> null }
+                val result = if (known != null) {
+                    val sizes = byteSizes(known)
+                    SavedDataQueryResult(sizes.size.toLong(), sizes.sum())
+                } else readCount(db.collection(path))
+                statistic(label, description, result)
+            } catch (error: Exception) { failedRow(label, description, error) }
+        } }.awaitAll()
+        val nestedRows = listOf("messages" to "Mensajes de la bandeja de entrada", "subscription_history" to "Movimientos del historial", "history" to "Historial de publicaciones")
             .map { (path, label) -> async {
-                runCatching {
-                    val count = db.collectionGroup(path).count().get(AggregateSource.SERVER).await().count
-                    val sample = db.collectionGroup(path).limit(25).get(Source.SERVER).await().documents
-                    SavedDataStatistic(label, "Registros guardados y sincronizados entre dispositivos.", count,
-                        estimatedBytes = StorageConsumptionPolicy.estimate(count, sample.map {
-                            org.json.JSONObject(it.data.orEmpty()).toString().toByteArray(Charsets.UTF_8).size.toLong() }))
-                }
-                    .getOrElse { SavedDataStatistic(label, "Registros guardados y sincronizados entre dispositivos.", failed = true) }
-            } }.awaitAll() + accountTotals.await()
+                val description = "Registros independientes sincronizados entre dispositivos. Los datos integrados se incluyen en las cuentas."
+                try {
+                    val parents = (if (path == "history") streamers else accounts).await().getOrThrow().documents
+                    val limiter = Semaphore(4)
+                    val children = parents.map { parent -> async { limiter.withPermit {
+                        try { Result.success(readCount(parent.reference.collection(path))) }
+                        catch (error: Exception) { if (error is CancellationException) throw error; Result.failure(error) }
+                    } } }.awaitAll().map { it.getOrThrow() }
+                    statistic(label, description, SavedDataQueryPolicy.combine(children))
+                } catch (error: Exception) { failedRow(label, description, error) }
+            } }.awaitAll()
+        topRows + nestedRows + accountTotals.await()
+    }
+
+    private suspend fun readParents(query: Query): Result<QuerySnapshot> = try {
+        Result.success(query.get(Source.SERVER).await())
+    } catch (error: Exception) {
+        if (error is CancellationException) throw error
+        Result.failure(error)
+    }
+
+    private fun byteSizes(snapshot: QuerySnapshot): List<Long> = snapshot.documents.map {
+        org.json.JSONObject(it.data.orEmpty()).toString().toByteArray(Charsets.UTF_8).size.toLong()
+    }
+
+    private suspend fun readCount(query: Query) = SavedDataQueryPolicy.read(
+        aggregate = { query.count().get(AggregateSource.SERVER).await().count },
+        fullRead = { byteSizes(query.get(Source.SERVER).await()) },
+        sample = { byteSizes(query.limit(25).get(Source.SERVER).await()) })
+
+    private fun statistic(label: String, description: String, result: SavedDataQueryResult) =
+        SavedDataStatistic(label, description, result.count, estimatedBytes = result.estimatedBytes,
+            failureReason = if (result.estimatedBytes == null) "Recuento disponible. No se pudo estimar el tamaño de esta categoría." else null)
+
+    private fun failedRow(label: String, description: String, error: Exception): SavedDataStatistic {
+        if (error is CancellationException) throw error
+        val reason = when ((error as? FirebaseFirestoreException)?.code) {
+            FirebaseFirestoreException.Code.PERMISSION_DENIED -> "El servicio rechazó el acceso a esta categoría. Sus permisos deben actualizarse."
+            FirebaseFirestoreException.Code.UNAUTHENTICATED -> "La sesión no pudo verificarse. Vuelve a iniciar sesión."
+            FirebaseFirestoreException.Code.UNAVAILABLE, FirebaseFirestoreException.Code.DEADLINE_EXCEEDED -> "El servicio no respondió. Comprueba tu conexión y vuelve a actualizar."
+            else -> "No se pudo consultar esta categoría."
+        }
+        return SavedDataStatistic(label, description, failed = true, failureReason = reason)
     }
 }

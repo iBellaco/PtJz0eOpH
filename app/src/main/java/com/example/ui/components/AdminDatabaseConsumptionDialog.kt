@@ -24,11 +24,11 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit, onOpenCashRequests: ((
     var busy by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    fun refresh() {
+    fun refresh(forceRefresh: Boolean = false) {
         if (busy) return
         busy = true; failed = false
         scope.launch {
-            val result = runCatching { DatabaseStatisticsRepository.load() }
+            val result = runCatching { DatabaseStatisticsRepository.load(forceRefresh = forceRefresh) }
             if (result.isSuccess) rows = result.getOrThrow() else failed = true
             busy = false
         }
@@ -46,7 +46,7 @@ fun AdminDatabaseConsumptionDialog(onDismiss: () -> Unit, onOpenCashRequests: ((
                 if (failed) Text(tr("No se pudieron consultar los datos. Vuelve a intentarlo."), color = DangerRed)
                 StorageConsumptionSummary(consumption)
                 SavedDataStatisticsContent(rows)
-                Button(onClick = { refresh() }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(tr("Actualizar")) }
+                Button(onClick = { refresh(forceRefresh = true) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(tr("Actualizar")) }
                 if (onOpenCashRequests != null) TextButton(onClick = onOpenCashRequests) { Text(tr("Solicitudes de canje")) }
                 TextButton(onClick = onDismiss) { Text(tr("Cerrar")) }
             }
@@ -64,7 +64,7 @@ fun SavedDataStatisticsContent(rows: List<SavedDataStatistic>) {
                     Text(row.count?.toString() ?: tr("No disponible"), color = if (row.failed) DangerRed else HextechCyan,
                         modifier = Modifier.testTag("saved_data_count_$index"))
                     Text(tr(row.description), color = TextSecondary)
-                    if (row.failed) Text(tr("No se pudo consultar esta categoría."), color = DangerRed)
+                    if (row.failed || row.failureReason != null) Text(tr(row.failureReason ?: "No se pudo consultar esta categoría."), color = if (row.failed) DangerRed else HextechGold)
                 }
             }
         }
