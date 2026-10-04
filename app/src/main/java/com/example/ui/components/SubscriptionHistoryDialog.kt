@@ -4,7 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -200,7 +200,7 @@ fun SubscriptionHistoryDialog(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .clickable {
+                                    .coachClickable {
                                         buyEssenceCurrency = "BLUE"
                                         showBuyEssenceDialogInside = true
                                     },
@@ -241,7 +241,7 @@ fun SubscriptionHistoryDialog(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .clickable {
+                                    .coachClickable {
                                         buyEssenceCurrency = "ORANGE"
                                         showBuyEssenceDialogInside = true
                                     },
@@ -284,7 +284,7 @@ fun SubscriptionHistoryDialog(
                         Surface(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .clickable {
+                                .coachClickable {
                                     showBuyEssenceDialogInside = true
                                 },
                             shape = RoundedCornerShape(8.dp),
@@ -321,7 +321,7 @@ fun SubscriptionHistoryDialog(
                     Surface(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .clickable { selectedFilter = "ALL" },
+                            .coachClickable { selectedFilter = "ALL" },
                         shape = RoundedCornerShape(16.dp),
                         color = if (selectedFilter == "ALL") HextechCyan.copy(alpha = 0.2f) else HextechDarkBg,
                         border = BorderStroke(1.dp, if (selectedFilter == "ALL") HextechCyan else HextechCardBorder)
@@ -339,7 +339,7 @@ fun SubscriptionHistoryDialog(
                     Surface(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .clickable { selectedFilter = "ESSENCE" },
+                            .coachClickable { selectedFilter = "ESSENCE" },
                         shape = RoundedCornerShape(16.dp),
                         color = if (selectedFilter == "ESSENCE") Color(0xFFFF9E1B).copy(alpha = 0.2f) else HextechDarkBg,
                         border = BorderStroke(1.dp, if (selectedFilter == "ESSENCE") Color(0xFFFF9E1B) else HextechCardBorder)
@@ -357,7 +357,7 @@ fun SubscriptionHistoryDialog(
                     Surface(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .clickable { selectedFilter = "SUBS" },
+                            .coachClickable { selectedFilter = "SUBS" },
                         shape = RoundedCornerShape(16.dp),
                         color = if (selectedFilter == "SUBS") HextechGold.copy(alpha = 0.2f) else HextechDarkBg,
                         border = BorderStroke(1.dp, if (selectedFilter == "SUBS") HextechGold else HextechCardBorder)

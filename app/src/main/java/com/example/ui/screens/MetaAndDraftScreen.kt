@@ -1,5 +1,12 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachFilterChip as FilterChip
+import com.example.ui.components.CoachTab as Tab
+
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import androidx.compose.foundation.selection.selectable
 
 import com.example.data.WildRiftItemsData
@@ -17,7 +24,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -83,10 +90,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -94,14 +101,14 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TextButton
+
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Tab
+
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.PaddingValues
@@ -557,12 +564,12 @@ fun MetaAndDraftScreen(
                         onToggleFirstPick = { isFirstPick = !isFirstPick },
                         onChangeRole = { showRoleChangeDialog = true },
                         onPickAllyRole = { role ->
-                            suggestedPickingRole = role
-                            pickingForTeam = "ALLY"
+                            if (activeRole == null) showRoleChangeDialog = true
+                            else { suggestedPickingRole = role; pickingForTeam = "ALLY" }
                         },
                         onPickEnemyRole = { role ->
-                            suggestedPickingRole = role
-                            pickingForTeam = "ENEMY"
+                            if (activeRole == null) showRoleChangeDialog = true
+                            else { suggestedPickingRole = role; pickingForTeam = "ENEMY" }
                         },
                         onRemoveAllyRole = { role ->
                             val idx = allySlots.indexOfFirst { it.assignedRole == role }
@@ -573,8 +580,9 @@ fun MetaAndDraftScreen(
                             if (idx >= 0) enemySlots.removeAt(idx)
                         },
                         onPickRecommendation = { champ ->
+                            if (activeRole == null) { showRoleChangeDialog = true; return@DraftAnalysisTab }
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            val targetRole = activeRole ?: champ.primaryRole
+                            val targetRole = activeRole!!
                             val existingIndex = allySlots.indexOfFirst { it.assignedRole == targetRole }
                             if (existingIndex >= 0) {
                                 allySlots[existingIndex] = DraftSlot(champ, targetRole)
@@ -587,6 +595,19 @@ fun MetaAndDraftScreen(
                         },
                         onSelectChampion = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectedDetailChampion = it },
                         onOpenHistory = { showDraftHistoryScreen = true },
+                        onRandomFill = {
+                            if (com.example.model.RolePanelAccess.isAdministrator(SubscriptionManager.userRole.value,
+                                    com.example.util.AuthManager.isAdminClaim.value)) {
+                                if (activeRole == null) showRoleChangeDialog = true
+                                else runCatching { com.example.data.RandomDraftPolicy.generate(WildRiftRepository.champions.toList()) }
+                                    .onSuccess { draft ->
+                                        allySlots.clear(); allySlots.addAll(draft.allies)
+                                        enemySlots.clear(); enemySlots.addAll(draft.enemies)
+                                    }.onFailure {
+                                        android.widget.Toast.makeText(screenContext, com.example.util.appTr("No se pudo formar un equipo con combos. Vuelve a intentarlo."), android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                            }
+                        },
                         onClearAll = {
                             allySlots.clear()
                             enemySlots.clear()
@@ -805,7 +826,7 @@ fun MetaAndDraftScreen(
     // Removed build creator dialog from catalog
 
     // Modal Champion Picker for Draft
-    if (pickingForTeam != null) {
+    if (pickingForTeam != null && (isOverlay || activeRole != null)) {
         DraftChampionPickerSheet(
             team = pickingForTeam!!,
             suggestedRole = suggestedPickingRole,
@@ -987,7 +1008,7 @@ fun ChampionsCatalogTab(
                             modifier = Modifier
                                 .size(16.dp)
                                 .clip(CircleShape)
-                                .clickable { searchQuery = "" },
+                                .coachClickable { searchQuery = "" },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -1034,7 +1055,7 @@ fun ChampionsCatalogTab(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .clickable { showFilterChips = !showFilterChips }
+                .coachClickable { showFilterChips = !showFilterChips }
                 .padding(vertical = 4.dp, horizontal = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -1290,7 +1311,7 @@ fun ChampionsCatalogTab(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .clickable { onSelectChampion(champion) }
+                        .coachClickable { onSelectChampion(champion) }
                         .testTag("champion_item_${champion.id}"),
                     colors = CardDefaults.cardColors(containerColor = HextechSurface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
@@ -1575,7 +1596,7 @@ fun TierListTab(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .clickable { showTierFilters = !showTierFilters }
+                    .coachClickable { showTierFilters = !showTierFilters }
                     .padding(vertical = 4.dp, horizontal = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -1955,7 +1976,7 @@ fun TierListTab(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .clickable { onSelectChampion(champ) },
+                            .coachClickable { onSelectChampion(champ) },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
                         border = androidx.compose.foundation.BorderStroke(
@@ -2159,7 +2180,7 @@ fun TierSectionCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable { onSelectChampion(champ) },
+                            .coachClickable { onSelectChampion(champ) },
                         shape = RoundedCornerShape(8.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurfaceVariant.copy(alpha = 0.6f)),
                         border = androidx.compose.foundation.BorderStroke(0.6.dp, HextechCardBorder.copy(alpha = 0.5f))
@@ -2391,7 +2412,7 @@ internal fun ItemsCatalogTab() {
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(if (isGridView) HextechCyan else Color.Transparent)
-                            .clickable { isGridView = true }
+                            .coachClickable { isGridView = true }
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Text(
@@ -2405,7 +2426,7 @@ internal fun ItemsCatalogTab() {
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(if (!isGridView) HextechCyan else Color.Transparent)
-                            .clickable { isGridView = false }
+                            .coachClickable { isGridView = false }
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Text(
@@ -2461,7 +2482,7 @@ internal fun ItemsCatalogTab() {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .clickable { showFilterChips = !showFilterChips }
+                .coachClickable { showFilterChips = !showFilterChips }
                 .padding(vertical = 4.dp, horizontal = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -2801,7 +2822,7 @@ internal fun selectedRuneItemModal(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(HextechCyan)
-                            .clickable { onDismiss() }
+                            .coachClickable { onDismiss() }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -2827,7 +2848,7 @@ private fun ItemGridCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
+            .coachClickable(onClick = onClick)
             .background(HextechSurface.copy(alpha = 0.6f))
             .border(0.5.dp, HextechCardBorder.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
             .padding(6.dp)
@@ -2885,7 +2906,7 @@ private fun ItemListCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .coachClickable(onClick = onClick),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = HextechSurface),
         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
@@ -3064,7 +3085,7 @@ private fun RunesTab() {
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (isGridView) HextechCyan else Color.Transparent)
-                        .clickable { isGridView = true }
+                        .coachClickable { isGridView = true }
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
@@ -3078,7 +3099,7 @@ private fun RunesTab() {
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (!isGridView) HextechCyan else Color.Transparent)
-                        .clickable { isGridView = false }
+                        .coachClickable { isGridView = false }
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
@@ -3124,7 +3145,7 @@ private fun RunesTab() {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .clickable { showFilterChips = !showFilterChips }
+                .coachClickable { showFilterChips = !showFilterChips }
                 .padding(vertical = 4.dp, horizontal = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -3271,7 +3292,7 @@ private fun RunesTab() {
                                                 .width(68.dp)
                                                 .height(86.dp)
                                                 .clip(RoundedCornerShape(8.dp))
-                                                .clickable { selectedRune = rune }
+                                                .coachClickable { selectedRune = rune }
                                                 .background(HextechSurface.copy(alpha = 0.6f))
                                                 .border(0.5.dp, HextechCardBorder.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
                                                 .padding(horizontal = 4.dp, vertical = 6.dp)
@@ -3318,7 +3339,7 @@ private fun RunesTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { selectedRune = rune },
+                            .coachClickable { selectedRune = rune },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
@@ -3543,7 +3564,7 @@ private fun SpellsTab() {
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (isGridView) HextechCyan else Color.Transparent)
-                        .clickable { isGridView = true }
+                        .coachClickable { isGridView = true }
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
@@ -3557,7 +3578,7 @@ private fun SpellsTab() {
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (!isGridView) HextechCyan else Color.Transparent)
-                        .clickable { isGridView = false }
+                        .coachClickable { isGridView = false }
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
@@ -3632,7 +3653,7 @@ private fun SpellsTab() {
                             .fillMaxWidth()
                             .height(130.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .clickable { selectedSpell = spell },
+                            .coachClickable { selectedSpell = spell },
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
                     ) {
@@ -3682,7 +3703,7 @@ private fun SpellsTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { selectedSpell = spell },
+                            .coachClickable { selectedSpell = spell },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
@@ -3922,13 +3943,17 @@ fun DraftAnalysisTab(
     onPickRecommendation: (Champion) -> Unit,
     onSelectChampion: (Champion) -> Unit,
     onOpenHistory: () -> Unit,
-    onClearAll: () -> Unit
+    onClearAll: () -> Unit,
+    onRandomFill: (() -> Unit)? = null
 ) {
     val selectedOwnChampion = myChampion?.takeUnless { it.id.equals("empty", true) || it.id.isBlank() }
     val selectedEnemyChampion = enemyLaneOpponent?.takeUnless { it.id.equals("empty", true) || it.id.isBlank() }
     val selectedAllySlots = allySlots.filterNot { it.champion.id.equals("empty", true) || it.champion.id.isBlank() }
     val selectedEnemySlots = enemySlots.filterNot { it.champion.id.equals("empty", true) || it.champion.id.isBlank() }
     val tabContext = LocalContext.current
+    val accountRole by SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsStateWithLifecycle()
+    val canRandomFill = !isOverlay && onRandomFill != null && com.example.model.RolePanelAccess.isAdministrator(accountRole, adminClaim)
     val draftLanguage = com.example.util.currentAppLanguage()
     val coroutineScope = rememberCoroutineScope()
     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
@@ -4032,7 +4057,7 @@ fun DraftAnalysisTab(
             text = { androidx.compose.material3.Text(tr("Es el mismo draft que el anterior, ¿deseas guardarlo de todas formas?"), color = com.example.ui.theme.TextSecondary) },
             containerColor = com.example.ui.theme.HextechSurface,
             confirmButton = {
-                androidx.compose.material3.Button(
+                com.example.ui.components.CoachButton(
                     onClick = {
                         val data = pendingSaveData!!
                         pendingSaveData = null
@@ -4067,7 +4092,7 @@ fun DraftAnalysisTab(
                 }
             },
             dismissButton = {
-                androidx.compose.material3.OutlinedButton(
+                com.example.ui.components.CoachOutlinedButton(
                     onClick = { pendingSaveData = null },
                     colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = com.example.ui.theme.TextMuted)
                 ) {
@@ -4092,7 +4117,7 @@ fun DraftAnalysisTab(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .clickable {
+                    .coachClickable {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onChangeRole()
                     }
@@ -4164,7 +4189,7 @@ fun DraftAnalysisTab(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .clickable {
+                    .coachClickable {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onToggleFirstPick()
                     }
@@ -4312,6 +4337,16 @@ fun DraftAnalysisTab(
                         }
                     }
                 }
+            }
+
+            if (canRandomFill) {
+                Button(
+                    onClick = { onRandomFill?.invoke() },
+                    modifier = Modifier.weight(1f).height(44.dp).testTag("random_draft_button"),
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechCyan.copy(alpha = 0.16f), contentColor = HextechCyan),
+                    border = BorderStroke(1.2.dp, HextechCyan.copy(alpha = 0.7f)),
+                    shape = RoundedCornerShape(12.dp), contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp)
+                ) { Text(tr("Aleatorio"), fontWeight = FontWeight.Bold, fontSize = 11.sp) }
             }
 
             Button(
@@ -4820,7 +4855,7 @@ fun DraftAnalysisTab(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .clickable { onSelectChampion(topPick.champion) }
+                        .coachClickable { onSelectChampion(topPick.champion) }
                         .border(1.5.dp, HextechGold, RoundedCornerShape(14.dp)),
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = HextechSurface)
@@ -4999,7 +5034,7 @@ fun DraftAnalysisTab(
                             .testTag("draft_secondary_recommendation")
                             .padding(vertical = 4.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .clickable { onSelectChampion(rec.champion) },
+                            .coachClickable { onSelectChampion(rec.champion) },
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
@@ -5071,7 +5106,7 @@ fun DraftAnalysisTab(
             }
             Spacer(modifier = Modifier.height(30.dp))
             if (!isOverlay && visibleOtherRecs.size < otherRecs.size) {
-                androidx.compose.material3.OutlinedButton(
+                com.example.ui.components.CoachOutlinedButton(
                     onClick = { visibleRecommendationCount = (visibleRecommendationCount + 5).coerceAtMost(otherRecs.size) },
                     modifier = Modifier.fillMaxWidth().testTag("draft_more_recommendations"),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = HextechCyan),
@@ -5104,7 +5139,7 @@ private fun TeamChampionSlot(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
-            .clickable { onClick() },
+            .coachClickable { onClick() },
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isMyPick) HextechGold.copy(alpha = 0.12f) else HextechSurface
@@ -5161,7 +5196,7 @@ private fun TeamChampionSlot(
                                     else if (isEnemy) DangerRed.copy(alpha = 0.15f)
                                     else AllyBlue.copy(alpha = 0.15f)
                                 )
-                                .clickable { showRoleMenu = true }
+                                .coachClickable { showRoleMenu = true }
                                 .padding(horizontal = 5.dp, vertical = 2.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -5248,7 +5283,7 @@ private fun AddChampionSlotButton(
                 if (isEnemy) DangerRed.copy(alpha = 0.4f) else AllyBlue.copy(alpha = 0.4f),
                 RoundedCornerShape(10.dp)
             )
-            .clickable { onClick() },
+            .coachClickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -5405,7 +5440,7 @@ private fun DraftChampionPickerSheet(
                     Column(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable {
+                            .coachClickable {
                                 val assignedRole = suggestedRole ?: selectedRoleFilter ?: champ.primaryRole
                                 onChampionPicked(champ, assignedRole)
                             }
@@ -5463,7 +5498,7 @@ private fun RoleChangeBottomSheet(
                             .clip(RoundedCornerShape(10.dp))
                             .background(if (role == currentRole) HextechCyan.copy(alpha = 0.2f) else HextechSurface)
                             .border(1.dp, if (role == currentRole) HextechCyan else HextechCardBorder, RoundedCornerShape(10.dp))
-                            .clickable { onRoleSelected(role) }
+                            .coachClickable { onRoleSelected(role) }
                             .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -5499,7 +5534,7 @@ private fun ChampionGridCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .coachClickable(onClick = onClick)
             .testTag("champion_item_${champion.id}"),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = HextechSurface),
@@ -5548,7 +5583,7 @@ private fun RuneGridCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .coachClickable(onClick = onClick),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = HextechSurface),
         border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
@@ -5603,7 +5638,7 @@ private fun SpellGridCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .coachClickable(onClick = onClick),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = HextechSurface),
         border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)

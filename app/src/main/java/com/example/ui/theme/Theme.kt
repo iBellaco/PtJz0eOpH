@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
+    animateButtons: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val theme = AppThemeManager.currentTheme
@@ -66,7 +67,11 @@ fun MyApplicationTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = {
+            androidx.compose.runtime.CompositionLocalProvider(com.example.ui.components.LocalCoachButtonAnimation provides animateButtons) {
+                content()
+            }
+        }
     )
 }
 

@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -7,7 +10,7 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -409,7 +412,7 @@ fun DraftCalibrationPanel(
                                 if (isSel) HextechCyan else HextechCardBorder.copy(alpha = 0.5f),
                                 RoundedCornerShape(6.dp)
                             )
-                            .clickable { selectedTarget = target }
+                            .coachClickable { selectedTarget = target }
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
@@ -439,7 +442,7 @@ fun DraftCalibrationPanel(
                     Surface(
                         modifier = Modifier
                             .size(34.dp)
-                            .clickable { modify(deltaY = -stepFactor) },
+                            .coachClickable { modify(deltaY = -stepFactor) },
                         shape = RoundedCornerShape(6.dp),
                         color = HextechSurface,
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
@@ -457,7 +460,7 @@ fun DraftCalibrationPanel(
                         Surface(
                             modifier = Modifier
                                 .size(34.dp)
-                                .clickable { modify(deltaX = -stepFactor) },
+                                .coachClickable { modify(deltaX = -stepFactor) },
                             shape = RoundedCornerShape(6.dp),
                             color = HextechSurface,
                             border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
@@ -487,7 +490,7 @@ fun DraftCalibrationPanel(
                         Surface(
                             modifier = Modifier
                                 .size(34.dp)
-                                .clickable { modify(deltaX = stepFactor) },
+                                .coachClickable { modify(deltaX = stepFactor) },
                             shape = RoundedCornerShape(6.dp),
                             color = HextechSurface,
                             border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
@@ -502,7 +505,7 @@ fun DraftCalibrationPanel(
                     Surface(
                         modifier = Modifier
                             .size(34.dp)
-                            .clickable { modify(deltaY = stepFactor) },
+                            .coachClickable { modify(deltaY = stepFactor) },
                         shape = RoundedCornerShape(6.dp),
                         color = HextechSurface,
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
@@ -580,7 +583,7 @@ fun DraftCalibrationPanel(
                                     .clip(RoundedCornerShape(4.dp))
                                     .background(if (isSel) HextechGold.copy(alpha = 0.25f) else HextechSurface)
                                     .border(0.6.dp, if (isSel) HextechGold else HextechCardBorder, RoundedCornerShape(4.dp))
-                                    .clickable { stepFactor = value }
+                                    .coachClickable { stepFactor = value }
                                     .padding(vertical = 2.dp),
                                 contentAlignment = Alignment.Center
                             ) {

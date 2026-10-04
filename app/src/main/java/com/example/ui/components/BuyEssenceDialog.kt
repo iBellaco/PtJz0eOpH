@@ -1,12 +1,14 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.widget.Toast
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -151,7 +153,7 @@ fun BuyEssenceDialog(
                     Surface(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable {
+                            .coachClickable {
                                 if (selectedCurrency != "BLUE") {
                                     selectedCurrency = "BLUE"
                                     selectedPackIndex = 0
@@ -184,7 +186,7 @@ fun BuyEssenceDialog(
                     Surface(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable {
+                            .coachClickable {
                                 if (selectedCurrency != "ORANGE") {
                                     selectedCurrency = "ORANGE"
                                     selectedPackIndex = 0
@@ -275,7 +277,7 @@ fun BuyEssenceDialog(
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { selectedPackIndex = index },
+                                .coachClickable { selectedPackIndex = index },
                             shape = RoundedCornerShape(10.dp),
                             color = if (isSelected) accentColor.copy(alpha = 0.15f) else Color(0xFF1E293B),
                             border = BorderStroke(

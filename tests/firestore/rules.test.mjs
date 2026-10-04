@@ -17,6 +17,31 @@ try {
     for (const [uid, role] of [['user','free'],['other','free'],['mod','moderador'],['admin','admin'],['s1','streamer'],['s2','streamer']]) await setDoc(doc(store, 'users', uid), { role, email: `${uid}@test.invalid`, registeredDevices: [] });
     await setDoc(doc(store, 'system_config', 'streamer_live'), { entries: [] });
   });
+  await test('same hardware reuses its slot while concurrent logins leave only one session owner',async()=>{
+    const ref=doc(user,'users/user');
+    async function register(device,token) {
+      return runTransaction(user,async tx=>{
+        const old=(await tx.get(ref)).data(); const devices=[...new Set(old.registeredDevices||[])];
+        if(!devices.includes(device)){assert.ok(devices.length<2);devices.push(device);}
+        tx.update(ref,{registeredDevices:devices,lastDeviceId:device,sessionToken:token,sessionStartedAt:serverTimestamp(),is_online:true});
+      });
+    }
+    await assertSucceeds(register('WRD_DEVICE_first','first-login'));
+    await assertSucceeds(register('WRD_DEVICE_first','reinstalled-login'));
+    assert.deepEqual((await getDoc(ref)).data().registeredDevices,['WRD_DEVICE_first']);
+    await Promise.all([register('WRD_DEVICE_first','phone-one'),register('WRD_DEVICE_second','phone-two')]);
+    const active=(await getDoc(ref)).data();
+    assert.equal(active.registeredDevices.length,2);
+    assert.ok(['phone-one','phone-two'].includes(active.sessionToken));
+    const stale=active.sessionToken==='phone-one'?'phone-two':'phone-one';
+    await assertSucceeds(runTransaction(user,async tx=>{
+      const account=(await tx.get(ref)).data();
+      if(account.sessionToken===stale)tx.update(ref,{is_online:false});
+    }));
+    assert.equal((await getDoc(ref)).data().is_online,true);
+    await assert.rejects(register('WRD_DEVICE_third','third-phone'));
+    assert.deepEqual((await getDoc(ref)).data(),active);
+  });
   await test('only the administrator can aggregate publication history and save consumption samples', async()=>{
     await env.withSecurityRulesDisabled(async context => {
       await setDoc(doc(context.firestore(),'streamer_requests/s1/history/storage-test'),{status:'REJECTED',channelName:'Canal'});
@@ -82,21 +107,21 @@ try {
     assert.equal((await getDoc(doc(store,'users/concurrent'))).data().orangeEssence,1);
     assert.equal((await getDocs(collection(store,'users/concurrent/subscription_history'))).size,1);
   });
-  function redeem(id, amount, override={}) {
-    return runTransaction(economy,async tx=>{
-      const profile=doc(economy,'users/economy'),operation=doc(economy,`users/economy/economy_operations/${id}`);
+  function redeem(id, amount, override={}, store=economy, uid="economy") {
+    return runTransaction(store,async tx=>{
+      const profile=doc(store,`users/${uid}`),operation=doc(store,`users/${uid}/economy_operations/${id}`);
       if((await tx.get(operation)).exists())return;
       const account=(await tx.get(profile)).data(),timestamp=Date.now();
       const receipt={id,timestamp,durationMillis:0,planName:'Canje de Esencia Naranja',status:'Pendiente',amount:`-${amount} EN`,source:'CASH_REDEMPTION'};
-      tx.set(operation,{id,userId:'economy',kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',timestamp,createdAt:serverTimestamp(),receipt});
+      tx.set(operation,{id,userId:uid,kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',timestamp,createdAt:serverTimestamp(),receipt});
       tx.update(profile,{orangeEssence:account.orangeEssence-amount,lastEconomyOperation:id});
-      tx.set(doc(economy,`cash_redemptions/${id}`),{id,userId:'economy',email:'economy@test.invalid',amount,usd:amount,paymentCurrency:'USDT',network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override});
+      tx.set(doc(store,`cash_redemptions/${id}`),{id,userId:uid,email:`${uid}@test.invalid`,amount,usd:amount,paymentCurrency:'USDT',network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override});
       const reportId=`payment_${id}`;
-      const conversation=initial(reportId).map(entry=>entry.senderRole==='USER'?{...entry,senderUid:'economy'}:entry);
-      const payment={id:reportId,reportId,redemptionId:id,userId:'economy',userEmail:'economy@test.invalid',userName:'Usuario',title:'Solicitud de pago USDT',description:'Solicitud de pago USDT',content:'Solicitud de pago USDT',tag:'PAGO',type:'PAGO',panel:'HISTORY',staffVisible:false,status:'PENDING',staffRead:false,isRead:true,userRead:true,userCanReply:false,timestamp,createdAt:serverTimestamp(),conversation};
-      tx.set(doc(economy,`support_reports/${reportId}`),payment);
-      tx.set(doc(economy,`users/economy/messages/${reportId}`),payment);
-      tx.set(doc(economy,`users/economy/subscription_history/${id}`),receipt);
+      const conversation=initial(reportId).map(entry=>entry.senderRole==='USER'?{...entry,senderUid:uid}:entry);
+      const payment={id:reportId,reportId,redemptionId:id,userId:uid,userEmail:`${uid}@test.invalid`,userName:'Usuario',title:'Solicitud de pago USDT',description:'Solicitud de pago USDT',content:'Solicitud de pago USDT',tag:'PAGO',type:'PAGO',panel:'HISTORY',staffVisible:false,status:'PENDING',staffRead:false,isRead:true,userRead:true,userCanReply:false,timestamp,createdAt:serverTimestamp(),conversation};
+      tx.set(doc(store,`support_reports/${reportId}`),payment);
+      tx.set(doc(store,`users/${uid}/messages/${reportId}`),payment);
+      tx.set(doc(store,`users/${uid}/subscription_history/${id}`),receipt);
     });
   }
   await test('cash requests debit atomically and keep owner-only receipts',async()=>{
@@ -112,6 +137,20 @@ try {
     await assertFails(getDoc(doc(other,'cash_redemptions/cash-ten')));
     await assertFails(getDocs(collection(other,'cash_redemptions')));
     await assertSucceeds(getDocs(query(collection(economy,'cash_redemptions'),where('userId','==','economy'))));
+  });
+  await test('pending payouts load for the administrator and remain private from moderators',async()=>{
+    await assertSucceeds(getDocs(query(collection(admin,'cash_redemptions'),where('status','==','PENDING'))));
+    await assertFails(getDocs(query(collection(moderator,'cash_redemptions'),where('status','==','PENDING'))));
+    await assertFails(getDocs(query(collection(other,'cash_redemptions'),where('status','==','PENDING'))));
+  });
+  await test('administrator redemption has the same atomic debit and idempotent receipt',async()=>{
+    await updateDoc(doc(admin,'users/admin'),{orangeEssence:400});
+    await assertSucceeds(redeem('admin-fifty',50,{},admin,'admin'));
+    assert.equal((await getDoc(doc(admin,'users/admin'))).data().orangeEssence,350);
+    await assertSucceeds(redeem('admin-fifty',50,{},admin,'admin'));
+    assert.equal((await getDoc(doc(admin,'users/admin'))).data().orangeEssence,350);
+    assert.equal((await getDoc(doc(admin,'cash_redemptions/admin-fifty'))).data().usd,50);
+    await assertFails(getDoc(doc(moderator,'support_reports/payment_admin-fifty')));
   });
   await test('cash amount, paid status and refunds cannot be forged by a user',async()=>{
     await assertFails(redeem('wrong-cash-amount',3));
@@ -500,6 +539,40 @@ try {
     await assertSucceeds(setDoc(doc(admin,'users/user/subscription_history/admin-gift'),receipt));
     await assertFails(setDoc(doc(user,'users/user/subscription_history/self-gift'),receipt));
     await assertFails(updateDoc(doc(user,'users/user'),{orangeEssence:50,subscriptionHistory:[receipt]}));
+  });
+  await test('streamer approval commits publication counter history and notification atomically',async()=>{
+    const uid='review-atomic',id='publication-review-atomic';
+    await env.withSecurityRulesDisabled(async context=>{
+      const store=context.firestore();
+      await setDoc(doc(store,`users/${uid}`),{role:'streamer',registeredDevices:[]});
+      await setDoc(doc(store,`streamer_requests/${uid}`),{userId:uid,publicationId:id,channelName:'Coach Test',channelUrl:'https://twitch.tv/coach_test',platform:'Twitch',status:'PENDING',usingCoachAcknowledged:true,submittedAtMillis:Date.now()});
+      await setDoc(doc(store,'system_config/streamer_live'),{entries:[]});
+    });
+    async function approve(badCounter=false){
+      return runTransaction(admin,async tx=>{
+        const req=doc(admin,`streamer_requests/${uid}`), registry=doc(admin,'system_config/streamer_live'),metric=doc(admin,`streamer_click_metrics/${id}`);
+        const request=await tx.get(req),live=await tx.get(registry),counter=await tx.get(metric);
+        if(request.data().status==='APPROVED' && live.data().entries.some(entry=>entry.publicationId===id))return;
+        const entry={userId:uid,publicationId:id,channelName:request.data().channelName,channelUrl:request.data().channelUrl,platform:'Twitch',approvedAtMillis:Date.now()};
+        if(!counter.exists())tx.set(metric,{userId:uid,publicationId:id,submittedAtMillis:request.data().submittedAtMillis,clickCount:badCounter?-1:0,status:'APPROVED'});
+        tx.set(registry,{entries:[entry]});
+        const reviewed={...request.data(),status:'APPROVED',verifiedUsingCoach:true,reviewedAtMillis:Date.now()};
+        tx.set(req,reviewed);
+        tx.set(doc(admin,`streamer_requests/${uid}/history/${id}`),reviewed);
+        tx.set(doc(admin,`users/${uid}/messages/streamer_review_${id}`),{panel:'STREAMER',isRead:false,timestamp:Date.now()});
+      });
+    }
+    await assertFails(approve(true));
+    assert.equal((await getDoc(doc(admin,`streamer_requests/${uid}`))).data().status,'PENDING');
+    assert.equal((await getDoc(doc(admin,'system_config/streamer_live'))).data().entries.length,0);
+    await assertSucceeds(approve());
+    assert.equal((await getDoc(doc(admin,`streamer_click_metrics/${id}`))).data().clickCount,0);
+    const guest=env.unauthenticatedContext().firestore();
+    await assertSucceeds(updateDoc(doc(guest,`streamer_click_metrics/${id}`),{clickCount:increment(1),lastClickedAt:serverTimestamp()}));
+    await assertSucceeds(approve());
+    assert.equal((await getDoc(doc(db(uid),`streamer_click_metrics/${id}`))).data().clickCount,1);
+    assert.equal((await getDoc(doc(db(uid),`streamer_requests/${uid}/history/${id}`))).data().status,'APPROVED');
+    assert.equal((await getDoc(doc(db(uid),`users/${uid}/messages/streamer_review_${id}`))).data().isRead,false);
   });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }

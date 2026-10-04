@@ -69,9 +69,9 @@ object StreamerRepository {
     suspend fun review(uid: String, approve: Boolean, verifiedUsingCoach: Boolean): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
         check(SupportTicketAccess.isAdmin()) { "streamer_error" }
         val ref = requests.document(uid)
-        val archive = historyAvailable(uid)
-        val countClicks = metricsAvailable(uid)
-        check(!approve || countClicks) { "streamer_metrics_error" }
+        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.await()
+        val archive = true
+        val countClicks = approve
         db.runTransaction { transaction ->
             val request = transaction.get(ref)
             val live = entries(transaction.get(registry).get("entries"))

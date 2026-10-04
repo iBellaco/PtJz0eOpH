@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import android.content.Context
@@ -11,7 +14,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.filled.Image
 import android.widget.Toast
@@ -733,7 +736,7 @@ fun UserInboxDialog(
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .clickable {
+                                            .coachClickable {
                                                 markMessageAsRead(id)
                                                 showSupportPopup = true
                                             }
@@ -768,7 +771,7 @@ fun UserInboxDialog(
                                                     modifier = Modifier
                                                         .fillMaxSize()
                                                         .background(Color.Black.copy(alpha = 0.8f))
-                                                        .clickable { showSupportPopup = false },
+                                                        .coachClickable { showSupportPopup = false },
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     Box(
@@ -778,7 +781,7 @@ fun UserInboxDialog(
                                                             .background(HextechDarkBg, RoundedCornerShape(16.dp))
                                                             .border(1.dp, HextechCyan, RoundedCornerShape(16.dp))
                                                             .padding(16.dp)
-                                                            .clickable(enabled = false) {}
+                                                            .coachClickable(enabled = false) {}
                                                     ) {
                                                         Column(modifier = Modifier.fillMaxSize()) {
                                                             Row(
@@ -840,7 +843,7 @@ fun ImageViewerDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.9f))
-                .clickable { onDismiss() },
+                .coachClickable { onDismiss() },
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -1111,7 +1114,7 @@ fun UserSupportThreadCard(
                             .size(72.dp)
                             .background(Color(0xFF0F172A), RoundedCornerShape(8.dp))
                             .border(1.dp, Color(0xFF0EA5E9), RoundedCornerShape(8.dp))
-                            .clickable { selectedPhotoToView = photoStr },
+                            .coachClickable { selectedPhotoToView = photoStr },
                         contentAlignment = Alignment.Center
                     ) {
                         val thumbBitmap = remember(photoStr) {

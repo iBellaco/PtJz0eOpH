@@ -51,10 +51,10 @@ fun Modifier.tactileClickable(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        targetValue = if (isPressed && enabled) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else Spring.StiffnessLow
         ),
         label = "tactileClickableScale"
     )
@@ -89,10 +89,10 @@ fun AnimatedTactileButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        targetValue = if (isPressed && enabled) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = 380f
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else 380f
         ),
         label = "animatedButtonScale"
     )
@@ -133,6 +133,13 @@ fun HextechAnimatedButton(
     enablePulse: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
+    if (LocalCoachButtonAnimation.current) {
+        CoachActionBox(onClick = onClick, modifier = modifier, enabled = enabled,
+            shape = shape, background = backgroundColor, borderColor = borderColor, padding = contentPadding, backgroundBrush = backgroundBrush,
+            content = { Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, content = content) })
+        return
+    }
+
     val infiniteTransition = rememberInfiniteTransition(label = "hextechBtnTransition")
     val shimmerProgress by infiniteTransition.animateFloat(
         initialValue = -1.2f,
@@ -156,15 +163,15 @@ fun HextechAnimatedButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        targetValue = if (isPressed && enabled) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = 380f
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else 380f
         ),
         label = "btnScale"
     )
     val pressY by animateFloatAsState(
-        targetValue = if (isPressed && enabled) 2.5f else 0f,
+        targetValue = if (isPressed && enabled && !LocalCoachButtonAnimation.current) 2.5f else 0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = 500f
@@ -261,6 +268,13 @@ fun HextechAnimatedOutlinedButton(
     enablePulse: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
+    if (LocalCoachButtonAnimation.current) {
+        CoachActionBox(onClick = onClick, modifier = modifier, enabled = enabled,
+            shape = shape, background = backgroundColor, borderColor = borderColor, padding = contentPadding,
+            content = { Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, content = content) })
+        return
+    }
+
     val infiniteTransition = rememberInfiniteTransition(label = "hextechOutlinedBtn")
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.45f,
@@ -275,10 +289,10 @@ fun HextechAnimatedOutlinedButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        targetValue = if (isPressed && enabled) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = 380f
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else 380f
         ),
         label = "btnScale"
     )
@@ -338,6 +352,13 @@ fun HextechAnimatedIconButton(
     scaleDown: Float = 0.88f,
     content: @Composable () -> Unit
 ) {
+    if (LocalCoachButtonAnimation.current) {
+        CoachActionBox(onClick = onClick, modifier = modifier.size(size), enabled = enabled,
+            shape = shape, background = backgroundColor, borderColor = borderColor, padding = PaddingValues(0.dp),
+            content = { content() })
+        return
+    }
+
     val infiniteTransition = rememberInfiniteTransition(label = "hextechIconBtn")
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
@@ -352,10 +373,10 @@ fun HextechAnimatedIconButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        targetValue = if (isPressed && enabled) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = 420f
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else 420f
         ),
         label = "iconBtnScale"
     )
@@ -404,13 +425,20 @@ fun HextechAnimatedTextLink(
     fontSize: TextUnit = 13.5.sp,
     fontWeight: FontWeight = FontWeight.Bold
 ) {
+    if (LocalCoachButtonAnimation.current) {
+        CoachActionBox(onClick = onClick, modifier = modifier, enabled = true,
+            shape = RoundedCornerShape(6.dp), background = Color.Transparent, borderColor = Color.Transparent, padding = PaddingValues(horizontal = 6.dp, vertical = 4.dp),
+            content = { Text(text = com.example.util.tr(text), color = color, fontSize = fontSize, fontWeight = fontWeight) })
+        return
+    }
+
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
+        targetValue = if (isPressed) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else 0.92f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = 400f
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else 400f
         ),
         label = "textLinkScale"
     )
@@ -458,10 +486,10 @@ fun AnimatedTactileOutlinedButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        targetValue = if (isPressed && enabled) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = 380f
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else 380f
         ),
         label = "animatedOutlinedButtonScale"
     )
@@ -499,10 +527,10 @@ fun AnimatedTactileTextButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        targetValue = if (isPressed && enabled) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = 400f
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else 400f
         ),
         label = "animatedTextButtonScale"
     )
@@ -537,10 +565,10 @@ fun AnimatedTactileIconButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        targetValue = if (isPressed && enabled) if (LocalCoachButtonAnimation.current) COACH_BUTTON_PRESSED_SCALE else scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = 420f
+            stiffness = if (LocalCoachButtonAnimation.current) COACH_BUTTON_SPRING_STIFFNESS else 420f
         ),
         label = "animatedIconButtonScale"
     )

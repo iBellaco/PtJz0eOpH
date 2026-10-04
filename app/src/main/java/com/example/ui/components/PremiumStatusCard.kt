@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachTextButton as TextButton
+
 import androidx.compose.runtime.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke

@@ -14,7 +14,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -114,7 +114,7 @@ fun DraftEnemyTeamCard(
                             .clip(RoundedCornerShape(8.dp))
                             .background(HextechDarkBg)
                             .border(1.dp, HextechGold.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                            .clickable {
+                            .coachClickable {
                                 if (champ != null) {
                                     onChampionClick(champ)
                                 } else {
@@ -173,7 +173,7 @@ fun DraftEnemyTeamCard(
                                                 .size(16.dp)
                                                 .clip(CircleShape)
                                                 .background(DangerRed)
-                                                .clickable { onRemoveEnemy(selectedChamp) },
+                                                .coachClickable { onRemoveEnemy(selectedChamp) },
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(Icons.Default.Close, contentDescription = com.example.util.trNullable("Eliminar"), tint = Color.White, modifier = Modifier.size(10.dp))

@@ -20,7 +20,7 @@ import com.example.util.tr
 fun OrangeEssenceRedemptionEntry(balance: Long, onClick: () -> Unit) {
     if (balance <= 0) return
     val accent = Color(0xFFFF9E1B)
-    Surface(onClick = onClick, modifier = Modifier.fillMaxWidth().testTag("orange_redemption_entry"),
+    com.example.ui.components.CoachClickableSurface(onClick = onClick, modifier = Modifier.fillMaxWidth().testTag("orange_redemption_entry"),
         color = HextechDarkBg, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, accent.copy(alpha = 0.65f))) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, tint = accent)

@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.platform.testTag
 import com.example.util.BuildChoiceRules
@@ -14,7 +17,7 @@ import com.example.ui.theme.TextSecondary
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,10 +51,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -211,7 +214,7 @@ fun ChampionDetailSheet(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(HextechSurface)
-                            .clickable { onDismiss() }
+                            .coachClickable { onDismiss() }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -390,7 +393,7 @@ fun ChampionDetailSheet(
                                         color = if (isSelected) HextechGold else HextechCardBorder,
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .clickable {
+                                    .coachClickable {
                                         selectedRole = role
                                         selectedBuildOptionIndex = 0
                                     }
@@ -794,7 +797,7 @@ fun ChampionDetailSheet(
                                     color = if (isSelected) HextechGold else HextechCardBorder,
                                     shape = RoundedCornerShape(8.dp)
                                 )
-                                .clickable { selectedBuildOptionIndex = idx }
+                                .coachClickable { selectedBuildOptionIndex = idx }
                                 .padding(horizontal = if (isCompact) 8.dp else 12.dp, vertical = if (isCompact) 4.dp else 7.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -957,7 +960,7 @@ fun ChampionDetailSheet(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
                                     .testTag("build_item_details")
-                                    .clickable {
+                                    .coachClickable {
                                         if (dbItem != null) {
                                             selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawName,
                                                 activeOption.coreItemsWithDesc.map { it.itemName to it.description }, "")
@@ -1018,7 +1021,7 @@ fun ChampionDetailSheet(
                                 AppAssetImage(
                                     url = item?.iconUrl ?: WildRiftItemsData.getItemIconByName(itemName),
                                     contentDescription = tr(itemName), fallbackText = tr(itemName),
-                                    modifier = Modifier.size(if (isCompact) 32.dp else 42.dp).clickable {
+                                    modifier = Modifier.size(if (isCompact) 32.dp else 42.dp).coachClickable {
                                         selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(itemName,
                                             activeOption.situationalItemsWithDesc.map { it.itemName to it.description }, "")
                                         if (item != null) itemForDetail = item else selectedSituationalItem = itemName
@@ -1090,7 +1093,7 @@ fun ChampionDetailSheet(
                                     .background(HextechSurfaceVariant)
                                     .border(1.dp, HextechGold, RoundedCornerShape(8.dp))
                                     .testTag("selected_boot_$currentBootBase")
-                                    .clickable {
+                                    .coachClickable {
                                         if (dbBoot1 != null) {
                                             selectedElementAdvice = ""
                                             itemForDetail = dbBoot1
@@ -1121,7 +1124,7 @@ fun ChampionDetailSheet(
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(HextechSurfaceVariant)
                                     .border(1.dp, HextechCyan, RoundedCornerShape(8.dp))
-                                    .clickable { if (dbBoot2 != null) {
+                                    .coachClickable { if (dbBoot2 != null) {
                                         selectedElementAdvice = ""
                                         itemForDetail = dbBoot2
                                     } }
@@ -1239,7 +1242,7 @@ fun ChampionDetailSheet(
                                         .background(HextechSurfaceVariant)
                                         .border(1.5.dp, HextechCyan, RoundedCornerShape(8.dp))
                                         .testTag("build_spell_details")
-                                        .clickable { if (dbSpell != null) {
+                                        .coachClickable { if (dbSpell != null) {
                                             selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawSpellName,
                                                 activeOption.coreSpells.map { it.spellName to it.description }, activeOption.tacticalReason)
                                             spellForDetail = dbSpell
@@ -1332,7 +1335,7 @@ fun ChampionDetailSheet(
                                         shape = RoundedCornerShape(8.dp)
                                     )
                                     .testTag("build_rune_details")
-                                    .clickable {
+                                    .coachClickable {
                                         selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rName,
                                             activeOption.coreRunes.map { it.runeName to it.description }, activeOption.tacticalReason)
                                         runeForDetail = foundRune ?: com.example.model.RuneItem(
@@ -1414,7 +1417,7 @@ fun ChampionDetailSheet(
                                         .fillMaxWidth()
                                         .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
-                                        .clickable {
+                                        .coachClickable {
                                             selectedElementAdvice = sRune.description
                                             runeForDetail = foundRune ?: com.example.model.RuneItem(
                                                 id = rName.lowercase().replace(" ", "_"),
@@ -1535,7 +1538,7 @@ fun ChampionDetailSheet(
                                             if (target != null) {
                                                 val targetChamp = resolveTargetChampion(target)
                                                 Box(
-                                                    modifier = Modifier.clickable {
+                                                    modifier = Modifier.coachClickable {
                                                         matchupExplanationTarget = target
                                                         matchupExplanationType = "Ventaja"
                                                     }
@@ -1633,7 +1636,7 @@ fun ChampionDetailSheet(
                                             if (counter != null) {
                                                 val targetChamp = resolveTargetChampion(counter)
                                                 Box(
-                                                    modifier = Modifier.clickable {
+                                                    modifier = Modifier.coachClickable {
                                                         matchupExplanationTarget = counter
                                                         matchupExplanationType = "Debilidad"
                                                     }
@@ -1740,7 +1743,7 @@ fun ChampionDetailSheet(
                                             if (partner != null) {
                                                 val targetChamp = resolveTargetChampion(partner)
                                                 Box(
-                                                    modifier = Modifier.clickable {
+                                                    modifier = Modifier.coachClickable {
                                                         matchupExplanationTarget = partner
                                                         matchupExplanationType = "Sinergia"
                                                     }
@@ -1799,7 +1802,7 @@ fun ChampionDetailSheet(
             modifier = Modifier
                 .fillMaxSize()
                 .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.95f))
-                .clickable(
+                .coachClickable(
                     interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                     indication = null,
                     onClick = onDismiss
@@ -1809,7 +1812,7 @@ fun ChampionDetailSheet(
             androidx.compose.foundation.layout.Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable(
+                    .coachClickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null,
                         onClick = {}
@@ -1840,7 +1843,7 @@ fun AdaptiveDetailAlertDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.85f))
-                .clickable(
+                .coachClickable(
                     interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                     indication = null,
                     onClick = onDismissRequest
@@ -1851,7 +1854,7 @@ fun AdaptiveDetailAlertDialog(
             androidx.compose.material3.Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(
+                    .coachClickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null,
                         onClick = {}
@@ -2249,7 +2252,7 @@ fun AdaptiveDetailAlertDialog(
                             .fillMaxWidth()
                             .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
                             .background(com.example.ui.theme.HextechCyan)
-                            .clickable { itemForDetail = null }
+                            .coachClickable { itemForDetail = null }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -2264,7 +2267,7 @@ fun AdaptiveDetailAlertDialog(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.85f))
-                    .clickable(
+                    .coachClickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null,
                         onClick = { itemForDetail = null }

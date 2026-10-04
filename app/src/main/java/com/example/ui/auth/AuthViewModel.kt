@@ -113,21 +113,16 @@ class AuthViewModel : ViewModel() {
                         "email" to (firebaseUser.email ?: _email.value.trim()),
                         "name" to (firebaseUser.displayName ?: firebaseUser.email?.substringBefore("@") ?: "Usuario"),
                         "last_active" to System.currentTimeMillis(),
-                        "is_online" to true
+                        "is_online" to false
                     )
                     if (!snap.exists()) {
-                        userData["role"] = if ((firebaseUser.email ?: "").equals("barbadiego695@gmail.com", true)) "admin" else "user"
+                        userData["role"] = "free"
                         userData["createdAt"] = System.currentTimeMillis()
-                        userData["blueEssence"] = 100L
-                        userData["orangeEssence"] = 10L
+                        userData["blueEssence"] = 0L
+                        userData["orangeEssence"] = 0L
                         userDocRef.set(userData, com.google.firebase.firestore.SetOptions.merge()).await()
                     } else {
-                        userDocRef.update(
-                            mapOf(
-                                "last_active" to System.currentTimeMillis(),
-                                "is_online" to true
-                            )
-                        ).await()
+                        // The confirmed session transaction owns presence updates.
                     }
                 }
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
@@ -183,12 +178,12 @@ class AuthViewModel : ViewModel() {
                         "uid" to firebaseUser.uid,
                         "email" to (firebaseUser.email ?: _email.value.trim()),
                         "name" to _username.value.trim(),
-                        "role" to if ((firebaseUser.email ?: "").equals("barbadiego695@gmail.com", true)) "admin" else "user",
+                        "role" to "free",
                         "createdAt" to System.currentTimeMillis(),
-                        "blueEssence" to 100L,
-                        "orangeEssence" to 10L,
+                        "blueEssence" to 0L,
+                        "orangeEssence" to 0L,
                         "last_active" to System.currentTimeMillis(),
-                        "is_online" to true
+                        "is_online" to false
                     )
                     userDocRef.set(userData, com.google.firebase.firestore.SetOptions.merge()).await()
                 }

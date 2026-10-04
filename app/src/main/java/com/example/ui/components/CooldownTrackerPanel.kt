@@ -1,12 +1,15 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachIconButton as IconButton
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -141,7 +144,7 @@ fun CooldownTrackerPanel(
                             if (isSelected) HextechGold else HextechCardBorder,
                             RoundedCornerShape(8.dp)
                         )
-                        .clickable { selectedRole = role }
+                        .coachClickable { selectedRole = role }
                         .padding(vertical = if (isCompactOverlay) 4.dp else 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -191,7 +194,7 @@ fun CooldownTrackerPanel(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
-                    .clickable { CooldownTrackerStateHolder.resetAllForRole(selectedRole.name) }
+                    .coachClickable { CooldownTrackerStateHolder.resetAllForRole(selectedRole.name) }
                     .padding(4.dp)
             )
         }

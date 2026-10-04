@@ -1,5 +1,7 @@
 package com.example
 
+import com.example.ui.components.CoachNavigationBarItem as NavigationBarItem
+
 import android.content.Context
 import android.Manifest
 import android.content.pm.PackageManager
@@ -342,7 +344,7 @@ class MainActivity : ComponentActivity() {
         com.example.util.SubscriptionManager.init(this)
         val currentAuthUser = com.example.util.AuthManager.getAuth()?.currentUser
         if (currentAuthUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(currentAuthUser)) {
-            com.example.util.DeviceAndSessionManager.registerDeviceAndSession(this, onError = { msg ->
+            com.example.util.DeviceAndSessionManager.resumeDeviceAndSession(this, onError = { msg ->
                 if (msg.contains("Límite de dispositivos", ignoreCase = true)) {
                     android.widget.Toast.makeText(this, com.example.util.appTr(msg), android.widget.Toast.LENGTH_LONG).show()
                     com.example.util.AuthManager.getAuth()?.signOut()
@@ -363,7 +365,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
+            MyApplicationTheme(animateButtons = true) {
                 com.example.ui.components.BlurredMeshBackground(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -385,6 +387,14 @@ class MainActivity : ComponentActivity() {
         if (intent.getBooleanExtra("extra_open_global_announcement", false)) {
             com.example.data.GlobalAnnouncementManager.showAnnouncementModal()
             intent.removeExtra("extra_open_global_announcement")
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val user = com.example.util.AuthManager.getAuth()?.currentUser
+        if (user != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(user)) {
+            com.example.util.SubscriptionManager.startHeartbeat(user.uid)
         }
     }
 

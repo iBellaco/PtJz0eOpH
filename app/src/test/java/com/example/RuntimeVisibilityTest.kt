@@ -290,7 +290,7 @@ class RuntimeVisibilityTest(private val screen: String) {
         // Enable animation frames before composition: the test framework cancels
         // infinite animations while its clock advances automatically.
         if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.autoAdvance = false
-        compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
+        compose.setContent { MyApplicationTheme(animateButtons = true) { Box(Modifier.fillMaxSize()) { surface() } } }
         if (screen in listOf("streamer-live", "panel-notification-animation")) compose.mainClock.advanceTimeBy(32)
         compose.waitForIdle()
         if (screen.startsWith("support-email-")) {

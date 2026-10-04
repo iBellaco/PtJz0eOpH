@@ -1,8 +1,11 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachIconButton as IconButton
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -333,7 +336,7 @@ fun FAQScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
-                            .clickable { selectedFaq = pair },
+                            .coachClickable { selectedFaq = pair },
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
                         border = BorderStroke(1.dp, HextechCardBorder)

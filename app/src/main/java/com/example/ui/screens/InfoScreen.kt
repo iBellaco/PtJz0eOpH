@@ -1,5 +1,9 @@
 package com.example.ui.screens
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.ui.platform.LocalContext
@@ -9,7 +13,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.ui.res.painterResource
 import com.example.R
 import androidx.compose.foundation.background

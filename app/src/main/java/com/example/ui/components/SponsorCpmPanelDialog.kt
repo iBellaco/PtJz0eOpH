@@ -1,5 +1,11 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachFilterChip as FilterChip
+
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -13,7 +19,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items

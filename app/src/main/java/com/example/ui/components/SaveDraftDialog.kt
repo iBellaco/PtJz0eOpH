@@ -1,11 +1,15 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,15 +30,14 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
+
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -176,7 +179,7 @@ fun SaveDraftDialog(
                             .clip(RoundedCornerShape(10.dp))
                             .background(HextechSurface)
                             .border(1.dp, HextechGold.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
-                            .clickable { profileDropdownExpanded = true }
+                            .coachClickable { profileDropdownExpanded = true }
                             .padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -363,7 +366,7 @@ fun SaveDraftDialog(
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(if (isSel) accentColor.copy(alpha = 0.22f) else HextechSurface)
                                 .border(1.dp, if (isSel) accentColor else HextechCardBorder, RoundedCornerShape(8.dp))
-                                .clickable { selectedMatchMode = mode }
+                                .coachClickable { selectedMatchMode = mode }
                                 .padding(vertical = 8.dp, horizontal = 2.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -414,7 +417,7 @@ fun SaveDraftDialog(
                                 color = if (isPendingSelected) HextechGold else HextechCardBorder,
                                 shape = RoundedCornerShape(10.dp)
                             )
-                            .clickable { selectedResult = "PENDING" }
+                            .coachClickable { selectedResult = "PENDING" }
                             .testTag("save_result_pending"),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isPendingSelected) HextechGold.copy(alpha = 0.22f) else HextechSurface
@@ -454,7 +457,7 @@ fun SaveDraftDialog(
                                 color = if (isVictorySelected) Color(0xFF81C784) else HextechCardBorder,
                                 shape = RoundedCornerShape(10.dp)
                             )
-                            .clickable { selectedResult = "VICTORY" }
+                            .coachClickable { selectedResult = "VICTORY" }
                             .testTag("save_result_victory"),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isVictorySelected) Color(0xFF2E7D32).copy(alpha = 0.35f) else HextechSurface
@@ -494,7 +497,7 @@ fun SaveDraftDialog(
                                 color = if (isDefeatSelected) DangerRed else HextechCardBorder,
                                 shape = RoundedCornerShape(10.dp)
                             )
-                            .clickable { selectedResult = "DEFEAT" }
+                            .coachClickable { selectedResult = "DEFEAT" }
                             .testTag("save_result_defeat"),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isDefeatSelected) DangerRed.copy(alpha = 0.25f) else HextechSurface
@@ -639,14 +642,14 @@ fun SaveDraftDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.6f))
-                .clickable(
+                .coachClickable(
                     interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                     indication = null,
                     onClick = onDismiss
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Box(modifier = Modifier.clickable(
+            Box(modifier = Modifier.coachClickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                 indication = null,
                 onClick = {}

@@ -16,7 +16,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -199,7 +199,7 @@ fun DraftTeamPositionCard(
                             .clip(RoundedCornerShape(8.dp))
                             .background(bgColor)
                             .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-                            .clickable {
+                            .coachClickable {
                                 onPickChampionForRole(role)
                             }
                             .padding(vertical = if (isOverlay) 4.dp else 8.dp, horizontal = if (isOverlay) 1.dp else 2.dp)
@@ -294,7 +294,7 @@ fun DraftTeamPositionCard(
                                             modifier = Modifier
                                                 .fillMaxSize()
                                                 .clip(RoundedCornerShape(8.dp))
-                                                .clickable {
+                                                .coachClickable {
                                                     onPickChampionForRole(role)
                                                 }
                                         )
@@ -325,7 +325,7 @@ fun DraftTeamPositionCard(
                                                 .size(16.dp)
                                                 .clip(CircleShape)
                                                 .background(Color.Black.copy(alpha = 0.75f))
-                                                .clickable {
+                                                .coachClickable {
                                                     onRemoveChampionForRole(role)
                                                 },
                                             contentAlignment = Alignment.Center
@@ -375,7 +375,7 @@ fun DraftTeamPositionCard(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.clickable { onChampionClick(displayChamp) }
+                                modifier = Modifier.coachClickable { onChampionClick(displayChamp) }
                             )
                             // Indicador de certeza / confianza SOLO para el equipo rival (desconocimiento de línea hasta loading screen)
                             if (isEnemy && slot?.confidence != null) {

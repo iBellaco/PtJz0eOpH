@@ -1,5 +1,11 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachFilterChip as FilterChip
+
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import android.content.Context
@@ -9,7 +15,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -376,7 +382,7 @@ fun AdminSponsorNoticeItem(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showMediaViewerDialog = true },
+                    .coachClickable { showMediaViewerDialog = true },
                 shape = RoundedCornerShape(8.dp),
                 colors = CardDefaults.cardColors(containerColor = HextechDarkBg),
                 border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.4f))

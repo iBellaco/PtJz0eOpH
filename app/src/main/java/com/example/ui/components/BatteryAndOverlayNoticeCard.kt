@@ -1,10 +1,12 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +28,7 @@ import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -163,7 +165,7 @@ fun BatteryAndOverlayNoticeCard(
                         if (hasOverlayPermission) HextechCyan else DangerRed.copy(alpha = 0.5f),
                         RoundedCornerShape(10.dp)
                     )
-                    .clickable {
+                    .coachClickable {
                         SystemPermissionHelper.openOverlaySettings(context)
                     }
                     .padding(12.dp),
@@ -218,7 +220,7 @@ fun BatteryAndOverlayNoticeCard(
                         if (isBatteryExempt) HextechCyan else DangerRed.copy(alpha = 0.5f),
                         RoundedCornerShape(10.dp)
                     )
-                    .clickable {
+                    .coachClickable {
                         SystemPermissionHelper.requestIgnoreBatteryOptimization(context)
                     }
                     .padding(12.dp),

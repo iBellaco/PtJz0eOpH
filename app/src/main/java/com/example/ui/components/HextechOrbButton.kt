@@ -9,7 +9,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -232,7 +232,7 @@ fun HextechOrbButton(
                         }
                     )
                 )
-                .clickable(
+                .coachClickable(
                     enabled = enabled,
                     interactionSource = remember { MutableInteractionSource() },
                     indication = if (enabled) ripple(bounded = true, color = energyTint) else null,

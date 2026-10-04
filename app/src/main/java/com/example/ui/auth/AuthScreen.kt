@@ -1,5 +1,11 @@
 package com.example.ui.auth
 
+import androidx.compose.runtime.DisposableEffect
+
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import android.widget.Toast
 import com.example.ui.theme.*
 import androidx.compose.animation.*
@@ -25,7 +31,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.border
 
 import androidx.compose.foundation.layout.*
@@ -94,6 +100,16 @@ fun AuthFlowContainer(
     val context = LocalContext.current
     var currentUser by remember { mutableStateOf(auth?.currentUser) }
 
+    DisposableEffect(auth) {
+        val listener = com.google.firebase.auth.FirebaseAuth.AuthStateListener { changed ->
+            // A new login waits for hardware/session registration before showing the profile.
+            // A remotely displaced session must immediately show the signed-out flow.
+            if (AuthManager.isGuestOrUnauthenticated(changed.currentUser)) currentUser = changed.currentUser
+        }
+        auth?.addAuthStateListener(listener)
+        onDispose { auth?.removeAuthStateListener(listener) }
+    }
+
     LaunchedEffect(Unit) {
         currentUser = auth?.currentUser
     }
@@ -107,6 +123,7 @@ fun AuthFlowContainer(
         AuthenticatedProfilePanel(
             user = currentUser!!,
             onSignOut = {
+                SubscriptionManager.stopHeartbeat(currentUser?.uid)
                 auth?.signOut()
                 currentUser = null
                 viewModel.resetSuccessState()
@@ -129,15 +146,9 @@ fun AuthFlowContainer(
                 onLoginSuccess?.invoke()
             },
             onError = { errorMessage ->
-                if (errorMessage.contains("Límite de dispositivos", ignoreCase = true)) {
-                    auth?.signOut()
-                    currentUser = null
-                    android.widget.Toast.makeText(context, com.example.util.appTr(errorMessage), android.widget.Toast.LENGTH_LONG).show()
-                } else {
-                    currentUser = auth?.currentUser
-                    com.example.util.SubscriptionManager.init(context)
-                    onLoginSuccess?.invoke()
-                }
+                auth?.signOut()
+                currentUser = null
+                android.widget.Toast.makeText(context, com.example.util.appTr(errorMessage), android.widget.Toast.LENGTH_LONG).show()
                 viewModel.resetSuccessState()
             }
         )
@@ -349,15 +360,15 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                 val currentOrangeEssence by SubscriptionManager.orangeEssence.collectAsState()
                 var blueBounce by remember { mutableStateOf(false) }
                 val blueScale by animateFloatAsState(
-                    targetValue = if (blueBounce) 1.08f else 1f,
-                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                    targetValue = if (blueBounce && !com.example.ui.components.LocalCoachButtonAnimation.current) 1.08f else 1f,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = com.example.ui.components.COACH_BUTTON_SPRING_STIFFNESS),
                     label = "blueScale",
                     finishedListener = { blueBounce = false }
                 )
                 var orangeBounce by remember { mutableStateOf(false) }
                 val orangeScale by animateFloatAsState(
-                    targetValue = if (orangeBounce) 1.08f else 1f,
-                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                    targetValue = if (orangeBounce && !com.example.ui.components.LocalCoachButtonAnimation.current) 1.08f else 1f,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = com.example.ui.components.COACH_BUTTON_SPRING_STIFFNESS),
                     label = "orangeScale",
                     finishedListener = { orangeBounce = false }
                 )
@@ -606,7 +617,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
             var avatarTapped by remember { mutableStateOf(false) }
             val avatarScale by animateFloatAsState(
                 targetValue = if (avatarTapped) 0.92f else 1f,
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = com.example.ui.components.COACH_BUTTON_SPRING_STIFFNESS),
                 label = "avatarScale",
                 finishedListener = { avatarTapped = false }
             )
@@ -675,7 +686,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
                         .clip(CircleShape)
                         .background(activeTheme.secondary)
                         .border(1.5.dp, activeTheme.background, CircleShape)
-                        .clickable(
+                        .coachClickable(
                             role = androidx.compose.ui.semantics.Role.Button,
                             onClick = {
                                 avatarTapped = true
@@ -1321,28 +1332,5 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser,
 }
 
 @Composable
-fun Modifier.tactileClickable(
-    scaleDown: Float = 0.94f,
-    onClick: () -> Unit
-): Modifier {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) scaleDown else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "tactileScale"
-    )
-    return this
-        .graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        }
-        .clickable(
-            interactionSource = interactionSource,
-            indication = androidx.compose.material3.ripple(bounded = true),
-            onClick = onClick
-        )
-}
+fun Modifier.tactileClickable(scaleDown: Float = 0.94f, onClick: () -> Unit): Modifier =
+    this.coachClickable(onClick = onClick)

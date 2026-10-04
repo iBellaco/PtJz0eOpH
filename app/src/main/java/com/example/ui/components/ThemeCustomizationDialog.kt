@@ -6,7 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -346,7 +346,7 @@ fun ThemeCustomizationBottomSheet(
                             .width(130.dp)
                             .height(82.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .clickable { previewTheme = theme },
+                            .coachClickable { previewTheme = theme },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(containerColor = theme.surface),
                         border = BorderStroke(
@@ -769,7 +769,7 @@ private fun RegionVisualPreviewGridCard(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(Brush.horizontalGradient(listOf(HextechGold, Color(0xFFD4AF37))))
-                                    .clickable { onShowPremiumAlert() }
+                                    .coachClickable { onShowPremiumAlert() }
                                     .padding(horizontal = 6.dp, vertical = 5.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {

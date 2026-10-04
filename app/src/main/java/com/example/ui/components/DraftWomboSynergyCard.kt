@@ -4,7 +4,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -349,7 +349,7 @@ fun DraftWomboSynergyCard(
                 // Campeón 1
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { onChampionClick(wombo.champ1) }
+                    modifier = Modifier.coachClickable { onChampionClick(wombo.champ1) }
                 ) {
                     ChampionAvatar(champion = wombo.champ1, size = 40.dp, showTierBadge = false)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -388,7 +388,7 @@ fun DraftWomboSynergyCard(
                 // Campeón 2
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { onChampionClick(wombo.champ2) }
+                    modifier = Modifier.coachClickable { onChampionClick(wombo.champ2) }
                 ) {
                     ChampionAvatar(champion = wombo.champ2, size = 40.dp, showTierBadge = false)
                     Spacer(modifier = Modifier.width(8.dp))

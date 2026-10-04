@@ -166,7 +166,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
     }
 
     @Test fun `Portuguese rendered surfaces contain no Spanish wording`() {
-        compose.setContent { MyApplicationTheme { Box(Modifier.fillMaxSize()) { surface() } } }
+        compose.setContent { MyApplicationTheme(animateButtons = true) { Box(Modifier.fillMaxSize()) { surface() } } }
         if (screen == "support-panel" || screen == "support-mailbox") {
             compose.waitUntil(15_000) { compose.onAllNodesWithText("Ajuda com o hub").fetchSemanticsNodes().isNotEmpty() }
         }

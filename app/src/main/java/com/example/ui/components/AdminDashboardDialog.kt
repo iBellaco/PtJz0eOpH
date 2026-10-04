@@ -1,5 +1,12 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachFilterChip as FilterChip
+
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import androidx.compose.foundation.BorderStroke
@@ -29,7 +36,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -99,7 +106,7 @@ fun AnimatedAdminActionButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
+        targetValue = if (isPressed && !com.example.ui.components.LocalCoachButtonAnimation.current) 0.92f else 1f,
         animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f),
         label = "AdminBtnScale"
     )
@@ -134,7 +141,7 @@ fun AnimatedAdminOutlinedButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
+        targetValue = if (isPressed && !com.example.ui.components.LocalCoachButtonAnimation.current) 0.92f else 1f,
         animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f),
         label = "AdminOutlinedBtnScale"
     )
@@ -764,7 +771,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { showCpmFromNotices = true },
+                        .coachClickable { showCpmFromNotices = true },
                     color = Color(0xFF00FF66).copy(alpha = 0.12f),
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.2.dp, Color(0xFF00FF66).copy(alpha = 0.5f))
@@ -810,7 +817,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { copyToClipboard("Medida Horizontal", "1920x1080") },
+                                .coachClickable { copyToClipboard("Medida Horizontal", "1920x1080") },
                             color = HextechSurfaceVariant,
                             shape = RoundedCornerShape(6.dp),
                             border = BorderStroke(1.dp, HextechCyan.copy(alpha = 0.4f))
@@ -836,7 +843,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { copyToClipboard("Medida Vertical", "1080x1920") },
+                                .coachClickable { copyToClipboard("Medida Vertical", "1080x1920") },
                             color = HextechSurfaceVariant,
                             shape = RoundedCornerShape(6.dp),
                             border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.4f))
@@ -1413,7 +1420,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     textDecoration = TextDecoration.Underline,
                                     modifier = Modifier
                                         .padding(top = 4.dp)
-                                        .clickable { showManualVideoUrlInput = true }
+                                        .coachClickable { showManualVideoUrlInput = true }
                                 )
                             }
                         }
@@ -1597,7 +1604,7 @@ fun AdminNoticeConfigDialog(onDismiss: () -> Unit) {
                                     textDecoration = TextDecoration.Underline,
                                     modifier = Modifier
                                         .padding(top = 4.dp)
-                                        .clickable { showManualExpandedUrlInput = true }
+                                        .coachClickable { showManualExpandedUrlInput = true }
                                  )
                             }
                         }
@@ -2238,7 +2245,7 @@ fun EnhancedUserManagementPanel(
 
                 if (isAdminUserForRequests && pendingRequestsCount > 0) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Surface(
+                    com.example.ui.components.CoachClickableSurface(
                         onClick = { showRequestsDialog = true },
                         color = HextechGold.copy(alpha = 0.12f),
                         shape = RoundedCornerShape(10.dp),
@@ -2450,7 +2457,7 @@ private fun AdminKpiCards(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { if (!isRefreshing) onRefresh() }
+                    modifier = Modifier.coachClickable { if (!isRefreshing) onRefresh() }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -2664,7 +2671,7 @@ fun EnhancedUserAdminCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable {
+                        modifier = Modifier.coachClickable {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             clipboard.setPrimaryClip(ClipData.newPlainText("Usuario" , name))
                             Toast.makeText(context, com.example.util.appTr("Usuario copiado: $name"), Toast.LENGTH_SHORT).show()
@@ -2702,7 +2709,7 @@ fun EnhancedUserAdminCard(
                             fontSize = 11.5.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.clickable {
+                            modifier = Modifier.coachClickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboard.setPrimaryClip(ClipData.newPlainText("Correo" , email))
                                 Toast.makeText(context, com.example.util.appTr("Correo copiado: $email"), Toast.LENGTH_SHORT).show()
@@ -2719,7 +2726,7 @@ fun EnhancedUserAdminCard(
                         // UID copiable con un toque
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable {
+                            modifier = Modifier.coachClickable {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 clipboard.setPrimaryClip(ClipData.newPlainText("UID" , uid))
                                 Toast.makeText(context, com.example.util.appTr("UID copiado"), Toast.LENGTH_SHORT).show()
@@ -3516,7 +3523,7 @@ fun UserDetailManagementDialog(
                                         primaryRoles.forEach { targetRole ->
                                             val isSelected = (currentRole.equals(targetRole.id, ignoreCase = true) && (!currentBanned || targetRole == AppUserRole.BANNED))
 
-                                            Surface(
+                                            com.example.ui.components.CoachClickableSurface(
                                                 onClick = {
                                                     if (!isSelected && !isChangingRole && isAdmin) {
                                                         roleToConfirm = targetRole
@@ -3682,7 +3689,7 @@ fun UserDetailManagementDialog(
                                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                     // Opción para quitar/limpiar rol secundario
                                     val isSecondaryEmpty = currentSecondaryRole.isBlank()
-                                    Surface(
+                                    com.example.ui.components.CoachClickableSurface(
                                         onClick = {
                                             if (!isSecondaryEmpty && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
                                                 secondaryRoleToConfirm = AppUserRole.FREE
@@ -3730,7 +3737,7 @@ fun UserDetailManagementDialog(
                                     secondaryRoles.forEach { targetRole ->
                                         val isSelected = currentSecondaryRole.equals(targetRole.id, ignoreCase = true)
 
-                                        Surface(
+                                        com.example.ui.components.CoachClickableSurface(
                                             onClick = {
                                                 if (!isSelected && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
                                                     secondaryRoleToConfirm = targetRole
@@ -5059,7 +5066,7 @@ fun AdminBroadcastAnnouncementDialog(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { isUrgent = !isUrgent }
+                    modifier = Modifier.coachClickable { isUrgent = !isUrgent }
                 ) {
                     Checkbox(
                         checked = isUrgent,
@@ -5072,7 +5079,7 @@ fun AdminBroadcastAnnouncementDialog(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { sendNotification = !sendNotification }
+                    modifier = Modifier.coachClickable { sendNotification = !sendNotification }
                 ) {
                     Checkbox(
                         checked = sendNotification,

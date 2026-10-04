@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import android.app.Activity
@@ -22,7 +25,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -634,9 +637,9 @@ fun NoticeMediaViewer(
                     .fillMaxSize()
                     .then(
                         if (onImageClick != null) {
-                            Modifier.clickable { onImageClick() }
+                            Modifier.coachClickable { onImageClick() }
                         } else if (!isFullscreen && onExpand != null) {
-                            Modifier.clickable { onExpand() }
+                            Modifier.coachClickable { onExpand() }
                         } else Modifier
                     ),
                 contentAlignment = Alignment.Center
@@ -1258,7 +1261,7 @@ fun NoticeMediaFullscreenDialog(
                     .fillMaxSize()
                     .then(
                         if (!isVideo && externalUrl.isNotBlank()) {
-                            Modifier.clickable { openLinkAction() }
+                            Modifier.coachClickable { openLinkAction() }
                         } else Modifier
                     ),
                 contentAlignment = Alignment.Center
@@ -1379,7 +1382,7 @@ fun NoticeMediaFullscreenDialog(
                         .scale(pulseScale)
                         .background(HextechDarkBg.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
                         .border(1.dp, HextechGold.copy(alpha = 0.85f), RoundedCornerShape(20.dp))
-                        .clickable { openLinkAction() }
+                        .coachClickable { openLinkAction() }
                         .padding(horizontal = 16.dp, vertical = 7.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {

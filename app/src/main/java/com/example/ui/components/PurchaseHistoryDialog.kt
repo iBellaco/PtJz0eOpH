@@ -7,7 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -284,7 +284,7 @@ fun PurchaseHistoryDialog(
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(if (isSelected) HextechCyan else HextechSurfaceVariant)
                                 .border(1.dp, if (isSelected) HextechCyan else HextechCardBorder, RoundedCornerShape(8.dp))
-                                .clickable { selectedFilter = key }
+                                .coachClickable { selectedFilter = key }
                                 .padding(vertical = 6.dp),
                             contentAlignment = Alignment.Center
                         ) {

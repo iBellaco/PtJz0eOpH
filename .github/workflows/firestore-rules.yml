@@ -8,6 +8,7 @@ on:
 permissions:
   actions: write
   contents: read
+  id-token: write
 jobs:
   rules:
     runs-on: ubuntu-latest
@@ -27,9 +28,62 @@ jobs:
         working-directory: tests/firestore
         run: npm test
 
+  deploy:
+    needs: rules
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check cloud deployment connection
+        id: connection
+        env:
+          SERVICE_ACCOUNT: ${{ secrets.COACH_FIREBASE_SERVICE_ACCOUNT || secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          IDENTITY_PROVIDER: ${{ vars.COACH_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          SERVICE_ACCOUNT_EMAIL: ${{ vars.COACH_FIREBASE_SERVICE_ACCOUNT_EMAIL }}
+        run: |
+          if [ -n "$IDENTITY_PROVIDER" ] && [ -n "$SERVICE_ACCOUNT_EMAIL" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo 'method=identity' >> "$GITHUB_OUTPUT"
+          elif [ -n "$SERVICE_ACCOUNT" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo 'method=account' >> "$GITHUB_OUTPUT"
+          elif [ -n "$FIREBASE_TOKEN" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo 'method=token' >> "$GITHUB_OUTPUT"
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '::warning::Permisos comprobados, pero no publicados: falta configurar la conexión de despliegue.'
+            echo 'La publicación de permisos queda pendiente hasta configurar la conexión de despliegue.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Authenticate deployment through workload identity
+        if: steps.connection.outputs.method == 'identity'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.COACH_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.COACH_FIREBASE_SERVICE_ACCOUNT_EMAIL }}
+      - name: Authenticate deployment through configured account
+        if: steps.connection.outputs.method == 'account'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.COACH_FIREBASE_SERVICE_ACCOUNT || secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - uses: actions/setup-node@v4
+        if: steps.connection.outputs.available == 'true'
+        with:
+          node-version: '20'
+      - name: Install deployment CLI
+        if: steps.connection.outputs.available == 'true'
+        working-directory: tests/firestore
+        run: npm ci --no-audit --no-fund
+      - name: Publish verified cloud permissions
+        if: steps.connection.outputs.available == 'true'
+        env:
+          FIREBASE_TOKEN: ${{ steps.connection.outputs.method == 'token' && secrets.FIREBASE_TOKEN || '' }}
+        run: tests/firestore/node_modules/.bin/firebase deploy --only firestore:rules --project wild-rift-drafting --non-interactive
+
   cleanup-history:
     if: always()
-    needs: [rules]
+    needs: [rules, deploy]
     runs-on: ubuntu-latest
     concurrency:
       group: coach-actions-history

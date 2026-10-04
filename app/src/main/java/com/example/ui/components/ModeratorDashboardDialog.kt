@@ -1,12 +1,16 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachButton as Button
+import com.example.ui.components.CoachOutlinedButton as OutlinedButton
+import com.example.ui.components.CoachIconButton as IconButton
+
 import com.example.util.tr
 
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -368,7 +372,7 @@ fun ModeratorUserListPanel() {
                     val isVerified = isUserVerified(user)
                     val secondaryRole = (user["secondaryRole"] as? String ?: user["secRole"] as? String ?: "").trim()
 
-                    Surface(
+                    com.example.ui.components.CoachClickableSurface(
                         onClick = { selectedUserForProposal = user },
                         color = HextechSurface,
                         shape = RoundedCornerShape(10.dp),
@@ -645,7 +649,7 @@ fun ModeratorUserProposalDialog(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(if (isSelected) HextechGold.copy(alpha = 0.12f) else Color.Transparent)
-                                .clickable { targetSecondaryRole = roleId }
+                                .coachClickable { targetSecondaryRole = roleId }
                                 .padding(horizontal = 10.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween

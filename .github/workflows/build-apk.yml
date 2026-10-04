@@ -300,7 +300,7 @@ jobs:
             shutil.copy2(file, target / file.name)
         for file in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml'):
             shutil.copy2(file, target / file.name)
-        names = ['champion-situational-boot', 'champion-premium', 'champion-guest', 'champion-registered', 'component-catalog', 'component-item-tear_of_the_goddess', 'component-item-quicksilver_sash', 'component-item-bramble_vest', 'component-item-mejais_soulstealer', 'sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
+        names = ['draft-random', 'champion-situational-boot', 'champion-premium', 'champion-guest', 'champion-registered', 'component-catalog', 'component-item-tear_of_the_goddess', 'component-item-quicksilver_sash', 'component-item-bramble_vest', 'component-item-mejais_soulstealer', 'sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
                  'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
                  'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
                  'premium-editor', 'premium-status', 'creator-reader',
@@ -350,7 +350,8 @@ jobs:
         emulator-boot-timeout: 300
         script: |
           python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
-          python3 tools/verify-native-ocr-device.py
+            python3 tools/verify-native-ocr-device.py
+            python3 tools/verify-device-reinstall.py
           python3 tools/check-draft-selection-device.py
           python3 tools/audit-portuguese-device.py
     - name: Upload installed APK Portuguese evidence

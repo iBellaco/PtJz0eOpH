@@ -1,5 +1,9 @@
 package com.example.ui.components
 
+import com.example.ui.components.CoachAssistChip as AssistChip
+
+import com.example.ui.components.CoachTextButton as TextButton
+
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
