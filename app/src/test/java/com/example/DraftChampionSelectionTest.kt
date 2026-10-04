@@ -83,10 +83,17 @@ class DraftChampionSelectionTest(private val language: String) {
     }
 
     @Test fun administratorCanFillEverySlotWithDistinctPrimaryLaneChampions() {
-        setRole("admin")
         compose.setContent { MyApplicationTheme(animateButtons = true) {
             MetaAndDraftScreen(mode = MetaScreenMode.DRAFTING, userMainRole = LaneRole.MID, onNavigateBack = {})
         } }
+        // Initial anonymous-auth callbacks run first. Then simulate the account's
+        // confirmed role arriving, just as the profile listener does after login.
+        compose.waitForIdle()
+        compose.runOnIdle { setRole("admin") }
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithTag("random_draft_button").fetchSemanticsNodes().size == 1
+        }
+        assertEquals("admin", com.example.util.SubscriptionManager.userRole.value)
         compose.onNodeWithTag("random_draft_button").performScrollTo().performClick()
         compose.waitForIdle()
         val all = DraftSessionManager.allySlots + DraftSessionManager.enemySlots
