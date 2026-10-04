@@ -14,6 +14,12 @@ data class SubscriptionRecord(
     val amount: String = "",
     val source: String = ""
 ) {
+    val isRevocation: Boolean
+        get() = source == "ADMIN_REVOCATION" ||
+            listOf("revoc", "retirad", "cancelad").any { marker ->
+                planName.contains(marker, ignoreCase = true) || status.contains(marker, ignoreCase = true)
+            }
+
     val isDeduction: Boolean
         get() = amount.startsWith("-") ||
                 status.contains("Descontad", ignoreCase = true) ||

@@ -17,10 +17,6 @@ object SubscriptionHistoryManager {
             ?: FirebaseAuth.getInstance().currentUser?.uid
             ?: return emptyList()
 
-        val targetEmail = (userEmail
-            ?: AuthManager.getAuth()?.currentUser?.email
-            ?: FirebaseAuth.getInstance().currentUser?.email)?.trim()
-
         val db = FirebaseFirestore.getInstance()
         val records = mutableListOf<SubscriptionRecord>()
         val seenIds = mutableSetOf<String>()
@@ -43,35 +39,8 @@ object SubscriptionHistoryManager {
             Log.e(TAG, "Error fetching subscription history for uid: $targetUid", e)
         }
 
-        // 2. Cross-reference other UID documents that share the same email (e.g. duplicate accounts)
-        if (!targetEmail.isNullOrBlank() && com.example.data.SupportTicketAccess.isAdmin()) {
-            try {
-                val emailMatches = db.collection("users")
-                    .whereEqualTo("email", targetEmail)
-                    .get()
-                    .await()
-
-                for (userDoc in emailMatches.documents) {
-                    if (userDoc.id != targetUid) {
-                        val otherSubSnap = db.collection("users").document(userDoc.id)
-                            .collection("subscription_history")
-                            .get()
-                            .await()
-
-                        for (doc in otherSubSnap.documents) {
-                            SubscriptionRecord.fromDocument(doc)?.let { record ->
-                                if (seenIds.add(record.id)) {
-                                    records.add(record)
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Error cross-referencing subscription history by email: $targetEmail", e)
-            }
-        }
-
+        // History belongs to one authenticated UID. Equal emails never authorize merging
+        // transactions from another account (including the account viewing this dialog).
         // Gifts are committed with the account update, including on deployments that
         // only permit the server to write the billing history subcollection.
         try {

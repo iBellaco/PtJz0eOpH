@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, getCountFromServer, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment, onSnapshot } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8080, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
 const db = uid => env.authenticatedContext(uid, { email: `${uid}@test.invalid` }).firestore();
 const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
@@ -640,6 +640,26 @@ try {
     assert.equal((await getDoc(doc(db(uid),`streamer_click_metrics/${id}`))).data().clickCount,1);
     assert.equal((await getDoc(doc(db(uid),`streamer_requests/${uid}/history/${id}`))).data().status,'APPROVED');
     assert.equal((await getDoc(doc(db(uid),`users/${uid}/messages/streamer_review_${id}`))).data().isRead,false);
+  });
+  await test('authorized direct-parent statistics include inbox history and publication records', async()=>{
+    await env.withSecurityRulesDisabled(async context=>{
+      const store=context.firestore();
+      await setDoc(doc(store,'users/stats-target'),{role:'free',blueEssence:0,orangeEssence:100});
+      await setDoc(doc(store,'users/stats-target/messages/inbox-one'),{title:'Mensaje'});
+      await setDoc(doc(store,'users/stats-target/subscription_history/gift-one'),{amount:'+100 EN',source:'ADMIN_ESSENCE_ADJUSTMENT'});
+      await setDoc(doc(store,'users/stats-target/subscription_history/removed-one'),{source:'ADMIN_REVOCATION',durationMillis:0});
+      await setDoc(doc(store,'streamer_requests/stats-target'),{userId:'stats-target',status:'PENDING'});
+      await setDoc(doc(store,'streamer_requests/stats-target/history/publication-one'),{status:'ENDED'});
+    });
+    for(const [path,expected] of [['users/stats-target/messages',1],['users/stats-target/subscription_history',2],['streamer_requests/stats-target/history',1]]) {
+      const rows=await assertSucceeds(getDocs(collection(admin,path)));
+      assert.equal(rows.size,expected);
+      const aggregate=await assertSucceeds(getCountFromServer(collection(admin,path)));
+      assert.equal(aggregate.data().count,expected);
+      await assertFails(getDocs(collection(moderator,path)));
+    }
+    const target=(await assertSucceeds(getDoc(doc(admin,'users/stats-target')))).data();
+    assert.equal(target.blueEssence,0);assert.equal(target.orangeEssence,100);
   });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }
