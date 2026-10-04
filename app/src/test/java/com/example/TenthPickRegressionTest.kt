@@ -134,6 +134,46 @@ class TenthPickRegressionTest {
         assertEquals(LiteRTVisionClassifier.EngineStatus.WAITING_FOR_TENTH_PICK, report.status)
     }
 
+    @Test fun nineHudSelectionsRecoverATransientOcrGapBeforeFinalConfirmation() = runBlocking {
+        val allies = (0..4).map { Champion(id = "ally$it") }
+        val enemies = (0..3).map { Champion(id = "enemy$it") }
+        allies.forEachIndexed { i, champion -> DraftVisionScanner.allySlotConfirmedChampions[i] = champion }
+        enemies.forEachIndexed { i, champion -> DraftVisionScanner.enemySlotConfirmedChampions[i] = champion }
+        DraftVisionScanner.allySlotConfirmedChampions[3] = null
+        val turn = DraftPickTurn(10, false, 4)
+        assertEquals(8, DraftVisionScanner.getConfirmedPicksExcept(turn).size)
+        val recovered = DraftVisionScanner.getConfirmedPicksExcept(turn, allies + enemies)
+        assertEquals(9, recovered.size)
+        LiteRTVisionClassifier.reset()
+        LiteRTVisionClassifier.manuallyConfirmTenthPick(vi)
+        val recognized = LiteRTVisionClassifier.executeTenthPickInference(null, false,
+            recovered.map { it.id }.toSet(), recovered.size)
+        val own = enemies.map { it as Champion? } + listOf(null)
+        assertEquals(4, com.example.service.screen.TenthPickHudPolicy.targetIndex(
+            LiteRTVisionClassifier.reportFlow.value.isConfirmed, recognized?.first, own, allies, emptySet()))
+        assertEquals(enemies, own.filterNotNull())
+    }
+
+    @Test fun finalHudCommitPreservesTheOtherNineAndManualLocksOnBothTeams() {
+        val own = listOf<Champion?>(Champion(id="a"), null, Champion(id="b"), Champion(id="c"), Champion(id="d"))
+        val other = (0..4).map { Champion(id="other$it") }
+        val policy = com.example.service.screen.TenthPickHudPolicy
+        assertEquals(1, policy.targetIndex(true, vi, own, other, emptySet(), expectedIndex=1))
+        assertNull(policy.targetIndex(false, vi, own, other, emptySet()))
+        assertNull(policy.targetIndex(true, vi, own, other, setOf(1)))
+        assertNull(policy.targetIndex(true, vi, own, other, emptySet(), expectedIndex=4))
+        assertNull(policy.targetIndex(true, other[0], own, other, emptySet()))
+        assertNull(policy.targetIndex(true, vi, own, other.drop(1), emptySet()))
+        assertNull(policy.targetIndex(true, vi, other, own, emptySet()))
+    }
+
+    @Test fun incompleteOrDuplicatedHudCannotInflateTheEarlierPickCount() {
+        val picks = (0..7).map { Champion(id="picked$it") }
+        val turn = DraftPickTurn(10, false, 4)
+        assertTrue(DraftVisionScanner.getConfirmedPicksExcept(turn, picks).isEmpty())
+        assertTrue(DraftVisionScanner.getConfirmedPicksExcept(turn, picks + picks.first()).isEmpty())
+    }
+
     @Test
     fun fullChampionNamesKeepViSeparateFromViktorAndSummonerText() {
         val viktor = Champion(id = "viktor", name = "Viktor")

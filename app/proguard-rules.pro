@@ -117,3 +117,8 @@
 }
 -keep class com.example.service.** { *; }
 -dontwarn androidx.work.**
+
+# Exercise the installed history UI in a real service-style window, including its theme.
+-keep class com.example.ui.screens.DraftHistoryScreenKt { public static void DraftHistoryScreen(...); }
+-keep class com.example.ui.theme.ThemeKt { public static void MyApplicationTheme(...); }
+-keep class com.example.util.AppLanguage { *; }

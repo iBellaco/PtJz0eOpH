@@ -1,11 +1,13 @@
 """Exercise actual draft fields and the champion picker in the installed APK."""
 from pathlib import Path
 import subprocess
+import os
 
 # Share the installed audit's language setup and hierarchy helpers, stopping at home.
 source = Path("tools/audit-portuguese-device.py").read_text()
 prefix = source.split('tap("Informação")')[0]
 try:
+    os.environ["COACH_AUDIT_LANGUAGE"] = "pt"
     exec(compile(prefix, "tools/audit-portuguese-device.py", "exec"), globals())
     adb("logcat", "-c")
     tap("Seleção")

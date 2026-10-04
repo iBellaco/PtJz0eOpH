@@ -4133,7 +4133,7 @@ fun DraftAnalysisTab(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = if (isOverlay) Modifier else Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                         if (activeRole != null) {
                             Image(
                                 painter = painterResource(id = activeRole.iconResId),
@@ -4175,6 +4175,8 @@ fun DraftAnalysisTab(
                             color = HextechCyan,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            softWrap = false,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
@@ -4207,12 +4209,14 @@ fun DraftAnalysisTab(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(modifier = if (isOverlay) Modifier else Modifier.weight(1f)) {
                         Text(
                             text = com.example.util.tr(if (isFirstPick) tr("1er Pick") else tr("Counter Pick")),
                             color = if (isFirstPick) HextechGold else HextechCyan,
                             fontSize = 11.5.sp,
-                            fontWeight = FontWeight.Black
+                            fontWeight = FontWeight.Black,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = com.example.util.tr(if (isFirstPick) tr("Blind Pick") else tr("Adaptativo")),
@@ -4255,13 +4259,19 @@ fun DraftAnalysisTab(
                 firstPickCard()
             }
         } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) { roleActivePill() }
-                androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) { firstPickCard() }
+            androidx.compose.foundation.layout.BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                if (maxWidth < 360.dp) {
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        roleActivePill()
+                        firstPickCard()
+                    }
+                } else {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) { roleActivePill() }
+                        androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) { firstPickCard() }
+                    }
+                }
             }
         }
 
