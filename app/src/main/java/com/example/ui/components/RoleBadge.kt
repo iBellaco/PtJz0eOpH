@@ -17,6 +17,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -118,9 +120,9 @@ fun RoleBadge(
             RoleBadgeSize.LARGE -> BadgeMetrics(13.5.sp, 13.dp, 6.dp, 15.sp)
         }
 
-        val badgeEmoji = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) "⚠️" else currentRoleState.emoji
-        val badgeText = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) "EXPIRA PRONTO" else currentRoleState.displayName.uppercase()
-        val badgeColor = if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) Color(0xFFEF4444) else currentRoleState.primaryColor
+        val badgeEmoji = currentRoleState.emoji
+        val badgeText = currentRoleState.displayName.uppercase()
+        val badgeColor = currentRoleState.primaryColor
 
         val baseBg = badgeColor.copy(alpha = 0.16f)
         val highlightBg = badgeColor.copy(alpha = (0.35f * pulseAlpha).coerceIn(0.18f, 0.45f))
@@ -137,35 +139,51 @@ fun RoleBadge(
             end = Offset(shimmerOffset + 80f, 60f)
         )
 
-        Box(
-            modifier = modifier
-                .scale(pulseScale)
-                .clip(RoundedCornerShape(6.dp))
-                .background(shimmerBrush)
-                .border(
-                    width = if (size == RoleBadgeSize.LARGE) 1.5.dp else 1.dp,
-                    color = ambientBorderColor,
-                    shape = RoundedCornerShape(6.dp)
-                )
-                .padding(horizontal = metrics.hPad, vertical = metrics.vPad),
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+        Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Box(
+                modifier = Modifier
+                    .scale(pulseScale)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(shimmerBrush)
+                    .border(
+                        width = if (size == RoleBadgeSize.LARGE) 1.5.dp else 1.dp,
+                        color = ambientBorderColor,
+                        shape = RoundedCornerShape(6.dp)
+                    )
+                    .padding(horizontal = metrics.hPad, vertical = metrics.vPad),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = com.example.util.tr(badgeEmoji),
-                    fontSize = metrics.iconSize,
-                    modifier = Modifier.padding(end = 4.dp)
-                )
-                Text(
-                    text = com.example.util.tr(badgeText),
-                    color = badgeColor,
-                    fontSize = metrics.fontSize,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 0.5.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = com.example.util.tr(badgeEmoji),
+                        fontSize = metrics.iconSize,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                    Text(
+                        text = com.example.util.tr(badgeText),
+                        color = badgeColor,
+                        fontSize = metrics.fontSize,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+            }
+            if (isExpiringSoon && currentRoleState != AppUserRole.ADMIN && !isBanned) {
+                val warning = Color(0xFFEF4444)
+                Box(Modifier.testTag("role_expiry_warning")
+                    .clip(RoundedCornerShape(6.dp)).background(warning.copy(alpha = 0.16f))
+                    .border(1.dp, warning.copy(alpha = 0.65f), RoundedCornerShape(6.dp))
+                    .padding(horizontal = metrics.hPad, vertical = metrics.vPad)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("⚠️", fontSize = metrics.iconSize, modifier = Modifier.padding(end = 4.dp))
+                        Text(com.example.util.tr("EXPIRA PRONTO"), color = warning,
+                            fontSize = metrics.fontSize, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
     }

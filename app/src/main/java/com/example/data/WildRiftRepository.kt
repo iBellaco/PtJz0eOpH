@@ -167,7 +167,12 @@ object WildRiftRepository {
 
     private val baseChampions = mutableListOf<Champion>()
     val baseChampionsList: List<Champion> get() = baseChampions.toList()
-    fun getBaseChampion(idOrName: String): Champion? = baseChampions.find { it.id.equals(idOrName, ignoreCase = true) || it.name.equals(idOrName, ignoreCase = true) }
+    private fun canonicalChampionId(id: String): String =
+        if (id.equals("nunu_and_willump", ignoreCase = true)) "nunu_willump" else id
+
+    fun getBaseChampion(idOrName: String): Champion? = baseChampions.find {
+        it.id.equals(canonicalChampionId(idOrName), ignoreCase = true) || it.name.equals(idOrName, ignoreCase = true)
+    }
     var activeRegionName by mutableStateOf(com.example.data.sync.MetaRegion.DEFAULT)
     private var chineseChampions: List<Champion> = emptyList()
     private val regionalChampions = mutableMapOf<String, List<Champion>>()
@@ -321,7 +326,7 @@ object WildRiftRepository {
 
     fun getChampionById(id: String): Champion? {
         if (id.equals("empty", ignoreCase = true)) return EMPTY_CHAMPION
-        return champions.find { it.id.equals(id, ignoreCase = true) }
+        return champions.find { it.id.equals(canonicalChampionId(id), ignoreCase = true) }
     }
 
     var syncCycle: Int = 0

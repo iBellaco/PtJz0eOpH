@@ -259,7 +259,7 @@ jobs:
       env:
         CI: 'true'
       run: gradle :app:testDebugUnitTest --tests com.example.HistoryConsistencyTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest
-        --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests
+        --tests com.example.ChampionNameResolverRegressionTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests
         com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests
         com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.BuildCoachingRegressionTest --tests com.example.DraftScoreFormatTest --tests com.example.SupportAndStreamerPolicyTest
         --tests com.example.WildRiftItemsCatalogTest --stacktrace --no-daemon
@@ -308,7 +308,7 @@ jobs:
             shutil.copy2(file, target / file.name)
         for file in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml'):
             shutil.copy2(file, target / file.name)
-        names = ['profile-admin-secondary-frame', 'profile-admin-image-frame', 'history-consistency', 'overlay-history', 'draft-narrow', 'draft-random', 'champion-situational-boot', 'champion-premium', 'champion-guest', 'champion-registered', 'component-catalog', 'component-item-tear_of_the_goddess', 'component-item-quicksilver_sash', 'component-item-bramble_vest', 'component-item-mejais_soulstealer', 'sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
+        names = ['profile-admin-expiring-roles', 'profile-admin-secondary-frame', 'profile-admin-image-frame', 'history-consistency', 'overlay-history', 'draft-narrow', 'draft-random', 'champion-situational-boot', 'champion-premium', 'champion-guest', 'champion-registered', 'component-catalog', 'component-item-tear_of_the_goddess', 'component-item-quicksilver_sash', 'component-item-bramble_vest', 'component-item-mejais_soulstealer', 'sponsor-layout', 'sponsor-read', 'managed-user', 'history-circle', 'history-receipts', 'redemption-entry', 'premium-plans-overview', 'creator-after-delete-pt', 'champion-guest-account-hint',
                  'champion-item-advice', 'champion-rune-advice', 'champion-spell-advice',
                  'streamer-live-animation', 'streamer-live-name-preserved', 'streamer-history', 'user-notification',
                  'premium-editor', 'premium-status', 'creator-reader',
