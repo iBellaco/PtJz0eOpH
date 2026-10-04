@@ -21,7 +21,7 @@ class ValidatedApkTest(unittest.TestCase):
             if '/jobs?' in path:
                 return {'jobs': [{'name': name, 'conclusion': 'failure' if failed_job and name == 'installed-audit' else 'success'} for name in validated.REQUIRED_JOBS]}
             if '/artifacts?' in path:
-                return {'artifacts': [{'name': 'app-debug.apk', 'expired': expired}]}
+                return {'artifacts': [{'name': 'app-release.apk', 'expired': expired}]}
             self.fail(path)
         return validated.find(self.repository, 'b' * 40, request)
 

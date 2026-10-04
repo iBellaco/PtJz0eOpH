@@ -33,7 +33,7 @@ jobs:
     needs: find-validated-apk
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
     - &id001
       name: Checkout repository
@@ -41,7 +41,9 @@ jobs:
       with:
         fetch-depth: 1
     - name: Validate signing publication policy
-      run: python3 -m unittest discover -s .github/scripts -p 'test_*signing.py'
+      run: |
+        python3 -m unittest discover -s .github/scripts -p 'test_*signing.py'
+        python3 -m unittest discover -s .github/scripts -p test_release_obfuscation.py
     - name: Check publication signing configuration
       if: github.ref == 'refs/heads/main'
       env:
@@ -153,14 +155,14 @@ jobs:
         python3 tools/import-component-icons.py --check
         python3 tools/update-champion-builds.py --check
         bash tools/audit-portuguese.sh
-    - name: Build Debug APK
+    - name: Build obfuscated release APK
       env:
         CI: 'true'
       run: |
         rm -rf app/build/outputs/apk/ || true
-        gradle :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace --no-daemon -x lint -x lintVitalRelease
+        gradle :app:assembleRelease :app:assembleReleaseAndroidTest -PcoachInstrumentedBuildType=release --stacktrace --no-daemon -x lint -x lintVitalRelease
 
-        EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
+        EXPECTED_APK="app/build/outputs/apk/release/app-release.apk"
         if [ ! -f "$EXPECTED_APK" ]; then
           echo "Searching for any generated apk files..."
           find app/build/outputs/ -name "*.apk" || true
@@ -171,23 +173,25 @@ jobs:
       env:
         COACH_EXPECTED_APK_CERT: ${{ steps.signing.outputs.certificate_sha256 }}
       run: |
-        EXPECTED_APK="app/build/outputs/apk/debug/app-debug.apk"
+        EXPECTED_APK="app/build/outputs/apk/release/app-release.apk"
         if [ -f "$EXPECTED_APK" ] && [ -s "$EXPECTED_APK" ]; then
-          echo "Confirmed valid debug APK at: $EXPECTED_APK"
+          echo "Confirmed valid obfuscated release APK at: $EXPECTED_APK"
           ls -lh "$EXPECTED_APK"
         else
           echo "ERROR: Expected APK not found at $EXPECTED_APK"
           find app/build/outputs/ -name "*.apk" || true
           exit 1
         fi
+        python3 .github/scripts/verify-release-obfuscation.py --build
         python3 .github/scripts/verify-apk-signing.py
-    - name: Upload debug APK artifact
+    - name: Upload obfuscated release APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug.apk
+        name: app-release.apk
         path: |
-          app/build/outputs/apk/debug/app-debug.apk
-          app/build/outputs/apk/debug/coach-apk-provenance.json
+          app/build/outputs/apk/release/app-release.apk
+          app/build/outputs/apk/release/coach-apk-provenance.json
+          app/build/outputs/apk/release/coach-obfuscation-proof.json
         if-no-files-found: error
         retention-days: 14
     - name: Upload APKs for the parallel device audit
@@ -221,9 +225,9 @@ jobs:
         mkdir -p "$ASSET_DIR"
         VERSION_NAME="${{ steps.app_version.outputs.version_name }}"
         VERSION_CODE="${{ steps.app_version.outputs.version_code }}"
-        ASSET_NAME="Coach-v${VERSION_NAME}-build-${VERSION_CODE}-debug.apk"
+        ASSET_NAME="Coach-v${VERSION_NAME}-build-${VERSION_CODE}-obfuscated.apk"
         ASSET_PATH="${ASSET_DIR}/${ASSET_NAME}"
-        cp app/build/outputs/apk/debug/app-debug.apk "$ASSET_PATH"
+        cp app/build/outputs/apk/release/app-release.apk "$ASSET_PATH"
         echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
         echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
     - name: Publish early review APK
@@ -346,9 +350,9 @@ jobs:
         emulator-boot-timeout: 300
         script: |
           python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
+          python3 tools/verify-native-ocr-device.py
           python3 tools/check-draft-selection-device.py
           python3 tools/audit-portuguese-device.py
-          python3 tools/verify-native-ocr-device.py
     - name: Upload installed APK Portuguese evidence
       if: always()
       uses: actions/upload-artifact@v4
@@ -386,8 +390,8 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: actions/download-artifact@v4
       with:
-        name: app-debug.apk
-        path: app/build/outputs/apk/debug/
+        name: app-release.apk
+        path: app/build/outputs/apk/release/
         run-id: ${{ needs.find-validated-apk.outputs.run_id }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
     - *id002
@@ -424,9 +428,9 @@ jobs:
         mkdir -p "$ASSET_DIR"
         VERSION_NAME="${{ steps.app_version.outputs.version_name }}"
         VERSION_CODE="${{ steps.app_version.outputs.version_code }}"
-        ASSET_NAME="Coach-v${VERSION_NAME}-build-${VERSION_CODE}-debug.apk"
+        ASSET_NAME="Coach-v${VERSION_NAME}-build-${VERSION_CODE}-obfuscated.apk"
         ASSET_PATH="${ASSET_DIR}/${ASSET_NAME}"
-        cp app/build/outputs/apk/debug/app-debug.apk "$ASSET_PATH"
+        cp app/build/outputs/apk/release/app-release.apk "$ASSET_PATH"
         echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
         echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
       if: github.ref == 'refs/heads/main'
@@ -445,7 +449,7 @@ jobs:
         gh release delete "$TAG_NAME" --cleanup-tag -y 2>/dev/null || true
 
         cat << NOTE_EOF > release_notes.md
-        ### Coach - APK de Pruebas (Debug)
+        ### Coach - APK ofuscado (Release)
         - **Versión de la app:** v${{ steps.app_version.outputs.version_name }}
         - **Código de versión:** ${{ steps.app_version.outputs.version_code }}
         - **Ejecución GitHub Actions:** #${{ github.run_number }}

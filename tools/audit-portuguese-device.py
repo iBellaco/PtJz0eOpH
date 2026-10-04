@@ -141,7 +141,7 @@ def enter_search_text(value):
     raise AssertionError('Android did not commit the complete search input: ' + value)
 
 
-adb("install", "-r", "app/build/outputs/apk/debug/app-debug.apk")
+adb("install", "-r", "app/build/outputs/apk/release/app-release.apk")
 adb("shell", "pm", "clear", APP)
 adb("shell", "pm", "grant", APP, "android.permission.POST_NOTIFICATIONS")
 adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")

@@ -24,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 881
-    versionName = "1.1.10.165"
+    versionCode = 882
+    versionName = "1.1.10.166"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -91,6 +91,10 @@ android {
     compose = true
     buildConfig = true
   }
+
+  // Instrument the same R8 variant delivered to users. AGP rewrites test
+  // references with the release mapping; debug tests cannot target it safely.
+  testBuildType = providers.gradleProperty("coachInstrumentedBuildType").getOrElse("debug")
 
   testOptions {
     unitTests {

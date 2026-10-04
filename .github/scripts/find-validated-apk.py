@@ -38,7 +38,7 @@ def find(repository, target_sha, request=api):
         if not REQUIRED_JOBS.issubset(passed):
             continue
         artifacts = request(f"{prefix}/actions/runs/{run['id']}/artifacts?per_page=100")['artifacts']
-        matches = [a for a in artifacts if a.get('name') == 'app-debug.apk' and a.get('expired') is False]
+        matches = [a for a in artifacts if a.get('name') == 'app-release.apk' and a.get('expired') is False]
         if len(matches) != 1:
             continue
         return str(run['id']), run['head_sha']
