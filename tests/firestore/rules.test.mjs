@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment, onSnapshot } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8080, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
 const db = uid => env.authenticatedContext(uid, { email: `${uid}@test.invalid` }).firestore();
 const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
@@ -439,6 +439,60 @@ try {
     await assertFails(updateDoc(doc(guest,'streamer_click_metrics',counterId),{clickCount:increment(1),lastClickedAt:serverTimestamp(),userId:'other'}));
     await assertSucceeds(updateDoc(doc(admin,'system_config','streamer_live'),{entries:[]}));
     await assertFails(updateDoc(doc(guest,'streamer_click_metrics',counterId),{clickCount:increment(1),lastClickedAt:serverTimestamp()}));
+  });
+  await test('approval and durable guest clicks reach the owner live without resetting counters on retry', async () => {
+    const uid='atomic-streamer', id='atomic-publication';
+    await env.withSecurityRulesDisabled(async context => {
+      const store=context.firestore();
+      await setDoc(doc(store,`users/${uid}`),{role:'streamer'});
+      await setDoc(doc(store,'system_config/streamer_live'),{entries:[]});
+    });
+    const owner=db(uid), guest=env.unauthenticatedContext().firestore();
+    const pending={...request(uid),publicationId:id};
+    const submit=writeBatch(owner);
+    submit.set(doc(owner,`streamer_requests/${uid}`),pending);
+    submit.set(doc(owner,`streamer_requests/${uid}/history/${id}`),pending);
+    await assertSucceeds(submit.commit());
+    const seen=[];
+    const unsubscribe=onSnapshot(query(collection(owner,'streamer_click_metrics'),where('userId','==',uid)),snap=>snap.docs.forEach(row=>seen.push(row.data().clickCount)));
+    async function approve() {
+      await runTransaction(admin,async tx=>{
+        const ref=doc(admin,`streamer_requests/${uid}`), registry=doc(admin,'system_config/streamer_live'), metric=doc(admin,`streamer_click_metrics/${id}`);
+        const data=(await tx.get(ref)).data(), live=(await tx.get(registry)).data().entries, counter=await tx.get(metric);
+        if(data.status==='APPROVED'&&live.some(row=>row.publicationId===id)&&counter.exists()) return;
+        assert.equal(data.status,'PENDING');
+        const reviewed=Date.now();
+        tx.set(registry,{entries:[...live,{userId:uid,publicationId:id,channelName:data.channelName,channelUrl:data.channelUrl,platform:data.platform,approvedAtMillis:reviewed}]},{merge:true});
+        if(!counter.exists()) tx.set(metric,{userId:uid,publicationId:id,submittedAtMillis:data.submittedAtMillis,clickCount:0,status:'APPROVED'});
+        tx.update(ref,{status:'APPROVED',verifiedUsingCoach:true,reviewedAtMillis:reviewed});
+        tx.set(doc(admin,`streamer_requests/${uid}/history/${id}`),{...data,status:'APPROVED',verifiedUsingCoach:true,reviewedAtMillis:reviewed});
+        tx.set(doc(admin,`users/${uid}/messages/streamer_review_${id}`),{id:`streamer_review_${id}`,title:'Publicación de streamer',content:'Tu publicación fue aceptada y el canal ya está visible.',tag:'GENERAL',panel:'STREAMER',timestamp:reviewed,isRead:false});
+      });
+    }
+    async function click(eventId) {
+      const event=doc(guest,`streamer_click_metrics/${id}/click_events/${eventId}`);
+      if((await getDoc(event)).exists()) return;
+      const batch=writeBatch(guest);
+      batch.set(event,{publicationId:id,clickedAt:serverTimestamp(),deleteAt:Timestamp.fromMillis(Date.now()+8*86400000)});
+      batch.update(doc(guest,`streamer_click_metrics/${id}`),{clickCount:increment(1),lastClickId:eventId,lastClickedAt:serverTimestamp()});
+      await batch.commit();
+    }
+    try {
+      await assertSucceeds(approve());
+      assert.equal((await getDoc(doc(owner,`streamer_requests/${uid}/history/${id}`))).data().status,'APPROVED');
+      assert.equal((await getDoc(doc(owner,`users/${uid}/messages/streamer_review_${id}`))).data().isRead,false);
+      assert.equal((await getDoc(doc(guest,'system_config/streamer_live'))).data().entries[0].publicationId,id);
+      await assertSucceeds(click('first-open'));
+      await assertSucceeds(click('first-open'));
+      await assertSucceeds(click('second-open'));
+      await assertSucceeds(approve());
+      assert.equal((await getDoc(doc(owner,`streamer_click_metrics/${id}`))).data().clickCount,2);
+      await new Promise((resolve,reject)=>{
+        const timer=setTimeout(()=>{clearInterval(poll);reject(Error('Owner listener missed the live count'));},5000);
+        const poll=setInterval(()=>{if(seen.includes(2)){clearInterval(poll);clearTimeout(timer);resolve();}},20);
+      });
+      assert.ok(seen.includes(0));
+    } finally {unsubscribe();}
   });
   await test('seven day retention permits only expired history and counter deletion by owner or staff', async () => {
     const oldId = 'publication-seven-days-old', oldDate = Date.now()-604800000-1000;

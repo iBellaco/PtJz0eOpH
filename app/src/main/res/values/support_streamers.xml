@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="streamer_permission_error">El servicio no permite sincronizar la publicación y sus métricas. No se confirmó la operación; se necesita restablecer el acceso.</string>
+    <string name="streamer_session_error">No se pudo verificar tu sesión. Vuelve a iniciar sesión para continuar.</string>
     <string name="support_you">Tú</string>
     <string name="support_close_conversation">Cerrar conversación</string>
     <string name="support_close_explanation">Al cerrarla, el usuario ya no podrá responder. El historial se conserva.</string>

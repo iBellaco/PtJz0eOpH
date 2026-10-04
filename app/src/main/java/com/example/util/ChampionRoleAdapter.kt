@@ -30,6 +30,8 @@ data class ChampionBuildOption(
     val coreSpells: List<com.example.data.local.SpellBuildEntry> = emptyList(),
     val situationalSpells: List<com.example.data.local.SpellBuildEntry> = emptyList(),
     val gameplayVideoUri: String? = null,
+    val bootBaseAdvice: String = "",
+    val bootUpgradeAdvice: String = "",
     val situationalBootReasons: Map<String, String> = emptyMap()
 )
 
@@ -654,10 +656,10 @@ object ChampionRoleAdapter {
             val opt1 = ChampionBuildOption(
                 optionNumber = 1,
                 title = b.title.ifBlank { "Build Oficial de Línea ($bRole)" },
-                subtitle = "Línea: $bRole • Análisis Estadístico & IA",
-                source = "Cálculo IA & Estadísticas",
-                badge = "ESTADÍSTICA & IA",
-                tacticalReason = "Build calculada por IA y análisis estadístico para $bRole: 3 Core Items indispensables, opciones situacionales y botas de Nivel 3 adaptadas.",
+                subtitle = "Línea: $bRole • Análisis del coach",
+                source = "Criterio del coach",
+                badge = "CRITERIO COACH",
+                tacticalReason = "Plan del coach para $bRole: 3 Core Items indispensables, opciones situacionales y botas de Nivel 3 adaptadas.",
                 items = cleanCoreItems,
                 bootBase = bBootBase,
                 bootUpgrade = bBootUpgrade,
@@ -694,10 +696,10 @@ object ChampionRoleAdapter {
         val fallbackOpt1 = ChampionBuildOption(
             optionNumber = 1,
             title = "Build Oficial de Línea (${role.shortName})",
-            subtitle = "Línea: ${role.displayName} • Análisis Estadístico & IA",
-            source = "Cálculo IA & Estadísticas",
-            badge = "ESTADÍSTICA & IA",
-            tacticalReason = "Build oficial calculada por IA y análisis estadístico para ${role.displayName}: 3 Core Items de impacto, opciones situacionales y botas de Nivel 3 adaptadas.",
+            subtitle = "Línea: ${role.displayName} • Análisis del coach",
+            source = "Criterio del coach",
+            badge = "CRITERIO COACH",
+            tacticalReason = "Plan del coach para ${role.displayName}: 3 Core Items de impacto, opciones situacionales y botas de Nivel 3 adaptadas.",
             items = defaultBuild8.take(3),
             bootBase = defaultBootBase,
             bootUpgrade = defaultBootUpgrade,

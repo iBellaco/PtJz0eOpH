@@ -48,6 +48,7 @@ data class CustomChampionBuildRecord(
     val championId: String = "",
     val championName: String = "",
     val buildTitle: String = "",
+    val coachAdvice: String = "",
     val role: String = "",
     val coreItems: List<String> = emptyList(),
     val situationalItems: List<String> = emptyList(),
@@ -127,7 +128,8 @@ object CustomChampionBuildsManager {
     }
 
     private fun isBundledOfficialBuild(record: CustomChampionBuildRecord): Boolean {
-        return record.creatorName.contains("Coach IA", ignoreCase = true)
+        return record.creatorName.contains("Coach IA", ignoreCase = true) ||
+            (record.creatorUserId.isBlank() && record.creatorName == "Coach (Criterio Táctico)")
     }
 
     private fun officialBuildKey(record: CustomChampionBuildRecord): String {

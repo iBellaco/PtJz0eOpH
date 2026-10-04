@@ -71,7 +71,11 @@ private fun liveEntries(): Pair<List<Map<String, Any>>, Boolean> {
 private fun operationError(result: Result<Unit>?): String? {
     if (result == null || result.isSuccess) return null
     val cause = generateSequence(result.exceptionOrNull()) { it.cause }.mapNotNull { it.message }.joinToString(" ")
+    val cloudCode = generateSequence(result.exceptionOrNull()) { it.cause }
+        .filterIsInstance<com.google.firebase.firestore.FirebaseFirestoreException>().firstOrNull()?.code
     val id = when {
+        cloudCode == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED -> R.string.streamer_permission_error
+        cloudCode == com.google.firebase.firestore.FirebaseFirestoreException.Code.UNAUTHENTICATED -> R.string.streamer_session_error
         cause.contains("streamer_metrics_error") -> R.string.streamer_metrics_error
         cause.contains("streamer_history_error") -> R.string.streamer_history_error
         cause.contains("streamer_expired") -> R.string.streamer_expired
