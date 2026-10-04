@@ -1254,7 +1254,7 @@ private fun FloatingOverlayContent(
                                     // -----------------------------------------------------------------
                                     // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
                                     // -----------------------------------------------------------------
-                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole, confirmedHudPicks())
+                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks())
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
                                             if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
@@ -1389,7 +1389,7 @@ private fun FloatingOverlayContent(
         coroutineScope.launch(Dispatchers.IO) {
             val bitmap = screenCaptureManager?.captureCurrentFrame()
             if (bitmap != null) {
-                val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, isFirstPick, activeRole, confirmedHudPicks())
+                val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks())
                 withContext(Dispatchers.Main) {
                     if (result.isSuccessful) {
                         // Sincronizar primera selección si se detectó y no ha sido fijada manualmente

@@ -63,6 +63,25 @@ class DraftChampionSelectionTest(private val language: String) {
         (field.get(com.example.util.SubscriptionManager) as kotlinx.coroutines.flow.MutableStateFlow<String>).value = role
     }
 
+    @Test fun savingDraftRequiresACompleteScoreAndOffersOnlyTwoRankedQueues() {
+        var savedScore: String? = null
+        var savedMode: String? = null
+        compose.setContent { MyApplicationTheme {
+            com.example.ui.components.SaveDraftDialog(
+                isOverlay = true, myChampion = null, enemyLaneOpponent = null,
+                userRole = LaneRole.MID, estimatedWinrate = 50.0, onDismiss = {},
+                onSave = { _, _, _, _, _, mode, score -> savedMode = mode; savedScore = score }
+            )
+        } }
+        compose.onNodeWithText("Normal").assertDoesNotExist()
+        compose.onNodeWithTag("draft_score_input").performTextInput("12/2")
+        compose.onNodeWithTag("confirm_save_draft_button").assertIsNotEnabled()
+        compose.onNodeWithTag("draft_score_input").performTextReplacement("12/2/8")
+        compose.onNodeWithTag("confirm_save_draft_button").assertIsEnabled().performClick()
+        assertEquals("12/2/8", savedScore)
+        assertEquals("RANKED", savedMode)
+    }
+
     @After fun release() {
         DraftSessionManager.clearAll()
         CompletableFuture.runAsync { Tasks.await(FirebaseFirestore.getInstance().terminate()) }.get(10, TimeUnit.SECONDS)

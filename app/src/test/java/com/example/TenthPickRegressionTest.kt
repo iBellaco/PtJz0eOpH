@@ -33,6 +33,31 @@ class TenthPickRegressionTest {
         DraftVisionScanner.resetSlotMemory()
     }
 
+    @Test fun lateScanRecoversTheOrderFromEveryUnambiguousDraftPrefix() {
+        for (firstAlly in listOf(true, false)) {
+            val sequence = DraftVisionScanner.getDraftPickSequence(firstAlly)
+            assertEquals(listOf(true, false, false, true, true, false, false, true, true, false),
+                sequence.map { if (firstAlly) it.isAlly else !it.isAlly })
+            assertEquals(!firstAlly, sequence.last().isAlly)
+            for (count in 0..10) {
+                val prefix = sequence.take(count)
+                val allies = prefix.count { it.isAlly }
+                val rivals = count - allies
+                val inferred = com.example.service.screen.DraftPickOrderPolicy.inferFirstPick(allies, rivals)
+                if (count in listOf(1, 3, 5, 7, 9)) assertEquals(firstAlly, inferred)
+                else assertNull(inferred)
+            }
+        }
+        assertNull(com.example.service.screen.DraftPickOrderPolicy.inferFirstPick(2, 0))
+        assertNull(com.example.service.screen.DraftPickOrderPolicy.inferFirstPick(5, 2))
+        assertEquals(true, DraftVisionScanner.recoverFirstPick(5, 4))
+        assertEquals(true, DraftVisionScanner.recoverFirstPick(5, 5))
+        DraftVisionScanner.resetSlotMemory()
+        assertNull(DraftVisionScanner.recoverFirstPick(4, 4))
+        assertEquals(false, DraftVisionScanner.recoverFirstPick(4, 5))
+        assertEquals(false, DraftVisionScanner.recoverFirstPick(5, 5))
+    }
+
     @Test
     fun excludesOnlyTheTargetSlotOnEitherSide() {
         for (isAlly in listOf(true, false)) {

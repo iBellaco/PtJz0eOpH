@@ -309,6 +309,19 @@ try {
     await assertFails(setDoc(doc(db('s2'),'streamer_requests','s2'),{...request('s2'),channelUrl:'https://twitch.tv.evil.com/coach_test'}));
     await assertSucceeds(getDocs(query(collection(admin,'streamer_requests'),where('status','==','PENDING'))));
   });
+  await test('pending streamer requests survive reopening on a second device before review', async () => {
+    const ownerSecondDevice=db('s1'), reviewerSecondDevice=db('admin');
+    const fromFirst=(await getDoc(doc(streamer,'streamer_requests/s1'))).data();
+    const fromSecond=(await assertSucceeds(getDoc(doc(ownerSecondDevice,'streamer_requests/s1')))).data();
+    assert.equal(fromSecond.publicationId,fromFirst.publicationId);
+    assert.equal(fromSecond.status,'PENDING');
+    for (const device of [admin,reviewerSecondDevice]) {
+      const queue=await assertSucceeds(getDocs(query(collection(device,'streamer_requests'),where('status','==','PENDING'))));
+      assert.ok(queue.docs.some(row=>row.id==='s1'&&row.data().publicationId===fromFirst.publicationId));
+    }
+    await assertFails(updateDoc(doc(ownerSecondDevice,'streamer_requests/s1'),{status:'APPROVED'}));
+    assert.equal((await getDoc(doc(reviewerSecondDevice,'streamer_requests/s1'))).data().status,'PENDING');
+  });
   await test('concurrent approvals never exceed five; requests stop at capacity', async () => {
     await setDoc(doc(admin,'system_config','streamer_live'), { entries:[1,2,3,4].map(i=>({userId:`live${i}`,channelName:`Canal ${i}`,channelUrl:'https://kick.com/coach_test'})) });
     const publish = uid => runTransaction(admin, async transaction => {
