@@ -5,7 +5,7 @@ import subprocess
 import zipfile
 import hashlib
 
-apk = Path('app/build/outputs/apk/debug/app-debug.apk')
+apk = Path('app/build/outputs/apk/release/app-release.apk')
 report = Path('app/build/reports/portuguese-device')
 report.mkdir(parents=True, exist_ok=True)
 with zipfile.ZipFile(apk) as archive:
