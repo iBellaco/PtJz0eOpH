@@ -4,37 +4,50 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function account() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function isAdmin() {
+      let acc = account();
+      let role = acc.get('role', '');
+      let sec = acc.get('secondaryRole', '');
+      let border = acc.get('rankBorder', '');
       return signedIn() && (
         request.auth.token.get('admin', false) == true ||
-        request.auth.token.get('email', '').lower() in ['barbadiego695@gmail.com'] ||
-        account().get('admin', false) == true ||
-        account().get('role', '').lower() in ['admin', 'administrador'] ||
-        account().get('secondaryRole', '').lower() in ['admin', 'administrador'] ||
-        account().get('rankBorder', '').lower() in ['admin', 'administrador']
+        request.auth.token.get('email', '').lower() == 'barbadiego695@gmail.com' ||
+        acc.get('admin', false) == true ||
+        role in ['admin', 'ADMIN', 'administrador'] ||
+        sec in ['admin', 'ADMIN', 'administrador'] ||
+        border in ['admin', 'ADMIN', 'administrador']
       );
     }
     function isModerator() {
+      let acc = account();
+      let role = acc.get('role', '');
+      let sec = acc.get('secondaryRole', '');
+      let border = acc.get('rankBorder', '');
       return signedIn() && (
         isAdmin() ||
-        account().get('role', '').lower() in ['moderador', 'moderator'] ||
-        account().get('secondaryRole', '').lower() in ['moderador', 'moderator'] ||
-        account().get('rankBorder', '').lower() in ['moderador', 'moderator']
+        role in ['moderador', 'moderator', 'MODERADOR'] ||
+        sec in ['moderador', 'moderator', 'MODERADOR'] ||
+        border in ['moderador', 'moderator', 'MODERADOR']
       );
     }
     function isStreamer() {
+      let acc = account();
+      let role = acc.get('role', '');
+      let sec = acc.get('secondaryRole', '');
+      let border = acc.get('rankBorder', '');
       return signedIn() && (
         isAdmin() ||
-        account().get('role', '').lower() in ['streamer'] ||
-        account().get('secondaryRole', '').lower() in ['streamer'] ||
-        account().get('rankBorder', '').lower() in ['streamer']
+        role in ['streamer', 'STREAMER'] ||
+        sec in ['streamer', 'STREAMER'] ||
+        border in ['streamer', 'STREAMER']
       );
     }
-    function canRedeemEssence() {
-      return signedIn() && !account().get('banned', false) && account().get('role', '').lower() != 'banned' && account().get('secondaryRole', '').lower() != 'banned' &&
-        (isAdmin() || isModerator() || isStreamer() ||
-         account().get('role', '').lower() in ['creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5'] ||
-         account().get('secondaryRole', '').lower() in ['creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5'] ||
-         account().get('rankBorder', '').lower() in ['creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5']);
+    function canRedeem(data) {
+      let r = data.get('role', '');
+      let s = data.get('secondaryRole', '');
+      let b = data.get('rankBorder', '');
+      return r in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'] ||
+             s in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'] ||
+             b in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'];
     }
     function sponsor(data) {
       let tags = ['PATROCINADOR', 'PATROCINIO', 'SPONSOR', 'PUBLICIDAD', 'PAGO', 'PAYMENT', 'PAGAMENTO'];
@@ -102,7 +115,7 @@ service cloud.firestore {
           && request.resource.data.premiumUntil == base + days * 86400000 && op.premiumUntil == request.resource.data.premiumUntil
           && request.resource.data.subscriptionPlan == op.receipt.planName
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([field, 'premiumUntil', 'subscriptionPlan', 'lastEconomyOperation'])) ||
-          (canRedeemEssence() && op.kind == 'CASH' && op.currency == 'ORANGE' && cost in [10, 25, 50] && op.usd == cost && validUsdtWallet(op.network, op.wallet)
+          (canRedeem(resource.data) && op.kind == 'CASH' && op.currency == 'ORANGE' && cost in [10, 25, 50] && op.usd == cost && validUsdtWallet(op.network, op.wallet)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['orangeEssence', 'lastEconomyOperation'])
           && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.amount == cost));
     }
@@ -165,7 +178,8 @@ service cloud.firestore {
     match /cash_redemptions/{id} {
       function op() { return getAfter(/databases/$(database)/documents/users/$(request.auth.uid)/economy_operations/$(id)).data; }
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
-      allow create: if canRedeemEssence() && request.resource.data.userId == request.auth.uid
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid
+        && canRedeem(account())
         && request.resource.data.keys().hasOnly(['id','userId','email','amount','usd','paymentCurrency','network','wallet','status','requestedAt','requestedAtMillis'])
         && request.resource.data.id == id && request.resource.data.email.lower() == request.auth.token.email.lower()
         && request.resource.data.status == 'PENDING' && request.resource.data.requestedAt == request.time
