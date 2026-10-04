@@ -637,12 +637,12 @@ class RuntimeVisibilityTest(private val screen: String) {
                 if (screen != "moderation-secondary") compose.onNodeWithContentDescription(appTr("Eliminar solucionados")).assertExists()
             }
             "profile-admin-expiring-roles", "profile-admin-expiring-roles-es" -> {
-                val creator = compose.onNodeWithText(tr("CREADOR LVL 1"))
-                val streamer = compose.onNodeWithText(tr("STREAMER"))
+                val creator = compose.onNodeWithText(appTr("CREADOR LVL 1"))
+                val streamer = compose.onNodeWithText(appTr("STREAMER"))
                 creator.assertIsDisplayed()
                 streamer.assertIsDisplayed()
                 compose.onNodeWithTag("role_expiry_warning", useUnmergedTree = true).assertIsDisplayed()
-                compose.onNodeWithText(tr("EXPIRA PRONTO")).assertIsDisplayed()
+                compose.onNodeWithText(appTr("EXPIRA PRONTO")).assertIsDisplayed()
                 compose.onNodeWithTag("premium_expiry_warning").assertExists()
                 compose.onNodeWithTag("premium_remaining_time").assertExists()
                 val warning = compose.onNodeWithTag("role_expiry_warning", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
