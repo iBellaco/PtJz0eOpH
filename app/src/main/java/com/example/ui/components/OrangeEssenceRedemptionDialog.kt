@@ -37,7 +37,7 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var loadError by remember { mutableStateOf(false) }
     var wallet by remember { mutableStateOf("") }
-    var network by remember { mutableStateOf(UsdtNetwork.TRC20) }
+    var network by remember { mutableStateOf<UsdtNetwork?>(null) }
     var amount by remember { mutableStateOf<Long?>(null) }
     var id by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -59,7 +59,42 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                     Text(tr("El pago es manual y demora de 24 a 72 horas. El equipo coordinará el pago contigo desde la bandeja de entrada."), color = TextSecondary)
                     Text(tr("Pago exclusivamente en USDT (la comisión de red corre por cuenta del usuario en EN)."), color = HextechGold)
                     UsdtWalletFields(network, wallet, !busy, onNetwork = { network = it }, onWallet = { wallet = it })
-                    if (orange > 0) CashRedemptionOptions(orange, network, !busy && UsdtWalletPolicy.valid(network, wallet.trim())) { selected -> amount = selected; id = java.util.UUID.randomUUID().toString(); feedback = null }
+                    if (orange > 0) {
+                        val isWalletValid = network != null && UsdtWalletPolicy.valid(network!!, wallet.trim())
+                        if (network != null) {
+                            Surface(
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                                color = HextechSurfaceVariant.copy(alpha = 0.7f),
+                                border = androidx.compose.foundation.BorderStroke(0.8.dp, HextechGold.copy(alpha = 0.5f)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(
+                                        text = tr("Aviso de confirmación de envío para cobro"),
+                                        color = HextechGold,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        fontSize = 12.sp
+                                    )
+                                    Text(
+                                        text = tr("Al seleccionar un monto se abrirá la confirmación final del cobro. Revisa que tu billetera en Binance coincida con la red seleccionada. El retiro se gestiona manualmente de 24 a 72 horas."),
+                                        color = TextSecondary,
+                                        fontSize = 11.sp,
+                                        lineHeight = 15.sp
+                                    )
+                                }
+                            }
+                        }
+                        CashRedemptionOptions(
+                            balance = orange,
+                            network = network ?: UsdtNetwork.TRC20,
+                            enabled = !busy && isWalletValid,
+                            hasSelectedNetwork = network != null
+                        ) { selected ->
+                            amount = selected
+                            id = java.util.UUID.randomUUID().toString()
+                            feedback = null
+                        }
+                    }
                     feedback?.let { Text(tr(it), color = HextechCyan) }
                     Text(tr("Historial"), color = HextechGold)
                     if (loadError) Text(tr("No se pudo cargar el historial. Vuelve a intentarlo."), color = DangerRed)
@@ -77,28 +112,43 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
         }
     }
     amount?.let { selected ->
-        CashRedemptionConfirmation(selected,network,wallet,busy,feedback,onConfirm = {
-            busy = true; feedback = null
-            scope.launch {
-                val result = EssenceEconomyRepository.redeem(id, selected, network, wallet.trim())
-                busy = false
-                if (result.isSuccess) { amount = null; feedback = "Solicitud de canje registrada" }
-                else feedback = economyFailure(result.exceptionOrNull())
-            }
-        },onDismiss = { amount = null; feedback = null })
+        network?.let { net ->
+            CashRedemptionConfirmation(selected, net, wallet, busy, feedback, onConfirm = {
+                busy = true; feedback = null
+                scope.launch {
+                    val result = EssenceEconomyRepository.redeem(id, selected, net, wallet.trim())
+                    busy = false
+                    if (result.isSuccess) { amount = null; feedback = "Solicitud de canje registrada" }
+                    else feedback = economyFailure(result.exceptionOrNull())
+                }
+            }, onDismiss = { amount = null; feedback = null })
+        }
     }
 }
 
 @Composable
-fun CashRedemptionOptions(balance: Long, network: UsdtNetwork = UsdtNetwork.TRC20, enabled: Boolean = true, onChoose: (Long) -> Unit) {
+fun CashRedemptionOptions(
+    balance: Long,
+    network: UsdtNetwork = UsdtNetwork.TRC20,
+    enabled: Boolean = true,
+    hasSelectedNetwork: Boolean = true,
+    onChoose: (Long) -> Unit
+) {
     if (balance <= 0) return
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(tr("Opciones de canje (comisión: ${network.feeEn} EN):"), color = HextechCyan, fontSize = 12.sp)
+        if (hasSelectedNetwork) {
+            Text(tr("Opciones de canje (comisión: ${network.feeEn} EN):"), color = HextechCyan, fontSize = 12.sp)
+        } else {
+            Text(tr("Selecciona primero una red para ver las opciones de canje"), color = TextSecondary, fontSize = 12.sp)
+        }
         EssenceEconomyPolicy.redemptionAmounts.forEach { amount ->
             val totalNeeded = amount + network.feeEn
             val canAfford = balance >= totalNeeded
-            Button(onClick = { onChoose(amount) }, enabled = enabled && canAfford,
-                modifier = Modifier.fillMaxWidth().testTag("cash_redemption_$amount")) {
+            Button(
+                onClick = { onChoose(amount) },
+                enabled = enabled && canAfford && hasSelectedNetwork,
+                modifier = Modifier.fillMaxWidth().testTag("cash_redemption_$amount")
+            ) {
                 Text(tr("$amount USDT (Total: $totalNeeded EN)"))
             }
         }
@@ -344,53 +394,135 @@ fun CashRedemptionReviewPanel() {
 }
 
 @Composable
-fun UsdtWalletFields(network: UsdtNetwork, wallet: String, enabled: Boolean,
-    onNetwork: (UsdtNetwork) -> Unit, onWallet: (String) -> Unit) {
+fun UsdtWalletFields(
+    network: UsdtNetwork?,
+    wallet: String,
+    enabled: Boolean,
+    onNetwork: (UsdtNetwork) -> Unit,
+    onWallet: (String) -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(tr("Red de USDT"), color = TextSecondary)
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             UsdtNetwork.entries.forEach { option ->
-                FilterChip(selected = network == option, onClick = { onNetwork(option) }, enabled = enabled, label = { Text("${option.name} (${option.feeEn} EN)") })
+                FilterChip(
+                    selected = network == option,
+                    onClick = { onNetwork(option) },
+                    enabled = enabled,
+                    label = { Text(option.name) }
+                )
             }
         }
-        Surface(
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
-            color = HextechSurfaceVariant.copy(alpha = 0.5f),
-            border = androidx.compose.foundation.BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.3f)),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = tr("Comisión de red (${network.name}): ${network.feeEn} EN a cargo del usuario (se descuenta en Esencia Naranja)."),
-                color = HextechGoldLight,
-                fontSize = 11.5.sp,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-            )
+        if (network == null) {
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
+                color = HextechSurfaceVariant.copy(alpha = 0.5f),
+                border = androidx.compose.foundation.BorderStroke(0.5.dp, HextechCyan.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = tr("Selecciona una red de transferencia de Binance para continuar."),
+                    color = HextechCyan,
+                    fontSize = 11.5.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                )
+            }
+        } else {
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
+                color = HextechSurfaceVariant.copy(alpha = 0.5f),
+                border = androidx.compose.foundation.BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Text(
+                        text = tr("Comisión de red (${network.name}): ${network.feeEn} EN a cargo del usuario (se descuenta en Esencia Naranja)."),
+                        color = HextechGoldLight,
+                        fontSize = 11.5.sp
+                    )
+                    Text(
+                        text = tr("Aviso de red Binance: Asegúrate de que la dirección ingresada pertenezca a la red ${network.name}. Enviar fondos a una red incompatible causará la pérdida irrecuperable de tus fondos."),
+                        color = HextechCyan,
+                        fontSize = 10.5.sp
+                    )
+                }
+            }
         }
-        OutlinedTextField(wallet, onWallet, enabled = enabled, singleLine = true,
-            label = { Text(tr("Tu billetera digital USDT")) }, modifier = Modifier.fillMaxWidth().testTag("usdt_wallet"),
-            colors = OutlinedTextFieldDefaults.colors(focusedTextColor = TextPrimary, unfocusedTextColor = TextPrimary))
-        Text(tr("Comprueba que la dirección corresponde a la red seleccionada. No envíes claves privadas ni frases de recuperación."), color = TextSecondary, fontSize = 11.sp)
-        if (wallet.isNotBlank() && !UsdtWalletPolicy.valid(network, wallet.trim())) Text(tr("Billetera USDT no válida"), color = DangerRed, fontSize = 11.5.sp)
+        OutlinedTextField(
+            wallet,
+            onWallet,
+            enabled = enabled,
+            singleLine = true,
+            label = { Text(tr("Tu billetera digital USDT")) },
+            modifier = Modifier.fillMaxWidth().testTag("usdt_wallet"),
+            colors = OutlinedTextFieldDefaults.colors(focusedTextColor = TextPrimary, unfocusedTextColor = TextPrimary)
+        )
+        Text(
+            tr("Comprueba que la dirección corresponde a la red seleccionada. No envíes claves privadas ni frases de recuperación."),
+            color = TextSecondary,
+            fontSize = 11.sp
+        )
+        if (network != null && wallet.isNotBlank() && !UsdtWalletPolicy.valid(network, wallet.trim())) {
+            Text(tr("Billetera USDT no válida"), color = DangerRed, fontSize = 11.5.sp)
+        }
     }
 }
 
 @Composable
-fun CashRedemptionConfirmation(amount: Long, network: UsdtNetwork, wallet: String, busy: Boolean,
-    feedback: String? = null, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+fun CashRedemptionConfirmation(
+    amount: Long,
+    network: UsdtNetwork,
+    wallet: String,
+    busy: Boolean,
+    feedback: String? = null,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
     val fee = network.feeEn
     val totalDeducted = amount + fee
-    AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(tr("Confirmar canje")) },
+    AlertDialog(
+        onDismissRequest = { if (!busy) onDismiss() },
+        title = { Text(tr("Confirmar canje")) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(tr("Monto a recibir: $amount USDT"), fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = HextechGold)
-                Text(tr("Red seleccionada: ${network.name}"))
+                Text(
+                    tr("Monto a recibir: $amount USDT"),
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    color = HextechGold
+                )
+                Text(tr("Red seleccionada: ${network.name} (Binance)"))
                 Text(tr("Comisión de red: $fee EN (a cargo del usuario)"))
-                Text(tr("Total a descontar: $totalDeducted EN"), fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, color = HextechCyan)
+                Text(
+                    tr("Total a descontar: $totalDeducted EN"),
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    color = HextechCyan
+                )
                 Text(wallet, fontSize = 11.sp, color = TextSecondary)
-                Text(tr("El pago es manual y demora de 24 a 72 horas."), fontSize = 11.sp, color = TextSecondary)
+                Text(
+                    tr("Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar."),
+                    fontSize = 11.sp,
+                    color = TextSecondary
+                )
                 feedback?.let { Text(tr(it), color = DangerRed) }
             }
         },
-        confirmButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("cash_redemption_confirm"), onClick = onConfirm) { Text(tr(if (busy) "Procesando…" else "Confirmar")) } },
-        dismissButton = { TextButton(enabled = !busy, modifier = Modifier.testTag("cash_redemption_cancel"), onClick = onDismiss) { Text(tr("Cancelar")) } })
+        confirmButton = {
+            TextButton(
+                enabled = !busy,
+                modifier = Modifier.testTag("cash_redemption_confirm"),
+                onClick = onConfirm
+            ) {
+                Text(tr(if (busy) "Procesando…" else "Confirmar"))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                enabled = !busy,
+                modifier = Modifier.testTag("cash_redemption_cancel"),
+                onClick = onDismiss
+            ) {
+                Text(tr("Cancelar"))
+            }
+        }
+    )
 }

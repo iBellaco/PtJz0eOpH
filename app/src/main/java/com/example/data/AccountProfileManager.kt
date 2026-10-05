@@ -2,10 +2,14 @@ package com.example.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.util.AuthManager
 import com.example.util.SubscriptionManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -69,7 +73,13 @@ object AccountProfileManager {
         val found = _allProfiles.value.find { it.id == currentId }
             ?: _allProfiles.value.firstOrNull()
             ?: AccountProfile("default", "Cuenta Principal", tag = "Main", isDefault = true)
-        _activeProfile.value = found
+        val authUser = AuthManager.getAuth()?.currentUser
+        val synchronized = if (authUser != null && !AuthManager.isGuestOrUnauthenticated(authUser)) {
+            val dbBlue = SubscriptionManager.blueEssence.value.toInt()
+            val dbOrange = SubscriptionManager.orangeEssence.value.toInt()
+            found.copy(blueEssence = dbBlue, orangeEssence = dbOrange)
+        } else found
+        _activeProfile.value = synchronized
     }
 
     private fun getPrefs(context: Context): SharedPreferences {
@@ -104,9 +114,18 @@ object AccountProfileManager {
             init(context)
         }
         val currentId = _activeProfileId.value
-        return _allProfiles.value.find { it.id == currentId }
+        val found = _allProfiles.value.find { it.id == currentId }
             ?: _allProfiles.value.firstOrNull()
             ?: AccountProfile("default", "Cuenta Principal", tag = "Main", isDefault = true)
+        val authUser = AuthManager.getAuth()?.currentUser
+        if (authUser != null && !AuthManager.isGuestOrUnauthenticated(authUser)) {
+            val dbBlue = SubscriptionManager.blueEssence.value.toInt()
+            val dbOrange = SubscriptionManager.orangeEssence.value.toInt()
+            if (found.blueEssence != dbBlue || found.orangeEssence != dbOrange) {
+                return found.copy(blueEssence = dbBlue, orangeEssence = dbOrange)
+            }
+        }
+        return found
     }
 
     fun setActiveProfile(context: Context, profileId: String) {
@@ -168,6 +187,12 @@ object AccountProfileManager {
     }
 
     fun buyBlueEssence(context: Context, profileId: String, amount: Int, price: Double) {
+        val authUser = AuthManager.getAuth()?.currentUser
+        if (authUser != null && !AuthManager.isGuestOrUnauthenticated(authUser)) {
+            CoroutineScope(Dispatchers.IO).launch {
+                SubscriptionManager.addBlueEssence(amount.toLong(), "Recarga de Esencia Azul")
+            }
+        }
         val currentProfiles = _allProfiles.value.toMutableList()
         val index = currentProfiles.indexOfFirst { it.id == profileId }
         if (index != -1) {
@@ -183,6 +208,12 @@ object AccountProfileManager {
     }
 
     fun buyOrangeEssence(context: Context, profileId: String, amount: Int, price: Double) {
+        val authUser = AuthManager.getAuth()?.currentUser
+        if (authUser != null && !AuthManager.isGuestOrUnauthenticated(authUser)) {
+            CoroutineScope(Dispatchers.IO).launch {
+                SubscriptionManager.addOrangeEssence(amount.toLong(), "Recarga de Esencia Naranja")
+            }
+        }
         val currentProfiles = _allProfiles.value.toMutableList()
         val index = currentProfiles.indexOfFirst { it.id == profileId }
         if (index != -1) {
@@ -198,6 +229,13 @@ object AccountProfileManager {
     }
 
     fun spendBlueEssence(context: Context, profileId: String, amount: Int): Boolean {
+        val authUser = AuthManager.getAuth()?.currentUser
+        if (authUser != null && !AuthManager.isGuestOrUnauthenticated(authUser)) {
+            if (SubscriptionManager.blueEssence.value < amount) return false
+            CoroutineScope(Dispatchers.IO).launch {
+                SubscriptionManager.addBlueEssence(-amount.toLong(), "Consumo de Esencia Azul")
+            }
+        }
         val currentProfiles = _allProfiles.value.toMutableList()
         val index = currentProfiles.indexOfFirst { it.id == profileId }
         if (index != -1) {
@@ -215,6 +253,13 @@ object AccountProfileManager {
     }
 
     fun spendOrangeEssence(context: Context, profileId: String, amount: Int): Boolean {
+        val authUser = AuthManager.getAuth()?.currentUser
+        if (authUser != null && !AuthManager.isGuestOrUnauthenticated(authUser)) {
+            if (SubscriptionManager.orangeEssence.value < amount) return false
+            CoroutineScope(Dispatchers.IO).launch {
+                SubscriptionManager.addOrangeEssence(-amount.toLong(), "Consumo de Esencia Naranja")
+            }
+        }
         val currentProfiles = _allProfiles.value.toMutableList()
         val index = currentProfiles.indexOfFirst { it.id == profileId }
         if (index != -1) {

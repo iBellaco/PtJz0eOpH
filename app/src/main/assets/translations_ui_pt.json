@@ -313,5 +313,12 @@
   "{0} • {1} USDT (Descontado: {2} EN)": "{0} • {1} USDT (Descontado: {2} EN)",
   "{0} • {1} USDT (Total: {2} EN)": "{0} • {1} USDT (Total: {2} EN)",
   "El servicio no respondió. Comprueba tu conexión y vuelve a actualizar.": "O serviço não respondeu. Verifique sua conexão e atualize novamente.",
-  "Ahora (En vivo)": "Agora (Ao vivo)"
+  "Ahora (En vivo)": "Agora (Ao vivo)",
+  "Selecciona una red de transferencia de Binance para continuar.": "Selecione uma rede de transferência da Binance para continuar.",
+  "Aviso de red Binance: Asegúrate de que la dirección ingresada pertenezca a la red {0}. Enviar fondos a una red incompatible causará la pérdida irrecuperable de tus fondos.": "Aviso de rede Binance: Certifique-se de que o endereço inserido pertença à rede {0}. Enviar fundos para uma rede incompatível causará a perda irreversível dos seus fundos.",
+  "Aviso de confirmación de envío para cobro": "Aviso de confirmação de envio para resgate",
+  "Al seleccionar un monto se abrirá la confirmación final del cobro. Revisa que tu billetera en Binance coincida con la red seleccionada. El retiro se gestiona manualmente de 24 a 72 horas.": "Ao selecionar um valor, será aberta a confirmação final do resgate. Verifique se a sua carteira na Binance coincide com a rede selecionada. O saque é gerenciado manualmente em 24 a 72 horas.",
+  "Selecciona primero una red para ver las opciones de canje": "Selecione primeiro uma rede para ver as opções de resgate",
+  "Red seleccionada: {0} (Binance)": "Rede selecionada: {0} (Binance)",
+  "Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar.": "Aviso: O pagamento é manual e leva de 24 a 72 horas. Verifique minuciosamente sua carteira e rede antes de confirmar."
 }

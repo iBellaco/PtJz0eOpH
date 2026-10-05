@@ -1,13 +1,13 @@
 package com.example.data
 
 enum class UsdtNetwork(val feeEn: Long = 2L, val displayName: String = "") {
+    BEP20(1L, "BNB Smart Chain (BEP20)"),
     TRC20(2L, "Tron (TRC20)"),
-    ERC20(5L, "Ethereum (ERC20)"),
-    BEP20(1L, "BNB Smart Chain (BEP20)");
+    ERC20(5L, "Ethereum (ERC20)");
 
     companion object {
         fun fromName(name: String?): UsdtNetwork {
-            return entries.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: TRC20
+            return entries.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: BEP20
         }
     }
 }
