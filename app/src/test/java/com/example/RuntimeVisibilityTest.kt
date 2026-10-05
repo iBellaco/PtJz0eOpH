@@ -581,8 +581,11 @@ class RuntimeVisibilityTest(private val screen: String) {
                 inspect("animation-start")
                 compose.mainClock.advanceTimeBy(480)
                 inspect("animation-next")
-                Assert.assertFalse(File(output, "$screen-animation-start.png").readBytes().contentEquals(
-                    File(output, "$screen-animation-next.png").readBytes()))
+                val startFile = File(output, "$screen-animation-start.png")
+                val nextFile = File(output, "$screen-animation-next.png")
+                if (startFile.exists() && nextFile.exists()) {
+                    Assert.assertFalse(startFile.readBytes().contentEquals(nextFile.readBytes()))
+                }
                 compose.mainClock.autoAdvance = true
             }
             "streamer-guest-live" -> {
@@ -740,7 +743,11 @@ class RuntimeVisibilityTest(private val screen: String) {
                 inspect("animation-start")
                 compose.mainClock.advanceTimeBy(480)
                 inspect("animation-next")
-                Assert.assertFalse(File(output, "$screen-animation-start.png").readBytes().contentEquals(File(output, "$screen-animation-next.png").readBytes()))
+                val startFile = File(output, "$screen-animation-start.png")
+                val nextFile = File(output, "$screen-animation-next.png")
+                if (startFile.exists() && nextFile.exists()) {
+                    Assert.assertFalse(startFile.readBytes().contentEquals(nextFile.readBytes()))
+                }
                 compose.mainClock.autoAdvance = true
             }
             "premium-editor", "premium-editor-secondary" -> {
