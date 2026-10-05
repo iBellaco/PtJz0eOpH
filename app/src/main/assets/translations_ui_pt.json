@@ -312,5 +312,6 @@
   "Red: {0} • Comisión: {1} EN": "Rede: {0} • Taxa: {1} EN",
   "{0} • {1} USDT (Descontado: {2} EN)": "{0} • {1} USDT (Descontado: {2} EN)",
   "{0} • {1} USDT (Total: {2} EN)": "{0} • {1} USDT (Total: {2} EN)",
-  "El servicio no respondió. Comprueba tu conexión y vuelve a actualizar.": "O serviço não respondeu. Verifique sua conexão e atualize novamente."
+  "El servicio no respondió. Comprueba tu conexión y vuelve a actualizar.": "O serviço não respondeu. Verifique sua conexão e atualize novamente.",
+  "Ahora (En vivo)": "Agora (Ao vivo)"
 }
