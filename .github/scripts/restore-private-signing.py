@@ -52,10 +52,10 @@ def read_private_document(manifest):
 
 def resolve_environment(environment, manifest, reader=read_private_document):
     if environment.get('COACH_DEBUG_KEYSTORE_BASE64', '').strip():
-        expected = environment.get('COACH_SIGNING_CERT_SHA256', '').strip().lower()
+        expected = (environment.get('COACH_SIGNING_CERT_SHA256', '') or manifest.get('certificate_sha256', '')).strip().lower()
         if not re.fullmatch(r'[0-9a-f]{64}', expected):
             raise RuntimeError('La clave de firma configurada necesita su huella de certificado.')
-        return {**environment, 'COACH_REQUIRE_PERSISTENT_SIGNING': 'true'}
+        return {**environment, 'COACH_SIGNING_CERT_SHA256': expected, 'COACH_REQUIRE_PERSISTENT_SIGNING': 'true'}
     if (environment.get('COACH_ALLOW_EPHEMERAL_TEST_SIGNING') == 'true'
             and environment.get('COACH_REQUIRE_PERSISTENT_SIGNING') != 'true'):
         return {'COACH_REQUIRE_PERSISTENT_SIGNING': 'false'}
