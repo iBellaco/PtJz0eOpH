@@ -45,7 +45,8 @@ service cloud.firestore {
       let r = data.get('role', '');
       let s = data.get('secondaryRole', '');
       let b = data.get('rankBorder', '');
-      return r in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'] ||
+      return isAdmin() ||
+             r in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'] ||
              s in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'] ||
              b in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'];
     }
@@ -179,9 +180,9 @@ service cloud.firestore {
       function op() { return getAfter(/databases/$(database)/documents/users/$(request.auth.uid)/economy_operations/$(id)).data; }
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid
-        && canRedeem(account())
-        && request.resource.data.keys().hasOnly(['id','userId','email','amount','usd','paymentCurrency','network','wallet','status','requestedAt','requestedAtMillis'])
-        && request.resource.data.id == id && request.resource.data.email.lower() == request.auth.token.email.lower()
+        && (isAdmin() || canRedeem(account()))
+        && request.resource.data.keys().hasOnly(['id','userId','email','amount','usd','paymentCurrency','network','wallet','status','requestedAt','requestedAtMillis','fee','totalDeducted'])
+        && request.resource.data.id == id && (request.resource.data.email.lower() == request.auth.token.get('email', '').lower() || request.resource.data.email == '')
         && request.resource.data.status == 'PENDING' && request.resource.data.requestedAt == request.time
         && request.resource.data.amount in [10,25,50] && request.resource.data.usd == request.resource.data.amount
         && request.resource.data.paymentCurrency == 'USDT' && request.resource.data.network == op().network && request.resource.data.wallet == op().wallet
@@ -206,7 +207,7 @@ service cloud.firestore {
 
     match /support_reports/{reportId} {
       allow create: if isAdmin() || (signedIn() && request.resource.data.get('category', '') == 'MODERATOR_REQUEST' && isModerator()) ||
-        (signedIn() && request.resource.data.userId == request.auth.uid && request.resource.data.userEmail.lower() == request.auth.token.email.lower()
+        (signedIn() && request.resource.data.userId == request.auth.uid && (request.resource.data.get('userEmail', '').lower() == request.auth.token.get('email', '').lower() || request.resource.data.get('userEmail', '') == '')
           && request.resource.data.staffVisible == !sponsor(request.resource.data)
           && request.resource.data.status == 'PENDING' && request.resource.data.get('adminReply', '') == ''
           && request.resource.data.get('userCanReply', false) == false

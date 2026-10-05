@@ -685,8 +685,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .offset(
-                            x = if (hasRoleFrame) 12.dp else 2.dp,
-                            y = if (hasRoleFrame) 10.dp else 2.dp
+                            x = if (hasRoleFrame) 16.dp else 2.dp,
+                            y = if (hasRoleFrame) 14.dp else 2.dp
                         )
                         .size(32.dp)
                         .clip(CircleShape)
@@ -710,7 +710,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 }
             }
 
-            Spacer(modifier = Modifier.height(if (hasRoleFrame) 36.dp else 12.dp))
+            Spacer(modifier = Modifier.height(if (hasRoleFrame) 46.dp else 12.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

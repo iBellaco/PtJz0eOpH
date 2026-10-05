@@ -320,5 +320,6 @@
   "Al seleccionar un monto se abrirá la confirmación final del cobro. Revisa que tu billetera en Binance coincida con la red seleccionada. El retiro se gestiona manualmente de 24 a 72 horas.": "Ao selecionar um valor, será aberta a confirmação final do resgate. Verifique se a sua carteira na Binance coincide com a rede selecionada. O saque é gerenciado manualmente em 24 a 72 horas.",
   "Selecciona primero una red para ver las opciones de canje": "Selecione primeiro uma rede para ver as opções de resgate",
   "Red seleccionada: {0} (Binance)": "Rede selecionada: {0} (Binance)",
-  "Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar.": "Aviso: O pagamento é manual e leva de 24 a 72 horas. Verifique minuciosamente sua carteira e rede antes de confirmar."
+  "Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar.": "Aviso: O pagamento é manual e leva de 24 a 72 horas. Verifique minuciosamente sua carteira e rede antes de confirmar.",
+  "Comisión de red actualizada automáticamente en tiempo real": "Taxa de rede atualizada automaticamente em tempo real"
 }

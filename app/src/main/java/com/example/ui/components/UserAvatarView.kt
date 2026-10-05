@@ -173,7 +173,9 @@ fun UserAvatarView(
     }
 
     val hasFrame = activeFrameAsset != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
-    val avatarSize = if (hasFrame) size * 0.76f else size
+    val avatarSize = if (hasFrame) (if (isCurrentUser) 74.dp else size * 0.60f) else size
+    val frameScaleMultiplier = if (isCurrentUser) 2.25f else 1.45f
+    val verticalHoleCorrection = if (isCurrentUser && hasFrame) 2.dp else 0.dp
 
     Box(
         modifier = modifier
@@ -186,10 +188,11 @@ fun UserAvatarView(
             },
         contentAlignment = Alignment.Center
     ) {
-        // Círculo base del Avatar
+        // Círculo base del Avatar (centrado exactamente en el círculo del marco)
         Box(
             modifier = Modifier
                 .size(avatarSize)
+                .offset(y = verticalHoleCorrection)
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
@@ -263,7 +266,7 @@ fun UserAvatarView(
                 contentDescription = com.example.util.tr("Marco de Perfil"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.40f else 1.15f)
+                    .requiredSize(size * frameScaleMultiplier)
                     .align(Alignment.Center)
             )
         } else if (isAdmin) {
@@ -273,7 +276,7 @@ fun UserAvatarView(
                     contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.40f else 1.15f)
+                        .requiredSize(size * frameScaleMultiplier)
                         .align(Alignment.Center)
                 )
             } else if (!adminFrameUrl.isNullOrBlank()) {
@@ -287,7 +290,7 @@ fun UserAvatarView(
                     contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * if (isCurrentUser && resolvedSecondaryRole.isNotBlank()) 1.40f else 1.15f)
+                        .requiredSize(size * frameScaleMultiplier)
                         .align(Alignment.Center)
                 )
             }

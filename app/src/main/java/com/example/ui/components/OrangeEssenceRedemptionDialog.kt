@@ -5,11 +5,14 @@ import com.example.ui.components.CoachFilterChip as FilterChip
 import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachTextButton as TextButton
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -43,6 +46,12 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        BinanceCommissionManager.init()
+    }
+    val liveFees by BinanceCommissionManager.liveFees.collectAsState()
+    val activeFee = network?.let { liveFees[it] ?: it.feeEn } ?: 0L
+
     DisposableEffect(uid) {
         val listener = EssenceEconomyRepository.redemptions.whereEqualTo("userId", uid).addSnapshotListener(MetadataChanges.INCLUDE) { snap, error ->
             loadError = error != null
@@ -56,9 +65,34 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                 Column(Modifier.fillMaxWidth().heightIn(max = 650.dp).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(tr("Canjear Esencia Naranja"), style = MaterialTheme.typography.titleLarge, color = HextechGold)
                     Text(tr("Saldo: $orange EN"), color = HextechCyan)
-                    Text(tr("El pago es manual y demora de 24 a 72 horas. El equipo coordinará el pago contigo desde la bandeja de entrada."), color = TextSecondary)
+                    Surface(
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                        color = DangerRed.copy(alpha = 0.12f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed.copy(alpha = 0.8f)),
+                        modifier = Modifier.fillMaxWidth().testTag("manual_payment_warning_card")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = DangerRed,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = tr("El pago es manual y demora de 24 a 72 horas. El equipo coordinará el pago contigo desde la bandeja de entrada."),
+                                color = DangerRed,
+                                fontSize = 12.sp,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                                lineHeight = 16.sp
+                            )
+                        }
+                    }
                     Text(tr("Pago exclusivamente en USDT (la comisión de red corre por cuenta del usuario en EN)."), color = HextechGold)
-                    UsdtWalletFields(network, wallet, !busy, onNetwork = { network = it }, onWallet = { wallet = it })
+                    UsdtWalletFields(network, wallet, !busy, onNetwork = { network = it }, onWallet = { wallet = it }, fee = activeFee)
                     if (orange > 0) {
                         val isWalletValid = network != null && UsdtWalletPolicy.valid(network!!, wallet.trim())
                         if (network != null) {
@@ -87,6 +121,7 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                         CashRedemptionOptions(
                             balance = orange,
                             network = network ?: UsdtNetwork.TRC20,
+                            fee = activeFee,
                             enabled = !busy && isWalletValid,
                             hasSelectedNetwork = network != null
                         ) { selected ->
@@ -119,9 +154,9 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                     val result = EssenceEconomyRepository.redeem(id, selected, net, wallet.trim())
                     busy = false
                     if (result.isSuccess) { amount = null; feedback = "Solicitud de canje registrada" }
-                    else feedback = economyFailure(result.exceptionOrNull())
+                    else feedback = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() && !it.startsWith("java.") } ?: economyFailure(result.exceptionOrNull())
                 }
-            }, onDismiss = { amount = null; feedback = null })
+            }, onDismiss = { amount = null; feedback = null }, fee = activeFee)
         }
     }
 }
@@ -130,6 +165,7 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
 fun CashRedemptionOptions(
     balance: Long,
     network: UsdtNetwork = UsdtNetwork.TRC20,
+    fee: Long = network.feeEn,
     enabled: Boolean = true,
     hasSelectedNetwork: Boolean = true,
     onChoose: (Long) -> Unit
@@ -137,12 +173,12 @@ fun CashRedemptionOptions(
     if (balance <= 0) return
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (hasSelectedNetwork) {
-            Text(tr("Opciones de canje (comisión: ${network.feeEn} EN):"), color = HextechCyan, fontSize = 12.sp)
+            Text(tr("Opciones de canje (comisión: $fee EN):"), color = HextechCyan, fontSize = 12.sp)
         } else {
             Text(tr("Selecciona primero una red para ver las opciones de canje"), color = TextSecondary, fontSize = 12.sp)
         }
         EssenceEconomyPolicy.redemptionAmounts.forEach { amount ->
-            val totalNeeded = amount + network.feeEn
+            val totalNeeded = amount + fee
             val canAfford = balance >= totalNeeded
             Button(
                 onClick = { onChoose(amount) },
@@ -399,7 +435,8 @@ fun UsdtWalletFields(
     wallet: String,
     enabled: Boolean,
     onNetwork: (UsdtNetwork) -> Unit,
-    onWallet: (String) -> Unit
+    onWallet: (String) -> Unit,
+    fee: Long = network?.feeEn ?: 0L
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(tr("Red de USDT"), color = TextSecondary)
@@ -434,12 +471,27 @@ fun UsdtWalletFields(
                 border = androidx.compose.foundation.BorderStroke(0.5.dp, HextechGold.copy(alpha = 0.3f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = tr("Comisión de red (${network.name}): ${network.feeEn} EN a cargo del usuario (se descuenta en Esencia Naranja)."),
+                        text = tr("Comisión de red (${network.name}): $fee EN a cargo del usuario (se descuenta en Esencia Naranja)."),
                         color = HextechGoldLight,
                         fontSize = 11.5.sp
                     )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(Color(0xFF10B981), androidx.compose.foundation.shape.CircleShape)
+                        )
+                        Text(
+                            text = tr("Comisión de red actualizada automáticamente en tiempo real"),
+                            color = HextechCyan,
+                            fontSize = 10.sp
+                        )
+                    }
                     Text(
                         text = tr("Aviso de red Binance: Asegúrate de que la dirección ingresada pertenezca a la red ${network.name}. Enviar fondos a una red incompatible causará la pérdida irrecuperable de tus fondos."),
                         color = HextechCyan,
@@ -475,10 +527,10 @@ fun CashRedemptionConfirmation(
     wallet: String,
     busy: Boolean,
     feedback: String? = null,
+    fee: Long = network.feeEn,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val fee = network.feeEn
     val totalDeducted = amount + fee
     AlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
@@ -498,11 +550,32 @@ fun CashRedemptionConfirmation(
                     color = HextechCyan
                 )
                 Text(wallet, fontSize = 11.sp, color = TextSecondary)
-                Text(
-                    tr("Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar."),
-                    fontSize = 11.sp,
-                    color = TextSecondary
-                )
+                Surface(
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                    color = DangerRed.copy(alpha = 0.12f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed.copy(alpha = 0.8f)),
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp).testTag("confirmation_manual_payment_warning")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = DangerRed,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = tr("Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar."),
+                            color = DangerRed,
+                            fontSize = 11.sp,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                            lineHeight = 15.sp
+                        )
+                    }
+                }
                 feedback?.let { Text(tr(it), color = DangerRed) }
             }
         },

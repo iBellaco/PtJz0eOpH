@@ -42,31 +42,54 @@ object EssenceEconomyRepository {
         check(!AuthManager.isGuestOrUnauthenticated(user)) { "Inicia sesión" }
         check(UsdtWalletPolicy.valid(network, wallet)) { "Billetera USDT no válida" }
         val profile = db.collection("users").document(user!!.uid)
-        val adminClaim = user.getIdToken(false).await().claims["admin"] == true
+        val adminClaim = runCatching { user.getIdToken(false).await().claims["admin"] == true }.getOrDefault(false)
         val operation = profile.collection("economy_operations").document(id)
-        val fee = network.feeEn
+        val fee = BinanceCommissionManager.getFee(network)
         val totalCost = amount + fee
+        val userEmail = (user.email ?: "").trim().lowercase()
         db.runTransaction { tx ->
             val previous = tx.get(operation)
             if (!previous.exists()) {
                 val account = tx.get(profile).data.orEmpty()
-                val remaining = EssenceEconomyPolicy.redeem(account, amount, fee, adminClaim)
+                EssenceEconomyPolicy.redeem(account, amount, fee, adminClaim)
+                val currentOrange = (account["orangeEssence"] as? Number)?.toLong() ?: 0L
+                val remainingAfterAmount = currentOrange - amount
                 val now = System.currentTimeMillis()
                 val receipt = mapOf("id" to id, "timestamp" to now, "durationMillis" to 0L, "planName" to "Canje de Esencia Naranja",
                     "status" to "Pendiente", "amount" to "-$totalCost EN", "source" to "CASH_REDEMPTION")
-                tx.set(operation, mapOf("id" to id, "userId" to user.uid, "kind" to "CASH", "currency" to "ORANGE", "cost" to totalCost,
-                    "amount" to amount, "fee" to fee, "totalDeducted" to totalCost, "usd" to amount, "network" to network.name, "wallet" to wallet,
+                tx.set(operation, mapOf("id" to id, "userId" to user.uid, "kind" to "CASH", "currency" to "ORANGE", "cost" to amount,
+                    "usd" to amount, "network" to network.name, "wallet" to wallet,
                     "timestamp" to now, "createdAt" to FieldValue.serverTimestamp(), "receipt" to receipt))
-                tx.update(profile, mapOf("orangeEssence" to remaining, "lastEconomyOperation" to id))
-                tx.set(redemptions.document(id), mapOf("id" to id, "userId" to user.uid, "email" to user.email.orEmpty(),
-                    "amount" to amount, "fee" to fee, "totalDeducted" to totalCost, "usd" to amount, "paymentCurrency" to "USDT", "network" to network.name, "wallet" to wallet, "status" to "PENDING", "requestedAt" to FieldValue.serverTimestamp(),
-                    "requestedAtMillis" to now))
+                tx.update(profile, mapOf("orangeEssence" to remainingAfterAmount, "lastEconomyOperation" to id))
+                tx.set(redemptions.document(id), mapOf("id" to id, "userId" to user.uid, "email" to userEmail,
+                    "amount" to amount, "usd" to amount, "paymentCurrency" to "USDT", "network" to network.name, "wallet" to wallet, "status" to "PENDING", "requestedAt" to FieldValue.serverTimestamp(),
+                    "requestedAtMillis" to now, "fee" to fee, "totalDeducted" to totalCost))
                 val ticketId = "payment_$id"
                 val body = "Solicitud de pago: $amount USDT. Red: ${network.name}. Comisión de red: $fee EN (a cargo del usuario). Total descontado: $totalCost EN. Billetera: $wallet. Plazo de revisión: 24 a 72 horas."
-                val conversation = SupportConversationPolicy.initial(ticketId, account["name"] as? String ?: "Usuario", body, now)
-                    .map { SupportConversationPolicy.encode(it, if (it.senderRole == "USER") user.uid else "") }
+                val conversation = listOf(
+                    mapOf(
+                        "id" to "${ticketId}_initial",
+                        "senderName" to (account["name"] as? String ?: "Usuario"),
+                        "senderRole" to "USER",
+                        "senderUid" to user.uid,
+                        "senderEmail" to userEmail,
+                        "text" to body,
+                        "timestampMillis" to now,
+                        "isGreeting" to false
+                    ),
+                    mapOf(
+                        "id" to "${ticketId}_system",
+                        "senderName" to "Sistema Coach",
+                        "senderRole" to "SYSTEM",
+                        "senderUid" to "",
+                        "senderEmail" to "",
+                        "text" to SupportConversationPolicy.LEGACY_SYSTEM_GREETING,
+                        "timestampMillis" to now + 1,
+                        "isGreeting" to true
+                    )
+                )
                 val ticket = mapOf("id" to ticketId, "reportId" to ticketId, "redemptionId" to id, "userId" to user.uid,
-                    "userEmail" to user.email.orEmpty(), "userName" to (account["name"] as? String ?: "Usuario"),
+                    "userEmail" to userEmail, "userName" to (account["name"] as? String ?: "Usuario"),
                     "title" to "Solicitud de pago USDT", "description" to body, "content" to body, "tag" to "PAGO", "type" to "PAGO",
                     "panel" to "HISTORY", "staffVisible" to false, "status" to "PENDING", "staffRead" to false,
                     "isRead" to true, "userRead" to true, "userCanReply" to false, "timestamp" to now, "createdAt" to FieldValue.serverTimestamp(), "conversation" to conversation)
@@ -75,6 +98,11 @@ object EssenceEconomyRepository {
                 tx.set(profile.collection("subscription_history").document(id), receipt)
             }
         }.await()
+        if (fee > 0L) {
+            runCatching {
+                profile.update("orangeEssence", FieldValue.increment(-fee)).await()
+            }
+        }
         Unit
     } }
 
