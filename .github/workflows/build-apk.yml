@@ -354,10 +354,10 @@ jobs:
       with:
         api-level: 34
         arch: x86_64
-        target: default
+        target: google_apis
         disable-animations: true
         emulator-boot-timeout: 300
-        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
         script: |
           python3 -m unittest discover -s tools -p test_portuguese_device_audit.py
           python3 tools/verify-native-ocr-device.py
@@ -395,10 +395,10 @@ jobs:
       with:
         api-level: 34
         arch: x86_64
-        target: default
+        target: google_apis
         disable-animations: true
         emulator-boot-timeout: 300
-        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+        emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
         script: |
           COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py
           python3 tools/verify-overlay-history-device.py
