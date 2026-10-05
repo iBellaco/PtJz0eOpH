@@ -1,6 +1,16 @@
 package com.example.data
 
-enum class UsdtNetwork { TRC20, ERC20, BEP20 }
+enum class UsdtNetwork(val feeEn: Long = 2L, val displayName: String = "") {
+    TRC20(2L, "Tron (TRC20)"),
+    ERC20(5L, "Ethereum (ERC20)"),
+    BEP20(1L, "BNB Smart Chain (BEP20)");
+
+    companion object {
+        fun fromName(name: String?): UsdtNetwork {
+            return entries.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: TRC20
+        }
+    }
+}
 
 object UsdtWalletPolicy {
     private val tokenContracts = setOf("txlaq63xg1nazckpwkhvzw7csemlmeqcdj", "0xdac17f958d2ee523a2206206994597c13d831ec7", "0x55d398326f99059ff775485246999027b3197955")

@@ -49,6 +49,37 @@ fun SubscriptionHistoryDialog(
     var isLoading by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val historyPrefs = remember(targetUid) {
+        context.getSharedPreferences("user_history_cache_${targetUid ?: "viewer"}", android.content.Context.MODE_PRIVATE)
+    }
+    val lastViewedTimestamp = remember(targetUid) {
+        historyPrefs.getLong("last_viewed_history_ts", 0L)
+    }
+    val panelSummary = userPanelNotificationSummary()
+    val historyEvents = panelSummary.events[com.example.data.NotificationPanel.HISTORY].orEmpty()
+    val newRecordIds = remember(history, historyEvents, lastViewedTimestamp) {
+        if (historyEvents.isNotEmpty() || (lastViewedTimestamp > 0L && history.any { it.timestamp > lastViewedTimestamp })) {
+            history.filter { record ->
+                (lastViewedTimestamp > 0L && record.timestamp > lastViewedTimestamp) ||
+                historyEvents.any { event -> event.contains(record.id) || record.id.contains(event) } ||
+                (historyEvents.isNotEmpty() && lastViewedTimestamp == 0L && record == history.firstOrNull())
+            }.map { it.id }.toSet()
+        } else emptySet()
+    }
+
+    fun handleDismiss() {
+        historyPrefs.edit().putLong("last_viewed_history_ts", System.currentTimeMillis()).apply()
+        if (ownAccount && historyEvents.isNotEmpty()) {
+            scope.launch {
+                runCatching {
+                    com.example.data.PanelReadRepository.markPanelRead(com.example.data.NotificationPanel.HISTORY, historyEvents)
+                }
+            }
+        }
+        onDismiss()
+    }
+
     var loadJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     fun loadHistory() {
         loadJob?.cancel()
@@ -83,7 +114,7 @@ fun SubscriptionHistoryDialog(
     LaunchedEffect(userId, userEmail) { loadHistory() }
 
     Dialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { handleDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = true)
     ) {
         Card(
@@ -151,7 +182,7 @@ fun SubscriptionHistoryDialog(
                         }
                         Spacer(modifier = Modifier.width(4.dp))
                         HextechAnimatedIconButton(
-                            onClick = onDismiss,
+                            onClick = { handleDismiss() },
                             size = 32.dp,
                             backgroundColor = Color.Transparent,
                             borderColor = Color.Transparent,
@@ -328,7 +359,8 @@ fun SubscriptionHistoryDialog(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         items(displayedHistory, key = { it.id }) { record ->
-                            SubscriptionHistoryItem(record)
+                            val isItemNew = record.id in newRecordIds
+                            SubscriptionHistoryItem(record, isNew = isItemNew)
                         }
                     }
                 }
@@ -338,7 +370,7 @@ fun SubscriptionHistoryDialog(
 }
 
 @Composable
-fun SubscriptionHistoryItem(record: SubscriptionRecord) {
+fun SubscriptionHistoryItem(record: SubscriptionRecord, isNew: Boolean = false) {
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
     val dateString = if (record.timestamp > 0L) dateFormat.format(Date(record.timestamp)) else "Reciente"
 
@@ -379,7 +411,7 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 .clip(RoundedCornerShape(10.dp))
                 .background(HextechSurfaceVariant)
                 .border(
-                    BorderStroke(1.dp, actionBorder.copy(alpha = 0.35f)),
+                    if (isNew) BorderStroke(1.5.dp, HextechCyan) else BorderStroke(1.dp, actionBorder.copy(alpha = 0.35f)),
                     RoundedCornerShape(10.dp)
                 )
                 .padding(12.dp)
@@ -403,13 +435,31 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
-                        Text(
-                            text = com.example.util.tr(record.planName.ifEmpty { if (isOrange) "Movimiento de Esencia Naranja" else "Movimiento de Esencia Azul" }),
-                            color = TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.5.sp,
-                            maxLines = 2
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (isNew) {
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = Color(0xFF0EA5E9).copy(alpha = 0.2f),
+                                    border = BorderStroke(0.5.dp, Color(0xFF0EA5E9)),
+                                    modifier = Modifier.padding(end = 6.dp)
+                                ) {
+                                    Text(
+                                        text = com.example.util.tr("NUEVO"),
+                                        color = Color(0xFF38BDF8),
+                                        fontSize = 8.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = com.example.util.tr(record.planName.ifEmpty { if (isOrange) "Movimiento de Esencia Naranja" else "Movimiento de Esencia Azul" }),
+                                color = TextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.5.sp,
+                                maxLines = 2
+                            )
+                        }
                         Spacer(modifier = Modifier.height(2.dp))
                         // Chip de origen (Admin / Suscripción / Recarga)
                         Surface(
@@ -511,7 +561,10 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(HextechSurfaceVariant)
-                .border(1.dp, if (isActive) HextechGold.copy(alpha = 0.35f) else HextechCardBorder, RoundedCornerShape(10.dp))
+                .border(
+                    if (isNew) BorderStroke(1.5.dp, HextechCyan) else BorderStroke(1.dp, if (isActive) HextechGold.copy(alpha = 0.35f) else HextechCardBorder),
+                    RoundedCornerShape(10.dp)
+                )
                 .padding(14.dp)
         ) {
             Row(
@@ -519,13 +572,30 @@ fun SubscriptionHistoryItem(record: SubscriptionRecord) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = com.example.util.tr(record.planName.ifEmpty { "Suscripción Premium" }),
-                    color = if (isActive) HextechGoldLight else TextPrimary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.5.sp,
-                    modifier = Modifier.weight(1f)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                    if (isNew) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFF0EA5E9).copy(alpha = 0.2f),
+                            border = BorderStroke(0.5.dp, Color(0xFF0EA5E9)),
+                            modifier = Modifier.padding(end = 6.dp)
+                        ) {
+                            Text(
+                                text = com.example.util.tr("NUEVO"),
+                                color = Color(0xFF38BDF8),
+                                fontSize = 8.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    Text(
+                        text = com.example.util.tr(record.planName.ifEmpty { "Suscripción Premium" }),
+                        color = if (isActive) HextechGoldLight else TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.5.sp
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = com.example.util.tr(if (record.amount.isNotBlank()) record.amount else "$0.00"),

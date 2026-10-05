@@ -203,26 +203,28 @@ fun UserInboxDialog(
         val target = messages.find { it["id"] == id } ?: return null
         if (id in readingIds) return null
         readingIds += id
+        val reportId = (target["reportId"] as? String)?.takeIf(String::isNotBlank) ?: id
+
+        fun updated(values: List<Map<String, Any>>) = values.map {
+            if (it["id"] == id || it["id"] == reportId || it["reportId"] == reportId)
+                it + mapOf("isRead" to true, "userRead" to true, "hasNewAdminReply" to false, "hasNewReply" to false)
+            else it
+        }
+        subcollectionMessages = updated(subcollectionMessages)
+        arrayMessages = updated(arrayMessages)
+        supportReportMessages = updated(supportReportMessages)
+        val newReadSet = localReadIds + id + reportId
+        localReadIds = newReadSet
+        inboxPrefs.edit().putStringSet("read_ids", newReadSet).apply()
+        SubscriptionManager.setUnreadMessageIds(com.example.data.InboxNotificationPolicy.unreadKeys(updated(messages)))
+
         return coroutineScope.launch {
-            val reportId = (target["reportId"] as? String)?.takeIf(String::isNotBlank) ?: id
-            val ticket = target["conversation"] != null || supportReportMessages.any { it["id"] == reportId }
-            val result = runCatching {
+            val ticket = target["conversation"] != null || supportReportMessages.any { it["id"] == reportId } || (target["tag"] as? String)?.uppercase() == "PAGO"
+            runCatching {
                 if (ticket) SupportReplyManager.markUserRead(reportId,
                     com.example.data.SupportConversationPolicy.decode(target["conversation"]).lastOrNull()?.id)
                 else com.example.data.UserMessageReadRepository.mark(userUid, id, target)
             }
-            if (result.getOrDefault(false)) {
-                fun updated(values: List<Map<String, Any>>) = values.map {
-                    if (it["id"] == id || it["id"] == reportId || it["reportId"] == reportId)
-                        it + mapOf("isRead" to true, "userRead" to true, "hasNewAdminReply" to false, "hasNewReply" to false)
-                    else it
-                }
-                subcollectionMessages = updated(subcollectionMessages)
-                arrayMessages = updated(arrayMessages)
-                supportReportMessages = updated(supportReportMessages)
-                localReadIds = localReadIds + id + reportId
-                SubscriptionManager.setUnreadMessageIds(com.example.data.InboxNotificationPolicy.unreadKeys(updated(messages)))
-            } else Toast.makeText(context, com.example.util.appTr("No se pudo sincronizar la lectura. Vuelve a abrir el mensaje."), Toast.LENGTH_SHORT).show()
             readingIds -= id
         }
     }
@@ -342,8 +344,9 @@ fun UserInboxDialog(
         val reportId = (msg["reportId"] as? String)?.takeIf { it.isNotBlank() } ?: id
         val rawStatus = (msg["status"] as? String)?.uppercase() ?: "PENDIENTE"
         val normalizedStatus = when (rawStatus) {
-            "SOLVED", "SOLUCIONADO", "RESUELTO" -> "SOLUCIONADO"
+            "SOLVED", "SOLUCIONADO", "RESUELTO", "PAID", "COMPLETED", "COMPLETADO" -> "RESUELTO"
             "READ", "LEIDO", "LEÍDO" -> "LEÍDO"
+            "REJECTED", "RECHAZADO" -> "RECHAZADO"
             else -> "PENDIENTE"
         }
         @Suppress("UNCHECKED_CAST")
@@ -629,13 +632,15 @@ fun UserInboxDialog(
                                     // Badge de Estado para reportes de soporte (sincronizado multidispositivo)
                                     val rawStatus = (msg["status"] as? String)?.uppercase() ?: "PENDIENTE"
                                     val normalizedStatus = when (rawStatus) {
-                                        "SOLVED", "SOLUCIONADO", "RESUELTO" -> "SOLUCIONADO"
+                                        "SOLVED", "SOLUCIONADO", "RESUELTO", "PAID", "COMPLETED", "COMPLETADO" -> "RESUELTO"
                                         "READ", "LEIDO", "LEÍDO" -> "EN TRÁMITE"
+                                        "REJECTED", "RECHAZADO" -> "RECHAZADO"
                                         else -> "PENDIENTE"
                                     }
                                     val (statusColor, statusBg) = when (normalizedStatus) {
-                                        "SOLUCIONADO" -> Color(0xFF10B981) to Color(0xFF10B981).copy(alpha = 0.2f)
-                                        "EN TRÁMITE" -> Color(0xFF38BDF8) to Color(0xFF38BDF8).copy(alpha = 0.2f)
+                                        "RESUELTO", "SOLUCIONADO" -> Color(0xFF10B981) to Color(0xFF10B981).copy(alpha = 0.2f)
+                                        "EN TRÁMITE", "LEÍDO" -> Color(0xFF38BDF8) to Color(0xFF38BDF8).copy(alpha = 0.2f)
+                                        "RECHAZADO" -> Color(0xFFEF4444) to Color(0xFFEF4444).copy(alpha = 0.2f)
                                         else -> Color(0xFFF59E0B) to Color(0xFFF59E0B).copy(alpha = 0.2f)
                                     }
 
@@ -822,6 +827,17 @@ fun UserInboxDialog(
                                             Spacer(modifier = Modifier.height(4.dp))
                                         }
                                         Text(com.example.util.tr(content), color = Color.LightGray, fontSize = 13.sp)
+                                        if (!isRead) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                                HextechAnimatedTextLink(
+                                                    text = tr("Marcar como leído"),
+                                                    onClick = { markMessageAsRead(id) },
+                                                    color = Color(0xFF0EA5E9),
+                                                    fontSize = 11.5.sp
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }

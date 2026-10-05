@@ -163,6 +163,19 @@ class RuntimeBehaviorTest {
         for (amount in listOf(10L, 25L, 50L)) assertEquals(60L - amount, EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 60L, "role" to "streamer"), amount))
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 100L, "role" to "banned"), 10) }.isFailure)
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + ("orangeEssence" to 100L), 11) }.isFailure)
+
+        // Network fee tests in Orange Essence
+        val userWith11En = mapOf<String, Any>("role" to "streamer", "orangeEssence" to 11L)
+        // 10 USDT + TRC20 (2 EN fee) = 12 EN needed -> fails with 11 EN
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.TRC20.feeEn) }.isFailure)
+        // 10 USDT + BEP20 (1 EN fee) = 11 EN needed -> succeeds, remaining is 0 EN
+        assertEquals(0L, EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.BEP20.feeEn))
+
+        val userWith55En = mapOf<String, Any>("role" to "creador", "orangeEssence" to 55L)
+        // 50 USDT + ERC20 (5 EN fee) = 55 EN needed -> succeeds, remaining is 0 EN
+        assertEquals(0L, EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.ERC20.feeEn))
+        // 50 USDT + TRC20 (2 EN fee) = 52 EN needed -> succeeds, remaining is 3 EN
+        assertEquals(3L, EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.TRC20.feeEn))
     }
 
     @Test fun `same installation and its legacy aliases consume only one slot across repeated logins`() {
