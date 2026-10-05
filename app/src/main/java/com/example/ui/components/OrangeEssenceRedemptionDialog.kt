@@ -527,9 +527,9 @@ fun CashRedemptionConfirmation(
     wallet: String,
     busy: Boolean,
     feedback: String? = null,
-    fee: Long = network.feeEn,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    fee: Long = network.feeEn
 ) {
     val totalDeducted = amount + fee
     AlertDialog(
