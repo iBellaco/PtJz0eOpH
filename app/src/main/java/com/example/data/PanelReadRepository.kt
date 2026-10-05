@@ -66,6 +66,6 @@ object PanelReadRepository {
                 check(SupportReplyManager.markUserRead(report, SupportConversationPolicy.decode(message["conversation"]).lastOrNull()?.id))
             } else check(UserMessageReadRepository.mark(uid, id, message))
         }
-        events.filter { it.startsWith("notice:") || it in observedVersions }.forEach { acknowledge(it, observedVersions[it].orEmpty()) }
+        events.forEach { acknowledge(it, observedVersions[it].orEmpty()) }
     }
 }

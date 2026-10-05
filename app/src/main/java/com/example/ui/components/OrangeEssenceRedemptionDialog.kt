@@ -6,6 +6,8 @@ import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachTextButton as TextButton
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -112,6 +114,7 @@ fun CashRedemptionReviewPanel() {
     val scope = rememberCoroutineScope()
     var retry by remember { mutableIntStateOf(0) }
     var selectedTab by remember { mutableStateOf("PENDING") }
+    var selectedUserFilter by remember { mutableStateOf<String?>(null) }
     val sevenDaysAgo = remember { System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000L }
 
     DisposableEffect(retry) {
@@ -137,6 +140,10 @@ fun CashRedemptionReviewPanel() {
         }
     }
 
+    val historyGroupedByUser = remember(historyRequests) {
+        historyRequests.groupBy { (it["email"] as? String)?.takeIf(String::isNotBlank) ?: (it["userId"] as? String ?: "Usuario") }
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(tr("Solicitudes de canje"), color = HextechGold)
 
@@ -149,7 +156,7 @@ fun CashRedemptionReviewPanel() {
             FilterChip(
                 selected = selectedTab == "HISTORY",
                 onClick = { selectedTab = "HISTORY" },
-                label = { Text(tr("Historial (7 días) (${historyRequests.size})")) }
+                label = { Text(tr("Historial individual (7 días) (${historyRequests.size})")) }
             )
         }
 
@@ -211,40 +218,124 @@ fun CashRedemptionReviewPanel() {
         } else {
             if (historyRequests.isEmpty()) {
                 Text(tr("No hay solicitudes procesadas en los últimos 7 días."), color = TextSecondary, fontSize = 12.sp)
-            }
-            historyRequests.forEach { request ->
-                val reqAmount = request["amount"] ?: 0
-                val reqFee = request["fee"] ?: 0
-                val reqTotal = request["totalDeducted"] ?: reqAmount
-                val status = (request["status"] as? String)?.uppercase() ?: ""
-                val isPaid = status == "PAID"
-                val timestamp = (request["resolvedAtMillis"] as? Number)?.toLong() ?: (request["requestedAtMillis"] as? Number)?.toLong() ?: 0L
-                val dateStr = if (timestamp > 0) java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(timestamp)) else "Reciente"
-                Surface(
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                    color = HextechSurfaceVariant,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, if (isPaid) Color(0xFF10B981).copy(alpha = 0.5f) else DangerRed.copy(alpha = 0.5f)),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text(
-                                text = tr(if (isPaid) "PAGADO" else "RECHAZADO Y REEMBOLSADO"),
-                                color = if (isPaid) Color(0xFF10B981) else DangerRed,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                fontSize = 11.sp
+            } else {
+                // Selector de usuario individual
+                if (historyGroupedByUser.size > 1) {
+                    androidx.compose.foundation.lazy.LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    ) {
+                        item {
+                            FilterChip(
+                                selected = selectedUserFilter == null,
+                                onClick = { selectedUserFilter = null },
+                                label = { Text(tr("Todos (${historyGroupedByUser.size})"), fontSize = 11.sp) }
                             )
-                            Text(dateStr, color = TextSecondary, fontSize = 10.5.sp)
                         }
-                        Text(tr("${request["email"]} • $reqAmount USDT (Total: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
-                        Text(tr("Red: ${request["network"]} • Comisión de red: $reqFee EN"), color = HextechCyan, fontSize = 11.5.sp)
-                        Text(tr("Billetera: ") + (request["wallet"] as? String ?: ""), color = TextSecondary, fontSize = 11.sp)
-                        var dm by remember(request["id"]) { mutableStateOf(false) }
-                        if (dm) SupportReplyDialog(reportId = "payment_${request["id"]}", userName = request["email"] as? String ?: "Usuario",
-                            reportTitle = "Solicitud de pago USDT", reportDescription = "", initialReply = "",
-                            onDismiss = { dm = false }, onReplySent = { _, _ -> dm = false }, userEmail = request["email"] as? String ?: "",
-                            userId = request["userId"] as? String ?: "", tag = "PAGO", isFirestoreDoc = true)
-                        TextButton(onClick = { dm = true }) { Text(tr("Enviar DM privado"), fontSize = 11.sp) }
+                        items(historyGroupedByUser.keys.toList()) { userKey ->
+                            val userReqs = historyGroupedByUser[userKey].orEmpty()
+                            val totalPaidUsdt = userReqs.filter { it["status"] == "PAID" }.sumOf { (it["amount"] as? Number)?.toLong() ?: 0L }
+                            FilterChip(
+                                selected = selectedUserFilter == userKey,
+                                onClick = { selectedUserFilter = if (selectedUserFilter == userKey) null else userKey },
+                                label = { Text("$userKey (${userReqs.size} • $totalPaidUsdt USDT)", fontSize = 11.sp) }
+                            )
+                        }
+                    }
+                }
+
+                val displayedGroups = if (selectedUserFilter != null) {
+                    historyGroupedByUser.filterKeys { it == selectedUserFilter }
+                } else {
+                    historyGroupedByUser
+                }
+
+                displayedGroups.forEach { (userKey, userReqs) ->
+                    val totalPaid = userReqs.filter { it["status"] == "PAID" }.sumOf { (it["amount"] as? Number)?.toLong() ?: 0L }
+                    val totalEnDeducted = userReqs.filter { it["status"] == "PAID" }.sumOf { (it["totalDeducted"] as? Number)?.toLong() ?: (it["amount"] as? Number)?.toLong() ?: 0L }
+
+                    Surface(
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+                        color = HextechDarkBg.copy(alpha = 0.8f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.4f)),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            // Cabecera individual del cobrador
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = userKey,
+                                        color = HextechGold,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        text = tr("Historial individual • Validez de 7 días"),
+                                        color = HextechCyan,
+                                        fontSize = 10.5.sp
+                                    )
+                                }
+                                Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+                                    Text(
+                                        text = "$totalPaid USDT",
+                                        color = Color(0xFF10B981),
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        text = tr("${userReqs.size} operaciones"),
+                                        color = TextSecondary,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(color = HextechCardBorder.copy(alpha = 0.5f), thickness = 0.5.dp)
+
+                            // Lista de pagos individuales en los 7 días
+                            userReqs.forEach { request ->
+                                val reqAmount = request["amount"] ?: 0
+                                val reqFee = request["fee"] ?: 0
+                                val reqTotal = request["totalDeducted"] ?: reqAmount
+                                val status = (request["status"] as? String)?.uppercase() ?: ""
+                                val isPaid = status == "PAID"
+                                val timestamp = (request["resolvedAtMillis"] as? Number)?.toLong() ?: (request["requestedAtMillis"] as? Number)?.toLong() ?: 0L
+                                val dateStr = if (timestamp > 0) java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(timestamp)) else "Reciente"
+                                
+                                Surface(
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
+                                    color = HextechSurfaceVariant.copy(alpha = 0.6f),
+                                    border = androidx.compose.foundation.BorderStroke(0.8.dp, if (isPaid) Color(0xFF10B981).copy(alpha = 0.4f) else DangerRed.copy(alpha = 0.4f)),
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                            Text(
+                                                text = tr(if (isPaid) "PAGADO" else "RECHAZADO Y REEMBOLSADO"),
+                                                color = if (isPaid) Color(0xFF10B981) else DangerRed,
+                                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                                fontSize = 10.5.sp
+                                            )
+                                            Text(dateStr, color = TextSecondary, fontSize = 10.sp)
+                                        }
+                                        Text(tr("$reqAmount USDT (Total: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, fontSize = 12.sp)
+                                        Text(tr("Red: ${request["network"]} • Comisión de red: $reqFee EN"), color = HextechCyan, fontSize = 11.sp)
+                                        Text(tr("Billetera: ") + (request["wallet"] as? String ?: ""), color = TextSecondary, fontSize = 10.5.sp)
+                                        var dm by remember(request["id"]) { mutableStateOf(false) }
+                                        if (dm) SupportReplyDialog(reportId = "payment_${request["id"]}", userName = request["email"] as? String ?: userKey,
+                                            reportTitle = "Solicitud de pago USDT", reportDescription = "", initialReply = "",
+                                            onDismiss = { dm = false }, onReplySent = { _, _ -> dm = false }, userEmail = request["email"] as? String ?: "",
+                                            userId = request["userId"] as? String ?: "", tag = "PAGO", isFirestoreDoc = true)
+                                        TextButton(onClick = { dm = true }, modifier = Modifier.padding(top = 2.dp)) { Text(tr("Enviar DM privado"), fontSize = 10.5.sp) }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

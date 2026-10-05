@@ -186,66 +186,13 @@ fun AdminDashboardDialog(
     var showSponsorModerationDialog by remember { mutableStateOf(false) }
     var showSponsorPanelDialog by remember { mutableStateOf(false) }
     var showModeratorRequestsDialog by remember { mutableStateOf(false) }
-    var pendingModeratorRequestsCount by remember { mutableStateOf(0) }
+    val adminNotificationSummary = userPanelNotificationSummary()
+    val pendingModeratorRequestsCount = adminNotificationSummary.count(com.example.data.NotificationPanel.ADMINISTRATION)
     val reviewScope = rememberCoroutineScope()
     var isMonitoringMinimized by remember { mutableStateOf(false) }
 
     val userRoleForRequests = com.example.util.SubscriptionManager.userRole.collectAsState().value
     val isAdminUserForRequests = userRoleForRequests == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
-
-    if (isAdminUserForRequests) {
-        DisposableEffect(Unit) {
-            val pendingSet1 = mutableSetOf<String>()
-            val pendingSet2 = mutableSetOf<String>()
-            var pendingStreamers = 0
-            var expirationJob: kotlinx.coroutines.Job? = null
-
-            val listener1 = FirebaseFirestore.getInstance().collection("support_reports")
-                .whereEqualTo("category", "MODERATOR_REQUEST")
-                .whereEqualTo("status", "PENDIENTE")
-                .addSnapshotListener { snapshot, _ ->
-                    if (snapshot != null) {
-                        pendingSet1.clear()
-                        snapshot.documents.forEach { pendingSet1.add(it.id) }
-                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers
-                    }
-                }
-            val listener2 = FirebaseFirestore.getInstance().collection("moderator_requests")
-                .whereEqualTo("status", "PENDIENTE")
-                .addSnapshotListener { snapshot, _ ->
-                    if (snapshot != null) {
-                        pendingSet2.clear()
-                        snapshot.documents.forEach { pendingSet2.add(it.id) }
-                        pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers
-                    }
-                }
-            val streamerListener = com.example.data.StreamerRepository.requests.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, _ ->
-                if (snapshot != null) {
-                    val requests = snapshot.documents.map { it.id to it.data.orEmpty() }
-                    expirationJob?.cancel()
-                    expirationJob = reviewScope.launch {
-                        while (isActive) {
-                            val now = System.currentTimeMillis()
-                            pendingStreamers = requests.count { !com.example.data.StreamerPublicationPolicy.isExpired(it.second, now) }
-                            pendingModeratorRequestsCount = (pendingSet1 + pendingSet2).size + pendingStreamers
-                            requests.filter { com.example.data.StreamerPublicationPolicy.isExpired(it.second, now) }.forEach {
-                                com.example.data.StreamerRepository.expire(it.first)
-                            }
-                            val next = requests.filterNot { com.example.data.StreamerPublicationPolicy.isExpired(it.second, now) }
-                                .minOfOrNull { com.example.data.StreamerPublicationPolicy.expiresAt(it.second) } ?: break
-                            delay((next - now).coerceAtLeast(1L))
-                        }
-                    }
-                }
-            }
-            onDispose {
-                expirationJob?.cancel()
-                streamerListener.remove()
-                listener1.remove()
-                listener2.remove()
-            }
-        }
-    }
 
     // Sub-dialogs
     if (showModeratorRequestsDialog) {
