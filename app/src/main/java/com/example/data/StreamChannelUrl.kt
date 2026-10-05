@@ -41,6 +41,27 @@ object StreamerPublicationPolicy {
     const val REVIEW_WINDOW_MILLIS = 3 * 60 * 60 * 1000L
     const val PENDING_HISTORY_WINDOW_MILLIS = 24 * 60 * 60 * 1000L
     const val HISTORY_WINDOW_MILLIS = 7 * 24 * 60 * 60 * 1000L
+
+    const val DURATION_3_HOURS = 3
+    const val DURATION_6_HOURS = 6
+    const val DURATION_12_HOURS = 12
+    const val DURATION_EXTENSIBLE = 0
+
+    fun durationHours(data: Map<String, Any>): Int =
+        (data["durationHours"] as? Number)?.toInt() ?: DURATION_3_HOURS
+
+    fun liveExpiresAt(entry: Map<String, Any>): Long {
+        val approved = (entry["approvedAtMillis"] as? Number)?.toLong() ?: 0L
+        val hours = (entry["durationHours"] as? Number)?.toInt() ?: 0
+        if (hours <= 0 || approved <= 0L) return 0L
+        return approved + hours * 3600 * 1000L
+    }
+
+    fun isLiveExpired(entry: Map<String, Any>, now: Long = System.currentTimeMillis()): Boolean {
+        val expires = liveExpiresAt(entry)
+        return expires > 0L && now >= expires
+    }
+
     fun submittedAt(data: Map<String, Any>): Long =
         (data["submittedAt"] as? com.google.firebase.Timestamp)?.toDate()?.time
             ?: (data["submittedAtMillis"] as? Number)?.toLong() ?: 0L

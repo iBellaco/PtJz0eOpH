@@ -231,7 +231,12 @@ fun AdminSupportReportsDialog(
     // Reportes visibles según rol de administrador
     val visibleReports = remember(reportsList.toList(), isAdmin) {
         if (isAdmin) reportsList.toList()
-        else reportsList.filter { !it.type.equals("PATROCINADOR", ignoreCase = true) }
+        else reportsList.filter {
+            !it.type.equals("PATROCINADOR", ignoreCase = true) &&
+            !it.type.equals("PAGO", ignoreCase = true) &&
+            !it.type.equals("PAYMENT", ignoreCase = true) &&
+            !it.type.equals("PAGAMENTO", ignoreCase = true)
+        }
     }
 
     // Filtrar reportes

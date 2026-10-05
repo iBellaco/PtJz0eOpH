@@ -321,5 +321,8 @@
   "Selecciona primero una red para ver las opciones de canje": "Selecione primeiro uma rede para ver as opções de resgate",
   "Red seleccionada: {0} (Binance)": "Rede selecionada: {0} (Binance)",
   "Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar.": "Aviso: O pagamento é manual e leva de 24 a 72 horas. Verifique minuciosamente sua carteira e rede antes de confirmar.",
-  "Comisión de red actualizada automáticamente en tiempo real": "Taxa de rede atualizada automaticamente em tempo real"
+  "Comisión de red actualizada automáticamente en tiempo real": "Taxa de rede atualizada automaticamente em tempo real",
+  "Dirección de billetera copiada al portapapeles": "Endereço da carteira copiado para a área de transferência",
+  "Regla importante: Si eliges la categoría incorrecta o contenido que no corresponda a Wild Rift, tu cuenta será suspendida.": "Regra importante: Se você escolher a categoria incorreta ou conteúdo que não corresponda ao Wild Rift, sua conta será suspensa.",
+  "Tiempo de visualización en vivo:": "Tempo de exibição ao vivo:"
 }

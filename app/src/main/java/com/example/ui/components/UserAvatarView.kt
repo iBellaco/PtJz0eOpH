@@ -173,9 +173,8 @@ fun UserAvatarView(
     }
 
     val hasFrame = activeFrameAsset != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
-    val avatarSize = if (hasFrame) (if (isCurrentUser) 74.dp else size * 0.60f) else size
-    val frameScaleMultiplier = if (isCurrentUser) 2.25f else 1.45f
-    val verticalHoleCorrection = if (isCurrentUser && hasFrame) 2.dp else 0.dp
+    val avatarSize = if (hasFrame) (size * 0.53f) else size
+    val verticalHoleCorrection = if (hasFrame) (size * 0.015f) else 0.dp
 
     Box(
         modifier = modifier
@@ -266,7 +265,7 @@ fun UserAvatarView(
                 contentDescription = com.example.util.tr("Marco de Perfil"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .requiredSize(size * frameScaleMultiplier)
+                    .size(size)
                     .align(Alignment.Center)
             )
         } else if (isAdmin) {
@@ -276,7 +275,7 @@ fun UserAvatarView(
                     contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * frameScaleMultiplier)
+                        .size(size)
                         .align(Alignment.Center)
                 )
             } else if (!adminFrameUrl.isNullOrBlank()) {
@@ -290,7 +289,7 @@ fun UserAvatarView(
                     contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .requiredSize(size * frameScaleMultiplier)
+                        .size(size)
                         .align(Alignment.Center)
                 )
             }

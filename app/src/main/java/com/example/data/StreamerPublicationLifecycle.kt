@@ -36,6 +36,20 @@ object StreamerPublicationLifecycle {
                     delay(delayMillis)
                     StreamerRepository.expire(uid)
                 }
+            } else if (data["status"] == "APPROVED") {
+                val liveExp = StreamerPublicationPolicy.liveExpiresAt(data)
+                if (liveExp > 0L) {
+                    val delayMillis = (liveExp - System.currentTimeMillis()).coerceAtLeast(0L)
+                    val work = OneTimeWorkRequestBuilder<StreamerExpiryWorker>()
+                        .setInputData(workDataOf("ownerUid" to uid))
+                        .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
+                        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
+                    WorkManager.getInstance(context).enqueueUniqueWork(workName, ExistingWorkPolicy.REPLACE, work)
+                    deadlineJob = scope.launch {
+                        delay(delayMillis)
+                        StreamerRepository.end(uid)
+                    }
+                } else WorkManager.getInstance(context).cancelUniqueWork(workName)
             } else WorkManager.getInstance(context).cancelUniqueWork(workName)
         }
         historyListener = StreamerRepository.history(uid).addSnapshotListener { snapshot, error ->

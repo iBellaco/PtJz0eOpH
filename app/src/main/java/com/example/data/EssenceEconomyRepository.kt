@@ -107,22 +107,27 @@ object EssenceEconomyRepository {
     } }
 
     suspend fun resolve(id: String, paid: Boolean): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
-        check(SupportTicketAccess.isAdmin())
+        check(SupportTicketAccess.isAdmin()) { "No tienes permisos de administrador" }
         val request = redemptions.document(id)
         db.runTransaction { tx ->
+            // --- FASE 1: TODAS LAS LECTURAS PRIMERO ---
             val snapshot = tx.get(request)
-            check(snapshot.getString("status") == "PENDING")
+            check(snapshot.getString("status") == "PENDING") { "La solicitud no se encuentra pendiente" }
             val uid = snapshot.getString("userId") ?: error("Solicitud no disponible")
             val profile = db.collection("users").document(uid)
             val account = tx.get(profile)
+            val subHistRef = profile.collection("subscription_history").document(id)
+            val subHistSnap = tx.get(subHistRef)
+            val ticketId = "payment_$id"
+            val ticketRef = db.collection("support_reports").document(ticketId)
+            val ticketSnap = tx.get(ticketRef)
+            val msgRef = profile.collection("messages").document(ticketId)
+
+            // --- FASE 2: PREPARACIÓN DE DATOS ---
             val amount = snapshot.getLong("amount") ?: error("Solicitud no disponible")
             val fee = snapshot.getLong("fee") ?: 0L
             val totalRefund = snapshot.getLong("totalDeducted") ?: (amount + fee)
             val now = System.currentTimeMillis()
-            if (!paid) tx.update(profile, "orangeEssence", (account.getLong("orangeEssence") ?: 0L) + totalRefund)
-            tx.update(request, mapOf("status" to if (paid) "PAID" else "REJECTED", "resolvedAt" to FieldValue.serverTimestamp(), "resolvedAtMillis" to now))
-            tx.update(profile.collection("subscription_history").document(id), "status", if (paid) "Completado" else "Rechazado y reembolsado")
-            val ticketId = "payment_$id"
             val replyText = if (paid) "Tu solicitud de pago de $amount USDT ha sido procesada y pagada con éxito." else "Tu solicitud de pago de $amount USDT ha sido rechazada y las esencias han sido reembolsadas."
             val replyEntry = SupportMessageEntry(
                 id = "${ticketId}_reply_$now",
@@ -132,8 +137,6 @@ object EssenceEconomyRepository {
                 timestampMillis = now,
                 isGreeting = false
             )
-            val ticketRef = db.collection("support_reports").document(ticketId)
-            val ticketSnap = tx.get(ticketRef)
             val previousConv = if (ticketSnap.exists()) {
                 SupportConversationPolicy.decode(ticketSnap.get("conversation"))
             } else {
@@ -157,12 +160,34 @@ object EssenceEconomyRepository {
                 "hasNewReply" to true,
                 "staffRead" to true
             )
+
+            // --- FASE 3: TODAS LAS ESCRITURAS ---
+            if (!paid) {
+                tx.update(profile, "orangeEssence", (account.getLong("orangeEssence") ?: 0L) + totalRefund)
+            }
+            tx.update(request, mapOf("status" to if (paid) "PAID" else "REJECTED", "resolvedAt" to FieldValue.serverTimestamp(), "resolvedAtMillis" to now))
+
+            if (subHistSnap.exists()) {
+                tx.update(subHistRef, "status", if (paid) "Completado" else "Rechazado y reembolsado")
+            } else {
+                val receipt = mapOf(
+                    "id" to id,
+                    "timestamp" to now,
+                    "durationMillis" to 0L,
+                    "planName" to "Canje de Esencia Naranja",
+                    "status" to if (paid) "Completado" else "Rechazado y reembolsado",
+                    "amount" to "-$totalRefund EN",
+                    "source" to "CASH_REDEMPTION"
+                )
+                tx.set(subHistRef, receipt, com.google.firebase.firestore.SetOptions.merge())
+            }
+
             if (ticketSnap.exists()) {
                 tx.update(ticketRef, updateTicketData)
             } else {
                 tx.set(ticketRef, updateTicketData + mapOf("id" to ticketId, "reportId" to ticketId, "userId" to uid, "title" to "Solicitud de pago USDT", "tag" to "PAGO", "type" to "PAGO", "panel" to "HISTORY", "createdAt" to FieldValue.serverTimestamp()), com.google.firebase.firestore.SetOptions.merge())
             }
-            tx.set(profile.collection("messages").document(ticketId), updateTicketData + mapOf("id" to ticketId, "reportId" to ticketId, "title" to "Solicitud de pago USDT", "content" to replyText, "tag" to "PAGO", "panel" to "HISTORY", "timestamp" to now), com.google.firebase.firestore.SetOptions.merge())
+            tx.set(msgRef, updateTicketData + mapOf("id" to ticketId, "reportId" to ticketId, "title" to "Solicitud de pago USDT", "content" to replyText, "tag" to "PAGO", "panel" to "HISTORY", "timestamp" to now), com.google.firebase.firestore.SetOptions.merge())
         }.await()
         Unit
     } }

@@ -30,7 +30,7 @@ object StreamerRepository {
     private fun hasRole(role: String?, secondary: String?, adminClaim: Boolean = false) =
         com.example.model.RolePanelAccess.canOpen(com.example.model.RolePanel.STREAMER, role.orEmpty(), secondary.orEmpty(), adminClaim)
 
-    suspend fun submit(name: String, rawUrl: String): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
+    suspend fun submit(name: String, rawUrl: String, durationHours: Int = 3): Result<Unit> = withContext(Dispatchers.IO) { runCatching {
         val user = FirebaseAuth.getInstance().currentUser ?: error("streamer_error")
         check(name.trim().length in 2..60) { "streamer_name_error" }
         val adminClaim = com.example.util.AuthManager.isAdminClaim.value
@@ -54,9 +54,16 @@ object StreamerRepository {
                     "rejectionReason" to "TIMEOUT", "reviewedAtMillis" to StreamerPublicationPolicy.expiresAt(prior)))
                 transaction.set(history(user.uid).document(StreamerPublicationPolicy.publicationId(prior)), previous)
             }
+            val durationLabel = when (durationHours) {
+                3 -> "3 horas"
+                6 -> "6 horas"
+                12 -> "12 horas"
+                else -> "Extensible"
+            }
             val fields = mutableMapOf<String, Any>("userId" to user.uid, "userName" to (account.getString("userName") ?: user.displayName.orEmpty()),
                 "channelName" to name.trim(), "channelUrl" to channel.url, "platform" to channel.platform,
-                "status" to "PENDING", "usingCoachAcknowledged" to true, "submittedAtMillis" to now)
+                "status" to "PENDING", "usingCoachAcknowledged" to true, "submittedAtMillis" to now,
+                "durationHours" to durationHours, "durationLabel" to durationLabel)
             if (archive) fields.putAll(mapOf("submittedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(), "publicationId" to publicationId,
                 "streamerHistoryDeleteAt" to com.google.firebase.Timestamp(java.util.Date(now + StreamerPublicationPolicy.PENDING_HISTORY_WINDOW_MILLIS))))
             if (isAdmin) fields["adminTest"] = channel.platform == "Google"
@@ -96,8 +103,11 @@ object StreamerRepository {
                 check(hasRole(account.getString("role"), account.getString("secondaryRole"), trustedTest)) { "streamer_role_error" }
                 val channel = StreamChannelUrl.parse(request.getString("channelUrl").orEmpty(),
                     allowAdminTest = trustedTest) ?: error("streamer_url_error")
+                val durHours = (request.getLong("durationHours") ?: (request.get("durationHours") as? Number)?.toLong() ?: 3L).toInt()
+                val durLabel = request.getString("durationLabel") ?: if (durHours == 0) "Extensible" else "$durHours horas"
                 val entry = mapOf<String, Any>("userId" to uid, "channelName" to request.getString("channelName").orEmpty(),
                     "channelUrl" to channel.url, "platform" to channel.platform, "approvedAtMillis" to System.currentTimeMillis(),
+                    "durationHours" to durHours, "durationLabel" to durLabel,
                     "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()))
                 transaction.set(registry, mapOf("entries" to StreamerPublicationPolicy.approve(live, entry)), SetOptions.merge())
                 if (countClicks && metric?.exists() != true) transaction.set(metricRef,

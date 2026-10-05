@@ -12,15 +12,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import android.widget.Toast
 import com.example.data.*
 import com.example.ui.theme.*
 import com.example.util.*
@@ -193,6 +198,8 @@ fun CashRedemptionOptions(
 
 @Composable
 fun CashRedemptionReviewPanel() {
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var historyRequests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -266,10 +273,42 @@ fun CashRedemptionReviewPanel() {
                     border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder),
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                 ) {
-                    Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(tr("${request["email"]} • $reqAmount USDT (Descontado: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                         Text(tr("Red: ${request["network"]} • Comisión: $reqFee EN"), color = HextechCyan, fontSize = 12.sp)
-                        Text(request["wallet"] as? String ?: "", color = TextSecondary, fontSize = 11.sp)
+                        val walletAddress = request["wallet"] as? String ?: ""
+                        Row(
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF0F172A), androidx.compose.foundation.shape.RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = walletAddress,
+                                color = HextechGoldLight,
+                                fontSize = 11.sp,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = {
+                                    if (walletAddress.isNotBlank()) {
+                                        clipboardManager.setText(AnnotatedString(walletAddress))
+                                        Toast.makeText(context, com.example.util.appTr("Dirección de billetera copiada al portapapeles"), Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                modifier = Modifier.size(28.dp).testTag("copy_wallet_btn_${request["id"]}")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = tr("Copiar billetera"),
+                                    tint = HextechGold,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                         var dm by remember(request["id"]) { mutableStateOf(false) }
                         if (dm) SupportReplyDialog(reportId = "payment_${request["id"]}", userName = request["email"] as? String ?: "Usuario",
                             reportTitle = "Solicitud de pago USDT", reportDescription = "", initialReply = "",
@@ -411,7 +450,39 @@ fun CashRedemptionReviewPanel() {
                                         }
                                         Text(tr("$reqAmount USDT (Total: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, fontSize = 12.sp)
                                         Text(tr("Red: ${request["network"]} • Comisión de red: $reqFee EN"), color = HextechCyan, fontSize = 11.sp)
-                                        Text(tr("Billetera: ") + (request["wallet"] as? String ?: ""), color = TextSecondary, fontSize = 10.5.sp)
+                                        val histWallet = request["wallet"] as? String ?: ""
+                                        Row(
+                                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color(0xFF0F172A).copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = histWallet,
+                                                color = TextSecondary,
+                                                fontSize = 10.5.sp,
+                                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            IconButton(
+                                                onClick = {
+                                                    if (histWallet.isNotBlank()) {
+                                                        clipboardManager.setText(AnnotatedString(histWallet))
+                                                        Toast.makeText(context, com.example.util.appTr("Dirección de billetera copiada al portapapeles"), Toast.LENGTH_SHORT).show()
+                                                    }
+                                                },
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.ContentCopy,
+                                                    contentDescription = tr("Copiar billetera"),
+                                                    tint = HextechGold,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
+                                        }
                                         var dm by remember(request["id"]) { mutableStateOf(false) }
                                         if (dm) SupportReplyDialog(reportId = "payment_${request["id"]}", userName = request["email"] as? String ?: userKey,
                                             reportTitle = "Solicitud de pago USDT", reportDescription = "", initialReply = "",

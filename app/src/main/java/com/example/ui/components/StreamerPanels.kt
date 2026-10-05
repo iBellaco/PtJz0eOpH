@@ -2,6 +2,7 @@ package com.example.ui.components
 
 import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachTextButton as TextButton
+import com.example.ui.components.CoachFilterChip
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
@@ -9,12 +10,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.R
@@ -149,6 +153,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
     var requestAvailable by remember(uid) { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
+    var selectedDuration by remember { mutableStateOf(3) }
     var busy by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<Result<Unit>?>(null) }
     val scope = rememberCoroutineScope()
@@ -189,10 +194,70 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 PanelReadControl(com.example.data.NotificationPanel.STREAMER)
                 Text(localizedString(R.string.streamer_requirement), color = Color.White)
                 Text(localizedString(R.string.streamer_expiry_notice), color = Color.LightGray)
+
+                // Aviso de Regla de Categoría
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFFEF4444).copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxWidth().testTag("streamer_category_rule_warning")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(10.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = Color(0xFFEF4444),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = com.example.util.tr("Regla importante: Si eliges la categoría incorrecta o contenido que no corresponda a Wild Rift, tu cuenta será suspendida."),
+                            color = Color(0xFFEF4444),
+                            fontSize = 11.5.sp,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                        )
+                    }
+                }
+
                 StreamerSubmissionFeedback(busy && submitting, submitted)
                 OutlinedTextField(name, { name = it; result = null }, label = { Text(localizedString(R.string.streamer_name)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(url, { url = it; result = null }, label = { Text(localizedString(R.string.streamer_url)) }, colors = streamerFieldColors(), singleLine = true, enabled = !busy && !pending && !active, modifier = Modifier.fillMaxWidth())
                 StreamerUrlRecommendations(isAdmin, enabled = !busy && !pending && !active) { url = it; result = null }
+
+                // Selector de duración de publicación
+                if (!active && !pending) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = com.example.util.tr("Tiempo de visualización en vivo:"),
+                            color = StreamGold,
+                            fontSize = 12.sp,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                        ) {
+                            listOf(
+                                3 to "3 Horas",
+                                6 to "6 Horas",
+                                12 to "12 Horas",
+                                0 to "Extensible"
+                            ).forEach { (hours, label) ->
+                                CoachFilterChip(
+                                    selected = selectedDuration == hours,
+                                    onClick = { if (!busy && !pending && !active) selectedDuration = hours },
+                                    label = { Text(com.example.util.tr(label), fontSize = 11.sp) },
+                                    enabled = !busy && !pending && !active,
+                                    modifier = Modifier.testTag("streamer_duration_${hours}h")
+                                )
+                            }
+                        }
+                    }
+                }
+
                 Text(localizedString(R.string.streamer_count, entries.size), color = Color.White)
                 if (maximum) Text(localizedString(R.string.streamer_max), color = StreamGold)
                 when {
@@ -214,7 +279,7 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 operationError(result)?.let { Text(it, color = Color(0xFFFF8A80)) }
                 if (!registryAvailable || !requestAvailable) Text(localizedString(R.string.streamer_loading), color = Color.White)
                 if (active) Button(onClick = { submitting = false; busy = true; scope.launch { submitted = false; result = StreamerRepository.end(uid); busy = false } }, enabled = !busy && registryAvailable) { Text(localizedString(R.string.streamer_end)) }
-                else Button(onClick = { submitting = true; busy = true; scope.launch { result = StreamerRepository.submit(name, url); submitted = result?.isSuccess == true; if (submitted) { name = ""; url = "" }; busy = false } },
+                else Button(onClick = { submitting = true; busy = true; scope.launch { result = StreamerRepository.submit(name, url, selectedDuration); submitted = result?.isSuccess == true; if (submitted) { name = ""; url = "" }; busy = false } },
                     enabled = !busy && registryAvailable && requestAvailable && !maximum && !pending && name.trim().length in 2..60 && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) != null) { Text(localizedString(R.string.streamer_submit)) }
                 if (url.isNotBlank() && StreamChannelUrl.parse(url, allowAdminTest = isAdmin) == null) Text(localizedString(R.string.streamer_url_error), color = Color(0xFFFF8A80))
                 val history = (publications + listOfNotNull(request.takeIf { it.isNotEmpty() })).distinctBy { StreamerPublicationPolicy.publicationId(it) }.map { item ->

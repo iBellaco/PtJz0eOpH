@@ -58,7 +58,7 @@ service cloud.firestore {
       return signedIn() && (data.get('userId', '') == request.auth.uid ||
         (data.get('userId', '') == '' && request.auth.token.get('email', '') != '' && data.get('userEmail', '') == request.auth.token.email));
     }
-    function staffTicket(data) { return isAdmin() || (isModerator() && data.get('staffVisible', false) == true); }
+    function staffTicket(data) { return isAdmin() || (isModerator() && data.get('staffVisible', false) == true && !sponsor(data)); }
     function closed(data) { return data.get('status', '').upper() in ['SOLVED', 'SOLUCIONADO', 'RESUELTO', 'CLOSED', 'CERRADO', 'COMPLETED', 'COMPLETADO']; }
     function userReadUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead','userRead','hasNewReply','hasNewAdminReply','userReadAtMillis','updatedAt'])
@@ -274,7 +274,7 @@ service cloud.firestore {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
       allow create, update: if (isAdmin() && (request.resource.data.get('status', '') != 'APPROVED' || !streamerExpired(resource.data))) ||
         (isStreamer() && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['userId','userName','channelName','channelUrl','platform','status','usingCoachAcknowledged','submittedAtMillis','submittedAt','publicationId','streamerHistoryDeleteAt'])
+        && request.resource.data.keys().hasOnly(['userId','userName','channelName','channelUrl','platform','status','usingCoachAcknowledged','submittedAtMillis','submittedAt','publicationId','streamerHistoryDeleteAt','durationHours','durationLabel'])
         && request.resource.data.userId == userId && request.resource.data.status == 'PENDING'
         && request.resource.data.usingCoachAcknowledged == true && request.resource.data.channelName is string
         && request.resource.data.channelName.size() >= 2 && request.resource.data.channelName.size() <= 60
