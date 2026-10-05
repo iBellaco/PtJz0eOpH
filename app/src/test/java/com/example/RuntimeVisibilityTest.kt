@@ -146,6 +146,12 @@ class RuntimeVisibilityTest(private val screen: String) {
     }
 
     @Composable private fun surface() {
+        val shouldBeSignedIn = screen.endsWith("-registered") || screen == "champion-premium" || screen == "champion-situational-boot" || screen == "creator-reader" || screen == "support-admin-notification"
+        androidx.compose.runtime.LaunchedEffect(screen) {
+            val field = AuthManager::class.java.getDeclaredField("_isSignedIn").apply { isAccessible = true }
+            @Suppress("UNCHECKED_CAST")
+            (field.get(AuthManager) as kotlinx.coroutines.flow.MutableStateFlow<Boolean>).value = shouldBeSignedIn
+        }
         when {
             screen.startsWith("support-email-") -> SupportReplyDialog(reportId = "email-privacy", reportTitle = "Teste",
                 reportDescription = "Detalhe", userEmail = "client@test.invalid", userName = "Cliente", userId = "private-target",
@@ -185,7 +191,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 EssencePlanOptions(if (screen == "essence-plans-insufficient") 99 else 1200,
                     if (screen == "essence-plans-blue") 0 else if (screen == "essence-plans-insufficient") 8 else 100) { plan, currency -> copiedSummary = "${plan.name}:${currency.name}" }
             }
-            screen == "cash-redemption-options" -> CashRedemptionOptions(25) { copiedSummary = it.toString() }
+            screen == "cash-redemption-options" -> CashRedemptionOptions(27) { copiedSummary = it.toString() }
             screen.startsWith("storage-summary") -> StorageConsumptionSummary(com.example.data.StorageConsumption(
                 estimatedBytes = 2_097_152, dailyGrowthBytes = if (screen.endsWith("partial")) null else 1024,
                 sampledAtMillis = fixedGrantNow, complete = !screen.endsWith("partial")))
@@ -265,7 +271,7 @@ class RuntimeVisibilityTest(private val screen: String) {
     }
 
     private fun inspect(step: String) {
-        compose.waitForIdle()
+        if (compose.mainClock.autoAdvance && !screen.contains("animation") && screen != "streamer-live") compose.waitForIdle()
         val nodes = compose.onAllNodes(SemanticsMatcher("all") { true }, useUnmergedTree = true).fetchSemanticsNodes()
         val strings = nodes.flatMap {
                 it.config.getOrNull(SemanticsProperties.Text).orEmpty().map { text -> text.text } +

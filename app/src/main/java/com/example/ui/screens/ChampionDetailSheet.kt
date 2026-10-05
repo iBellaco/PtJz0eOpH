@@ -535,10 +535,12 @@ fun ChampionDetailSheet(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     // Tarjeta analítica de tendencia: hace 24 horas vs. hace 12 horas vs. actual
-                    DetailedTrendGraphCard(
-                        winrate = roleProfile.winrate,
-                        delta = roleProfile.winrateDelta
-                    )
+                    if (isSignedIn) {
+                        DetailedTrendGraphCard(
+                            winrate = roleProfile.winrate,
+                            delta = roleProfile.winrateDelta
+                        )
+                    }
                 }
             }
 
