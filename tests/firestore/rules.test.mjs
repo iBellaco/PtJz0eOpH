@@ -171,7 +171,10 @@ try {
     assert.equal(emailPayout.network,'');
     assert.equal(emailPayout.wallet,'');
     await assertFails(redeem('binance-email-invalid',10,{binanceEmail:'correo-invalido'}));
-    await assertSucceeds(deleteDoc(doc(admin,'cash_redemptions/binance-email')));
+    const binanceRef=doc(admin,'cash_redemptions/binance-email');
+    await assertFails(deleteDoc(binanceRef));
+    await assertSucceeds(updateDoc(binanceRef,{status:'PAID',resolvedAtMillis:Date.now()-1209601000,historyDeleteAtMillis:Date.now()-1000}));
+    await assertSucceeds(deleteDoc(binanceRef));
   });
   await test('staff can reject a cash request and refund once in one transaction',async()=>{
     const before=(await getDoc(doc(admin,'users/economy'))).data().orangeEssence;
