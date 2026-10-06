@@ -399,8 +399,8 @@ class RuntimeBehaviorTest {
         assertEquals(0L, StreamerPublicationPolicy.liveExpiresAt(approved + ("durationHours" to 0)))
     }
 
-    @Test fun `active history has no deadline and 72 hours start at actual end`() {
-        assertEquals(72L * 60 * 60 * 1000L, StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS)
+    @Test fun `active history has no deadline and 48 hours start at actual end`() {
+        assertEquals(48L * 60 * 60 * 1000L, StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS)
         val publication = mapOf<String, Any>("submittedAtMillis" to now, "status" to "APPROVED")
         val endedAt = now + 9 * 86400000L
         assertEquals(0L, StreamerPublicationPolicy.historyExpiresAt(publication))

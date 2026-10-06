@@ -48,7 +48,7 @@
     <string name="streamer_history_date_unavailable">Data indisponível</string>
     <string name="streamer_history_error">Não foi possível sincronizar o histórico compartilhado. O histórico deste dispositivo foi preservado.</string>
     <string name="streamer_live_label">Ao vivo</string>
-    <string name="streamer_history_retention">Pendentes: 24 horas após o envio. Publicações encerradas: 72 horas após o encerramento.</string>
+    <string name="streamer_history_retention">Pendentes: 24 horas após o envio. Publicações encerradas: 48 horas após o encerramento.</string>
     <string name="streamer_history_exact_date">Data e hora: %1$s</string>
     <string name="streamer_history_clicks">Cliques para abrir o canal: %1$d</string>
     <string name="streamer_history_clicks_unavailable">Cliques: contagem indisponível</string>

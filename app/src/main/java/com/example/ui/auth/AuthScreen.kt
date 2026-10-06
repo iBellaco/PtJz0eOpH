@@ -475,7 +475,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 compact = true
             )
 
-            Spacer(modifier = Modifier.height(if (hasRoleFrame) 10.dp else 12.dp))
+            Spacer(modifier = Modifier.height(if (hasRoleFrame) 2.dp else 8.dp))
 
             if (showInboxDialog) {
                 com.example.ui.components.UserInboxDialog(
@@ -626,7 +626,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             // Avatar in center
             Box(
                 modifier = Modifier
-                    .size(if (hasImageFrame) 196.dp else if (hasRoleFrame) 140.dp else 92.dp)
+                    .size(if (hasImageFrame) 180.dp else if (hasRoleFrame) 140.dp else 92.dp)
                     .testTag("profile_avatar_frame_area")
                     .padding(
                         top = if (hasRoleFrame) 0.dp else 6.dp,
@@ -709,7 +709,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 }
             }
 
-            Spacer(modifier = Modifier.height(if (hasImageFrame) 28.dp else 12.dp))
+            Spacer(modifier = Modifier.height(if (hasImageFrame) 6.dp else 12.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

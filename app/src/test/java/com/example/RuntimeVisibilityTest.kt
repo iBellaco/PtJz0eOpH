@@ -630,7 +630,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Aceita"))
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Data e hora:"))
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Duração selecionada: 12 horas"))
-                Assert.assertTrue(copiedSummary, copiedSummary.contains("A contagem de 72 horas começará"))
+                Assert.assertTrue(copiedSummary, copiedSummary.contains("A contagem de 48 horas começará"))
                 Assert.assertTrue(copiedSummary, Regex("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}").containsMatchIn(copiedSummary))
                 compose.onAllNodesWithText("Aceita").assertCountEquals(2)
                 compose.onNodeWithText("Rejeitada automaticamente: passaram três horas sem aprovação.").performScrollTo().assertExists()
@@ -664,7 +664,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val name = compose.onNodeWithTag("profile_user_name", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 val density = context.resources.displayMetrics.density
                 Assert.assertEquals(140f * density, avatar.width, density)
-                Assert.assertEquals(196f * density, area.width, density)
+                Assert.assertEquals(180f * density, area.width, density)
                 Assert.assertTrue("Frame space must precede the username: $area $name", area.bottom < name.top)
                 if (screen.startsWith("profile-admin-image-frame")) Assert.assertEquals("free", SubscriptionManager.userRole.value)
                 inspect("expanded-avatar")

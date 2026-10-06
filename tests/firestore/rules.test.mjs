@@ -523,8 +523,8 @@ try {
       assert.ok(seen.includes(0));
     } finally {unsubscribe();}
   });
-  await test('72 hour retention permits only expired history and counter deletion by owner or staff', async () => {
-    const oldId = 'publication-72-hours-old', oldDate = Date.now()-259200000-1000;
+  await test('48 hour retention permits only expired history and counter deletion by owner or staff', async () => {
+    const oldId = 'publication-48-hours-old', oldDate = Date.now()-172800000-1000;
     const data = { ...request('s2'),status:'ENDED',endedAtMillis:oldDate,submittedAtMillis:oldDate,submittedAt:Timestamp.fromMillis(oldDate),publicationId:oldId };
     await env.withSecurityRulesDisabled(async context => {
       const store = context.firestore();
@@ -549,13 +549,13 @@ try {
     await assertSucceeds(setDoc(doc(owner,'streamer_requests','s2'),{...data,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+86400000)}));
     await assertFails(setDoc(doc(admin,'streamer_click_metrics','publication-wrong-deadline'),{userId:'s2',publicationId:'publication-wrong-deadline',submittedAtMillis:data.submittedAtMillis,clickCount:0,streamerHistoryDeleteAt:Timestamp.fromMillis(data.submittedAtMillis+8*86400000)}));
   });
-  await test('an active publication older than 72 hours still accepts guest clicks and cannot be pruned', async () => {
+  await test('an active publication older than 48 hours still accepts guest clicks and cannot be pruned', async () => {
     const id='publication-still-active', submitted=Date.now()-9*86400000;
     await assertSucceeds(setDoc(doc(admin,'system_config','streamer_live'),{entries:[{userId:'s2',publicationId:id,channelName:'Coach',channelUrl:'https://twitch.tv/coach_test'}]}));
     await assertSucceeds(setDoc(doc(admin,'streamer_click_metrics',id),{userId:'s2',publicationId:id,submittedAtMillis:submitted,status:'APPROVED',clickCount:0}));
     await assertSucceeds(updateDoc(doc(env.unauthenticatedContext().firestore(),'streamer_click_metrics',id),{clickCount:increment(1),lastClickedAt:serverTimestamp()}));
     await assertFails(deleteDoc(doc(db('s2'),'streamer_click_metrics',id)));
-    const endedAt=Date.now(), deadline=Timestamp.fromMillis(endedAt+72*60*60*1000);
+    const endedAt=Date.now(), deadline=Timestamp.fromMillis(endedAt+48*60*60*1000);
     await assertSucceeds(setDoc(doc(admin,'streamer_requests','s2'),{userId:'s2',publicationId:id,submittedAtMillis:submitted,status:'APPROVED'}));
     const owner=db('s2'), batch=writeBatch(owner);
     batch.update(doc(owner,'streamer_requests','s2'),{status:'ENDED',endedAtMillis:endedAt,streamerHistoryDeleteAt:deadline});

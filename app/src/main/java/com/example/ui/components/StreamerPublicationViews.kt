@@ -128,11 +128,33 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
                         val durationHours = StreamerPublicationPolicy.durationHours(item)
                         val durationValue = if (durationHours <= 0) localizedString(R.string.streamer_duration_extensible) else localizedString(R.string.streamer_duration_hours, durationHours)
                         val durationText = localizedString(R.string.streamer_duration_selected, durationValue)
+                        val liveDeadline = if (status == "APPROVED") StreamerPublicationPolicy.liveExpiresAt(item) else 0L
+                        val liveRemainingMillis = (liveDeadline - now).coerceAtLeast(0L)
+                        val liveRemainingSeconds = (liveRemainingMillis + 999L) / 1000L
+                        val liveCountdownText = if (liveDeadline > 0L) localizedString(
+                            R.string.streamer_live_ends_in,
+                            liveRemainingSeconds / 3600L,
+                            (liveRemainingSeconds / 60L) % 60L,
+                            liveRemainingSeconds % 60L
+                        ) else ""
+                        val liveCountdownColor = when {
+                            liveRemainingMillis <= 10 * 60 * 1000L -> Color(0xFFFF5252)
+                            liveRemainingMillis <= 30 * 60 * 1000L -> Color(0xFFFFA726)
+                            else -> Color(0xFF22D3EE)
+                        }
                         val deadline = StreamerPublicationPolicy.historyExpiresAt(item)
                         val remaining = ((deadline - now).coerceAtLeast(0L) + 59999L) / 60000L
                         val expiresText = if (deadline > 0L) localizedString(R.string.streamer_history_delete_in, remaining / 60L, remaining % 60L) else if (status == "APPROVED") localizedString(R.string.streamer_history_active_retention) else ""
                         Text(dateText, color = Color.LightGray)
                         Text(durationText, color = Color.White, modifier = Modifier.testTag("streamer_history_duration_${StreamerPublicationPolicy.publicationId(item)}"))
+                        if (liveCountdownText.isNotBlank()) {
+                            Text(
+                                liveCountdownText,
+                                color = liveCountdownColor,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                modifier = Modifier.testTag("streamer_history_live_countdown_${StreamerPublicationPolicy.publicationId(item)}")
+                            )
+                        }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(statusText, color = color)
                         }
@@ -155,7 +177,7 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
                         val deletionDate = if (deadline > 0L) localizedString(R.string.streamer_history_deletion_date, exactFormat.format(Date(deadline))) else ""
                         val copyLabel = localizedString(R.string.streamer_history_copy)
                         TextButton(onClick = {
-                            val summary = listOf(channel, dateText, durationText, statusText, clickText, expiresText, deletionDate).filter { it.isNotBlank() }.joinToString("\n")
+                            val summary = listOf(channel, dateText, durationText, liveCountdownText, statusText, clickText, expiresText, deletionDate).filter { it.isNotBlank() }.joinToString("\n")
                             if (onCopy != null) onCopy(summary) else {
                                 clipboard.setText(AnnotatedString(summary))
                                 android.widget.Toast.makeText(context, copiedMessage, android.widget.Toast.LENGTH_SHORT).show()
