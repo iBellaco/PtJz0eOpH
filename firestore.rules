@@ -91,6 +91,15 @@ service cloud.firestore {
         ((network == 'TRC20' && wallet.matches('T[1-9A-HJ-NP-Za-km-z]{33}')) ||
          (network != 'TRC20' && wallet.matches('0x[0-9a-fA-F]{40}') && wallet != '0x0000000000000000000000000000000000000000'));
     }
+    function validBinanceEmail(email) {
+      return email is string && email.size() >= 5 && email.size() <= 254 &&
+        email.matches('[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}');
+    }
+    function validCashDestination(data) {
+      let email = data.get('binanceEmail', '');
+      return (email != '' && validBinanceEmail(email) && data.get('network', '') == '' && data.get('wallet', '') == '') ||
+        (email == '' && validUsdtWallet(data.get('network', ''), data.get('wallet', '')));
+    }
     function economyOperation(userId) {
       return getAfter(/databases/$(database)/documents/users/$(userId)/economy_operations/$(request.resource.data.lastEconomyOperation)).data;
     }
@@ -116,7 +125,7 @@ service cloud.firestore {
           && request.resource.data.premiumUntil == base + days * 86400000 && op.premiumUntil == request.resource.data.premiumUntil
           && request.resource.data.subscriptionPlan == op.receipt.planName
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([field, 'premiumUntil', 'subscriptionPlan', 'lastEconomyOperation'])) ||
-          (canRedeem(resource.data) && op.kind == 'CASH' && op.currency == 'ORANGE' && cost in [10, 25, 50] && op.usd == cost && validUsdtWallet(op.network, op.wallet)
+          (canRedeem(resource.data) && op.kind == 'CASH' && op.currency == 'ORANGE' && cost in [10, 25, 50] && op.usd == cost && validCashDestination(op)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['orangeEssence', 'lastEconomyOperation'])
           && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.amount == cost));
     }
@@ -158,7 +167,7 @@ service cloud.firestore {
         allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
         allow create: if signedIn() && request.auth.uid == userId && request.resource.data.userId == userId
           && request.resource.data.id == id && request.resource.data.createdAt == request.time
-          && request.resource.data.keys().hasOnly(['id','userId','kind','plan','currency','cost','premiumUntil','usd','network','wallet','timestamp','createdAt','receipt'])
+          && request.resource.data.keys().hasOnly(['id','userId','kind','plan','currency','cost','premiumUntil','usd','network','wallet','binanceEmail','timestamp','createdAt','receipt'])
           && profile().lastEconomyOperation == id
           && get(/databases/$(database)/documents/users/$(userId)).data.get('lastEconomyOperation', '') != id
           && getAfter(/databases/$(database)/documents/users/$(userId)/subscription_history/$(id)).data == request.resource.data.receipt;
@@ -181,15 +190,17 @@ service cloud.firestore {
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid
         && (isAdmin() || canRedeem(account()))
-        && request.resource.data.keys().hasOnly(['id','userId','email','amount','usd','paymentCurrency','network','wallet','status','requestedAt','requestedAtMillis','fee','totalDeducted'])
+        && request.resource.data.keys().hasOnly(['id','userId','email','userName','amount','usd','paymentCurrency','network','wallet','binanceEmail','status','requestedAt','requestedAtMillis','fee','totalDeducted'])
         && request.resource.data.id == id && (request.resource.data.email.lower() == request.auth.token.get('email', '').lower() || request.resource.data.email == '')
+        && request.resource.data.userName == account().get('name', '')
         && request.resource.data.status == 'PENDING' && request.resource.data.requestedAt == request.time
         && request.resource.data.amount in [10,25,50] && request.resource.data.usd == request.resource.data.amount
-        && request.resource.data.paymentCurrency == 'USDT' && request.resource.data.network == op().network && request.resource.data.wallet == op().wallet
-        && validUsdtWallet(request.resource.data.network, request.resource.data.wallet)
+        && request.resource.data.paymentCurrency == 'USDT'
+        && request.resource.data.network == op().get('network', '') && request.resource.data.wallet == op().get('wallet', '')
+        && request.resource.data.binanceEmail == op().get('binanceEmail', '')
+        && validCashDestination(request.resource.data)
         && op().kind == 'CASH' && op().cost == request.resource.data.amount && op().timestamp == request.resource.data.requestedAtMillis;
-      allow update: if isAdmin();
-      allow delete: if false;
+      allow update, delete: if isAdmin();
     }
     match /pending_sponsor_ads/{id} {
       allow read, update, delete: if isAdmin();
