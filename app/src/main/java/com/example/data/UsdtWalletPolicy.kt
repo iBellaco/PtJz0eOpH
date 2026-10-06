@@ -14,6 +14,18 @@ enum class UsdtNetwork(val feeEn: Long = 2L, val displayName: String = "") {
 
 object UsdtWalletPolicy {
     private val tokenContracts = setOf("txlaq63xg1nazckpwkhvzw7csemlmeqcdj", "0xdac17f958d2ee523a2206206994597c13d831ec7", "0x55d398326f99059ff775485246999027b3197955")
+    private val binanceEmailPattern = Regex("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", RegexOption.IGNORE_CASE)
+
+    fun validBinanceEmail(email: String): Boolean {
+        val normalized = email.trim()
+        return normalized.length in 5..254 && normalized == email && binanceEmailPattern.matches(normalized)
+    }
+
+    fun validDestination(network: UsdtNetwork?, wallet: String, binanceEmail: String): Boolean {
+        val email = binanceEmail.trim()
+        return if (email.isNotBlank()) validBinanceEmail(email) else network != null && valid(network, wallet)
+    }
+
     fun valid(network: UsdtNetwork, wallet: String): Boolean {
         if (wallet != wallet.trim() || wallet.lowercase() in tokenContracts) return false
         if (network != UsdtNetwork.TRC20) return wallet.matches(Regex("0x[0-9a-fA-F]{40}")) && wallet.drop(2).any { it != '0' }
