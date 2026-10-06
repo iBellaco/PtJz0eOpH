@@ -140,6 +140,8 @@ class RuntimeBehaviorTest {
         assertTrue(UsdtWalletPolicy.valid(UsdtNetwork.ERC20,"0x1111111111111111111111111111111111111111"))
         assertFalse(UsdtWalletPolicy.valid(UsdtNetwork.ERC20,"0x0000000000000000000000000000000000000000"))
         assertFalse(UsdtWalletPolicy.valid(UsdtNetwork.BEP20,"0xdAC17F958D2ee523a2206206994597C13D831ec7"))
+        assertTrue(UsdtWalletPolicy.validBinanceEmail("coach.payout+wr@example.com"))
+        assertFalse(UsdtWalletPolicy.validBinanceEmail("correo-invalido"))
     }
 
     @Test fun `subscription price and inherited deadlines depend on selected plan and currency`() {
@@ -543,7 +545,7 @@ class RuntimeBehaviorTest {
             com.example.data.NotificationPanel.ADMINISTRATION to setOf("streamer:approval-one"))
         val summary = com.example.data.PanelNotificationPolicy.combine(keys, routes, queue, setOf("notice:ad-review"))
         assertEquals(7, summary.total)
-        assertEquals(4, summary.count(com.example.data.NotificationPanel.INBOX))
+        assertEquals(3, summary.count(com.example.data.NotificationPanel.INBOX))
         for (panel in listOf(com.example.data.NotificationPanel.STREAMER, com.example.data.NotificationPanel.CREATOR,
             com.example.data.NotificationPanel.HISTORY, com.example.data.NotificationPanel.SPONSOR,
             com.example.data.NotificationPanel.ADMINISTRATION, com.example.data.NotificationPanel.SUPPORT,
@@ -552,6 +554,7 @@ class RuntimeBehaviorTest {
         assertEquals(0, read.total)
         com.example.data.NotificationPanel.entries.forEach { assertEquals(0, read.count(it)) }
         assertEquals(setOf(com.example.data.NotificationPanel.INBOX), com.example.data.PanelNotificationPolicy.messagePanels(mapOf("title" to "Mensaje")))
+        assertEquals(setOf(com.example.data.NotificationPanel.HISTORY), com.example.data.PanelNotificationPolicy.messagePanels(history))
     }
 
     @Test fun `essence adjustments clamp deductions and reject overflow before a commit`() {
