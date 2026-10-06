@@ -80,7 +80,6 @@ object BuildElementAdvice {
                 appendLine(trigger.ifBlank { coreItemTimingHint(itemName, pt) })
                 val matchup = against.ifBlank { coreHint }
                 if (matchup.isNotBlank()) append("\nPartidas em que rende mais:\n$matchup")
-                append("\nNão é um conselho genérico: este bloco descreve a função deste item específico dentro da build.")
             } else buildString {
                 appendLine("Por qué $localizedName es core para $championName ($roleName):")
                 appendLine(catalogTip.ifBlank { purpose })
@@ -88,7 +87,6 @@ object BuildElementAdvice {
                 appendLine(trigger.ifBlank { coreItemTimingHint(itemName, pt) })
                 val matchup = against.ifBlank { coreHint }
                 if (matchup.isNotBlank()) append("\nPartidas donde rinde más:\n$matchup")
-                append("\nEste consejo corresponde a este objeto concreto, no al plan general del campeón.")
             }
         }.trim()
     }
