@@ -101,7 +101,7 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                             )
                         }
                     }
-                    Text(tr("Pago exclusivamente en USDT (la comisión de red corre por cuenta del usuario en EN)."), color = HextechGold)
+                    Text(tr("Pago exclusivamente en USDT. Puedes usar correo de Binance o billetera por red; la comisión de red solo aplica a billeteras."), color = HextechGold)
                     UsdtWalletFields(
                         network = network,
                         wallet = wallet,
