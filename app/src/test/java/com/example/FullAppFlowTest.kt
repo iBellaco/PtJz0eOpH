@@ -19,7 +19,7 @@ import org.robolectric.annotation.SQLiteMode
 
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [34])
-@SQLiteMode(SQLiteMode.Mode.NATIVE)
+@SQLiteMode(SQLiteMode.Mode.LEGACY)
 class FullAppFlowTest {
 
     @get:Rule
