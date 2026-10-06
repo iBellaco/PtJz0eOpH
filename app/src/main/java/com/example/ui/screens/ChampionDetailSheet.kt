@@ -1106,7 +1106,13 @@ fun ChampionDetailSheet(
                                     .testTag("selected_boot_$currentBootBase")
                                     .coachClickable {
                                         if (dbBoot1 != null) {
-                                            selectedElementAdvice = activeOption.bootBaseAdvice
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.contextualBootAdvice(
+                                                bootName = currentBootBase,
+                                                championName = champion.getLocalizedName(currentLang),
+                                                roleName = selectedRole.getLocalizedName(currentLang),
+                                                language = currentLang,
+                                                situational = !currentBootBase.equals(primaryBootBase, ignoreCase = true)
+                                            )
                                             itemForDetail = dbBoot1
                                         }
                                     }
@@ -1136,7 +1142,13 @@ fun ChampionDetailSheet(
                                     .background(HextechSurfaceVariant)
                                     .border(1.dp, HextechCyan, RoundedCornerShape(8.dp))
                                     .coachClickable { if (dbBoot2 != null) {
-                                        selectedElementAdvice = activeOption.bootUpgradeAdvice
+                                        selectedElementAdvice = com.example.util.BuildElementAdvice.contextualBootAdvice(
+                                            bootName = currentBootUpgrade,
+                                            championName = champion.getLocalizedName(currentLang),
+                                            roleName = selectedRole.getLocalizedName(currentLang),
+                                            language = currentLang,
+                                            situational = selectedBootBaseOverride != null
+                                        )
                                         itemForDetail = dbBoot2
                                     } }
                             ) {
@@ -1197,10 +1209,13 @@ fun ChampionDetailSheet(
                                             .testTag("build_boot_${sitBootName}")
                                             .selectable(selected = isSelected, onClick = {
                                                 selectedBootBaseOverride = sitBootName.takeUnless { it.equals(primaryBootBase, true) }
-                                                val reason = activeOption.situationalBootReasons[sitBootName]
-                                                    ?: BuildChoiceRules.boots(primaryBootBase, champion.damageType, champion.isFrontline,
-                                                        champion.isRanged, selectedRole, champion.id).firstOrNull { it.name.equals(sitBootName, true) }?.reason
-                                                    ?: dbSitBoot?.coachTip.orEmpty()
+                                                val reason = com.example.util.BuildElementAdvice.contextualBootAdvice(
+                                                    bootName = sitBootName,
+                                                    championName = champion.getLocalizedName(currentLang),
+                                                    roleName = selectedRole.getLocalizedName(currentLang),
+                                                    language = currentLang,
+                                                    situational = !sitBootName.equals(primaryBootBase, ignoreCase = true)
+                                                )
                                                 if (reason.isNotBlank()) buildAdvice = "Consejo del coach" to reason
                                             })
                                     ) {
