@@ -161,7 +161,14 @@ jobs:
         CI: 'true'
       run: |
         rm -rf app/build/outputs/apk/ || true
-        gradle :app:assembleRelease :app:assembleReleaseAndroidTest -PcoachInstrumentedBuildType=release --stacktrace --no-daemon -x lint -x lintVitalRelease
+
+        # Build the production APK first. Packaging the release APK and the
+        # instrumented APK in one Gradle invocation can retain both R8 graphs
+        # and exhaust the GitHub runner heap inside ApkFlinger.
+        gradle :app:assembleRelease \
+          -PcoachInstrumentedBuildType=release \
+          -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true" \
+          --max-workers=1 --stacktrace --no-daemon -x lint -x lintVitalRelease
 
         EXPECTED_APK="app/build/outputs/apk/release/app-release.apk"
         if [ ! -f "$EXPECTED_APK" ]; then
@@ -170,6 +177,14 @@ jobs:
           echo "ERROR: Expected APK not found at $EXPECTED_APK"
           exit 1
         fi
+
+        # Build the instrumented release APK only after the production APK is
+        # safely packaged, in a fresh Gradle JVM with the same bounded worker
+        # count. This prevents packageRelease from competing for heap.
+        gradle :app:assembleReleaseAndroidTest \
+          -PcoachInstrumentedBuildType=release \
+          -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true" \
+          --max-workers=1 --stacktrace --no-daemon -x lint -x lintVitalRelease
     - name: Verify APK
       env:
         COACH_EXPECTED_APK_CERT: ${{ steps.signing.outputs.certificate_sha256 }}
