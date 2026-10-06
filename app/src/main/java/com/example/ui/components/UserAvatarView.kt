@@ -174,9 +174,9 @@ fun UserAvatarView(
     }
 
     val hasFrame = activeFrameAsset != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
-    val avatarSize = if (hasFrame) size * (if (frameScale > 1f) 0.67f else 0.53f) else size
+    val avatarSize = if (hasFrame) size * (if (frameScale > 1f) 0.70f else 0.53f) else size
     val frameRenderSize = if (hasFrame) size * frameScale.coerceAtLeast(1f) else size
-    val verticalHoleCorrection = if (hasFrame) (size * 0.008f) else 0.dp
+    val verticalHoleCorrection = if (hasFrame) (size * 0.004f) else 0.dp
 
     Box(
         modifier = modifier
