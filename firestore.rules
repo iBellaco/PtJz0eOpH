@@ -100,6 +100,10 @@ service cloud.firestore {
       return (email != '' && validBinanceEmail(email) && data.get('network', '') == '' && data.get('wallet', '') == '') ||
         (email == '' && validUsdtWallet(data.get('network', ''), data.get('wallet', '')));
     }
+    function cashHistoryExpired(data) {
+      let deleteAt = data.get('historyDeleteAtMillis', data.get('resolvedAtMillis', 0) + 1209600000);
+      return data.get('status', '') in ['PAID','REJECTED'] && deleteAt is int && request.time.toMillis() >= deleteAt;
+    }
     function economyOperation(userId) {
       return getAfter(/databases/$(database)/documents/users/$(userId)/economy_operations/$(request.resource.data.lastEconomyOperation)).data;
     }
@@ -200,7 +204,8 @@ service cloud.firestore {
         && request.resource.data.binanceEmail == op().get('binanceEmail', '')
         && validCashDestination(request.resource.data)
         && op().kind == 'CASH' && op().cost == request.resource.data.amount && op().timestamp == request.resource.data.requestedAtMillis;
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin() && cashHistoryExpired(resource.data);
     }
     match /pending_sponsor_ads/{id} {
       allow read, update, delete: if isAdmin();
