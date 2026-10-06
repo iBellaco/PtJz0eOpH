@@ -112,13 +112,16 @@ try {
       const profile=doc(store,`users/${uid}`),operation=doc(store,`users/${uid}/economy_operations/${id}`);
       if((await tx.get(operation)).exists())return;
       const account=(await tx.get(profile)).data(),timestamp=Date.now();
+      const binanceEmail=(override.binanceEmail||'').trim().toLowerCase();
+      const network=binanceEmail?'':(override.network??'ERC20');
+      const wallet=binanceEmail?'':(override.wallet??'0x1111111111111111111111111111111111111111');
       const receipt={id,timestamp,durationMillis:0,planName:'Canje de Esencia Naranja',status:'Pendiente',amount:`-${amount} EN`,source:'CASH_REDEMPTION'};
-      tx.set(operation,{id,userId:uid,kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',timestamp,createdAt:serverTimestamp(),receipt});
+      tx.set(operation,{id,userId:uid,kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network,wallet,binanceEmail,timestamp,createdAt:serverTimestamp(),receipt});
       tx.update(profile,{orangeEssence:account.orangeEssence-amount,lastEconomyOperation:id});
-      tx.set(doc(store,`cash_redemptions/${id}`),{id,userId:uid,email:`${uid}@test.invalid`,amount,usd:amount,paymentCurrency:'USDT',network:'ERC20',wallet:'0x1111111111111111111111111111111111111111',status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override});
+      tx.set(doc(store,`cash_redemptions/${id}`),{id,userId:uid,email:`${uid}@test.invalid`,userName:account.name||'',amount,usd:amount,paymentCurrency:'USDT',network,wallet,binanceEmail,status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override,network,wallet,binanceEmail});
       const reportId=`payment_${id}`;
       const conversation=initial(reportId).map(entry=>entry.senderRole==='USER'?{...entry,senderUid:uid}:entry);
-      const payment={id:reportId,reportId,redemptionId:id,userId:uid,userEmail:`${uid}@test.invalid`,userName:'Usuario',title:'Solicitud de pago USDT',description:'Solicitud de pago USDT',content:'Solicitud de pago USDT',tag:'PAGO',type:'PAGO',panel:'HISTORY',staffVisible:false,status:'PENDING',staffRead:false,isRead:true,userRead:true,userCanReply:false,timestamp,createdAt:serverTimestamp(),conversation};
+      const payment={id:reportId,reportId,redemptionId:id,userId:uid,userEmail:`${uid}@test.invalid`,userName:account.name||'Usuario',title:'Solicitud de pago USDT',description:'Solicitud de pago USDT',content:'Solicitud de pago USDT',tag:'PAGO',type:'PAGO',panel:'HISTORY',staffVisible:false,status:'PENDING',staffRead:false,isRead:true,userRead:true,userCanReply:false,timestamp,createdAt:serverTimestamp(),conversation};
       tx.set(doc(store,`support_reports/${reportId}`),payment);
       tx.set(doc(store,`users/${uid}/messages/${reportId}`),payment);
       tx.set(doc(store,`users/${uid}/subscription_history/${id}`),receipt);
@@ -161,6 +164,14 @@ try {
     await assertFails(updateDoc(doc(economy,'cash_redemptions/cash-ten'),{status:'PAID'}));
     await assertFails(deleteDoc(doc(economy,'cash_redemptions/cash-ten')));
     await assertFails(redeem('insufficient',50));
+    await updateDoc(doc(admin,'users/economy'),{orangeEssence:50});
+    await assertSucceeds(redeem('binance-email',10,{binanceEmail:'payout@example.com'}));
+    const emailPayout=(await getDoc(doc(economy,'cash_redemptions/binance-email'))).data();
+    assert.equal(emailPayout.binanceEmail,'payout@example.com');
+    assert.equal(emailPayout.network,'');
+    assert.equal(emailPayout.wallet,'');
+    await assertFails(redeem('binance-email-invalid',10,{binanceEmail:'correo-invalido'}));
+    await assertSucceeds(deleteDoc(doc(admin,'cash_redemptions/binance-email')));
   });
   await test('staff can reject a cash request and refund once in one transaction',async()=>{
     const before=(await getDoc(doc(admin,'users/economy'))).data().orangeEssence;
