@@ -435,7 +435,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("premium_MONTHLY_ORANGE").assertExists()
             }
             "usdt-wallet-fields" -> {
-                compose.onNodeWithTag("binance_email").assertExists()\n                compose.onNodeWithTag("usdt_wallet").assertTextContains("0x1111111111111111111111111111111111111111")
+                compose.onNodeWithTag("binance_email").assertExists()
+                compose.onNodeWithTag("usdt_wallet").assertTextContains("0x1111111111111111111111111111111111111111")
                 compose.onNodeWithText(appTr("Billetera USDT no válida")).assertDoesNotExist()
             }
             "support-admin-notification" -> {
