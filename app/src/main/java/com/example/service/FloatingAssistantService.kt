@@ -2000,7 +2000,8 @@ private fun FloatingOverlayContent(
                                 com.example.ui.screens.ChampionDetailSheet(
                                     isOverlay = true,
                                     champion = selectedChampionDetail,
-                                    onDismiss = { selectedChampionDetail = null }
+                                    onDismiss = { selectedChampionDetail = null },
+                                    onChampionSelected = { selectedChampionDetail = it }
                                 )
                             } else {
                                 when (overlayHubTab) {

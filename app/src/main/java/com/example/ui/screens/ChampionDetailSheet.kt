@@ -109,7 +109,8 @@ import com.example.util.tr
 fun ChampionDetailSheet(
     isOverlay: Boolean = false,
     champion: Champion?,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onChampionSelected: (Champion) -> Unit = {}
 ) {
     val isPremium by SubscriptionManager.isPremium.collectAsState()
     if (champion == null) return
@@ -134,8 +135,6 @@ fun ChampionDetailSheet(
         }
     }
 
-    var matchupExplanationTarget by remember { mutableStateOf<String?>(null) }
-    var matchupExplanationType by remember { mutableStateOf<String?>(null) }
     var selectedSituationalItem by remember { mutableStateOf<String?>(null) }
     var selectedElementAdvice by remember { mutableStateOf("") }
     var buildAdvice by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -160,9 +159,6 @@ fun ChampionDetailSheet(
                 runeForDetail = null
             } else if (spellForDetail != null) {
                 spellForDetail = null
-            } else if (matchupExplanationTarget != null) {
-                matchupExplanationTarget = null
-                matchupExplanationType = null
             } else if (selectedSituationalItem != null) {
                 selectedSituationalItem = null
             } else {
@@ -1258,8 +1254,12 @@ fun ChampionDetailSheet(
                                         .border(1.5.dp, HextechCyan, RoundedCornerShape(8.dp))
                                         .testTag("build_spell_details")
                                         .coachClickable { if (dbSpell != null) {
-                                            selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawSpellName,
-                                                activeOption.coreSpells.map { it.spellName to it.description }, "", dbSpell.description)
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.contextualSpellAdvice(
+                                                spellName = rawSpellName,
+                                                championName = champion.getLocalizedName(currentLang),
+                                                roleName = selectedRole.getLocalizedName(currentLang),
+                                                language = currentLang
+                                            )
                                             spellForDetail = dbSpell
                                         } }
                                 ) {
@@ -1351,8 +1351,13 @@ fun ChampionDetailSheet(
                                     )
                                     .testTag("build_rune_details")
                                     .coachClickable {
-                                        selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rName,
-                                            activeOption.coreRunes.map { it.runeName to it.description }, "", foundRune?.description.orEmpty())
+                                        selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
+                                            runeName = rName,
+                                            championName = champion.getLocalizedName(currentLang),
+                                            roleName = selectedRole.getLocalizedName(currentLang),
+                                            language = currentLang,
+                                            situational = false
+                                        )
                                         runeForDetail = foundRune ?: com.example.model.RuneItem(
                                             id = rName.lowercase().replace(" ", "_"),
                                             name = rName,
@@ -1433,7 +1438,13 @@ fun ChampionDetailSheet(
                                         .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                                         .coachClickable {
-                                            selectedElementAdvice = sRune.description
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
+                                                runeName = rName,
+                                                championName = champion.getLocalizedName(currentLang),
+                                                roleName = selectedRole.getLocalizedName(currentLang),
+                                                language = currentLang,
+                                                situational = true
+                                            )
                                             runeForDetail = foundRune ?: com.example.model.RuneItem(
                                                 id = rName.lowercase().replace(" ", "_"),
                                                 name = rName,
@@ -1554,8 +1565,7 @@ fun ChampionDetailSheet(
                                                 val targetChamp = resolveTargetChampion(target)
                                                 Box(
                                                     modifier = Modifier.coachClickable {
-                                                        matchupExplanationTarget = target
-                                                        matchupExplanationType = "Ventaja"
+                                                        targetChamp?.let(onChampionSelected)
                                                     }
                                                 ) {
                                                     if (targetChamp != null) {
@@ -1652,8 +1662,7 @@ fun ChampionDetailSheet(
                                                 val targetChamp = resolveTargetChampion(counter)
                                                 Box(
                                                     modifier = Modifier.coachClickable {
-                                                        matchupExplanationTarget = counter
-                                                        matchupExplanationType = "Debilidad"
+                                                        targetChamp?.let(onChampionSelected)
                                                     }
                                                 ) {
                                                     if (targetChamp != null) {
@@ -1759,8 +1768,7 @@ fun ChampionDetailSheet(
                                                 val targetChamp = resolveTargetChampion(partner)
                                                 Box(
                                                     modifier = Modifier.coachClickable {
-                                                        matchupExplanationTarget = partner
-                                                        matchupExplanationType = "Sinergia"
+                                                        targetChamp?.let(onChampionSelected)
                                                     }
                                                 ) {
                                                     if (targetChamp != null) {
@@ -2063,81 +2071,7 @@ fun AdaptiveDetailAlertDialog(
 
 
 
-    // ==========================================
-    // DIALOG DE DETALLE DE MATCHUP / SINERGIA
-    // ==========================================
-    if (matchupExplanationTarget != null && matchupExplanationType != null) {
-        val type = matchupExplanationType!!
-        val target = matchupExplanationTarget!!
-
-        val currentLang = com.example.util.currentAppLanguage()
-        val localizedTarget = if (currentLang == "pt") com.example.util.trStr("pt", target) else target
-        val titleText = when (currentLang) {
-            "pt" -> {
-                when (type) {
-                    "Ventaja" -> "Vantagem contra $localizedTarget"
-                    "Debilidad" -> "Fraco contra $localizedTarget"
-                    "Situacional" -> "Item Situacional: $localizedTarget"
-                    else -> "Sinergia com $localizedTarget"
-                }
-            }
-            "es", "auto" -> {
-                when (type) {
-                    "Ventaja" -> "Ventaja contra $target"
-                    "Debilidad" -> "Débil contra $target"
-                    "Situacional" -> "Objeto Situacional: $target"
-                    else -> "Sinergia con $target"
-                }
-            }
-            else -> {
-                when (type) {
-                    "Ventaja" -> "Strong against $target"
-                    "Debilidad" -> "Weak against $target"
-                    "Situacional" -> "Situational Item: $target"
-                    else -> "Synergy with $target"
-                }
-            }
-        }
-
-        val descText = CoachingGenerator.generateMatchupReason(champion, selectedRole, target, type, com.example.util.currentAppLanguage())
-
-        AdaptiveDetailAlertDialog(
-            isOverlay = isOverlay,
-            onDismissRequest = { matchupExplanationTarget = null },
-            title = {
-                val targetChamp = resolveTargetChampion(target)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (targetChamp != null) {
-                        ChampionAvatar(
-                            champion = targetChamp,
-                            size = 36.dp,
-                            showTierBadge = false,
-                            borderColor = when (type) {
-                                "Ventaja" -> AllyBlue
-                                "Debilidad" -> DangerRed
-                                else -> HextechGold
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                    }
-                    Text(
-                        text = com.example.util.tr(titleText),
-                        color = HextechGold,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            },
-            text = {
-                Text(com.example.util.tr(descText), color = TextPrimary)
-            },
-            confirmButton = {
-                TextButton(onClick = { matchupExplanationTarget = null }) {
-                    Text(tr("Entendido"), color = HextechCyan)
-                }
-            }
-        )
-    }
-
+    // Matchup cards navigate directly to the selected champion build; no coaching popup.
 
     itemForDetail?.let { item ->
         val itemDetailCard = @Composable {

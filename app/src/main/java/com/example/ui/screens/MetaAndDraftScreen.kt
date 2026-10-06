@@ -819,7 +819,8 @@ fun MetaAndDraftScreen(
     if (selectedDetailChampion != null) {
         ChampionDetailSheet(
             champion = selectedDetailChampion,
-            onDismiss = { selectedDetailChampion = null }
+            onDismiss = { selectedDetailChampion = null },
+            onChampionSelected = { selectedDetailChampion = it }
         )
     }
 

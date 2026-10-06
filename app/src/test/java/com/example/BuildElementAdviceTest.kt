@@ -44,9 +44,32 @@ class BuildElementAdviceTest {
     }
 
     @Test fun `core item advice is about the tapped item instead of a repeated champion plan`() {
-        val advice = BuildElementAdvice.contextualItemAdvice("Sombrero mortal de Rabadon", "Hwei", "Línea Central", "es", false)
-        assertTrue(advice.contains("Sombrero mortal de Rabadon"))
-        assertTrue(advice.contains("Hwei"))
-        assertFalse(advice.startsWith("Diagnóstico del error/situación"))
+        val rabadon = BuildElementAdvice.contextualItemAdvice("Sombrero mortal de Rabadon", "Hwei", "Línea Central", "es", false)
+        val liandry = BuildElementAdvice.contextualItemAdvice("Tormento de Liandry", "Hwei", "Línea Central", "es", false)
+        assertTrue(rabadon.contains("Sombrero mortal de Rabadon"))
+        assertTrue(rabadon.contains("Hwei"))
+        assertTrue(rabadon.contains("Cuándo completarlo"))
+        assertTrue(rabadon.contains("AP acumulado"))
+        assertNotEquals(rabadon, liandry)
+        assertFalse(rabadon.startsWith("Diagnóstico del error/situación"))
+    }
+
+    @Test fun `rune advice is specific to the selected rune and matchup condition`() {
+        val comet = BuildElementAdvice.contextualRuneAdvice("Cometa Arcano", "Hwei", "Línea Central", "es", false)
+        val bones = BuildElementAdvice.contextualRuneAdvice("Revestimiento de Huesos", "Hwei", "Línea Central", "es", true)
+        assertTrue(comet.contains("Cuándo usarla"))
+        assertTrue(comet.contains("Lux") || comet.contains("Orianna"))
+        assertTrue(bones.contains("Renekton") || bones.contains("Pantheon"))
+        assertNotEquals(comet, bones)
+    }
+
+    @Test fun `spell advice is matchup specific but flash never has coaching`() {
+        assertEquals("", BuildElementAdvice.contextualSpellAdvice("Destello", "Hwei", "Línea Central", "es"))
+        assertEquals("", BuildElementAdvice.contextualSpellAdvice("FLASH", "Hwei", "Línea Central", "es"))
+        val exhaust = BuildElementAdvice.contextualSpellAdvice("Extenuación", "Hwei", "Línea Central", "es")
+        val barrier = BuildElementAdvice.contextualSpellAdvice("Barrera", "Hwei", "Línea Central", "es")
+        assertTrue(exhaust.contains("Zed") || exhaust.contains("Akali"))
+        assertTrue(barrier.contains("Syndra") || barrier.contains("Lux"))
+        assertNotEquals(exhaust, barrier)
     }
 }
