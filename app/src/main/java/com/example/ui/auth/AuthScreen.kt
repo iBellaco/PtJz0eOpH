@@ -221,8 +221,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     val savedUserName by SubscriptionManager.userName.collectAsState()
     val currentAvatarId by SubscriptionManager.currentAvatarId.collectAsState()
     val currentRankBorder by SubscriptionManager.currentRankBorder.collectAsState()
-    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") || secondaryRole.isNotBlank() ||
-        currentRankBorder.isNotBlank() && currentRankBorder.uppercase(java.util.Locale.ROOT) !in setOf("NONE", "DEFAULT")
+    val hasImageFrame = currentRankBorder.isNotBlank() && currentRankBorder.uppercase(java.util.Locale.ROOT) !in setOf("NONE", "DEFAULT")
+    val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") || secondaryRole.isNotBlank() || hasImageFrame
     var showAvatarDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
@@ -465,7 +465,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             Spacer(modifier = Modifier.height(8.dp))
 
             val redemptionBalance by SubscriptionManager.orangeEssence.collectAsState()
-            if (com.example.model.RolePanelAccess.canRedeemEssence(userRole, secondaryRole, adminClaim)) {
+            if (redemptionBalance > 0L && com.example.model.RolePanelAccess.canRedeemEssence(userRole, secondaryRole, adminClaim)) {
                 com.example.ui.components.OrangeEssenceRedemptionEntry(redemptionBalance) { showRedemptionDialog = true }
             }
 
@@ -628,7 +628,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             // Avatar in center
             Box(
                 modifier = Modifier
-                    .size(if (hasRoleFrame) 140.dp else 92.dp)
+                    .size(if (hasImageFrame) 172.dp else if (hasRoleFrame) 140.dp else 92.dp)
                     .testTag("profile_avatar_frame_area")
                     .padding(
                         top = if (hasRoleFrame) 0.dp else 6.dp,
@@ -674,7 +674,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     avatarId = currentAvatarId,
                     rankBorder = currentRankBorder,
                     modifier = Modifier.testTag("profile_avatar"),
-                    size = if (hasRoleFrame) 140.dp else 76.dp,
+                    size = if (hasImageFrame) 172.dp else if (hasRoleFrame) 140.dp else 76.dp,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser,
                     secondaryRole = secondaryRole,
@@ -685,8 +685,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .offset(
-                            x = if (hasRoleFrame) (-6).dp else 2.dp,
-                            y = if (hasRoleFrame) (-6).dp else 2.dp
+                            x = if (hasImageFrame) (-8).dp else if (hasRoleFrame) (-6).dp else 2.dp,
+                            y = if (hasImageFrame) (-8).dp else if (hasRoleFrame) (-6).dp else 2.dp
                         )
                         .size(32.dp)
                         .clip(CircleShape)
@@ -710,7 +710,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 }
             }
 
-            Spacer(modifier = Modifier.height(if (hasRoleFrame) 12.dp else 12.dp))
+            Spacer(modifier = Modifier.height(if (hasImageFrame) 16.dp else 12.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
