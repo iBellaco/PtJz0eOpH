@@ -19,7 +19,9 @@ object PanelNotificationPolicy {
             title.contains("Límite de Suscriptores", true) || title.contains("Suscripción con Esencia Naranja", true) -> NotificationPanel.CREATOR
             else -> null
         }
-        return setOfNotNull(NotificationPanel.INBOX, panel ?: legacy)
+        val destination = panel ?: legacy
+        return if (destination == NotificationPanel.HISTORY) setOf(NotificationPanel.HISTORY)
+        else setOfNotNull(NotificationPanel.INBOX, destination)
     }
 
     fun combine(unread: Set<String>, routes: Map<String, Set<NotificationPanel>>, queues: Map<NotificationPanel, Set<String>>,
