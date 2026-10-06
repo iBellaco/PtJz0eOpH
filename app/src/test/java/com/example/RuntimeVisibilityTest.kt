@@ -435,7 +435,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("premium_MONTHLY_ORANGE").assertExists()
             }
             "usdt-wallet-fields" -> {
-                compose.onNodeWithTag("usdt_wallet").assertTextContains("0x1111111111111111111111111111111111111111")
+                compose.onNodeWithTag("binance_email").assertExists()\n                compose.onNodeWithTag("usdt_wallet").assertTextContains("0x1111111111111111111111111111111111111111")
                 compose.onNodeWithText(appTr("Billetera USDT no válida")).assertDoesNotExist()
             }
             "support-admin-notification" -> {
@@ -661,8 +661,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val area = compose.onNodeWithTag("profile_avatar_frame_area", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 val name = compose.onNodeWithTag("profile_user_name", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 val density = context.resources.displayMetrics.density
-                Assert.assertEquals(140f * density, avatar.width, density)
-                Assert.assertEquals(140f * density, area.width, density)
+                Assert.assertEquals(172f * density, avatar.width, density)
+                Assert.assertEquals(172f * density, area.width, density)
                 Assert.assertTrue("Frame space must precede the username: $area $name", area.bottom < name.top)
                 if (screen.startsWith("profile-admin-image-frame")) Assert.assertEquals("free", SubscriptionManager.userRole.value)
                 inspect("expanded-avatar")
