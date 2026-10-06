@@ -106,9 +106,11 @@ fun LiveStreamersRow() {
 @Composable
 fun LiveStreamersContent(entries: List<Map<String, Any>>,
     onOpen: (Map<String, Any>, String) -> Unit) {
-    if (entries.isNotEmpty()) {
+    val now = streamerClock()
+    val visibleEntries = entries.filterNot { StreamerPublicationPolicy.isLiveExpired(it, now) }
+    if (visibleEntries.isNotEmpty()) {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            entries.take(StreamerPublicationPolicy.MAX_LIVE).forEach { item ->
+            visibleEntries.take(StreamerPublicationPolicy.MAX_LIVE).forEach { item ->
                 val channel = StreamChannelUrl.approved(item["channelUrl"] as? String ?: "")
                 if (channel != null) LiveStreamerChip(item["channelName"] as? String ?: "") { onOpen(item, channel.url) }
             }
@@ -177,8 +179,11 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
         }
         onDispose { listener.remove(); historyListener.remove(); metricsListener.remove() }
     }
-    val activeEntry = entries.firstOrNull { it["userId"] == uid }
+    val activeEntries = entries.filterNot { StreamerPublicationPolicy.isLiveExpired(it, now) }
+    val activeEntry = activeEntries.firstOrNull { it["userId"] == uid }
     val active = activeEntry != null
+    val activeDeadline = activeEntry?.let(StreamerPublicationPolicy::liveExpiresAt) ?: 0L
+    val activeExpired = activeDeadline > 0L && now >= activeDeadline
     val expired = StreamerPublicationPolicy.isExpired(request, now)
     val pending = request["status"] == "PENDING" && !expired
     LaunchedEffect(uid, request["publicationId"], expired) {
@@ -187,7 +192,13 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
             if (expiration.isFailure) result = expiration
         }
     }
-    val maximum = entries.size >= StreamerPublicationPolicy.MAX_LIVE
+    LaunchedEffect(uid, activeEntry?.get("publicationId"), activeExpired) {
+        if (activeExpired) {
+            val ending = StreamerRepository.end(uid)
+            if (ending.isFailure) result = ending
+        }
+    }
+    val maximum = activeEntries.size >= StreamerPublicationPolicy.MAX_LIVE
     Dialog(onDismissRequest = { if (!busy) onDismiss() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(Modifier.fillMaxWidth(0.95f).heightIn(max = 650.dp), shape = RoundedCornerShape(16.dp), color = StreamBackground, border = BorderStroke(1.dp, StreamGold)) {
             Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -270,8 +281,14 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                         Text(localizedString(R.string.streamer_duration_selected, activeDurationValue), color = Color.White, modifier = Modifier.testTag("streamer_active_duration"))
                         val liveDeadline = StreamerPublicationPolicy.liveExpiresAt(activeData)
                         if (liveDeadline > 0L) {
-                            val remainingSeconds = ((liveDeadline - now).coerceAtLeast(0L) + 999L) / 1000L
-                            Text(localizedString(R.string.streamer_live_ends_in, remainingSeconds / 3600L, (remainingSeconds / 60L) % 60L, remainingSeconds % 60L), color = StreamGold, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, modifier = Modifier.testTag("streamer_live_countdown"))
+                            val remainingMillis = (liveDeadline - now).coerceAtLeast(0L)
+                            val remainingSeconds = (remainingMillis + 999L) / 1000L
+                            val countdownColor = when {
+                                remainingMillis <= 10 * 60 * 1000L -> Color(0xFFFF5252)
+                                remainingMillis <= 30 * 60 * 1000L -> Color(0xFFFFA726)
+                                else -> Color(0xFF22D3EE)
+                            }
+                            Text(localizedString(R.string.streamer_live_ends_in, remainingSeconds / 3600L, (remainingSeconds / 60L) % 60L, remainingSeconds % 60L), color = countdownColor, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, modifier = Modifier.testTag("streamer_live_countdown"))
                         }
                         val activePubId = StreamerPublicationPolicy.publicationId(activeData)
                         val activeClicks = clickMetrics[activePubId] ?: (request["clickCount"] as? Number)?.toLong() ?: 0L
@@ -400,8 +417,14 @@ fun ApprovedStreamerReviewCard(item: Map<String, Any>, enabled: Boolean,
             Text(localizedString(R.string.streamer_review_accepted), color = Color(0xFF2DD4BF))
             Text(localizedString(R.string.streamer_duration_selected, durationValue), color = StreamGold)
             if (liveDeadline > 0L) {
-                val remainingSeconds = ((liveDeadline - now).coerceAtLeast(0L) + 999L) / 1000L
-                Text(localizedString(R.string.streamer_live_ends_in, remainingSeconds / 3600L, (remainingSeconds / 60L) % 60L, remainingSeconds % 60L), color = Color.White)
+                val remainingMillis = (liveDeadline - now).coerceAtLeast(0L)
+                val remainingSeconds = (remainingMillis + 999L) / 1000L
+                val countdownColor = when {
+                    remainingMillis <= 10 * 60 * 1000L -> Color(0xFFFF5252)
+                    remainingMillis <= 30 * 60 * 1000L -> Color(0xFFFFA726)
+                    else -> Color(0xFF22D3EE)
+                }
+                Text(localizedString(R.string.streamer_live_ends_in, remainingSeconds / 3600L, (remainingSeconds / 60L) % 60L, remainingSeconds % 60L), color = countdownColor, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             }
             Text(item["channelUrl"] as? String ?: "", color = Color.White)
             Text(

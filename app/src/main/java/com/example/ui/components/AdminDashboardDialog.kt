@@ -2042,34 +2042,34 @@ fun EnhancedUserManagementPanel(
         }
     }
 
-    // Cálculos de métricas en tiempo real
-    val totalUsers = users.size
+    // Cálculos de métricas en tiempo real. Los roles secundarios también cuentan en su categoría.
     val now = currentTime
-    val onlineThreshold = 10 * 60 * 1000L // Activos en últimos 10 minutos o con flag is_online
-
-    val onlineUsers = users.count { u ->
-        val isOnlineFlag = u["is_online"] as? Boolean
-        val lastActive = (u["last_active"] as? Number)?.toLong() ?: (u["lastActiveTimestamp"] as? Number)?.toLong() ?: 0L
-        if (isOnlineFlag == false) false else (lastActive > 0L && now - lastActive < onlineThreshold)
+    val onlineThreshold = 10 * 60 * 1000L
+    fun roleSet(user: Map<String, Any>): Set<String> = setOf(
+        (user["role"] as? String).orEmpty().lowercase(),
+        (user["secondaryRole"] as? String).orEmpty().lowercase()
+    ).filter(String::isNotBlank).toSet()
+    fun userOnline(user: Map<String, Any>): Boolean {
+        val explicitOnline = user["is_online"] as? Boolean ?: false
+        val lastActive = (user["last_active"] as? Number)?.toLong()
+            ?: (user["lastActiveTimestamp"] as? Number)?.toLong() ?: 0L
+        return explicitOnline && lastActive > 0L && now - lastActive in 0 until onlineThreshold
     }
+    fun userBanned(user: Map<String, Any>): Boolean =
+        (user["banned"] as? Boolean) == true || "banned" in roleSet(user)
+    fun hasRole(user: Map<String, Any>, vararg roles: String): Boolean =
+        roleSet(user).any { current -> roles.any { current == it } }
 
-    val premiumUsers = users.count { u ->
-        val role = u["role"] as? String ?: "free"
-        val until = com.example.model.PremiumAccessPolicy.deadline(u["premiumUntil"])
-        com.example.model.PremiumAccessPolicy.isActiveAccount(u, now)
-    }
-
-    val adminUsers = users.count { (it["role"] as? String) == "admin" }
-    val modUsers = users.count { (it["role"] as? String) == "moderador" }
-    val sponsorUsers = users.count { (it["role"] as? String) == "patrocinador" }
-    val streamerUsers = users.count { (it["role"] as? String) == "streamer" }
-    val creatorUsers = users.count { (it["role"] as? String) in listOf("creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") }
-    val freeUsers = users.count { u ->
-        val role = u["role"] as? String ?: "free"
-        val until = com.example.model.PremiumAccessPolicy.deadline(u["premiumUntil"])
-        !com.example.model.PremiumAccessPolicy.isActiveAccount(u, now)
-    }
-    val bannedUsers = users.count { (it["banned"] as? Boolean) == true || (it["role"] as? String) == "banned" }
+    val totalUsers = users.mapNotNull { (it["uid"] as? String)?.takeIf(String::isNotBlank) }.distinct().size
+    val onlineUsers = users.count(::userOnline)
+    val premiumUsers = users.count { com.example.model.PremiumAccessPolicy.isActiveAccount(it, now) && !userBanned(it) }
+    val adminUsers = users.count { hasRole(it, "admin", "administrador") && !userBanned(it) }
+    val modUsers = users.count { hasRole(it, "moderador", "moderator") && !userBanned(it) }
+    val sponsorUsers = users.count { hasRole(it, "patrocinador", "sponsor") && !userBanned(it) }
+    val streamerUsers = users.count { hasRole(it, "streamer") && !userBanned(it) }
+    val creatorUsers = users.count { hasRole(it, "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") && !userBanned(it) }
+    val bannedUsers = users.count(::userBanned)
+    val freeUsers = users.count { !com.example.model.PremiumAccessPolicy.isActiveAccount(it, now) && !userBanned(it) }
 
     // Filtrado de usuarios
     val filteredUsers = remember(users, searchQuery, selectedFilter, now) {
@@ -2081,24 +2081,20 @@ fun EnhancedUserManagementPanel(
 
             val matchesQuery = query.isEmpty() || name.contains(query) || email.contains(query) || uid.contains(query)
 
-            val role = user["role"] as? String ?: "free"
-            val until = com.example.model.PremiumAccessPolicy.deadline(user["premiumUntil"])
             val isPrem = com.example.model.PremiumAccessPolicy.isActiveAccount(user, now)
-            val explicitOnline = user["is_online"] as? Boolean
-            val lastActiveTmp = (user["last_active"] as? Number)?.toLong() ?: (user["lastActiveTimestamp"] as? Number)?.toLong() ?: 0L
-            val isOnline = if (explicitOnline == false) false else (lastActiveTmp > 0L && now - lastActiveTmp < onlineThreshold)
-            val isBanned = (user["banned"] as? Boolean) == true || role == "banned"
+            val isOnline = userOnline(user)
+            val isBanned = userBanned(user)
 
             val matchesTab = when (selectedFilter) {
                 UserFilterTab.ALL -> true
-                UserFilterTab.PREMIUM -> isPrem
+                UserFilterTab.PREMIUM -> isPrem && !isBanned
                 UserFilterTab.FREE -> !isPrem && !isBanned
                 UserFilterTab.ONLINE -> isOnline
-                UserFilterTab.ADMINS -> role == "admin"
-                UserFilterTab.MODS -> role == "moderador"
-                UserFilterTab.SPONSORS -> role == "patrocinador"
-                UserFilterTab.STREAMERS -> role == "streamer"
-                UserFilterTab.CREATORS -> role in listOf("creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5")
+                UserFilterTab.ADMINS -> hasRole(user, "admin", "administrador") && !isBanned
+                UserFilterTab.MODS -> hasRole(user, "moderador", "moderator") && !isBanned
+                UserFilterTab.SPONSORS -> hasRole(user, "patrocinador", "sponsor") && !isBanned
+                UserFilterTab.STREAMERS -> hasRole(user, "streamer") && !isBanned
+                UserFilterTab.CREATORS -> hasRole(user, "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") && !isBanned
                 UserFilterTab.BANNED -> isBanned
             }
 
@@ -2557,8 +2553,8 @@ fun EnhancedUserAdminCard(
 
     val lastActiveTimestamp = (user["last_active"] as? Number)?.toLong() ?: (user["lastActiveTimestamp"] as? Number)?.toLong() ?: 0L
     val now = currentTime
-    val explicitOnline = user["is_online"] as? Boolean
-    val isOnline = if (explicitOnline == false) false else (lastActiveTimestamp > 0L && now - lastActiveTimestamp < 10 * 60 * 1000L)
+    val explicitOnline = user["is_online"] as? Boolean ?: false
+    val isOnline = explicitOnline && lastActiveTimestamp > 0L && now - lastActiveTimestamp in 0 until 10 * 60 * 1000L
 
     val isPremiumActive = com.example.model.PremiumAccessPolicy.isActiveAccount(user, now)
 
@@ -5558,7 +5554,7 @@ private fun createModeratorApprovalRequest(
         "targetEmail" to targetEmail,
         "newValue" to newValue,
         "requestedByUid" to (moderator?.uid ?: ""),
-        "requestedByName" to (moderator?.displayName ?: moderator?.email?.substringBefore("@") ?: "Moderador"),
+        "requestedByName" to (com.example.util.SubscriptionManager.userName.value.takeIf { it.isNotBlank() } ?: moderator?.displayName?.takeIf { it.isNotBlank() } ?: "Moderador"),
         "status" to "PENDIENTE",
         "timestamp" to System.currentTimeMillis()
     )

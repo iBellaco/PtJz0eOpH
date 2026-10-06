@@ -664,7 +664,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val name = compose.onNodeWithTag("profile_user_name", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 val density = context.resources.displayMetrics.density
                 Assert.assertEquals(140f * density, avatar.width, density)
-                Assert.assertEquals(172f * density, area.width, density)
+                Assert.assertEquals(196f * density, area.width, density)
                 Assert.assertTrue("Frame space must precede the username: $area $name", area.bottom < name.top)
                 if (screen.startsWith("profile-admin-image-frame")) Assert.assertEquals("free", SubscriptionManager.userRole.value)
                 inspect("expanded-avatar")

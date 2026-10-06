@@ -63,7 +63,7 @@ object EssenceEconomyRepository {
                 val remainingAfterCost = EssenceEconomyPolicy.redeem(account, amount, fee, adminClaim)
                 val now = System.currentTimeMillis()
                 val userName = (account["name"] as? String).orEmpty()
-                val visibleUserName = userName.ifBlank { user.displayName?.takeIf { it.isNotBlank() } ?: userEmail.substringBefore("@").ifBlank { "Usuario" } }
+                val visibleUserName = userName.ifBlank { user.displayName?.takeIf { it.isNotBlank() } ?: "Usuario" }
                 val receipt = mapOf("id" to id, "timestamp" to now, "durationMillis" to 0L, "planName" to "Canje de Esencia Naranja",
                     "status" to "Pendiente", "amount" to "-$totalCost EN", "source" to "CASH_REDEMPTION")
                 tx.set(operation, mapOf("id" to id, "userId" to user.uid, "kind" to "CASH", "currency" to "ORANGE", "cost" to amount,
@@ -71,7 +71,7 @@ object EssenceEconomyRepository {
                     "fee" to fee, "totalCost" to totalCost,
                     "timestamp" to now, "createdAt" to FieldValue.serverTimestamp(), "receipt" to receipt))
                 tx.update(profile, mapOf("orangeEssence" to remainingAfterCost, "lastEconomyOperation" to id))
-                tx.set(redemptions.document(id), mapOf("id" to id, "userId" to user.uid, "email" to userEmail, "userName" to userName,
+                tx.set(redemptions.document(id), mapOf("id" to id, "userId" to user.uid, "email" to userEmail, "userName" to visibleUserName,
                     "amount" to amount, "usd" to amount, "paymentCurrency" to "USDT", "network" to payoutNetwork, "wallet" to payoutWallet,
                     "binanceEmail" to cleanBinanceEmail, "status" to "PENDING", "requestedAt" to FieldValue.serverTimestamp(),
                     "requestedAtMillis" to now, "fee" to fee, "totalDeducted" to totalCost))

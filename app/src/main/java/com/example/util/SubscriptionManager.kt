@@ -424,7 +424,7 @@ object SubscriptionManager {
                 } else {
                     val isEmailAdmin = AuthManager.isCurrentUserAdmin()
                     val fallbackRole = if (isEmailAdmin) "admin" else "free"
-                    _userName.value = user.displayName?.takeIf { it.isNotBlank() } ?: user.email?.substringBefore("@") ?: ""
+                    _userName.value = user.displayName?.takeIf { it.isNotBlank() } ?: "Usuario"
                     _userRole.value = fallbackRole
                     _secondaryRole.value = ""
                     _isPremium.value = isEmailAdmin

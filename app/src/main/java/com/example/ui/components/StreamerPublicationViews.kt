@@ -138,7 +138,16 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
                         }
                         Text(clickText, color = Color.White, modifier = Modifier.testTag("streamer_clicks_${StreamerPublicationPolicy.publicationId(item)}"))
                         if (item["clicksLive"] == false) Text(localizedString(R.string.streamer_clicks_cached), color = Color.LightGray)
-                        if (expiresText.isNotBlank()) Text(expiresText, color = Color.LightGray)
+                        if (expiresText.isNotBlank()) {
+                            val deletionRemaining = (deadline - now).coerceAtLeast(0L)
+                            val deletionColor = if (deadline <= 0L) Color.LightGray else when {
+                                deletionRemaining <= 6 * 60 * 60 * 1000L -> Color(0xFFFF5252)
+                                deletionRemaining <= 24 * 60 * 60 * 1000L -> Color(0xFFFFA726)
+                                else -> Color(0xFFA78BFA)
+                            }
+                            Text(expiresText, color = deletionColor, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                modifier = Modifier.testTag("streamer_history_delete_countdown_${StreamerPublicationPolicy.publicationId(item)}"))
+                        }
                         if (item["rejectionReason"] == "TIMEOUT" || StreamerPublicationPolicy.isExpired(item, now)) {
                             Text(localizedString(R.string.streamer_expired), color = Color.LightGray)
                         }

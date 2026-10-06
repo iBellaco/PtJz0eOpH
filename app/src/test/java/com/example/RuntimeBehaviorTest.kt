@@ -391,6 +391,14 @@ class RuntimeBehaviorTest {
             assertEquals("SOLVED", SupportTicketPresentation.status(status))
     }
 
+    @Test fun `approved streamer duration has a deterministic live deadline`() {
+        val approved = mapOf<String, Any>("status" to "APPROVED", "approvedAtMillis" to now, "durationHours" to 3)
+        assertEquals(now + 3 * 60 * 60 * 1000L, StreamerPublicationPolicy.liveExpiresAt(approved))
+        assertFalse(StreamerPublicationPolicy.isLiveExpired(approved, now + 3 * 60 * 60 * 1000L - 1))
+        assertTrue(StreamerPublicationPolicy.isLiveExpired(approved, now + 3 * 60 * 60 * 1000L))
+        assertEquals(0L, StreamerPublicationPolicy.liveExpiresAt(approved + ("durationHours" to 0)))
+    }
+
     @Test fun `active history has no deadline and 72 hours start at actual end`() {
         assertEquals(72L * 60 * 60 * 1000L, StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS)
         val publication = mapOf<String, Any>("submittedAtMillis" to now, "status" to "APPROVED")
@@ -426,7 +434,7 @@ class RuntimeBehaviorTest {
         StreamerHistoryCache.merge(context, "owner", listOf(ended), now)
         assertEquals(42L, (StreamerHistoryCache.records(context, "owner", now).last()["clickCount"] as Number).toLong())
         assertEquals(listOf("first"), StreamerHistoryCache.records(context, "owner", now + 86400000L).map { it["publicationId"] })
-        assertTrue(StreamerHistoryCache.records(context, "owner", now + 7 * 86400000L).isEmpty())
+        assertTrue(StreamerHistoryCache.records(context, "owner", now + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS).isEmpty())
     }
 
     @Test fun `notification policy includes new staff turns and respects sponsor and resolved restrictions`() {

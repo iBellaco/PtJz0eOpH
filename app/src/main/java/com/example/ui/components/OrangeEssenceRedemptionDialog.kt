@@ -272,9 +272,7 @@ fun CashRedemptionReviewPanel() {
 
     val historyGroupedByUser = remember(historyRequests) {
         historyRequests.groupBy {
-            (it["userName"] as? String)?.takeIf(String::isNotBlank)
-                ?: (it["email"] as? String)?.substringBefore("@")?.takeIf(String::isNotBlank)
-                ?: (it["userId"] as? String ?: "Usuario")
+            (it["userName"] as? String)?.takeIf(String::isNotBlank) ?: "Usuario"
         }
     }
 
@@ -315,8 +313,7 @@ fun CashRedemptionReviewPanel() {
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        val requestUserName = (request["userName"] as? String).orEmpty()
-                            .ifBlank { (request["email"] as? String)?.substringBefore("@").orEmpty().ifBlank { "Usuario" } }
+                        val requestUserName = (request["userName"] as? String).orEmpty().ifBlank { "Usuario" }
                         Text(tr("$requestUserName • $reqAmount USDT (Descontado: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                         val payoutEmail = (request["binanceEmail"] as? String).orEmpty()
                         if (payoutEmail.isNotBlank()) {
@@ -358,7 +355,7 @@ fun CashRedemptionReviewPanel() {
                             }
                         }
                         var dm by remember(request["id"]) { mutableStateOf(false) }
-                        if (dm) SupportReplyDialog(reportId = "payment_${request["id"]}", userName = request["email"] as? String ?: "Usuario",
+                        if (dm) SupportReplyDialog(reportId = "payment_${request["id"]}", userName = requestUserName,
                             reportTitle = "Solicitud de pago USDT", reportDescription = "", initialReply = "",
                             onDismiss = { dm = false }, onReplySent = { _, _ -> dm = false }, userEmail = request["email"] as? String ?: "",
                             userId = request["userId"] as? String ?: "", tag = "PAGO", isFirestoreDoc = true)
@@ -537,7 +534,7 @@ fun CashRedemptionReviewPanel() {
                                             }
                                         }
                                         var dm by remember(request["id"]) { mutableStateOf(false) }
-                                        if (dm) SupportReplyDialog(reportId = "payment_${request["id"]}", userName = request["email"] as? String ?: userKey,
+                                        if (dm) SupportReplyDialog(reportId = "payment_${request["id"]}", userName = (request["userName"] as? String).orEmpty().ifBlank { userKey },
                                             reportTitle = "Solicitud de pago USDT", reportDescription = "", initialReply = "",
                                             onDismiss = { dm = false }, onReplySent = { _, _ -> dm = false }, userEmail = request["email"] as? String ?: "",
                                             userId = request["userId"] as? String ?: "", tag = "PAGO", isFirestoreDoc = true)

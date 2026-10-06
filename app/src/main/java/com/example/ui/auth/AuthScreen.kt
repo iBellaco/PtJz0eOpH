@@ -588,9 +588,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             }
 
             // Summoner Crest Avatar
-            val finalUserName = savedUserName.takeIf { it.isNotBlank() }
-                ?: user?.displayName?.takeIf { it.isNotBlank() }
-                ?: effectiveEmail.substringBefore("@").ifBlank { "Invocador" }
+            val finalUserName = savedUserName.takeIf { it.isNotBlank() } ?: "Invocador"
 
             val equippedAvatar = AvatarCatalog.getAvatarById(currentAvatarId)
 
@@ -628,7 +626,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             // Avatar in center
             Box(
                 modifier = Modifier
-                    .size(if (hasImageFrame) 172.dp else if (hasRoleFrame) 140.dp else 92.dp)
+                    .size(if (hasImageFrame) 196.dp else if (hasRoleFrame) 140.dp else 92.dp)
                     .testTag("profile_avatar_frame_area")
                     .padding(
                         top = if (hasRoleFrame) 0.dp else 6.dp,
@@ -675,7 +673,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     rankBorder = currentRankBorder,
                     modifier = Modifier.testTag("profile_avatar"),
                     size = if (hasRoleFrame) 140.dp else 76.dp,
-                    frameScale = if (hasImageFrame) 1.23f else 1f,
+                    frameScale = if (hasImageFrame) 1.40f else 1f,
                     fallbackInitial = finalUserName,
                     isAdmin = isAdminUser,
                     secondaryRole = secondaryRole,
@@ -686,8 +684,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .offset(
-                            x = if (hasImageFrame) (-8).dp else if (hasRoleFrame) (-6).dp else 2.dp,
-                            y = if (hasImageFrame) (-8).dp else if (hasRoleFrame) (-6).dp else 2.dp
+                            x = if (hasImageFrame) (-16).dp else if (hasRoleFrame) (-6).dp else 2.dp,
+                            y = if (hasImageFrame) (-16).dp else if (hasRoleFrame) (-6).dp else 2.dp
                         )
                         .size(32.dp)
                         .clip(CircleShape)
@@ -711,7 +709,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 }
             }
 
-            Spacer(modifier = Modifier.height(if (hasImageFrame) 16.dp else 12.dp))
+            Spacer(modifier = Modifier.height(if (hasImageFrame) 28.dp else 12.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

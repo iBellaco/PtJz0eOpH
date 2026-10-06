@@ -60,7 +60,11 @@ object StreamerRepository {
                 12 -> "12 horas"
                 else -> "Extensible"
             }
-            val fields = mutableMapOf<String, Any>("userId" to user.uid, "userName" to (account.getString("userName") ?: user.displayName.orEmpty()),
+            val accountUserName = account.getString("name")?.takeIf { it.isNotBlank() }
+                ?: account.getString("userName")?.takeIf { it.isNotBlank() }
+                ?: user.displayName?.takeIf { it.isNotBlank() }
+                ?: "Usuario"
+            val fields = mutableMapOf<String, Any>("userId" to user.uid, "userName" to accountUserName,
                 "channelName" to name.trim(), "channelUrl" to channel.url, "platform" to channel.platform,
                 "status" to "PENDING", "usingCoachAcknowledged" to true, "submittedAtMillis" to now,
                 "durationHours" to durationHours, "durationLabel" to durationLabel)
