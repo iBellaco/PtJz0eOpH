@@ -30,6 +30,8 @@ import com.example.data.*
 import com.example.ui.theme.*
 import com.example.util.*
 import com.google.firebase.firestore.MetadataChanges
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
@@ -241,6 +243,7 @@ fun CashRedemptionReviewPanel() {
     var retry by remember { mutableIntStateOf(0) }
     var selectedTab by remember { mutableStateOf("PENDING") }
     var selectedUserFilter by remember { mutableStateOf<String?>(null) }
+    var resolvedUserNames by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     val fourteenDaysAgo = remember { System.currentTimeMillis() - EssenceEconomyRepository.CASH_HISTORY_RETENTION_MILLIS }
 
     LaunchedEffect(Unit) {
@@ -270,14 +273,38 @@ fun CashRedemptionReviewPanel() {
         }
     }
 
-    val historyGroupedByUser = remember(historyRequests) {
-        historyRequests.groupBy {
-            (it["userName"] as? String)?.takeIf(String::isNotBlank) ?: "Usuario"
+    LaunchedEffect(historyRequests.mapNotNull { it["userId"] as? String }.distinct()) {
+        val ids = historyRequests.mapNotNull { (it["userId"] as? String)?.takeIf(String::isNotBlank) }.distinct()
+        if (ids.isEmpty()) {
+            resolvedUserNames = emptyMap()
+        } else {
+            val db = FirebaseFirestore.getInstance()
+            resolvedUserNames = ids.associateWith { uid ->
+                runCatching {
+                    val profile = db.collection("users").document(uid).get().await()
+                    profile.getString("name")?.takeIf { it.isNotBlank() }
+                        ?: profile.getString("userName")?.takeIf { it.isNotBlank() }
+                        ?: "Usuario"
+                }.getOrDefault("Usuario")
+            }
         }
     }
 
+    fun paymentUserName(request: Map<String, Any>): String {
+        val uid = (request["userId"] as? String).orEmpty()
+        val resolved = resolvedUserNames[uid].orEmpty()
+        val stored = (request["userName"] as? String).orEmpty()
+        return resolved.takeIf { it.isNotBlank() && !it.equals("Usuario", ignoreCase = true) }
+            ?: stored.takeIf { it.isNotBlank() && !it.equals("Usuario", ignoreCase = true) }
+            ?: "Usuario"
+    }
+
+    val historyGroupedByUser = remember(historyRequests, resolvedUserNames) {
+        historyRequests.groupBy(::paymentUserName)
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(tr("Solicitudes de canje"), color = HextechGold)
+        Text(tr(if (selectedTab == "HISTORY") "Historial de pago" else "Solicitudes de canje"), color = HextechGold)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(
@@ -288,7 +315,7 @@ fun CashRedemptionReviewPanel() {
             FilterChip(
                 selected = selectedTab == "HISTORY",
                 onClick = { selectedTab = "HISTORY" },
-                label = { Text(tr("Historial por usuario (14 días) (${historyRequests.size})")) }
+                label = { Text(tr("Historial de pago")) }
             )
         }
 
@@ -313,7 +340,7 @@ fun CashRedemptionReviewPanel() {
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        val requestUserName = (request["userName"] as? String).orEmpty().ifBlank { "Usuario" }
+                        val requestUserName = paymentUserName(request)
                         Text(tr("$requestUserName • $reqAmount USDT (Descontado: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                         val payoutEmail = (request["binanceEmail"] as? String).orEmpty()
                         if (payoutEmail.isNotBlank()) {
@@ -439,13 +466,13 @@ fun CashRedemptionReviewPanel() {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = userKey,
+                                        text = tr("Invocador") + ": " + userKey,
                                         color = HextechGold,
                                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                                         fontSize = 13.sp
                                     )
                                     Text(
-                                        text = tr("Historial por usuario • Vigencia de 14 días"),
+                                        text = tr("Historial de pago • Vigencia de 14 días"),
                                         color = HextechCyan,
                                         fontSize = 10.5.sp
                                     )

@@ -967,8 +967,13 @@ fun ChampionDetailSheet(
                                     .testTag("build_item_details")
                                     .coachClickable {
                                         if (dbItem != null) {
-                                            selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(rawName,
-                                                activeOption.coreItemsWithDesc.map { it.itemName to it.description }, "")
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.contextualItemAdvice(
+                                                itemName = rawName,
+                                                championName = champion.getLocalizedName(currentLang),
+                                                roleName = selectedRole.getLocalizedName(currentLang),
+                                                language = currentLang,
+                                                situational = false
+                                            )
                                             itemForDetail = dbItem
                                         } else {
                                             selectedSituationalItem = rawName
@@ -1027,8 +1032,13 @@ fun ChampionDetailSheet(
                                     url = item?.iconUrl ?: WildRiftItemsData.getItemIconByName(itemName),
                                     contentDescription = tr(itemName), fallbackText = tr(itemName),
                                     modifier = Modifier.size(if (isCompact) 32.dp else 42.dp).coachClickable {
-                                        selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(itemName,
-                                            activeOption.situationalItemsWithDesc.map { it.itemName to it.description }, "")
+                                        selectedElementAdvice = com.example.util.BuildElementAdvice.contextualItemAdvice(
+                                            itemName = itemName,
+                                            championName = champion.getLocalizedName(currentLang),
+                                            roleName = selectedRole.getLocalizedName(currentLang),
+                                            language = currentLang,
+                                            situational = true
+                                        )
                                         if (item != null) itemForDetail = item else selectedSituationalItem = itemName
                                     }, shape = RoundedCornerShape(6.dp)
                                 )

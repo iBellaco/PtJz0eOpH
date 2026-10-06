@@ -29,4 +29,23 @@ class BuildElementAdviceTest {
         assertEquals("", BuildElementAdvice.resolve("Colección de Globos Oculares",listOf("Colección de Globos Oculares" to mechanic),"",mechanic))
         assertEquals("Prioriza participación segura", BuildElementAdvice.resolve("Colección de Globos Oculares",listOf("Colección de Globos Oculares" to "Prioriza participación segura"),"",mechanic))
     }
+
+    @Test fun `situational item advice names concrete threats and a purchase trigger`() {
+        val serylda = BuildElementAdvice.contextualItemAdvice("Rencor de Serylda", "Hwei", "Línea Central", "es", true)
+        assertTrue(serylda.contains("Cuándo usar"))
+        assertTrue(serylda.contains("Contra qué campeones/composiciones"))
+        assertTrue(serylda.contains("Ornn"))
+        assertFalse(serylda.contains("Heridas Graves"))
+
+        val maw = BuildElementAdvice.contextualItemAdvice("Fauces de Malmortius", "Hwei", "Línea Central", "es", true)
+        assertTrue(maw.contains("Akali") || maw.contains("Syndra") || maw.contains("Fizz"))
+        assertNotEquals(serylda, maw)
+    }
+
+    @Test fun `core item advice is about the tapped item instead of a repeated champion plan`() {
+        val advice = BuildElementAdvice.contextualItemAdvice("Sombrero mortal de Rabadon", "Hwei", "Línea Central", "es", false)
+        assertTrue(advice.contains("Sombrero mortal de Rabadon"))
+        assertTrue(advice.contains("Hwei"))
+        assertFalse(advice.startsWith("Diagnóstico del error/situación"))
+    }
 }
