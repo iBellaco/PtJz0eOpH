@@ -100,6 +100,11 @@ service cloud.firestore {
       return (email != '' && validBinanceEmail(email) && data.get('network', '') == '' && data.get('wallet', '') == '') ||
         (email == '' && validUsdtWallet(data.get('network', ''), data.get('wallet', '')));
     }
+    function expectedCashFee(data) {
+      let email = data.get('binanceEmail', '');
+      let network = data.get('network', '');
+      return email != '' ? 0 : (network == 'BEP20' ? 1 : (network == 'TRC20' ? 2 : (network == 'ERC20' ? 5 : -1)));
+    }
     function cashHistoryExpired(data) {
       let deleteAt = data.get('historyDeleteAtMillis', data.get('resolvedAtMillis', 0) + 1209600000);
       return data.get('status', '') in ['PAID','REJECTED'] && deleteAt is int && request.time.toMillis() >= deleteAt;
@@ -118,20 +123,25 @@ service cloud.firestore {
       let field = op.currency == 'BLUE' ? 'blueEssence' : 'orangeEssence';
       let days = op.get('plan', '') == 'MONTHLY' ? 30 : 365;
       let cost = op.kind == 'PREMIUM' ? (op.plan == 'MONTHLY' ? (op.currency == 'BLUE' ? 100 : 9) : (op.currency == 'BLUE' ? 1100 : 95)) : op.cost;
+      let fee = op.kind == 'CASH' ? op.get('fee', -1) : 0;
+      let debit = op.kind == 'CASH' ? cost + fee : cost;
       return op.userId == userId && op.id == request.resource.data.lastEconomyOperation
         && !exists(/databases/$(database)/documents/users/$(userId)/economy_operations/$(op.id))
         && op.createdAt == request.time && op.timestamp is int
         && op.timestamp >= request.time.toMillis() - 60000 && op.timestamp <= request.time.toMillis() + 60000
         && !resource.data.get('banned', false) && resource.data.get('role', '') != 'banned' && resource.data.get('secondaryRole', '') != 'banned'
-        && op.cost == cost && request.resource.data[field] == resource.data.get(field, 0) - cost && request.resource.data[field] >= 0
+        && op.cost == cost && request.resource.data[field] == resource.data.get(field, 0) - debit && request.resource.data[field] >= 0
         && ((op.kind == 'PREMIUM' && op.plan in ['MONTHLY', 'ANNUAL'] && op.currency in ['BLUE', 'ORANGE']
           && resource.data.get('role', '') != 'admin' && resource.data.get('role', '') != 'moderador' && resource.data.get('secondaryRole', '') != 'moderador'
           && request.resource.data.premiumUntil == base + days * 86400000 && op.premiumUntil == request.resource.data.premiumUntil
           && request.resource.data.subscriptionPlan == op.receipt.planName
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([field, 'premiumUntil', 'subscriptionPlan', 'lastEconomyOperation'])) ||
           (canRedeem(resource.data) && op.kind == 'CASH' && op.currency == 'ORANGE' && cost in [10, 25, 50] && op.usd == cost && validCashDestination(op)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['orangeEssence', 'lastEconomyOperation'])
-          && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.amount == cost));
+           && fee == expectedCashFee(op) && op.get('totalCost', -1) == cost + fee
+           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['orangeEssence', 'lastEconomyOperation'])
+           && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.amount == cost
+           && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.fee == fee
+           && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.totalDeducted == op.totalCost));
     }
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
@@ -171,7 +181,7 @@ service cloud.firestore {
         allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
         allow create: if signedIn() && request.auth.uid == userId && request.resource.data.userId == userId
           && request.resource.data.id == id && request.resource.data.createdAt == request.time
-          && request.resource.data.keys().hasOnly(['id','userId','kind','plan','currency','cost','premiumUntil','usd','network','wallet','binanceEmail','timestamp','createdAt','receipt'])
+          && request.resource.data.keys().hasOnly(['id','userId','kind','plan','currency','cost','premiumUntil','usd','network','wallet','binanceEmail','fee','totalCost','timestamp','createdAt','receipt'])
           && profile().lastEconomyOperation == id
           && get(/databases/$(database)/documents/users/$(userId)).data.get('lastEconomyOperation', '') != id
           && getAfter(/databases/$(database)/documents/users/$(userId)/subscription_history/$(id)).data == request.resource.data.receipt;
@@ -203,7 +213,11 @@ service cloud.firestore {
         && request.resource.data.network == op().get('network', '') && request.resource.data.wallet == op().get('wallet', '')
         && request.resource.data.binanceEmail == op().get('binanceEmail', '')
         && validCashDestination(request.resource.data)
-        && op().kind == 'CASH' && op().cost == request.resource.data.amount && op().timestamp == request.resource.data.requestedAtMillis;
+        && request.resource.data.fee == expectedCashFee(request.resource.data)
+        && request.resource.data.totalDeducted == request.resource.data.amount + request.resource.data.fee
+        && op().kind == 'CASH' && op().cost == request.resource.data.amount
+        && op().get('fee', -1) == request.resource.data.fee && op().get('totalCost', -1) == request.resource.data.totalDeducted
+        && op().timestamp == request.resource.data.requestedAtMillis;
       allow update: if isAdmin();
       allow delete: if isAdmin() && cashHistoryExpired(resource.data);
     }
