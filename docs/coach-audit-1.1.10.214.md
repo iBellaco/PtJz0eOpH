@@ -34,6 +34,7 @@
 - `app/src/test/java/com/example/BuildElementAdviceCoverageTest.kt`
 - `app/src/test/java/com/example/SpellCatalogFormattingTest.kt`
 - `app/build.gradle.kts`
+- `.github/workflows/build-apk.yml`
 - `docs/coach-audit-1.1.10.214.md`
 
 ## Verificación
