@@ -3746,13 +3746,42 @@ private fun SpellsTab() {
                                         Text(tr(spell.category), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                FormattedWildRiftText(
-                                    text = tr(spell.description),
-                                    color = TextPrimary.copy(alpha = 0.9f),
-                                    fontSize = 12.sp,
-                                    lineHeight = 16.sp
-                                )
+                                val spellPresentation = remember(spell.description, lang) {
+                                    com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
+                                }
+                                if (spellPresentation.mapLabels.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(5.dp))
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        spellPresentation.mapLabels.forEach { mapName ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(5.dp))
+                                                    .background(HextechCyan.copy(alpha = 0.14f))
+                                                    .border(0.5.dp, HextechCyan.copy(alpha = 0.55f), RoundedCornerShape(5.dp))
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            ) {
+                                                Text(
+                                                    text = mapName,
+                                                    color = HextechCyan,
+                                                    fontSize = 9.5.sp,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                if (spellPresentation.description.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    FormattedWildRiftText(
+                                        text = spellPresentation.description,
+                                        color = TextPrimary.copy(alpha = 0.9f),
+                                        fontSize = 12.sp,
+                                        lineHeight = 16.sp
+                                    )
+                                }
                             }
                         }
                     }
@@ -3800,19 +3829,49 @@ private fun SpellsTab() {
             },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(HextechSurface, RoundedCornerShape(8.dp))
-                            .border(0.5.dp, HextechCardBorder, RoundedCornerShape(8.dp))
-                            .padding(10.dp)
-                    ) {
-                        FormattedWildRiftText(
-                            text = tr(spell.description),
-                            color = TextPrimary,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        )
+                    val spellPresentation = remember(spell.description, lang) {
+                        com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
+                    }
+                    if (spellPresentation.mapLabels.isNotEmpty()) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            spellPresentation.mapLabels.forEach { mapName ->
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(HextechCyan.copy(alpha = 0.16f))
+                                        .border(0.7.dp, HextechCyan.copy(alpha = 0.65f), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = mapName,
+                                        color = HextechCyan,
+                                        fontSize = 10.5.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    if (spellPresentation.description.isNotBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(HextechSurface, RoundedCornerShape(8.dp))
+                                .border(0.5.dp, HextechCardBorder, RoundedCornerShape(8.dp))
+                                .padding(10.dp)
+                        ) {
+                            FormattedWildRiftText(
+                                text = spellPresentation.description,
+                                color = TextPrimary,
+                                fontSize = 13.sp,
+                                lineHeight = 18.sp
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
