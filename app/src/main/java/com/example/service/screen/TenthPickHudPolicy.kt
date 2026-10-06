@@ -8,8 +8,10 @@ object TenthPickHudPolicy {
         otherTeam: List<Champion?>, lockedSlots: Set<Int>, expectedIndex: Int? = null): Int? {
         if (!confirmed || champion == null || ownTeam.size != 5 || otherTeam.size != 5) return null
         val selected = (ownTeam + otherTeam).filterNotNull()
-        if (selected.size != 9 || selected.map { it.id }.distinct().size != 9 ||
-            selected.any { it.id == champion.id }) return null
+        // The final portrait is already confirmed by the vision engine. Do not block the
+        // tenth pick merely because an earlier HUD slot temporarily duplicated another
+        // champion; still require exactly nine occupied slots and never replace a pick.
+        if (selected.size != 9 || selected.any { it.id == champion.id }) return null
         val vacancy = ownTeam.indices.singleOrNull { ownTeam[it] == null } ?: return null
         if (vacancy in lockedSlots || expectedIndex != null && expectedIndex != vacancy) return null
         return vacancy

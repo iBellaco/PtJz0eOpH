@@ -139,6 +139,9 @@ object DraftVisionScanner {
         liveScanFps.value = fps
     }
 
+    internal fun preferFullScreenAllyChampion(fullScreenChampion: Champion?, targetedChampion: Champion?): Champion? =
+        fullScreenChampion ?: targetedChampion
+
     fun computeActiveSelectionTurns(
         sequence: List<DraftPickTurn>,
         allies: Array<Champion?>,
@@ -469,21 +472,29 @@ object DraftVisionScanner {
                 val y = (height * calib.allySlotYRatios[i]).toInt()
                 val left = (width * (calib.allyAvatarCenterX + 0.035f)).toInt().coerceIn(0, width - 1)
                 val right = (width * calib.allyOcrMaxX).toInt().coerceIn(left + 1, width)
-                val top = (y - height * 0.075f).toInt().coerceIn(0, height - 1)
-                val bottom = (y + height * 0.075f).toInt().coerceIn(top + 1, height)
+                // Keep this crop inside a single Wild Rift row. The previous +/-7.5% height
+                // overlapped adjacent rows on landscape devices and could copy one champion
+                // into a neighboring slot before the complete row text was resolved.
+                val top = (y - height * 0.050f).toInt().coerceIn(0, height - 1)
+                val bottom = (y + height * 0.050f).toInt().coerceIn(top + 1, height)
                 var crop: Bitmap? = null
                 var scaled: Bitmap? = null
                 try {
                     crop = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
-                    scaled = Bitmap.createScaledBitmap(crop, (crop.width * 3).coerceAtMost(1400), (crop.height * 3).coerceAtMost(500), true)
+                    scaled = Bitmap.createScaledBitmap(crop, (crop.width * 3).coerceAtMost(1400), (crop.height * 3).coerceAtMost(420), true)
                     val slotText = recognizer.process(InputImage.fromBitmap(scaled, 0)).await()
-                    for (line in slotText.textBlocks.flatMap { it.lines }) {
-                        val candidate = ChampionNameResolver.findChampionInText(line.text, allChamps)
-                        if (candidate != null) {
-                            targetedAllyChampions[i] = candidate
-                            freshAllyChampions[i] = candidate
-                            break
+                    val centerY = scaled.height / 2
+                    val best = slotText.textBlocks.flatMap { it.lines }
+                        .mapNotNull { line ->
+                            ChampionNameResolver.findChampionInText(line.text, allChamps)?.let { candidate ->
+                                val distance = kotlin.math.abs((line.boundingBox?.centerY() ?: centerY) - centerY)
+                                Triple(candidate, distance, line.text)
+                            }
                         }
+                        .minByOrNull { it.second }
+                    if (best != null) {
+                        targetedAllyChampions[i] = best.first
+                        AppLogger.d(TAG, "OCR dirigido Aliado Slot $i -> candidato de respaldo ${best.first.name} ('${best.third}')")
                     }
                 } catch (_: Throwable) {
                     // Full-screen OCR remains the fallback for this slot.
@@ -700,7 +711,7 @@ object DraftVisionScanner {
                 val entries = allySlotTexts[i]
 
                 var detectedRoleInSlot: LaneRole? = null
-                var detectedChampInSlot: Champion? = targetedAllyChampions[i]
+                var detectedChampInSlot: Champion? = null
                 var isSlotShowingLane = false
                 val summonerCandidates = mutableListOf<String>()
 
@@ -780,6 +791,15 @@ object DraftVisionScanner {
                         }
                     }
 
+                    if (detectedRoleInSlot == null) {
+                        val fullScreenChampion = detectedChampInSlot
+                        detectedChampInSlot = preferFullScreenAllyChampion(fullScreenChampion, targetedAllyChampions[i])
+                        if (fullScreenChampion == null && detectedChampInSlot != null) {
+                            freshAllyChampions[i] = detectedChampInSlot!!
+                            AppLogger.d(TAG, "OCR Aliado Slot $i -> usando OCR dirigido solo como respaldo: ${detectedChampInSlot!!.name}")
+                        }
+                    }
+
                     if (detectedChampInSlot != null) {
                         isSlotShowingLane = false
                     } else if (detectedRoleInSlot != null) {
@@ -847,10 +867,6 @@ object DraftVisionScanner {
                             summonerCandidates.add(line)
                         }
                     }
-                }
-
-                if (targetedAllyChampions[i] != null) {
-                    AppLogger.d(TAG, "OCR dirigido Aliado Slot $i -> ${targetedAllyChampions[i]?.name}")
                 }
 
                 // Guardar nombre de invocador detectado al instante

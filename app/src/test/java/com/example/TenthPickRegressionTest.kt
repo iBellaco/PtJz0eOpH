@@ -179,6 +179,28 @@ class TenthPickRegressionTest {
         assertEquals(enemies, own.filterNotNull())
     }
 
+    @Test fun fullScreenAllyNameWinsOverTargetedNeighborFallback() {
+        val yuumi = Champion(id = "yuumi", name = "Yuumi")
+        val jinx = Champion(id = "jinx", name = "Jinx")
+        val skarner = Champion(id = "skarner", name = "Skarner")
+        val pantheon = Champion(id = "pantheon", name = "Pantheon")
+        assertEquals(jinx, DraftVisionScanner.preferFullScreenAllyChampion(jinx, yuumi))
+        assertEquals(skarner, DraftVisionScanner.preferFullScreenAllyChampion(skarner, yuumi))
+        assertEquals(pantheon, DraftVisionScanner.preferFullScreenAllyChampion(pantheon, yuumi))
+        assertEquals(yuumi, DraftVisionScanner.preferFullScreenAllyChampion(null, yuumi))
+    }
+
+    @Test fun confirmedTenthPickFillsVacancyDespiteTransientEarlierDuplicate() {
+        val own = listOf<Champion?>(Champion(id="a"), null, Champion(id="b"), Champion(id="c"), Champion(id="d"))
+        val duplicatedOther = listOf<Champion?>(
+            Champion(id="yuumi"), Champion(id="jinx"), Champion(id="brand"),
+            Champion(id="yuumi"), Champion(id="pantheon")
+        )
+        assertEquals(1, com.example.service.screen.TenthPickHudPolicy.targetIndex(
+            true, vi, own, duplicatedOther, emptySet(), expectedIndex = 1
+        ))
+    }
+
     @Test fun finalHudCommitPreservesTheOtherNineAndManualLocksOnBothTeams() {
         val own = listOf<Champion?>(Champion(id="a"), null, Champion(id="b"), Champion(id="c"), Champion(id="d"))
         val other = (0..4).map { Champion(id="other$it") }
