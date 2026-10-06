@@ -115,10 +115,12 @@ try {
       const binanceEmail=(override.binanceEmail||'').trim().toLowerCase();
       const network=binanceEmail?'':(override.network??'ERC20');
       const wallet=binanceEmail?'':(override.wallet??'0x1111111111111111111111111111111111111111');
-      const receipt={id,timestamp,durationMillis:0,planName:'Canje de Esencia Naranja',status:'Pendiente',amount:`-${amount} EN`,source:'CASH_REDEMPTION'};
-      tx.set(operation,{id,userId:uid,kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network,wallet,binanceEmail,timestamp,createdAt:serverTimestamp(),receipt});
-      tx.update(profile,{orangeEssence:account.orangeEssence-amount,lastEconomyOperation:id});
-      tx.set(doc(store,`cash_redemptions/${id}`),{id,userId:uid,email:`${uid}@test.invalid`,userName:account.name||'',amount,usd:amount,paymentCurrency:'USDT',network,wallet,binanceEmail,status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override,network,wallet,binanceEmail});
+      const fee=binanceEmail?0:(network==='BEP20'?1:(network==='TRC20'?2:(network==='ERC20'?5:-1)));
+      const totalCost=amount+fee;
+      const receipt={id,timestamp,durationMillis:0,planName:'Canje de Esencia Naranja',status:'Pendiente',amount:`-${totalCost} EN`,source:'CASH_REDEMPTION'};
+      tx.set(operation,{id,userId:uid,kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network,wallet,binanceEmail,fee,totalCost,timestamp,createdAt:serverTimestamp(),receipt});
+      tx.update(profile,{orangeEssence:account.orangeEssence-totalCost,lastEconomyOperation:id});
+      tx.set(doc(store,`cash_redemptions/${id}`),{id,userId:uid,email:`${uid}@test.invalid`,userName:account.name||'',amount,usd:amount,paymentCurrency:'USDT',network,wallet,binanceEmail,fee,totalDeducted:totalCost,status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override,network,wallet,binanceEmail,fee,totalDeducted:totalCost});
       const reportId=`payment_${id}`;
       const conversation=initial(reportId).map(entry=>entry.senderRole==='USER'?{...entry,senderUid:uid}:entry);
       const payment={id:reportId,reportId,redemptionId:id,userId:uid,userEmail:`${uid}@test.invalid`,userName:account.name||'Usuario',title:'Solicitud de pago USDT',description:'Solicitud de pago USDT',content:'Solicitud de pago USDT',tag:'PAGO',type:'PAGO',panel:'HISTORY',staffVisible:false,status:'PENDING',staffRead:false,isRead:true,userRead:true,userCanReply:false,timestamp,createdAt:serverTimestamp(),conversation};
@@ -149,9 +151,9 @@ try {
   await test('administrator redemption has the same atomic debit and idempotent receipt',async()=>{
     await updateDoc(doc(admin,'users/admin'),{orangeEssence:400});
     await assertSucceeds(redeem('admin-fifty',50,{},admin,'admin'));
-    assert.equal((await getDoc(doc(admin,'users/admin'))).data().orangeEssence,350);
+    assert.equal((await getDoc(doc(admin,'users/admin'))).data().orangeEssence,345);
     await assertSucceeds(redeem('admin-fifty',50,{},admin,'admin'));
-    assert.equal((await getDoc(doc(admin,'users/admin'))).data().orangeEssence,350);
+    assert.equal((await getDoc(doc(admin,'users/admin'))).data().orangeEssence,345);
     assert.equal((await getDoc(doc(admin,'cash_redemptions/admin-fifty'))).data().usd,50);
     await assertFails(getDoc(doc(moderator,'support_reports/payment_admin-fifty')));
   });
@@ -181,11 +183,11 @@ try {
     await assertSucceeds(runTransaction(admin,async tx=>{
       const request=doc(admin,'cash_redemptions/cash-ten'),profile=doc(admin,'users/economy');
       const r=await tx.get(request),p=await tx.get(profile);assert.equal(r.data().status,'PENDING');
-      tx.update(profile,{orangeEssence:p.data().orangeEssence+r.data().amount});
+      tx.update(profile,{orangeEssence:p.data().orangeEssence+r.data().totalDeducted});
       tx.update(request,{status:'REJECTED',resolvedAt:serverTimestamp()});
       tx.update(doc(admin,'users/economy/subscription_history/cash-ten'),{status:'Rechazado y reembolsado'});
     }));
-    assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before+10);
+    assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before+15);
   });
   await test('payment conversation is private to its owner and the administrator',async()=>{
     const data={...ticket('payment','PAGO'),staffVisible:false};
@@ -195,12 +197,12 @@ try {
     await assertFails(getDoc(doc(other,'support_reports/payment')));
     await assertFails(setDoc(doc(user,'support_reports/payment-exposed'),{...data,staffVisible:true}));
   });
-  await test('all cash request amounts debit the exact one-to-one USDT value',async()=>{
+  await test('all cash request amounts debit the payout plus the exact network fee',async()=>{
     await updateDoc(doc(admin,'users/economy'),{orangeEssence:100});
     for(const amount of [25,50]) {
       const before=(await getDoc(doc(economy,'users/economy'))).data().orangeEssence;
       await assertSucceeds(redeem(`cash-${amount}`,amount));
-      assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before-amount);
+      assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before-amount-5);
       assert.equal((await getDoc(doc(economy,`cash_redemptions/cash-${amount}`))).data().usd,amount);
     }
   });
