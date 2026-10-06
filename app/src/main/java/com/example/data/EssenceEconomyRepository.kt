@@ -60,9 +60,7 @@ object EssenceEconomyRepository {
             val previous = tx.get(operation)
             if (!previous.exists()) {
                 val account = tx.get(profile).data.orEmpty()
-                EssenceEconomyPolicy.redeem(account, amount, fee, adminClaim)
-                val currentOrange = (account["orangeEssence"] as? Number)?.toLong() ?: 0L
-                val remainingAfterAmount = currentOrange - amount
+                val remainingAfterCost = EssenceEconomyPolicy.redeem(account, amount, fee, adminClaim)
                 val now = System.currentTimeMillis()
                 val userName = (account["name"] as? String).orEmpty()
                 val visibleUserName = userName.ifBlank { user.displayName?.takeIf { it.isNotBlank() } ?: userEmail.substringBefore("@").ifBlank { "Usuario" } }
@@ -70,8 +68,9 @@ object EssenceEconomyRepository {
                     "status" to "Pendiente", "amount" to "-$totalCost EN", "source" to "CASH_REDEMPTION")
                 tx.set(operation, mapOf("id" to id, "userId" to user.uid, "kind" to "CASH", "currency" to "ORANGE", "cost" to amount,
                     "usd" to amount, "network" to payoutNetwork, "wallet" to payoutWallet, "binanceEmail" to cleanBinanceEmail,
+                    "fee" to fee, "totalCost" to totalCost,
                     "timestamp" to now, "createdAt" to FieldValue.serverTimestamp(), "receipt" to receipt))
-                tx.update(profile, mapOf("orangeEssence" to remainingAfterAmount, "lastEconomyOperation" to id))
+                tx.update(profile, mapOf("orangeEssence" to remainingAfterCost, "lastEconomyOperation" to id))
                 tx.set(redemptions.document(id), mapOf("id" to id, "userId" to user.uid, "email" to userEmail, "userName" to userName,
                     "amount" to amount, "usd" to amount, "paymentCurrency" to "USDT", "network" to payoutNetwork, "wallet" to payoutWallet,
                     "binanceEmail" to cleanBinanceEmail, "status" to "PENDING", "requestedAt" to FieldValue.serverTimestamp(),
@@ -115,11 +114,6 @@ object EssenceEconomyRepository {
                 tx.set(profile.collection("subscription_history").document(id), receipt)
             }
         }.await()
-        if (fee > 0L) {
-            runCatching {
-                profile.update("orangeEssence", FieldValue.increment(-fee)).await()
-            }
-        }
         Unit
     } }
 
