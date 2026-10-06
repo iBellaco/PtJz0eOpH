@@ -61,6 +61,7 @@ fun UserAvatarView(
     adminFrameUrl: String? = null,
     role: String? = null,
     secondaryRole: String? = null,
+    frameScale: Float = 1f,
     isCurrentUser: Boolean = false
 ) {
     val currentRoleFlowValue = com.example.util.SubscriptionManager.userRole.collectAsState().value
@@ -173,7 +174,8 @@ fun UserAvatarView(
     }
 
     val hasFrame = activeFrameAsset != null || adminFrameResId != 0 || !adminFrameUrl.isNullOrBlank()
-    val avatarSize = if (hasFrame) (size * 0.50f) else size
+    val avatarSize = if (hasFrame) (size * 0.53f) else size
+    val frameRenderSize = if (hasFrame) size * frameScale.coerceAtLeast(1f) else size
     val verticalHoleCorrection = if (hasFrame) (size * 0.015f) else 0.dp
 
     Box(
@@ -265,7 +267,7 @@ fun UserAvatarView(
                 contentDescription = com.example.util.tr("Marco de Perfil"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .size(size)
+                    .requiredSize(frameRenderSize)
                     .align(Alignment.Center)
             )
         } else if (isAdmin) {
@@ -275,7 +277,7 @@ fun UserAvatarView(
                     contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .size(size)
+                        .requiredSize(frameRenderSize)
                         .align(Alignment.Center)
                 )
             } else if (!adminFrameUrl.isNullOrBlank()) {
@@ -289,7 +291,7 @@ fun UserAvatarView(
                     contentDescription = com.example.util.tr("Marco de Administrador"),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .size(size)
+                        .requiredSize(frameRenderSize)
                         .align(Alignment.Center)
                 )
             }

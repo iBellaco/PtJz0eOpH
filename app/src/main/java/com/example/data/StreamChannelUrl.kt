@@ -40,7 +40,7 @@ object StreamerPublicationPolicy {
     const val MAX_LIVE = 5
     const val REVIEW_WINDOW_MILLIS = 3 * 60 * 60 * 1000L
     const val PENDING_HISTORY_WINDOW_MILLIS = 24 * 60 * 60 * 1000L
-    const val HISTORY_WINDOW_MILLIS = 7 * 24 * 60 * 60 * 1000L
+    const val HISTORY_WINDOW_MILLIS = 72 * 60 * 60 * 1000L
 
     const val DURATION_3_HOURS = 3
     const val DURATION_6_HOURS = 6

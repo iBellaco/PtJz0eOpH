@@ -222,7 +222,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val now = System.currentTimeMillis()
                 val records = listOf("APPROVED", "REJECTED", "ENDED", "PENDING").mapIndexed { i, status ->
                     mapOf<String, Any>("publicationId" to "history-$i", "channelName" to "Canal $i", "status" to status,
-                        "submittedAtMillis" to now - (if (status == "PENDING") 4 * 60 * 60 * 1000L else (i + 1) * 24 * 60 * 60 * 1000L), "endedAtMillis" to now - 3600000L, "clickCount" to if (i == 0) 42L else i.toLong())
+                        "submittedAtMillis" to now - (if (status == "PENDING") 4 * 60 * 60 * 1000L else (i + 1) * 24 * 60 * 60 * 1000L), "endedAtMillis" to now - 3600000L, "durationHours" to 12, "clickCount" to if (i == 0) 42L else i.toLong())
                 }
                 Column(Modifier.verticalScroll(rememberScrollState())) { StreamerPublicationHistory(records + mapOf<String, Any>("publicationId" to "history-old", "channelName" to "Canal Expirado", "status" to "ENDED", "endedAtMillis" to now - StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS,
                     "submittedAtMillis" to now - StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS), now) { copiedSummary = it } }
@@ -629,7 +629,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Cliques para abrir o canal: 42"))
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Aceita"))
                 Assert.assertTrue(copiedSummary, copiedSummary.contains("Data e hora:"))
-                Assert.assertTrue(copiedSummary, copiedSummary.contains("A contagem de sete dias começará"))
+                Assert.assertTrue(copiedSummary, copiedSummary.contains("Duração selecionada: 12 horas"))
+                Assert.assertTrue(copiedSummary, copiedSummary.contains("A contagem de 72 horas começará"))
                 Assert.assertTrue(copiedSummary, Regex("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}").containsMatchIn(copiedSummary))
                 compose.onAllNodesWithText("Aceita").assertCountEquals(2)
                 compose.onNodeWithText("Rejeitada automaticamente: passaram três horas sem aprovação.").performScrollTo().assertExists()
@@ -662,7 +663,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 val area = compose.onNodeWithTag("profile_avatar_frame_area", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 val name = compose.onNodeWithTag("profile_user_name", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 val density = context.resources.displayMetrics.density
-                Assert.assertEquals(172f * density, avatar.width, density)
+                Assert.assertEquals(140f * density, avatar.width, density)
                 Assert.assertEquals(172f * density, area.width, density)
                 Assert.assertTrue("Frame space must precede the username: $area $name", area.bottom < name.top)
                 if (screen.startsWith("profile-admin-image-frame")) Assert.assertEquals("free", SubscriptionManager.userRole.value)

@@ -177,7 +177,8 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
         }
         onDispose { listener.remove(); historyListener.remove(); metricsListener.remove() }
     }
-    val active = entries.any { it["userId"] == uid }
+    val activeEntry = entries.firstOrNull { it["userId"] == uid }
+    val active = activeEntry != null
     val expired = StreamerPublicationPolicy.isExpired(request, now)
     val pending = request["status"] == "PENDING" && !expired
     LaunchedEffect(uid, request["publicationId"], expired) {
@@ -263,15 +264,18 @@ fun StreamerPanelDialog(onDismiss: () -> Unit) {
                 when {
                     active -> {
                         Text(localizedString(R.string.streamer_approved), color = Color.White)
-                        val activePubId = entries.firstOrNull { it["userId"] == uid }?.let { StreamerPublicationPolicy.publicationId(it) }
-                            ?: StreamerPublicationPolicy.publicationId(request)
+                        val activeData = activeEntry.orEmpty()
+                        val activeHours = StreamerPublicationPolicy.durationHours(activeData)
+                        val activeDurationValue = if (activeHours <= 0) localizedString(R.string.streamer_duration_extensible) else localizedString(R.string.streamer_duration_hours, activeHours)
+                        Text(localizedString(R.string.streamer_duration_selected, activeDurationValue), color = Color.White, modifier = Modifier.testTag("streamer_active_duration"))
+                        val liveDeadline = StreamerPublicationPolicy.liveExpiresAt(activeData)
+                        if (liveDeadline > 0L) {
+                            val remainingSeconds = ((liveDeadline - now).coerceAtLeast(0L) + 999L) / 1000L
+                            Text(localizedString(R.string.streamer_live_ends_in, remainingSeconds / 3600L, (remainingSeconds / 60L) % 60L, remainingSeconds % 60L), color = StreamGold, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, modifier = Modifier.testTag("streamer_live_countdown"))
+                        }
+                        val activePubId = StreamerPublicationPolicy.publicationId(activeData)
                         val activeClicks = clickMetrics[activePubId] ?: (request["clickCount"] as? Number)?.toLong() ?: 0L
-                        Text(
-                            localizedString(R.string.streamer_history_clicks, activeClicks),
-                            color = StreamGold,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                        )
+                        Text(localizedString(R.string.streamer_history_clicks, activeClicks), color = StreamGold, style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                     }
                     pending -> Text(localizedString(R.string.streamer_pending), color = Color.White)
                     request["status"] == "REJECTED" -> Text(localizedString(R.string.streamer_rejected), color = Color.White)
@@ -364,6 +368,9 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(request["channelName"] as? String ?: "", color = StreamGold, style = MaterialTheme.typography.titleMedium)
                         Text("${(request["userName"] as? String).orEmpty()} • ${(request["platform"] as? String).orEmpty()}", color = Color.White)
+                        val requestHours = StreamerPublicationPolicy.durationHours(request)
+                        val requestDurationValue = if (requestHours <= 0) localizedString(R.string.streamer_duration_extensible) else localizedString(R.string.streamer_duration_hours, requestHours)
+                        Text(localizedString(R.string.streamer_duration_selected, requestDurationValue), color = StreamGold, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, modifier = Modifier.testTag("streamer_admin_duration_$uid"))
                         Text(request["channelUrl"] as? String ?: "", color = Color.White)
                         TextButton(onClick = { channel?.let { runCatching { uri.openUri(it.url) } } }, enabled = channel != null) { Text(localizedString(R.string.streamer_open)) }
                         Row { Checkbox(checked = verified, onCheckedChange = { verified = it }, enabled = !busy); Text(localizedString(R.string.streamer_verify), color = Color.White, modifier = Modifier.weight(1f)) }
@@ -383,10 +390,19 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
 fun ApprovedStreamerReviewCard(item: Map<String, Any>, enabled: Boolean,
     onOpen: (String) -> Unit, onEnd: () -> Unit, clicks: Long = 0L) {
     val channel = StreamChannelUrl.approved(item["channelUrl"] as? String ?: "")
+    val now = streamerClock()
+    val durationHours = StreamerPublicationPolicy.durationHours(item)
+    val durationValue = if (durationHours <= 0) localizedString(R.string.streamer_duration_extensible) else localizedString(R.string.streamer_duration_hours, durationHours)
+    val liveDeadline = StreamerPublicationPolicy.liveExpiresAt(item)
     Surface(color = Color(0xFF1F2937), shape = RoundedCornerShape(10.dp)) {
         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(item["channelName"] as? String ?: "", color = StreamGold, style = MaterialTheme.typography.titleMedium)
             Text(localizedString(R.string.streamer_review_accepted), color = Color(0xFF2DD4BF))
+            Text(localizedString(R.string.streamer_duration_selected, durationValue), color = StreamGold)
+            if (liveDeadline > 0L) {
+                val remainingSeconds = ((liveDeadline - now).coerceAtLeast(0L) + 999L) / 1000L
+                Text(localizedString(R.string.streamer_live_ends_in, remainingSeconds / 3600L, (remainingSeconds / 60L) % 60L, remainingSeconds % 60L), color = Color.White)
+            }
             Text(item["channelUrl"] as? String ?: "", color = Color.White)
             Text(
                 localizedString(R.string.streamer_history_clicks, clicks),

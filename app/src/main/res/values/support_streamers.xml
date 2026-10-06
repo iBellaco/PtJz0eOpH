@@ -48,11 +48,15 @@
     <string name="streamer_history_date_unavailable">Fecha no disponible</string>
     <string name="streamer_history_error">No se pudo sincronizar el historial compartido. Se conserva el historial de este dispositivo.</string>
     <string name="streamer_live_label">En vivo</string>
-    <string name="streamer_history_retention">Pendientes: 24 horas desde el envío. Publicaciones finalizadas: siete días desde su finalización.</string>
+    <string name="streamer_history_retention">Pendientes: 24 horas desde el envío. Publicaciones finalizadas: 72 horas desde su finalización.</string>
     <string name="streamer_history_exact_date">Fecha y hora: %1$s</string>
     <string name="streamer_history_clicks">Clics para abrir el canal: %1$d</string>
     <string name="streamer_history_clicks_unavailable">Clics: recuento no disponible</string>
-    <string name="streamer_history_delete_in">Se eliminará en %1$d d %2$d h %3$d min</string>
+    <string name="streamer_history_delete_in">Se eliminará en %1$d h %2$d min</string>
+    <string name="streamer_duration_selected">Duración seleccionada: %1$s</string>
+    <string name="streamer_duration_hours">%1$d horas</string>
+    <string name="streamer_duration_extensible">Extensible</string>
+    <string name="streamer_live_ends_in">La publicación desaparecerá en %1$d h %2$d min %3$d s</string>
     <string name="streamer_history_deletion_date">Eliminación: %1$s</string>
     <string name="streamer_history_copy">Copiar datos de la publicación</string>
     <string name="streamer_history_copied">Datos de la publicación copiados.</string>

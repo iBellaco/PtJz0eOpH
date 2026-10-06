@@ -125,11 +125,14 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
                         val clickText = (item["clickCount"] as? Number)?.let { localizedString(R.string.streamer_history_clicks, it.toLong()) }
                             ?: if (status in listOf("APPROVED", "ENDED")) localizedString(R.string.streamer_history_clicks, 0L)
                             else localizedString(R.string.streamer_history_clicks_unavailable)
+                        val durationHours = StreamerPublicationPolicy.durationHours(item)
+                        val durationValue = if (durationHours <= 0) localizedString(R.string.streamer_duration_extensible) else localizedString(R.string.streamer_duration_hours, durationHours)
+                        val durationText = localizedString(R.string.streamer_duration_selected, durationValue)
                         val deadline = StreamerPublicationPolicy.historyExpiresAt(item)
                         val remaining = ((deadline - now).coerceAtLeast(0L) + 59999L) / 60000L
-                        val expiresText = if (deadline > 0L) localizedString(R.string.streamer_history_delete_in,
-                            remaining / 1440L, (remaining / 60L) % 24L, remaining % 60L) else if (status == "APPROVED") localizedString(R.string.streamer_history_active_retention) else ""
+                        val expiresText = if (deadline > 0L) localizedString(R.string.streamer_history_delete_in, remaining / 60L, remaining % 60L) else if (status == "APPROVED") localizedString(R.string.streamer_history_active_retention) else ""
                         Text(dateText, color = Color.LightGray)
+                        Text(durationText, color = Color.White, modifier = Modifier.testTag("streamer_history_duration_${StreamerPublicationPolicy.publicationId(item)}"))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(statusText, color = color)
                         }
@@ -143,7 +146,7 @@ fun StreamerPublicationHistory(publications: List<Map<String, Any>>, now: Long, 
                         val deletionDate = if (deadline > 0L) localizedString(R.string.streamer_history_deletion_date, exactFormat.format(Date(deadline))) else ""
                         val copyLabel = localizedString(R.string.streamer_history_copy)
                         TextButton(onClick = {
-                            val summary = listOf(channel, dateText, statusText, clickText, expiresText, deletionDate).filter { it.isNotBlank() }.joinToString("\n")
+                            val summary = listOf(channel, dateText, durationText, statusText, clickText, expiresText, deletionDate).filter { it.isNotBlank() }.joinToString("\n")
                             if (onCopy != null) onCopy(summary) else {
                                 clipboard.setText(AnnotatedString(summary))
                                 android.widget.Toast.makeText(context, copiedMessage, android.widget.Toast.LENGTH_SHORT).show()

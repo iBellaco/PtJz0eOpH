@@ -37,7 +37,7 @@
     <string name="blue_essence">Essência Azul</string>
     <string name="orange_essence">Essência Laranja</string>
     <string name="matchup_sign_in_hint">Crie uma conta e entre para ver seis campeões em Vantagem, Fraqueza e Sinergia.</string>
-    <string name="streamer_history_active_retention">A contagem de sete dias começará quando a publicação for encerrada.</string>
+    <string name="streamer_history_active_retention">A contagem de 72 horas começará quando a publicação for encerrada.</string>
     <string name="streamer_metrics_error">Não foi possível ativar o contador de cliques. A aprovação não foi concluída. Verifique a sincronização na nuvem.</string>
     <string name="streamer_clicks_cached">Última contagem salva; aguardando conexão ao vivo.</string>
 </resources>

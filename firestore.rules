@@ -283,8 +283,8 @@ service cloud.firestore {
       let status = data.get('status', '');
       return status == 'APPROVED' ? 0 :
         (status == 'PENDING' || data.get('rejectionReason', '') == 'TIMEOUT') ? submitted + 86400000 :
-        status == 'ENDED' ? data.get('endedAtMillis', submitted) + 604800000 :
-        status == 'REJECTED' ? data.get('reviewedAtMillis', submitted) + 604800000 : submitted + 604800000;
+        status == 'ENDED' ? data.get('endedAtMillis', submitted) + 259200000 :
+        status == 'REJECTED' ? data.get('reviewedAtMillis', submitted) + 259200000 : submitted + 259200000;
     }
     function streamerHistoryDeadline(data) { return streamerHistoryDeadlineFrom(data, streamerSubmittedMillis(data)); }
     function validStreamerHistoryDeadline(data) {

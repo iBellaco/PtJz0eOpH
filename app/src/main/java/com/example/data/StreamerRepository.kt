@@ -96,6 +96,7 @@ object StreamerRepository {
             }
             check(request.getString("status") == "PENDING") { "streamer_error" }
             check(!StreamerPublicationPolicy.isExpired(request.data.orEmpty())) { "streamer_expired" }
+            val reviewedAt = System.currentTimeMillis()
             if (approve) {
                 check(verifiedUsingCoach && request.getBoolean("usingCoachAcknowledged") == true) { "streamer_requirement" }
                 // Only a trusted staff writer can create adminTest; ordinary requests forbid this field.
@@ -106,7 +107,7 @@ object StreamerRepository {
                 val durHours = (request.getLong("durationHours") ?: (request.get("durationHours") as? Number)?.toLong() ?: 3L).toInt()
                 val durLabel = request.getString("durationLabel") ?: if (durHours == 0) "Extensible" else "$durHours horas"
                 val entry = mapOf<String, Any>("userId" to uid, "channelName" to request.getString("channelName").orEmpty(),
-                    "channelUrl" to channel.url, "platform" to channel.platform, "approvedAtMillis" to System.currentTimeMillis(),
+                    "channelUrl" to channel.url, "platform" to channel.platform, "approvedAtMillis" to reviewedAt,
                     "durationHours" to durHours, "durationLabel" to durLabel,
                     "publicationId" to StreamerPublicationPolicy.publicationId(request.data.orEmpty()))
                 transaction.set(registry, mapOf("entries" to StreamerPublicationPolicy.approve(live, entry)), SetOptions.merge())
@@ -115,9 +116,9 @@ object StreamerRepository {
                         "submittedAtMillis" to StreamerPublicationPolicy.submittedAt(request.data.orEmpty()), "clickCount" to 0L,
                         "status" to "APPROVED"))
             }
-            val reviewedAt = System.currentTimeMillis()
             val reviewed = mutableMapOf<String, Any>("status" to if (approve) "APPROVED" else "REJECTED",
                 "verifiedUsingCoach" to (approve && verifiedUsingCoach), "reviewedAtMillis" to reviewedAt)
+            if (approve) reviewed["approvedAtMillis"] = reviewedAt
             if (archive) reviewed["streamerHistoryDeleteAt"] = if (approve)
                 com.google.firebase.firestore.FieldValue.delete() else com.google.firebase.Timestamp(java.util.Date(reviewedAt + StreamerPublicationPolicy.HISTORY_WINDOW_MILLIS))
             transaction.update(ref, reviewed)
