@@ -8,7 +8,7 @@ data class SpellCatalogPresentation(
 /** Separates the map applicability header from the spell mechanic text for catalog chips. */
 object SpellCatalogFormatting {
     private val mapPrefix = Regex(
-        "^\\s*Mapas?\\s+(?:aplicables?|disponibles?)\\s*:\\s*",
+        "^\\s*Mapas?\\s+(?:aplicables?|disponibles?|aplicáveis?|disponíveis?)\\s*:\\s*",
         RegexOption.IGNORE_CASE
     )
 
@@ -25,6 +25,7 @@ object SpellCatalogFormatting {
             .trim()
             .trimEnd('.', ';')
             .replace(Regex("\\s+y\\s+el\\s+", RegexOption.IGNORE_CASE), ", ")
+            .replace(Regex("\\s+e\\s+o\\s+", RegexOption.IGNORE_CASE), ", ")
             .replace(Regex("\\s+y\\s+", RegexOption.IGNORE_CASE), ", ")
             .replace(Regex("\\s+e\\s+", RegexOption.IGNORE_CASE), ", ")
 
