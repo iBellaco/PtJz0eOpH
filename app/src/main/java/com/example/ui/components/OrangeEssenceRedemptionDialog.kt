@@ -42,10 +42,12 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
     val adminClaim by AuthManager.isAdminClaim.collectAsState()
     if (!com.example.model.RolePanelAccess.canRedeemEssence(role, secondary, adminClaim)) return
     val orange by SubscriptionManager.orangeEssence.collectAsState()
+    if (orange <= 0L) return
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var loadError by remember { mutableStateOf(false) }
     var wallet by remember { mutableStateOf("") }
     var network by remember { mutableStateOf<UsdtNetwork?>(null) }
+    var binanceEmail by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf<Long?>(null) }
     var id by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -55,7 +57,10 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
         BinanceCommissionManager.init()
     }
     val liveFees by BinanceCommissionManager.liveFees.collectAsState()
-    val activeFee = network?.let { liveFees[it] ?: it.feeEn } ?: 0L
+    val normalizedBinanceEmail = binanceEmail.trim().lowercase(java.util.Locale.ROOT)
+    val usingBinanceEmail = normalizedBinanceEmail.isNotBlank()
+    val binanceEmailValid = usingBinanceEmail && UsdtWalletPolicy.validBinanceEmail(normalizedBinanceEmail)
+    val activeFee = if (usingBinanceEmail) 0L else network?.let { liveFees[it] ?: it.feeEn } ?: 0L
 
     DisposableEffect(uid) {
         val listener = EssenceEconomyRepository.redemptions.whereEqualTo("userId", uid).addSnapshotListener(MetadataChanges.INCLUDE) { snap, error ->
@@ -97,10 +102,26 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                         }
                     }
                     Text(tr("Pago exclusivamente en USDT (la comisión de red corre por cuenta del usuario en EN)."), color = HextechGold)
-                    UsdtWalletFields(network, wallet, !busy, onNetwork = { network = it }, onWallet = { wallet = it }, fee = activeFee)
+                    UsdtWalletFields(
+                        network = network,
+                        wallet = wallet,
+                        enabled = !busy,
+                        onNetwork = { network = it },
+                        onWallet = { wallet = it },
+                        fee = activeFee,
+                        binanceEmail = binanceEmail,
+                        onBinanceEmail = { value ->
+                            binanceEmail = value
+                            if (value.isNotBlank()) {
+                                network = null
+                                wallet = ""
+                            }
+                        }
+                    )
                     if (orange > 0) {
-                        val isWalletValid = network != null && UsdtWalletPolicy.valid(network!!, wallet.trim())
-                        if (network != null) {
+                        val isWalletValid = !usingBinanceEmail && network != null && UsdtWalletPolicy.valid(network!!, wallet.trim())
+                        val destinationReady = binanceEmailValid || isWalletValid
+                        if (network != null && !usingBinanceEmail) {
                             Surface(
                                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
                                 color = HextechSurfaceVariant.copy(alpha = 0.7f),
@@ -127,8 +148,8 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                             balance = orange,
                             network = network ?: UsdtNetwork.TRC20,
                             fee = activeFee,
-                            enabled = !busy && isWalletValid,
-                            hasSelectedNetwork = network != null
+                            enabled = !busy && destinationReady,
+                            hasSelectedNetwork = destinationReady
                         ) { selected ->
                             amount = selected
                             id = java.util.UUID.randomUUID().toString()
@@ -143,7 +164,9 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
                             .format(Date((request["requestedAtMillis"] as? Number)?.toLong() ?: 0L))
                         val reqAmount = request["amount"] ?: 0
                         val reqTotal = request["totalDeducted"] ?: reqAmount
-                        Text(tr("$date • $reqTotal EN (${request["network"]}) → $reqAmount USDT"), color = TextPrimary)
+                        val payoutEmail = (request["binanceEmail"] as? String).orEmpty()
+                        val destination = if (payoutEmail.isNotBlank()) tr("Correo Binance") + ": " + payoutEmail else (request["network"] as? String).orEmpty()
+                        Text(tr("$date • $reqTotal EN → $reqAmount USDT") + " • " + destination, color = TextPrimary)
                         Text(tr(when (request["status"]) { "PAID" -> "Pagado"; "REJECTED" -> "Rechazado y reembolsado"; else -> "Pendiente" }), color = HextechCyan)
                     }
                     TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("Cerrar")) }
@@ -152,17 +175,27 @@ fun OrangeEssenceRedemptionDialog(onDismiss: () -> Unit) {
         }
     }
     amount?.let { selected ->
-        network?.let { net ->
-            CashRedemptionConfirmation(selected, net, wallet, busy, feedback, onConfirm = {
+        val emailForPayment = normalizedBinanceEmail.takeIf { binanceEmailValid }.orEmpty()
+        val networkForPayment = if (emailForPayment.isNotBlank()) null else network
+        CashRedemptionConfirmation(
+            amount = selected,
+            network = networkForPayment,
+            wallet = if (emailForPayment.isNotBlank()) "" else wallet.trim(),
+            busy = busy,
+            feedback = feedback,
+            onConfirm = {
                 busy = true; feedback = null
                 scope.launch {
-                    val result = EssenceEconomyRepository.redeem(id, selected, net, wallet.trim())
+                    val result = EssenceEconomyRepository.redeem(id, selected, networkForPayment, wallet.trim(), emailForPayment)
                     busy = false
                     if (result.isSuccess) { amount = null; feedback = "Solicitud de canje registrada" }
                     else feedback = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() && !it.startsWith("java.") } ?: economyFailure(result.exceptionOrNull())
                 }
-            }, onDismiss = { amount = null; feedback = null }, fee = activeFee)
-        }
+            },
+            onDismiss = { amount = null; feedback = null },
+            fee = activeFee,
+            binanceEmail = emailForPayment
+        )
     }
 }
 
@@ -180,7 +213,7 @@ fun CashRedemptionOptions(
         if (hasSelectedNetwork) {
             Text(tr("Opciones de canje (comisión: $fee EN):"), color = HextechCyan, fontSize = 12.sp)
         } else {
-            Text(tr("Selecciona primero una red para ver las opciones de canje"), color = TextSecondary, fontSize = 12.sp)
+            Text(tr("Ingresa un correo de Binance o selecciona una red para ver las opciones de canje"), color = TextSecondary, fontSize = 12.sp)
         }
         EssenceEconomyPolicy.redemptionAmounts.forEach { amount ->
             val totalNeeded = amount + fee
@@ -208,7 +241,11 @@ fun CashRedemptionReviewPanel() {
     var retry by remember { mutableIntStateOf(0) }
     var selectedTab by remember { mutableStateOf("PENDING") }
     var selectedUserFilter by remember { mutableStateOf<String?>(null) }
-    val sevenDaysAgo = remember { System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000L }
+    val fourteenDaysAgo = remember { System.currentTimeMillis() - EssenceEconomyRepository.CASH_HISTORY_RETENTION_MILLIS }
+
+    LaunchedEffect(Unit) {
+        EssenceEconomyRepository.cleanupExpiredResolvedRedemptions()
+    }
 
     DisposableEffect(retry) {
         val pendingListener = EssenceEconomyRepository.redemptions.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, failure ->
@@ -222,7 +259,7 @@ fun CashRedemptionReviewPanel() {
                         val status = doc["status"] as? String ?: ""
                         val reqAt = (doc["requestedAtMillis"] as? Number)?.toLong() ?: 0L
                         val resAt = (doc["resolvedAtMillis"] as? Number)?.toLong() ?: reqAt
-                        status in setOf("PAID", "REJECTED") && (reqAt >= sevenDaysAgo || resAt >= sevenDaysAgo)
+                        status in setOf("PAID", "REJECTED") && (reqAt >= fourteenDaysAgo || resAt >= fourteenDaysAgo)
                     }
                     .sortedByDescending { (it["resolvedAtMillis"] as? Number)?.toLong() ?: (it["requestedAtMillis"] as? Number)?.toLong() ?: 0L }
             }
@@ -234,7 +271,11 @@ fun CashRedemptionReviewPanel() {
     }
 
     val historyGroupedByUser = remember(historyRequests) {
-        historyRequests.groupBy { (it["email"] as? String)?.takeIf(String::isNotBlank) ?: (it["userId"] as? String ?: "Usuario") }
+        historyRequests.groupBy {
+            (it["userName"] as? String)?.takeIf(String::isNotBlank)
+                ?: (it["email"] as? String)?.substringBefore("@")?.takeIf(String::isNotBlank)
+                ?: (it["userId"] as? String ?: "Usuario")
+        }
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -249,7 +290,7 @@ fun CashRedemptionReviewPanel() {
             FilterChip(
                 selected = selectedTab == "HISTORY",
                 onClick = { selectedTab = "HISTORY" },
-                label = { Text(tr("Historial individual (7 días) (${historyRequests.size})")) }
+                label = { Text(tr("Historial por usuario (14 días) (${historyRequests.size})")) }
             )
         }
 
@@ -274,39 +315,46 @@ fun CashRedemptionReviewPanel() {
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(tr("${request["email"]} • $reqAmount USDT (Descontado: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                        Text(tr("Red: ${request["network"]} • Comisión: $reqFee EN"), color = HextechCyan, fontSize = 12.sp)
-                        val walletAddress = request["wallet"] as? String ?: ""
-                        Row(
-                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF0F172A), androidx.compose.foundation.shape.RoundedCornerShape(6.dp))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = walletAddress,
-                                color = HextechGoldLight,
-                                fontSize = 11.sp,
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = {
+                        val requestUserName = (request["userName"] as? String).orEmpty()
+                            .ifBlank { (request["email"] as? String)?.substringBefore("@").orEmpty().ifBlank { "Usuario" } }
+                        Text(tr("$requestUserName • $reqAmount USDT (Descontado: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        val payoutEmail = (request["binanceEmail"] as? String).orEmpty()
+                        if (payoutEmail.isNotBlank()) {
+                            Text(tr("Sin comisión de red"), color = HextechCyan, fontSize = 12.sp)
+                            Row(
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth().background(Color(0xFF0F172A), androidx.compose.foundation.shape.RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(tr("Correo Binance") + ": " + payoutEmail, color = HextechGoldLight, fontSize = 11.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, modifier = Modifier.weight(1f))
+                                IconButton(onClick = {
+                                    clipboardManager.setText(AnnotatedString(payoutEmail))
+                                    Toast.makeText(context, com.example.util.appTr("Correo de Binance copiado al portapapeles"), Toast.LENGTH_SHORT).show()
+                                }, modifier = Modifier.size(28.dp).testTag("copy_binance_email_btn_${request["id"]}")) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = tr("Copiar correo Binance"), tint = HextechGold, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        } else {
+                            Text(tr("Red: ${request["network"]} • Comisión: $reqFee EN"), color = HextechCyan, fontSize = 12.sp)
+                            val walletAddress = request["wallet"] as? String ?: ""
+                            Row(
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth().background(Color(0xFF0F172A), androidx.compose.foundation.shape.RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(walletAddress, color = HextechGoldLight, fontSize = 11.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, modifier = Modifier.weight(1f))
+                                IconButton(onClick = {
                                     if (walletAddress.isNotBlank()) {
                                         clipboardManager.setText(AnnotatedString(walletAddress))
                                         Toast.makeText(context, com.example.util.appTr("Dirección de billetera copiada al portapapeles"), Toast.LENGTH_SHORT).show()
                                     }
-                                },
-                                modifier = Modifier.size(28.dp).testTag("copy_wallet_btn_${request["id"]}")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ContentCopy,
-                                    contentDescription = tr("Copiar billetera"),
-                                    tint = HextechGold,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                                }, modifier = Modifier.size(28.dp).testTag("copy_wallet_btn_${request["id"]}")) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = tr("Copiar billetera"), tint = HextechGold, modifier = Modifier.size(16.dp))
+                                }
                             }
                         }
                         var dm by remember(request["id"]) { mutableStateOf(false) }
@@ -342,7 +390,7 @@ fun CashRedemptionReviewPanel() {
             }
         } else {
             if (historyRequests.isEmpty()) {
-                Text(tr("No hay solicitudes procesadas en los últimos 7 días."), color = TextSecondary, fontSize = 12.sp)
+                Text(tr("No hay solicitudes procesadas en los últimos 14 días."), color = TextSecondary, fontSize = 12.sp)
             } else {
                 // Selector de usuario individual
                 if (historyGroupedByUser.size > 1) {
@@ -400,7 +448,7 @@ fun CashRedemptionReviewPanel() {
                                         fontSize = 13.sp
                                     )
                                     Text(
-                                        text = tr("Historial individual • Validez de 7 días"),
+                                        text = tr("Historial por usuario • Vigencia de 14 días"),
                                         color = HextechCyan,
                                         fontSize = 10.5.sp
                                     )
@@ -422,7 +470,7 @@ fun CashRedemptionReviewPanel() {
 
                             HorizontalDivider(color = HextechCardBorder.copy(alpha = 0.5f), thickness = 0.5.dp)
 
-                            // Lista de pagos individuales en los 7 días
+                            // Lista de pagos individuales durante los 14 días de vigencia
                             userReqs.forEach { request ->
                                 val reqAmount = request["amount"] ?: 0
                                 val reqFee = request["fee"] ?: 0
@@ -449,38 +497,43 @@ fun CashRedemptionReviewPanel() {
                                             Text(dateStr, color = TextSecondary, fontSize = 10.sp)
                                         }
                                         Text(tr("$reqAmount USDT (Total: $reqTotal EN)"), color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, fontSize = 12.sp)
-                                        Text(tr("Red: ${request["network"]} • Comisión de red: $reqFee EN"), color = HextechCyan, fontSize = 11.sp)
-                                        val histWallet = request["wallet"] as? String ?: ""
-                                        Row(
-                                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .background(Color(0xFF0F172A).copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
-                                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                                        ) {
-                                            Text(
-                                                text = histWallet,
-                                                color = TextSecondary,
-                                                fontSize = 10.5.sp,
-                                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                            IconButton(
-                                                onClick = {
+                                        val histBinanceEmail = (request["binanceEmail"] as? String).orEmpty()
+                                        if (histBinanceEmail.isNotBlank()) {
+                                            Text(tr("Sin comisión de red"), color = HextechCyan, fontSize = 11.sp)
+                                            Row(
+                                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                modifier = Modifier.fillMaxWidth().background(Color(0xFF0F172A).copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            ) {
+                                                Text(tr("Correo Binance") + ": " + histBinanceEmail, color = TextSecondary, fontSize = 10.5.sp,
+                                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, modifier = Modifier.weight(1f))
+                                                IconButton(onClick = {
+                                                    clipboardManager.setText(AnnotatedString(histBinanceEmail))
+                                                    Toast.makeText(context, com.example.util.appTr("Correo de Binance copiado al portapapeles"), Toast.LENGTH_SHORT).show()
+                                                }, modifier = Modifier.size(24.dp)) {
+                                                    Icon(Icons.Default.ContentCopy, contentDescription = tr("Copiar correo Binance"), tint = HextechGold, modifier = Modifier.size(14.dp))
+                                                }
+                                            }
+                                        } else {
+                                            Text(tr("Red: ${request["network"]} • Comisión de red: $reqFee EN"), color = HextechCyan, fontSize = 11.sp)
+                                            val histWallet = request["wallet"] as? String ?: ""
+                                            Row(
+                                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                modifier = Modifier.fillMaxWidth().background(Color(0xFF0F172A).copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            ) {
+                                                Text(histWallet, color = TextSecondary, fontSize = 10.5.sp,
+                                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, modifier = Modifier.weight(1f))
+                                                IconButton(onClick = {
                                                     if (histWallet.isNotBlank()) {
                                                         clipboardManager.setText(AnnotatedString(histWallet))
                                                         Toast.makeText(context, com.example.util.appTr("Dirección de billetera copiada al portapapeles"), Toast.LENGTH_SHORT).show()
                                                     }
-                                                },
-                                                modifier = Modifier.size(24.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.ContentCopy,
-                                                    contentDescription = tr("Copiar billetera"),
-                                                    tint = HextechGold,
-                                                    modifier = Modifier.size(14.dp)
-                                                )
+                                                }, modifier = Modifier.size(24.dp)) {
+                                                    Icon(Icons.Default.ContentCopy, contentDescription = tr("Copiar billetera"), tint = HextechGold, modifier = Modifier.size(14.dp))
+                                                }
                                             }
                                         }
                                         var dm by remember(request["id"]) { mutableStateOf(false) }
@@ -507,21 +560,43 @@ fun UsdtWalletFields(
     enabled: Boolean,
     onNetwork: (UsdtNetwork) -> Unit,
     onWallet: (String) -> Unit,
-    fee: Long = network?.feeEn ?: 0L
+    fee: Long = network?.feeEn ?: 0L,
+    binanceEmail: String = "",
+    onBinanceEmail: (String) -> Unit = {}
 ) {
+    val email = binanceEmail.trim().lowercase(java.util.Locale.ROOT)
+    val usingEmail = email.isNotBlank()
+    val validEmail = usingEmail && UsdtWalletPolicy.validBinanceEmail(email)
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        OutlinedTextField(
+            value = binanceEmail,
+            onValueChange = onBinanceEmail,
+            enabled = enabled,
+            singleLine = true,
+            label = { Text(tr("Correo electrónico de Binance (opcional)")) },
+            modifier = Modifier.fillMaxWidth().testTag("binance_email"),
+            colors = OutlinedTextFieldDefaults.colors(focusedTextColor = TextPrimary, unfocusedTextColor = TextPrimary)
+        )
+        if (usingEmail) {
+            if (validEmail) {
+                Text(tr("Con un correo de Binance válido no necesitas seleccionar una red ni ingresar una billetera."), color = HextechCyan, fontSize = 11.sp)
+            } else {
+                Text(tr("Correo electrónico de Binance no válido"), color = DangerRed, fontSize = 11.5.sp)
+            }
+        }
+        Text(tr("O usa una billetera USDT por red"), color = TextSecondary, fontSize = 11.sp)
         Text(tr("Red de USDT"), color = TextSecondary)
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             UsdtNetwork.entries.forEach { option ->
                 FilterChip(
                     selected = network == option,
                     onClick = { onNetwork(option) },
-                    enabled = enabled,
+                    enabled = enabled && !usingEmail,
                     label = { Text(option.name) }
                 )
             }
         }
-        if (network == null) {
+        if (!usingEmail && network == null) {
             Surface(
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
                 color = HextechSurfaceVariant.copy(alpha = 0.5f),
@@ -535,7 +610,7 @@ fun UsdtWalletFields(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
                 )
             }
-        } else {
+        } else if (!usingEmail && network != null) {
             Surface(
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
                 color = HextechSurfaceVariant.copy(alpha = 0.5f),
@@ -548,20 +623,9 @@ fun UsdtWalletFields(
                         color = HextechGoldLight,
                         fontSize = 11.5.sp
                     )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .background(Color(0xFF10B981), androidx.compose.foundation.shape.CircleShape)
-                        )
-                        Text(
-                            text = tr("Comisión de red actualizada automáticamente en tiempo real"),
-                            color = HextechCyan,
-                            fontSize = 10.sp
-                        )
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Box(modifier = Modifier.size(6.dp).background(Color(0xFF10B981), androidx.compose.foundation.shape.CircleShape))
+                        Text(text = tr("Comisión de red actualizada automáticamente en tiempo real"), color = HextechCyan, fontSize = 10.sp)
                     }
                     Text(
                         text = tr("Aviso de red Binance: Asegúrate de que la dirección ingresada pertenezca a la red ${network.name}. Enviar fondos a una red incompatible causará la pérdida irrecuperable de tus fondos."),
@@ -574,18 +638,19 @@ fun UsdtWalletFields(
         OutlinedTextField(
             wallet,
             onWallet,
-            enabled = enabled,
+            enabled = enabled && !usingEmail,
             singleLine = true,
             label = { Text(tr("Tu billetera digital USDT")) },
             modifier = Modifier.fillMaxWidth().testTag("usdt_wallet"),
             colors = OutlinedTextFieldDefaults.colors(focusedTextColor = TextPrimary, unfocusedTextColor = TextPrimary)
         )
         Text(
-            tr("Comprueba que la dirección corresponde a la red seleccionada. No envíes claves privadas ni frases de recuperación."),
+            tr(if (usingEmail) "Al usar un correo de Binance válido, el pago se envía dentro de Binance y no necesitas indicar red ni billetera."
+                else "Comprueba que la dirección corresponde a la red seleccionada. No envíes claves privadas ni frases de recuperación."),
             color = TextSecondary,
             fontSize = 11.sp
         )
-        if (network != null && wallet.isNotBlank() && !UsdtWalletPolicy.valid(network, wallet.trim())) {
+        if (!usingEmail && network != null && wallet.isNotBlank() && !UsdtWalletPolicy.valid(network, wallet.trim())) {
             Text(tr("Billetera USDT no válida"), color = DangerRed, fontSize = 11.5.sp)
         }
     }
@@ -594,52 +659,44 @@ fun UsdtWalletFields(
 @Composable
 fun CashRedemptionConfirmation(
     amount: Long,
-    network: UsdtNetwork,
+    network: UsdtNetwork?,
     wallet: String,
     busy: Boolean,
     feedback: String? = null,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    fee: Long = network.feeEn
+    fee: Long = network?.feeEn ?: 0L,
+    binanceEmail: String = ""
 ) {
+    val cleanEmail = binanceEmail.trim().lowercase(java.util.Locale.ROOT)
+    val usingEmail = cleanEmail.isNotBlank()
     val totalDeducted = amount + fee
     AlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
         title = { Text(tr("Confirmar canje")) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    tr("Monto a recibir: $amount USDT"),
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    color = HextechGold
-                )
-                Text(tr("Red seleccionada: ${network.name} (Binance)"))
-                Text(tr("Comisión de red: $fee EN (a cargo del usuario)"))
-                Text(
-                    tr("Total a descontar: $totalDeducted EN"),
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                    color = HextechCyan
-                )
-                Text(wallet, fontSize = 11.sp, color = TextSecondary)
+                Text(tr("Monto a recibir: $amount USDT"), fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = HextechGold)
+                if (usingEmail) {
+                    Text(tr("Correo Binance") + ": " + cleanEmail)
+                    Text(tr("Sin comisión de red"), color = HextechCyan)
+                } else {
+                    Text(tr("Red seleccionada: ${network?.name.orEmpty()} (Binance)"))
+                    Text(tr("Comisión de red: $fee EN (a cargo del usuario)"))
+                    Text(wallet, fontSize = 11.sp, color = TextSecondary)
+                }
+                Text(tr("Total a descontar: $totalDeducted EN"), fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, color = HextechCyan)
                 Surface(
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
                     color = DangerRed.copy(alpha = 0.12f),
                     border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed.copy(alpha = 0.8f)),
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp).testTag("confirmation_manual_payment_warning")
                 ) {
-                    Row(
-                        modifier = Modifier.padding(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = DangerRed,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    Row(modifier = Modifier.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Icon(imageVector = androidx.compose.material.icons.Icons.Default.Warning, contentDescription = null, tint = DangerRed, modifier = Modifier.size(16.dp))
                         Text(
-                            text = tr("Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar."),
+                            text = tr(if (usingEmail) "Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente el correo de Binance antes de confirmar."
+                                else "Aviso: El pago es manual y demora de 24 a 72 horas. Verifica minuciosamente tu billetera y red antes de confirmar."),
                             color = DangerRed,
                             fontSize = 11.sp,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
@@ -651,20 +708,12 @@ fun CashRedemptionConfirmation(
             }
         },
         confirmButton = {
-            TextButton(
-                enabled = !busy,
-                modifier = Modifier.testTag("cash_redemption_confirm"),
-                onClick = onConfirm
-            ) {
+            TextButton(enabled = !busy, modifier = Modifier.testTag("cash_redemption_confirm"), onClick = onConfirm) {
                 Text(tr(if (busy) "Procesando…" else "Confirmar"))
             }
         },
         dismissButton = {
-            TextButton(
-                enabled = !busy,
-                modifier = Modifier.testTag("cash_redemption_cancel"),
-                onClick = onDismiss
-            ) {
+            TextButton(enabled = !busy, modifier = Modifier.testTag("cash_redemption_cancel"), onClick = onDismiss) {
                 Text(tr("Cancelar"))
             }
         }
