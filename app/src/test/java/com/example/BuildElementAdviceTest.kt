@@ -35,7 +35,8 @@ class BuildElementAdviceTest {
         assertTrue(serylda.contains("Cuándo usar"))
         assertTrue(serylda.contains("Contra qué campeones/composiciones"))
         assertTrue(serylda.contains("Ornn"))
-        assertFalse(serylda.contains("Heridas Graves"))
+        assertTrue(serylda.contains("No aplica Heridas Graves"))
+        assertFalse(serylda.contains("aplica 40% de Heridas Graves", ignoreCase = true))
 
         val maw = BuildElementAdvice.contextualItemAdvice("Fauces de Malmortius", "Hwei", "Línea Central", "es", true)
         assertTrue(maw.contains("Akali") || maw.contains("Syndra") || maw.contains("Fizz"))
