@@ -29,3 +29,7 @@ github.keystore
 
 *-debug.log
 tests/firestore/node_modules
+# Python cache files
+__pycache__/
+*.py[cod]
+.pytest_cache/
