@@ -167,7 +167,6 @@ RUNE_POLICIES = {
 }
 
 SPELL_POLICIES = {
- 'Aplastar': ('Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.', 'Combine o dano visível de Golpear com sua habilidade de finalização; não gaste antes da janela de disputa.'),
  'Barrera': ('Actívala cuando llegue la ráfaga que no puedes esquivar y aprovecha la protección para terminar tu secuencia o salir.', 'Ative quando chegar a rajada que não consegue esquivar e aproveite a proteção para terminar a sequência ou sair.'),
  'Curar': ('Mantente cerca del aliado que recibirá el beneficio; decide el momento por el daño entrante y la ruta de retirada.', 'Fique perto do aliado que receberá o benefício; escolha o momento pelo dano recebido e pela rota de retirada.'),
  'Extenuación': ('Aplica la reducción al atacante cuando comprometa su ráfaga, no mientras todavía se aproxima sin gastar daño.', 'Aplique a redução no atacante quando comprometer sua rajada, não enquanto aproxima sem gastar dano.'),
@@ -178,7 +177,7 @@ SPELL_POLICIES = {
 
 def element(champion, lane_name, name, kind, pt=False, display_name=None):
     risk, rule = profile(champion, pt)
-    if name in ('Destello', 'Flash'):
+    if kind == 'spell' and name in ('Destello', 'Flash', 'Aplastar', 'Castigo', 'Smite', 'Smite desafiante', 'Smite helado', 'Golpear'):
         return ''
     steps = rule.split('; ', 1)
     anchor = steps[0].rstrip('.')

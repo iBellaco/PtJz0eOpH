@@ -6,6 +6,7 @@
 - Ventaja, debilidad y sinergia: tres secciones con filas de tres campeones. La misma política limita cada sección a 3 para invitados, 6 para registrados y 12 para premium. Se preserva el orden del perfil, sin repetir nombres ni incluir al propio campeón.
 - Al pulsar una relación se muestra solamente su nombre. Se retira el texto «Cerrar»; el nombre y el área exterior permiten descartar la vista, sin redirigir a otra build.
 - Aplastar: retirados 54 consejos guardados del catálogo de builds. Se oculta también cualquier consejo antiguo o generado para Aplastar, Castigo, Smite y Golpear en las vistas de builds y sus detalles. Se conserva la descripción mecánica del hechizo.
+- El generador de builds respeta la exclusión de Aplastar y elimina sus traducciones de consejos obsoletas para que no vuelvan a aparecer al regenerar el catálogo.
 - El aviso de recuperación de la cuenta cambia suavemente entre tonos rojos, con variantes legibles para superficies claras y oscuras. No cambia el plazo ni el procedimiento de eliminación.
 
 ## Comprobaciones
@@ -21,6 +22,7 @@
 - `README.md`
 - `app/build.gradle.kts`
 - `app/src/main/assets/champions_creator_builds.json`
+- `app/src/main/assets/translations_pt.json`
 - `app/src/main/java/com/example/ui/components/AccountDeletionCard.kt`
 - `app/src/main/java/com/example/ui/components/CustomBuildDetailDialog.kt`
 - `app/src/main/java/com/example/ui/screens/ChampionDetailSheet.kt`
@@ -33,3 +35,4 @@
 - `app/src/test/java/com/example/BuildElementAdviceTest.kt`
 - `app/src/test/java/com/example/CoachMatchupCoverageTest.kt`
 - `app/src/test/java/com/example/SpellCatalogRenderedTest.kt`
+- `tools/build_coaching.py`

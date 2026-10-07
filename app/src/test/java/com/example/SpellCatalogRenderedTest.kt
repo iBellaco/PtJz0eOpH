@@ -52,8 +52,9 @@ class SpellCatalogRenderedTest {
         }
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(output, "spell-catalog-grid-$language.png").path)
         compose.onNodeWithTag("catalog_spell_barrier").assertHeightIsAtLeast(112.dp)
+        val cardBounds = compose.onNodeWithTag("catalog_spell_barrier").getUnclippedBoundsInRoot()
         org.junit.Assert.assertTrue("Spell grid should not retain the old empty 184dp card",
-            compose.onNodeWithTag("catalog_spell_barrier").getUnclippedBoundsInRoot().height < 140.dp)
+            cardBounds.bottom - cardBounds.top < 140.dp)
         checkCompactCatalog()
         compose.onNodeWithTag("catalog_spell_barrier").performClick()
         // The grid remains behind the dialog; assert the dialog's own label.
