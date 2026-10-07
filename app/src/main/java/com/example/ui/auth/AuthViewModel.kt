@@ -77,7 +77,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun navigateTo(screen: AuthScreenType) {
-        _uiState.update { it.copy(authScreen = screen, error = null, isSuccess = false) }
+        _uiState.update { it.copy(authScreen = screen, error = null, isSuccess = false, deletionCancelled = false) }
         if (screen == AuthScreenType.LOGIN || screen == AuthScreenType.REGISTER) {
              // Keep email, but maybe clear passwords if we want
         }
@@ -101,7 +101,7 @@ class AuthViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, deletionCancelled = false) }
             try {
                 val result = auth.signInWithEmailAndPassword(_email.value.trim(), _password.value).await()
                 val firebaseUser = result.user
@@ -170,7 +170,7 @@ class AuthViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, deletionCancelled = false) }
             try {
                 val result = auth.createUserWithEmailAndPassword(_email.value.trim(), _password.value).await()
                 val firebaseUser = result.user
@@ -223,7 +223,7 @@ class AuthViewModel : ViewModel() {
         }
         
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, deletionCancelled = false) }
             try {
                 auth.sendPasswordResetEmail(_email.value).await()
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }

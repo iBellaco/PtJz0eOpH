@@ -19,8 +19,8 @@ Actualización de privacidad, términos, contacto confirmado DevWildRiftCoach@gm
 
 - 4 escenarios de permisos de archivos aprobados: coincidencia de titular, bloqueo de suplantación, propietario inmutable y restricción de invitados/rutas.
 - 56 escenarios de reglas de acceso aprobados, incluidos aislamiento, fecha del servicio, plazo no alterable, reautenticación reciente, cancelación dentro del plazo y bloqueo tras comenzar el borrado.
-- Integración de demostración: borrado de identidad y datos asociados, conservación de cuenta ajena, reintento idempotente y cancelación por inicio real de sesión y bloqueo de cierre falso ante un antiguo archivo externo.
-- 14 pruebas del servicio: límite exacto de 60 días, carreras de inicio de sesión, recuperación, registro mínimo y detección de antiguos archivos externos. La lista y los resultados definitivos del APK se adjuntarán a la entrega cuando terminen las comprobaciones; aún no se acreditan aquí.
+- Integración de demostración: borrado de identidad y datos asociados, conservación de cuenta ajena, reintento idempotente y cancelación por inicio real de sesión y bloqueo de cierre falso ante un antiguo archivo externo, eliminación de solicitudes personales secundarias y limpieza de respuestas propias sin eliminar el texto del destinatario.
+- 17 pruebas del servicio: límite exacto de 60 días, carreras de inicio de sesión, recuperación, registro mínimo y detección de antiguos archivos externos y limpieza de conversaciones compartidas. La lista y los resultados definitivos del APK se adjuntarán a la entrega cuando terminen las comprobaciones; aún no se acreditan aquí.
 
 ## Riesgos y requisitos pendientes
 
@@ -103,3 +103,6 @@ Procedimiento: [eliminación de cuentas](account-deletion-operations.md). Pasos 
 - `tests/firestore/run-tests.mjs`
 - `tests/firestore/storage.test.mjs`
 - `untranslated_strings.txt`
+
+- `server/account-deletion/conversations.mjs`
+- `server/account-deletion/test/conversations.test.mjs`

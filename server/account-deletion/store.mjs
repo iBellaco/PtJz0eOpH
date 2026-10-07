@@ -3,6 +3,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { mediaObjects, buckets, legacyExternalMedia } from './media.mjs';
+import {conversationCleanup} from './conversations.mjs';
 export const PROJECT = process.env.FIRESTORE_EMULATOR_HOST ? 'demo-coach-tests' : 'wild-rift-drafting';
 initializeApp({ credential: applicationDefault(), projectId: PROJECT });
 export const db = getFirestore();
@@ -46,13 +47,48 @@ export function owned(data, uid, email) {
   if (owner) return owner === uid;
   return email && ['userEmail','email','sponsorEmail'].some(key => data[key] === email);
 }
-async function deleteQuery(query, uid, email) {
+async function deleteQuery(query, uid, email, predicate=owned) {
   let last;
   do {
     const page = await (last ? query.startAfter(last) : query).limit(100).get();
-    for (const doc of page.docs) if (owned(doc.data(), uid, email)) await db.recursiveDelete(doc.ref);
+    for (const doc of page.docs) if (predicate(doc.data(), uid, email)) await db.recursiveDelete(doc.ref);
     last = page.size === 100 ? page.docs.at(-1) : null;
   } while (last);
+}
+async function cleanSharedRecords(uid,email) {
+  for(const name of ['support_reports','moderator_requests']) {
+    await deleteQuery(db.collection(name).where('targetUid','==',uid),uid,email,data=>data.targetUid===uid);
+    if(email)await deleteQuery(db.collection(name).where('targetEmail','==',email),uid,email,
+      data=>!data.targetUid || data.targetUid===uid);
+    const authored=await db.collection(name).where('requestedByUid','==',uid).get();
+    for(const document of authored.docs)await db.runTransaction(async tx=>{
+      const fresh=await tx.get(document.ref);
+      if(fresh.get('requestedByUid')===uid)tx.update(document.ref,
+        {requestedByUid:FieldValue.delete(),requestedByName:'Moderador'});
+    });
+  }
+  // Scan primary tickets without a new collection-group index, then clean their mirrors.
+  let last;
+  do {
+    const query=db.collection('support_reports');
+    const page=await(last?query.startAfter(last):query).limit(100).get();
+    for(const document of page.docs)await db.runTransaction(async tx=>{
+      const ticket=await tx.get(document.ref);
+      if(!ticket.exists)return;
+      const owner=ticket.get('userId');
+      const mirror=owner?db.doc(`users/${owner}/messages/${document.id}`):null;
+      const inbox=mirror?await tx.get(mirror):null;
+      for(const snapshot of [ticket,inbox].filter(item=>item?.exists)) {
+        const patch=conversationCleanup(snapshot.data(),uid,email);
+        if(patch) {
+          if(Object.hasOwn(patch,'repliedAt'))patch.repliedAt=Number.isFinite(patch.repliedAt)&&patch.repliedAt>0
+            ?Timestamp.fromMillis(patch.repliedAt):FieldValue.delete();
+          tx.update(snapshot.ref,patch);
+        }
+      }
+    });
+    last=page.size===100?page.docs.at(-1):null;
+  }while(last);
 }
 export async function purgeAccountData(uid, email) {
   const plan = new Map();
@@ -92,6 +128,7 @@ export async function purgeAccountData(uid, email) {
     if (email) for (const field of ['userEmail','email','sponsorEmail'])
       await deleteQuery(db.collection(name).where(field,'==',email), uid, email);
   }
+  await cleanSharedRecords(uid,email);
   // Messages belonging to the account can also be mirrored outside its own profile.
   // A collection-group index is not assumed; parent-specific records are deleted recursively.
   const subscribers = await db.collection('users').where('subscribedCreators','array-contains',uid).get();

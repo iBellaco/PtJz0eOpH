@@ -21,15 +21,30 @@ await db.doc(`streamer_requests/${uid}`).set({userId:uid});
 await db.doc(`streamer_requests/${uid}/history/private`).set({userId:uid});
 await db.doc('streamer_click_metrics/deletion-owned').set({userId:uid});
 await db.doc('pending_sponsor_ads/deletion-owned').set({sponsorEmail:email});
+await db.doc('moderator_requests/deletion-target').set({targetUid:uid,targetEmail:email,requestedByUid:other});
+await db.doc('support_reports/deletion-moderation-target').set({targetUid:uid,targetEmail:email,requestedByUid:other});
+await db.doc('moderator_requests/deletion-authored').set({targetUid:other,requestedByUid:uid,requestedByName:'deleted person'});
+const sharedConversation=[{senderUid:other,senderRole:'USER',text:'keep private question'},
+  {senderUid:uid,senderRole:'SUPPORT',senderName:'deleted person',text:'erase answer'}];
+const sharedTicket={userId:other,conversation:sharedConversation,adminReply:'erase answer',repliedBy:'deleted person'};
+await db.doc('support_reports/deletion-shared').set(sharedTicket);
+await db.doc(`users/${other}/messages/deletion-shared`).set(sharedTicket);
 await db.doc('system_config/streamer_live').set({entries:[{userId:uid},{userId:other}]});
 await db.doc('system_config/app_notices').set({notices:[{sponsorEmail:email},{sponsorEmail:'other@test.invalid'}]});
 await db.doc(`account_deletions/${uid}`).set({userId:uid,requestId:'12345678-1234-1234-1234-123456789012',status:'PENDING',graceDays:60,requestedAt:Timestamp.fromMillis(now-GRACE_MS-1000)});
 assert.equal(await processRequest(uid,adapter,now),'deleted');
 for(const path of [`users/${uid}`,`users/${uid}/messages/private`,`users/${uid}/subscription_history/receipt`,
   'support_reports/deletion-owned','support_reports/deletion-legacy','cash_redemptions/deletion-owned',
-  `streamer_requests/${uid}`,`streamer_requests/${uid}/history/private`,'streamer_click_metrics/deletion-owned','pending_sponsor_ads/deletion-owned'])
+  `streamer_requests/${uid}`,`streamer_requests/${uid}/history/private`,'streamer_click_metrics/deletion-owned','pending_sponsor_ads/deletion-owned',
+  'moderator_requests/deletion-target','support_reports/deletion-moderation-target'])
   assert.equal((await db.doc(path).get()).exists,false,path);
 assert.equal((await db.doc('support_reports/deletion-foreign').get()).exists,true);
+for(const path of ['support_reports/deletion-shared',`users/${other}/messages/deletion-shared`]) {
+  const record=(await db.doc(path).get()).data();
+  assert.deepEqual(record.conversation,[sharedConversation[0]]);assert.equal(record.adminReply,'');assert.equal(record.repliedBy,'');
+}
+const authored=(await db.doc('moderator_requests/deletion-authored').get()).data();
+assert.equal(authored.targetUid,other);assert.equal(authored.requestedByUid,undefined);assert.equal(authored.requestedByName,'Moderador');
 assert.deepEqual((await db.doc(`users/${other}`).get()).get('subscribedCreators'),['keep-creator']);
 assert.deepEqual((await db.doc('system_config/streamer_live').get()).get('entries'),[{userId:other}]);
 await assert.rejects(auth.getUser(uid),error=>error.code==='auth/user-not-found');
