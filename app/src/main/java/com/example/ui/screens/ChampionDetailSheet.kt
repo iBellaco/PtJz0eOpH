@@ -1845,7 +1845,13 @@ fun ChampionDetailSheet(
 
             selectedMatchupName?.let { name ->
                 androidx.compose.ui.window.Popup(
-                    alignment = Alignment.Center,
+                    popupPositionProvider = object : androidx.compose.ui.window.PopupPositionProvider {
+                        override fun calculatePosition(anchorBounds: androidx.compose.ui.unit.IntRect,
+                            windowSize: androidx.compose.ui.unit.IntSize, layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+                            popupContentSize: androidx.compose.ui.unit.IntSize) = androidx.compose.ui.unit.IntOffset(
+                                (windowSize.width - popupContentSize.width) / 2,
+                                (windowSize.height - popupContentSize.height) / 2)
+                    },
                     onDismissRequest = { selectedMatchupName = null },
                     properties = androidx.compose.ui.window.PopupProperties(focusable = true)
                 ) {
