@@ -4,17 +4,17 @@
     <string name="info_back" formatted="false">Voltar</string>
     <string name="info_coach_icon" formatted="false">Ícone do Coach</string>
     <string name="info_coach" formatted="false">Coach</string>
-    <string name="info_asistente_tactico_oficial_de_drafting" formatted="false">Assistente tático oficial de seleção</string>
-    <string name="info_1_compatibilidad_y_parche_oficial" formatted="false">1. Compatibilidade e Atualização Oficial</string>
+    <string name="info_asistente_tactico_oficial_de_drafting" formatted="false">Assistente independente de seleção de campeões</string>
+    <string name="info_1_compatibilidad_y_parche_oficial" formatted="false">1. Compatibilidade e informações da atualização</string>
     <string name="info_compatibilidad_de_juego_exclusiva" formatted="false">🎮 Compatibilidade de Jogo Exclusiva:</string>
-    <string name="info_desarrollado_100_para_league_of_legends_wild_rift_en_dispositivos" formatted="false">Desenvolvido 100% para League of Legends: Wild Rift em dispositivos móveis. Todos os campeões, estatísticas base, escalonamentos, itens e runas correspondem exatamente às versões do Wild Rift.</string>
-    <string name="info_sincronizacion_de_parche_en_tiempo_real" formatted="false">🔄 Sincronização de atualização em Tempo Real:</string>
+    <string name="info_desarrollado_100_para_league_of_legends_wild_rift_en_dispositivos" formatted="false">Projetado para consultar informações do Wild Rift em dispositivos móveis. O catálogo pode conter erros ou ficar desatualizado; confira as mudanças da atualização antes de aplicar uma recomendação.</string>
+    <string name="info_sincronizacion_de_parche_en_tiempo_real" formatted="false">Consulta de informações da atualização:</string>
     <string name="info_nomenclatura_oficial_movil" formatted="false">⚡ Nomenclatura Oficial Móvel:</string>
     <string name="info_utiliza_exclusivamente_el_esquema_oficial_de_wild_rift_habilidad" formatted="false">Utiliza exclusivamente o esquema oficial do Wild Rift: Habilidade 1 (H1), Habilidade 2 (H2), Habilidade 3 (H3) e Ultimate (H4), além de feitiços e runas adaptadas ao ritmo móvel.</string>
     <string name="info_asistente_flotante_y_alto_rendimiento" formatted="false">🛡️ Assistente Flutuante e Alto Desempenho:</string>
-    <string name="info_overlay_interactivo_con_permiso_de_superposicion_system_alert_win" formatted="false">Overlay interativo com permissão de sobreposição (SYSTEM_ALERT_WINDOW) projetado com aceleração de hardware. Consumo ultra-baixo de bateria (&lt;2% por hora) e fluidez garantida a 60, 90 e 120 FPS sem travamentos ou input lag dentro da partida.</string>
+    <string name="info_overlay_interactivo_con_permiso_de_superposicion_system_alert_win" formatted="false">O assistente usa permissão de sobreposição e captura autorizada. O consumo de bateria e a fluidez dependem do dispositivo, da configuração e dos outros aplicativos; não garantimos uma taxa de quadros ou consumo fixo.</string>
     <string name="info_compatibilidad_de_sistema_operativo" formatted="false">📱 Compatibilidade do Sistema Operacional:</string>
-    <string name="info_compatible_con_android_8_0_hasta_android_16_api_24_a_36_con_sopor" formatted="false">Compatível com Android 8.0 até Android 16 (API 24 a 36) com suporte nativo a modo multijanela, notch e orientação de tela horizontal.</string>
+    <string name="info_compatible_con_android_8_0_hasta_android_16_api_24_a_36_con_sopor" formatted="false">Requer Android 7.0 ou posterior (API 24). É compilado para API 36. O funcionamento da captura e da sobreposição depende das restrições do Android e do fabricante.</string>
     <string name="info_2_modo_de_uso_de_la_aplicacion" formatted="false">2. Modo de Uso do Aplicativo</string>
     <string name="info_paso_1_configura_tus_lineas_de_juego" formatted="false">Passo 1: Configure suas Rotas de Jogo</string>
     <string name="info_en_la_pantalla_principal_selecciona_tu_linea_main_segunda_linea_y" formatted="false">Na tela principal, selecione sua \'Rota Principal\', \'Segunda Rota\' e \'Função Autofill\' tocando em cada cartão.</string>
@@ -102,5 +102,5 @@
     <string name="legal_third_party" formatted="false">Terceiros</string>
     <string name="info_patch">Atualização %1$s</string>
     <string name="info_version">v%1$s (Compilação %2$d) • %3$s</string>
-    <string name="info_patch_description">Totalmente sincronizado com o meta oficial do Wild Rift %1$s. Inclui os últimos buffs, nerfs, ajustes de itens e rotações da lista de níveis.</string>
+    <string name="info_patch_description">Atualização de referência: %1$s. O catálogo e as fontes consultadas podem manter dados anteriores ou apresentar erros. Não garantimos atualização imediata.</string>
 </resources>

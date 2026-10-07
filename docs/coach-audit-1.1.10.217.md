@@ -17,6 +17,7 @@ Actualización de privacidad, términos, contacto confirmado DevWildRiftCoach@gm
 
 ## Verificaciones comprobadas localmente
 
+- 4 escenarios de permisos de archivos aprobados: coincidencia de titular, bloqueo de suplantación, propietario inmutable y restricción de invitados/rutas.
 - 56 escenarios de reglas de acceso aprobados, incluidos aislamiento, fecha del servicio, plazo no alterable, reautenticación reciente, cancelación dentro del plazo y bloqueo tras comenzar el borrado.
 - Integración de demostración: borrado de identidad y datos asociados, conservación de cuenta ajena, reintento idempotente y cancelación por inicio real de sesión y bloqueo de cierre falso ante un antiguo archivo externo.
 - 14 pruebas del servicio: límite exacto de 60 días, carreras de inicio de sesión, recuperación, registro mínimo y detección de antiguos archivos externos. La lista y los resultados definitivos del APK se adjuntarán a la entrega cuando terminen las comprobaciones; aún no se acreditan aquí.
@@ -27,7 +28,7 @@ Actualización de privacidad, términos, contacto confirmado DevWildRiftCoach@gm
 2. **Google Play:** no se ha revisado una cuenta ni enviado la app a la tienda. Faltan declaraciones reales, evaluación de permisos, pagos, acceso de revisión y resolución de publicación. La configuración histórica de firma directa y un APK no acreditan un AAB aceptado por la tienda.
 3. **Plazo legal:** Google no fija ni aprueba específicamente los 60 días. Debe evaluarse la rapidez del proceso y la normativa de las jurisdicciones reales; no se conocen país ni razón social del responsable.
 4. **Archivos previos:** existía código de subida anónima a proveedores ajenos. No se comprobó aquí qué archivos se publicaron o retiraron. No se afirma su eliminación; una solicitud afectada requiere revisión y retirada verificadas.
-5. **Operación:** atender el correo, verificar titulares y vigilar fallos de la tarea es responsabilidad del operador. El proceso automático no responde el correo. Una interrupción retrasa la ejecución y obliga a resolverla; la app deja de aceptar pedidos cuando la comprobación del servicio está desactualizada.
+5. **Operación:** atender el correo, verificar titulares y vigilar fallos de la tarea es responsabilidad del operador. El proceso automático no responde el correo. El programador puede retrasar ejecuciones y desactivar la tarea tras inactividad prolongada del repositorio; debe mantenerse activo y supervisarse. Una interrupción retrasa la ejecución y obliga a resolverla; la app deja de aceptar pedidos cuando la comprobación del servicio está desactualizada.
 6. **Licencias:** están pendientes el inventario de derechos de recursos, fuentes de estadísticas y condiciones de cada componente. Publicar el código no concede derechos de terceros.
 
 Procedimiento: [eliminación de cuentas](account-deletion-operations.md). Pasos y fuentes oficiales: [Riot y Google Play](riot-google-play-authorization.md).
