@@ -3501,7 +3501,7 @@ private fun RunesTab() {
 // ====================================================================
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SpellsTab() {
+internal fun SpellsTab() {
     val lang = com.example.util.currentAppLanguage()
     var searchQuery by remember { mutableStateOf("") }
     var isGridView by remember { mutableStateOf(true) }
@@ -3652,8 +3652,9 @@ private fun SpellsTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(130.dp)
+                            .height(184.dp)
                             .clip(RoundedCornerShape(12.dp))
+                            .testTag("catalog_spell_${spell.id}")
                             .coachClickable { selectedSpell = spell },
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
@@ -3685,6 +3686,8 @@ private fun SpellsTab() {
                                 lineHeight = 13.sp,
                                 modifier = Modifier.fillMaxWidth()
                             )
+                            val presentation = com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
+                            com.example.ui.components.SpellMapLabels(presentation.mapLabels)
                             Text(
                                 text = com.example.util.tr("CD ${spell.cooldown}"),
                                 color = HextechCyan,
@@ -3704,6 +3707,7 @@ private fun SpellsTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .testTag("catalog_spell_${spell.id}")
                             .coachClickable { selectedSpell = spell },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
@@ -3751,27 +3755,7 @@ private fun SpellsTab() {
                                 }
                                 if (spellPresentation.mapLabels.isNotEmpty()) {
                                     Spacer(modifier = Modifier.height(5.dp))
-                                    FlowRow(
-                                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        spellPresentation.mapLabels.forEach { mapName ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(RoundedCornerShape(5.dp))
-                                                    .background(HextechCyan.copy(alpha = 0.14f))
-                                                    .border(0.5.dp, HextechCyan.copy(alpha = 0.55f), RoundedCornerShape(5.dp))
-                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                                            ) {
-                                                Text(
-                                                    text = mapName,
-                                                    color = HextechCyan,
-                                                    fontSize = 9.5.sp,
-                                                    fontWeight = FontWeight.SemiBold
-                                                )
-                                            }
-                                        }
-                                    }
+                                    com.example.ui.components.SpellMapLabels(spellPresentation.mapLabels)
                                 }
                                 if (spellPresentation.description.isNotBlank()) {
                                     Spacer(modifier = Modifier.height(4.dp))
@@ -3833,28 +3817,7 @@ private fun SpellsTab() {
                         com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
                     }
                     if (spellPresentation.mapLabels.isNotEmpty()) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalArrangement = Arrangement.spacedBy(5.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            spellPresentation.mapLabels.forEach { mapName ->
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(HextechCyan.copy(alpha = 0.16f))
-                                        .border(0.7.dp, HextechCyan.copy(alpha = 0.65f), RoundedCornerShape(6.dp))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        text = mapName,
-                                        color = HextechCyan,
-                                        fontSize = 10.5.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
+                        com.example.ui.components.SpellMapLabels(spellPresentation.mapLabels, Modifier.fillMaxWidth())
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     if (spellPresentation.description.isNotBlank()) {

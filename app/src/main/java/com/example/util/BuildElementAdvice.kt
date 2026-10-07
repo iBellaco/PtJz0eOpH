@@ -77,14 +77,14 @@ object BuildElementAdvice {
                 appendLine("Por que $localizedName é núcleo para $championName ($roleName):")
                 appendLine(catalogTip.ifBlank { purpose })
                 appendLine("\nQuando completar:")
-                appendLine(trigger.ifBlank { coreItemTimingHint(itemName, pt) })
+                appendLine(coreItemTimingHint(itemName, pt))
                 val matchup = against.ifBlank { coreHint }
                 if (matchup.isNotBlank()) append("\nPartidas em que rende mais:\n$matchup")
             } else buildString {
                 appendLine("Por qué $localizedName es core para $championName ($roleName):")
                 appendLine(catalogTip.ifBlank { purpose })
                 appendLine("\nCuándo completarlo:")
-                appendLine(trigger.ifBlank { coreItemTimingHint(itemName, pt) })
+                appendLine(coreItemTimingHint(itemName, pt))
                 val matchup = against.ifBlank { coreHint }
                 if (matchup.isNotBlank()) append("\nPartidas donde rinde más:\n$matchup")
             }
@@ -167,10 +167,8 @@ object BuildElementAdvice {
         val pt = lang == "pt"
         val spell = WildRiftSpellsAndRunes.getSpellByName(spellName)
         val localizedName = spell?.getLocalizedName(lang) ?: spellName
-        val description = spell?.getLocalizedDescription(lang)
-            ?.substringBefore("\n")
-            ?.trim()
-            .orEmpty()
+        val description = SpellCatalogFormatting.split(spell?.getLocalizedDescription(lang).orEmpty(), lang)
+            .description.substringBefore("\n").trim()
         val scenario = spellScenario(spellName, pt)
 
         return if (pt) buildString {

@@ -71,5 +71,17 @@ class BuildElementAdviceTest {
         assertTrue(exhaust.contains("Zed") || exhaust.contains("Akali"))
         assertTrue(barrier.contains("Syndra") || barrier.contains("Lux"))
         assertNotEquals(exhaust, barrier)
+        assertTrue(exhaust.contains("reduce su daño"))
+        assertFalse(exhaust.contains("Mapas aplicables:"))
+        assertFalse(barrier.contains("Mapas aplicables:"))
+    }
+
+    @Test fun `core purchase timing is independent from the situational matchup recommendation`() {
+        val core = BuildElementAdvice.contextualItemAdvice("Baile de la muerte", "Vi", "Jungla", "es", false)
+        val alternative = BuildElementAdvice.contextualItemAdvice("Baile de la muerte", "Vi", "Jungla", "es", true)
+        assertTrue(core.contains("después de tu primer pico ofensivo"))
+        assertTrue(alternative.contains("Cuándo usar"))
+        val pt = BuildElementAdvice.contextualItemAdvice("Baile de la muerte", "Vi", "Selva", "pt", false)
+        assertTrue(pt.contains("depois do primeiro pico ofensivo"))
     }
 }

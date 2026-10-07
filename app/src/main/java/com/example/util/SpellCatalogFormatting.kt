@@ -1,5 +1,7 @@
 package com.example.util
 
+import java.util.Locale
+
 data class SpellCatalogPresentation(
     val mapLabels: List<String>,
     val description: String
@@ -8,7 +10,7 @@ data class SpellCatalogPresentation(
 /** Separates the map applicability header from the spell mechanic text for catalog chips. */
 object SpellCatalogFormatting {
     private val mapPrefix = Regex(
-        "^\\s*Mapas?\\s+(?:aplicables?|disponibles?|aplicáveis?|disponíveis?)\\s*:\\s*",
+        "^\\s*Mapas?\\s+(?:aplicables?|disponibles?|aplicável|aplicáveis|disponível|disponíveis)\\s*:\\s*",
         RegexOption.IGNORE_CASE
     )
 
@@ -31,14 +33,17 @@ object SpellCatalogFormatting {
 
         val pt = AppLanguage.normalize(language) == "pt"
         val labels = rawMaps.split(',')
-            .map { it.trim().removePrefix("el ").removePrefix("El ") }
+            .map { it.trim().replace(Regex("^(?:el|o)\\s+", RegexOption.IGNORE_CASE), "") }
             .filter { it.isNotBlank() }
             .map { label ->
-                if (pt && label.equals("Abismo de los Lamentos", ignoreCase = true)) {
-                    "Abismo dos Lamentos"
-                } else label
+                when (label.lowercase(Locale.ROOT)) {
+                    "wild rift" -> "Wild Rift"
+                    "abismo de los lamentos", "abismo dos lamentos", "howling abyss" ->
+                        if (pt) "Abismo dos Lamentos" else "Abismo de los Lamentos"
+                    else -> label
+                }
             }
-            .distinctBy { it.lowercase() }
+            .distinctBy { it.lowercase(Locale.ROOT) }
 
         val body = if (firstBreak >= 0) normalized.substring(firstBreak + 1).trim() else ""
         return SpellCatalogPresentation(labels, body)
