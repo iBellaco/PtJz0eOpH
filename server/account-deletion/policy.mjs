@@ -22,7 +22,13 @@ export async function processRequest(uid, adapter, now) {
     return 'skipped';
   }
   if (request.status === 'COMPLETED') {
-    if (request.completedAt + SECURITY_RETENTION_MS <= now) await adapter.remove(uid, request.requestId);
+    if (request.completedAt + SECURITY_RETENTION_MS <= now) {
+      // Storage may still accept an issued ID token until it expires. Sweep again
+      // after the security window, without retaining the former email, before
+      // removing the retry marker. A failed sweep must keep this marker.
+      await adapter.purge(uid, '');
+      await adapter.remove(uid, request.requestId);
+    }
     return 'skipped';
   }
   const account = await adapter.account(uid);
