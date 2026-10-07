@@ -213,7 +213,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Aatrox · Jungla · Aplastar. Si gastas H3 para acercarte, pierdes la corrección del filo de H1 y tu salida.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -1603,7 +1603,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Ambessa · Jungla · Aplastar. Encadenar habilidades sin alternar ataques consume energía y te corta la persecución.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -1731,7 +1731,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Amumu · Jungla · Aplastar. Gastar las dos cargas de H1 sobre el mismo acercamiento elimina tu respuesta al salto rival.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Primera carga para entrar.\nRegla aplicable: Segunda carga para seguir la salida después del control inicial."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -3731,7 +3731,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Brand · Jungla · Aplastar. Una rotación sobre objetivos separados pierde las detonaciones y rebotes que justifican tu daño en área.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Aplica Quemadura antes de H1 para aturdir.\nRegla aplicable: Busca rebotes reales antes de gastar H4."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -4493,7 +4493,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Camille · Jungla · Aplastar. Usar la segunda H1 antes de cargarla sacrifica el golpe que gana tu intercambio corto.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Primera H1 para preparar, segunda al estar cargada.\nRegla aplicable: Reserva H3 si todavía no conoces la posición del jungla."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -5249,7 +5249,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Darius · Jungla · Aplastar. Empezar un duelo fuera del alcance del filo de H1 te quita curación y retrasa las cinco marcas.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
+        "description": ""
       },
       {
         "spellName": "Fantasmal",
@@ -5377,7 +5377,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Diana · Jungla · Aplastar. Entrar con H3 sin aplicar Luz Lunar pierde el reinicio y te deja comprometida en el centro rival.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: H1 conecta antes de H3.\nRegla aplicable: Decide la segunda entrada por los objetivos agrupados y la cobertura de tu equipo."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -5755,7 +5755,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Dr. Mundo · Jungla · Aplastar. Caminar sobre el bote sin valorar quién puede pisarlo transforma tu recuperación en una entrada previsible.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Recoge el bote cuando no te exponga al daño concentrado.\nRegla aplicable: Conserva H4 para la pelea que puedas sostener."
+        "description": ""
       },
       {
         "spellName": "Fantasmal",
@@ -6133,7 +6133,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Ekko · Jungla · Aplastar. H2 colocada después de mostrarte permite al rival salir de su zona antes de la activación.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Prepara H2 desde niebla y entra cuando cierre el paso.\nRegla aplicable: Revisa la posición de la sombra antes de gastar H4."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -6377,7 +6377,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Evelynn · Jungla · Aplastar. Golpear antes de que H2 complete su preparación pierde el Encanto y anuncia tu entrada sin control.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Entra por el lado que corta la retirada.\nRegla aplicable: Espera la preparación de H2 y guarda H4 para ejecutar o escapar."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -6865,7 +6865,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Fiddlesticks · Jungla · Aplastar. Canalizar H4 desde una zona vista elimina el miedo que hace segura tu entrada.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Confirma la ausencia de visión antes de canalizar.\nRegla aplicable: Prepara la ruta de salida antes de aparecer en el centro."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -7999,7 +7999,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Garen · Jungla · Aplastar. Perseguir con H1 sin una ventana de silencio permite al rival frenar tu giro y alejarse.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -8383,7 +8383,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Gragas · Jungla · Aplastar. Una H4 que empuja al objetivo fuera del alcance aliado desarma tu propia iniciación.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Marca el lugar donde debe caer el rival antes de lanzar H4.\nRegla aplicable: Usa H3 para asegurar ese ángulo."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -8767,7 +8767,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Graves · Jungla · Aplastar. Un intercambio largo contra daño mágico no se gana solo por acumular la armadura de H3.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Controla munición y recarga antes de invadir.\nRegla aplicable: H2 corta la respuesta mientras reposicionas para el siguiente disparo."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -9151,7 +9151,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Gwen · Jungla · Aplastar. Colocar H2 lejos del objetivo permite que el rival te obligue a salir de tu propia zona protectora.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Pelea desde el borde de H2 frente a enemigos externos.\nRegla aplicable: Prepara cargas de H1 antes del intercambio central."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -9279,7 +9279,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Hecarim · Jungla · Aplastar. Una entrada frontal sin velocidad preparada deja a tu equipo sin el ángulo para seguir el desplazamiento.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
+        "description": ""
       },
       {
         "spellName": "Fantasmal",
@@ -10657,7 +10657,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Jarvan IV · Jungla · Aplastar. Cerrar H4 sobre rivales con salto disponible puede encerrar a tus aliados sin atrapar al objetivo.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -11041,7 +11041,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Jax · Jungla · Aplastar. Usar el salto para iniciar sin H3 disponible abre una ventana de ataques que no puedes negar.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: H3 debe cubrir los ataques decisivos.\nRegla aplicable: Conserva un objetivo aliado o súbdito al que saltar para salir."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -13687,7 +13687,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Kayn · Jungla · Aplastar. Elegir objetivos sin considerar tu forma puede pedir un asesinato rápido a una configuración de pelea prolongada.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Forma sombría busca acceso a frágiles.\nRegla aplicable: Rhaast sostiene peleas; define la retirada de H3 antes de comprometer H4."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -14187,7 +14187,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Kha'Zix · Jungla · Aplastar. Saltar a un objetivo junto a sus aliados elimina el aislamiento que hace rentable tu entrada.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Aislamiento confirmado antes de H1.\nRegla aplicable: Conserva el salto para salir si el derribo no asegura su reinicio."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -14437,7 +14437,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Kindred · Jungla · Aplastar. Seguir una marca sin prioridad aliada entrega tu ubicación y puede transformar el campamento en una emboscada.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Marca alcanzable con apoyo antes de invadir.\nRegla aplicable: Prepara la salida de H4 porque también protege a enemigos dentro."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -14943,7 +14943,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Lee Sin · Jungla · Aplastar. Una patada que aleja al objetivo de tu equipo pierde el seguimiento aunque conectes tu entrada.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -15455,7 +15455,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Lillia · Jungla · Aplastar. Entrar sin velocidad acumulada o acercarte demasiado al objetivo te expone al control antes de activar el sueño.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Mantén velocidad con impactos seguros.\nRegla aplicable: H4 se decide por quién podrá castigar al objetivo cuando despierte."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -17327,7 +17327,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Maokai · Jungla · Aplastar. Avanzar tras H4 sin controlar el flanco deja al equipo expuesto aunque bloquees la ruta frontal.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Arbolitos para comprobar entradas antes de H4.\nRegla aplicable: Conserva el control cercano para quien atraviese la primera línea."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -17455,7 +17455,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Maestro Yi · Jungla · Aplastar. Abrir con H1 contra un control disponible consume la habilidad que te permitiría evitar la respuesta.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Acércate sin gastar H1 cuando sea posible.\nRegla aplicable: Resérvala para la animación del control y busca el primer reinicio protegido."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -18577,7 +18577,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Mordekaiser · Jungla · Aplastar. Usar H4 sobre un objetivo inalcanzable puede apartarte del monstruo que tu equipo estaba intentando asegurar.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar.\nRegla aplicable: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar."
+        "description": ""
       },
       {
         "spellName": "Fantasmal",
@@ -18949,7 +18949,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Morgana · Jungla · Aplastar. Colocar H3 después de que llegue el control pierde la protección que debía permitir la entrada o retirada.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Escudo antes del impacto de control.\nRegla aplicable: H1 cubre la salida del aliado, no solo busca capturas."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -19443,7 +19443,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Nasus · Jungla · Aplastar. Intentar sumar H1 en cada súbdito bajo amenaza puede perder más cargas en la muerte y la oleada siguiente.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Carga segura antes que súbdito disputado.\nRegla aplicable: Usa la ralentización para mantener al rival dentro de tu ventana de H4."
+        "description": ""
       },
       {
         "spellName": "Fantasmal",
@@ -19827,7 +19827,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Nautilus · Jungla · Aplastar. Enganchar un objetivo sin ruta de seguimiento te compromete a una entrada que tu equipo no puede sostener.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: H4 fuerza la primera respuesta.\nRegla aplicable: H1 sigue cuando termine la movilidad rival o se reserva para salir por terreno."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -19955,7 +19955,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Nidalee · Jungla · Aplastar. Entrar en puma sin marca pierde el acceso y el daño que justifican tu salto.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Jabalina o trampa activa Cacería antes de comprometer la forma de puma.\nRegla aplicable: Conserva el salto si no existe ejecución."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -20199,7 +20199,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Nilah · Jungla · Aplastar. Gastar H2 antes del ataque decisivo deja tu entrada cuerpo a cuerpo expuesta a la ráfaga del tirador.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: H2 cubre la respuesta de ataques.\nRegla aplicable: Conserva un blanco de desplazamiento para volver a la protección del soporte."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -20449,7 +20449,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Nocturne · Jungla · Aplastar. Activar H4 sobre un rival que tu equipo no puede alcanzar transforma la oscuridad en un duelo aislado.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Elige el objetivo por cobertura y ruta de retirada.\nRegla aplicable: Reserva H2 para la habilidad que llegue después de aterrizar."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -20949,7 +20949,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Nunu y Willump · Jungla · Aplastar. Una bola de nieve sin una ruta libre pierde velocidad y revela la emboscada antes de llegar.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Ruta de H2 despejada antes de empezar.\nRegla aplicable: H1 y Castigo se coordinan con la vida visible del monstruo."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -21333,7 +21333,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Olaf · Jungla · Aplastar. Abrir con H4 demasiado pronto permite que el rival te aleje antes del control que querías ignorar.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Hacha recuperable antes de perseguir.\nRegla aplicable: H4 se compromete cuando el control rival impida continuar la pelea."
+        "description": ""
       },
       {
         "spellName": "Fantasmal",
@@ -22351,7 +22351,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Pantheon · Jungla · Aplastar. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -22607,7 +22607,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Poppy · Jungla · Aplastar. Gastar H2 para correr elimina el bloqueo que hace peligrosa la siguiente entrada del rival.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: H2 reservada para el desplazamiento rival.\nRegla aplicable: H3 solo asegura aturdimiento si existe una pared en la trayectoria."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -23369,7 +23369,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Rammus · Jungla · Aplastar. Provocar antes de H2 permite que los ataques forzados lleguen antes de tu defensa.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: H2 activa antes de la provocación.\nRegla aplicable: Escoge al atacante que pueda recibir daño devuelto y seguimiento aliado."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -23753,7 +23753,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Rell · Jungla · Aplastar. Entrar sobre el primer objetivo visible sin compañía puede separar tu control del daño de tu equipo.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Seguimiento confirmado antes de comprometer la entrada.\nRegla aplicable: H1 rompe el escudo antes de concentrar el daño aliado."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -24137,7 +24137,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Rengar · Jungla · Aplastar. Saltar sin decidir la habilidad potenciada puede dejarte sin limpieza cuando llegue el control.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Ferocidad y habilidad potenciada elegidas antes del salto.\nRegla aplicable: Daño para ejecutar, respuesta defensiva para sobrevivir al control."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -24905,7 +24905,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Rumble · Jungla · Aplastar. Sobrecalentarte antes de lanzar el control que necesitas te impide completar la secuencia.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Barra de calor revisada antes de cada rotación.\nRegla aplicable: Coloca H4 sobre la ruta de salida, no detrás del rival."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -26667,7 +26667,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Shyvana · Jungla · Aplastar. Llegar a la disputa sin furia suficiente elimina la forma que permite sostener tu entrada.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Furia disponible antes de comprometer el objetivo.\nRegla aplicable: El punto de aterrizaje de H4 debe permitir que tu equipo siga."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -27691,7 +27691,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Skarner · Jungla · Aplastar. Entrar atravesando un muro sin planear la dirección del arrastre puede separar al objetivo del daño aliado.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Salida de H3 y dirección de H4 definidas antes de iniciar.\nRegla aplicable: Arrastra hacia cobertura o daño aliado."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -29325,7 +29325,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Taliyah · Jungla · Aplastar. Lanzar el desplazamiento sin preparar H3 pierde la zona que castiga el movimiento del rival.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Tierra preparada antes del desplazamiento.\nRegla aplicable: H4 corta una retirada confirmada y exige revisar el destino antes de viajar."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -29569,7 +29569,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Talon · Jungla · Aplastar. Cruzar un muro sin revisar su disponibilidad de regreso te puede encerrar tras una entrada fallida.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Ruta de muros preparada antes de entrar.\nRegla aplicable: Completa la pasiva con el ataque antes de comprometer la persecución."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -30703,7 +30703,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Tryndamere · Jungla · Aplastar. Girar para acercarte sin furia preparada impide ganar el duelo antes de necesitar H4.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Furia preparada antes de pelear.\nRegla aplicable: Define el muro de salida y no gastes H3 si la ejecución no está asegurada."
+        "description": ""
       },
       {
         "spellName": "Fantasmal",
@@ -31197,7 +31197,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Twitch · Jungla · Aplastar. Salir del sigilo demasiado cerca te obliga a disparar desde el alcance del control rival.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Posición lateral antes de revelar H1.\nRegla aplicable: H4 busca una línea de varios objetivos sin abandonar tu cobertura."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -32813,7 +32813,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Vi · Jungla · Aplastar. Lanzar H4 sobre un objetivo fuera del seguimiento aliado te deja sola al terminar la animación.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -33069,7 +33069,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Viego · Jungla · Aplastar. Tomar una posesión por disponibilidad puede alejarte del objetivo y perder el siguiente reinicio.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Posee por curación, herramientas y posición.\nRegla aplicable: Revisa las habilidades prestadas antes de abandonar la forma con H4."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -33947,7 +33947,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Volibear · Jungla · Aplastar. Inhabilitar la torre con H4 sin que llegue la oleada deja una zambullida sin continuación segura.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Oleada y aliados llegan antes del salto.\nRegla aplicable: Mantén la marca sobre el mismo objetivo para aprovechar la respuesta de H2."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -34203,7 +34203,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Warwick · Jungla · Aplastar. Seguir un rastro de vida baja sin revisar el flanco puede convertir tu persecución en una entrada contra varios rivales.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Rastro con ruta segura antes de perseguir.\nRegla aplicable: H4 debe tener línea al objetivo y cobertura al terminar la supresión."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -34459,7 +34459,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Wukong · Jungla · Aplastar. Gastar H2 para avanzar sin una segunda ruta de salida deja tu doble Ciclón expuesto al daño concentrado.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -34843,7 +34843,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Xin Zhao · Jungla · Aplastar. Usar H4 antes de separar al objetivo desafiado puede desperdiciar la zona que niega el daño exterior.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -36337,7 +36337,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Zed · Jungla · Aplastar. Colocar todas las sombras hacia el objetivo elimina el punto seguro al que volver después de H4.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Sombra lateral para doble H1 y regreso seguro.\nRegla aplicable: No persigas otra eliminación si pierdes acceso a esa salida."
+        "description": ""
       },
       {
         "spellName": "Destello",
@@ -37697,7 +37697,7 @@
       {
         "spellName": "Aplastar",
         "iconUrl": "file:///android_asset/spells/smite.webp",
-        "description": "Diagnóstico del error/situación: Zyra · Jungla · Aplastar. Lanzar el control sin semillas colocadas pierde las plantas que mantienen al rival en tu zona de daño.\nDecisión Soberano: Coordina el daño visible de Castigo con tu habilidad de remate; no lo gastes antes de la ventana de disputa.\nMicro y Macro detalle: Semillas antes de la habilidad que las activa.\nRegla aplicable: H4 asegura permanencia en la zona después del control, no sustituye la preparación."
+        "description": ""
       },
       {
         "spellName": "Destello",

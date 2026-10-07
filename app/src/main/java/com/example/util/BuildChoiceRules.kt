@@ -71,4 +71,8 @@ object BuildChoiceRules {
         premium -> 12
         else -> 6
     }
+
+    fun matchupRows(names: List<String>, premium: Boolean, signedIn: Boolean): List<List<String>> =
+        names.map { it.trim() }.filter { it.isNotBlank() }.distinct()
+            .take(matchupLimit(premium, signedIn)).chunked(3)
 }

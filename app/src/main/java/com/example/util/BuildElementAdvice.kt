@@ -10,6 +10,9 @@ import java.util.Locale
 object BuildElementAdvice {
     fun isFlash(name: String): Boolean = key(name) in setOf("destello", "flash")
 
+    fun isSpellWithoutCoachAdvice(name: String): Boolean = isFlash(name) ||
+        key(name) in setOf("aplastar", "castigo", "smite", "smite desafiante", "smite helado", "golpear")
+
     private fun key(value: String): String =
         Normalizer.normalize(value, Normalizer.Form.NFD)
             .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
@@ -18,7 +21,7 @@ object BuildElementAdvice {
             .trim()
 
     fun resolve(name: String, entries: List<Pair<String, String>>, fallback: String, catalogDescription: String = ""): String {
-        if (isFlash(name)) return ""
+        if (isSpellWithoutCoachAdvice(name)) return ""
         fun compact(value: String) = key(value).replace(" ", "")
         val wanted = compact(name)
         return entries.firstOrNull { compact(it.first) == wanted && it.second.isNotBlank() }
@@ -164,7 +167,7 @@ object BuildElementAdvice {
         roleName: String,
         language: String
     ): String {
-        if (isFlash(spellName)) return ""
+        if (isSpellWithoutCoachAdvice(spellName)) return ""
         val lang = AppLanguage.normalize(language)
         val pt = lang == "pt"
         val spell = WildRiftSpellsAndRunes.getSpellByName(spellName)

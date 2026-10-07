@@ -39,13 +39,13 @@ class BuildElementAdviceCoverageTest {
     }
 
     @Test
-    fun `every bundled non flash spell has an explicit decision and flash stays silent`() {
+    fun `every bundled coached spell has an explicit decision and silent spells stay silent`() {
         val names = builds().flatMap { it.coreSpells + it.situationalSpells }
             .map { it.spellName }.filter { it.isNotBlank() }.distinct()
         names.forEach { name ->
             val advice = BuildElementAdvice.contextualSpellAdvice(name, "Campeón", "Línea", "es")
-            if (BuildElementAdvice.isFlash(name)) {
-                assertTrue("Flash/Destello must not show coach advice", advice.isBlank())
+            if (BuildElementAdvice.isSpellWithoutCoachAdvice(name)) {
+                assertTrue("Flash/Smite must not show coach advice", advice.isBlank())
             } else {
                 assertTrue("$name must have contextual spell advice", advice.contains("Cuándo usar"))
                 assertFalse("$name fell through generic spell advice", advice.contains("Elige este hechizo"))

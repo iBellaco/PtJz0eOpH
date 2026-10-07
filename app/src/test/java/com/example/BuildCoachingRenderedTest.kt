@@ -43,20 +43,45 @@ class BuildCoachingRenderedTest {
         CustomChampionBuildsManager.init(context)
         val champion = WildRiftRepository.champions.first { it.id == "syndra" }
         var navigations = 0
+        @Suppress("UNCHECKED_CAST")
+        fun <T> state(owner: Any, fieldName: String) = owner.javaClass.getDeclaredField(fieldName)
+            .apply { isAccessible = true }.get(owner) as kotlinx.coroutines.flow.MutableStateFlow<T>
+        val signedIn = state<Boolean>(com.example.util.AuthManager, "_isSignedIn")
+        val premium = state<Boolean>(com.example.util.SubscriptionManager, "_isPremium")
+        val role = state<String>(com.example.util.SubscriptionManager, "_userRole")
+        val saved = Triple(signedIn.value, premium.value, role.value)
+        try {
+        role.value = "free"; signedIn.value = false; premium.value = false
         compose.setContent { MyApplicationTheme {
             ChampionDetailSheet(champion = champion, isOverlay = false, onDismiss = {},
                 onChampionSelected = { navigations++ })
         } }
+        for ((signed, pro, count) in listOf(Triple(false, false, 3), Triple(true, false, 6), Triple(true, true, 12))) {
+            compose.runOnIdle { signedIn.value = signed; premium.value = pro }
+            for (group in listOf("advantage", "weakness", "synergy")) {
+                compose.onAllNodesWithTag("build_matchup_name_$group").assertCountEquals(count)
+                for (row in 0 until count / 3) {
+                    compose.onNodeWithTag("build_matchup_${group}_row_$row").assertExists()
+                }
+            }
+            compose.onNodeWithTag("advantage_insight_card").performScrollTo()
+            val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
+            compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-matchup-access-$count-$language.png").path)
+        }
         for (group in listOf("advantage", "weakness", "synergy")) {
             val avatar = compose.onAllNodesWithTag("build_matchup_name_$group").onFirst().performScrollTo()
             val name = avatar.fetchSemanticsNode().config[SemanticsProperties.ContentDescription].first()
             avatar.performSemanticsAction(SemanticsActions.OnClick) { it() }
-            compose.onNodeWithTag("build_matchup_visible_name").assertTextEquals(name).assertIsDisplayed()
+            compose.onNodeWithTag("build_matchup_visible_name", useUnmergedTree = true).assertTextEquals(name).assertIsDisplayed()
             val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
             compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-matchup-name-$group-$language.png").path)
             org.junit.Assert.assertEquals(0, navigations)
-            compose.onNodeWithText(if(language == "pt") "Fechar" else "Cerrar").performClick()
-            compose.onNodeWithTag("build_matchup_visible_name").assertDoesNotExist()
+            compose.onAllNodesWithText(if(language == "pt") "Fechar" else "Cerrar").assertCountEquals(0)
+            compose.onNodeWithTag("build_matchup_name_popup").performClick()
+            compose.onNodeWithTag("build_matchup_visible_name", useUnmergedTree = true).assertDoesNotExist()
+        }
+        } finally {
+            signedIn.value = saved.first; premium.value = saved.second; role.value = saved.third
         }
     }
 
@@ -95,6 +120,12 @@ class BuildCoachingRenderedTest {
         compose.onNodeWithText(close).performClick()
         compose.onNodeWithTag("selected_boot_Botas inmortales").performScrollTo().performClick()
         checkAdvice("Botas inmortales", "Trituradoras encadenadas")
+        val smiteName = WildRiftRepository.summonerSpells.first { it.name == "Aplastar" }.getLocalizedName(language)
+        compose.onNode(hasTestTag("build_spell_details") and hasContentDescription(smiteName)).performScrollTo().performClick()
+        compose.onNodeWithText(smiteName).assertExists()
+        compose.onAllNodesWithTag("build_element_advice_card").assertCountEquals(0)
+        val output = File("build/reports/portuguese-rendered").apply { mkdirs() }
+        compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(output, "build-coaching-smite-$language.png").path)
     }
 
     private fun inspect(language:String) {

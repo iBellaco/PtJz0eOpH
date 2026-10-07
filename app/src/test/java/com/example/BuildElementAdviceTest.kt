@@ -24,6 +24,16 @@ class BuildElementAdviceTest {
         assertEquals("", BuildElementAdvice.resolve("FLASH",emptyList(),"Consejo general"))
     }
 
+    @Test fun `smite aliases suppress saved coaching and generated fallbacks in both languages`() {
+        for (name in listOf("Aplastar", "Castigo", "Smite", "Golpear", "SMITE HELADO")) {
+            assertEquals("", BuildElementAdvice.resolve(name, listOf(name to "Consejo guardado"), "Consejo general"))
+            for (language in listOf("es", "pt")) {
+                assertEquals("", BuildElementAdvice.contextualSpellAdvice(name, "Vi", "Jungla", language))
+            }
+        }
+        assertFalse(BuildElementAdvice.isSpellWithoutCoachAdvice("Prender"))
+    }
+
     @Test fun `copied rune mechanics do not become a second coach card`() {
         val mechanic="Otorga poder de habilidad al participar en eliminaciones."
         assertEquals("", BuildElementAdvice.resolve("Colección de Globos Oculares",listOf("Colección de Globos Oculares" to mechanic),"",mechanic))

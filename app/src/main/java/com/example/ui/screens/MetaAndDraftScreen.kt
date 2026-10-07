@@ -3652,7 +3652,7 @@ internal fun SpellsTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(184.dp)
+                            .heightIn(min = 112.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .testTag("catalog_spell_${spell.id}")
                             .coachClickable { selectedSpell = spell },
@@ -3661,9 +3661,9 @@ internal fun SpellsTab() {
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.SpaceBetween,
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
                             modifier = Modifier
-                                .fillMaxSize()
+                                .fillMaxWidth()
                                 .padding(horizontal = 6.dp, vertical = 8.dp)
                         ) {
                             AppAssetImage(

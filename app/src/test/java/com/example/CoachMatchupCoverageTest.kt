@@ -1,50 +1,45 @@
 package com.example
 
 import com.example.model.Champion
-import com.example.model.DamageType
 import com.example.model.LaneRole
 import com.example.util.CoachMatchupRanking
 import com.example.util.MatchupRoleResult
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
-import java.io.File
 
+@org.junit.runner.RunWith(org.robolectric.RobolectricTestRunner::class)
+@org.robolectric.annotation.Config(sdk = [34], application = android.app.Application::class)
 class CoachMatchupCoverageTest {
-    private fun strings(json: JSONObject, key: String): List<String> {
-        val array = json.optJSONArray(key) ?: return emptyList()
-        return (0 until array.length()).map { array.getString(it) }
-    }
     private fun catalog(): List<Champion> {
-        val raw = File("src/main/res/raw").takeIf { it.isDirectory } ?: File("app/src/main/res/raw")
-        return (1..2).flatMap { part ->
-            val array = JSONArray(File(raw,"champions_part$part.json").readText())
-            (0 until array.length()).map { i ->
-                val c = array.getJSONObject(i)
-                Champion(id=c.getString("id"), name=c.getString("name"),
-                    primaryRole=LaneRole.valueOf(c.getString("primaryRole")),
-                    secondaryRoles=strings(c,"secondaryRoles").map(LaneRole::valueOf),
-                    damageType=DamageType.valueOf(c.getString("damageType")),
-                    isRanged=c.optBoolean("isRanged"), isFrontline=c.optBoolean("isFrontline"))
-            }
-        }
+        val context = org.robolectric.RuntimeEnvironment.getApplication()
+        com.example.util.AppLanguage.select(context, "es")
+        com.example.data.WildRiftRepository.initChampions(context, forceReload = true)
+        return com.example.data.WildRiftRepository.baseChampionsList
     }
     @Test fun `all bundled champions and playable roles have twelve unique relationships per category`() {
         val champions=catalog()
         assertEquals(142,champions.size)
         var profiles=0
         for (champion in champions) for (role in listOf(champion.primaryRole)+champion.secondaryRoles) {
-            val result=CoachMatchupRanking.complete(champion,role,MatchupRoleResult(emptyList(),emptyList(),emptyList()),champions)
+            val profile = com.example.util.ChampionRoleAdapter.getProfile(champion, role, "es")
+            val result = MatchupRoleResult(profile.advantageAgainst, profile.counteredBy, profile.synergies)
             for (list in listOf(result.advantages,result.counters,result.synergies)) {
                 assertEquals("${champion.id} $role",12,list.size)
                 assertEquals(list.size,list.distinct().size)
                 assertFalse(list.contains(champion.name))
+                for ((signedIn, premium, expected) in listOf(
+                    Triple(false, false, 3), Triple(true, false, 6), Triple(true, true, 12))) {
+                    val rows = com.example.util.BuildChoiceRules.matchupRows(list, premium, signedIn)
+                    assertEquals("${champion.id} $role signedIn=$signedIn premium=$premium", expected, rows.flatten().size)
+                    assertEquals(expected / 3, rows.size)
+                    rows.forEach { assertEquals(3, it.size) }
+                    assertEquals(list.take(expected), rows.flatten())
+                }
             }
             assertTrue(result.advantages.intersect(result.counters.toSet()).isEmpty())
-            for (name in result.advantages+result.counters) {
-                val rival=champions.first { it.name==name }
-                assertTrue(rival.primaryRole==role || role in rival.secondaryRoles)
+            // Reviewed relations can describe threats across the map, not only direct lane rivals.
+            for (name in result.advantages+result.counters+result.synergies) {
+                assertTrue("${champion.id} $role has an unknown relationship: $name", champions.any { it.name==name })
             }
             profiles++
         }

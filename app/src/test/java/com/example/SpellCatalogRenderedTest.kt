@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.data.WildRiftRepository
 import com.example.data.WildRiftSpellsAndRunes
 import androidx.compose.ui.test.*
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.ui.screens.SpellsTab
 import com.example.ui.theme.MyApplicationTheme
@@ -50,6 +51,10 @@ class SpellCatalogRenderedTest {
             compose.onAllNodesWithText("Howling Abyss", substring = true).assertCountEquals(0)
         }
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(output, "spell-catalog-grid-$language.png").path)
+        compose.onNodeWithTag("catalog_spell_barrier").assertHeightIsAtLeast(112.dp)
+        val cardBounds = compose.onNodeWithTag("catalog_spell_barrier").getUnclippedBoundsInRoot()
+        org.junit.Assert.assertTrue("Spell grid should not retain the old empty 184dp card",
+            cardBounds.bottom - cardBounds.top < 140.dp)
         checkCompactCatalog()
         compose.onNodeWithTag("catalog_spell_barrier").performClick()
         // The grid remains behind the dialog; assert the dialog's own label.

@@ -30,7 +30,7 @@ class BuildCoachingRegressionTest {
         val runes=WildRiftSpellsAndRunes.runes.associateBy { it.name }
         for (build in builds()) {
             for (spell in build.coreSpells+build.situationalSpells) {
-                if (spell.spellName=="Destello") assertTrue(spell.description.isEmpty())
+                if (com.example.util.BuildElementAdvice.isSpellWithoutCoachAdvice(spell.spellName)) assertTrue(spell.description.isEmpty())
                 else assertTrue(spell.description.contains(build.championName))
             }
             for (rune in build.coreRunes+build.situationalRunes) {
