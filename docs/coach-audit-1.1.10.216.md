@@ -39,6 +39,7 @@ La captura aportada es estática y su último slot todavía muestra el icono de 
 - `app/src/test/java/com/example/BuildCoachingRenderedTest.kt`
 - `app/src/test/java/com/example/SpellCatalogRenderedTest.kt`
 - `app/src/test/java/com/example/TenthPickRegressionTest.kt`
+- `app/src/test/java/com/example/ChampionNameResolverRegressionTest.kt`
 - `app/src/androidTest/java/com/example/DraftRivalNameInstalledTest.kt`
 - `app/src/androidTest/assets/draft/`
 - `tools/verify-draft-rival-names-device.py`
