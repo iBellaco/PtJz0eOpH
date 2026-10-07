@@ -106,3 +106,8 @@ Procedimiento: [eliminación de cuentas](account-deletion-operations.md). Pasos 
 
 - `server/account-deletion/conversations.mjs`
 - `server/account-deletion/test/conversations.test.mjs`
+
+Los cinco casos de interacción de eliminación se ejecutan en Android sobre el APK release instalado: mantienen las comprobaciones de ambas confirmaciones, contraseña obligatoria, cancelación sin envío, un solo envío durante la espera y errores sin confirmación falsa. Se usan respuestas controladas, sin borrar cuentas reales. El simulador de ventanas no logró estabilizar el campo de contraseña; las dos comprobaciones renderizadas de información legal siguen en su conjunto original. La validación instalada es obligatoria antes de fusionar.
+
+- `app/src/androidTest/java/com/example/AccountDeletionInstalledTest.kt`
+- `tools/verify-account-deletion-device.py`

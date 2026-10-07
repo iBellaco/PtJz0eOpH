@@ -425,6 +425,7 @@ jobs:
           COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py
           python3 tools/verify-overlay-history-device.py
           python3 tools/verify-draft-rival-names-device.py
+          python3 tools/verify-account-deletion-device.py
     - name: Upload installed Spanish and overlay evidence
       if: always()
       uses: actions/upload-artifact@v4
