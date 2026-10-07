@@ -75,11 +75,19 @@ jobs:
         with:
           node-version: '20'
       - name: Install deployment CLI
-        if: steps.connection.outputs.available == 'true'
+        if: steps.connection.outputs.method == 'token'
         working-directory: tests/firestore
         run: npm ci --no-audit --no-fund
+      - name: Install verified permission publisher
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        working-directory: server/account-deletion
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Publish and read back verified cloud permissions
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        working-directory: server/account-deletion
+        run: node publish-permissions.mjs
       - name: Publish verified cloud permissions
-        if: steps.connection.outputs.available == 'true'
+        if: steps.connection.outputs.method == 'token'
         env:
           FIREBASE_TOKEN: ${{ steps.connection.outputs.method == 'token' && secrets.FIREBASE_TOKEN || '' }}
         run: tests/firestore/node_modules/.bin/firebase deploy --only firestore:rules,storage --project wild-rift-drafting --non-interactive

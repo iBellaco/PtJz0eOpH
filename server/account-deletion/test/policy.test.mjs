@@ -65,6 +65,20 @@ test('the minimal security record expires after 24 hours and includes no email',
   await processRequest('owner',adapter,start+GRACE_MS+SECURITY_RETENTION_MS-1);assert.ok(state.request);
   await processRequest('owner',adapter,start+GRACE_MS+SECURITY_RETENTION_MS);assert.equal(state.request,null);
 });
+test('late data is swept after token expiry and a failed sweep retains the retry marker',async()=>{
+  const {state,adapter}=fixture();await processRequest('owner',adapter,start+GRACE_MS);
+  state.ownData=true;state.calls=[];state.failure='purge';
+  await assert.rejects(processRequest('owner',adapter,start+GRACE_MS+SECURITY_RETENTION_MS));
+  assert.ok(state.request);assert.equal(state.request.status,'COMPLETED');
+  assert.ok(state.ownData);assert.ok(!state.calls.includes('remove'));assert.equal(state.otherData,true);
+  state.failure=null;state.calls=[];
+  const purge=adapter.purge;adapter.purge=async(uid,email)=>{
+    assert.equal(uid,'owner');assert.equal(email,'');await purge();
+  };
+  await processRequest('owner',adapter,start+GRACE_MS+SECURITY_RETENTION_MS+1000);
+  assert.equal(state.ownData,false);assert.equal(state.request,null);assert.equal(state.otherData,true);
+  assert.deepEqual(state.calls,['purge','remove']);
+});
 test('malformed or shortened recovery requests cannot trigger deletion',async()=>{
   for(const change of [{graceDays:0},{requestedAt:NaN},{requestId:'short'}]) {const {state,adapter}=fixture();Object.assign(state.request,change);
     assert.equal(await processRequest('owner',adapter,start+GRACE_MS),'skipped');assert.deepEqual(state.calls,[]);}
