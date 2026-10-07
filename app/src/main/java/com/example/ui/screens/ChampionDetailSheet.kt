@@ -1843,6 +1843,25 @@ fun ChampionDetailSheet(
                     modifier = Modifier.fillMaxWidth().testTag("matchup_sign_in_hint"))
             }
 
+            selectedMatchupName?.let { name ->
+                androidx.compose.ui.window.Popup(
+                    alignment = Alignment.Center,
+                    onDismissRequest = { selectedMatchupName = null },
+                    properties = androidx.compose.ui.window.PopupProperties(focusable = true)
+                ) {
+                    androidx.compose.material3.Surface(
+                        shape = RoundedCornerShape(12.dp), color = HextechSurface,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold)
+                    ) {
+                        Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(name, Modifier.testTag("build_matchup_visible_name"), color = TextPrimary,
+                                fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            TextButton(onClick = { selectedMatchupName = null }) { Text(tr("Cerrar")) }
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(30.dp))
         }
     }
@@ -2098,25 +2117,6 @@ fun AdaptiveDetailAlertDialog(
     }
 
 
-
-    selectedMatchupName?.let { name ->
-        androidx.compose.ui.window.Popup(
-            alignment = Alignment.Center,
-            onDismissRequest = { selectedMatchupName = null },
-            properties = androidx.compose.ui.window.PopupProperties(focusable = true)
-        ) {
-            androidx.compose.material3.Surface(
-                shape = RoundedCornerShape(12.dp), color = HextechSurface,
-                border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold)
-            ) {
-                Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(name, Modifier.testTag("build_matchup_visible_name"), color = TextPrimary,
-                        fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    TextButton(onClick = { selectedMatchupName = null }) { Text(tr("Cerrar")) }
-                }
-            }
-        }
-    }
 
     itemForDetail?.let { item ->
         val itemDetailCard = @Composable {

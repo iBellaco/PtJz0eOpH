@@ -52,6 +52,8 @@ class BuildCoachingRenderedTest {
             val name = avatar.fetchSemanticsNode().config[SemanticsProperties.ContentDescription].first()
             avatar.performSemanticsAction(SemanticsActions.OnClick) { it() }
             compose.onNodeWithTag("build_matchup_visible_name").assertTextEquals(name).assertIsDisplayed()
+            val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
+            compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-matchup-name-$group-$language.png").path)
             org.junit.Assert.assertEquals(0, navigations)
             compose.onNodeWithText(if(language == "pt") "Fechar" else "Cerrar").performClick()
             compose.onNodeWithTag("build_matchup_visible_name").assertDoesNotExist()
