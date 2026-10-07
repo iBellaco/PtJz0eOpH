@@ -28,7 +28,6 @@ fun AccountDeletionCard(
     var busy by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val focus = LocalFocusManager.current
     fun dismiss() { if (!busy) { step = 0; password = ""; failed = false } }
     Column(Modifier.fillMaxWidth().testTag("account_deletion_card")) {
         Text(localizedString(R.string.account_delete_summary), style = MaterialTheme.typography.bodySmall)
@@ -42,6 +41,7 @@ fun AccountDeletionCard(
         onDismissRequest = ::dismiss,
         title = { Text(localizedString(if (step == 1) R.string.account_delete_first_title else R.string.account_delete_second_title)) },
         text = {
+            val focus = LocalFocusManager.current
             if (step == 1) Text(localizedString(R.string.account_delete_first_body))
             else Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(localizedString(R.string.account_delete_second_body, email))
@@ -58,6 +58,7 @@ fun AccountDeletionCard(
             }
         },
         confirmButton = {
+            val focus = LocalFocusManager.current
             if (step == 1) CoachButton(onClick = { step = 2 },
                 modifier = Modifier.heightIn(min = 48.dp).testTag("account_delete_first_confirm")) {
                 Text(localizedString(R.string.continuar))

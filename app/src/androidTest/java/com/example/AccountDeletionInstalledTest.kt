@@ -50,6 +50,8 @@ class AccountDeletionInstalledTest {
     }
     private fun password(value: String) {
         compose.onNodeWithTag("account_delete_password").performTextInput(value); frame()
+        compose.onNodeWithTag("account_delete_password").performImeAction(); frame()
+        compose.onNodeWithTag("account_delete_password").assertIsNotFocused()
     }
     @Test fun `Spanish deletion needs both confirmations and password`()=confirmations("es")
     @Test fun `Portuguese deletion needs both confirmations and password`()=confirmations("pt")
