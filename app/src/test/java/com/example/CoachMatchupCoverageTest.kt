@@ -37,9 +37,9 @@ class CoachMatchupCoverageTest {
                 }
             }
             assertTrue(result.advantages.intersect(result.counters.toSet()).isEmpty())
-            for (name in result.advantages+result.counters) {
-                val rival=champions.first { it.name==name }
-                assertTrue(rival.primaryRole==role || role in rival.secondaryRoles)
+            // Reviewed relations can describe threats across the map, not only direct lane rivals.
+            for (name in result.advantages+result.counters+result.synergies) {
+                assertTrue("${champion.id} $role has an unknown relationship: $name", champions.any { it.name==name })
             }
             profiles++
         }

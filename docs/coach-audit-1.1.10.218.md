@@ -12,6 +12,7 @@
 ## Comprobaciones
 
 - Se amplía la cobertura para verificar los perfiles reales de los 142 campeones y sus 300 combinaciones de línea, incluyendo 3/6/12 relaciones por sección y filas de tres.
+- Se conservan las relaciones revisadas que incluyen amenazas de otras líneas; se verifica su existencia en el catálogo sin reinterpretarlas como duelos exclusivos de la misma línea.
 - Las pruebas de interfaz verifican los tres niveles de acceso en ambos idiomas, nombres sin navegación ni texto de cierre y tarjetas de hechizos sin la altura vacía anterior.
 - Se comprueba que Aplastar no recupere consejos desde datos guardados, alias o alternativas generadas y que otros hechizos conserven sus consejos.
 - Los resultados definitivos de compilación, firma, ofuscación y APK instalado se incorporan a la auditoría de entrega después de terminar CI. No se declaran aprobados antes de ejecutarlos.
@@ -30,6 +31,7 @@
 - `app/src/main/java/com/example/util/BuildChoiceRules.kt`
 - `app/src/main/java/com/example/util/BuildElementAdvice.kt`
 - `app/src/test/java/com/example/BuildCoachingRegressionTest.kt`
+- `app/src/test/java/com/example/ChampionBuildsCatalogValidationTest.kt`
 - `app/src/test/java/com/example/BuildCoachingRenderedTest.kt`
 - `app/src/test/java/com/example/BuildElementAdviceCoverageTest.kt`
 - `app/src/test/java/com/example/BuildElementAdviceTest.kt`

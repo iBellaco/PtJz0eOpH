@@ -123,16 +123,16 @@ class ChampionBuildsCatalogValidationTest {
             assertEquals("$prefix spell detail list must match", build.spells, build.coreSpells.map { it.spellName })
             for (spell in build.coreSpells) {
                 assertTrue("$prefix spell ${spell.spellName} must exist in local catalog", spell.spellName in validSpellNames)
-                if (!spell.spellName.equals("Destello", ignoreCase = true)) {
-                    assertTrue("$prefix non-Flash spell ${spell.spellName} needs advice", spell.description.isNotBlank())
-                }
+                if (com.example.util.BuildElementAdvice.isSpellWithoutCoachAdvice(spell.spellName)) {
+                    assertTrue("$prefix spell ${spell.spellName} must not have coach advice", spell.description.isBlank())
+                } else assertTrue("$prefix spell ${spell.spellName} needs advice", spell.description.isNotBlank())
             }
             for (spell in build.situationalSpells) {
                 assertTrue("$prefix situational spell ${spell.spellName} must exist in local catalog", spell.spellName in validSpellNames)
                 assertFalse("$prefix situational spell cannot duplicate a main spell", build.spells.any { it.equals(spell.spellName, ignoreCase = true) })
-                if (!spell.spellName.equals("Destello", ignoreCase = true)) {
-                    assertTrue("$prefix situational spell ${spell.spellName} needs advice", spell.description.isNotBlank())
-                }
+                if (com.example.util.BuildElementAdvice.isSpellWithoutCoachAdvice(spell.spellName)) {
+                    assertTrue("$prefix situational spell ${spell.spellName} must not have coach advice", spell.description.isBlank())
+                } else assertTrue("$prefix situational spell ${spell.spellName} needs advice", spell.description.isNotBlank())
             }
 
             assertEquals("$prefix must have 1 keystone + 4 secondaries", 5, build.coreRunes.size)
