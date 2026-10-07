@@ -2,7 +2,7 @@
 
 ## Estado de la intervención
 
-Cambios preparados sobre la versión 1.1.10.218. Esta revisión todavía no está validada como entrega instalable ni fusionada en main. GitHub rechazó con HTTP 403 la creación del Secret COACH_GOOGLE_SERVICES_JSON desde la conexión disponible: Resource not accessible by integration. No se ha creado el Secret y no se declara la compilación de Actions operativa.
+Cambios preparados sobre la versión 1.1.10.218. Esta revisión todavía no está validada como entrega instalable ni fusionada en main. GitHub rechazó con HTTP 403 la creación del Secret COACH_GOOGLE_SERVICES_JSON desde la conexión disponible: Resource not accessible by integration. Esta conexión no creó el Secret. Posteriormente, el run 37703349630 de Actions confirmó que COACH_GOOGLE_SERVICES_JSON ya estaba disponible: ambos trabajos consumidores completaron su restauración y validación. No se atribuye su creación a esta conexión; la compilación y las comprobaciones del APK continúan antes de declarar una entrega validada.
 
 ## Hallazgos contrastados con el repositorio actual
 
@@ -37,7 +37,7 @@ Archivos principales después de dividirlos: MetaAndDraftScreen.kt, 782 líneas;
 
 ## Límites y riesgos pendientes
 
-- La creación del Secret requiere acceso que la conexión de GitHub actual no ofrece. El archivo existente se preparó fuera del repositorio para que el titular pueda configurar ese Secret; no está versionado.
+- La conexión de GitHub no ofrece acceso a la gestión de Secrets; la creación por esta conexión fue rechazada. Actions sí confirmó posteriormente que el Secret ya está disponible y válido. El archivo existente se preparó fuera del repositorio y no está versionado.
 - Retirar los valores del workflow no los borra de commits ni registros históricos. La configuración cliente continúa incluida en el APK y no sustituye las reglas de acceso. No se rotaron claves ni se reescribió el historial.
 - La refactorización requiere compilación, pruebas de pantallas y validación del APK antes de fusionar o publicar. La primera compilación detectó una colisión de nombres al compartir un auxiliar y una constante Java inválida al dejar una propiedad opcional vacía. Se corrigen ambas antes de repetir las verificaciones. No se afirma que esas verificaciones hayan pasado por tener sintaxis válida.
 - La autorización de Riot y la aceptación de Google Play siguen sin estar acreditadas; esta limpieza no las concede. La auditoría legal previa y su guía siguen aplicando.
