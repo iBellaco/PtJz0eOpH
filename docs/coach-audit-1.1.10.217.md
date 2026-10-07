@@ -20,7 +20,9 @@ Actualización de privacidad, términos, contacto confirmado DevWildRiftCoach@gm
 - 4 escenarios de permisos de archivos aprobados: coincidencia de titular, bloqueo de suplantación, propietario inmutable y restricción de invitados/rutas.
 - 56 escenarios de reglas de acceso aprobados, incluidos aislamiento, fecha del servicio, plazo no alterable, reautenticación reciente, cancelación dentro del plazo y bloqueo tras comenzar el borrado.
 - Integración de demostración: borrado de identidad y datos asociados, conservación de cuenta ajena, reintento idempotente y cancelación por inicio real de sesión y bloqueo de cierre falso ante un antiguo archivo externo, eliminación de solicitudes personales secundarias y limpieza de respuestas propias sin eliminar el texto del destinatario.
-- 17 pruebas del servicio: límite exacto de 60 días, carreras de inicio de sesión, recuperación, registro mínimo y detección de antiguos archivos externos y limpieza de conversaciones compartidas. La lista y los resultados definitivos del APK se adjuntarán a la entrega cuando terminen las comprobaciones; aún no se acreditan aquí.
+- 17 pruebas del servicio: límite exacto de 60 días, carreras de inicio de sesión, recuperación, registro mínimo y detección de antiguos archivos externos y limpieza de conversaciones compartidas.
+- APK release instalado: cinco casos de eliminación aprobados en español y portugués; auditoría de 36 pantallas en español y 39 en portugués sin cruces de idioma; reconocimiento nativo, identidad persistente y navegación del asistente comprobados. 126 pruebas de lógica y 303 de interfaces aprobadas. Estos resultados corresponden al código de la app validado antes de la corrección final de publicación de permisos.
+- La publicación conjunta mediante la herramienta de despliegue se detuvo por falta de permiso de consulta de servicios. La conexión de cuenta utiliza ahora la API oficial de reglas y verifica por lectura que las fuentes activas coincidan con el repositorio; no amplía privilegios ni habilita servicios. El resultado final de producción se incorpora a la auditoría entregada.
 
 ## Riesgos y requisitos pendientes
 
@@ -91,6 +93,7 @@ Procedimiento: [eliminación de cuentas](account-deletion-operations.md). Pasos 
 - `server/account-deletion/package.json`
 - `server/account-deletion/policy.mjs`
 - `server/account-deletion/preflight.mjs`
+- `server/account-deletion/publish-permissions.mjs`
 - `server/account-deletion/request-verified-email.mjs`
 - `server/account-deletion/store.mjs`
 - `server/account-deletion/test/emulator.integration.mjs`
