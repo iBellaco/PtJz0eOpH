@@ -111,3 +111,5 @@ Los cinco casos de interacción de eliminación se ejecutan en Android sobre el 
 
 - `app/src/androidTest/java/com/example/AccountDeletionInstalledTest.kt`
 - `tools/verify-account-deletion-device.py`
+
+La revisión instalada exige conservar la API pública compartida de corutinas y los puntos de entrada utilizados por las pruebas del diálogo. Se permiten las optimizaciones de cuerpos y se mantiene la ofuscación del resto de la implementación de Coach; cada APK sigue obligado a demostrar clases propias renombradas y firma persistente.
