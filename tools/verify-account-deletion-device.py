@@ -5,6 +5,9 @@ import subprocess
 
 report = Path('app/build/reports/spanish-device/account-deletion')
 report.mkdir(parents=True, exist_ok=True)
+for apk in ('app/build/outputs/apk/release/app-release.apk', 'app/build/outputs/apk/androidTest/release/app-release-androidTest.apk'):
+    subprocess.run(['adb', 'install', '-r', apk], check=True, timeout=60)
+subprocess.run(['adb', 'shell', 'pm', 'grant', 'com.Coach', 'android.permission.POST_NOTIFICATIONS'], check=True, timeout=20)
 subprocess.run(['adb', 'logcat', '-c'], check=True, timeout=20)
 result = subprocess.run(['adb', 'shell', 'am', 'instrument', '-w', '-r', '-e', 'class',
     'com.example.AccountDeletionInstalledTest', 'com.Coach.test/androidx.test.runner.AndroidJUnitRunner'],

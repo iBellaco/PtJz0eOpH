@@ -139,8 +139,8 @@
 -keep class androidx.lifecycle.ViewTreeViewModelStoreOwner { *; }
 
 # The release Compose test runner shares the coroutine runtime with the APK.
-# Retain its callable API, while allowing body optimization and keeping Coach obfuscated.
--keep,allowoptimization class kotlinx.coroutines.** { public protected *; }
+# Retain callable APIs and subclass extensibility; Coach remains eligible for obfuscation.
+-keep class kotlinx.coroutines.** { *; }
 # Public entry points hosted by the installed deletion interaction tests.
 -keep class com.example.ui.components.AccountDeletionCardKt { public static void AccountDeletionCard(...); }
 -keep class com.example.util.DynamicTranslations { public *; }
