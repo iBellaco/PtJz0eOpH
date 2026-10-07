@@ -72,13 +72,13 @@ class BuildCoachingRenderedTest {
             val avatar = compose.onAllNodesWithTag("build_matchup_name_$group").onFirst().performScrollTo()
             val name = avatar.fetchSemanticsNode().config[SemanticsProperties.ContentDescription].first()
             avatar.performSemanticsAction(SemanticsActions.OnClick) { it() }
-            compose.onNodeWithTag("build_matchup_visible_name").assertTextEquals(name).assertIsDisplayed()
+            compose.onNodeWithTag("build_matchup_visible_name", useUnmergedTree = true).assertTextEquals(name).assertIsDisplayed()
             val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
             compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-matchup-name-$group-$language.png").path)
             org.junit.Assert.assertEquals(0, navigations)
             compose.onAllNodesWithText(if(language == "pt") "Fechar" else "Cerrar").assertCountEquals(0)
             compose.onNodeWithTag("build_matchup_name_popup").performClick()
-            compose.onNodeWithTag("build_matchup_visible_name").assertDoesNotExist()
+            compose.onNodeWithTag("build_matchup_visible_name", useUnmergedTree = true).assertDoesNotExist()
         }
         } finally {
             signedIn.value = saved.first; premium.value = saved.second; role.value = saved.third
@@ -120,8 +120,9 @@ class BuildCoachingRenderedTest {
         compose.onNodeWithText(close).performClick()
         compose.onNodeWithTag("selected_boot_Botas inmortales").performScrollTo().performClick()
         checkAdvice("Botas inmortales", "Trituradoras encadenadas")
-        compose.onAllNodesWithTag("build_spell_details").onLast().performScrollTo().performClick()
-        compose.onNodeWithText(if (language == "pt") "Golpear" else "Aplastar").assertExists()
+        val smiteName = WildRiftRepository.summonerSpells.first { it.name == "Aplastar" }.getLocalizedName(language)
+        compose.onNode(hasTestTag("build_spell_details") and hasContentDescription(smiteName)).performScrollTo().performClick()
+        compose.onNodeWithText(smiteName).assertExists()
         compose.onAllNodesWithTag("build_element_advice_card").assertCountEquals(0)
         val output = File("build/reports/portuguese-rendered").apply { mkdirs() }
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(output, "build-coaching-smite-$language.png").path)
