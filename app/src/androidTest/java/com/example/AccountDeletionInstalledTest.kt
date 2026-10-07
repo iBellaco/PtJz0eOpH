@@ -53,9 +53,9 @@ class AccountDeletionInstalledTest {
         compose.onNodeWithTag("account_delete_password").performImeAction(); frame()
         compose.onNodeWithTag("account_delete_password").assertIsNotFocused()
     }
-    @Test fun `Spanish deletion needs both confirmations and password`()=confirmations("es")
-    @Test fun `Portuguese deletion needs both confirmations and password`()=confirmations("pt")
-    @Test fun `pending request prevents repeated submission and cancellation`() {
+    @Test fun spanishDeletionNeedsBothConfirmationsAndPassword()=confirmations("es")
+    @Test fun portugueseDeletionNeedsBothConfirmationsAndPassword()=confirmations("pt")
+    @Test fun pendingRequestPreventsRepeatedSubmissionAndCancellation() {
         language("es");var calls=0;var delivered=false
         val reply=kotlinx.coroutines.CompletableDeferred<Long>()
         content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;reply.await()},onScheduled={delivered=true}) } }
@@ -91,8 +91,8 @@ class AccountDeletionInstalledTest {
         assertEquals(1,calls);assertEquals(123456789L,delivered ?: -1L)
         compose.onAllNodesWithTag("account_delete_final_confirm").assertCountEquals(0)
     }
-    @Test fun `failure never claims a scheduled Spanish deletion`()=failure("es")
-    @Test fun `failure never claims a scheduled Portuguese deletion`()=failure("pt")
+    @Test fun failureNeverClaimsScheduledSpanishDeletion()=failure("es")
+    @Test fun failureNeverClaimsScheduledPortugueseDeletion()=failure("pt")
     private fun failure(lang: String) {
         language(lang);var calls=0;var delivered=false
         content { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;error("rejected")},onScheduled={delivered=true}) } }
