@@ -7,6 +7,7 @@ Continúa la revisión 1.1.10.214 del PR 59. Los consejos core, runas, hechizos 
 ## Correcciones adicionales
 
 - Los core muestran siempre su momento de compra específico; la recomendación situacional ya no reemplaza ese texto.
+- Las recomendaciones de relleno se filtran antes de traducir. La prueba de interfaz comprueba que los core tampoco muestren amenazas genéricas en portugués.
 - Las notas guardadas corrigen Leyenda: Velocidad (aceleración de habilidades), Fortalecimiento (tres ataques y amplificación), Fuente de Vida (ataque/habilidad junto al aliado herido) y Orbe Anulador (escudo al caer de vida). Botas de mercurio y Trituradoras encadenadas dejan de usar una política de movilidad genérica. Se regeneran los textos y sus traducciones sin cambiar las elecciones de las builds.
 - El consejo de un hechizo describe su efecto en vez de presentar únicamente el encabezado de mapas bajo «Qué aporta el hechizo».
 - Las botas se resuelven por su identidad exacta antes de recurrir al catálogo general. El consejo sigue la selección real de nivel 2 y la evolución correspondiente de nivel 3, incluyendo al volver a la bota principal.

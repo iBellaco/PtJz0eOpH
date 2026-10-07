@@ -39,10 +39,11 @@ object BuildElementAdvice {
         val lang = AppLanguage.normalize(language)
         val pt = lang == "pt"
         val catalog = WildRiftItemsData.getItemByName(itemName)
-        val strategic = SituationalItemAdvisor.getAdvice(itemName, lang)
-        val localizedName = catalog?.getLocalizedName(lang) ?: strategic.name
+        // Filter placeholder advice in its source language before translating it.
+        val strategic = SituationalItemAdvisor.getAdvice(itemName, "es")
+        val localizedName = catalog?.getLocalizedName(lang) ?: trStr(lang, strategic.name)
         val catalogTip = catalog?.getLocalizedCoachTip(lang).orEmpty()
-        val purpose = strategic.purpose.takeIf { it.isNotBlank() }
+        val purpose = strategic.purpose.takeIf { it.isNotBlank() }?.let { trStr(lang, it) }
             ?: catalog?.getLocalizedPassive(lang).orEmpty().substringBefore("\n")
         val against = strategic.bestAgainst
             .filterNot {
@@ -50,10 +51,11 @@ object BuildElementAdvice {
                     it.contains("Amenazas prioritarias", ignoreCase = true)
             }
             .take(8)
+            .map { trStr(lang, it) }
             .joinToString(", ")
         val trigger = strategic.recommendationTip.takeIf {
             it.isNotBlank() && !it.contains("según el estado de la partida", ignoreCase = true)
-        }.orEmpty()
+        }.orEmpty().let { trStr(lang, it) }
         val coreHint = coreItemMatchupHint(itemName, pt)
 
         return if (situational) {

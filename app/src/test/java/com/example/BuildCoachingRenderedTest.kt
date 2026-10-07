@@ -85,6 +85,14 @@ class BuildCoachingRenderedTest {
         compose.onAllNodesWithText("ESTADÍSTICA & IA").assertCountEquals(0)
         val out=File("build/reports/portuguese-rendered").apply { mkdirs() }
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out,"build-coaching-overview-$language.png").path)
+        compose.onAllNodesWithTag("build_item_details").onFirst().performScrollTo().performClick()
+        compose.onNodeWithTag("build_element_advice_card").assertExists()
+        for (placeholder in listOf("Composiciones rivales especializadas", "Amenazas prioritarias de la partida",
+            "Composições adversárias especializadas", "Ameaças prioritárias do jogo")) {
+            compose.onAllNodesWithText(placeholder, substring = true).assertCountEquals(0)
+        }
+        compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out,"build-coaching-core-$language.png").path)
+        compose.onNodeWithText(if(language=="pt") "Fechar" else "Cerrar").performClick()
         compose.onAllNodesWithTag("build_rune_details").onFirst().performScrollTo().performClick()
         compose.onNodeWithTag("build_element_advice_card").assertExists()
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out,"build-coaching-rune-$language.png").path)
