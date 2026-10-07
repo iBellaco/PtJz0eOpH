@@ -4,11 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicReference
 import java.util.Locale
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -27,7 +28,15 @@ class DraftRivalNameInstalledTest {
         val scaled = Bitmap.createScaledBitmap(crop, crop.width * 3, crop.height * 3, true)
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         try {
-            val result = Tasks.await(recognizer.process(InputImage.fromBitmap(scaled, 0)), 45, TimeUnit.SECONDS)
+            val completed = CountDownLatch(1)
+            val reading = AtomicReference<com.google.mlkit.vision.text.Text?>()
+            val failure = AtomicReference<Exception?>()
+            recognizer.process(InputImage.fromBitmap(scaled, 0))
+                .addOnSuccessListener { reading.set(it); completed.countDown() }
+                .addOnFailureListener { failure.set(it); completed.countDown() }
+            assertTrue("Native OCR timed out", completed.await(45, TimeUnit.SECONDS))
+            failure.get()?.let { throw it }
+            val result = reading.get() ?: error("Native OCR returned no reading")
             // Exercise the bundled native reader directly. R8 can inline internal
             // app methods across the APK boundary; resolver identity is covered
             // separately by the real-catalog unit regressions.
