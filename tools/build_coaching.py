@@ -84,6 +84,8 @@ ITEM_POLICIES = {
 
 # Defensive and support purchases have explicit duties, not a universal damage paragraph.
 EXTRA_POLICIES = {
+ 'Botas de mercurio': ('Resistir daño mágico y reducir controles afectados por tenacidad; conserva tu salida frente a levantamientos que estas botas no acortan.', 'Resistir a dano mágico e reduzir controles afetados por tenacidade; preserve sua saída contra arremessos que estas botas não encurtam.'),
+ 'Trituradoras encadenadas': ('Entrar con el escudo mágico disponible y aprovechar la tenacidad contra el control reducible que acompaña la ráfaga.', 'Entrar com o escudo mágico disponível e aproveitar a tenacidade contra o controle reduzível que acompanha a rajada.'),
  'Botas blindadas': ('Aproximarte frente a ataques físicos conservando tu control para responder después.', 'Aproximar diante de ataques físicos preservando seu controle para responder depois.'),
  'Avance blindado': ('Sostener la movilidad necesaria para entrar y salir frente a la presión física.', 'Sustentar a mobilidade necessária para entrar e sair diante da pressão física.'),
  'Botas de maná': ('Mantener maná para la siguiente rotación sin gastar tu habilidad de protección para acercarte.', 'Manter mana para a próxima rotação sem gastar sua habilidade de proteção para aproximar.'),
@@ -92,7 +94,7 @@ EXTRA_POLICIES = {
  'Botas inmortales': ('Sostener tu presencia cerca del objetivo sin entregar la salida por perseguir un impacto adicional.', 'Sustentar sua presença perto do alvo sem entregar a saída para perseguir um acerto adicional.'),
  'Botas jonias de la lucidez': ('Preparar una segunda habilidad básica y un hechizo disponible para la siguiente disputa.', 'Preparar uma segunda habilidade básica e um feitiço disponível para a próxima disputa.'),
  'Botas quebrantarmaduras': ('Mantener alcance para aplicar tu daño físico sobre el rival que absorbe la primera rotación.', 'Manter alcance para aplicar seu dano físico no inimigo que absorve a primeira rotação.'),
- 'Grebas codiciosas': ('Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.', 'Recuperar vida com ataques seguros antes de disputar outra vez o alcance inimigo.'),
+ 'Grebas codiciosas': ('Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.', 'Recuperar vida com dano seguro de ataques e habilidades antes de disputar outra vez o alcance inimigo.'),
  'Grebas de berserker': ('Mantener varios ataques durante la ventana de tu habilidad sin cruzar la protección aliada.', 'Manter vários ataques na janela da habilidade sem atravessar a proteção aliada.'),
  'Grebas de metal': ('Conservar distancia de respuesta frente al daño físico que llega durante tu entrada.', 'Preservar distância de resposta diante do dano físico durante sua entrada.'),
  'Lucidez carmesí': ('Repetir tu habilidad decisiva sin consumir todos los recursos antes del segundo intercambio.', 'Repetir sua habilidade decisiva sem consumir todos os recursos antes da segunda troca.'),
@@ -136,8 +138,8 @@ RUNE_POLICIES = {
  'Cosecha Oscura': ('Reserva el impacto para un objetivo ya desgastado que puedas alcanzar sin sacrificar tu salida.', 'Reserve o acerto para um alvo já desgastado que consiga alcançar sem sacrificar a saída.'),
  'Demoler': ('Prepara la oleada y la carga junto a la torre antes de golpear; retírate si la respuesta rival llega antes del impacto.', 'Prepare a onda e a carga junto da torre antes de atacar; recue se a resposta inimiga chegar antes do acerto.'),
  'Electrocutar': ('Completa tres acciones válidas dentro del intercambio corto y sal antes de absorber la respuesta prolongada.', 'Complete três ações válidas na troca curta e saia antes de receber a resposta prolongada.'),
- 'Fortalecimiento': ('Sincroniza la defensa con el control que abre tu entrada y la respuesta que llega inmediatamente después.', 'Sincronize a defesa com o controle que abre sua entrada e a resposta imediatamente depois.'),
- 'Fuente de Vida': ('Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.', 'Marque com seu controle um inimigo que os aliados realmente consigam atacar durante a proteção.'),
+ 'Fortalecimiento': ('Conecta tres ataques sobre el mismo campeón y aprovecha la amplificación mientras puedas mantener el combate desde una posición segura.', 'Conecte três ataques no mesmo campeão e aproveite a amplificação enquanto conseguir manter o combate numa posição segura.'),
+ 'Fuente de Vida': ('Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.', 'Acerte o campeão com ataque ou habilidade quando o aliado ferido estiver perto; preserve a distância de proteção para ambos receberem a recuperação.'),
  'Fuerzas Renovadas': ('Permite que la recuperación termine entre hostigamientos antes de comprometer otra entrada.', 'Permita a recuperação terminar entre pressões antes de comprometer outra entrada.'),
  'Garras del Inmortal': ('Prepara el golpe mientras estás en combate y entra solo para un ataque seguro antes de volver a distancia.', 'Prepare o golpe enquanto está em combate e entre apenas para um ataque seguro antes de voltar à distância.'),
  'Golpe Bajo': ('Aplica tu control o ralentización antes del daño que lo aprovecha; no inviertas la secuencia por apresurarte.', 'Aplique seu controle ou lentidão antes do dano que aproveita; não inverta a sequência pela pressa.'),
@@ -148,8 +150,8 @@ RUNE_POLICIES = {
  'Irrupción de Fase': ('Completa la activación antes de usar la aceleración para retirarte o seguir el blanco; no abandones la salida por una cuarta acción.', 'Complete a ativação antes de usar a aceleração para recuar ou seguir o alvo; não abandone a saída por uma quarta ação.'),
  'Leyenda: Linaje': ('Recupera vida con ataques seguros entre disputas; no confíes en el robo de vida durante control enemigo.', 'Recupere vida com ataques seguros entre disputas; não confie no roubo de vida durante controle inimigo.'),
  'Leyenda: Presteza': ('El valor llega al sostener ataques durante tus ventanas de habilidad; mantén un blanco seguro antes de invertir en velocidad.', 'O valor chega ao sustentar ataques nas janelas de habilidade; mantenha um alvo seguro antes de investir em velocidade.'),
- 'Leyenda: Velocidad': ('La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.', 'A progressão serve aos ataques repetidos; converta cada eliminação segura em pressão sem romper sua cobertura.'),
- 'Orbe Anulador': ('Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.', 'Preserve sua saída para usar junto da proteção mágica; o escudo não nega o controle depois do dano.'),
+ 'Leyenda: Velocidad': ('Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.', 'Acumule aceleração de habilidades com tropas, monstros e eliminações; preserve mana ou energia para aproveitar uma segunda rotação de H1/H2/H3.'),
+ 'Orbe Anulador': ('Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.', 'Preserve sua saída para usar junto do escudo ao perder vida; o escudo não nega o controle depois do dano.'),
  'Pies Veloces': ('Prepara el ataque con vigor sobre un blanco seguro y usa la aceleración para salir del intercambio.', 'Prepare o ataque energizado num alvo seguro e use a aceleração para sair da troca.'),
  'Piroláser': ('Usa hostigamientos con una retirada preparada; no añadas un ataque inseguro solo para extender el daño.', 'Use pressão com uma retirada preparada; não acrescente um ataque inseguro apenas para estender o dano.'),
  'Primer Golpe': ('Inicia tú el daño desde un ángulo que el rival no pueda contestar primero; si ya te golpeó, espera otra ventana.', 'Inicie você o dano de um ângulo que o inimigo não consiga responder primeiro; se já atingiu você, espere outra janela.'),
@@ -188,9 +190,6 @@ def element(champion, lane_name, name, kind, pt=False, display_name=None):
         elif name in EXTRA_POLICIES:
             action = EXTRA_POLICIES[name][int(pt)]
             need = ('La tarea de esta compra es ' if not pt else 'A tarefa desta compra é ') + action[0].lower() + action[1:]
-        elif 'bota' in name.lower() or name in ('Grebas codiciosas', 'Avance blindado', 'Avance mercurial', 'Lucidez carmesí', 'Grebas berserker'):
-            need = 'La movilidad debe permitir ejecutar tu condición sin consumir la herramienta de salida.' if not pt else 'A mobilidade deve permitir executar sua condição sem consumir a ferramenta de saída.'
-            action = 'Elige la defensa por el daño o control que recibes al acercarte, y conserva tu recurso para volver a cobertura.' if not pt else 'Escolha a defesa pelo dano ou controle ao aproximar e preserve seu recurso para voltar à cobertura.'
         else:
             raise AssertionError(('Item lacks authored policy', name))
     else:

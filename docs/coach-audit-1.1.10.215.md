@@ -7,6 +7,7 @@ Continúa la revisión 1.1.10.214 del PR 59. Los consejos core, runas, hechizos 
 ## Correcciones adicionales
 
 - Los core muestran siempre su momento de compra específico; la recomendación situacional ya no reemplaza ese texto.
+- Las notas guardadas corrigen Leyenda: Velocidad (aceleración de habilidades), Fortalecimiento (tres ataques y amplificación), Fuente de Vida (ataque/habilidad junto al aliado herido) y Orbe Anulador (escudo al caer de vida). Botas de mercurio y Trituradoras encadenadas dejan de usar una política de movilidad genérica. Se regeneran los textos y sus traducciones sin cambiar las elecciones de las builds.
 - El consejo de un hechizo describe su efecto en vez de presentar únicamente el encabezado de mapas bajo «Qué aporta el hechizo».
 - Las botas se resuelven por su identidad exacta antes de recurrir al catálogo general. El consejo sigue la selección real de nivel 2 y la evolución correspondiente de nivel 3, incluyendo al volver a la bota principal.
 - Los mapas aparecen como etiquetas en cuadrícula, lista, detalle del catálogo y detalle de hechizos de una build. Se conserva el texto mecánico completo.
@@ -25,6 +26,10 @@ Continúa la revisión 1.1.10.214 del PR 59. Los consejos core, runas, hechizos 
 - `app/src/test/java/com/example/SpellCatalogFormattingTest.kt`
 - `app/src/test/java/com/example/SpellCatalogRenderedTest.kt`
 - `.github/workflows/build-apk.yml`
+- `tools/build_coaching.py`
+- `app/src/main/assets/champions_creator_builds.json`
+- `app/src/main/assets/translations_pt.json`
+- `app/src/test/java/com/example/BuildCoachingRegressionTest.kt`
 - Este reporte.
 
 ## Verificación
