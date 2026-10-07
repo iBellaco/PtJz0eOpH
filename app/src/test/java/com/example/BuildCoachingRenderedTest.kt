@@ -2,6 +2,7 @@ package com.example
 
 import android.app.Application
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
 import com.example.data.local.CustomChampionBuildsManager
@@ -85,8 +86,13 @@ class BuildCoachingRenderedTest {
         compose.onAllNodesWithText("ESTADÍSTICA & IA").assertCountEquals(0)
         val out=File("build/reports/portuguese-rendered").apply { mkdirs() }
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out,"build-coaching-overview-$language.png").path)
-        compose.onAllNodesWithTag("build_item_details").onFirst().performScrollTo().performClick()
+        // The core row scrolls horizontally inside the vertically scrolling sheet.
+        // Invoke the icon's click action without depending on its clipped center.
+        compose.onAllNodesWithTag("build_item_details").onFirst().performScrollTo()
+            .performSemanticsAction(SemanticsActions.OnClick) { it() }
         compose.onNodeWithTag("build_element_advice_card").assertExists()
+        compose.onNode(hasText(if(language=="pt") "Quando completar:" else "Cuándo completarlo:", substring = true)
+            and hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertExists()
         for (placeholder in listOf("Composiciones rivales especializadas", "Amenazas prioritarias de la partida",
             "Composições adversárias especializadas", "Ameaças prioritárias do jogo")) {
             compose.onAllNodesWithText(placeholder, substring = true).assertCountEquals(0)
