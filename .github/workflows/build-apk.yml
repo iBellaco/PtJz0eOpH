@@ -247,6 +247,8 @@ jobs:
         echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
         echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
     - name: Publish early review APK
+      id: early_review
+      continue-on-error: true
       if: github.event_name == 'pull_request' || github.ref == 'refs/heads/pruebas'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -259,6 +261,11 @@ jobs:
         gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease --target "${{ github.event.pull_request.head.sha || github.sha }}" --title "Coach: revisión temprana ${{ steps.app_version.outputs.version_name }}" --notes-file review-notes.md
         gh release upload "$TAG" "${{ steps.prepare_asset.outputs.asset_path }}" --clobber
         printf 'APK de revisión disponible. Las comprobaciones completas siguen ejecutándose.\n' >> "$GITHUB_STEP_SUMMARY"
+    - name: Report unavailable early review publication
+      if: steps.early_review.outcome == 'failure'
+      run: |
+        echo '::warning::La revisión temprana no pudo publicarse. Continúan las verificaciones obligatorias del APK firmado; la publicación final sigue siendo obligatoria.'
+        echo 'La revisión temprana no se publicó. Los artefactos firmados siguen disponibles para las pruebas del APK instalado.' >> "$GITHUB_STEP_SUMMARY"
   core-and-rendered:
     needs: find-validated-apk
     if: needs.find-validated-apk.outputs.run_id == ''

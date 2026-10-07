@@ -32,40 +32,55 @@ class AccountDeletionRenderedTest {
         val folder=File("build/reports/portuguese-rendered").apply { mkdirs() }
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(folder,name+".png").path)
     }
+    private fun frame() { compose.mainClock.advanceTimeBy(300); compose.waitForIdle() }
+    private fun click(tag: String) {
+        compose.onNodeWithTag(tag).performClick()
+        if (!compose.mainClock.autoAdvance) frame()
+    }
+    private fun openFinal() {
+        compose.onNodeWithTag("account_delete_first_confirm").performClick()
+        // Freeze the automatically focused password cursor and progress animations;
+        // every interaction still advances a frame and retains its behavioral assertions.
+        compose.mainClock.autoAdvance = false
+        frame()
+    }
+    private fun password(value: String) {
+        compose.onNodeWithTag("account_delete_password").performTextInput(value); frame()
+    }
     @Test fun `Spanish deletion needs both confirmations and password`()=confirmations("es")
     @Test fun `Portuguese deletion needs both confirmations and password`()=confirmations("pt")
     @Test fun `pending request prevents repeated submission and cancellation`() {
         language("es");var calls=0;var delivered=false
         val reply=kotlinx.coroutines.CompletableDeferred<Long>()
         compose.setContent { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;reply.await()},onScheduled={delivered=true}) } }
-        compose.onNodeWithTag("account_delete_open").performClick()
-        compose.onNodeWithTag("account_delete_first_confirm").performClick()
-        compose.onNodeWithTag("account_delete_password").performTextInput("test-password")
-        compose.onNodeWithTag("account_delete_final_confirm").performClick()
+        click("account_delete_open")
+        openFinal()
+        password("test-password")
+        click("account_delete_final_confirm")
         compose.onNodeWithTag("account_delete_final_confirm").assertIsNotEnabled()
         compose.onNodeWithTag("account_delete_second_cancel").assertIsNotEnabled()
         compose.onNodeWithTag("account_delete_password").assertIsNotEnabled()
         assertEquals(1,calls);assertFalse(delivered)
-        compose.runOnIdle { reply.complete(123456789L) };compose.waitForIdle()
+        compose.runOnIdle { reply.complete(123456789L) };frame()
         assertEquals(1,calls);assertTrue(delivered)
     }
     private fun confirmations(lang: String) {
         language(lang); var calls=0; var delivered:Long?=null
         compose.setContent { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;123456789L},onScheduled={delivered=it}) } }
-        compose.onNodeWithTag("account_delete_open").performClick()
+        click("account_delete_open")
         capture("account-delete-first-$lang")
-        compose.onNodeWithTag("account_delete_first_cancel").performClick()
+        click("account_delete_first_cancel")
         assertEquals(0,calls)
-        compose.onNodeWithTag("account_delete_open").performClick()
-        compose.onNodeWithTag("account_delete_first_confirm").performClick()
+        click("account_delete_open")
+        openFinal()
         compose.onNodeWithTag("account_delete_final_confirm").assertIsNotEnabled()
         capture("account-delete-final-$lang")
-        compose.onNodeWithTag("account_delete_second_cancel").performClick()
+        click("account_delete_second_cancel")
         assertEquals(0,calls); assertNull(delivered)
-        compose.onNodeWithTag("account_delete_open").performClick()
-        compose.onNodeWithTag("account_delete_first_confirm").performClick()
-        compose.onNodeWithTag("account_delete_password").performTextInput("test-password")
-        compose.onNodeWithTag("account_delete_final_confirm").performClick()
+        click("account_delete_open")
+        openFinal()
+        password("test-password")
+        click("account_delete_final_confirm")
         compose.waitForIdle()
         assertEquals(1,calls);assertEquals(123456789L,delivered ?: -1L)
         compose.onAllNodesWithTag("account_delete_final_confirm").assertCountEquals(0)
@@ -75,10 +90,10 @@ class AccountDeletionRenderedTest {
     private fun failure(lang: String) {
         language(lang);var calls=0;var delivered=false
         compose.setContent { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;error("rejected")},onScheduled={delivered=true}) } }
-        compose.onNodeWithTag("account_delete_open").performClick()
-        compose.onNodeWithTag("account_delete_first_confirm").performClick()
-        compose.onNodeWithTag("account_delete_password").performTextInput("wrong-password")
-        compose.onNodeWithTag("account_delete_final_confirm").performClick();compose.waitForIdle()
+        click("account_delete_open")
+        openFinal()
+        password("wrong-password")
+        click("account_delete_final_confirm");compose.waitForIdle()
         compose.onNodeWithTag("account_delete_error").assertIsDisplayed()
         compose.onNodeWithTag("account_delete_final_confirm").assertIsNotEnabled()
         assertEquals(1,calls);assertFalse(delivered)
