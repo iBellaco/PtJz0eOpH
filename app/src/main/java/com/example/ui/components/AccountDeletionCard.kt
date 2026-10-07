@@ -1,11 +1,18 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
@@ -28,10 +35,17 @@ fun AccountDeletionCard(
     var busy by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val warningTransition = rememberInfiniteTransition(label = "account_delete_warning")
+    val lightSurface = MaterialTheme.colorScheme.surface.luminance() > 0.5f
+    val warningColor by warningTransition.animateColor(
+        initialValue = if (lightSurface) Color(0xFFC62828) else Color(0xFFFF6B6B),
+        targetValue = if (lightSurface) Color(0xFF8E1A1A) else Color(0xFFFF9B9B),
+        animationSpec = infiniteRepeatable(tween(1800), RepeatMode.Reverse),
+        label = "account_delete_warning_color")
     fun dismiss() { if (!busy) { step = 0; password = ""; failed = false } }
     Column(Modifier.fillMaxWidth().testTag("account_deletion_card")) {
         Text(localizedString(R.string.account_delete_summary), style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface)
+            color = warningColor, modifier = Modifier.testTag("account_delete_warning"))
         Spacer(Modifier.height(8.dp))
         CoachOutlinedButton(onClick = { step = 1 },
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("account_delete_open")) {

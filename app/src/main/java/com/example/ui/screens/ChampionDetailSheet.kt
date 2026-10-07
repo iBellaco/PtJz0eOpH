@@ -9,6 +9,7 @@ import com.example.util.BuildChoiceRules
 
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import com.example.utils.parseHtmlColorToAnnotatedString
 import com.example.data.WildRiftItemsData
 import com.example.model.WildRiftItem
@@ -1520,323 +1521,17 @@ fun ChampionDetailSheet(
             val isUserPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
             val matchupUserRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
             val isPremium = isUserPremium || matchupUserRole == "admin"
-            val maxMatchupCount = BuildChoiceRules.matchupLimit(isPremium, isSignedIn)
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Fuerte Contra (Ventaja)
-                Card(
-                    modifier = Modifier.weight(1f).testTag("advantage_insight_card"),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, AllyBlue.copy(alpha = 0.5f))
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val advantageList = roleProfile.advantageAgainst.distinct().take(maxMatchupCount)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = com.example.util.tr("${tr("Ventaja")} (${advantageList.size})"),
-                                color = AllyBlue,
-                                fontSize = if (isCompact) 9.5.sp else 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            if (!isPremium) {
-                                Text(
-                                    text = "PRO 12",
-                                    color = HextechGold,
-                                    fontSize = 7.5.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        val advantageChunks = advantageList.chunked(if (isCompact) 1 else 2)
-                        if (advantageList.isEmpty()) {
-                            Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
-                        } else {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(5.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                advantageChunks.forEach { rowChampions ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceEvenly,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        for (col in 0 until (if (isCompact) 1 else 2)) {
-                                            val target = rowChampions.getOrNull(col)
-                                            if (target != null) {
-                                                val targetChamp = resolveTargetChampion(target)
-                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(target)
-                                                Box(
-                                                    modifier = Modifier.size(48.dp).testTag("build_matchup_name_advantage")
-                                                        .semantics { contentDescription = matchupName }
-                                                        .coachClickable {
-                                                            selectedMatchupName = matchupName
-                                                        },
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    if (targetChamp != null) {
-                                                        ChampionAvatar(
-                                                            champion = targetChamp,
-                                                            size = if (isCompact) 26.dp else 30.dp,
-                                                            showTierBadge = false,
-                                                            borderColor = AllyBlue
-                                                        )
-                                                    } else {
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .size(if (isCompact) 26.dp else 30.dp)
-                                                                .clip(CircleShape)
-                                                                .background(HextechDarkBg)
-                                                                .border(1.2.dp, AllyBlue, CircleShape),
-                                                            contentAlignment = Alignment.Center
-                                                        ) {
-                                                            Text(
-                                                                text = com.example.util.tr(target.take(2).uppercase()),
-                                                                color = TextPrimary,
-                                                                fontSize = 10.sp,
-                                                                fontWeight = FontWeight.Bold
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                Spacer(modifier = Modifier.size(48.dp))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Débil Contra (Debilidad)
-                Card(
-                    modifier = Modifier.weight(1f).testTag("weakness_insight_card"),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f))
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val counteredList = roleProfile.counteredBy.distinct().take(maxMatchupCount)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = com.example.util.tr("${tr("Débil")} (${counteredList.size})"),
-                                color = DangerRed,
-                                fontSize = if (isCompact) 9.5.sp else 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            if (!isPremium) {
-                                Text(
-                                    text = "PRO 12",
-                                    color = HextechGold,
-                                    fontSize = 7.5.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        val counteredChunks = counteredList.chunked(if (isCompact) 1 else 2)
-                        if (counteredList.isEmpty()) {
-                            Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
-                        } else {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(5.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                counteredChunks.forEach { rowChampions ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceEvenly,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        for (col in 0 until (if (isCompact) 1 else 2)) {
-                                            val counter = rowChampions.getOrNull(col)
-                                            if (counter != null) {
-                                                val targetChamp = resolveTargetChampion(counter)
-                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(counter)
-                                                Box(
-                                                    modifier = Modifier.size(48.dp).testTag("build_matchup_name_weakness")
-                                                        .semantics { contentDescription = matchupName }
-                                                        .coachClickable {
-                                                            selectedMatchupName = matchupName
-                                                        },
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    if (targetChamp != null) {
-                                                        ChampionAvatar(
-                                                            champion = targetChamp,
-                                                            size = if (isCompact) 26.dp else 30.dp,
-                                                            showTierBadge = false,
-                                                            borderColor = DangerRed
-                                                        )
-                                                    } else {
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .size(if (isCompact) 26.dp else 30.dp)
-                                                                .clip(CircleShape)
-                                                                .background(HextechDarkBg)
-                                                                .border(1.2.dp, DangerRed, CircleShape),
-                                                            contentAlignment = Alignment.Center
-                                                        ) {
-                                                            Text(
-                                                                text = com.example.util.tr(counter.take(2).uppercase()),
-                                                                color = TextPrimary,
-                                                                fontSize = 10.sp,
-                                                                fontWeight = FontWeight.Bold
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                Spacer(modifier = Modifier.size(48.dp))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Sinergias (Compañeros ideales)
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag("synergy_insight_card"),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = HextechSurface),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val rawSynergies = if (roleProfile.synergies.isNotEmpty()) {
-                            roleProfile.synergies
-                        } else if (champion.synergies.isNotEmpty()) {
-                            champion.synergies
-                        } else {
-                            synergyProfile.bestTeammates.map { it.championName }
-                        }
-                        val synergyList = rawSynergies.distinct().take(maxMatchupCount)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = com.example.util.tr("${tr("Sinergia")} (${synergyList.size})"),
-                                color = HextechGold,
-                                fontSize = if (isCompact) 9.5.sp else 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            if (!isPremium) {
-                                Text(
-                                    text = "PRO 12",
-                                    color = HextechGold,
-                                    fontSize = 7.5.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        val synergyChunks = synergyList.chunked(if (isCompact) 1 else 2)
-                        if (synergyList.isEmpty()) {
-                            Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
-                        } else {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(5.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                synergyChunks.forEach { rowChampions ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceEvenly,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        for (col in 0 until (if (isCompact) 1 else 2)) {
-                                            val partner = rowChampions.getOrNull(col)
-                                            if (partner != null) {
-                                                val targetChamp = resolveTargetChampion(partner)
-                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(partner)
-                                                Box(
-                                                    modifier = Modifier.size(48.dp).testTag("build_matchup_name_synergy")
-                                                        .semantics { contentDescription = matchupName }
-                                                        .coachClickable {
-                                                            selectedMatchupName = matchupName
-                                                        },
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    if (targetChamp != null) {
-                                                        ChampionAvatar(
-                                                            champion = targetChamp,
-                                                            size = if (isCompact) 26.dp else 30.dp,
-                                                            showTierBadge = false,
-                                                            borderColor = HextechGold
-                                                        )
-                                                    } else {
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .size(if (isCompact) 26.dp else 30.dp)
-                                                                .clip(CircleShape)
-                                                                .background(HextechDarkBg)
-                                                                .border(1.2.dp, HextechGold, CircleShape),
-                                                            contentAlignment = Alignment.Center
-                                                        ) {
-                                                            Text(
-                                                                text = com.example.util.tr(partner.take(2).uppercase()),
-                                                                color = TextPrimary,
-                                                                fontSize = 10.sp,
-                                                                fontWeight = FontWeight.Bold
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                Spacer(modifier = Modifier.size(48.dp))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            val rawSynergies = roleProfile.synergies.ifEmpty {
+                champion.synergies.ifEmpty { synergyProfile.bestTeammates.map { it.championName } }
+            }
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                BuildMatchupList("advantage", tr("Ventaja"), roleProfile.advantageAgainst,
+                    AllyBlue, isPremium, isSignedIn, isCompact, currentLang) { selectedMatchupName = it }
+                BuildMatchupList("weakness", tr("Débil"), roleProfile.counteredBy,
+                    DangerRed, isPremium, isSignedIn, isCompact, currentLang) { selectedMatchupName = it }
+                BuildMatchupList("synergy", tr("Sinergia"), rawSynergies,
+                    HextechGold, isPremium, isSignedIn, isCompact, currentLang) { selectedMatchupName = it }
             }
 
             if (!isSignedIn) {
@@ -1859,13 +1554,14 @@ fun ChampionDetailSheet(
                     properties = androidx.compose.ui.window.PopupProperties(focusable = true)
                 ) {
                     androidx.compose.material3.Surface(
+                        modifier = Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp).testTag("build_matchup_name_popup")
+                            .coachClickable { selectedMatchupName = null },
                         shape = RoundedCornerShape(12.dp), color = HextechSurface,
                         border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold)
                     ) {
                         Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(name, Modifier.testTag("build_matchup_visible_name"), color = TextPrimary,
                                 fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            TextButton(onClick = { selectedMatchupName = null }) { Text(tr("Cerrar")) }
                         }
                     }
                 }
@@ -2369,7 +2065,7 @@ fun AdaptiveDetailAlertDialog(
                         text = presentation.description,
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
-                    if (!com.example.util.BuildElementAdvice.isFlash(spell.name)) BuildElementCoachAdvice(selectedElementAdvice)
+                    if (!com.example.util.BuildElementAdvice.isSpellWithoutCoachAdvice(spell.name)) BuildElementCoachAdvice(selectedElementAdvice)
                 }
             },
             confirmButton = {
@@ -2380,6 +2076,56 @@ fun AdaptiveDetailAlertDialog(
         )
     }
 
+}
+
+@Composable
+private fun BuildMatchupList(
+    group: String,
+    title: String,
+    candidates: List<String>,
+    accent: Color,
+    premium: Boolean,
+    signedIn: Boolean,
+    compact: Boolean,
+    language: String,
+    onShowName: (String) -> Unit
+) {
+    val rows = BuildChoiceRules.matchupRows(candidates, premium, signedIn)
+    Card(
+        modifier = Modifier.fillMaxWidth().testTag("${group}_insight_card"),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = HextechSurface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.5f))
+    ) {
+        Column(Modifier.fillMaxWidth().padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("$title (${rows.sumOf { it.size }})", color = accent,
+                    fontWeight = FontWeight.Bold, fontSize = if (compact) 12.sp else 13.sp)
+                if (!premium) Text("PRO 12", color = HextechGold, fontSize = 10.sp)
+            }
+            rows.forEachIndexed { index, row ->
+                Row(Modifier.fillMaxWidth().testTag("build_matchup_${group}_row_$index"),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    row.forEach { target ->
+                        val champion = resolveTargetChampion(target)
+                        val name = champion?.getLocalizedName(language) ?: tr(target)
+                        Box(Modifier.weight(1f).heightIn(min = 48.dp)
+                            .testTag("build_matchup_name_$group")
+                            .semantics { contentDescription = name }
+                            .coachClickable { onShowName(name) },
+                            contentAlignment = Alignment.Center) {
+                            if (champion != null) ChampionAvatar(champion = champion,
+                                size = if (compact) 32.dp else 36.dp,
+                                showTierBadge = false, borderColor = accent)
+                            else Text(tr(target), color = TextPrimary, fontSize = 11.sp,
+                                textAlign = TextAlign.Center)
+                        }
+                    }
+                    repeat(3 - row.size) { Spacer(Modifier.weight(1f).height(48.dp)) }
+                }
+            }
+        }
+    }
 }
 
 private fun resolveTargetChampion(nameOrId: String): Champion? {
