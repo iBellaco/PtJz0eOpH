@@ -9,6 +9,7 @@ La captura presenta etiquetas antiguas Corki/Yunara junto a los nombres actuales
 - Lectura ampliada de la banda de nombre de cada slot rival, igual que en aliados. Los recortes pertenecen a una sola fila, excluyen la ventana y los textos de depuración; una lectura de nombres contradictorios no confirma un candidato dirigido.
 - Aplicación atómica de la lista rival por roles: elimina previews anteriores, evita duplicados y respeta elecciones manuales y la identidad del equipo aliado.
 - Los nueve picks previos proceden de una sola lectura compatible. Mezclar un preview anterior con su reemplazo ya no aumenta artificialmente el número de campeones.
+- El resolvedor de nombres deja de fabricar fichas con rol/estadísticas genéricas cuando no encuentra una entrada real. Sin identidad disponible, el resultado permanece pendiente.
 - El HUD recibe las decisiones confirmadas del visor incluso con el escaneo pausado. El escaneo dirigido usa la misma regla segura de aplicación del décimo pick: llenar una vacante, preservar los otros campeones y las selecciones manuales.
 - Los iconos de ventaja, debilidad y sinergia muestran el nombre localizado al tocarlos; no navegan a otra build. Los controles reservan 48 dp, con filas adaptadas al espacio compacto.
 - Las etiquetas de mapas se conservan únicamente dentro de la descripción del hechizo, fuera de la cuadrícula y la lista del catálogo. La cuadrícula recupera su altura fija y conserva el enfriamiento visible.
