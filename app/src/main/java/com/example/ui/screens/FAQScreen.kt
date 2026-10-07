@@ -86,7 +86,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Me pueden banear en Wild Rift por usar esta burbuja flotante?",
-                "No, no hay riesgo de ban. El asistente funciona como una capa de información sobre la pantalla (overlay) y no modifica, inyecta código, ni interactúa directamente con los archivos o la memoria de Wild Rift. Es 100% legal y seguro según las políticas de Riot."
+                "Coach no puede garantizar ausencia de sanciones ni afirmar aprobación de Riot. El asistente analiza la pantalla autorizada durante la selección; esa forma de funcionamiento no sustituye el cumplimiento de las políticas del juego. Consulta los requisitos oficiales y usa únicamente funciones autorizadas."
             ),
             Pair(
                 "¿Puedo cambiar el tamaño de la burbuja flotante?",

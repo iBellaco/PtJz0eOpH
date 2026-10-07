@@ -21,6 +21,7 @@ data class AuthState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null,
+    val deletionCancelled: Boolean = false,
     val authScreen: AuthScreenType = AuthScreenType.LOGIN
 )
 
@@ -72,7 +73,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun resetSuccessState() {
-        _uiState.update { it.copy(isSuccess = false, error = null) }
+        _uiState.update { it.copy(isSuccess = false, error = null, deletionCancelled = false) }
     }
 
     fun navigateTo(screen: AuthScreenType) {
@@ -105,6 +106,12 @@ class AuthViewModel : ViewModel() {
                 val result = auth.signInWithEmailAndPassword(_email.value.trim(), _password.value).await()
                 val firebaseUser = result.user
                 if (firebaseUser != null) {
+                    val cancelled = try { com.example.data.AccountDeletionRepository.cancelAfterSignIn() }
+                    catch (failure: Exception) {
+                        if (failure is kotlinx.coroutines.CancellationException) throw failure
+                        throw IllegalStateException("No se pudo comprobar la solicitud de eliminación. Revisa tu conexión o contacta a soporte.")
+                    }
+                    _uiState.update { it.copy(deletionCancelled = cancelled) }
                     val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
                     val userDocRef = db.collection("users").document(firebaseUser.uid)
                     val snap = userDocRef.get().await()
@@ -127,6 +134,8 @@ class AuthViewModel : ViewModel() {
                 }
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
+                // Do not leave an authenticated session when a deletion cannot be cancelled.
+                auth.signOut()
                 val errorMsg = e.localizedMessage ?: "Error de autenticación. Verifica tus credenciales."
                 _uiState.update { it.copy(isLoading = false, error = errorMsg) }
             }

@@ -25,6 +25,9 @@ jobs:
         working-directory: tests/firestore
         run: npm ci --no-audit --no-fund
       - name: Test permissions and concurrent publications
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: server/account-deletion
+      - name: Test permissions and account deletion integration
         working-directory: tests/firestore
         run: npm test
 

@@ -33,6 +33,8 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.*
 import com.example.util.tr
 import com.example.util.localizedString
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 
 enum class LegalTab(@androidx.annotation.StringRes val titleRes: Int) {
     PRIVACY(R.string.legal_privacy),
@@ -264,6 +266,23 @@ private fun PrivacyPolicyContent() {
         title = localizedString(R.string.legal_5_seguridad_y_cifrado_de_conexion),
         body = localizedString(R.string.legal_todas_las_comunicaciones_entre_la_aplicacion_y_los_servicios_de_b)
     )
+    PolicySection(title = localizedString(R.string.legal_deletion_title), body = localizedString(R.string.legal_deletion_body))
+    PolicySection(title = localizedString(R.string.legal_contact_title), body = localizedString(R.string.legal_contact_body))
+    val context = LocalContext.current
+    val language = com.example.util.AppLanguage.current.value
+    OutlinedButton(onClick = {
+        val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO,
+            android.net.Uri.parse("mailto:DevWildRiftCoach@gmail.com"))
+        if (intent.resolveActivity(context.packageManager) != null) context.startActivity(intent)
+    }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("legal_privacy_contact")) {
+        Text(localizedString(R.string.legal_contact_action))
+    }
+    OutlinedButton(onClick = {
+        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW,
+            android.net.Uri.parse("https://coach-legal-wild-rift-drafting.web.app/" + if (language == "pt") "pt/" else "")))
+    }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("legal_public_policy")) {
+        Text(localizedString(R.string.legal_web_action))
+    }
 }
 
 @Composable

@@ -1,4 +1,46 @@
 {
-  "firestore": { "rules": "firestore.rules" },
-  "emulators": { "firestore": { "port": 8088 }, "ui": { "enabled": false }, "singleProjectMode": true }
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8088
+    },
+    "auth": {
+      "port": 9099
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  },
+  "hosting": {
+    "site": "coach-legal-wild-rift-drafting",
+    "public": "legal-site",
+    "cleanUrls": true,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'none'; style-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+          }
+        ]
+      }
+    ]
+  }
 }

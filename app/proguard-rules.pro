@@ -27,7 +27,6 @@
 # Keep data models used for serialization (Kotlinx Serialization, Firebase, Room, Json)
 -keep class com.example.model.** { *; }
 -keep class com.example.data.remote.model.** { *; }
--keep class com.example.data.supabase.model.** { *; }
 -keep class com.example.data.local.entity.** { *; }
 
 # Mantener serializadores generados por kotlinx.serialization

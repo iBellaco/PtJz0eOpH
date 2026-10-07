@@ -1,7 +1,14 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
+    function deletionBlocksSession() {
+      return exists(/databases/$(database)/documents/account_deletions/$(request.auth.uid))
+        && get(/databases/$(database)/documents/account_deletions/$(request.auth.uid)).data.status in ['PROCESSING','DATA_PURGED','COMPLETED'];
+    }
+    function signedIn() { return request.auth != null && !deletionBlocksSession(); }
+    function recentSignIn() {
+      return request.auth != null && request.auth.token.get('auth_time', 0) * 1000 > request.time.toMillis() - 600000;
+    }
     function account() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function isAdmin() {
       let acc = account();
@@ -142,6 +149,28 @@ service cloud.firestore {
            && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.amount == cost
            && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.fee == fee
            && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.totalDeducted == op.totalCost));
+    }
+    match /account_deletions/{userId} {
+      function owner() { return request.auth != null && request.auth.uid == userId; }
+      function newRequest() {
+        let availability = get(/databases/$(database)/documents/system_config/account_deletion_service).data;
+        return owner() && recentSignIn() && request.auth.token.get('email', '') != 'coach.guest.reader@gmail.com'
+          && request.auth.token.get('firebase', {}).get('sign_in_provider', '') == 'password'
+          && availability.enabled == true && availability.graceDays == 60
+          && availability.checkedAt > request.time - duration.value(36, 'h')
+          && request.resource.data.keys().hasOnly(['userId','requestId','status','graceDays','requestedAt'])
+          && request.resource.data.userId == userId && request.resource.data.status == 'PENDING'
+          && request.resource.data.requestId is string && request.resource.data.requestId.size() == 36
+          && request.resource.data.graceDays == 60 && request.resource.data.requestedAt == request.time;
+      }
+      allow read: if owner();
+      allow create: if newRequest();
+      allow update: if (resource.data.status == 'CANCELLED' && newRequest()) ||
+        (owner() && recentSignIn() && resource.data.status == 'PENDING'
+          && request.time < resource.data.requestedAt + duration.value(60, 'd')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','cancelledAt'])
+          && request.resource.data.status == 'CANCELLED' && request.resource.data.cancelledAt == request.time);
+      allow delete: if false;
     }
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdmin());

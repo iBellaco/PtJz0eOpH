@@ -1,0 +1,22 @@
+<resources>
+    <string name="account_delete_title">Excluir minha conta</string>
+    <string name="account_delete_summary">Solicite a exclusão da sua conta do Coach. Você terá 60 dias para recuperá-la entrando novamente.</string>
+    <string name="account_delete_first_title">Primeira confirmação</string>
+    <string name="account_delete_first_body">Sua conta e os dados associados na nuvem serão excluídos, incluindo perfil, mensagens e registros da conta. O processo definitivo começará após 60 dias. Se você entrar novamente antes dessa data, a solicitação será cancelada. Isso não exclui sua conta da Riot.</string>
+    <string name="account_delete_second_title">Confirmação final</string>
+    <string name="account_delete_second_body">Conta do Coach: %1$s. Digite sua senha e confirme a solicitação. Em seguida, a sessão será encerrada. Não entre novamente durante os 60 dias se desejar continuar com a exclusão.</string>
+    <string name="account_delete_password">Senha do Coach</string>
+    <string name="account_delete_submit">Solicitar exclusão</string>
+    <string name="account_delete_error">Não foi possível confirmar a solicitação. Verifique sua senha e conexão. Se já solicitou a exclusão, fale com o suporte antes de repetir.</string>
+    <string name="account_delete_scheduled">Solicitação registrada. A exclusão definitiva começará a partir de %1$s. Entrar novamente antes dessa data cancelará a solicitação.</string>
+    <string name="account_delete_cancelled">A solicitação de exclusão está cancelada. Sua conta permanece ativa.</string>
+    <string name="legal_deletion_title">6. Exclusão da conta e retenção</string>
+    <string name="legal_deletion_body">Em Usuário → Excluir minha conta, você pode solicitar a exclusão com duas confirmações e sua senha do Coach. O período de recuperação é de 60 dias desde a data registrada pelo serviço. A sessão será encerrada; entrar novamente durante esse período cancela a solicitação. Após o prazo, a exclusão é processada automaticamente e pode exigir novas tentativas se houver uma interrupção do serviço. A conta e os dados associados na nuvem são excluídos. Um registro mínimo de segurança é mantido temporariamente por 24 horas após a exclusão para impedir a reutilização de sessões antigas; sua limpeza é verificada periodicamente. Arquivos exportados, cópias compartilhadas por você e dados locais em outros dispositivos não são apagados remotamente.</string>
+    <string name="legal_contact_title">Contato de privacidade</string>
+    <string name="legal_contact_body">Coach: DevWildRiftCoach@gmail.com. Você também pode solicitar a exclusão na página pública sem reinstalar o aplicativo. Informe o e-mail da sua conta; nunca envie senhas, códigos de acesso ou credenciais da Riot. Sua identidade será verificada antes de processar a solicitação.</string>
+    <string name="legal_contact_action">Escrever para privacidade</string>
+    <string name="legal_web_action">Privacidade e exclusão na web</string>
+    <string name="legal_capture_title">Captura de tela</string>
+    <string name="legal_capture_disclosure">O Coach acessa a tela que você autorizar para reconhecer a seleção de campeões enquanto o assistente estiver ativo. As imagens são processadas no dispositivo. Ao ativar o diagnóstico, recortes são salvos no cache até você apagá-los ou substituí-los; você pode compartilhá-los voluntariamente. A captura pode incluir informações visíveis de outros aplicativos se você autorizar a tela inteira. Você pode interrompê-la pelo assistente ou pelo Android.</string>
+    <string name="legal_capture_continue">Continuar para a permissão do Android</string>
+</resources>

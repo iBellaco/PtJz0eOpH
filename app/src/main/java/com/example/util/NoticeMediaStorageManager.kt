@@ -340,6 +340,7 @@ object NoticeMediaStorageManager {
                 val filename = "notice_videos/${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(6)}.mp4"
                 val metadata = com.google.firebase.storage.StorageMetadata.Builder()
                     .setContentType("video/mp4")
+                    .setCustomMetadata("uploaderUid", com.example.util.AuthManager.getAuth()?.currentUser?.uid.orEmpty())
                     .setCustomMetadata("uploadedAt", System.currentTimeMillis().toString())
                     .build()
 
@@ -379,112 +380,6 @@ object NoticeMediaStorageManager {
     }
 
     /**
-     * Sube un video a Catbox.moe para obtener un enlace público directo permanente HTTPS (.mp4)
-     * compatible con reproducción instantánea en cualquier dispositivo.
-     */
-    suspend fun tryUploadToCatbox(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) {
-        withTimeoutOrNull(45000L) {
-            try {
-                val tempFile = File(context.cacheDir, "catbox_upload_${System.currentTimeMillis()}.mp4")
-                context.contentResolver.openInputStream(uri)?.use { input ->
-                    FileOutputStream(tempFile).use { output -> input.copyTo(output) }
-                }
-                if (!tempFile.exists() || tempFile.length() == 0L) return@withTimeoutOrNull null
-
-                val requestBody = okhttp3.MultipartBody.Builder()
-                    .setType(okhttp3.MultipartBody.FORM)
-                    .addFormDataPart("reqtype", "fileupload")
-                    .addFormDataPart(
-                        "fileToUpload",
-                        "video_${System.currentTimeMillis()}.mp4",
-                        okhttp3.RequestBody.create("video/mp4".toMediaTypeOrNull(), tempFile)
-                    )
-                    .build()
-
-                val request = Request.Builder()
-                    .url("https://catbox.moe/user/api.php")
-                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) CoachApp/1.0")
-                    .post(requestBody)
-                    .build()
-
-                val response = okHttpClient.newCall(request).execute()
-                val responseText = response.body?.string()?.trim() ?: ""
-                if (response.isSuccessful && responseText.startsWith("http")) {
-                    Log.d(TAG, "Video subido exitosamente a Catbox: $responseText")
-                    // Guardar en caché local
-                    try {
-                        val dir = File(context.cacheDir, VIDEO_CACHE_DIR)
-                        if (!dir.exists()) dir.mkdirs()
-                        val key = "vid_" + responseText.hashCode().toString().replace("-", "n") + ".mp4"
-                        tempFile.copyTo(File(dir, key), overwrite = true)
-                    } catch (_: Exception) {}
-                    try { tempFile.delete() } catch (_: Exception) {}
-                    return@withTimeoutOrNull responseText
-                }
-                try { tempFile.delete() } catch (_: Exception) {}
-                null
-            } catch (e: Exception) {
-                Log.w(TAG, "Error subiendo a Catbox: ${e.message}")
-                null
-            }
-        }
-    }
-
-    /**
-     * Sube un video a Tmpfiles API como alternativa en la nube directa.
-     */
-    suspend fun tryUploadToTmpfiles(context: Context, uri: Uri): String? = withContext(Dispatchers.IO) {
-        withTimeoutOrNull(30000L) {
-            try {
-                val tempFile = File(context.cacheDir, "tmpfiles_upload_${System.currentTimeMillis()}.mp4")
-                context.contentResolver.openInputStream(uri)?.use { input ->
-                    FileOutputStream(tempFile).use { output -> input.copyTo(output) }
-                }
-                if (!tempFile.exists() || tempFile.length() == 0L) return@withTimeoutOrNull null
-
-                val requestBody = okhttp3.MultipartBody.Builder()
-                    .setType(okhttp3.MultipartBody.FORM)
-                    .addFormDataPart(
-                        "input_file",
-                        "video_${System.currentTimeMillis()}.mp4",
-                        okhttp3.RequestBody.create("video/mp4".toMediaTypeOrNull(), tempFile)
-                    )
-                    .build()
-
-                val request = Request.Builder()
-                    .url("https://tmpfiles.org/api/v1/upload")
-                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) CoachApp/1.0")
-                    .post(requestBody)
-                    .build()
-
-                val response = okHttpClient.newCall(request).execute()
-                val responseText = response.body?.string()?.trim() ?: ""
-                if (response.isSuccessful && responseText.isNotBlank()) {
-                    val json = JSONObject(responseText)
-                    if (json.optString("status") == "success") {
-                        val originalUrl = json.getJSONObject("data").getString("url")
-                        val directUrl = originalUrl.replace("tmpfiles.org/", "tmpfiles.org/dl/")
-                        Log.d(TAG, "Video subido exitosamente a Tmpfiles: $directUrl")
-                        try {
-                            val dir = File(context.cacheDir, VIDEO_CACHE_DIR)
-                            if (!dir.exists()) dir.mkdirs()
-                            val key = "vid_" + directUrl.hashCode().toString().replace("-", "n") + ".mp4"
-                            tempFile.copyTo(File(dir, key), overwrite = true)
-                        } catch (_: Exception) {}
-                        try { tempFile.delete() } catch (_: Exception) {}
-                        return@withTimeoutOrNull directUrl
-                    }
-                }
-                try { tempFile.delete() } catch (_: Exception) {}
-                null
-            } catch (e: Exception) {
-                Log.w(TAG, "Error subiendo a Tmpfiles: ${e.message}")
-                null
-            }
-        }
-    }
-
-    /**
      * Convierte videos ultra-ligeros (< 100 KB) a Data URL Base64 para sincronización ligera.
      * Para videos mayores, se almacena en disco local permanente o en almacenamiento remoto
      * evitando saturar el límite de tamaño de documento de 1MB.
@@ -509,8 +404,6 @@ object NoticeMediaStorageManager {
      * Guarda el video de forma blindada:
      * 1. Almacena copia permanente en disco local para reproducción instantánea (0ms).
      * 2. Intenta subirlo a Firebase Storage con metadatos video/mp4 (prioritario para sincronización global).
-     * 3. Si no está disponible, intenta Catbox Cloud (enlace HTTPS mp4 público permanente multidispositivo).
-     * 4. Si no está disponible, intenta Tmpfiles Cloud.
      * 5. Si es ligero (< 500KB), genera Data URL Base64 para que se replique en Firestore en todos los dispositivos.
      * 6. Si todo lo anterior falla, retorna la ruta local permanente file://.
      */
@@ -522,18 +415,6 @@ object NoticeMediaStorageManager {
         val cloudUrl = tryUploadVideoToCloud(context, uri)
         if (!cloudUrl.isNullOrBlank()) {
             return@withContext cloudUrl
-        }
-
-        // 3. Intentar subir a Catbox Cloud (enlace HTTPS mp4 público permanente multidispositivo)
-        val catboxUrl = tryUploadToCatbox(context, uri)
-        if (!catboxUrl.isNullOrBlank()) {
-            return@withContext catboxUrl
-        }
-
-        // 4. Intentar subir a Tmpfiles Cloud
-        val tmpfilesUrl = tryUploadToTmpfiles(context, uri)
-        if (!tmpfilesUrl.isNullOrBlank()) {
-            return@withContext tmpfilesUrl
         }
 
         // 5. Si es video compacto (< 500KB), generar Data URL Base64 para sincronización instantánea en la nube
