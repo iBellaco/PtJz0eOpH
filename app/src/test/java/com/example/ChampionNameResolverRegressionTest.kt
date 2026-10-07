@@ -37,6 +37,19 @@ class ChampionNameResolverRegressionTest {
             assertEquals("vi", ChampionNameResolver.findChampionInText(name, WildRiftRepository.champions)?.id)
     }
 
+    @Test fun missingCatalogEntriesNeverCreateInventedChampionData() {
+        val catalog = WildRiftRepository.champions.toList()
+        WildRiftRepository.champions.clear()
+        try {
+            for (text in listOf("YUNARA", "VI", "V1", "MILIO", "Cho'Gath")) {
+                assertNull("No real catalog entry available for $text",
+                    ChampionNameResolver.findChampionInText(text, emptyList()))
+            }
+        } finally {
+            WildRiftRepository.champions.addAll(catalog)
+        }
+    }
+
     @Test fun all142DisplayNamesResolveToTheRealCatalogEntryAndPortrait() {
         val catalog = WildRiftRepository.champions.toList()
         assertEquals(142, catalog.size)

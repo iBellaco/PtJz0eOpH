@@ -103,6 +103,8 @@ import com.example.ui.theme.TierSPlusColor
 import com.example.util.ChampionRoleAdapter
 import com.example.util.CoachingGenerator
 import com.example.util.tr
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -135,6 +137,7 @@ fun ChampionDetailSheet(
         }
     }
 
+    var selectedMatchupName by remember(champion.id) { mutableStateOf<String?>(null) }
     var selectedSituationalItem by remember { mutableStateOf<String?>(null) }
     var selectedElementAdvice by remember { mutableStateOf("") }
     var buildAdvice by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -1560,7 +1563,7 @@ fun ChampionDetailSheet(
                             }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
-                        val advantageChunks = advantageList.chunked(3)
+                        val advantageChunks = advantageList.chunked(if (isCompact) 1 else 2)
                         if (advantageList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
@@ -1575,14 +1578,18 @@ fun ChampionDetailSheet(
                                         horizontalArrangement = Arrangement.SpaceEvenly,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        for (col in 0 until 3) {
+                                        for (col in 0 until (if (isCompact) 1 else 2)) {
                                             val target = rowChampions.getOrNull(col)
                                             if (target != null) {
                                                 val targetChamp = resolveTargetChampion(target)
+                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(target)
                                                 Box(
-                                                    modifier = Modifier.coachClickable {
-                                                        targetChamp?.let(onChampionSelected)
-                                                    }
+                                                    modifier = Modifier.size(48.dp).testTag("build_matchup_name_advantage")
+                                                        .semantics { contentDescription = matchupName }
+                                                        .coachClickable {
+                                                            selectedMatchupName = matchupName
+                                                        },
+                                                    contentAlignment = Alignment.Center
                                                 ) {
                                                     if (targetChamp != null) {
                                                         ChampionAvatar(
@@ -1610,7 +1617,7 @@ fun ChampionDetailSheet(
                                                     }
                                                 }
                                             } else {
-                                                Spacer(modifier = Modifier.size(if (isCompact) 26.dp else 30.dp))
+                                                Spacer(modifier = Modifier.size(48.dp))
                                             }
                                         }
                                     }
@@ -1657,7 +1664,7 @@ fun ChampionDetailSheet(
                             }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
-                        val counteredChunks = counteredList.chunked(3)
+                        val counteredChunks = counteredList.chunked(if (isCompact) 1 else 2)
                         if (counteredList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
@@ -1672,14 +1679,18 @@ fun ChampionDetailSheet(
                                         horizontalArrangement = Arrangement.SpaceEvenly,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        for (col in 0 until 3) {
+                                        for (col in 0 until (if (isCompact) 1 else 2)) {
                                             val counter = rowChampions.getOrNull(col)
                                             if (counter != null) {
                                                 val targetChamp = resolveTargetChampion(counter)
+                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(counter)
                                                 Box(
-                                                    modifier = Modifier.coachClickable {
-                                                        targetChamp?.let(onChampionSelected)
-                                                    }
+                                                    modifier = Modifier.size(48.dp).testTag("build_matchup_name_weakness")
+                                                        .semantics { contentDescription = matchupName }
+                                                        .coachClickable {
+                                                            selectedMatchupName = matchupName
+                                                        },
+                                                    contentAlignment = Alignment.Center
                                                 ) {
                                                     if (targetChamp != null) {
                                                         ChampionAvatar(
@@ -1707,7 +1718,7 @@ fun ChampionDetailSheet(
                                                     }
                                                 }
                                             } else {
-                                                Spacer(modifier = Modifier.size(if (isCompact) 26.dp else 30.dp))
+                                                Spacer(modifier = Modifier.size(48.dp))
                                             }
                                         }
                                     }
@@ -1763,7 +1774,7 @@ fun ChampionDetailSheet(
                             }
                         }
                         Spacer(modifier = Modifier.height(6.dp))
-                        val synergyChunks = synergyList.chunked(3)
+                        val synergyChunks = synergyList.chunked(if (isCompact) 1 else 2)
                         if (synergyList.isEmpty()) {
                             Text(com.example.util.tr("—"), color = TextMuted, fontSize = 11.sp)
                         } else {
@@ -1778,14 +1789,18 @@ fun ChampionDetailSheet(
                                         horizontalArrangement = Arrangement.SpaceEvenly,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        for (col in 0 until 3) {
+                                        for (col in 0 until (if (isCompact) 1 else 2)) {
                                             val partner = rowChampions.getOrNull(col)
                                             if (partner != null) {
                                                 val targetChamp = resolveTargetChampion(partner)
+                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(partner)
                                                 Box(
-                                                    modifier = Modifier.coachClickable {
-                                                        targetChamp?.let(onChampionSelected)
-                                                    }
+                                                    modifier = Modifier.size(48.dp).testTag("build_matchup_name_synergy")
+                                                        .semantics { contentDescription = matchupName }
+                                                        .coachClickable {
+                                                            selectedMatchupName = matchupName
+                                                        },
+                                                    contentAlignment = Alignment.Center
                                                 ) {
                                                     if (targetChamp != null) {
                                                         ChampionAvatar(
@@ -1813,7 +1828,7 @@ fun ChampionDetailSheet(
                                                     }
                                                 }
                                             } else {
-                                                Spacer(modifier = Modifier.size(if (isCompact) 26.dp else 30.dp))
+                                                Spacer(modifier = Modifier.size(48.dp))
                                             }
                                         }
                                     }
@@ -1829,6 +1844,31 @@ fun ChampionDetailSheet(
                 Text(com.example.util.localizedString(com.example.R.string.matchup_sign_in_hint),
                     color = TextMuted, fontSize = 11.sp,
                     modifier = Modifier.fillMaxWidth().testTag("matchup_sign_in_hint"))
+            }
+
+            selectedMatchupName?.let { name ->
+                androidx.compose.ui.window.Popup(
+                    popupPositionProvider = object : androidx.compose.ui.window.PopupPositionProvider {
+                        override fun calculatePosition(anchorBounds: androidx.compose.ui.unit.IntRect,
+                            windowSize: androidx.compose.ui.unit.IntSize, layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+                            popupContentSize: androidx.compose.ui.unit.IntSize) = androidx.compose.ui.unit.IntOffset(
+                                (windowSize.width - popupContentSize.width) / 2,
+                                (windowSize.height - popupContentSize.height) / 2)
+                    },
+                    onDismissRequest = { selectedMatchupName = null },
+                    properties = androidx.compose.ui.window.PopupProperties(focusable = true)
+                ) {
+                    androidx.compose.material3.Surface(
+                        shape = RoundedCornerShape(12.dp), color = HextechSurface,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold)
+                    ) {
+                        Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(name, Modifier.testTag("build_matchup_visible_name"), color = TextPrimary,
+                                fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            TextButton(onClick = { selectedMatchupName = null }) { Text(tr("Cerrar")) }
+                        }
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -2086,8 +2126,6 @@ fun AdaptiveDetailAlertDialog(
     }
 
 
-
-    // Matchup cards navigate directly to the selected champion build; no coaching popup.
 
     itemForDetail?.let { item ->
         val itemDetailCard = @Composable {

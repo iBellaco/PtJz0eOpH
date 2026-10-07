@@ -207,6 +207,7 @@ object ChampionNameResolver {
         "yone" to "yone",
         "yorick" to "yorick",
         "yuumi" to "yuumi",
+        "yunara" to "yunara",
         "zac" to "zac",
         "zed" to "zed",
         "zeri" to "zeri",
@@ -275,7 +276,6 @@ object ChampionNameResolver {
         if (compact == "vl" || compact == "v1" || compactStripped == "vl" || compactStripped == "v1") {
             val vi = safeChamps.find { it.id.equals("vi", ignoreCase = true) }
                 ?: WildRiftRepository.getChampionById("vi")
-                ?: Champion(id = "vi", name = "Vi", primaryRole = LaneRole.JUNGLE, tier = "A", winrate = 50.0, pickRate = 5.0, banRate = 1.0, damageType = com.example.model.DamageType.PHYSICAL, summary = "Vi", advantageAgainst = emptyList(), counteredBy = emptyList(), synergies = emptyList(), tacticalAdvice = "", recommendedRunes = "", isFrontline = false, isRanged = false, winrateDelta = 0.0, pickRateDelta = 0.0, banRateDelta = 0.0)
             return vi
         }
 
@@ -285,7 +285,6 @@ object ChampionNameResolver {
                 KNOWN_CHAMPIONS_MAP[c]?.let { id ->
                     val found = safeChamps.find { it.id.equals(id, ignoreCase = true) }
                         ?: WildRiftRepository.getChampionById(id)
-                        ?: Champion(id = id, name = id.replaceFirstChar { it.uppercase() }, primaryRole = LaneRole.MID, tier = "A", winrate = 50.0, pickRate = 5.0, banRate = 1.0, damageType = com.example.model.DamageType.PHYSICAL, summary = id, advantageAgainst = emptyList(), counteredBy = emptyList(), synergies = emptyList(), tacticalAdvice = "", recommendedRunes = "", isFrontline = false, isRanged = false, winrateDelta = 0.0, pickRateDelta = 0.0, banRateDelta = 0.0)
                     return found
                 }
             }

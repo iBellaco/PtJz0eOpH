@@ -6,6 +6,10 @@ import com.example.service.screen.ChampionNameResolver
 import com.example.service.screen.DraftPickTurn
 import com.example.service.screen.DraftVisionScanner
 import com.example.service.screen.LiteRTVisionClassifier
+import com.example.service.OverlayState
+import com.example.service.applyConfirmedLastPick
+import com.example.service.syncScannedEnemies
+import com.example.service.screen.DraftScanResult
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -219,6 +223,69 @@ class TenthPickRegressionTest {
         val turn = DraftPickTurn(10, false, 4)
         assertTrue(DraftVisionScanner.getConfirmedPicksExcept(turn, picks).isEmpty())
         assertTrue(DraftVisionScanner.getConfirmedPicksExcept(turn, picks + picks.first()).isEmpty())
+    }
+
+    @Test fun currentEnemyNamesReplaceOldPreviewsBeforeApplyingTheTenthPick() {
+        val roles = com.example.service.screen.AllyDraftReconciler.roles
+        val hud = OverlayState()
+        val allyIds = listOf("skarner", "pantheon", "brand", "jinx", "yuumi")
+        allyIds.forEachIndexed { i, id -> hud.allies[i] = Champion(id = id) }
+        // The old preview occupied a different role and must not survive the new scan.
+        listOf("milio", "darius", "mel", "corki", "yunara").forEachIndexed { i, id ->
+            hud.enemies[i] = Champion(id = id)
+        }
+        val current = mapOf(LaneRole.TOP to Champion(id = "darius"),
+            LaneRole.MID to Champion(id = "mel"), LaneRole.ADC to Champion(id = "caitlyn"),
+            LaneRole.SUPPORT to Champion(id = "milio"))
+        val scan = DraftScanResult(hud.allies.filterNotNull(), current.values.toList(),
+            enemiesByRole = current, isSuccessful = true, statusMessage = "",
+            lastPickChampion = vi, isLastPickConfirmed = true, tenthPickIsAlly = false)
+        hud.syncScannedEnemies(scan)
+        assertEquals(listOf("darius", null, "mel", "caitlyn", "milio"), hud.enemies.map { it?.id })
+        hud.applyConfirmedLastPick(scan)
+        assertEquals(listOf("darius", "vi", "mel", "caitlyn", "milio"), hud.enemies.map { it?.id })
+        assertEquals(allyIds, hud.allies.map { it?.id })
+        assertEquals(10, (hud.allies + hud.enemies).filterNotNull().map { it.id }.distinct().size)
+        assertEquals(100, hud.enemyConfidences[roles[1]])
+    }
+
+    @Test fun confirmedYunaraAppearsInEnemyHudAndManualSelectionsArePreserved() {
+        val hud = OverlayState()
+        val yunara = Champion(id = "yunara", name = "Yunara")
+        val locked = Champion(id = "ornn", name = "Ornn")
+        hud.enemies[0] = locked
+        hud.manualLockedEnemySlots[0] = true
+        val source = mapOf(LaneRole.TOP to Champion(id = "darius"), LaneRole.ADC to yunara,
+            LaneRole.SUPPORT to locked)
+        hud.syncScannedEnemies(DraftScanResult(emptyList(), source.values.toList(),
+            enemiesByRole = source, isSuccessful = true, statusMessage = ""))
+        assertEquals(yunara, hud.enemies[3])
+        assertEquals(locked, hud.enemies[0])
+        assertNull(hud.enemies[4])
+    }
+
+    @Test fun changedPreviewsCannotBeCountedAsAdditionalPreviousPicks() {
+        val allies = (0..4).map { Champion(id = "ally$it") }
+        val rivals = listOf("darius", "mel", "caitlyn", "milio").map { Champion(id = it) }
+        allies.forEachIndexed { i, c -> DraftVisionScanner.allySlotConfirmedChampions[i] = c }
+        rivals.forEachIndexed { i, c -> DraftVisionScanner.enemySlotConfirmedChampions[i] = c }
+        val oldHud = allies + listOf("darius", "mel", "corki", "yunara").map { Champion(id = it) }
+        val turn = DraftPickTurn(10, false, 4)
+        assertEquals((allies + rivals).map { it.id }.toSet(),
+            DraftVisionScanner.getConfirmedPicksExcept(turn, oldHud).map { it.id }.toSet())
+        DraftVisionScanner.allySlotConfirmedChampions[3] = null
+        assertEquals(8, DraftVisionScanner.getConfirmedPicksExcept(turn, oldHud).size)
+    }
+
+    @Test fun rivalNameBandStaysInsideTheCurrentRowForTheSuppliedCapture() {
+        val engine = com.example.service.screen.AdaptiveScreenLayoutEngine
+        val config = engine.computeAdaptiveConfig(1280, 579)
+        val milio = engine.calculateSlotNameRect(1280, 579, false, 3, config)
+        assertTrue(milio.contains(1170, 330)) // MILIO, in the game's name band.
+        assertFalse(milio.contains(1160, 307)) // Stale Yunara debug caption above it.
+        val caitlyn = engine.calculateSlotNameRect(1280, 579, false, 2, config)
+        assertTrue(caitlyn.contains(1160, 252))
+        assertFalse(caitlyn.contains(1170, 330))
     }
 
     @Test

@@ -14,6 +14,18 @@ import kotlin.math.min
  * - Tablets y Plegables 4:3 (1.333), 16:10 (1.600)
  */
 object AdaptiveScreenLayoutEngine {
+    /** The name band belongs to one row and stops before its portrait. */
+    fun calculateSlotNameRect(width: Int, height: Int, isAlly: Boolean, slot: Int,
+        config: VisionCalibrationConfig): Rect {
+        val center = height * (if (isAlly) config.allySlotYRatios else config.enemySlotYRatios)[slot]
+        val leftRatio = if (isAlly) config.allyAvatarCenterX + 0.035f else config.enemyOcrMinX
+        val rightRatio = if (isAlly) config.allyOcrMaxX else config.enemyAvatarCenterX - 0.025f
+        val left = (width * leftRatio).toInt().coerceIn(0, width - 1)
+        val right = (width * rightRatio).toInt().coerceIn(left + 1, width)
+        val top = (center - height * 0.05f).toInt().coerceIn(0, height - 1)
+        val bottom = (center + height * 0.05f).toInt().coerceIn(top + 1, height)
+        return Rect(left, top, right, bottom)
+    }
 
     // Relación de aspecto canónica de referencia para la UI de Wild Rift (16:9)
     private const val BASE_ASPECT_RATIO = 16f / 9f // ~1.7778f
