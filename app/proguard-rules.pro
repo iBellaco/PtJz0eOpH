@@ -144,4 +144,4 @@
 # Public entry points hosted by the installed deletion interaction tests.
 -keep class com.example.ui.components.AccountDeletionCardKt { public static void AccountDeletionCard(...); }
 -keep class com.example.util.DynamicTranslations { public *; }
--keep class androidx.activity.compose.ComponentActivityKt { public static void setContent(...); }
+-keep class androidx.activity.compose.ComponentActivityKt { public static void setContent*(...); }
