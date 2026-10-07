@@ -82,7 +82,7 @@ jobs:
         if: steps.connection.outputs.available == 'true'
         env:
           FIREBASE_TOKEN: ${{ steps.connection.outputs.method == 'token' && secrets.FIREBASE_TOKEN || '' }}
-        run: tests/firestore/node_modules/.bin/firebase deploy --only firestore:rules --project wild-rift-drafting --non-interactive
+        run: tests/firestore/node_modules/.bin/firebase deploy --only firestore:rules,storage --project wild-rift-drafting --non-interactive
 
   cleanup-history:
     if: always()

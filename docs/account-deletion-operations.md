@@ -23,7 +23,7 @@ node server/account-deletion/request-verified-email.mjs CORREO_DE_LA_CUENTA --ow
 
 ## Archivos antiguos y conservación
 
-Los nuevos videos subidos al almacenamiento controlado incluyen un identificador verificable de su titular. Se revisan también subidas sin un aviso activo. Un archivo con otro propietario se conserva. Si un archivo antiguo carece de propietario, el proceso queda pendiente de revisión: comprobar la titularidad antes de asignarla o retirar el recurso. Para antiguos archivos en servicios externos, solicitar retirada al proveedor y verificarla antes de cerrar la revisión. Nunca marcar como completado un borrado que no se ha verificado.
+Los nuevos videos subidos al almacenamiento controlado incluyen un identificador verificable de su titular. Se revisan también subidas sin un aviso activo. Un archivo con otro propietario se conserva. Si un archivo antiguo carece de propietario, el proceso queda pendiente de revisión: comprobar la titularidad antes de retirar el recurso. Para antiguos archivos en servicios externos, solicitar retirada al proveedor y verificarla antes de cerrar la revisión. Tras verificar la retirada, retirar las referencias afectadas y su registro privado de revisión para que el siguiente reintento compruebe el resultado. Nunca marcar como completado un borrado que no se ha verificado.
 
 El registro de revisión privada contiene únicamente los datos necesarios para resolver la solicitud. Tras la purga, el registro mínimo de seguridad permanece 24 horas para bloquear sesiones antiguas; la limpieza se comprueba periódicamente. Las exportaciones ya compartidas y las copias locales no se eliminan a distancia.
 

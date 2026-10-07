@@ -11,7 +11,7 @@ Actualización de privacidad, términos, contacto confirmado DevWildRiftCoach@gm
 - Aviso de captura antes del permiso de Android. Retirados permisos amplios de lectura de fotografías cuando ya se utiliza el selector.
 - Eliminación: fecha del servicio, dos confirmaciones, contraseña, cierre de sesión, cancelación por nuevo inicio de sesión durante 60 días y procesamiento programado independiente de la instalación.
 - Purga antes de borrar la identidad; bloqueo de sesiones antiguas; reintentos con puntos de progreso; conservación mínima de seguridad de 24 horas y limpieza periódica. No se borran datos de otra cuenta ni copias ya exportadas.
-- Retiradas subidas alternativas de nuevos videos a servicios externos sin mecanismo verificable de retirada. Las nuevas subidas controladas incorporan identificador de propietario. Los archivos antiguos ambiguos requieren revisión y el proceso no declara finalización falsa.
+- Retiradas subidas alternativas de nuevos videos a servicios externos sin mecanismo verificable de retirada. Las nuevas subidas controladas incorporan identificador y ruta de propietario inmutables, protegidos contra suplantación. Los archivos antiguos ambiguos requieren revisión y el proceso no declara finalización falsa.
 - Página legal pública en español y portugués y solicitud externa por correo sin reinstalar. Atención externa manual, con verificación de titular y consentimiento; el plazo inicia cuando se registra el pedido verificado.
 - README reescrito con repositorio, versiones, fuentes y límites reales. Limpieza de referencias antiguas en configuración, reglas de optimización e inventarios de traducción; conservadas las claves de firma.
 

@@ -83,7 +83,8 @@ export async function purgeAccountData(uid, email) {
     catch (error) { if (error.code === 404) continue; throw error; }
     const owner = metadata.metadata?.uploaderUid;
     // Legacy uploads have no verifiable owner. Do not erase another account's file.
-    if (!owner) throw new Error('Legacy media ownership requires verification before deletion');
+    if (!owner || item.bucket !== 'wild-rift-drafting.firebasestorage.app' || !item.path.startsWith(`notice_videos/${owner}/`))
+      throw new Error('Legacy media ownership requires verification before deletion');
     if (owner === uid) await file.delete({ignoreNotFound:true});
   }
   for (const name of ['support_reports', 'cash_redemptions', 'streamer_click_metrics', 'pending_sponsor_ads']) {

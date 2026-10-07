@@ -331,16 +331,15 @@ object NoticeMediaStorageManager {
                 }
 
                 val storages = listOfNotNull(
-                    try { FirebaseStorage.getInstance("gs://wild-rift-drafting.firebasestorage.app") } catch (_: Exception) { null },
-                    try { FirebaseStorage.getInstance() } catch (_: Exception) { null },
-                    try { FirebaseStorage.getInstance("gs://wild-rift-drafting.appspot.com") } catch (_: Exception) { null }
+                    try { FirebaseStorage.getInstance("gs://wild-rift-drafting.firebasestorage.app") } catch (_: Exception) { null }
                 )
 
                 var finalUrl: String? = null
-                val filename = "notice_videos/${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(6)}.mp4"
+                val ownerUid = com.example.util.AuthManager.getAuth()?.currentUser?.uid ?: return@withTimeoutOrNull null
+                val filename = "notice_videos/$ownerUid/${UUID.randomUUID()}.mp4"
                 val metadata = com.google.firebase.storage.StorageMetadata.Builder()
                     .setContentType("video/mp4")
-                    .setCustomMetadata("uploaderUid", com.example.util.AuthManager.getAuth()?.currentUser?.uid.orEmpty())
+                    .setCustomMetadata("uploaderUid", ownerUid)
                     .setCustomMetadata("uploadedAt", System.currentTimeMillis().toString())
                     .build()
 
@@ -351,7 +350,7 @@ object NoticeMediaStorageManager {
                         val downloadUrl = videoRef.downloadUrl.await().toString()
                         if (downloadUrl.isNotBlank()) {
                             finalUrl = downloadUrl
-                            Log.d(TAG, "Video subido exitosamente a Firebase Storage: $finalUrl")
+                            Log.d(TAG, "Video almacenado con propietario verificado")
                             break
                         }
                     } catch (e: Exception) {

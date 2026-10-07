@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /notice_videos/{userId}/{fileName} {
+      allow read: if request.auth != null;
+      // Immutable owner and path protect the deletion worker from forged ownership.
+      allow create: if request.auth != null && request.auth.uid == userId
+        && request.auth.token.email != 'coach.guest.reader@gmail.com'
+        && request.resource.metadata.uploaderUid == userId
+        && request.resource.contentType == 'video/mp4';
+      allow update, delete: if false;
+    }
+    match /notice_videos/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}
