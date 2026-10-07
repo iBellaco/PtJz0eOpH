@@ -3652,7 +3652,7 @@ internal fun SpellsTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(184.dp)
+                            .heightIn(min = 184.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .testTag("catalog_spell_${spell.id}")
                             .coachClickable { selectedSpell = spell },

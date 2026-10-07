@@ -44,6 +44,7 @@ class SpellCatalogRenderedTest {
         fun checkLabelsAndMechanics() {
             // Cards merge their accessible text; inspect the actual label child.
             compose.onNode(hasText(abyss) and hasAnyAncestor(hasTestTag("spell_map_labels")), useUnmergedTree = true).assertIsDisplayed()
+            compose.onNode(hasText("100s", substring = true) and hasAnyAncestor(hasTestTag("catalog_spell_barrier")), useUnmergedTree = true).assertIsDisplayed()
             compose.onAllNodesWithText("Mapas aplicables", substring = true).assertCountEquals(0)
             compose.onAllNodesWithText("Mapas aplicáveis", substring = true).assertCountEquals(0)
             compose.onAllNodesWithText("Howling Abyss", substring = true).assertCountEquals(0)

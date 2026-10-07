@@ -35,7 +35,7 @@ fun SpellMapLabels(labels: List<String>, modifier: Modifier = Modifier) {
                     .border(0.5.dp, HextechCyan.copy(alpha = 0.55f), RoundedCornerShape(6.dp))
                     .padding(horizontal = 6.dp, vertical = 3.dp)
             ) {
-                Text(label, color = HextechCyan, fontSize = 9.5.sp, fontWeight = FontWeight.SemiBold)
+                Text(label, color = HextechCyan, fontSize = 9.5.sp, lineHeight = 12.sp, fontWeight = FontWeight.SemiBold)
             }
         }
     }

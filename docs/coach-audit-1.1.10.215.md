@@ -11,6 +11,7 @@ Continúa la revisión 1.1.10.214 del PR 59. Los consejos core, runas, hechizos 
 - El consejo de un hechizo describe su efecto en vez de presentar únicamente el encabezado de mapas bajo «Qué aporta el hechizo».
 - Las botas se resuelven por su identidad exacta antes de recurrir al catálogo general. El consejo sigue la selección real de nivel 2 y la evolución correspondiente de nivel 3, incluyendo al volver a la bota principal.
 - Los mapas aparecen como etiquetas en cuadrícula, lista, detalle del catálogo y detalle de hechizos de una build. Se conserva el texto mecánico completo.
+- Las tarjetas de cuadrícula adaptan su altura a las etiquetas y el tamaño de texto. Se define la altura de línea de las etiquetas y se comprueba que el enfriamiento siga visible en ambas vistas.
 - El formato reconoce encabezados singulares y plurales en español y portugués, normaliza Abismo de los Lamentos/Abismo dos Lamentos/Howling Abyss y conserva mapas desconocidos.
 
 ## Archivos modificados
