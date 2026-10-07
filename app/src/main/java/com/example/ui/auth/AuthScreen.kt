@@ -142,6 +142,10 @@ fun AuthFlowContainer(
             onSuccess = {
                 currentUser = auth?.currentUser
                 com.example.util.SubscriptionManager.init(context)
+                if (uiState.deletionCancelled) Toast.makeText(context,
+                    context.createConfigurationContext(android.content.res.Configuration(context.resources.configuration).apply {
+                        setLocale(com.example.util.AppLanguage.locale(com.example.util.AppLanguage.current.value))
+                    }).getString(com.example.R.string.account_delete_cancelled), Toast.LENGTH_LONG).show()
                 viewModel.resetSuccessState()
                 onLoginSuccess?.invoke()
             },
@@ -1290,6 +1294,21 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
+
+            com.example.ui.components.AccountDeletionCard(
+                email = effectiveEmail,
+                submit = { com.example.data.AccountDeletionRepository.request(it) },
+                onScheduled = { deadline ->
+                    val resources = context.createConfigurationContext(android.content.res.Configuration(context.resources.configuration).apply {
+                        setLocale(com.example.util.AppLanguage.locale(com.example.util.AppLanguage.current.value))
+                    }).resources
+                    val date = java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT,
+                        com.example.util.AppLanguage.locale(com.example.util.AppLanguage.current.value)).format(java.util.Date(deadline))
+                    Toast.makeText(context, resources.getString(com.example.R.string.account_delete_scheduled, date), Toast.LENGTH_LONG).show()
+                    onSignOut()
+                }
+            )
+            Spacer(Modifier.height(12.dp))
 
             com.example.ui.components.HextechAnimatedOutlinedButton(
                 onClick = { showSignOutConfirm = true },

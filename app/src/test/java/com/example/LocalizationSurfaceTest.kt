@@ -158,7 +158,7 @@ class LocalizationSurfaceTest {
         compose.runOnIdle { assertEquals("pt", AppLanguage.current.value) }
         compose.onNodeWithText("Informação").assertExists()
         compose.onNodeWithText("Información").assertDoesNotExist()
-        compose.onNodeWithText("1. Compatibilidade e Atualização Oficial").performScrollTo().assertExists()
+        compose.onNodeWithText("1. Compatibilidade e informações da atualização").performScrollTo().assertExists()
         compose.onNodeWithText("Passo 1: Configure suas Rotas de Jogo").performScrollTo().assertExists()
         compose.onNodeWithText("Passo 4: Consulta de Builds e Runas").performScrollTo().assertExists()
         compose.onNodeWithText("Informações Legais e Privacidade").performScrollTo().assertExists()
@@ -182,7 +182,7 @@ class LocalizationSurfaceTest {
         compose.onNodeWithText("Termos").performClick()
         compose.onNodeWithText("1. Aceitação dos Termos").assertExists()
         compose.onNodeWithText("Terceiros").performClick()
-        compose.onNodeWithText("1. Isenção de Responsabilidade Oficial da Riot Games").assertExists()
+        compose.onNodeWithText("1. Projeto independente da Riot Games").assertExists()
         compose.onNodeWithText("Aceitar e Entrar").assertIsDisplayed()
         compose.onNodeWithText("Aceptar y Entrar").assertDoesNotExist()
     }

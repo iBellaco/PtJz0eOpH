@@ -21,6 +21,7 @@ data class AuthState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null,
+    val deletionCancelled: Boolean = false,
     val authScreen: AuthScreenType = AuthScreenType.LOGIN
 )
 
@@ -72,11 +73,11 @@ class AuthViewModel : ViewModel() {
     }
 
     fun resetSuccessState() {
-        _uiState.update { it.copy(isSuccess = false, error = null) }
+        _uiState.update { it.copy(isSuccess = false, error = null, deletionCancelled = false) }
     }
 
     fun navigateTo(screen: AuthScreenType) {
-        _uiState.update { it.copy(authScreen = screen, error = null, isSuccess = false) }
+        _uiState.update { it.copy(authScreen = screen, error = null, isSuccess = false, deletionCancelled = false) }
         if (screen == AuthScreenType.LOGIN || screen == AuthScreenType.REGISTER) {
              // Keep email, but maybe clear passwords if we want
         }
@@ -100,11 +101,17 @@ class AuthViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, deletionCancelled = false) }
             try {
                 val result = auth.signInWithEmailAndPassword(_email.value.trim(), _password.value).await()
                 val firebaseUser = result.user
                 if (firebaseUser != null) {
+                    val cancelled = try { com.example.data.AccountDeletionRepository.cancelAfterSignIn() }
+                    catch (failure: Exception) {
+                        if (failure is kotlinx.coroutines.CancellationException) throw failure
+                        throw IllegalStateException("No se pudo comprobar la solicitud de eliminación. Revisa tu conexión o contacta a soporte.")
+                    }
+                    _uiState.update { it.copy(deletionCancelled = cancelled) }
                     val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
                     val userDocRef = db.collection("users").document(firebaseUser.uid)
                     val snap = userDocRef.get().await()
@@ -127,6 +134,8 @@ class AuthViewModel : ViewModel() {
                 }
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
+                // Do not leave an authenticated session when a deletion cannot be cancelled.
+                auth.signOut()
                 val errorMsg = e.localizedMessage ?: "Error de autenticación. Verifica tus credenciales."
                 _uiState.update { it.copy(isLoading = false, error = errorMsg) }
             }
@@ -161,7 +170,7 @@ class AuthViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, deletionCancelled = false) }
             try {
                 val result = auth.createUserWithEmailAndPassword(_email.value.trim(), _password.value).await()
                 val firebaseUser = result.user
@@ -214,7 +223,7 @@ class AuthViewModel : ViewModel() {
         }
         
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, deletionCancelled = false) }
             try {
                 auth.sendPasswordResetEmail(_email.value).await()
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }

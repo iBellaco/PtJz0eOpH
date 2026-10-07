@@ -283,7 +283,6 @@ FLEX ($otherRoles)
 Fecha de registro: $dateString
 Fecha: $dateString
 Feedback Report
-Firebase y Supabase (Almacenamiento Cloud)
 Flex
 Franjas y Fechas Ocupadas:
 Fullscreen

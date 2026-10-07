@@ -1,0 +1,22 @@
+<resources>
+    <string name="account_delete_title">Eliminar mi cuenta</string>
+    <string name="account_delete_summary">Solicita el borrado de tu cuenta de Coach. Tendrás 60 días para recuperarla iniciando sesión de nuevo.</string>
+    <string name="account_delete_first_title">Primera confirmación</string>
+    <string name="account_delete_first_body">Se eliminarán tu cuenta y los datos asociados en la nube, incluidos tu perfil, mensajes y registros de cuenta. El proceso definitivo comenzará al cumplirse 60 días. Si vuelves a iniciar sesión antes de esa fecha, se cancelará la solicitud. Esto no elimina tu cuenta de Riot.</string>
+    <string name="account_delete_second_title">Confirmación final</string>
+    <string name="account_delete_second_body">Cuenta de Coach: %1$s. Ingresa tu contraseña y confirma la solicitud. Después se cerrará la sesión. No vuelvas a iniciar sesión durante los 60 días si deseas que continúe el borrado.</string>
+    <string name="account_delete_password">Contraseña de Coach</string>
+    <string name="account_delete_submit">Solicitar eliminación</string>
+    <string name="account_delete_error">No se pudo confirmar la solicitud. Verifica tu contraseña y conexión. Si ya solicitaste el borrado, contacta a soporte antes de repetirlo.</string>
+    <string name="account_delete_scheduled">Solicitud registrada. El borrado definitivo comenzará a partir del %1$s. Un nuevo inicio de sesión antes de esa fecha cancelará la solicitud.</string>
+    <string name="account_delete_cancelled">La solicitud de eliminación está cancelada. Tu cuenta permanece activa.</string>
+    <string name="legal_deletion_title">6. Eliminación de cuenta y conservación</string>
+    <string name="legal_deletion_body">Desde Usuario → Eliminar mi cuenta puedes solicitar el borrado con dos confirmaciones y tu contraseña de Coach. El plazo de recuperación es de 60 días desde la fecha registrada por el servicio. Se cerrará la sesión; iniciar sesión de nuevo durante ese plazo cancela la solicitud. Transcurrido el plazo, el borrado se procesa automáticamente y puede requerir reintentos si hay una interrupción del servicio. Se eliminan la cuenta y los datos asociados en la nube. Se conserva temporalmente un registro mínimo de seguridad durante 24 horas después del borrado para impedir la reutilización de sesiones antiguas; su limpieza se comprueba periódicamente. Los archivos exportados, las copias compartidas por ti y los datos locales de otros dispositivos no se borran a distancia.</string>
+    <string name="legal_contact_title">Contacto de privacidad</string>
+    <string name="legal_contact_body">Coach: DevWildRiftCoach@gmail.com. También puedes solicitar la eliminación desde la página pública sin reinstalar la app. Identifica el correo de tu cuenta; nunca envíes contraseñas, códigos de acceso ni credenciales de Riot. Verificaremos tu identidad antes de tramitar la solicitud.</string>
+    <string name="legal_contact_action">Escribir a privacidad</string>
+    <string name="legal_web_action">Privacidad y eliminación en la web</string>
+    <string name="legal_capture_title">Captura de pantalla</string>
+    <string name="legal_capture_disclosure">Coach accede a la pantalla que autorices para reconocer la selección de campeones mientras el asistente está activo. Las imágenes se procesan en el dispositivo. Si activas el diagnóstico, se guardan recortes en la caché hasta borrarlos o reemplazarlos; puedes compartirlos voluntariamente. La captura puede incluir información visible de otras aplicaciones si autorizas toda la pantalla. Puedes detenerla desde el asistente o Android.</string>
+    <string name="legal_capture_continue">Continuar al permiso de Android</string>
+</resources>

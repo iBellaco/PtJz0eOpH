@@ -57,5 +57,5 @@ Toda respuesta al usuario al finalizar una tarea debe incluir:
 1. **Mensaje de Commit Copiable:** En español, con convención clara (ej. `feat: ...`, `fix: ...`, `build: ...`).
 2. **Reporte para el Equipo de Pruebas (Testers):**
    - **Cero emojis:** Ningún emoji en los textos copiables o reportes.
-   - **Prohibición estricta de infraestructura interna y datos sensibles:** No usar términos como "panel de administrador", "Firebase", "Firestore", "Supabase", nombres de colecciones o tablas de base de datos.
+   - **Prohibición estricta de infraestructura interna y datos sensibles:** No usar términos como "panel de administrador", "Firebase", "Firestore", nombres de colecciones o tablas de base de datos.
    - **Vocabulario permitido:** Emplear terminología limpia y orientada al usuario final (ej. "sincronización en la nube en tiempo real", "gestor de avisos", "módulo de verificación de canales", "sistema de canjes de esencias", "almacenamiento local optimizado").

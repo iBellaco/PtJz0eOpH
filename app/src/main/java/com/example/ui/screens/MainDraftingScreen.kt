@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.layout.heightIn
+
 import com.example.ui.components.CoachButton as Button
 import com.example.ui.components.CoachOutlinedButton as OutlinedButton
 import com.example.ui.components.CoachTextButton as TextButton
@@ -212,12 +214,12 @@ fun MainDraftingScreen(
         }
     }
 
+    var showCaptureDisclosure by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         val activity = context as? Activity
         if (activity?.intent?.getBooleanExtra("EXTRA_REQUEST_CAPTURE", false) == true) {
             activity.intent.removeExtra("EXTRA_REQUEST_CAPTURE")
-            val mediaProjectionManager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
+            showCaptureDisclosure = true
         }
     }
 
@@ -227,8 +229,7 @@ fun MainDraftingScreen(
                 val activity = context as? Activity
                 if (activity?.intent?.getBooleanExtra("EXTRA_REQUEST_CAPTURE", false) == true) {
                     activity.intent.removeExtra("EXTRA_REQUEST_CAPTURE")
-                    val mediaProjectionManager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                    mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
+                    showCaptureDisclosure = true
                 }
             }
         }
@@ -247,8 +248,7 @@ fun MainDraftingScreen(
             if (!SystemPermissionHelper.hasOverlayPermission(context)) {
                 showPermissionDialog = true
             } else {
-                val mediaProjectionManager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
+                showCaptureDisclosure = true
             }
         }
     }
@@ -773,6 +773,28 @@ fun MainDraftingScreen(
 
 
 
+        if (showCaptureDisclosure) {
+            AlertDialog(
+                onDismissRequest = { showCaptureDisclosure = false },
+                title = { Text(com.example.util.localizedString(com.example.R.string.legal_capture_title)) },
+                text = { Text(com.example.util.localizedString(com.example.R.string.legal_capture_disclosure)) },
+                confirmButton = {
+                    Button(onClick = {
+                        showCaptureDisclosure = false
+                        val manager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                        mediaProjectionLauncher.launch(manager.createScreenCaptureIntent())
+                    }, modifier = Modifier.heightIn(min = 48.dp).testTag("capture_disclosure_continue")) {
+                        Text(com.example.util.localizedString(com.example.R.string.legal_capture_continue))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showCaptureDisclosure = false },
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("capture_disclosure_cancel")) {
+                        Text(com.example.util.localizedString(com.example.R.string.cancelar))
+                    }
+                }
+            )
+        }
         if (showThemeDialog) {
             com.example.ui.components.ThemeCustomizationBottomSheet(
                 isPremium = com.example.util.SubscriptionManager.isPremium.collectAsState().value,

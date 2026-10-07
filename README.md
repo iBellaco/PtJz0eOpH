@@ -1,80 +1,57 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/github/explore/main/topics/android/android.png" alt="Android" width="60"/>
-  <h1 align="center">Wild Rift Drafting Coach & Overlay</h1>
-</p>
+# Coach
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Kotlin-1.9.22-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin" />
-  <img src="https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?style=for-the-badge&logo=android&logoColor=white" alt="Jetpack Compose" />
-  <img src="https://img.shields.io/badge/Scraper-5%20Global%20Sources-C89B3C?style=for-the-badge&logo=leagueoflegends&logoColor=white" alt="Global Meta Scraper" />
-  <img src="https://img.shields.io/badge/Android-14%2F15%20V2%2FV3%20Signed-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="V2/V3 Signature" />
-</p>
+Aplicación Android independiente de consulta y asistencia para la selección de campeones de League of Legends: Wild Rift. Nombre de la aplicación: **Coach**. Idiomas seleccionables: español y portugués. Versión: **1.1.10.217**, código **933**.
 
----
+## Funciones implementadas
 
-## ⚡ Características Principales (100% Real)
+- Reconocimiento de nombres mediante OCR y comparación de retratos locales sobre la pantalla autorizada por Android. El décimo pick también usa el retrato; la precisión depende de la imagen, la posición y los recursos disponibles. Las detecciones inciertas pueden dejar la selección pendiente.
+- Asistente flotante con draft, tier list e historial. La captura y la superposición requieren permisos de Android; se puede detener la captura desde el asistente o el sistema.
+- Catálogo comunitario de campeones, objetos, runas, hechizos y mapas. Recomendaciones por campeón y línea, objetos esenciales y situacionales. Las relaciones de ventaja, debilidad y sinergia muestran el nombre al tocarlas.
+- Consulta de tres fuentes identificadas: BestBuildWR, WildRiftFire y WildRiftCore. Son fuentes globales; el nombre histórico del componente de sincronización no acredita estadísticas oficiales del servidor chino. Ante fallos se puede conservar la última consulta guardada.
+- Perfiles, historial, mensajes de soporte, avisos, contenido patrocinado, canjes y exportaciones locales según las condiciones disponibles para la cuenta.
 
-### 1. 🔍 Escaneo y Lectura de Draft por OCR en Tiempo Real
-- **Detección Automática de Campeones:** Utiliza **Google ML Kit Text Recognition** sobre la captura de pantalla (`MediaProjection API`) para escanear en vivo la sala de selección de campeones (selecciones del 1 al 9, aliados y enemigos).
-- **Reconocimiento de Invocadores con Espacios:** Sistema OCR adaptado para procesar nombres con espacios (ej. *"D I E G O"*) y filtrar ruido de chat de forma efectiva.
-- **Asignación Dinámica de Roles:** Seguimiento en tiempo real de carriles (Top, Jungle, Mid, ADC, Support) por si el usuario cambia de rol o realiza intercambios con un aliado.
+No se garantiza exactitud completa del catálogo, reconocimiento perfecto, actualización inmediata por parche, ausencia de sanciones ni compatibilidad con todos los dispositivos.
 
-### 2. Estadísticas del servidor chino
-- Consulta de victorias, selecciones y bloqueos desde el servidor chino.
-- Los fallos de conexión conservan los últimos datos guardados y muestran el estado real de la consulta.
-- El décimo pick se reconoce por coincidencia espacial de su avatar con los retratos locales, sin API de IA ni lectura del nombre oculto.
+## Eliminación de cuenta
 
-### 3. 🪟 Superposición Flotante en Pantalla (Overlay HUD)
-- **Burbuja Flotante Minimalista:** Permite ejecutar la aplicación directamente sobre el juego Wild Rift sin salir de la partida mediante el permiso `SYSTEM_ALERT_WINDOW`.
-- **HUD Multifuncional:** Pestañas integradas de Draft en vivo, Tier List sincronizada e historial de partidas directamente en la ventana flotante.
+En **Usuario → Eliminar mi cuenta**, la persona confirma dos veces y verifica su contraseña. La solicitud usa la fecha del servicio y cierra la sesión. Durante **60 días**, un nuevo inicio de sesión explícito cancela la eliminación. Restaurar la aplicación o renovar una sesión no equivale a esa confirmación.
 
-### 4. 📚 Catálogo Oficial de Campeones, Objetos y Runas
-- **141 Campeones:** Estadísticas detalladas, sinergias, counter-picks, habilidades (H1, H2, H3, H4/Ulti), rutas de build y consejos de Coach por línea.
-- **Roles Flexibles:** Configuración de roles primarios y secundarios por campeón adaptados al meta de cada servidor (ej. Nilah en Jungla y Flex ADC).
-- **Objetos y Runas:** Base de datos completa con costos, pasivas y árboles de runas actualizados.
+Al cumplirse el plazo, un servicio programado procesa el borrado de la identidad y sus datos asociados, sin depender de que la aplicación siga instalada. Los fallos se reintentan; no se informa de borrado completo antes de finalizar. Los archivos antiguos sin propietario verificable o publicados en servicios externos requieren revisión y retirada. Las exportaciones y copias que el usuario haya compartido no se eliminan a distancia. Un registro mínimo de seguridad se conserva 24 horas después de completar el borrado y luego se limpia periódicamente.
 
-### 5. 🧠 Recomendaciones Tácticas (Coach de Élite)
-Análisis estructurado bajo estándares profesionales de esports (MOBA / Wild Rift):
-1. **Lectura del Draft y Condición de Victoria (Win Condition).**
-2. **Picks recomendados y Sinergias de equipo.**
-3. **Configuración Óptima de Runas y Hechizos.**
-4. **Ruta de Objetos e Itemización Dinámica Situacional.**
-5. **Plan de Juego Macro y Objetivos (Fase de líneas, teamfights y micro-tips).**
+También existe una solicitud externa por correo, sin reinstalar la aplicación: [eliminar cuenta](https://coach-legal-wild-rift-drafting.web.app/eliminar). Su atención es manual: el responsable verifica al titular, registra la solicitud y confirma la fecha. Abrir el correo no registra automáticamente un pedido. Procedimiento operativo: [gestión de solicitudes](docs/account-deletion-operations.md).
 
-### 6. 🔐 Seguridad, Firma V2/V3 y Autenticación
-- **Firma APK Moderna:** Configuración explícita de esquemas de firma **V2 y V3** para garantizar compatibilidad total e instalaciones limpias sin errores de paquete en **Android 14 y Android 15**.
-- **Autenticación Firebase & Perfiles:** Gestión de inicio de sesión, límite de dispositivos por cuenta estándar y perfiles multicuenta.
-- **Respaldo Local/Nube:** Importación y exportación de historiales de draft en formato JSON con fusión inteligente.
+## Privacidad y situación legal
 
----
+[Privacidad y términos en español](https://coach-legal-wild-rift-drafting.web.app/) · [Português](https://coach-legal-wild-rift-drafting.web.app/pt/)
 
-## 🏗️ Estructura del Proyecto
+Contacto público: **DevWildRiftCoach@gmail.com**. Nunca enviar contraseñas, códigos de acceso ni credenciales de Riot.
 
-```
-├── app/src/main/java/com/example/
-│   ├── data/                   # Repositorios, scrapper de 5 fuentes, ChineseMetaSyncService
-│   │   ├── backup/             # BackupRestoreManager
-│   │   └── local/              # Room Database (Drafts y Tier Lists)
-│   ├── model/                  # Modelos de dominio (Champion, LaneRole, etc.)
-│   ├── service/                # Foreground Services (FloatingAssistantService y DraftVisionScanner)
-│   ├── ui/                     # Jetpack Compose + Material 3 (Screens, Dialogs, Admin Panel)
-│   └── util/                   # Utilidades de OCR, SummonerSpellDetector y AuthManager
-```
+Coach no está respaldado ni patrocinado por Riot Games. Los recursos de Wild Rift conservan los derechos de sus titulares. **No se ha acreditado una autorización específica de Riot para esta aplicación.** Una clave de otro juego, el acceso al código o este aviso no conceden esa autorización. Antes de presentar la app en una tienda o monetizarla, deben resolverse las autorizaciones aplicables y completarse las declaraciones exigidas por la tienda. El plazo de 60 días es una decisión del producto, no un plazo aprobado expresamente por Google ni una garantía de cumplimiento de las leyes locales.
 
----
+Consulta la [guía de autorización de Riot y publicación en Google Play](docs/riot-google-play-authorization.md) y la [auditoría de esta versión](docs/coach-audit-1.1.10.217.md). El repositorio no permite certificar aprobación legal ni de Google Play. No se afirma que todos sus componentes compartan una misma licencia.
 
-## 🛠️ Compilación y Desarrollo Local
+## Desarrollo y comprobaciones
+
+Repositorio: <https://github.com/iBellaco/PtJz0eOpH>. Ramas de trabajo: `pruebas` y `main`.
+
+Configuración: Kotlin **2.2.10**, Gradle **9.3.1**, Java **21**, Android mínimo **API 24**, compilación y destino **API 36**, Jetpack Compose y Material 3. Las versiones exactas se mantienen en `gradle/libs.versions.toml` y los archivos Gradle.
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/barbadiego695/wild-rift-coach.git
-cd wild-rift-coach
-
-# 2. Compilar el APK de depuración (firmado V2/V3)
-./gradlew assembleDebug
+git clone https://github.com/iBellaco/PtJz0eOpH.git
+cd PtJz0eOpH
 ```
 
----
+El wrapper no está versionado. Para una compilación local se necesitan Gradle, Java, Android SDK y la configuración privada de los servicios y firma. No publicar credenciales ni sustituir la identidad de firma de entregas anteriores. Los flujos de GitHub Actions preparan esas herramientas, comprueban el código, generan el APK release con R8 y verifican firma, ofuscación e instalación antes de publicarlo.
 
-## 📜 Licencia y Aviso Legal
-Herramienta de asistencia comunitaria para jugadores de **League of Legends: Wild Rift**. *League of Legends: Wild Rift y Riot Games* son marcas comerciales de Riot Games, Inc. Este software no está afiliado oficialmente con Riot Games.
+Pruebas del servicio y reglas en un proyecto de demostración aislado:
+
+```bash
+cd server/account-deletion
+npm ci
+npm test
+cd ../../tests/firestore
+npm ci
+npm test
+```
+
+El servicio programado solo se activa con una conexión privilegiada verificada. Si deja de comprobarse su disponibilidad, la app no acepta nuevas solicitudes. Los resultados efectivos de validación se registran en la auditoría; la existencia del flujo no demuestra por sí sola que haya pasado.

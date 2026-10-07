@@ -27,7 +27,6 @@
 # Keep data models used for serialization (Kotlinx Serialization, Firebase, Room, Json)
 -keep class com.example.model.** { *; }
 -keep class com.example.data.remote.model.** { *; }
--keep class com.example.data.supabase.model.** { *; }
 -keep class com.example.data.local.entity.** { *; }
 
 # Mantener serializadores generados por kotlinx.serialization
@@ -138,3 +137,11 @@
 -keep class androidx.lifecycle.ViewModelStoreOwner { *; }
 -keep class androidx.lifecycle.ViewTreeLifecycleOwner { *; }
 -keep class androidx.lifecycle.ViewTreeViewModelStoreOwner { *; }
+
+# The release Compose test runner shares the coroutine runtime with the APK.
+# Retain callable APIs and subclass extensibility; Coach remains eligible for obfuscation.
+-keep class kotlinx.coroutines.** { *; }
+# Public entry points hosted by the installed deletion interaction tests.
+-keep class com.example.ui.components.AccountDeletionCardKt { public static void AccountDeletionCard(...); }
+-keep class com.example.util.DynamicTranslations { public *; }
+-keep class androidx.activity.compose.ComponentActivityKt { public static void setContent*(...); }

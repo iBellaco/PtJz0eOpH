@@ -134,7 +134,7 @@ fun DonationDialog(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = tr("Coach es una app sin anuncios molestos. Si la app te ayuda a subir de elo y ganar partidas, tu donación permite mantener los servidores y actualizaciones constantes."),
+                                text = tr("El apoyo a Coach es voluntario y ayuda a mantener el servicio y desarrollar mejoras. No garantiza victorias, rango, actualizaciones continuas ni aprobación de Riot o Google Play."),
                                 color = TextSecondary,
                                 fontSize = 12.sp,
                                 lineHeight = 16.5.sp

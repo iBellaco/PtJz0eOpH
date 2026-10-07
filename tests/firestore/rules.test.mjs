@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, getCountFromServer, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment, onSnapshot } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8088, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
-const db = uid => env.authenticatedContext(uid, { email: `${uid}@test.invalid` }).firestore();
+const db = (uid, extra = {}) => env.authenticatedContext(uid, { email: `${uid}@test.invalid`, ...extra }).firestore();
 const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
 const greeting = 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.';
 const initial = id => [{ id: `${id}_initial`, senderRole: 'USER', senderUid: 'user', text: 'Ayuda', timestampMillis: 100 }, { id: `${id}_system`, senderRole: 'SYSTEM', senderUid: '', text: greeting, timestampMillis: 101 }];
@@ -16,6 +16,58 @@ try {
     const store = context.firestore();
     for (const [uid, role] of [['user','free'],['other','free'],['mod','moderador'],['admin','admin'],['s1','streamer'],['s2','streamer']]) await setDoc(doc(store, 'users', uid), { role, email: `${uid}@test.invalid`, registeredDevices: [] });
     await setDoc(doc(store, 'system_config', 'streamer_live'), { entries: [] });
+  });
+  const recovery=db('user',{auth_time:Math.floor(Date.now()/1000),firebase:{sign_in_provider:'password'}});
+  const recoveryRef=doc(recovery,'account_deletions/user');
+  const requestData=()=>({userId:'user',requestId:'12345678-1234-1234-1234-123456789012',status:'PENDING',graceDays:60,requestedAt:serverTimestamp()});
+  await env.withSecurityRulesDisabled(async context=>{
+    await setDoc(doc(context.firestore(),'system_config/account_deletion_service'),{enabled:true,graceDays:60,checkedAt:serverTimestamp()});
+  });
+  await test('deletion requires a recent password sign-in and a server timestamp',async()=>{
+    await assertFails(setDoc(doc(user,'account_deletions/user'),requestData()));
+    await assertFails(setDoc(recoveryRef,{...requestData(),requestedAt:Timestamp.fromMillis(Date.now()-1000)}));
+    await assertFails(setDoc(recoveryRef,{...requestData(),graceDays:1}));
+    await assertFails(setDoc(recoveryRef,{...requestData(),accountEmail:'forged@test.invalid'}));
+    await assertSucceeds(setDoc(recoveryRef,requestData()));
+  });
+  await test('other accounts cannot read or cancel a deletion request',async()=>{
+    await assertFails(getDoc(doc(other,'account_deletions/user')));
+    await assertFails(updateDoc(doc(other,'account_deletions/user'),{status:'CANCELLED',cancelledAt:serverTimestamp()}));
+    await assertFails(updateDoc(recoveryRef,{status:'PROCESSING'}));
+    await assertFails(updateDoc(recoveryRef,{requestedAt:serverTimestamp()}));
+    await assertFails(deleteDoc(recoveryRef));
+  });
+  await test('a recent login can cancel during recovery and explicitly request again',async()=>{
+    await assertSucceeds(updateDoc(recoveryRef,{status:'CANCELLED',cancelledAt:serverTimestamp()}));
+    await assertSucceeds(setDoc(recoveryRef,{...requestData(),requestId:'12345678-1234-1234-1234-123456789013'}));
+    await assertFails(setDoc(recoveryRef,requestData()));
+  });
+  await test('expired recovery cannot be cancelled and a processing session cannot access account data',async()=>{
+    await env.withSecurityRulesDisabled(async context=>{
+      await updateDoc(doc(context.firestore(),'account_deletions/user'),{requestedAt:Timestamp.fromMillis(Date.now()-60*86400000-1000)});
+    });
+    await assertFails(updateDoc(recoveryRef,{status:'CANCELLED',cancelledAt:serverTimestamp()}));
+    await env.withSecurityRulesDisabled(async context=>{
+      await updateDoc(doc(context.firestore(),'account_deletions/user'),{status:'PROCESSING'});
+    });
+    await assertFails(getDoc(doc(recovery,'users/user')));
+    await assertFails(updateDoc(doc(recovery,'users/user'),{name:'must not write'}));
+    await assertSucceeds(getDoc(recoveryRef));
+    await env.withSecurityRulesDisabled(async context=>{await deleteDoc(doc(context.firestore(),'account_deletions/user'));});
+  });
+  await test('a stopped or stale deletion service cannot accept a request',async()=>{
+    await env.withSecurityRulesDisabled(async context=>{
+      await updateDoc(doc(context.firestore(),'system_config/account_deletion_service'),{checkedAt:Timestamp.fromMillis(Date.now()-37*3600000)});
+    });
+    await assertFails(setDoc(recoveryRef,requestData()));
+    await assertFails(updateDoc(doc(recovery,'system_config/account_deletion_service'),{enabled:true,checkedAt:serverTimestamp()}));
+    await env.withSecurityRulesDisabled(async context=>{
+      await updateDoc(doc(context.firestore(),'system_config/account_deletion_service'),{checkedAt:serverTimestamp(),enabled:false});
+    });
+    await assertFails(setDoc(recoveryRef,requestData()));
+    await env.withSecurityRulesDisabled(async context=>{
+      await updateDoc(doc(context.firestore(),'system_config/account_deletion_service'),{enabled:true});
+    });
   });
   await test('same hardware reuses its slot while concurrent logins leave only one session owner',async()=>{
     const ref=doc(user,'users/user');
