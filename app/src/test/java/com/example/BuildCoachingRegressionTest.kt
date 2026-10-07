@@ -61,12 +61,36 @@ class BuildCoachingRegressionTest {
         for (build in builds()) {
             val advice=listOf(build.coachAdvice)+(build.coreItemsWithDesc+build.situationalItemsWithDesc).map { it.description }+
                 (build.coreRunes+build.situationalRunes).map { it.description }+
-                (build.coreSpells+build.situationalSpells).map { it.description }
+                (build.coreSpells+build.situationalSpells).map { it.description }+
+                listOfNotNull(build.bootsT2Item?.description,build.bootsT3Item?.description)
             for (text in advice.filter { it.isNotBlank() }) {
                 val pt=translations[text].orEmpty()
                 assertTrue("Missing Portuguese: ${build.id}",pt.contains("Decisão Soberano"))
                 assertFalse(pt.contains("Diagnóstico del error/situación"))
                 assertFalse(pt.contains("Regla aplicable"))
+            }
+        }
+    }
+
+    @Test fun `saved rune and boot advice matches current effects instead of legacy mechanics`() {
+        val all = builds()
+        val runes = all.flatMap { it.coreRunes + it.situationalRunes }.groupBy { it.runeName }
+        for (rune in runes.getValue("Leyenda: Velocidad")) {
+            assertTrue(rune.description.contains("velocidad de habilidades"))
+            assertFalse(rune.description.contains("La progresión sirve a tus ataques repetidos"))
+        }
+        for (rune in runes.getValue("Fortalecimiento")) {
+            assertTrue(rune.description.contains("tres ataques sobre el mismo campeón"))
+            assertFalse(rune.description.contains("Sincroniza la defensa con el control"))
+        }
+        for (rune in runes.getValue("Fuente de Vida")) {
+            assertTrue(rune.description.contains("un ataque o habilidad"))
+            assertFalse(rune.description.contains("Marca con tu control"))
+        }
+        for (build in all) {
+            for (boot in listOfNotNull(build.bootsT2Item, build.bootsT3Item)) {
+                assertTrue(boot.description.contains(boot.itemName))
+                assertFalse(boot.description.contains("La movilidad debe permitir ejecutar tu condición"))
             }
         }
     }

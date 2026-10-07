@@ -3501,7 +3501,7 @@ private fun RunesTab() {
 // ====================================================================
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SpellsTab() {
+internal fun SpellsTab() {
     val lang = com.example.util.currentAppLanguage()
     var searchQuery by remember { mutableStateOf("") }
     var isGridView by remember { mutableStateOf(true) }
@@ -3652,8 +3652,9 @@ private fun SpellsTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(130.dp)
+                            .heightIn(min = 184.dp)
                             .clip(RoundedCornerShape(12.dp))
+                            .testTag("catalog_spell_${spell.id}")
                             .coachClickable { selectedSpell = spell },
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
@@ -3685,6 +3686,8 @@ private fun SpellsTab() {
                                 lineHeight = 13.sp,
                                 modifier = Modifier.fillMaxWidth()
                             )
+                            val presentation = com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
+                            com.example.ui.components.SpellMapLabels(presentation.mapLabels)
                             Text(
                                 text = com.example.util.tr("CD ${spell.cooldown}"),
                                 color = HextechCyan,
@@ -3704,6 +3707,7 @@ private fun SpellsTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .testTag("catalog_spell_${spell.id}")
                             .coachClickable { selectedSpell = spell },
                         shape = RoundedCornerShape(10.dp),
                         colors = CardDefaults.cardColors(containerColor = HextechSurface),
@@ -3746,13 +3750,22 @@ private fun SpellsTab() {
                                         Text(tr(spell.category), color = HextechCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                FormattedWildRiftText(
-                                    text = tr(spell.description),
-                                    color = TextPrimary.copy(alpha = 0.9f),
-                                    fontSize = 12.sp,
-                                    lineHeight = 16.sp
-                                )
+                                val spellPresentation = remember(spell.description, lang) {
+                                    com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
+                                }
+                                if (spellPresentation.mapLabels.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(5.dp))
+                                    com.example.ui.components.SpellMapLabels(spellPresentation.mapLabels)
+                                }
+                                if (spellPresentation.description.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    FormattedWildRiftText(
+                                        text = spellPresentation.description,
+                                        color = TextPrimary.copy(alpha = 0.9f),
+                                        fontSize = 12.sp,
+                                        lineHeight = 16.sp
+                                    )
+                                }
                             }
                         }
                     }
@@ -3800,19 +3813,28 @@ private fun SpellsTab() {
             },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(HextechSurface, RoundedCornerShape(8.dp))
-                            .border(0.5.dp, HextechCardBorder, RoundedCornerShape(8.dp))
-                            .padding(10.dp)
-                    ) {
-                        FormattedWildRiftText(
-                            text = tr(spell.description),
-                            color = TextPrimary,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        )
+                    val spellPresentation = remember(spell.description, lang) {
+                        com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
+                    }
+                    if (spellPresentation.mapLabels.isNotEmpty()) {
+                        com.example.ui.components.SpellMapLabels(spellPresentation.mapLabels, Modifier.fillMaxWidth())
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    if (spellPresentation.description.isNotBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(HextechSurface, RoundedCornerShape(8.dp))
+                                .border(0.5.dp, HextechCardBorder, RoundedCornerShape(8.dp))
+                                .padding(10.dp)
+                        ) {
+                            FormattedWildRiftText(
+                                text = spellPresentation.description,
+                                color = TextPrimary,
+                                fontSize = 13.sp,
+                                lineHeight = 18.sp
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(

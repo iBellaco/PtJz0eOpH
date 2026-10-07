@@ -276,7 +276,7 @@ jobs:
       run: gradle :app:testDebugUnitTest --tests com.example.HistoryConsistencyTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest
         --tests com.example.ChampionNameResolverRegressionTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests
         com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests
-        com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.BuildCoachingRegressionTest --tests com.example.DraftScoreFormatTest --tests com.example.SupportAndStreamerPolicyTest
+        com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.BuildElementAdviceCoverageTest --tests com.example.SpellCatalogFormattingTest --tests com.example.BuildCoachingRegressionTest --tests com.example.DraftScoreFormatTest --tests com.example.SupportAndStreamerPolicyTest
         --tests com.example.WildRiftItemsCatalogTest --stacktrace --no-daemon
     - name: Upload core regression results
       if: always()
@@ -289,7 +289,7 @@ jobs:
       env:
         CI: 'true'
       run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests
-        com.example.HubChampionNavigationTest --tests com.example.HistoryConsistencyRenderedTest --tests com.example.BuildCoachingRenderedTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests
+        com.example.HubChampionNavigationTest --tests com.example.HistoryConsistencyRenderedTest --tests com.example.BuildCoachingRenderedTest --tests com.example.SpellCatalogRenderedTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests
         com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.DraftChampionSelectionTest --tests com.example.RequiredItemCorrectionsTest --tests com.example.ComponentItemsCatalogTest
         -Proborazzi.test.record=true --stacktrace --no-daemon
     - name: Upload Portuguese screenshots and rendered texts

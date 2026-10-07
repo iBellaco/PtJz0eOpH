@@ -67,7 +67,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Aatrox · Línea de Barón · Leyenda: Velocidad. Si gastas H3 para acercarte, pierdes la corrección del filo de H1 y tu salida.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
+        "description": "Diagnóstico del error/situación: Aatrox · Línea de Barón · Leyenda: Velocidad. Si gastas H3 para acercarte, pierdes la corrección del filo de H1 y tu salida.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -107,7 +107,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Aatrox · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
+      "description": "Diagnóstico del error/situación: Aatrox · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -195,7 +195,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Aatrox · Jungla · Leyenda: Velocidad. Si gastas H3 para acercarte, pierdes la corrección del filo de H1 y tu salida.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
+        "description": "Diagnóstico del error/situación: Aatrox · Jungla · Leyenda: Velocidad. Si gastas H3 para acercarte, pierdes la corrección del filo de H1 y tu salida.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -235,7 +235,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Aatrox · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
+      "description": "Diagnóstico del error/situación: Aatrox · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Filo de H1 conectado antes de prolongar.\nRegla aplicable: H3 reservada para ajustar o salir."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -729,7 +729,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Akali · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Sal del círculo de la pasiva entre habilidades.\nRegla aplicable: No gastes ambos recursos de escape para iniciar."
+      "description": "Diagnóstico del error/situación: Akali · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Sal del círculo de la pasiva entre habilidades.\nRegla aplicable: No gastes ambos recursos de escape para iniciar."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -807,7 +807,7 @@
       {
         "runeName": "Fortalecimiento",
         "iconUrl": "file:///android_asset/runes/fortalecimiento.webp",
-        "description": "Diagnóstico del error/situación: Akshan · Línea Central · Fortalecimiento. Una trayectoria de H3 que choca con un enemigo corta tu daño y puede dejarte sin retirada.\nDecisión Soberano: Sincroniza la defensa con el control que abre tu entrada y la respuesta que llega inmediatamente después.\nMicro y Macro detalle: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro.\nRegla aplicable: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro."
+        "description": "Diagnóstico del error/situación: Akshan · Línea Central · Fortalecimiento. Una trayectoria de H3 que choca con un enemigo corta tu daño y puede dejarte sin retirada.\nDecisión Soberano: Conecta tres ataques sobre el mismo campeón y aprovecha la amplificación mientras puedas mantener el combate desde una posición segura.\nMicro y Macro detalle: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro.\nRegla aplicable: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro."
       },
       {
         "runeName": "Brutal",
@@ -935,7 +935,7 @@
       {
         "runeName": "Fortalecimiento",
         "iconUrl": "file:///android_asset/runes/fortalecimiento.webp",
-        "description": "Diagnóstico del error/situación: Akshan · Línea de Barón · Fortalecimiento. Una trayectoria de H3 que choca con un enemigo corta tu daño y puede dejarte sin retirada.\nDecisión Soberano: Sincroniza la defensa con el control que abre tu entrada y la respuesta que llega inmediatamente después.\nMicro y Macro detalle: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro.\nRegla aplicable: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro."
+        "description": "Diagnóstico del error/situación: Akshan · Línea de Barón · Fortalecimiento. Una trayectoria de H3 que choca con un enemigo corta tu daño y puede dejarte sin retirada.\nDecisión Soberano: Conecta tres ataques sobre el mismo campeón y aprovecha la amplificación mientras puedas mantener el combate desde una posición segura.\nMicro y Macro detalle: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro.\nRegla aplicable: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro."
       },
       {
         "runeName": "Brutal",
@@ -1063,7 +1063,7 @@
       {
         "runeName": "Fortalecimiento",
         "iconUrl": "file:///android_asset/runes/fortalecimiento.webp",
-        "description": "Diagnóstico del error/situación: Akshan · Línea de Dragón · Fortalecimiento. Una trayectoria de H3 que choca con un enemigo corta tu daño y puede dejarte sin retirada.\nDecisión Soberano: Sincroniza la defensa con el control que abre tu entrada y la respuesta que llega inmediatamente después.\nMicro y Macro detalle: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro.\nRegla aplicable: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro."
+        "description": "Diagnóstico del error/situación: Akshan · Línea de Dragón · Fortalecimiento. Una trayectoria de H3 que choca con un enemigo corta tu daño y puede dejarte sin retirada.\nDecisión Soberano: Conecta tres ataques sobre el mismo campeón y aprovecha la amplificación mientras puedas mantener el combate desde una posición segura.\nMicro y Macro detalle: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro.\nRegla aplicable: Antes de engancharte, verifica el arco de la cuerda y el punto donde terminará tu giro."
       },
       {
         "runeName": "Brutal",
@@ -1196,7 +1196,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Alistar · Soporte · Fuente de Vida. Usar H2 sin tener H1 disponible separa al objetivo de tu equipo en vez de iniciar.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Derriba antes de consumir H4.\nRegla aplicable: Si tu tirador está amenazado, H2 sirve para expulsar al atacante."
+        "description": "Diagnóstico del error/situación: Alistar · Soporte · Fuente de Vida. Usar H2 sin tener H1 disponible separa al objetivo de tu equipo en vez de iniciar.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Derriba antes de consumir H4.\nRegla aplicable: Si tu tirador está amenazado, H2 sirve para expulsar al atacante."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -1324,7 +1324,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Alistar · Línea de Barón · Fuente de Vida. Usar H2 sin tener H1 disponible separa al objetivo de tu equipo en vez de iniciar.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Derriba antes de consumir H4.\nRegla aplicable: Si tu tirador está amenazado, H2 sirve para expulsar al atacante."
+        "description": "Diagnóstico del error/situación: Alistar · Línea de Barón · Fuente de Vida. Usar H2 sin tener H1 disponible separa al objetivo de tu equipo en vez de iniciar.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Derriba antes de consumir H4.\nRegla aplicable: Si tu tirador está amenazado, H2 sirve para expulsar al atacante."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -1457,7 +1457,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Ambessa · Línea de Barón · Leyenda: Velocidad. Encadenar habilidades sin alternar ataques consume energía y te corta la persecución.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
+        "description": "Diagnóstico del error/situación: Ambessa · Línea de Barón · Leyenda: Velocidad. Encadenar habilidades sin alternar ataques consume energía y te corta la persecución.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -1497,7 +1497,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Ambessa · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
+      "description": "Diagnóstico del error/situación: Ambessa · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -1585,7 +1585,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Ambessa · Jungla · Leyenda: Velocidad. Encadenar habilidades sin alternar ataques consume energía y te corta la persecución.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
+        "description": "Diagnóstico del error/situación: Ambessa · Jungla · Leyenda: Velocidad. Encadenar habilidades sin alternar ataques consume energía y te corta la persecución.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -1625,7 +1625,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Ambessa · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
+      "description": "Diagnóstico del error/situación: Ambessa · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataque entre desplazamientos.\nRegla aplicable: Conserva energía y una dirección de salida antes de comprometer H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -1713,7 +1713,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Amumu · Jungla · Leyenda: Velocidad. Gastar las dos cargas de H1 sobre el mismo acercamiento elimina tu respuesta al salto rival.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Primera carga para entrar.\nRegla aplicable: Segunda carga para seguir la salida después del control inicial."
+        "description": "Diagnóstico del error/situación: Amumu · Jungla · Leyenda: Velocidad. Gastar las dos cargas de H1 sobre el mismo acercamiento elimina tu respuesta al salto rival.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Primera carga para entrar.\nRegla aplicable: Segunda carga para seguir la salida después del control inicial."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -1841,7 +1841,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Amumu · Soporte · Leyenda: Velocidad. Gastar las dos cargas de H1 sobre el mismo acercamiento elimina tu respuesta al salto rival.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Primera carga para entrar.\nRegla aplicable: Segunda carga para seguir la salida después del control inicial."
+        "description": "Diagnóstico del error/situación: Amumu · Soporte · Leyenda: Velocidad. Gastar las dos cargas de H1 sobre el mismo acercamiento elimina tu respuesta al salto rival.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Primera carga para entrar.\nRegla aplicable: Segunda carga para seguir la salida después del control inicial."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -2952,7 +2952,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Bardo · Soporte · Fuente de Vida. Buscar campanas mientras la oleada rebota hacia el rival deja a tu tirador expuesto al dos contra uno.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Campanas durante una ventana segura del tirador.\nRegla aplicable: H4 solo con una jugada preparada para cuando termine."
+        "description": "Diagnóstico del error/situación: Bardo · Soporte · Fuente de Vida. Buscar campanas mientras la oleada rebota hacia el rival deja a tu tirador expuesto al dos contra uno.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Campanas durante una ventana segura del tirador.\nRegla aplicable: H4 solo con una jugada preparada para cuando termine."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -3080,7 +3080,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Bardo · Línea Central · Fuente de Vida. Buscar campanas mientras la oleada rebota hacia el rival deja a tu tirador expuesto al dos contra uno.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Campanas durante una ventana segura del tirador.\nRegla aplicable: H4 solo con una jugada preparada para cuando termine."
+        "description": "Diagnóstico del error/situación: Bardo · Línea Central · Fuente de Vida. Buscar campanas mientras la oleada rebota hacia el rival deja a tu tirador expuesto al dos contra uno.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Campanas durante una ventana segura del tirador.\nRegla aplicable: H4 solo con una jugada preparada para cuando termine."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -3202,7 +3202,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Blitzcrank · Soporte · Fuente de Vida. Fallar H1 cede la presión del carril durante su enfriamiento; lanzar a través de súbditos desperdicia esa amenaza.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Amenaza con acercarte hasta despejar la línea del gancho.\nRegla aplicable: No atraigas al iniciador rival hacia tu tirador."
+        "description": "Diagnóstico del error/situación: Blitzcrank · Soporte · Fuente de Vida. Fallar H1 cede la presión del carril durante su enfriamiento; lanzar a través de súbditos desperdicia esa amenaza.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Amenaza con acercarte hasta despejar la línea del gancho.\nRegla aplicable: No atraigas al iniciador rival hacia tu tirador."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -3330,7 +3330,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Blitzcrank · Línea de Barón · Fuente de Vida. Fallar H1 cede la presión del carril durante su enfriamiento; lanzar a través de súbditos desperdicia esa amenaza.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Amenaza con acercarte hasta despejar la línea del gancho.\nRegla aplicable: No atraigas al iniciador rival hacia tu tirador."
+        "description": "Diagnóstico del error/situación: Blitzcrank · Línea de Barón · Fuente de Vida. Fallar H1 cede la presión del carril durante su enfriamiento; lanzar a través de súbditos desperdicia esa amenaza.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Amenaza con acercarte hasta despejar la línea del gancho.\nRegla aplicable: No atraigas al iniciador rival hacia tu tirador."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -3602,7 +3602,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Brand · Línea Central · Orbe Anulador. Una rotación sobre objetivos separados pierde las detonaciones y rebotes que justifican tu daño en área.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Aplica Quemadura antes de H1 para aturdir.\nRegla aplicable: Busca rebotes reales antes de gastar H4."
+        "description": "Diagnóstico del error/situación: Brand · Línea Central · Orbe Anulador. Una rotación sobre objetivos separados pierde las detonaciones y rebotes que justifican tu daño en área.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Aplica Quemadura antes de H1 para aturdir.\nRegla aplicable: Busca rebotes reales antes de gastar H4."
       }
     ],
     "coreSpells": [
@@ -3830,7 +3830,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Braum · Soporte · Fuente de Vida. Gastar H3 para bloquear hostigamiento menor deja a tu tirador sin cobertura contra el proyectil decisivo.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: H2 te coloca entre amenaza y aliado.\nRegla aplicable: H3 debe mirar al proyectil y tus ataques completar la pasiva."
+        "description": "Diagnóstico del error/situación: Braum · Soporte · Fuente de Vida. Gastar H3 para bloquear hostigamiento menor deja a tu tirador sin cobertura contra el proyectil decisivo.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: H2 te coloca entre amenaza y aliado.\nRegla aplicable: H3 debe mirar al proyectil y tus ataques completar la pasiva."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -3958,7 +3958,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Braum · Línea de Barón · Fuente de Vida. Gastar H3 para bloquear hostigamiento menor deja a tu tirador sin cobertura contra el proyectil decisivo.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: H2 te coloca entre amenaza y aliado.\nRegla aplicable: H3 debe mirar al proyectil y tus ataques completar la pasiva."
+        "description": "Diagnóstico del error/situación: Braum · Línea de Barón · Fuente de Vida. Gastar H3 para bloquear hostigamiento menor deja a tu tirador sin cobertura contra el proyectil decisivo.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: H2 te coloca entre amenaza y aliado.\nRegla aplicable: H3 debe mirar al proyectil y tus ataques completar la pasiva."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -4387,7 +4387,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Camille · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Primera H1 para preparar, segunda al estar cargada.\nRegla aplicable: Reserva H3 si todavía no conoces la posición del jungla."
+      "description": "Diagnóstico del error/situación: Camille · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Primera H1 para preparar, segunda al estar cargada.\nRegla aplicable: Reserva H3 si todavía no conoces la posición del jungla."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -4515,7 +4515,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Camille · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Primera H1 para preparar, segunda al estar cargada.\nRegla aplicable: Reserva H3 si todavía no conoces la posición del jungla."
+      "description": "Diagnóstico del error/situación: Camille · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Primera H1 para preparar, segunda al estar cargada.\nRegla aplicable: Reserva H3 si todavía no conoces la posición del jungla."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -5021,7 +5021,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Corki · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara el regreso por el Paquete antes de la disputa.\nRegla aplicable: La entrega debe dividir rivales, no aislarte de tus aliados."
+      "description": "Diagnóstico del error/situación: Corki · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara el regreso por el Paquete antes de la disputa.\nRegla aplicable: La entrega debe dividir rivales, no aislarte de tus aliados."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -5103,7 +5103,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Darius · Línea de Barón · Leyenda: Velocidad. Empezar un duelo fuera del alcance del filo de H1 te quita curación y retrasa las cinco marcas.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
+        "description": "Diagnóstico del error/situación: Darius · Línea de Barón · Leyenda: Velocidad. Empezar un duelo fuera del alcance del filo de H1 te quita curación y retrasa las cinco marcas.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -5143,7 +5143,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Darius · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
+      "description": "Diagnóstico del error/situación: Darius · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -5231,7 +5231,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Darius · Jungla · Leyenda: Velocidad. Empezar un duelo fuera del alcance del filo de H1 te quita curación y retrasa las cinco marcas.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
+        "description": "Diagnóstico del error/situación: Darius · Jungla · Leyenda: Velocidad. Empezar un duelo fuera del alcance del filo de H1 te quita curación y retrasa las cinco marcas.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -5271,7 +5271,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Darius · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
+      "description": "Diagnóstico del error/situación: Darius · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Filo de H1 y ataques para completar Hemorragia.\nRegla aplicable: H4 se decide por marcas y ejecución, no por abrir el duelo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -5359,7 +5359,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Diana · Jungla · Leyenda: Velocidad. Entrar con H3 sin aplicar Luz Lunar pierde el reinicio y te deja comprometida en el centro rival.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: H1 conecta antes de H3.\nRegla aplicable: Decide la segunda entrada por los objetivos agrupados y la cobertura de tu equipo."
+        "description": "Diagnóstico del error/situación: Diana · Jungla · Leyenda: Velocidad. Entrar con H3 sin aplicar Luz Lunar pierde el reinicio y te deja comprometida en el centro rival.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: H1 conecta antes de H3.\nRegla aplicable: Decide la segunda entrada por los objetivos agrupados y la cobertura de tu equipo."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -5399,7 +5399,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Diana · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H1 conecta antes de H3.\nRegla aplicable: Decide la segunda entrada por los objetivos agrupados y la cobertura de tu equipo."
+      "description": "Diagnóstico del error/situación: Diana · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H1 conecta antes de H3.\nRegla aplicable: Decide la segunda entrada por los objetivos agrupados y la cobertura de tu equipo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -5487,7 +5487,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Diana · Línea Central · Leyenda: Velocidad. Entrar con H3 sin aplicar Luz Lunar pierde el reinicio y te deja comprometida en el centro rival.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: H1 conecta antes de H3.\nRegla aplicable: Decide la segunda entrada por los objetivos agrupados y la cobertura de tu equipo."
+        "description": "Diagnóstico del error/situación: Diana · Línea Central · Leyenda: Velocidad. Entrar con H3 sin aplicar Luz Lunar pierde el reinicio y te deja comprometida en el centro rival.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: H1 conecta antes de H3.\nRegla aplicable: Decide la segunda entrada por los objetivos agrupados y la cobertura de tu equipo."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -6155,7 +6155,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Ekko · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara H2 desde niebla y entra cuando cierre el paso.\nRegla aplicable: Revisa la posición de la sombra antes de gastar H4."
+      "description": "Diagnóstico del error/situación: Ekko · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara H2 desde niebla y entra cuando cierre el paso.\nRegla aplicable: Revisa la posición de la sombra antes de gastar H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -6399,7 +6399,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Evelynn · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Entra por el lado que corta la retirada.\nRegla aplicable: Espera la preparación de H2 y guarda H4 para ejecutar o escapar."
+      "description": "Diagnóstico del error/situación: Evelynn · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Entra por el lado que corta la retirada.\nRegla aplicable: Espera la preparación de H2 y guarda H4 para ejecutar o escapar."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -6643,7 +6643,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Ezreal · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Carga la pasiva sin comprometer H3.\nRegla aplicable: Intercala ataques cuando haya una línea limpia para H1."
+      "description": "Diagnóstico del error/situación: Ezreal · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Carga la pasiva sin comprometer H3.\nRegla aplicable: Intercala ataques cuando haya una línea limpia para H1."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -7131,7 +7131,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Fiora · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Reserva H2 para la animación de control.\nRegla aplicable: Acércate al vital que puedas golpear sin perder tu retirada."
+      "description": "Diagnóstico del error/situación: Fiora · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Reserva H2 para la animación de control.\nRegla aplicable: Acércate al vital que puedas golpear sin perder tu retirada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -7259,7 +7259,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Fiora · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Reserva H2 para la animación de control.\nRegla aplicable: Acércate al vital que puedas golpear sin perder tu retirada."
+      "description": "Diagnóstico del error/situación: Fiora · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Reserva H2 para la animación de control.\nRegla aplicable: Acércate al vital que puedas golpear sin perder tu retirada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -7509,7 +7509,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Fizz · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H4 abre cuando tenga línea de impacto.\nRegla aplicable: Conserva H3 para el control o daño que llegue después de tu entrada."
+      "description": "Diagnóstico del error/situación: Fizz · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H4 abre cuando tenga línea de impacto.\nRegla aplicable: Conserva H3 para el control o daño que llegue después de tu entrada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -7853,7 +7853,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Garen · Línea de Barón · Leyenda: Velocidad. Perseguir con H1 sin una ventana de silencio permite al rival frenar tu giro y alejarse.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
+        "description": "Diagnóstico del error/situación: Garen · Línea de Barón · Leyenda: Velocidad. Perseguir con H1 sin una ventana de silencio permite al rival frenar tu giro y alejarse.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -7893,7 +7893,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Garen · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
+      "description": "Diagnóstico del error/situación: Garen · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -7981,7 +7981,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Garen · Jungla · Leyenda: Velocidad. Perseguir con H1 sin una ventana de silencio permite al rival frenar tu giro y alejarse.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
+        "description": "Diagnóstico del error/situación: Garen · Jungla · Leyenda: Velocidad. Perseguir con H1 sin una ventana de silencio permite al rival frenar tu giro y alejarse.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -8021,7 +8021,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Garen · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
+      "description": "Diagnóstico del error/situación: Garen · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Silencia antes del intercambio.\nRegla aplicable: Retírate para reactivar la regeneración si no existe ejecución con H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -8149,7 +8149,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Gnar · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: La barra de furia decide tu llegada.\nRegla aplicable: Busca una pared real antes de comprometer H4 en Mega."
+      "description": "Diagnóstico del error/situación: Gnar · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: La barra de furia decide tu llegada.\nRegla aplicable: Busca una pared real antes de comprometer H4 en Mega."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -8277,7 +8277,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Gnar · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: La barra de furia decide tu llegada.\nRegla aplicable: Busca una pared real antes de comprometer H4 en Mega."
+      "description": "Diagnóstico del error/situación: Gnar · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: La barra de furia decide tu llegada.\nRegla aplicable: Busca una pared real antes de comprometer H4 en Mega."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -8405,7 +8405,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Gragas · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Marca el lugar donde debe caer el rival antes de lanzar H4.\nRegla aplicable: Usa H3 para asegurar ese ángulo."
+      "description": "Diagnóstico del error/situación: Gragas · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Marca el lugar donde debe caer el rival antes de lanzar H4.\nRegla aplicable: Usa H3 para asegurar ese ángulo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -8533,7 +8533,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Gragas · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Marca el lugar donde debe caer el rival antes de lanzar H4.\nRegla aplicable: Usa H3 para asegurar ese ángulo."
+      "description": "Diagnóstico del error/situación: Gragas · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Marca el lugar donde debe caer el rival antes de lanzar H4.\nRegla aplicable: Usa H3 para asegurar ese ángulo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -8917,7 +8917,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Graves · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Controla munición y recarga antes de invadir.\nRegla aplicable: H2 corta la respuesta mientras reposicionas para el siguiente disparo."
+      "description": "Diagnóstico del error/situación: Graves · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Controla munición y recarga antes de invadir.\nRegla aplicable: H2 corta la respuesta mientras reposicionas para el siguiente disparo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -9045,7 +9045,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Gwen · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pelea desde el borde de H2 frente a enemigos externos.\nRegla aplicable: Prepara cargas de H1 antes del intercambio central."
+      "description": "Diagnóstico del error/situación: Gwen · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pelea desde el borde de H2 frente a enemigos externos.\nRegla aplicable: Prepara cargas de H1 antes del intercambio central."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -9173,7 +9173,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Gwen · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pelea desde el borde de H2 frente a enemigos externos.\nRegla aplicable: Prepara cargas de H1 antes del intercambio central."
+      "description": "Diagnóstico del error/situación: Gwen · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pelea desde el borde de H2 frente a enemigos externos.\nRegla aplicable: Prepara cargas de H1 antes del intercambio central."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -9261,7 +9261,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Hecarim · Jungla · Leyenda: Velocidad. Una entrada frontal sin velocidad preparada deja a tu equipo sin el ángulo para seguir el desplazamiento.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
+        "description": "Diagnóstico del error/situación: Hecarim · Jungla · Leyenda: Velocidad. Una entrada frontal sin velocidad preparada deja a tu equipo sin el ángulo para seguir el desplazamiento.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -9301,7 +9301,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Hecarim · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
+      "description": "Diagnóstico del error/situación: Hecarim · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -9389,7 +9389,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Hecarim · Línea de Barón · Leyenda: Velocidad. Una entrada frontal sin velocidad preparada deja a tu equipo sin el ángulo para seguir el desplazamiento.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
+        "description": "Diagnóstico del error/situación: Hecarim · Línea de Barón · Leyenda: Velocidad. Una entrada frontal sin velocidad preparada deja a tu equipo sin el ángulo para seguir el desplazamiento.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -9429,7 +9429,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Hecarim · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
+      "description": "Diagnóstico del error/situación: Hecarim · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara H3 antes de mostrarte y empuja hacia tu equipo.\nRegla aplicable: No persigas si pierdes el seguimiento aliado."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -9534,7 +9534,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Heimerdinger · Línea Central · Orbe Anulador. Abandonar las torretas para perseguir cambia un combate en tu terreno por uno sin tu principal daño.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Haz que el rival entre al triángulo de torretas.\nRegla aplicable: H3 asegura su permanencia antes de usar la mejora de H4."
+        "description": "Diagnóstico del error/situación: Heimerdinger · Línea Central · Orbe Anulador. Abandonar las torretas para perseguir cambia un combate en tu terreno por uno sin tu principal daño.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Haz que el rival entre al triángulo de torretas.\nRegla aplicable: H3 asegura su permanencia antes de usar la mejora de H4."
       }
     ],
     "coreSpells": [
@@ -9906,7 +9906,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Hwei · Línea Central · Orbe Anulador. Repetir la misma elección de pinceladas no responde igual a una entrada rival y a una oleada que necesitas empujar.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Elige el control de H3 por la trayectoria rival.\nRegla aplicable: Prepara maná con H2 antes de la secuencia de daño de H1."
+        "description": "Diagnóstico del error/situación: Hwei · Línea Central · Orbe Anulador. Repetir la misma elección de pinceladas no responde igual a una entrada rival y a una oleada que necesitas empujar.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Elige el control de H3 por la trayectoria rival.\nRegla aplicable: Prepara maná con H2 antes de la secuencia de daño de H1."
       }
     ],
     "coreSpells": [
@@ -10179,7 +10179,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Irelia · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Verifica la vida del súbdito antes de H1.\nRegla aplicable: Entra al campeón con pasiva preparada y un reinicio posible."
+      "description": "Diagnóstico del error/situación: Irelia · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Verifica la vida del súbdito antes de H1.\nRegla aplicable: Entra al campeón con pasiva preparada y un reinicio posible."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -10307,7 +10307,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Irelia · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Verifica la vida del súbdito antes de H1.\nRegla aplicable: Entra al campeón con pasiva preparada y un reinicio posible."
+      "description": "Diagnóstico del error/situación: Irelia · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Verifica la vida del súbdito antes de H1.\nRegla aplicable: Entra al campeón con pasiva preparada y un reinicio posible."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -10639,7 +10639,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Jarvan IV · Jungla · Leyenda: Velocidad. Cerrar H4 sobre rivales con salto disponible puede encerrar a tus aliados sin atrapar al objetivo.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
+        "description": "Diagnóstico del error/situación: Jarvan IV · Jungla · Leyenda: Velocidad. Cerrar H4 sobre rivales con salto disponible puede encerrar a tus aliados sin atrapar al objetivo.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -10679,7 +10679,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Jarvan IV · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
+      "description": "Diagnóstico del error/situación: Jarvan IV · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -10767,7 +10767,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Jarvan IV · Línea de Barón · Leyenda: Velocidad. Cerrar H4 sobre rivales con salto disponible puede encerrar a tus aliados sin atrapar al objetivo.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
+        "description": "Diagnóstico del error/situación: Jarvan IV · Línea de Barón · Leyenda: Velocidad. Cerrar H4 sobre rivales con salto disponible puede encerrar a tus aliados sin atrapar al objetivo.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -10807,7 +10807,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Jarvan IV · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
+      "description": "Diagnóstico del error/situación: Jarvan IV · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Confirma la movilidad gastada antes de H4.\nRegla aplicable: Desarma el muro si impide el seguimiento o la retirada aliada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -10935,7 +10935,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Jax · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H3 debe cubrir los ataques decisivos.\nRegla aplicable: Conserva un objetivo aliado o súbdito al que saltar para salir."
+      "description": "Diagnóstico del error/situación: Jax · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H3 debe cubrir los ataques decisivos.\nRegla aplicable: Conserva un objetivo aliado o súbdito al que saltar para salir."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -11063,7 +11063,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Jax · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H3 debe cubrir los ataques decisivos.\nRegla aplicable: Conserva un objetivo aliado o súbdito al que saltar para salir."
+      "description": "Diagnóstico del error/situación: Jax · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H3 debe cubrir los ataques decisivos.\nRegla aplicable: Conserva un objetivo aliado o súbdito al que saltar para salir."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -11191,7 +11191,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Jayce · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Disparo acelerado antes de acercarte.\nRegla aplicable: Usa el empuje del martillo para terminar el intercambio, no para perseguirlo."
+      "description": "Diagnóstico del error/situación: Jayce · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Disparo acelerado antes de acercarte.\nRegla aplicable: Usa el empuje del martillo para terminar el intercambio, no para perseguirlo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -11447,7 +11447,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Jhin · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara el cuarto disparo antes de avanzar.\nRegla aplicable: Marca al objetivo antes de H2 y retrocede durante la recarga."
+      "description": "Diagnóstico del error/situación: Jhin · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Prepara el cuarto disparo antes de avanzar.\nRegla aplicable: Marca al objetivo antes de H2 y retrocede durante la recarga."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -13087,7 +13087,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Kassadin · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Calcula el coste visible del siguiente H4 antes de entrar.\nRegla aplicable: Conserva maná para una salida además del daño."
+      "description": "Diagnóstico del error/situación: Kassadin · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Calcula el coste visible del siguiente H4 antes de entrar.\nRegla aplicable: Conserva maná para una salida además del daño."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -13337,7 +13337,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Katarina · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Control rival gastado antes de canalizar.\nRegla aplicable: Elige una daga que dé acceso al objetivo y una salida tras el derribo."
+      "description": "Diagnóstico del error/situación: Katarina · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Control rival gastado antes de canalizar.\nRegla aplicable: Elige una daga que dé acceso al objetivo y una salida tras el derribo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -13709,7 +13709,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Kayn · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Forma sombría busca acceso a frágiles.\nRegla aplicable: Rhaast sostiene peleas; define la retirada de H3 antes de comprometer H4."
+      "description": "Diagnóstico del error/situación: Kayn · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Forma sombría busca acceso a frágiles.\nRegla aplicable: Rhaast sostiene peleas; define la retirada de H3 antes de comprometer H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -13837,7 +13837,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Kayn · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Forma sombría busca acceso a frágiles.\nRegla aplicable: Rhaast sostiene peleas; define la retirada de H3 antes de comprometer H4."
+      "description": "Diagnóstico del error/situación: Kayn · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Forma sombría busca acceso a frágiles.\nRegla aplicable: Rhaast sostiene peleas; define la retirada de H3 antes de comprometer H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -14925,7 +14925,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Lee Sin · Jungla · Leyenda: Velocidad. Una patada que aleja al objetivo de tu equipo pierde el seguimiento aunque conectes tu entrada.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
+        "description": "Diagnóstico del error/situación: Lee Sin · Jungla · Leyenda: Velocidad. Una patada que aleja al objetivo de tu equipo pierde el seguimiento aunque conectes tu entrada.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -14965,7 +14965,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Lee Sin · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
+      "description": "Diagnóstico del error/situación: Lee Sin · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -15053,7 +15053,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Lee Sin · Línea de Barón · Leyenda: Velocidad. Una patada que aleja al objetivo de tu equipo pierde el seguimiento aunque conectes tu entrada.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
+        "description": "Diagnóstico del error/situación: Lee Sin · Línea de Barón · Leyenda: Velocidad. Una patada que aleja al objetivo de tu equipo pierde el seguimiento aunque conectes tu entrada.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -15093,7 +15093,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Lee Sin · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
+      "description": "Diagnóstico del error/situación: Lee Sin · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Define dónde debe terminar el rival antes de H4.\nRegla aplicable: Conserva un blanco de H2 para salir si no llega el seguimiento."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -15176,7 +15176,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Leona · Soporte · Fuente de Vida. Entrar por H3 fuera del alcance del tirador convierte tu cadena de control en una pelea sin daño aliado.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Seguimiento a distancia antes de H3.\nRegla aplicable: Encadena los controles cuando termina el anterior para ampliar la ventana de daño."
+        "description": "Diagnóstico del error/situación: Leona · Soporte · Fuente de Vida. Entrar por H3 fuera del alcance del tirador convierte tu cadena de control en una pelea sin daño aliado.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Seguimiento a distancia antes de H3.\nRegla aplicable: Encadena los controles cuando termina el anterior para ampliar la ventana de daño."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -15304,7 +15304,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Leona · Línea de Barón · Fuente de Vida. Entrar por H3 fuera del alcance del tirador convierte tu cadena de control en una pelea sin daño aliado.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Seguimiento a distancia antes de H3.\nRegla aplicable: Encadena los controles cuando termina el anterior para ampliar la ventana de daño."
+        "description": "Diagnóstico del error/situación: Leona · Línea de Barón · Fuente de Vida. Entrar por H3 fuera del alcance del tirador convierte tu cadena de control en una pelea sin daño aliado.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Seguimiento a distancia antes de H3.\nRegla aplicable: Encadena los controles cuando termina el anterior para ampliar la ventana de daño."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -15437,7 +15437,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Lillia · Jungla · Leyenda: Velocidad. Entrar sin velocidad acumulada o acercarte demasiado al objetivo te expone al control antes de activar el sueño.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Mantén velocidad con impactos seguros.\nRegla aplicable: H4 se decide por quién podrá castigar al objetivo cuando despierte."
+        "description": "Diagnóstico del error/situación: Lillia · Jungla · Leyenda: Velocidad. Entrar sin velocidad acumulada o acercarte demasiado al objetivo te expone al control antes de activar el sueño.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Mantén velocidad con impactos seguros.\nRegla aplicable: H4 se decide por quién podrá castigar al objetivo cuando despierte."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -15559,7 +15559,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Lillia · Línea de Barón · Leyenda: Velocidad. Entrar sin velocidad acumulada o acercarte demasiado al objetivo te expone al control antes de activar el sueño.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Mantén velocidad con impactos seguros.\nRegla aplicable: H4 se decide por quién podrá castigar al objetivo cuando despierte."
+        "description": "Diagnóstico del error/situación: Lillia · Línea de Barón · Leyenda: Velocidad. Entrar sin velocidad acumulada o acercarte demasiado al objetivo te expone al control antes de activar el sueño.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Mantén velocidad con impactos seguros.\nRegla aplicable: H4 se decide por quién podrá castigar al objetivo cuando despierte."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -17048,7 +17048,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Maokai · Soporte · Fuente de Vida. Avanzar tras H4 sin controlar el flanco deja al equipo expuesto aunque bloquees la ruta frontal.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Arbolitos para comprobar entradas antes de H4.\nRegla aplicable: Conserva el control cercano para quien atraviese la primera línea."
+        "description": "Diagnóstico del error/situación: Maokai · Soporte · Fuente de Vida. Avanzar tras H4 sin controlar el flanco deja al equipo expuesto aunque bloquees la ruta frontal.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Arbolitos para comprobar entradas antes de H4.\nRegla aplicable: Conserva el control cercano para quien atraviese la primera línea."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -17176,7 +17176,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Maokai · Línea de Barón · Fuente de Vida. Avanzar tras H4 sin controlar el flanco deja al equipo expuesto aunque bloquees la ruta frontal.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Arbolitos para comprobar entradas antes de H4.\nRegla aplicable: Conserva el control cercano para quien atraviese la primera línea."
+        "description": "Diagnóstico del error/situación: Maokai · Línea de Barón · Fuente de Vida. Avanzar tras H4 sin controlar el flanco deja al equipo expuesto aunque bloquees la ruta frontal.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Arbolitos para comprobar entradas antes de H4.\nRegla aplicable: Conserva el control cercano para quien atraviese la primera línea."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -17304,7 +17304,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Maokai · Jungla · Fuente de Vida. Avanzar tras H4 sin controlar el flanco deja al equipo expuesto aunque bloquees la ruta frontal.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Arbolitos para comprobar entradas antes de H4.\nRegla aplicable: Conserva el control cercano para quien atraviese la primera línea."
+        "description": "Diagnóstico del error/situación: Maokai · Jungla · Fuente de Vida. Avanzar tras H4 sin controlar el flanco deja al equipo expuesto aunque bloquees la ruta frontal.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Arbolitos para comprobar entradas antes de H4.\nRegla aplicable: Conserva el control cercano para quien atraviese la primera línea."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -17477,7 +17477,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Maestro Yi · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Acércate sin gastar H1 cuando sea posible.\nRegla aplicable: Resérvala para la animación del control y busca el primer reinicio protegido."
+      "description": "Diagnóstico del error/situación: Maestro Yi · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Acércate sin gastar H1 cuando sea posible.\nRegla aplicable: Resérvala para la animación del control y busca el primer reinicio protegido."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -17599,7 +17599,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Maestro Yi · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Acércate sin gastar H1 cuando sea posible.\nRegla aplicable: Resérvala para la animación del control y busca el primer reinicio protegido."
+      "description": "Diagnóstico del error/situación: Maestro Yi · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Acércate sin gastar H1 cuando sea posible.\nRegla aplicable: Resérvala para la animación del control y busca el primer reinicio protegido."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -18215,7 +18215,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Miss Fortune · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rebote de H1 con alineación real.\nRegla aplicable: H4 desde un ángulo protegido y después del control aliado."
+      "description": "Diagnóstico del error/situación: Miss Fortune · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rebote de H1 con alineación real.\nRegla aplicable: H4 desde un ángulo protegido y después del control aliado."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -18471,7 +18471,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Mordekaiser · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar.\nRegla aplicable: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar."
+      "description": "Diagnóstico del error/situación: Mordekaiser · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar.\nRegla aplicable: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -18599,7 +18599,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Mordekaiser · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar.\nRegla aplicable: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar."
+      "description": "Diagnóstico del error/situación: Mordekaiser · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar.\nRegla aplicable: Decide el objetivo de H4 por la disputa siguiente: negar al jungla o aislar a un carry que puedas alcanzar."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -19337,7 +19337,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Nasus · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Carga segura antes que súbdito disputado.\nRegla aplicable: Usa la ralentización para mantener al rival dentro de tu ventana de H4."
+      "description": "Diagnóstico del error/situación: Nasus · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Carga segura antes que súbdito disputado.\nRegla aplicable: Usa la ralentización para mantener al rival dentro de tu ventana de H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -19465,7 +19465,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Nasus · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Carga segura antes que súbdito disputado.\nRegla aplicable: Usa la ralentización para mantener al rival dentro de tu ventana de H4."
+      "description": "Diagnóstico del error/situación: Nasus · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Carga segura antes que súbdito disputado.\nRegla aplicable: Usa la ralentización para mantener al rival dentro de tu ventana de H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -19548,7 +19548,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Nautilus · Soporte · Fuente de Vida. Enganchar un objetivo sin ruta de seguimiento te compromete a una entrada que tu equipo no puede sostener.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: H4 fuerza la primera respuesta.\nRegla aplicable: H1 sigue cuando termine la movilidad rival o se reserva para salir por terreno."
+        "description": "Diagnóstico del error/situación: Nautilus · Soporte · Fuente de Vida. Enganchar un objetivo sin ruta de seguimiento te compromete a una entrada que tu equipo no puede sostener.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: H4 fuerza la primera respuesta.\nRegla aplicable: H1 sigue cuando termine la movilidad rival o se reserva para salir por terreno."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -19676,7 +19676,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Nautilus · Línea de Barón · Fuente de Vida. Enganchar un objetivo sin ruta de seguimiento te compromete a una entrada que tu equipo no puede sostener.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: H4 fuerza la primera respuesta.\nRegla aplicable: H1 sigue cuando termine la movilidad rival o se reserva para salir por terreno."
+        "description": "Diagnóstico del error/situación: Nautilus · Línea de Barón · Fuente de Vida. Enganchar un objetivo sin ruta de seguimiento te compromete a una entrada que tu equipo no puede sostener.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: H4 fuerza la primera respuesta.\nRegla aplicable: H1 sigue cuando termine la movilidad rival o se reserva para salir por terreno."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -19804,7 +19804,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Nautilus · Jungla · Fuente de Vida. Enganchar un objetivo sin ruta de seguimiento te compromete a una entrada que tu equipo no puede sostener.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: H4 fuerza la primera respuesta.\nRegla aplicable: H1 sigue cuando termine la movilidad rival o se reserva para salir por terreno."
+        "description": "Diagnóstico del error/situación: Nautilus · Jungla · Fuente de Vida. Enganchar un objetivo sin ruta de seguimiento te compromete a una entrada que tu equipo no puede sostener.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: H4 fuerza la primera respuesta.\nRegla aplicable: H1 sigue cuando termine la movilidad rival o se reserva para salir por terreno."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -20599,7 +20599,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Nocturne · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Elige el objetivo por cobertura y ruta de retirada.\nRegla aplicable: Reserva H2 para la habilidad que llegue después de aterrizar."
+      "description": "Diagnóstico del error/situación: Nocturne · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Elige el objetivo por cobertura y ruta de retirada.\nRegla aplicable: Reserva H2 para la habilidad que llegue después de aterrizar."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -20941,7 +20941,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Nunu y Willump · Jungla · Fuente de Vida. Una bola de nieve sin una ruta libre pierde velocidad y revela la emboscada antes de llegar.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Ruta de H2 despejada antes de empezar.\nRegla aplicable: H1 y Castigo se coordinan con la vida visible del monstruo."
+        "description": "Diagnóstico del error/situación: Nunu y Willump · Jungla · Fuente de Vida. Una bola de nieve sin una ruta libre pierde velocidad y revela la emboscada antes de llegar.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Ruta de H2 despejada antes de empezar.\nRegla aplicable: H1 y Castigo se coordinan con la vida visible del monstruo."
       }
     ],
     "situationalRunes": [],
@@ -21069,7 +21069,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Nunu y Willump · Línea Central · Fuente de Vida. Una bola de nieve sin una ruta libre pierde velocidad y revela la emboscada antes de llegar.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Ruta de H2 despejada antes de empezar.\nRegla aplicable: H1 y Castigo se coordinan con la vida visible del monstruo."
+        "description": "Diagnóstico del error/situación: Nunu y Willump · Línea Central · Fuente de Vida. Una bola de nieve sin una ruta libre pierde velocidad y revela la emboscada antes de llegar.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Ruta de H2 despejada antes de empezar.\nRegla aplicable: H1 y Castigo se coordinan con la vida visible del monstruo."
       }
     ],
     "situationalRunes": [],
@@ -21227,7 +21227,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Olaf · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Hacha recuperable antes de perseguir.\nRegla aplicable: H4 se compromete cuando el control rival impida continuar la pelea."
+      "description": "Diagnóstico del error/situación: Olaf · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Hacha recuperable antes de perseguir.\nRegla aplicable: H4 se compromete cuando el control rival impida continuar la pelea."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -21355,7 +21355,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Olaf · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Hacha recuperable antes de perseguir.\nRegla aplicable: H4 se compromete cuando el control rival impida continuar la pelea."
+      "description": "Diagnóstico del error/situación: Olaf · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Hacha recuperable antes de perseguir.\nRegla aplicable: H4 se compromete cuando el control rival impida continuar la pelea."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -21460,7 +21460,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Orianna · Línea Central · Orbe Anulador. H4 lanzada sin verificar la posición de la esfera puede gastar tu iniciación fuera del objetivo.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Localiza la esfera antes de cada H4.\nRegla aplicable: Acompaña al iniciador con H3 sin perder el alcance de seguimiento."
+        "description": "Diagnóstico del error/situación: Orianna · Línea Central · Orbe Anulador. H4 lanzada sin verificar la posición de la esfera puede gastar tu iniciación fuera del objetivo.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Localiza la esfera antes de cada H4.\nRegla aplicable: Acompaña al iniciador con H3 sin perder el alcance de seguimiento."
       }
     ],
     "coreSpells": [
@@ -21949,7 +21949,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Pantheon · Línea de Barón · Leyenda: Velocidad. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
+        "description": "Diagnóstico del error/situación: Pantheon · Línea de Barón · Leyenda: Velocidad. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -21989,7 +21989,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Pantheon · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
+      "description": "Diagnóstico del error/situación: Pantheon · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -22077,7 +22077,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Pantheon · Línea Central · Leyenda: Velocidad. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
+        "description": "Diagnóstico del error/situación: Pantheon · Línea Central · Leyenda: Velocidad. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -22117,7 +22117,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Pantheon · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
+      "description": "Diagnóstico del error/situación: Pantheon · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -22205,7 +22205,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Pantheon · Soporte · Leyenda: Velocidad. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
+        "description": "Diagnóstico del error/situación: Pantheon · Soporte · Leyenda: Velocidad. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -22333,7 +22333,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Pantheon · Jungla · Leyenda: Velocidad. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
+        "description": "Diagnóstico del error/situación: Pantheon · Jungla · Leyenda: Velocidad. Entrar con H2 sin preparar la pasiva pierde la ráfaga que hace rentable tu intercambio corto.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -22373,7 +22373,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Pantheon · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
+      "description": "Diagnóstico del error/situación: Pantheon · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Pasiva preparada antes de H2.\nRegla aplicable: Orienta H3 hacia la amenaza y elige H4 por la posición de llegada aliada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -23090,7 +23090,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Rakan · Soporte · Fuente de Vida. Usar ambas cargas de H3 para avanzar te deja sin regreso después de entrar con H2 y H4.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Un aliado dentro del alcance de regreso antes de iniciar.\nRegla aplicable: Conserva una carga de H3 para cerrar la jugada."
+        "description": "Diagnóstico del error/situación: Rakan · Soporte · Fuente de Vida. Usar ambas cargas de H3 para avanzar te deja sin regreso después de entrar con H2 y H4.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Un aliado dentro del alcance de regreso antes de iniciar.\nRegla aplicable: Conserva una carga de H3 para cerrar la jugada."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -23218,7 +23218,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Rakan · Línea Central · Fuente de Vida. Usar ambas cargas de H3 para avanzar te deja sin regreso después de entrar con H2 y H4.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Un aliado dentro del alcance de regreso antes de iniciar.\nRegla aplicable: Conserva una carga de H3 para cerrar la jugada."
+        "description": "Diagnóstico del error/situación: Rakan · Línea Central · Fuente de Vida. Usar ambas cargas de H3 para avanzar te deja sin regreso después de entrar con H2 y H4.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Un aliado dentro del alcance de regreso antes de iniciar.\nRegla aplicable: Conserva una carga de H3 para cerrar la jugada."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -23346,7 +23346,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Rammus · Jungla · Fuente de Vida. Provocar antes de H2 permite que los ataques forzados lleguen antes de tu defensa.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: H2 activa antes de la provocación.\nRegla aplicable: Escoge al atacante que pueda recibir daño devuelto y seguimiento aliado."
+        "description": "Diagnóstico del error/situación: Rammus · Jungla · Fuente de Vida. Provocar antes de H2 permite que los ataques forzados lleguen antes de tu defensa.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: H2 activa antes de la provocación.\nRegla aplicable: Escoge al atacante que pueda recibir daño devuelto y seguimiento aliado."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -23474,7 +23474,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Rammus · Línea de Barón · Fuente de Vida. Provocar antes de H2 permite que los ataques forzados lleguen antes de tu defensa.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: H2 activa antes de la provocación.\nRegla aplicable: Escoge al atacante que pueda recibir daño devuelto y seguimiento aliado."
+        "description": "Diagnóstico del error/situación: Rammus · Línea de Barón · Fuente de Vida. Provocar antes de H2 permite que los ataques forzados lleguen antes de tu defensa.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: H2 activa antes de la provocación.\nRegla aplicable: Escoge al atacante que pueda recibir daño devuelto y seguimiento aliado."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -23602,7 +23602,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Rell · Soporte · Fuente de Vida. Entrar sobre el primer objetivo visible sin compañía puede separar tu control del daño de tu equipo.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Seguimiento confirmado antes de comprometer la entrada.\nRegla aplicable: H1 rompe el escudo antes de concentrar el daño aliado."
+        "description": "Diagnóstico del error/situación: Rell · Soporte · Fuente de Vida. Entrar sobre el primer objetivo visible sin compañía puede separar tu control del daño de tu equipo.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Seguimiento confirmado antes de comprometer la entrada.\nRegla aplicable: H1 rompe el escudo antes de concentrar el daño aliado."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -23730,7 +23730,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Rell · Jungla · Fuente de Vida. Entrar sobre el primer objetivo visible sin compañía puede separar tu control del daño de tu equipo.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: Seguimiento confirmado antes de comprometer la entrada.\nRegla aplicable: H1 rompe el escudo antes de concentrar el daño aliado."
+        "description": "Diagnóstico del error/situación: Rell · Jungla · Fuente de Vida. Entrar sobre el primer objetivo visible sin compañía puede separar tu control del daño de tu equipo.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: Seguimiento confirmado antes de comprometer la entrada.\nRegla aplicable: H1 rompe el escudo antes de concentrar el daño aliado."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -23863,7 +23863,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Renekton · Línea de Barón · Leyenda: Velocidad. Gastar la furia en limpiar antes de un duelo elimina el aturdimiento potenciado que abre tu ráfaga.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Furia preparada antes de H2.\nRegla aplicable: Conserva la segunda parte de H3 para retirarte después del intercambio."
+        "description": "Diagnóstico del error/situación: Renekton · Línea de Barón · Leyenda: Velocidad. Gastar la furia en limpiar antes de un duelo elimina el aturdimiento potenciado que abre tu ráfaga.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Furia preparada antes de H2.\nRegla aplicable: Conserva la segunda parte de H3 para retirarte después del intercambio."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -23903,7 +23903,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Renekton · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Furia preparada antes de H2.\nRegla aplicable: Conserva la segunda parte de H3 para retirarte después del intercambio."
+      "description": "Diagnóstico del error/situación: Renekton · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Furia preparada antes de H2.\nRegla aplicable: Conserva la segunda parte de H3 para retirarte después del intercambio."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -23991,7 +23991,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Renekton · Línea Central · Leyenda: Velocidad. Gastar la furia en limpiar antes de un duelo elimina el aturdimiento potenciado que abre tu ráfaga.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Furia preparada antes de H2.\nRegla aplicable: Conserva la segunda parte de H3 para retirarte después del intercambio."
+        "description": "Diagnóstico del error/situación: Renekton · Línea Central · Leyenda: Velocidad. Gastar la furia en limpiar antes de un duelo elimina el aturdimiento potenciado que abre tu ráfaga.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Furia preparada antes de H2.\nRegla aplicable: Conserva la segunda parte de H3 para retirarte después del intercambio."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -24031,7 +24031,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Renekton · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Furia preparada antes de H2.\nRegla aplicable: Conserva la segunda parte de H3 para retirarte después del intercambio."
+      "description": "Diagnóstico del error/situación: Renekton · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Furia preparada antes de H2.\nRegla aplicable: Conserva la segunda parte de H3 para retirarte después del intercambio."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -24287,7 +24287,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Rengar · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ferocidad y habilidad potenciada elegidas antes del salto.\nRegla aplicable: Daño para ejecutar, respuesta defensiva para sobrevivir al control."
+      "description": "Diagnóstico del error/situación: Rengar · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ferocidad y habilidad potenciada elegidas antes del salto.\nRegla aplicable: Daño para ejecutar, respuesta defensiva para sobrevivir al control."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -24375,7 +24375,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Riven · Línea de Barón · Leyenda: Velocidad. Gastar todas las cargas de H1 para acercarte reduce el daño y elimina tu salida tras la respuesta rival.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Ataques entre cargas de H1.\nRegla aplicable: Conserva un desplazamiento si todavía no se gastó el control enemigo."
+        "description": "Diagnóstico del error/situación: Riven · Línea de Barón · Leyenda: Velocidad. Gastar todas las cargas de H1 para acercarte reduce el daño y elimina tu salida tras la respuesta rival.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Ataques entre cargas de H1.\nRegla aplicable: Conserva un desplazamiento si todavía no se gastó el control enemigo."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -24415,7 +24415,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Riven · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataques entre cargas de H1.\nRegla aplicable: Conserva un desplazamiento si todavía no se gastó el control enemigo."
+      "description": "Diagnóstico del error/situación: Riven · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataques entre cargas de H1.\nRegla aplicable: Conserva un desplazamiento si todavía no se gastó el control enemigo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -24503,7 +24503,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Riven · Línea Central · Leyenda: Velocidad. Gastar todas las cargas de H1 para acercarte reduce el daño y elimina tu salida tras la respuesta rival.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Ataques entre cargas de H1.\nRegla aplicable: Conserva un desplazamiento si todavía no se gastó el control enemigo."
+        "description": "Diagnóstico del error/situación: Riven · Línea Central · Leyenda: Velocidad. Gastar todas las cargas de H1 para acercarte reduce el daño y elimina tu salida tras la respuesta rival.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Ataques entre cargas de H1.\nRegla aplicable: Conserva un desplazamiento si todavía no se gastó el control enemigo."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -24543,7 +24543,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Riven · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataques entre cargas de H1.\nRegla aplicable: Conserva un desplazamiento si todavía no se gastó el control enemigo."
+      "description": "Diagnóstico del error/situación: Riven · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataques entre cargas de H1.\nRegla aplicable: Conserva un desplazamiento si todavía no se gastó el control enemigo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -24671,7 +24671,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Rumble · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Barra de calor revisada antes de cada rotación.\nRegla aplicable: Coloca H4 sobre la ruta de salida, no detrás del rival."
+      "description": "Diagnóstico del error/situación: Rumble · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Barra de calor revisada antes de cada rotación.\nRegla aplicable: Coloca H4 sobre la ruta de salida, no detrás del rival."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -24927,7 +24927,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Rumble · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Barra de calor revisada antes de cada rotación.\nRegla aplicable: Coloca H4 sobre la ruta de salida, no detrás del rival."
+      "description": "Diagnóstico del error/situación: Rumble · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Barra de calor revisada antes de cada rotación.\nRegla aplicable: Coloca H4 sobre la ruta de salida, no detrás del rival."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -25555,7 +25555,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Senna · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Alma segura antes que alma disputada.\nRegla aplicable: Usa alcance y ralentización para reunir almas sin cruzar la línea de protección."
+      "description": "Diagnóstico del error/situación: Senna · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Alma segura antes que alma disputada.\nRegla aplicable: Usa alcance y ralentización para reunir almas sin cruzar la línea de protección."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -26137,7 +26137,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Sett · Línea de Barón · Leyenda: Velocidad. Lanzar H2 antes de acumular Agallas convierte tu herramienta de respuesta en una amenaza menor.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: H3 reúne o inmoviliza antes de centrar H2.\nRegla aplicable: No entregues la barra de Agallas disparando al primer daño recibido."
+        "description": "Diagnóstico del error/situación: Sett · Línea de Barón · Leyenda: Velocidad. Lanzar H2 antes de acumular Agallas convierte tu herramienta de respuesta en una amenaza menor.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: H3 reúne o inmoviliza antes de centrar H2.\nRegla aplicable: No entregues la barra de Agallas disparando al primer daño recibido."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -26177,7 +26177,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Sett · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H3 reúne o inmoviliza antes de centrar H2.\nRegla aplicable: No entregues la barra de Agallas disparando al primer daño recibido."
+      "description": "Diagnóstico del error/situación: Sett · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: H3 reúne o inmoviliza antes de centrar H2.\nRegla aplicable: No entregues la barra de Agallas disparando al primer daño recibido."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -26265,7 +26265,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Sett · Soporte · Leyenda: Velocidad. Lanzar H2 antes de acumular Agallas convierte tu herramienta de respuesta en una amenaza menor.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: H3 reúne o inmoviliza antes de centrar H2.\nRegla aplicable: No entregues la barra de Agallas disparando al primer daño recibido."
+        "description": "Diagnóstico del error/situación: Sett · Soporte · Leyenda: Velocidad. Lanzar H2 antes de acumular Agallas convierte tu herramienta de respuesta en una amenaza menor.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: H3 reúne o inmoviliza antes de centrar H2.\nRegla aplicable: No entregues la barra de Agallas disparando al primer daño recibido."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -26689,7 +26689,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Shyvana · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Furia disponible antes de comprometer el objetivo.\nRegla aplicable: El punto de aterrizaje de H4 debe permitir que tu equipo siga."
+      "description": "Diagnóstico del error/situación: Shyvana · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Furia disponible antes de comprometer el objetivo.\nRegla aplicable: El punto de aterrizaje de H4 debe permitir que tu equipo siga."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -26817,7 +26817,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Shyvana · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Furia disponible antes de comprometer el objetivo.\nRegla aplicable: El punto de aterrizaje de H4 debe permitir que tu equipo siga."
+      "description": "Diagnóstico del error/situación: Shyvana · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Furia disponible antes de comprometer el objetivo.\nRegla aplicable: El punto de aterrizaje de H4 debe permitir que tu equipo siga."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -26905,7 +26905,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Singed · Línea de Barón · Leyenda: Velocidad. Hacer proxy sin localizar al jungla puede encerrar tu retirada entre dos rivales y perder la siguiente oleada.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Ruta de salida antes de cruzar la torre.\nRegla aplicable: Usa H2 para negar la persecución y H3 para devolver rivales al veneno."
+        "description": "Diagnóstico del error/situación: Singed · Línea de Barón · Leyenda: Velocidad. Hacer proxy sin localizar al jungla puede encerrar tu retirada entre dos rivales y perder la siguiente oleada.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Ruta de salida antes de cruzar la torre.\nRegla aplicable: Usa H2 para negar la persecución y H3 para devolver rivales al veneno."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -27033,7 +27033,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Singed · Línea Central · Leyenda: Velocidad. Hacer proxy sin localizar al jungla puede encerrar tu retirada entre dos rivales y perder la siguiente oleada.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Ruta de salida antes de cruzar la torre.\nRegla aplicable: Usa H2 para negar la persecución y H3 para devolver rivales al veneno."
+        "description": "Diagnóstico del error/situación: Singed · Línea Central · Leyenda: Velocidad. Hacer proxy sin localizar al jungla puede encerrar tu retirada entre dos rivales y perder la siguiente oleada.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Ruta de salida antes de cruzar la torre.\nRegla aplicable: Usa H2 para negar la persecución y H3 para devolver rivales al veneno."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -27673,7 +27673,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Skarner · Jungla · Leyenda: Velocidad. Entrar atravesando un muro sin planear la dirección del arrastre puede separar al objetivo del daño aliado.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Salida de H3 y dirección de H4 definidas antes de iniciar.\nRegla aplicable: Arrastra hacia cobertura o daño aliado."
+        "description": "Diagnóstico del error/situación: Skarner · Jungla · Leyenda: Velocidad. Entrar atravesando un muro sin planear la dirección del arrastre puede separar al objetivo del daño aliado.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Salida de H3 y dirección de H4 definidas antes de iniciar.\nRegla aplicable: Arrastra hacia cobertura o daño aliado."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -27801,7 +27801,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Skarner · Línea de Barón · Leyenda: Velocidad. Entrar atravesando un muro sin planear la dirección del arrastre puede separar al objetivo del daño aliado.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Salida de H3 y dirección de H4 definidas antes de iniciar.\nRegla aplicable: Arrastra hacia cobertura o daño aliado."
+        "description": "Diagnóstico del error/situación: Skarner · Línea de Barón · Leyenda: Velocidad. Entrar atravesando un muro sin planear la dirección del arrastre puede separar al objetivo del daño aliado.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Salida de H3 y dirección de H4 definidas antes de iniciar.\nRegla aplicable: Arrastra hacia cobertura o daño aliado."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -27969,7 +27969,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Smolder · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Decide por el efecto desbloqueado de H1.\nRegla aplicable: Conserva H3 para mantener el rango cuando el rival se acerque."
+      "description": "Diagnóstico del error/situación: Smolder · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Decide por el efecto desbloqueado de H1.\nRegla aplicable: Conserva H3 para mantener el rango cuando el rival se acerque."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -28673,7 +28673,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Swain · Línea Central · Leyenda: Velocidad. Perseguir fuera del alcance de drenaje deja caer la pelea prolongada que hacía útil tu definitiva.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Controla la salida rival para mantener el drenaje.\nRegla aplicable: Retírate si ya no puedes permanecer en rango de campeones."
+        "description": "Diagnóstico del error/situación: Swain · Línea Central · Leyenda: Velocidad. Perseguir fuera del alcance de drenaje deja caer la pelea prolongada que hacía útil tu definitiva.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Controla la salida rival para mantener el drenaje.\nRegla aplicable: Retírate si ya no puedes permanecer en rango de campeones."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -28801,7 +28801,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Swain · Soporte · Leyenda: Velocidad. Perseguir fuera del alcance de drenaje deja caer la pelea prolongada que hacía útil tu definitiva.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Controla la salida rival para mantener el drenaje.\nRegla aplicable: Retírate si ya no puedes permanecer en rango de campeones."
+        "description": "Diagnóstico del error/situación: Swain · Soporte · Leyenda: Velocidad. Perseguir fuera del alcance de drenaje deja caer la pelea prolongada que hacía útil tu definitiva.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Controla la salida rival para mantener el drenaje.\nRegla aplicable: Retírate si ya no puedes permanecer en rango de campeones."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -28929,7 +28929,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Swain · Línea de Barón · Leyenda: Velocidad. Perseguir fuera del alcance de drenaje deja caer la pelea prolongada que hacía útil tu definitiva.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Controla la salida rival para mantener el drenaje.\nRegla aplicable: Retírate si ya no puedes permanecer en rango de campeones."
+        "description": "Diagnóstico del error/situación: Swain · Línea de Barón · Leyenda: Velocidad. Perseguir fuera del alcance de drenaje deja caer la pelea prolongada que hacía útil tu definitiva.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Controla la salida rival para mantener el drenaje.\nRegla aplicable: Retírate si ya no puedes permanecer en rango de campeones."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -29074,7 +29074,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Syndra · Línea Central · Orbe Anulador. Gastar H3 para limpiar deja tus esferas sin la herramienta que detiene al asesino y asegura H4.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Esfera colocada antes del empuje.\nRegla aplicable: Conserva H3 hasta forzar la movilidad rival o necesitar cortar su entrada."
+        "description": "Diagnóstico del error/situación: Syndra · Línea Central · Orbe Anulador. Gastar H3 para limpiar deja tus esferas sin la herramienta que detiene al asesino y asegura H4.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Esfera colocada antes del empuje.\nRegla aplicable: Conserva H3 hasta forzar la movilidad rival o necesitar cortar su entrada."
       }
     ],
     "coreSpells": [
@@ -30040,7 +30040,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Thresh · Soporte · Fuente de Vida. Avanzar tras el gancho sin un aliado en rango elimina el seguimiento y la utilidad de tu linterna.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: No reactives H1 automáticamente.\nRegla aplicable: Coloca H2 en una ruta accesible antes de iniciar o rescatar."
+        "description": "Diagnóstico del error/situación: Thresh · Soporte · Fuente de Vida. Avanzar tras el gancho sin un aliado en rango elimina el seguimiento y la utilidad de tu linterna.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: No reactives H1 automáticamente.\nRegla aplicable: Coloca H2 en una ruta accesible antes de iniciar o rescatar."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -30168,7 +30168,7 @@
       {
         "runeName": "Fuente de Vida",
         "iconUrl": "file:///android_asset/runes/font_of_life.webp",
-        "description": "Diagnóstico del error/situación: Thresh · Línea de Barón · Fuente de Vida. Avanzar tras el gancho sin un aliado en rango elimina el seguimiento y la utilidad de tu linterna.\nDecisión Soberano: Marca con tu control a un enemigo que los aliados realmente puedan atacar durante la protección.\nMicro y Macro detalle: No reactives H1 automáticamente.\nRegla aplicable: Coloca H2 en una ruta accesible antes de iniciar o rescatar."
+        "description": "Diagnóstico del error/situación: Thresh · Línea de Barón · Fuente de Vida. Avanzar tras el gancho sin un aliado en rango elimina el seguimiento y la utilidad de tu linterna.\nDecisión Soberano: Golpea al campeón con un ataque o habilidad cuando el aliado herido esté cerca; conserva distancia de protección para que ambos reciban la recuperación.\nMicro y Macro detalle: No reactives H1 automáticamente.\nRegla aplicable: Coloca H2 en una ruta accesible antes de iniciar o rescatar."
       },
       {
         "runeName": "Revestimiento de Huesos",
@@ -31301,7 +31301,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Urgot · Línea de Barón · Leyenda: Velocidad. Permanecer en el mismo lado del objetivo desperdicia las piernas aún disponibles para disparar.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Rota alrededor del objetivo sin cruzar su salida.\nRegla aplicable: Usa H4 cuando el indicador permita ejecutar, no por abrir la pelea."
+        "description": "Diagnóstico del error/situación: Urgot · Línea de Barón · Leyenda: Velocidad. Permanecer en el mismo lado del objetivo desperdicia las piernas aún disponibles para disparar.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Rota alrededor del objetivo sin cruzar su salida.\nRegla aplicable: Usa H4 cuando el indicador permita ejecutar, no por abrir la pelea."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -31341,7 +31341,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Urgot · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rota alrededor del objetivo sin cruzar su salida.\nRegla aplicable: Usa H4 cuando el indicador permita ejecutar, no por abrir la pelea."
+      "description": "Diagnóstico del error/situación: Urgot · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rota alrededor del objetivo sin cruzar su salida.\nRegla aplicable: Usa H4 cuando el indicador permita ejecutar, no por abrir la pelea."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -31429,7 +31429,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Urgot · Línea Central · Leyenda: Velocidad. Permanecer en el mismo lado del objetivo desperdicia las piernas aún disponibles para disparar.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Rota alrededor del objetivo sin cruzar su salida.\nRegla aplicable: Usa H4 cuando el indicador permita ejecutar, no por abrir la pelea."
+        "description": "Diagnóstico del error/situación: Urgot · Línea Central · Leyenda: Velocidad. Permanecer en el mismo lado del objetivo desperdicia las piernas aún disponibles para disparar.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Rota alrededor del objetivo sin cruzar su salida.\nRegla aplicable: Usa H4 cuando el indicador permita ejecutar, no por abrir la pelea."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -31469,7 +31469,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Urgot · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rota alrededor del objetivo sin cruzar su salida.\nRegla aplicable: Usa H4 cuando el indicador permita ejecutar, no por abrir la pelea."
+      "description": "Diagnóstico del error/situación: Urgot · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rota alrededor del objetivo sin cruzar su salida.\nRegla aplicable: Usa H4 cuando el indicador permita ejecutar, no por abrir la pelea."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -31597,7 +31597,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Varus · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataques para preparar Infección antes de detonar.\nRegla aplicable: H4 se reserva para asegurar la secuencia o detener la entrada."
+      "description": "Diagnóstico del error/situación: Varus · Línea de Dragón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Ataques para preparar Infección antes de detonar.\nRegla aplicable: H4 se reserva para asegurar la secuencia o detener la entrada."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -32068,7 +32068,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Veigar · Línea Central · Orbe Anulador. Colocar la jaula solo por alcance puede dejar un pasillo limpio para que el rival alcance tu posición.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Borde de H3 sobre la ruta rival.\nRegla aplicable: H4 después del daño preparatorio, no antes de conocer la vida restante."
+        "description": "Diagnóstico del error/situación: Veigar · Línea Central · Orbe Anulador. Colocar la jaula solo por alcance puede dejar un pasillo limpio para que el rival alcance tu posición.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Borde de H3 sobre la ruta rival.\nRegla aplicable: H4 después del daño preparatorio, no antes de conocer la vida restante."
       }
     ],
     "coreSpells": [
@@ -32318,7 +32318,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Vel'Koz · Línea Central · Orbe Anulador. Canalizar H4 sin contar las marcas de la pasiva pierde daño y te expone al control disponible.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Prepara la pasiva y un ángulo protegido antes de H4.\nRegla aplicable: Usa el derribo para negar al rival que pueda interrumpirte."
+        "description": "Diagnóstico del error/situación: Vel'Koz · Línea Central · Orbe Anulador. Canalizar H4 sin contar las marcas de la pasiva pierde daño y te expone al control disponible.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Prepara la pasiva y un ángulo protegido antes de H4.\nRegla aplicable: Usa el derribo para negar al rival que pueda interrumpirte."
       }
     ],
     "coreSpells": [
@@ -32795,7 +32795,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Vi · Jungla · Leyenda: Velocidad. Lanzar H4 sobre un objetivo fuera del seguimiento aliado te deja sola al terminar la animación.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
+        "description": "Diagnóstico del error/situación: Vi · Jungla · Leyenda: Velocidad. Lanzar H4 sobre un objetivo fuera del seguimiento aliado te deja sola al terminar la animación.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -32835,7 +32835,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Vi · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
+      "description": "Diagnóstico del error/situación: Vi · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -32923,7 +32923,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Vi · Línea de Barón · Leyenda: Velocidad. Lanzar H4 sobre un objetivo fuera del seguimiento aliado te deja sola al terminar la animación.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
+        "description": "Diagnóstico del error/situación: Vi · Línea de Barón · Leyenda: Velocidad. Lanzar H4 sobre un objetivo fuera del seguimiento aliado te deja sola al terminar la animación.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -32963,7 +32963,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Vi · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
+      "description": "Diagnóstico del error/situación: Vi · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Objetivo y posición aliada antes de H4.\nRegla aplicable: Conserva H1 si necesitas seguir la salida después de fijarlo."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -33091,7 +33091,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Viego · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Posee por curación, herramientas y posición.\nRegla aplicable: Revisa las habilidades prestadas antes de abandonar la forma con H4."
+      "description": "Diagnóstico del error/situación: Viego · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Posee por curación, herramientas y posición.\nRegla aplicable: Revisa las habilidades prestadas antes de abandonar la forma con H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -33219,7 +33219,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Viego · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Posee por curación, herramientas y posición.\nRegla aplicable: Revisa las habilidades prestadas antes de abandonar la forma con H4."
+      "description": "Diagnóstico del error/situación: Viego · Línea Central · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Posee por curación, herramientas y posición.\nRegla aplicable: Revisa las habilidades prestadas antes de abandonar la forma con H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -33324,7 +33324,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Viktor · Línea Central · Orbe Anulador. Gastar el control antes de la entrada rival puede dejar tu posición inmóvil sin protección durante el rayo.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Rayo desde alcance seguro y zona de control sobre la entrada.\nRegla aplicable: H4 interrumpe cuando el rival realmente canaliza."
+        "description": "Diagnóstico del error/situación: Viktor · Línea Central · Orbe Anulador. Gastar el control antes de la entrada rival puede dejar tu posición inmóvil sin protección durante el rayo.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Rayo desde alcance seguro y zona de control sobre la entrada.\nRegla aplicable: H4 interrumpe cuando el rival realmente canaliza."
       }
     ],
     "coreSpells": [
@@ -34097,7 +34097,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Warwick · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rastro con ruta segura antes de perseguir.\nRegla aplicable: H4 debe tener línea al objetivo y cobertura al terminar la supresión."
+      "description": "Diagnóstico del error/situación: Warwick · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rastro con ruta segura antes de perseguir.\nRegla aplicable: H4 debe tener línea al objetivo y cobertura al terminar la supresión."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -34225,7 +34225,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Warwick · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rastro con ruta segura antes de perseguir.\nRegla aplicable: H4 debe tener línea al objetivo y cobertura al terminar la supresión."
+      "description": "Diagnóstico del error/situación: Warwick · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Rastro con ruta segura antes de perseguir.\nRegla aplicable: H4 debe tener línea al objetivo y cobertura al terminar la supresión."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -34313,7 +34313,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Wukong · Línea de Barón · Leyenda: Velocidad. Gastar H2 para avanzar sin una segunda ruta de salida deja tu doble Ciclón expuesto al daño concentrado.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
+        "description": "Diagnóstico del error/situación: Wukong · Línea de Barón · Leyenda: Velocidad. Gastar H2 para avanzar sin una segunda ruta de salida deja tu doble Ciclón expuesto al daño concentrado.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -34353,7 +34353,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Wukong · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
+      "description": "Diagnóstico del error/situación: Wukong · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -34441,7 +34441,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Wukong · Jungla · Leyenda: Velocidad. Gastar H2 para avanzar sin una segunda ruta de salida deja tu doble Ciclón expuesto al daño concentrado.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
+        "description": "Diagnóstico del error/situación: Wukong · Jungla · Leyenda: Velocidad. Gastar H2 para avanzar sin una segunda ruta de salida deja tu doble Ciclón expuesto al daño concentrado.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
       },
       {
         "runeName": "Último Esfuerzo",
@@ -34481,7 +34481,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Wukong · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
+      "description": "Diagnóstico del error/situación: Wukong · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Clon colocado donde pueda acompañar el control.\nRegla aplicable: Conserva una salida tras el primer levantamiento antes de repetir H4."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -34825,7 +34825,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Xin Zhao · Jungla · Leyenda: Velocidad. Usar H4 antes de separar al objetivo desafiado puede desperdiciar la zona que niega el daño exterior.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
+        "description": "Diagnóstico del error/situación: Xin Zhao · Jungla · Leyenda: Velocidad. Usar H4 antes de separar al objetivo desafiado puede desperdiciar la zona que niega el daño exterior.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -34865,7 +34865,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Xin Zhao · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
+      "description": "Diagnóstico del error/situación: Xin Zhao · Jungla · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -34953,7 +34953,7 @@
       {
         "runeName": "Leyenda: Velocidad",
         "iconUrl": "file:///android_asset/offline_images/first_strike_rune.webp",
-        "description": "Diagnóstico del error/situación: Xin Zhao · Línea de Barón · Leyenda: Velocidad. Usar H4 antes de separar al objetivo desafiado puede desperdiciar la zona que niega el daño exterior.\nDecisión Soberano: La progresión sirve a tus ataques repetidos; convierte cada derribo seguro en presión sin romper tu cobertura.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
+        "description": "Diagnóstico del error/situación: Xin Zhao · Línea de Barón · Leyenda: Velocidad. Usar H4 antes de separar al objetivo desafiado puede desperdiciar la zona que niega el daño exterior.\nDecisión Soberano: Acumula velocidad de habilidades con súbditos, monstruos y derribos; conserva maná o energía para aprovechar una segunda rotación de H1/H2/H3.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
       },
       {
         "runeName": "Golpe de Gracia",
@@ -34993,7 +34993,7 @@
     ],
     "bootsT2Item": {
       "itemName": "Grebas codiciosas",
-      "description": "Diagnóstico del error/situación: Xin Zhao · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con ataques seguros antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
+      "description": "Diagnóstico del error/situación: Xin Zhao · Línea de Barón · Grebas codiciosas. La tarea de esta compra es recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nDecisión Soberano: Recuperar vida con daño seguro de ataques y habilidades antes de volver a disputar el alcance del rival.\nMicro y Macro detalle: Define el objetivo desafiado antes de H4.\nRegla aplicable: Pelea desde el borde que deja fuera al daño de retaguardia rival."
     },
     "bootsT3Item": {
       "itemName": "Botas inmortales",
@@ -36714,7 +36714,7 @@
       {
         "runeName": "Orbe Anulador",
         "iconUrl": "file:///android_asset/runes/nullifying_orb.webp",
-        "description": "Diagnóstico del error/situación: Ziggs · Línea Central · Orbe Anulador. Gastar H2 para daño menor deja tu siguiente avance sin desplazamiento defensivo ni ejecución de torre.\nDecisión Soberano: Conserva tu salida para usarla junto a la protección mágica; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Conserva H2 para cortar la entrada o ejecutar la torre según su indicador.\nRegla aplicable: H4 acompaña una pelea ya localizada."
+        "description": "Diagnóstico del error/situación: Ziggs · Línea Central · Orbe Anulador. Gastar H2 para daño menor deja tu siguiente avance sin desplazamiento defensivo ni ejecución de torre.\nDecisión Soberano: Conserva tu salida para usarla junto al escudo al caer de vida; el escudo no niega el control que siga al daño.\nMicro y Macro detalle: Conserva H2 para cortar la entrada o ejecutar la torre según su indicador.\nRegla aplicable: H4 acompaña una pelea ya localizada."
       }
     ],
     "coreSpells": [

@@ -1091,8 +1091,8 @@ fun ChampionDetailSheet(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            val dbBoot1 = com.example.data.WildRiftRepository.items.find { it.name.equals(currentBootBase, ignoreCase = true) || currentBootBase.contains(it.name, ignoreCase = true) }
-                            val dbBoot2 = com.example.data.WildRiftRepository.items.find { it.name.equals(currentBootUpgrade, ignoreCase = true) || currentBootUpgrade.contains(it.name, ignoreCase = true) }
+                            val dbBoot1 = WildRiftItemsData.getItemByName(currentBootBase) ?: com.example.data.WildRiftRepository.items.find { it.name.equals(currentBootBase, ignoreCase = true) || currentBootBase.contains(it.name, ignoreCase = true) }
+                            val dbBoot2 = WildRiftItemsData.getItemByName(currentBootUpgrade) ?: com.example.data.WildRiftRepository.items.find { it.name.equals(currentBootUpgrade, ignoreCase = true) || currentBootUpgrade.contains(it.name, ignoreCase = true) }
 
                             val boot1Icon = dbBoot1?.iconUrl ?: com.example.data.WildRiftItemsData.getItemIconByName(currentBootBase)
                             val boot2Icon = dbBoot2?.iconUrl ?: com.example.data.WildRiftItemsData.getItemIconByName(currentBootUpgrade)
@@ -1106,7 +1106,13 @@ fun ChampionDetailSheet(
                                     .testTag("selected_boot_$currentBootBase")
                                     .coachClickable {
                                         if (dbBoot1 != null) {
-                                            selectedElementAdvice = activeOption.bootBaseAdvice
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.contextualBootAdvice(
+                                                bootName = currentBootBase,
+                                                championName = champion.getLocalizedName(currentLang),
+                                                roleName = selectedRole.getLocalizedName(currentLang),
+                                                language = currentLang,
+                                                situational = !currentBootBase.equals(primaryBootBase, ignoreCase = true)
+                                            )
                                             itemForDetail = dbBoot1
                                         }
                                     }
@@ -1135,8 +1141,15 @@ fun ChampionDetailSheet(
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(HextechSurfaceVariant)
                                     .border(1.dp, HextechCyan, RoundedCornerShape(8.dp))
+                                    .testTag("selected_boot_$currentBootUpgrade")
                                     .coachClickable { if (dbBoot2 != null) {
-                                        selectedElementAdvice = activeOption.bootUpgradeAdvice
+                                        selectedElementAdvice = com.example.util.BuildElementAdvice.contextualBootAdvice(
+                                            bootName = currentBootUpgrade,
+                                            championName = champion.getLocalizedName(currentLang),
+                                            roleName = selectedRole.getLocalizedName(currentLang),
+                                            language = currentLang,
+                                            situational = selectedBootBaseOverride != null
+                                        )
                                         itemForDetail = dbBoot2
                                     } }
                             ) {
@@ -1197,10 +1210,13 @@ fun ChampionDetailSheet(
                                             .testTag("build_boot_${sitBootName}")
                                             .selectable(selected = isSelected, onClick = {
                                                 selectedBootBaseOverride = sitBootName.takeUnless { it.equals(primaryBootBase, true) }
-                                                val reason = activeOption.situationalBootReasons[sitBootName]
-                                                    ?: BuildChoiceRules.boots(primaryBootBase, champion.damageType, champion.isFrontline,
-                                                        champion.isRanged, selectedRole, champion.id).firstOrNull { it.name.equals(sitBootName, true) }?.reason
-                                                    ?: dbSitBoot?.coachTip.orEmpty()
+                                                val reason = com.example.util.BuildElementAdvice.contextualBootAdvice(
+                                                    bootName = sitBootName,
+                                                    championName = champion.getLocalizedName(currentLang),
+                                                    roleName = selectedRole.getLocalizedName(currentLang),
+                                                    language = currentLang,
+                                                    situational = !sitBootName.equals(primaryBootBase, ignoreCase = true)
+                                                )
                                                 if (reason.isNotBlank()) buildAdvice = "Consejo del coach" to reason
                                             })
                                     ) {
@@ -2306,8 +2322,13 @@ fun AdaptiveDetailAlertDialog(
             },
             text = {
                 Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
+                    val presentation = com.example.util.SpellCatalogFormatting.split(
+                        spell.getLocalizedDescription(currentLang), currentLang
+                    )
+                    com.example.ui.components.SpellMapLabels(presentation.mapLabels)
+                    Spacer(Modifier.height(8.dp))
                     FormattedWildRiftText(
-                        text = spell.getLocalizedDescription(com.example.util.currentAppLanguage()),
+                        text = presentation.description,
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
                     if (!com.example.util.BuildElementAdvice.isFlash(spell.name)) BuildElementCoachAdvice(selectedElementAdvice)
