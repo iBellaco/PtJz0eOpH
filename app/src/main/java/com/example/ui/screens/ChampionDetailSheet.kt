@@ -1582,11 +1582,12 @@ fun ChampionDetailSheet(
                                             val target = rowChampions.getOrNull(col)
                                             if (target != null) {
                                                 val targetChamp = resolveTargetChampion(target)
+                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(target)
                                                 Box(
                                                     modifier = Modifier.size(48.dp).testTag("build_matchup_name_advantage")
-                                                        .semantics { contentDescription = targetChamp?.getLocalizedName(currentLang) ?: tr(target) }
+                                                        .semantics { contentDescription = matchupName }
                                                         .coachClickable {
-                                                            selectedMatchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(target)
+                                                            selectedMatchupName = matchupName
                                                         },
                                                     contentAlignment = Alignment.Center
                                                 ) {
@@ -1682,11 +1683,12 @@ fun ChampionDetailSheet(
                                             val counter = rowChampions.getOrNull(col)
                                             if (counter != null) {
                                                 val targetChamp = resolveTargetChampion(counter)
+                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(counter)
                                                 Box(
                                                     modifier = Modifier.size(48.dp).testTag("build_matchup_name_weakness")
-                                                        .semantics { contentDescription = targetChamp?.getLocalizedName(currentLang) ?: tr(counter) }
+                                                        .semantics { contentDescription = matchupName }
                                                         .coachClickable {
-                                                            selectedMatchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(counter)
+                                                            selectedMatchupName = matchupName
                                                         },
                                                     contentAlignment = Alignment.Center
                                                 ) {
@@ -1791,11 +1793,12 @@ fun ChampionDetailSheet(
                                             val partner = rowChampions.getOrNull(col)
                                             if (partner != null) {
                                                 val targetChamp = resolveTargetChampion(partner)
+                                                val matchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(partner)
                                                 Box(
                                                     modifier = Modifier.size(48.dp).testTag("build_matchup_name_synergy")
-                                                        .semantics { contentDescription = targetChamp?.getLocalizedName(currentLang) ?: tr(partner) }
+                                                        .semantics { contentDescription = matchupName }
                                                         .coachClickable {
-                                                            selectedMatchupName = targetChamp?.getLocalizedName(currentLang) ?: tr(partner)
+                                                            selectedMatchupName = matchupName
                                                         },
                                                     contentAlignment = Alignment.Center
                                                 ) {
