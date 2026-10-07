@@ -1968,6 +1968,7 @@
   "Coach es 100% gratuito y sin anuncios molestos. Si la app te ayuda a subir de elo y ganar partidas, tu donación permite mantener los servidores y actualizaciones constantes.": "Coach é 100% gratuito e sem anúncios chatos. Se o app te ajuda a subir de elo e ganhar partidas, sua doação ajuda a manter os servidores e atualizações constantes.",
   "Coach es una app sin anuncios molestos. Si la app te ayuda a subir de elo y ganar partidas, tu donación permite mantener los servidores y actualizaciones constantes.": "O Coach é um aplicativo sem anúncios irritantes. Se o app te ajuda a subir de elo e vencer partidas, sua doação ajuda a manter os servidores e atualizações constantes.",
   "Coach no cuenta con el respaldo de Riot Games y no refleja las opiniones ni los puntos de vista de Riot Games ni de ninguna persona involucrada oficialmente en la producción o administración de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas comerciales registradas de Riot Games, Inc.": "O Coach não é aprovado nem afiliado à Riot Games e não reflete as opiniões ou pontos de vista da Riot Games ou de qualquer pessoa oficialmente envolvida na produção ou administração das propriedades da Riot Games. Riot Games e todas as propriedades associadas são marcas comerciais ou marcas registradas da Riot Games, Inc.",
+  "Coach no puede garantizar ausencia de sanciones ni afirmar aprobación de Riot. El asistente analiza la pantalla autorizada durante la selección; esa forma de funcionamiento no sustituye el cumplimiento de las políticas del juego. Consulta los requisitos oficiales y usa únicamente funciones autorizadas.": "O Coach não pode garantir ausência de sanções nem afirmar aprovação da Riot. O assistente analisa a tela autorizada durante a seleção; esse funcionamento não substitui o cumprimento das políticas do jogo. Consulte os requisitos oficiais e use apenas recursos autorizados.",
   "Coach v2.0": "Coach v2.0",
   "Coach v2.11": "Coach v2.11",
   "Cofre de Artesano": "Cofre de Artesão",
@@ -8535,6 +8536,7 @@
   "El acceso de administración es vitalicio.": "O acesso de administração é vitalício.",
   "El alcance del lanzamiento de Oscuridad lacerante es igual al alcance de ataque de Senna y su velocidad de lanzamiento mejora conforme aumenta la velocidad de ataque. Se puede utilizar contra cualquier tipo de objetivo y aplica efectos de impacto a los campeones enemigos.": "O alcance do lançamento de Escuridão lacerante é igual ao alcance de ataque de Senna e sua velocidade de lançamento melhora conforme aumenta a velocidade de ataque. Pode ser usado contra qualquer tipo de objetivo e aplica efeitos de impacto aos campeões inimigos.",
   "El aliento de los dioses": "Sopro de Luz",
+  "El apoyo a Coach es voluntario y ayuda a mantener el servicio y desarrollar mejoras. No garantiza victorias, rango, actualizaciones continuas ni aprobación de Riot o Google Play.": "O apoio ao Coach é voluntário e ajuda a manter o serviço e desenvolver melhorias. Não garante vitórias, classificação, atualizações contínuas nem aprovação da Riot ou do Google Play.",
   "El archivo de video local no se encuentra disponible.": "O arquivo de vídeo local não está disponível.",
   "El archivo descargado contiene HTML, descartando del caché de video.": "O ficheiro baixado contém HTML, descartando a 'cache' de vídeo.",
   "El archivo no contiene perfiles ni historiales válidos.": "O ficheiro não contém perfis ou históriais válidos.",
@@ -11523,6 +11525,7 @@
   "No se pudo actualizar; usando los últimos datos guardados.": "Não foi possível atualizar; usando os últimos dados guardados.",
   "No se pudo almacenar en caché el video: {0}": "Não foi possível gravar na 'cache' o vídeo: {0}",
   "No se pudo clonar bitmap para diagnóstico": "Não foi possível clonar o bitmap para diagnóstico",
+  "No se pudo comprobar la solicitud de eliminación. Revisa tu conexión o contacta a soporte.": "Não foi possível verificar a solicitação de exclusão. Verifique sua conexão ou fale com o suporte.",
   "No se pudo conectar con la fuente": "Não foi possível conectar à fonte",
   "No se pudo eliminar la build. Inténtalo de nuevo.": "Não foi possível excluir a build. Tente novamente.",
   "No se pudo enviar mensaje a la bandeja del usuario: {0}": "Não foi possível enviar a mensagem para a bandeja do utilizador: {0}",
@@ -15330,7 +15333,5 @@
   "🤝 SINERGIA DE EQUIPO (+{0})": "⌀ SINERGIA DE EQUIPE (+{0})",
   "🥈 2° Lugar": "🥈 2º Lugar",
   "🥉 3° Lugar": "🥉 3º Lugar",
-  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas).",
-  "Coach no puede garantizar ausencia de sanciones ni afirmar aprobación de Riot. El asistente analiza la pantalla autorizada durante la selección; esa forma de funcionamiento no sustituye el cumplimiento de las políticas del juego. Consulta los requisitos oficiales y usa únicamente funciones autorizadas.": "O Coach não pode garantir ausência de sanções nem afirmar aprovação da Riot. O assistente analisa a tela autorizada durante a seleção; esse funcionamento não substitui o cumprimento das políticas do jogo. Consulte os requisitos oficiais e use apenas recursos autorizados.",
-  "No se pudo comprobar la solicitud de eliminación. Revisa tu conexión o contacta a soporte.": "Não foi possível verificar a solicitação de exclusão. Verifique sua conexão ou fale com o suporte."
+  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas)."
 }

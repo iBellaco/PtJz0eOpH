@@ -34,6 +34,21 @@ class AccountDeletionRenderedTest {
     }
     @Test fun `Spanish deletion needs both confirmations and password`()=confirmations("es")
     @Test fun `Portuguese deletion needs both confirmations and password`()=confirmations("pt")
+    @Test fun `pending request prevents repeated submission and cancellation`() {
+        language("es");var calls=0;var delivered=false
+        val reply=kotlinx.coroutines.CompletableDeferred<Long>()
+        compose.setContent { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;reply.await()},onScheduled={delivered=true}) } }
+        compose.onNodeWithTag("account_delete_open").performClick()
+        compose.onNodeWithTag("account_delete_first_confirm").performClick()
+        compose.onNodeWithTag("account_delete_password").performTextInput("test-password")
+        compose.onNodeWithTag("account_delete_final_confirm").performClick()
+        compose.onNodeWithTag("account_delete_final_confirm").assertIsNotEnabled()
+        compose.onNodeWithTag("account_delete_second_cancel").assertIsNotEnabled()
+        compose.onNodeWithTag("account_delete_password").assertIsNotEnabled()
+        assertEquals(1,calls);assertFalse(delivered)
+        compose.runOnIdle { reply.complete(123456789L) };compose.waitForIdle()
+        assertEquals(1,calls);assertTrue(delivered)
+    }
     private fun confirmations(lang: String) {
         language(lang); var calls=0; var delivered:Long?=null
         compose.setContent { MyApplicationTheme { AccountDeletionCard("owner@test.invalid",submit={calls++;123456789L},onScheduled={delivered=it}) } }
