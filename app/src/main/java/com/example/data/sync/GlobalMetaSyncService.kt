@@ -7,15 +7,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.model.Champion
-import com.example.model.LaneRole
 
-object ChineseMetaSyncService {
-    private val _syncState = MutableStateFlow<ChineseSyncState>(ChineseSyncState.Idle)
-    val syncState: StateFlow<ChineseSyncState> = _syncState.asStateFlow()
-
-    private val _currentTier = MutableStateFlow(TencentRankTier.DIAMOND_PLUS)
-    val currentTier: StateFlow<TencentRankTier> = _currentTier.asStateFlow()
+object GlobalMetaSyncService {
+    private val _syncState = MutableStateFlow<MetaSyncState>(MetaSyncState.Idle)
+    val syncState: StateFlow<MetaSyncState> = _syncState.asStateFlow()
 
     private val _currentRegion = MutableStateFlow(MetaRegion.DEFAULT)
     val currentRegion: StateFlow<String> = _currentRegion.asStateFlow()
@@ -37,22 +32,17 @@ object ChineseMetaSyncService {
             .putString("selected_meta_region", region).apply()
         WildRiftRepository.selectMetaRegion(region)
         BestBuildWrScraper.selectRegion(region)
-        scope.launch { syncChineseMeta(context, _currentTier.value, forceRefresh = true) }
+        scope.launch { syncGlobalMeta(context, forceRefresh = true) }
     }
 
-    suspend fun syncChineseMeta(context: Context, tier: TencentRankTier = TencentRankTier.DIAMOND_PLUS, forceRefresh: Boolean = false) {
-        _syncState.value = ChineseSyncState.Syncing
-        _currentTier.value = tier
+    suspend fun syncGlobalMeta(context: Context, forceRefresh: Boolean = false) {
+        _syncState.value = MetaSyncState.Syncing
         val requestedRegion = _currentRegion.value
         BestBuildWrScraper.syncGlobalTierList(context, requestedRegion, force = forceRefresh)
         if (requestedRegion != _currentRegion.value) return
         _syncState.value = if (BestBuildWrScraper.isLastSyncSuccess.value)
-            ChineseSyncState.Success(BestBuildWrScraper.lastSyncFormattedTime.value, tier)
-        else ChineseSyncState.Error("No se pudo actualizar; usando los últimos datos guardados.")
-    }
-
-    suspend fun getFilteredRankings(context: Context, tier: TencentRankTier, lane: LaneRole?): List<Champion> {
-        return emptyList()
+            MetaSyncState.Success(BestBuildWrScraper.lastSyncFormattedTime.value)
+        else MetaSyncState.Error("No se pudo actualizar; usando los últimos datos guardados.")
     }
 
     fun getLastSyncInfo(context: Context): Pair<String, String> {

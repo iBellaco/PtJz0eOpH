@@ -700,8 +700,8 @@ fun DraftingApp() {
     LaunchedEffect(Unit) {
         // Inicializar listado maestro de campeones desde assets JSON
         com.example.data.WildRiftRepository.initChampions(context)
-        com.example.data.sync.ChineseMetaSyncService.loadRegion(context)
-        launch { com.example.data.sync.ChineseMetaSyncService.syncChineseMeta(context) }
+        com.example.data.sync.GlobalMetaSyncService.loadRegion(context)
+        launch { com.example.data.sync.GlobalMetaSyncService.syncGlobalMeta(context) }
 
         // La consulta del meta ya se lanzó arriba; no duplicar las tres peticiones al arrancar.
         com.example.data.GlobalAnnouncementManager.init(context)

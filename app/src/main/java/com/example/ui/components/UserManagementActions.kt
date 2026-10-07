@@ -1,0 +1,377 @@
+package com.example.ui.components
+
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import com.example.data.AvatarCatalog
+import com.example.model.AppUserRole
+import com.example.ui.theme.*
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import java.util.UUID
+
+internal fun applyPremiumDuration(context: Context, uid: String, days: Int, extendExisting: Boolean = true,
+    onError: () -> Unit = {}, onSuccess: (Map<String, Any>) -> Unit) {
+    val db = FirebaseFirestore.getInstance()
+    val userRef = db.collection("users").document(uid)
+    val grantId = java.util.UUID.randomUUID().toString()
+    val grantedAt = System.currentTimeMillis()
+    db.runTransaction { transaction ->
+        val account = transaction.get(userRef)
+        val updated = com.example.data.PremiumGrantPolicy.apply(account.data.orEmpty(), days, extendExisting, grantedAt, grantId)
+        val fields = setOf("premiumUntil", "subscriptionPlan", "lastModifiedByAdmin", "subscriptionHistory")
+        transaction.update(userRef, updated.filterKeys { it in fields })
+        updated + ("uid" to uid)
+    }.addOnSuccessListener { updated ->
+        Toast.makeText(context, com.example.util.appTr("Tiempo premium actualizado"), Toast.LENGTH_SHORT).show()
+        onSuccess(updated)
+    }.addOnFailureListener { failure ->
+        onError()
+        val policyError = generateSequence<Throwable>(failure) { it.cause }.filterIsInstance<IllegalArgumentException>().firstOrNull()?.message
+        val message = policyError ?: "No se pudo actualizar Premium. Vuelve a intentarlo."
+        Toast.makeText(context, com.example.util.appTr(message), Toast.LENGTH_LONG).show()
+    }
+}
+
+internal fun removePremiumFromUser(
+    context: Context,
+    uid: String,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val updatePayload = hashMapOf<String, Any>(
+        "premiumUntil" to 0L,
+        "subscriptionPlan" to "Gratuito",
+        "lastModifiedByAdmin" to System.currentTimeMillis()
+    )
+
+    db.collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun updateUserVerification(
+    context: Context,
+    uid: String,
+    isVerified: Boolean,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val updatePayload = hashMapOf<String, Any>(
+        "isVerified" to isVerified,
+        "verified" to isVerified,
+        "lastModifiedByAdmin" to System.currentTimeMillis()
+    )
+
+    db.collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            val msg = if (isVerified) "Verificación otorgada exitosamente" else "Verificación revocada"
+            Toast.makeText(context, com.example.util.appTr(msg), Toast.LENGTH_SHORT).show()
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar verificación: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun resetUserHardwareSlots(
+    context: Context,
+    uid: String,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val updatePayload = hashMapOf<String, Any>(
+        "registeredDevices" to emptyList<String>(),
+        "sessionToken" to "",
+        "slotsResetTimestamp" to System.currentTimeMillis()
+    )
+
+    db.collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al reiniciar slots: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun giftSingleAvatarToUser(
+    context: Context,
+    uid: String,
+    avatarId: String,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val userRef = db.collection("users").document(uid)
+
+    userRef.update("unlockedAvatars", FieldValue.arrayUnion(avatarId))
+        .addOnSuccessListener {
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            // Si el campo no existía aún, usamos set con merge
+            val updateData = hashMapOf<String, Any>(
+                "unlockedAvatars" to listOf("default_poro", avatarId)
+            )
+            userRef.set(updateData, SetOptions.merge())
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { err ->
+                    Toast.makeText(context, com.example.util.appTr("Error: ${err.message}"), Toast.LENGTH_LONG).show()
+                }
+        }
+}
+
+internal fun giftAllAvatarsToUser(
+    context: Context,
+    uid: String,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val allIds = AvatarCatalog.avatars.map { it.id }
+
+    val updateData = hashMapOf<String, Any>(
+        "unlockedAvatars" to allIds,
+        "avatarAllAccessGranted" to true
+    )
+
+    db.collection("users").document(uid)
+        .set(updateData, SetOptions.merge())
+        .addOnSuccessListener {
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al regalar avatares: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun revokeSingleAvatarFromUser(
+    context: Context,
+    uid: String,
+    avatarId: String,
+    currentEquippedAvatarId: String? = null,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val userRef = db.collection("users").document(uid)
+
+    val updates = mutableMapOf<String, Any>(
+        "unlockedAvatars" to FieldValue.arrayRemove(avatarId),
+        "avatarAllAccessGranted" to false
+    )
+    if (currentEquippedAvatarId == avatarId) {
+        updates["avatarId"] = "default_poro"
+    }
+
+    userRef.update(updates)
+        .addOnSuccessListener {
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al quitar avatar: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun revokeAllExclusiveAvatarsFromUser(
+    context: Context,
+    uid: String,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val userRef = db.collection("users").document(uid)
+
+    val defaultAvatars = listOf("default_poro")
+    val updateData = hashMapOf<String, Any>(
+        "unlockedAvatars" to defaultAvatars,
+        "avatarAllAccessGranted" to false,
+        "avatarId" to "default_poro"
+    )
+
+    userRef.set(updateData, SetOptions.merge())
+        .addOnSuccessListener {
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al remover avatares: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun updateUserRoleInCloud(
+    context: Context,
+    uid: String,
+    targetRoleId: String,
+    onSuccess: (newRole: String, isBanned: Boolean, inheritedUntil: Long?) -> Unit
+) {
+    if (targetRoleId == "admin") {
+        Toast.makeText(context, com.example.util.appTr("Operación denegada: No se puede asignar el rol de Administrador por directivas de seguridad."), Toast.LENGTH_LONG).show()
+        return
+    }
+
+    val db = FirebaseFirestore.getInstance()
+    val isBanned = (targetRoleId == "banned")
+    val updatePayload = hashMapOf<String, Any>(
+        "role" to targetRoleId,
+        "banned" to isBanned,
+        "last_role_update" to System.currentTimeMillis()
+    )
+
+    if (isBanned) {
+        updatePayload["bannedTimestamp"] = System.currentTimeMillis()
+        updatePayload["sessionToken"] = ""
+    } else {
+        updatePayload["bannedTimestamp"] = 0L
+    }
+
+    val userRef = db.collection("users").document(uid)
+    db.runTransaction { transaction ->
+        val account = transaction.get(userRef)
+        val inherited = com.example.model.PremiumAccessPolicy.deadline(account.get("premiumUntil"))
+        val deadline = com.example.model.PremiumAccessPolicy.deadlineForRole(targetRoleId, inherited, System.currentTimeMillis())
+        if (deadline != inherited && deadline != null) updatePayload["premiumUntil"] = deadline
+        if (targetRoleId == "free") {
+            updatePayload["premiumUntil"] = 0L
+            updatePayload["subscriptionPlan"] = "FREE"
+            if (inherited != null && inherited > 0L) {
+                updatePayload["subscriptionHistory"] = com.google.firebase.firestore.FieldValue.arrayUnion(mapOf(
+                    "id" to "premium_revoked_" + java.util.UUID.randomUUID(),
+                    "timestamp" to System.currentTimeMillis(), "durationMillis" to 0L,
+                    "planName" to "Suscripción Premium retirada", "status" to "Completado",
+                    "amount" to "0", "source" to "ADMIN_REVOCATION"))
+            }
+        }
+        transaction.update(userRef, updatePayload)
+        deadline
+    }
+        .addOnSuccessListener { deadline ->
+            val roleName = AppUserRole.fromId(targetRoleId).displayName
+            Toast.makeText(context, com.example.util.appTr("Rol actualizado a $roleName"), Toast.LENGTH_SHORT).show()
+            onSuccess(targetRoleId, isBanned, deadline)
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar rol: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun updateUserSecondaryRoleInCloud(
+    context: Context,
+    uid: String,
+    targetSecondaryRoleId: String,
+    onSuccess: (newSecondaryRole: String) -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val updatePayload = hashMapOf<String, Any>(
+        "secondaryRole" to targetSecondaryRoleId,
+        "last_secondary_role_update" to System.currentTimeMillis()
+    )
+
+    db.collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            val roleName = if (targetSecondaryRoleId.isNotBlank()) {
+                AppUserRole.fromId(targetSecondaryRoleId).displayName
+            } else {
+                "Ninguno"
+            }
+            Toast.makeText(context, com.example.util.appTr("Rol secundario actualizado a $roleName"), Toast.LENGTH_SHORT).show()
+            onSuccess(targetSecondaryRoleId)
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar rol secundario: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun toggleUserBanStatus(
+    context: Context,
+    uid: String,
+    isBanned: Boolean,
+    newRole: String,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val updatePayload = hashMapOf<String, Any>(
+        "banned" to isBanned,
+        "role" to newRole,
+        "bannedTimestamp" to if (isBanned) System.currentTimeMillis() else 0L
+    )
+
+    db.collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            Toast.makeText(context, com.example.util.appTr(if (isBanned) "Usuario BANEADO" else "Usuario Desbaneado"), Toast.LENGTH_SHORT).show()
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun updateUserEmail(
+    context: Context,
+    uid: String,
+    newEmail: String,
+    onSuccess: (String) -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val updatePayload = hashMapOf<String, Any>(
+        "email" to newEmail.trim(),
+        "lastModifiedByAdmin" to System.currentTimeMillis()
+    )
+    db.collection("users").document(uid)
+        .set(updatePayload, SetOptions.merge())
+        .addOnSuccessListener {
+            Toast.makeText(context, com.example.util.appTr("Correo electrónico actualizado exitosamente"), Toast.LENGTH_SHORT).show()
+            onSuccess(newEmail.trim())
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al actualizar correo: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}
+
+internal fun createUserManagementApprovalRequest(
+    context: Context,
+    requestType: String,
+    targetUid: String,
+    targetName: String,
+    targetEmail: String,
+    newValue: String,
+    onSuccess: () -> Unit
+) {
+    val db = FirebaseFirestore.getInstance()
+    val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+    val moderator = auth.currentUser
+
+    val reqId = db.collection("moderator_requests").document().id
+    val payload = hashMapOf<String, Any>(
+        "id" to reqId,
+        "requestType" to requestType,
+        "targetUid" to targetUid,
+        "targetName" to targetName,
+        "targetEmail" to targetEmail,
+        "newValue" to newValue,
+        "requestedByUid" to (moderator?.uid ?: ""),
+        "requestedByName" to (com.example.util.SubscriptionManager.userName.value.takeIf { it.isNotBlank() } ?: moderator?.displayName?.takeIf { it.isNotBlank() } ?: "Moderador"),
+        "status" to "PENDIENTE",
+        "timestamp" to System.currentTimeMillis()
+    )
+
+    db.collection("moderator_requests").document(reqId)
+        .set(payload)
+        .addOnSuccessListener {
+            Toast.makeText(context, com.example.util.appTr("Solicitud enviada para aprobación del Administrador"), Toast.LENGTH_LONG).show()
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(context, com.example.util.appTr("Error al crear solicitud: ${e.message}"), Toast.LENGTH_LONG).show()
+        }
+}

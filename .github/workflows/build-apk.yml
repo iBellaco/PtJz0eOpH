@@ -98,58 +98,12 @@ jobs:
         COACH_ALLOW_EPHEMERAL_TEST_SIGNING: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'true' || 'false' }}
       run: python3 .github/scripts/restore-private-signing.py
     - &id005
-      name: Create google-services.json
+      name: Restore Android client configuration from Actions Secrets
+      env:
+        COACH_GOOGLE_SERVICES_JSON: ${{ secrets.COACH_GOOGLE_SERVICES_JSON }}
       run: |
-        cat << 'EOF' > app/google-services.json
-        {
-          "project_info": {
-            "project_number": "500606030430",
-            "project_id": "wild-rift-drafting",
-            "storage_bucket": "wild-rift-drafting.firebasestorage.app"
-          },
-          "client": [
-            {
-              "client_info": {
-                "mobilesdk_app_id": "1:500606030430:android:d32178b0d793e97aa7dacf",
-                "android_client_info": {
-                  "package_name": "com.Coach"
-                }
-              },
-              "oauth_client": [],
-              "api_key": [
-                {
-                  "current_key": "AIzaSyDFUZjKmw2K5IJT-p6E6vBvQ9Ons6xUhck"
-                }
-              ],
-              "services": {
-                "appinvite_service": {
-                  "other_platform_oauth_client": []
-                }
-              }
-            },
-            {
-              "client_info": {
-                "mobilesdk_app_id": "1:500606030430:android:d32178b0d793e97aa7dacf",
-                "android_client_info": {
-                  "package_name": "com.aistudio.wildriftdrafting.wrdftx"
-                }
-              },
-              "oauth_client": [],
-              "api_key": [
-                {
-                  "current_key": "AIzaSyDFUZjKmw2K5IJT-p6E6vBvQ9Ons6xUhck"
-                }
-              ],
-              "services": {
-                "appinvite_service": {
-                  "other_platform_oauth_client": []
-                }
-              }
-            }
-          ],
-          "configuration_version": "1"
-        }
-        EOF
+        python3 -m unittest discover -s .github/scripts -p test_google_services.py
+        python3 .github/scripts/restore-google-services.py
     - name: Audit Portuguese text sinks
       run: |
         python3 tools/generate-component-items.py --check

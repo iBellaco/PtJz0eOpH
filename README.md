@@ -1,13 +1,15 @@
 # Coach
 
-Aplicación Android independiente de consulta y asistencia para la selección de campeones de League of Legends: Wild Rift. Nombre de la aplicación: **Coach**. Idiomas seleccionables: español y portugués. Versión: **1.1.10.218**, código **934**.
+Aplicación Android independiente de consulta y asistencia para la selección de campeones de League of Legends: Wild Rift. Nombre de la aplicación: **Coach**. Idiomas seleccionables: español y portugués. Versión: **1.1.10.219**, código **935**.
+
+Este repositorio se utiliza para compilar el APK y respaldar el desarrollo. Su visibilidad pública no equivale a una licencia de software libre. El proyecto no ofrece una licencia de distribución o reutilización fuera de los permisos de la plataforma y los términos aplicables de terceros. Un nombre poco reconocible no impide consultar o copiar un repositorio público.
 
 ## Funciones implementadas
 
 - Reconocimiento de nombres mediante OCR y comparación de retratos locales sobre la pantalla autorizada por Android. El décimo pick también usa el retrato; la precisión depende de la imagen, la posición y los recursos disponibles. Las detecciones inciertas pueden dejar la selección pendiente.
 - Asistente flotante con draft, tier list e historial. La captura y la superposición requieren permisos de Android; se puede detener la captura desde el asistente o el sistema.
 - Catálogo comunitario de campeones, objetos, runas, hechizos y mapas. Recomendaciones por campeón y línea, objetos esenciales y situacionales. Las relaciones de ventaja, debilidad y sinergia muestran el nombre al tocarlas.
-- Consulta de tres fuentes identificadas: BestBuildWR, WildRiftFire y WildRiftCore. Son fuentes globales; el nombre histórico del componente de sincronización no acredita estadísticas oficiales del servidor chino. Ante fallos se puede conservar la última consulta guardada.
+- Consulta de clasificaciones globales de BestBuildWR (`/tierlist`), WildRiftFire y WildRiftCore. No existe integración activa con LOLM/Tencent ni estadísticas verificadas por elo obtenidas de esas consultas. La sincronización actualiza categorías sin convertirlas en porcentajes de victorias, selección o bloqueo. Conserva los números incluidos en el catálogo, cuya exactitud externa no se certifica aquí. Ante fallos se puede conservar la última consulta guardada.
 - Perfiles, historial, mensajes de soporte, avisos, contenido patrocinado, canjes y exportaciones locales según las condiciones disponibles para la cuenta.
 
 No se garantiza exactitud completa del catálogo, reconocimiento perfecto, actualización inmediata por parche, ausencia de sanciones ni compatibilidad con todos los dispositivos.
@@ -28,7 +30,7 @@ Contacto público: **DevWildRiftCoach@gmail.com**. Nunca enviar contraseñas, c�
 
 Coach no está respaldado ni patrocinado por Riot Games. Los recursos de Wild Rift conservan los derechos de sus titulares. **No se ha acreditado una autorización específica de Riot para esta aplicación.** Una clave de otro juego, el acceso al código o este aviso no conceden esa autorización. Antes de presentar la app en una tienda o monetizarla, deben resolverse las autorizaciones aplicables y completarse las declaraciones exigidas por la tienda. El plazo de 60 días es una decisión del producto, no un plazo aprobado expresamente por Google ni una garantía de cumplimiento de las leyes locales.
 
-Consulta la [guía de autorización de Riot y publicación en Google Play](docs/riot-google-play-authorization.md) y la [auditoría de esta versión](docs/coach-audit-1.1.10.218.md). El repositorio no permite certificar aprobación legal ni de Google Play. No se afirma que todos sus componentes compartan una misma licencia.
+Consulta la [guía de autorización de Riot y publicación en Google Play](docs/riot-google-play-authorization.md) y la [auditoría de esta versión](docs/coach-audit-1.1.10.219.md). El repositorio no permite certificar aprobación legal ni de Google Play. No se afirma que todos sus componentes compartan una misma licencia.
 
 ## Desarrollo y comprobaciones
 
@@ -42,6 +44,10 @@ cd PtJz0eOpH
 ```
 
 El wrapper no está versionado. Para una compilación local se necesitan Gradle, Java, Android SDK y la configuración privada de los servicios y firma. No publicar credenciales ni sustituir la identidad de firma de entregas anteriores. Los flujos de GitHub Actions preparan esas herramientas, comprueban el código, generan el APK release con R8 y verifican firma, ofuscación e instalación antes de publicarlo.
+
+La configuración Android `google-services.json` se obtiene del Secret de Actions `COACH_GOOGLE_SERVICES_JSON`; contiene el JSON completo de la aplicación `com.Coach`. El workflow no incluye sus valores ni los imprime. Sin el Secret, la compilación se detiene con un error explícito. Para desarrollo local, el archivo se coloca en `app/google-services.json`, excluido de Git. La clave de configuración cliente sigue estando en el APK: Secrets evita publicarla en el workflow, pero no la convierte en una credencial de servidor ni sustituye las reglas de acceso. Los valores publicados anteriormente permanecen en commits y registros históricos; esta limpieza no reescribe el historial ni rota la clave.
+
+Los scripts mantenidos están en `tools/` y `.github/scripts/`. Se retiraron 25 scripts e informes de reparación de la raíz. Las pantallas y el asistente flotante están divididos por sección, preservando sus nombres de funciones para los consumidores Kotlin.
 
 Pruebas del servicio y reglas en un proyecto de demostración aislado:
 

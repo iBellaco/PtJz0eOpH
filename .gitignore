@@ -33,3 +33,24 @@ tests/firestore/node_modules
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Generated client configuration and one-off root repair files are local only.
+/google-services.json
+/app/google-services.json
+/fix_*.py
+/fix_*.sh
+/fix_*.js
+/patch_*.py
+/patch_*.sh
+/patch_*.js
+/update_*.py
+/update_*.js
+/temp_*.kt
+/temp_*.py
+/temp_*.js
+/all_missing_keys.json
+/clean_missing_pt.json
+/filtered_ui_missing.json
+/missing_strings_full.json
+/pt_translations_bulk.json
+/untranslated_strings.txt

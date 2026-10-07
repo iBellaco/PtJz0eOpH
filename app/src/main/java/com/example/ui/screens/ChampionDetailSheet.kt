@@ -2,20 +2,16 @@ package com.example.ui.screens
 
 import com.example.ui.components.CoachTextButton as TextButton
 import com.example.ui.components.CoachIconButton as IconButton
-
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.platform.testTag
 import com.example.util.BuildChoiceRules
-
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
 import com.example.utils.parseHtmlColorToAnnotatedString
 import com.example.data.WildRiftItemsData
 import com.example.model.WildRiftItem
-import com.example.ui.theme.HextechGoldLight
 import com.example.ui.theme.TextSecondary
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import com.example.ui.components.coachClickable
@@ -43,19 +39,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,17 +65,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.local.FavoriteChampionsManager
 import com.example.data.SituationalItemAdvisor
 import com.example.data.SynergyAdvisor
-import com.example.data.SynergyTeammate
 import com.example.data.WildRiftRepository
 import com.example.model.Champion
 import com.example.util.SubscriptionManager
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import com.example.model.LaneRole
 import com.example.ui.components.AppAssetImage
 import com.example.ui.components.ChampionAvatar
@@ -95,7 +83,6 @@ import com.example.ui.theme.DangerRed
 import com.example.ui.theme.HextechCardBorder
 import com.example.ui.theme.HextechCyan
 import com.example.ui.theme.HextechGold
-import com.example.ui.theme.HextechGoldLight
 import com.example.ui.theme.HextechSurface
 import com.example.ui.theme.HextechSurfaceVariant
 import com.example.ui.theme.TextMuted
@@ -104,7 +91,6 @@ import com.example.ui.theme.TierSPlusColor
 import com.example.util.ChampionRoleAdapter
 import com.example.util.CoachingGenerator
 import com.example.util.tr
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -148,7 +134,6 @@ fun ChampionDetailSheet(
     var selectedBuildOptionIndex by remember(champion.id, selectedRole) { mutableStateOf(0) }
 
     val currentLang = com.example.util.currentAppLanguage()
-
 
 
     // Service-hosted overlays have no activity back dispatcher; their visible
@@ -1007,7 +992,6 @@ fun ChampionDetailSheet(
 
 
 
-
                 }
             }
 
@@ -1047,7 +1031,6 @@ fun ChampionDetailSheet(
                     }
                 }
             }
-
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -1235,7 +1218,6 @@ fun ChampionDetailSheet(
                                 }
                             }
 
-
                         }
                     }
                 }
@@ -1294,7 +1276,6 @@ fun ChampionDetailSheet(
                                 if (idx == 0) Spacer(modifier = Modifier.width(12.dp))
                             }
                         }
-
 
                     }
                 }
@@ -1605,71 +1586,6 @@ fun ChampionDetailSheet(
         }
     }
 
-@Composable
-fun AdaptiveDetailAlertDialog(
-    isOverlay: Boolean,
-    onDismissRequest: () -> Unit,
-    title: @Composable () -> Unit,
-    text: @Composable () -> Unit,
-    confirmButton: @Composable () -> Unit
-) {
-    if (isOverlay) {
-        androidx.compose.foundation.layout.Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.85f))
-                .coachClickable(
-                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                    indication = null,
-                    onClick = onDismissRequest
-                )
-                .padding(12.dp),
-            contentAlignment = androidx.compose.ui.Alignment.Center
-        ) {
-            androidx.compose.material3.Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .coachClickable(
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                        indication = null,
-                        onClick = {}
-                    ),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = com.example.ui.theme.HextechDarkBg),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, com.example.ui.theme.HextechGold)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp)
-                ) {
-                    title()
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Box(modifier = Modifier.weight(1f, fill = false)) {
-                        text()
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        confirmButton()
-                    }
-                }
-            }
-        }
-    } else {
-        androidx.compose.material3.AlertDialog(
-            onDismissRequest = onDismissRequest,
-            title = title,
-            text = text,
-            confirmButton = confirmButton,
-            containerColor = com.example.ui.theme.HextechSurface,
-            titleContentColor = com.example.ui.theme.HextechGold,
-            textContentColor = com.example.ui.theme.TextPrimary
-        )
-    }
-}
 
     buildAdvice?.let { (title, advice) ->
         AdaptiveDetailAlertDialog(
@@ -1680,7 +1596,6 @@ fun AdaptiveDetailAlertDialog(
             confirmButton = { TextButton(onClick = { buildAdvice = null }) { Text(tr("Cerrar")) } }
         )
     }
-
 
     // ==========================================
     // DIALOG DE DETALLE DE OBJETO SITUACIONAL
@@ -1820,7 +1735,6 @@ fun AdaptiveDetailAlertDialog(
             }
         )
     }
-
 
 
     itemForDetail?.let { item ->
@@ -2076,106 +1990,4 @@ fun AdaptiveDetailAlertDialog(
         )
     }
 
-}
-
-@Composable
-private fun BuildMatchupList(
-    group: String,
-    title: String,
-    candidates: List<String>,
-    accent: Color,
-    premium: Boolean,
-    signedIn: Boolean,
-    compact: Boolean,
-    language: String,
-    onShowName: (String) -> Unit
-) {
-    val rows = BuildChoiceRules.matchupRows(candidates, premium, signedIn)
-    Card(
-        modifier = Modifier.fillMaxWidth().testTag("${group}_insight_card"),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = HextechSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.5f))
-    ) {
-        Column(Modifier.fillMaxWidth().padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("$title (${rows.sumOf { it.size }})", color = accent,
-                    fontWeight = FontWeight.Bold, fontSize = if (compact) 12.sp else 13.sp)
-                if (!premium) Text("PRO 12", color = HextechGold, fontSize = 10.sp)
-            }
-            rows.forEachIndexed { index, row ->
-                Row(Modifier.fillMaxWidth().testTag("build_matchup_${group}_row_$index"),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    row.forEach { target ->
-                        val champion = resolveTargetChampion(target)
-                        val name = champion?.getLocalizedName(language) ?: tr(target)
-                        Box(Modifier.weight(1f).heightIn(min = 48.dp)
-                            .testTag("build_matchup_name_$group")
-                            .semantics { contentDescription = name }
-                            .coachClickable { onShowName(name) },
-                            contentAlignment = Alignment.Center) {
-                            if (champion != null) ChampionAvatar(champion = champion,
-                                size = if (compact) 32.dp else 36.dp,
-                                showTierBadge = false, borderColor = accent)
-                            else Text(tr(target), color = TextPrimary, fontSize = 11.sp,
-                                textAlign = TextAlign.Center)
-                        }
-                    }
-                    repeat(3 - row.size) { Spacer(Modifier.weight(1f).height(48.dp)) }
-                }
-            }
-        }
-    }
-}
-
-private fun resolveTargetChampion(nameOrId: String): Champion? {
-    val clean = nameOrId.trim()
-    return WildRiftRepository.getChampionByName(clean)
-        ?: WildRiftRepository.getChampionById(clean.lowercase().replace(" ", "_").replace("-", "_").replace("'", ""))
-        ?: WildRiftRepository.champions.find {
-            it.name.equals(clean, ignoreCase = true) ||
-            it.id.equals(clean, ignoreCase = true) ||
-            it.ddragonId.equals(clean, ignoreCase = true)
-        }
-}
-
-private fun getSituationalItemExplanation(itemName: String): String {
-    val clean = itemName.lowercase()
-    return when {
-        clean.contains("malmortius") || clean.contains("fauces") -> "Usar contra composiciones con daño mágico pesado o asesinos AP de ráfaga (ej. Akali, Lux, Veigar) para activar un escudo protector salvavidas."
-        clean.contains("ángel") || clean.contains("angel") || clean.contains("guardian") -> "Usar en el juego tardío o frente a composiciones con alto daño de dive para garantizar una segunda oportunidad en peleas de equipo decisivas."
-        clean.contains("corta") || clean.contains("morellonomicón") || clean.contains("morellonomicon") || clean.contains("recordatorio letal") || clean.contains("recordatorio mortal") -> "Usar contra campeones con alta regeneración de salud, robo de vida o sanación continua (ej. Dr. Mundo, Soraka, Aatrox, Yuumi) para aplicar heridas graves."
-        clean.contains("espinas") || clean.contains("thornmail") -> "Usar frente a atacantes físicos constantes y duelistas con curaciones en línea para devolver daño y frenar su sostenimiento."
-        clean.contains("mercurio") || clean.contains("trituradoras") || clean.contains("treads") -> "Usar frente a equipos con múltiples habilidades de control de masas pesado (aturdimientos, ralentizaciones, provocaciones) y magos de control (ej. Morgana, Lux, Ashe)."
-        clean.contains("blindada") || clean.contains("avance") || clean.contains("steelcaps") -> "Usar contra tiradores enemigos (ADCs) y duelistas con alto daño físico constante basado en ataques básicos directos."
-        clean.contains("codiciosa") || clean.contains("inmortal") -> "Usar cuando requieras omnivampirismo prolongado, sustentación de vida en duelos largos y capacidad de supervivencia adaptativa."
-        clean.contains("jonia") || clean.contains("lucidez") || clean.contains("carmesí") -> "Usar con magos, soportes o tiradores basados en habilidades para maximizar la aceleración de enfriamiento de habilidades y hechizos de invocador."
-        clean.contains("dinámica") || clean.contains("dinamica") || clean.contains("quebrantarmadura") -> "Usar contra objetivos con armadura moderada para maximizar la penetración física temprana y ganar velocidad en rotaciones rápidas."
-        clean.contains("maná") || clean.contains("mana") || clean.contains("lanzahechizos") -> "Usar con magos de alto gasto de maná y daño de ráfaga para amplificar la penetración mágica y acelerar la limpieza de oleadas."
-        clean.contains("berserker") || clean.contains("metal") || clean.contains("gunmetal") -> "Usar con tiradores y duelistas de ataque rápido para maximizar la velocidad de ataque y optimizar el daño continuo."
-        clean.contains("colmillo") || clean.contains("serpiente") -> "Usar contra composiciones con exceso de escudos protectores (ej. Sett, Karma, Lulu, Shen) para reducirlos drásticamente al impactar."
-        clean.contains("randuin") -> "Usar contra tiradores críticos y campeones con daño crítico masivo (ej. Yasuo, Yone, Jinx, Caitlyn) para mitigar el impacto y reducir su velocidad de ataque."
-        clean.contains("naturaleza") -> "Usar frente a equipos con dos o más magos de daño mágico continuo en el tiempo o quemaduras (ej. Brand, Aurelion Sol, Swain, Lillia)."
-        clean.contains("zhonya") || clean.contains("estasis") -> "Usar para esquivar habilidades definitivas fatales y combos explosivos de asesinos mediante 2.5 segundos de invulnerabilidad."
-        clean.contains("sterak") -> "Usar con luchadores y colosos para obtener un gran escudo de vida al recibir daño crítico y aumentar la tenacidad en peleas."
-        clean.contains("serylda") -> "Usar para penetrar armaduras y aplicar ralentización continua con habilidades, facilitando el kiteo y persecución de tanques."
-        clean.contains("dominik") -> "Usar con tiradores frente a equipos con múltiples tanques y colosos de alta vida para maximizar el daño por golpe crítico."
-        clean.contains("corona") || clean.contains("fragmentada") -> "Usar con magos contra asesinos o iniciadores para reducir drásticamente el daño recibido al iniciar un enfrentamiento."
-        else -> "Usar como reemplazo táctico para contrarrestar las mayores amenazas del equipo rival según la composición de la partida."
-    }
-}
-
-
-@Composable
-private fun BuildElementCoachAdvice(advice: String) {
-    if (advice.isBlank()) return
-    Spacer(Modifier.height(14.dp))
-    androidx.compose.material3.Surface(modifier = Modifier.fillMaxWidth().testTag("build_element_advice_card"),
-        shape = RoundedCornerShape(8.dp), color = HextechSurface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(tr("Consejo del coach"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-            FormattedWildRiftText(text = tr(advice), color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
-        }
-    }
 }

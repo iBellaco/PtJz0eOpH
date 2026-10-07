@@ -174,54 +174,20 @@ object WildRiftRepository {
         it.id.equals(canonicalChampionId(idOrName), ignoreCase = true) || it.name.equals(idOrName, ignoreCase = true)
     }
     var activeRegionName by mutableStateOf(com.example.data.sync.MetaRegion.DEFAULT)
-    private var chineseChampions: List<Champion> = emptyList()
     private val regionalChampions = mutableMapOf<String, List<Champion>>()
     var regionRevision by mutableStateOf(0)
         private set
 
-    private data class RegionalStatsTuple(val wr: Double, val pr: Double, val br: Double, val delta: Double)
-
     @Synchronized
     fun applyRegionalTierList(region: String, tiers: Map<String, String>) {
+        if (!region.equals(com.example.data.sync.MetaRegion.DEFAULT, ignoreCase = true)) return
         val normalized = com.example.data.sync.MetaRegion.normalize(region)
         val updated = baseChampions.map { champion ->
             val category = tiers[com.example.data.sync.RegionalTierParser.canonical(champion.id)]
                 ?: tiers[com.example.data.sync.RegionalTierParser.canonical(champion.name)]
                 ?: champion.tier.ifBlank { "A" }
 
-            val (baseWr, basePr, baseBr, delta) = when (category) {
-                "S+" -> RegionalStatsTuple(53.8, 14.5, 22.0, 0.48)
-                "S" -> RegionalStatsTuple(52.3, 11.2, 12.5, 0.32)
-                "A+", "A" -> RegionalStatsTuple(50.8, 8.4, 5.0, 0.12)
-                "B+", "B" -> RegionalStatsTuple(49.4, 5.6, 2.1, -0.18)
-                "C+", "C" -> RegionalStatsTuple(48.1, 3.2, 0.8, -0.35)
-                else -> RegionalStatsTuple(46.8, 1.8, 0.4, -0.52)
-            }
-            val finalWr = if (champion.winrate > 0.0) champion.winrate else baseWr
-            val finalPr = if (champion.pickRate > 0.0) champion.pickRate else basePr
-            val finalBr = if (champion.banRate > 0.0) champion.banRate else baseBr
-            val finalDelta = if (champion.winrateDelta != 0.0) champion.winrateDelta else delta
-            val isCn = false
-            val finalCnTier = if (champion.cnTier.isNotBlank()) champion.cnTier else when (category) {
-                "S+" -> "T0"
-                "S" -> "T1"
-                "A+", "A" -> "T2"
-                "B+", "B" -> "T3"
-                "C+", "C" -> "T4"
-                else -> "T5"
-            }
-
-            champion.copy(
-                hasRegionalStats = isCn,
-                tier = category,
-                cnTier = finalCnTier,
-                // GLOBAL también conserva las estadísticas reales incluidas en el catálogo.
-                // Antes se ponían en 0.0 al fusionar tiers, provocando ▲ +0.00% en toda la Tier List.
-                winrate = finalWr,
-                pickRate = finalPr,
-                banRate = finalBr,
-                winrateDelta = finalDelta
-            )
+            champion.copy(hasRegionalStats = false, tier = category)
         }
         regionalChampions[normalized] = updated
         regionRevision++
@@ -241,17 +207,6 @@ object WildRiftRepository {
         activeRegionName = normalized
         if (source.isNotEmpty()) { champions.clear(); champions.addAll(source) }
     }
-
-    @Synchronized
-    fun applyChineseStats(updated: List<Champion>) {
-        chineseChampions = updated.toList()
-        regionRevision++
-        if (activeRegionName == "CN") { champions.clear(); champions.addAll(updated) }
-    }
-
-    fun chineseStatsSnapshot(): List<Champion> =
-        chineseChampions.ifEmpty { baseChampions.toList() }
-
 
     @Synchronized
     fun initChampions(context: android.content.Context, forceReload: Boolean = false) {
@@ -287,7 +242,6 @@ object WildRiftRepository {
             baseChampions.addAll(parsed2)
             champions.clear()
             champions.addAll(baseChampions)
-            chineseChampions = baseChampions.toList()
             regionalChampions.clear()
             regionRevision++
             android.util.Log.d("WildRiftRepository", "Loaded ${champions.size} champions successfully")
@@ -327,56 +281,6 @@ object WildRiftRepository {
     fun getChampionById(id: String): Champion? {
         if (id.equals("empty", ignoreCase = true)) return EMPTY_CHAMPION
         return champions.find { it.id.equals(canonicalChampionId(id), ignoreCase = true) }
-    }
-
-    var syncCycle: Int = 0
-
-    fun computeChampionsForRegionAndTier(
-        sourceList: List<Champion>,
-        regionId: String,
-        tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS
-    ): List<Champion> {
-        // Preserve the bundled references: no synthetic regional percentages.
-        return regionalSnapshot(regionId).ifEmpty { sourceList }
-    }
-
-    fun updateStatsForRegionAndTier(regionId: String, tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS) {
-        selectMetaRegion(regionId)
-    }
-
-    private data class Tuple4(val wr: Double, val pr: Double, val br: Double, val delta: Double)
-
-    /**
-     * Obtiene los mejores campeones (Top N) con mayor Win Rate real de un servidor
-     * para sincronizar con total exactitud las estadísticas multiserver con la Tier List.
-     */
-    fun getTopChampionsForServer(
-        regionId: String,
-        count: Int = 3,
-        tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS
-    ): List<Champion> {
-        val normalized = com.example.data.sync.MetaRegion.normalize(regionId)
-        val snapshot = regionalSnapshot(normalized)
-        val categories = mapOf("S+" to 6, "S" to 5, "A+" to 4, "A" to 3, "B" to 2, "C" to 1)
-        return snapshot.filter { it.hasRegionalStats && it.winrate > 0.0 }.sortedByDescending { it.winrate }.take(count)
-
-    }
-
-    fun getTopChampionForServer(
-        regionId: String,
-        tencentTier: com.example.data.sync.TencentRankTier = com.example.data.sync.TencentRankTier.DIAMOND_PLUS
-    ): Pair<String, Double> {
-        val top = getTopChampionsForServer(regionId, 1, tencentTier).firstOrNull()
-        return if (top != null) Pair(top.name, top.winrate) else Pair("Sin datos", 0.0)
-    }
-
-    fun simulateRegionStatsChange(regionId: String) {
-        syncCycle++
-        updateStatsForRegionAndTier(regionId, com.example.data.sync.ChineseMetaSyncService.currentTier.value)
-    }
-
-    fun simulateTierStatsChange(tier: Any) {
-        if (tier is com.example.data.sync.TencentRankTier) updateStatsForRegionAndTier(activeRegionName, tier)
     }
 
     fun getChampionsByRole(role: LaneRole): List<Champion> {
@@ -447,8 +351,6 @@ object WildRiftRepository {
         isFirstPick: Boolean = false,
         lang: String = "es"
     ): DraftAnalysisResult {
-        val serverRegion = com.example.data.sync.ChineseMetaSyncService.currentRegion.value
-        val rankTier = com.example.data.sync.ChineseMetaSyncService.currentTier.value.displayName
 
         val activeEnemies = (enemies + listOfNotNull(enemyLaneOpponent)).filter { it.id != "empty" }.distinctBy { it.id }
         val activeAllies = allies.filter { it.id != "empty" }.distinctBy { it.id }
