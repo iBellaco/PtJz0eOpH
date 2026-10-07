@@ -32,3 +32,74 @@ Actualización de privacidad, términos, contacto confirmado DevWildRiftCoach@gm
 6. **Licencias:** están pendientes el inventario de derechos de recursos, fuentes de estadísticas y condiciones de cada componente. Publicar el código no concede derechos de terceros.
 
 Procedimiento: [eliminación de cuentas](account-deletion-operations.md). Pasos y fuentes oficiales: [Riot y Google Play](riot-google-play-authorization.md).
+
+## Archivos modificados
+
+- `.github/workflows/account-deletion.yml`
+- `.github/workflows/build-apk.yml`
+- `.github/workflows/firestore-rules.yml`
+- `AGENTS.md`
+- `INSTRUCCIONES_AGENTES.md`
+- `README.md`
+- `all_missing_keys.json`
+- `app/applet/secrets.defaults.properties`
+- `app/applet/secrets.properties`
+- `app/build.gradle.kts`
+- `app/proguard-rules.pro`
+- `app/src/main/AndroidManifest.xml`
+- `app/src/main/assets/translations_pt.json`
+- `app/src/main/java/com/example/data/AccountDeletionPolicy.kt`
+- `app/src/main/java/com/example/data/AccountDeletionRepository.kt`
+- `app/src/main/java/com/example/ui/auth/AuthScreen.kt`
+- `app/src/main/java/com/example/ui/auth/AuthViewModel.kt`
+- `app/src/main/java/com/example/ui/components/AccountDeletionCard.kt`
+- `app/src/main/java/com/example/ui/components/DonationDialog.kt`
+- `app/src/main/java/com/example/ui/components/PrivacyPolicyDialog.kt`
+- `app/src/main/java/com/example/ui/screens/FAQScreen.kt`
+- `app/src/main/java/com/example/ui/screens/MainDraftingScreen.kt`
+- `app/src/main/java/com/example/util/NoticeMediaStorageManager.kt`
+- `app/src/main/java/com/example/util/SystemPermissionHelper.kt`
+- `app/src/main/res/values-pt/account_deletion.xml`
+- `app/src/main/res/values-pt/startup_information.xml`
+- `app/src/main/res/values/account_deletion.xml`
+- `app/src/main/res/values/startup_information.xml`
+- `app/src/test/java/com/example/AccountDeletionPolicyTest.kt`
+- `app/src/test/java/com/example/AccountDeletionRenderedTest.kt`
+- `app/src/test/java/com/example/LocalizationSurfaceTest.kt`
+- `clean_missing_pt.json`
+- `docs/account-deletion-operations.md`
+- `docs/coach-audit-1.1.10.217.md`
+- `docs/riot-google-play-authorization.md`
+- `filtered_ui_missing.json`
+- `firebase.json`
+- `firestore.rules`
+- `legal-site/confirmar-eliminacion.html`
+- `legal-site/eliminar.html`
+- `legal-site/index.html`
+- `legal-site/pt/confirmar-eliminacion.html`
+- `legal-site/pt/eliminar.html`
+- `legal-site/pt/index.html`
+- `legal-site/style.css`
+- `metadata.json`
+- `missing_strings_full.json`
+- `pt_translations_bulk.json`
+- `secrets.defaults.properties`
+- `secrets.properties`
+- `server/account-deletion/ensure-legal-site.mjs`
+- `server/account-deletion/media.mjs`
+- `server/account-deletion/package-lock.json`
+- `server/account-deletion/package.json`
+- `server/account-deletion/policy.mjs`
+- `server/account-deletion/preflight.mjs`
+- `server/account-deletion/request-verified-email.mjs`
+- `server/account-deletion/store.mjs`
+- `server/account-deletion/test/emulator.integration.mjs`
+- `server/account-deletion/test/media.test.mjs`
+- `server/account-deletion/test/policy.test.mjs`
+- `server/account-deletion/worker.mjs`
+- `storage.rules`
+- `tests/firestore/package.json`
+- `tests/firestore/rules.test.mjs`
+- `tests/firestore/run-tests.mjs`
+- `tests/firestore/storage.test.mjs`
+- `untranslated_strings.txt`

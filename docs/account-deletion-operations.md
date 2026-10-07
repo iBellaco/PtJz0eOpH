@@ -28,3 +28,7 @@ Los nuevos videos subidos al almacenamiento controlado incluyen un identificador
 El registro de revisión privada contiene únicamente los datos necesarios para resolver la solicitud. Tras la purga, el registro mínimo de seguridad permanece 24 horas para bloquear sesiones antiguas; la limpieza se comprueba periódicamente. Las exportaciones ya compartidas y las copias locales no se eliminan a distancia.
 
 El responsable debe evaluar la compatibilidad del plazo de recuperación de 60 días y la conservación con las jurisdicciones de sus usuarios. Google Play no certifica ese plazo por tener un aviso. Si la ley exige atender antes una solicitud de supresión, debe existir un procedimiento que cumpla ese requisito.
+
+La tarea debe supervisarse y mantenerse activa: el programador puede retrasar ejecuciones y desactivar flujos de repositorios públicos tras 60 días sin actividad. Antes de una distribución amplia, conviene migrar la programación a un servicio con un compromiso de disponibilidad apropiado. [Condiciones oficiales del programador](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+
+Las comunicaciones de verificación recibidas por correo se gestionan manualmente. Al completar la solicitud, retirar los mensajes y archivos de verificación que ya no sean necesarios; si existe una obligación legítima de conservar algún registro, documentar su alcance y plazo e informar al titular. La purga automática de la aplicación no elimina la bandeja de correo del responsable.
