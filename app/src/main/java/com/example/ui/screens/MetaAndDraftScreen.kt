@@ -3652,7 +3652,7 @@ internal fun SpellsTab() {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 184.dp)
+                            .height(184.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .testTag("catalog_spell_${spell.id}")
                             .coachClickable { selectedSpell = spell },
@@ -3686,8 +3686,6 @@ internal fun SpellsTab() {
                                 lineHeight = 13.sp,
                                 modifier = Modifier.fillMaxWidth()
                             )
-                            val presentation = com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
-                            com.example.ui.components.SpellMapLabels(presentation.mapLabels)
                             Text(
                                 text = com.example.util.tr("CD ${spell.cooldown}"),
                                 color = HextechCyan,
@@ -3752,10 +3750,6 @@ internal fun SpellsTab() {
                                 }
                                 val spellPresentation = remember(spell.description, lang) {
                                     com.example.util.SpellCatalogFormatting.split(spell.getLocalizedDescription(lang), lang)
-                                }
-                                if (spellPresentation.mapLabels.isNotEmpty()) {
-                                    Spacer(modifier = Modifier.height(5.dp))
-                                    com.example.ui.components.SpellMapLabels(spellPresentation.mapLabels)
                                 }
                                 if (spellPresentation.description.isNotBlank()) {
                                     Spacer(modifier = Modifier.height(4.dp))

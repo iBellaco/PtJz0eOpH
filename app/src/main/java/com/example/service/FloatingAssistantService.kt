@@ -1,4 +1,6 @@
 package com.example.service
+
+import kotlinx.coroutines.flow.collect
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.asImageBitmap
@@ -1059,9 +1061,28 @@ private fun FloatingOverlayContent(
         changes
     }
 
+    val syncEnemyHud: (com.example.service.screen.DraftScanResult) -> Int = { state.syncScannedEnemies(it) }
+
     val confirmedHudPicks = { (allies.toList() + enemies.toList()).filterNotNull().takeIf { it.size == 9 }.orEmpty() }
     val commitLastPickToHud: (com.example.service.screen.DraftScanResult) -> Unit = { result ->
         state.applyConfirmedLastPick(result)
+    }
+
+    // The viewer and the HUD consume the same confirmed decision. This also
+    // applies an explicit viewer selection while auto-scan is paused.
+    LaunchedEffect(state) {
+        com.example.service.screen.LiteRTVisionClassifier.reportFlow.collect { report ->
+            if (report.isConfirmed && report.pickedChampion != null &&
+                (report.slotDescription.startsWith("Aliado") || report.slotDescription.startsWith("Rival"))) {
+                state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
+                    allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+                    isLastPickConfirmed = true, lastPickChampion = report.pickedChampion,
+                    tenthPickIsAlly = report.slotDescription.startsWith("Aliado"), tenthPickSlotIndex = 4,
+                    allyRolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value,
+                    isSuccessful = true, statusMessage = ""
+                ))
+            }
+        }
     }
 
     var isScanning by state::isScanning
@@ -1201,29 +1222,19 @@ private fun FloatingOverlayContent(
                                         withContext(Dispatchers.Main) {
                                             var fastPicksAdded = 0
                                             for ((turn, champ) in detectedPicks) {
-                                                if (turn.isAlly) {
-                                                    val rolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value
-                                                    if (rolesBySlot.size == 5) {
-                                                        DraftVisionScanner.allySlotConfirmedChampions[turn.slotIndex] = champ
-                                                        val byRole = DraftVisionScanner.allySlotConfirmedChampions
-                                                            .mapIndexedNotNull { slot, picked ->
-                                                                rolesBySlot[slot]?.let { role -> picked?.let { role to it } }
-                                                            }.toMap()
-                                                        fastPicksAdded += syncAlliedHud(byRole)
-                                                    }
-                                                } else {
-                                                    val emptyIdx = enemies.indices.firstOrNull { enemies[it] == null && manualLockedEnemySlots[it] != true }
-                                                    val targetIdx = when {
-                                                        emptyIdx != null -> emptyIdx
-                                                        manualLockedEnemySlots[turn.slotIndex] != true -> turn.slotIndex
-                                                        else -> enemies.indices.firstOrNull { manualLockedEnemySlots[it] != true } ?: turn.slotIndex
-                                                    }
-                                                    if (manualLockedEnemySlots[targetIdx] != true && enemies[targetIdx]?.id != champ.id) {
-                                                        assignEnemySlot(targetIdx, champ, 100)
-                                                        DraftVisionScanner.enemySlotConfirmedChampions[turn.slotIndex] = champ
-                                                        fastPicksAdded++
-                                                        AppLogger.d("HighPriorityLoop", "Slot Rival Activo ${turn.slotIndex} fijado en $targetIdx: ${champ.name}")
-                                                    }
+                                                val before = (allies + enemies).count { it != null }
+                                                val scan = com.example.service.screen.DraftScanResult(
+                                                    allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+                                                    isLastPickConfirmed = true, lastPickChampion = champ,
+                                                    tenthPickIsAlly = turn.isAlly, tenthPickSlotIndex = turn.slotIndex,
+                                                    allyRolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value,
+                                                    isSuccessful = true, statusMessage = ""
+                                                )
+                                                state.applyConfirmedLastPick(scan)
+                                                if ((allies + enemies).count { it != null } > before) {
+                                                    (if (turn.isAlly) DraftVisionScanner.allySlotConfirmedChampions
+                                                     else DraftVisionScanner.enemySlotConfirmedChampions)[turn.slotIndex] = champ
+                                                    fastPicksAdded++
                                                 }
                                             }
                                             if (fastPicksAdded > 0) {
@@ -1247,19 +1258,7 @@ private fun FloatingOverlayContent(
                                             }
 
                                             val newAlliesAdded = if (result.allyRolesBySlot.size == 5) syncAlliedHud(result.alliesByRole) else 0
-                                            var newEnemiesAdded = 0
-
-                                            defaultRoles.forEachIndexed { idx, role ->
-                                                if (manualLockedEnemySlots[idx] != true) {
-                                                    val scannedEnemy = result.enemiesByRole[role]
-                                                    if (scannedEnemy != null) {
-                                                        if (enemies[idx] == null || enemies[idx]?.id != scannedEnemy.id) {
-                                                            assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
-                                                            if (enemies[idx] == null) newEnemiesAdded++
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            val newEnemiesAdded = syncEnemyHud(result)
 
                                             commitLastPickToHud(result)
 
@@ -1384,14 +1383,7 @@ private fun FloatingOverlayContent(
 
                         // 1. Asignación directa y de alta precisión por rol (respetando selecciones manuales)
                         if (result.allyRolesBySlot.size == 5) syncAlliedHud(result.alliesByRole)
-                        defaultRoles.forEachIndexed { idx, role ->
-                            if (manualLockedEnemySlots[idx] != true) {
-                                val scannedEnemy = result.enemiesByRole[role]
-                                if (scannedEnemy != null) {
-                                    assignEnemySlot(idx, scannedEnemy, result.enemyConfidencesByRole[role])
-                                }
-                            }
-                        }
+                        syncEnemyHud(result)
 
                         commitLastPickToHud(result)
 

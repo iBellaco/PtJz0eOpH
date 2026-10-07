@@ -237,7 +237,13 @@ object DraftVisionScanner {
         }.filterNotNull()
         // Only a complete, unique set of nine HUD picks can recover a transient OCR gap.
         val hud = confirmedHudPicks.takeIf { it.size == 9 && it.map { c -> c.id }.distinct().size == 9 }.orEmpty()
-        return (remembered + hud).filter { it.id != target?.id }.distinctBy { it.id }
+        val uniqueRemembered = remembered.filter { it.id != target?.id }.distinctBy { it.id }
+        // An old HUD and a current OCR reading are alternative snapshots, not extra picks.
+        // In particular a changed preview must never inflate the count beyond nine.
+        if (uniqueRemembered.size == 9) return uniqueRemembered
+        val compatibleHud = hud.filter { it.id != target?.id }
+        return if (compatibleHud.size == 9 && uniqueRemembered.all { c -> compatibleHud.any { it.id == c.id } })
+            compatibleHud else uniqueRemembered
     }
 
     internal fun getRememberedAllyRoles(currentRoles: Map<Int, LaneRole>): Map<Int, LaneRole> {
@@ -441,6 +447,7 @@ object DraftVisionScanner {
         val enemyOcrChampions = Array<Champion?>(5) { null }
         val textDiagnosticsList = mutableListOf<TextBlockDiagnostic>()
         val targetedAllyChampions = Array<Champion?>(5) { null }
+        val targetedEnemyChampions = Array<Champion?>(5) { null }
 
         // -----------------------------------------------------------------------------------------
         // PASO 1: OCR DIRECTO CON MÁXIMA FIDELIDAD ÓPTICA
@@ -466,38 +473,37 @@ object DraftVisionScanner {
                 if (ocrBitmap !== bitmap) ocrBitmap.recycle()
             }
 
-            // A short champion name such as Vi is often lost in full-screen OCR.
-            // Read only the name band of each ally slot at a larger scale.
-            for (i in 0..4) {
-                val y = (height * calib.allySlotYRatios[i]).toInt()
-                val left = (width * (calib.allyAvatarCenterX + 0.035f)).toInt().coerceIn(0, width - 1)
-                val right = (width * calib.allyOcrMaxX).toInt().coerceIn(left + 1, width)
-                // Keep this crop inside a single Wild Rift row. The previous +/-7.5% height
-                // overlapped adjacent rows on landscape devices and could copy one champion
-                // into a neighboring slot before the complete row text was resolved.
-                val top = (y - height * 0.050f).toInt().coerceIn(0, height - 1)
-                val bottom = (y + height * 0.050f).toInt().coerceIn(top + 1, height)
+            // Read the same isolated name band on both teams. Full-screen OCR can
+            // miss a small rival name and otherwise keep an earlier preview forever.
+            for (isAlly in listOf(true, false)) for (i in 0..4) {
+                val nameRect = AdaptiveScreenLayoutEngine.calculateSlotNameRect(width, height, isAlly, i, calib)
+                if (overlayRect?.let { Rect.intersects(it, nameRect) } == true) continue
                 var crop: Bitmap? = null
                 var scaled: Bitmap? = null
                 try {
-                    crop = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
+                    val original = Bitmap.createBitmap(bitmap, nameRect.left, nameRect.top, nameRect.width(), nameRect.height())
+                    crop = original.copy(Bitmap.Config.ARGB_8888, true) ?: error("Name crop unavailable")
+                    if (original !== bitmap && original !== crop) original.recycle()
+                    val canvas = android.graphics.Canvas(crop)
+                    val paint = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
+                    exclusions.forEach { excluded ->
+                        val local = Rect(excluded).apply { offset(-nameRect.left, -nameRect.top) }
+                        canvas.drawRect(local, paint)
+                    }
                     scaled = Bitmap.createScaledBitmap(crop, (crop.width * 3).coerceAtMost(1400), (crop.height * 3).coerceAtMost(420), true)
                     val slotText = recognizer.process(InputImage.fromBitmap(scaled, 0)).await()
                     val centerY = scaled.height / 2
-                    val best = slotText.textBlocks.flatMap { it.lines }
-                        .mapNotNull { line ->
-                            ChampionNameResolver.findChampionInText(line.text, allChamps)?.let { candidate ->
-                                val distance = kotlin.math.abs((line.boundingBox?.centerY() ?: centerY) - centerY)
-                                Triple(candidate, distance, line.text)
-                            }
+                    val candidates = slotText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
+                        ChampionNameResolver.findChampionInText(line.text, allChamps)?.let { candidate ->
+                            candidate to kotlin.math.abs((line.boundingBox?.centerY() ?: centerY) - centerY)
                         }
-                        .minByOrNull { it.second }
-                    if (best != null) {
-                        targetedAllyChampions[i] = best.first
-                        AppLogger.d(TAG, "OCR dirigido Aliado Slot $i -> candidato de respaldo ${best.first.name} ('${best.third}')")
                     }
+                    // Conflicting champion names inside one band are not a confirmed pick.
+                    val best = candidates.takeIf { it.map { c -> c.first.id }.distinct().size == 1 }
+                        ?.minByOrNull { it.second }?.first
+                    if (isAlly) targetedAllyChampions[i] = best else targetedEnemyChampions[i] = best
                 } catch (_: Throwable) {
-                    // Full-screen OCR remains the fallback for this slot.
+                    // A missing cropped reading is a gap, not a fabricated champion.
                 } finally {
                     try { if (scaled != null && scaled !== crop) scaled.recycle() } catch (_: Throwable) {}
                     try { crop?.recycle() } catch (_: Throwable) {}
@@ -1064,6 +1070,8 @@ object DraftVisionScanner {
                         break
                     }
                 }
+
+                detectedEnemyChamp = targetedEnemyChampions[i] ?: detectedEnemyChamp
 
                 // REGLAS ESTRICTAS DEL USUARIO:
                 // Si el OCR detecta un campeón en el slot rival, se confirma al 100% y se guarda en memoria.

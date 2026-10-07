@@ -28,8 +28,8 @@ class SpellCatalogRenderedTest {
     @After fun restoreCatalog() {
         WildRiftRepository.summonerSpells = WildRiftSpellsAndRunes.summonerSpells
     }
-    @Test fun `Spanish catalog displays map labels in grid list and dialog`() = inspect("es")
-    @Test fun `Portuguese catalog displays translated map labels in grid list and dialog`() = inspect("pt")
+    @Test fun `Spanish map labels appear only inside the spell description`() = inspect("es")
+    @Test fun `Portuguese map labels appear only inside the spell description`() = inspect("pt")
 
     private fun inspect(language: String) {
         val context = RuntimeEnvironment.getApplication()
@@ -41,25 +41,28 @@ class SpellCatalogRenderedTest {
         val abyss = if (language == "pt") "Abismo dos Lamentos" else "Abismo de los Lamentos"
         val close = if (language == "pt") "Fechar" else "Cerrar"
         val output = File("build/reports/portuguese-rendered").apply { mkdirs() }
-        fun checkLabelsAndMechanics() {
-            // Cards merge their accessible text; inspect the actual label child.
-            compose.onNode(hasText(abyss) and hasAnyAncestor(hasTestTag("spell_map_labels")), useUnmergedTree = true).assertIsDisplayed()
+        fun checkCompactCatalog() {
+            compose.onAllNodesWithTag("spell_map_labels", useUnmergedTree = true).assertCountEquals(0)
+            compose.onAllNodesWithText(abyss, substring = true, useUnmergedTree = true).assertCountEquals(0)
             compose.onNode(hasText("100s", substring = true) and hasAnyAncestor(hasTestTag("catalog_spell_barrier")), useUnmergedTree = true).assertIsDisplayed()
             compose.onAllNodesWithText("Mapas aplicables", substring = true).assertCountEquals(0)
             compose.onAllNodesWithText("Mapas aplicáveis", substring = true).assertCountEquals(0)
             compose.onAllNodesWithText("Howling Abyss", substring = true).assertCountEquals(0)
         }
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(output, "spell-catalog-grid-$language.png").path)
-        checkLabelsAndMechanics()
+        checkCompactCatalog()
         compose.onNodeWithTag("catalog_spell_barrier").performClick()
         // The grid remains behind the dialog; assert the dialog's own label.
         compose.onNode(hasText(abyss) and hasAnyAncestor(isDialog()), useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithText(if (language == "pt") "Concede um escudo" else "Otorga un escudo", substring = true).assertExists()
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(output, "spell-catalog-dialog-$language.png").path)
         compose.onNodeWithText(close).performClick()
+        checkCompactCatalog()
         compose.onNodeWithText(if (language == "pt") "Detalhado" else "Detallado").performClick()
-        checkLabelsAndMechanics()
+        checkCompactCatalog()
         compose.onNodeWithText(if (language == "pt") "Concede um escudo" else "Otorga un escudo", substring = true).assertExists()
         compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(output, "spell-catalog-list-$language.png").path)
+        compose.onNodeWithTag("catalog_spell_barrier").performClick()
+        compose.onNode(hasText(abyss) and hasAnyAncestor(isDialog()), useUnmergedTree = true).assertIsDisplayed()
     }
 }

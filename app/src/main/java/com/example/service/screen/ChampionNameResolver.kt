@@ -207,6 +207,7 @@ object ChampionNameResolver {
         "yone" to "yone",
         "yorick" to "yorick",
         "yuumi" to "yuumi",
+        "yunara" to "yunara",
         "zac" to "zac",
         "zed" to "zed",
         "zeri" to "zeri",

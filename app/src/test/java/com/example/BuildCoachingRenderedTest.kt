@@ -3,6 +3,7 @@ package com.example
 import android.app.Application
 import androidx.compose.ui.test.*
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
 import com.example.data.local.CustomChampionBuildsManager
@@ -30,6 +31,32 @@ class BuildCoachingRenderedTest {
     @Test fun `Syndra build and element decisions are localized in Portuguese`()=inspect("pt")
     @Test fun `Vi boot selections keep their own tier two and tier three advice in Spanish`()=inspectBoots("es")
     @Test fun `Vi boot selections keep their own tier two and tier three advice in Portuguese`()=inspectBoots("pt")
+    @Test fun `matchup avatars show their name without navigating in Spanish`()=inspectMatchupNames("es")
+    @Test fun `matchup avatars show their name without navigating in Portuguese`()=inspectMatchupNames("pt")
+
+    private fun inspectMatchupNames(language: String) {
+        val context = RuntimeEnvironment.getApplication()
+        com.example.util.DynamicTranslations.loadSync(context)
+        AppLanguage.select(context, language)
+        WildRiftRepository.initChampions(context, forceReload = true)
+        FavoriteChampionsManager.init(context)
+        CustomChampionBuildsManager.init(context)
+        val champion = WildRiftRepository.champions.first { it.id == "syndra" }
+        var navigations = 0
+        compose.setContent { MyApplicationTheme {
+            ChampionDetailSheet(champion = champion, isOverlay = false, onDismiss = {},
+                onChampionSelected = { navigations++ })
+        } }
+        for (group in listOf("advantage", "weakness", "synergy")) {
+            val avatar = compose.onAllNodesWithTag("build_matchup_name_$group").onFirst().performScrollTo()
+            val name = avatar.fetchSemanticsNode().config[SemanticsProperties.ContentDescription].first()
+            avatar.performSemanticsAction(SemanticsActions.OnClick) { it() }
+            compose.onNodeWithTag("build_matchup_visible_name").assertTextEquals(name).assertIsDisplayed()
+            org.junit.Assert.assertEquals(0, navigations)
+            compose.onNodeWithText(if(language == "pt") "Fechar" else "Cerrar").performClick()
+            compose.onNodeWithTag("build_matchup_visible_name").assertDoesNotExist()
+        }
+    }
 
     private fun inspectBoots(language: String) {
         val context = RuntimeEnvironment.getApplication()
