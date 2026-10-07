@@ -30,7 +30,8 @@ fun AccountDeletionCard(
     val scope = rememberCoroutineScope()
     fun dismiss() { if (!busy) { step = 0; password = ""; failed = false } }
     Column(Modifier.fillMaxWidth().testTag("account_deletion_card")) {
-        Text(localizedString(R.string.account_delete_summary), style = MaterialTheme.typography.bodySmall)
+        Text(localizedString(R.string.account_delete_summary), style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.height(8.dp))
         CoachOutlinedButton(onClick = { step = 1 },
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("account_delete_open")) {
