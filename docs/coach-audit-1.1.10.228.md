@@ -9,6 +9,7 @@
 - `NoticeMediaStorageManager.kt` y pruebas de medios: se rechazan vídeos que superen el límite también antes de subirlos.
 - `.github/workflows/build-apk.yml`: lint y todas las pruebas unitarias Android pasan antes de compilar el APK final; continúan las comprobaciones de pantallas, firma e instalación.
 - `gradle/libs.versions.toml`, `app/build.gradle.kts`: las APIs de fecha utilizadas por Coach se adaptan a Android 7.0 y posteriores; lint había detectado una incompatibilidad en API 24/25.
+- `StreamerPublicationViews.kt`: se corrige la sangría del indicador animado que lint marcó como error de lectura de código.
 - `.github/scripts/cleanup-completed-runs.cjs`, su prueba y `AGENTS.md`: la evidencia de las entregas se conserva separada del historial de ejecuciones frecuentes del servicio.
 - `README.md`, `docs/economy-operations.md`, `app/build.gradle.kts`: documentación de operación y versión actualizadas.
 
