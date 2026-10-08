@@ -25,7 +25,31 @@ object BuildElementAdvice {
         fun compact(value: String) = key(value).replace(" ", "")
         val wanted = compact(name)
         return entries.firstOrNull { compact(it.first) == wanted && it.second.isNotBlank() }
-            ?.second?.trim()?.takeUnless { it == catalogDescription.trim() } ?: fallback.trim()
+            ?.second?.let { distinctAdvice(it, catalogDescription) }?.takeIf { it.isNotBlank() }
+            ?: distinctAdvice(fallback, catalogDescription)
+    }
+
+    /** Remove copied mechanics and near-identical sentences, preserving tactical additions. */
+    fun distinctAdvice(advice: String, catalogDescription: String): String {
+        if (catalogDescription.isBlank()) return advice.trim()
+        fun sentences(text: String) = text.replace(Regex("<[^>]+>"), " ")
+            .split(Regex("(?<=[.!?;])\\s+|\\n+"))
+            .map { it.trim() }.filter { it.isNotBlank() }
+        val catalog = sentences(catalogDescription).map(::key)
+        val entireCatalog = key(catalogDescription)
+        return sentences(advice).filterNot { sentence ->
+            val normalized = key(sentence)
+            if (normalized.isBlank()) false
+            else if (normalized == entireCatalog || entireCatalog.contains(normalized)) true
+            else catalog.any { source ->
+                val words = normalized.split(" ").toSet()
+                val original = source.split(" ").toSet()
+                val overlap = words.intersect(original).size.toDouble()
+                val similarity = overlap / words.union(original).size
+                words.size >= 6 && original.size >= 6 && (similarity >= 0.8 ||
+                    (similarity >= 0.65 && overlap / minOf(words.size, original.size) >= 0.9))
+            }
+        }.joinToString("\n").trim()
     }
 
     /**
@@ -45,9 +69,9 @@ object BuildElementAdvice {
         // Filter placeholder advice in its source language before translating it.
         val strategic = SituationalItemAdvisor.getAdvice(itemName, "es")
         val localizedName = catalog?.getLocalizedName(lang) ?: trStr(lang, strategic.name)
-        val catalogTip = catalog?.getLocalizedCoachTip(lang).orEmpty()
-        val purpose = strategic.purpose.takeIf { it.isNotBlank() }?.let { trStr(lang, it) }
-            ?: catalog?.getLocalizedPassive(lang).orEmpty().substringBefore("\n")
+        val catalogTip = distinctAdvice(catalog?.getLocalizedCoachTip(lang).orEmpty(),
+            catalog?.getLocalizedPassive(lang).orEmpty())
+        val timing = coreItemTimingHint(itemName, pt)
         val against = strategic.bestAgainst
             .filterNot {
                 it.contains("Composiciones rivales especializadas", ignoreCase = true) ||
@@ -60,34 +84,41 @@ object BuildElementAdvice {
             it.isNotBlank() && !it.contains("según el estado de la partida", ignoreCase = true)
         }.orEmpty().let { trStr(lang, it) }
         val coreHint = coreItemMatchupHint(itemName, pt)
+        val decision = distinctAdvice(trigger, catalog?.getLocalizedPassive(lang).orEmpty())
+            .ifBlank { catalogTip.ifBlank { timing } }
+        val additionalTip = distinctAdvice(catalogTip, decision)
 
         return if (situational) {
             if (pt) buildString {
                 appendLine("Quando usar $localizedName:")
-                appendLine(trigger.ifBlank { catalogTip.ifBlank { purpose } })
+                appendLine(decision)
                 if (against.isNotBlank()) appendLine("\nContra quais campeões/composições:\n$against")
-                appendLine("\nPor que funciona com $championName ($roleName):")
-                appendLine(catalogTip.ifBlank { purpose })
+                if (additionalTip.isNotBlank()) {
+                    appendLine("\nComo aproveitar com $championName ($roleName):")
+                    appendLine(additionalTip)
+                }
                 append("\nRegra de compra: não substitua o núcleo por padrão; troque um item apenas quando essa ameaça for uma das condições principais da partida.")
             } else buildString {
                 appendLine("Cuándo usar $localizedName:")
-                appendLine(trigger.ifBlank { catalogTip.ifBlank { purpose } })
+                appendLine(decision)
                 if (against.isNotBlank()) appendLine("\nContra qué campeones/composiciones:\n$against")
-                appendLine("\nPor qué funciona con $championName ($roleName):")
-                appendLine(catalogTip.ifBlank { purpose })
+                if (additionalTip.isNotBlank()) {
+                    appendLine("\nCómo aprovecharlo con $championName ($roleName):")
+                    appendLine(additionalTip)
+                }
                 append("\nRegla de compra: no reemplaces el core por defecto; cambia un objeto solo cuando esa amenaza sea una de las condiciones principales de la partida.")
             }
         } else {
             if (pt) buildString {
                 appendLine("Por que $localizedName é núcleo para $championName ($roleName):")
-                appendLine(catalogTip.ifBlank { purpose })
+                if (catalogTip.isNotBlank()) appendLine(catalogTip)
                 appendLine("\nQuando completar:")
                 appendLine(coreItemTimingHint(itemName, pt))
                 val matchup = against.ifBlank { coreHint }
                 if (matchup.isNotBlank()) append("\nPartidas em que rende mais:\n$matchup")
             } else buildString {
                 appendLine("Por qué $localizedName es core para $championName ($roleName):")
-                appendLine(catalogTip.ifBlank { purpose })
+                if (catalogTip.isNotBlank()) appendLine(catalogTip)
                 appendLine("\nCuándo completarlo:")
                 appendLine(coreItemTimingHint(itemName, pt))
                 val matchup = against.ifBlank { coreHint }
@@ -109,20 +140,14 @@ object BuildElementAdvice {
         val catalog = WildRiftItemsData.getItemByName(bootName)
         val localizedName = catalog?.getLocalizedName(lang) ?: bootName
         val condition = bootScenario(bootName, pt)
-        val mechanic = catalog?.getLocalizedCoachTip(lang)
-            ?.trim()
-            ?.takeIf { it.isNotBlank() }
-            ?: catalog?.getLocalizedPassive(lang)?.substringBefore("\n")?.trim().orEmpty()
 
         return if (pt) buildString {
             appendLine("Por que $localizedName nesta build de $championName ($roleName):")
-            if (mechanic.isNotBlank()) appendLine(mechanic)
             appendLine("\nQuando escolher:")
             appendLine(condition)
             if (situational) append("\nTroca situacional: use esta bota quando a ameaça descrita for mais importante que o plano padrão de botas da build.")
         } else buildString {
             appendLine("Por qué $localizedName en esta build de $championName ($roleName):")
-            if (mechanic.isNotBlank()) appendLine(mechanic)
             appendLine("\nCuándo elegirla:")
             appendLine(condition)
             if (situational) append("\nCambio situacional: úsala cuando la amenaza descrita sea más importante que el plan de botas predeterminado de la build.")
@@ -140,21 +165,15 @@ object BuildElementAdvice {
         val pt = lang == "pt"
         val rune = WildRiftSpellsAndRunes.getRuneByName(runeName)
         val localizedName = rune?.getLocalizedName(lang) ?: runeName
-        val description = rune?.getLocalizedDescription(lang)
-            ?.substringBefore("\n")
-            ?.trim()
-            .orEmpty()
         val scenario = runeScenario(runeName, pt)
 
         return if (pt) buildString {
             appendLine("Função de $localizedName para $championName ($roleName):")
-            appendLine(description.ifBlank { "Esta runa reforça uma condição específica da build." })
             appendLine("\nQuando usar:")
             appendLine(scenario)
             if (situational) append("\nTroque uma runa principal por esta somente quando essa condição realmente aparecer na partida.")
         } else buildString {
             appendLine("Función de $localizedName para $championName ($roleName):")
-            appendLine(description.ifBlank { "Esta runa refuerza una condición concreta de la build." })
             appendLine("\nCuándo usarla:")
             appendLine(scenario)
             if (situational) append("\nCámbiala por una runa principal solo cuando esa condición realmente aparezca en la partida.")
@@ -172,18 +191,14 @@ object BuildElementAdvice {
         val pt = lang == "pt"
         val spell = WildRiftSpellsAndRunes.getSpellByName(spellName)
         val localizedName = spell?.getLocalizedName(lang) ?: spellName
-        val description = SpellCatalogFormatting.split(spell?.getLocalizedDescription(lang).orEmpty(), lang)
-            .description.substringBefore("\n").trim()
         val scenario = spellScenario(spellName, pt)
 
         return if (pt) buildString {
             appendLine("Quando usar $localizedName com $championName ($roleName):")
             appendLine(scenario)
-            if (description.isNotBlank()) append("\nO que o feitiço oferece:\n$description")
         } else buildString {
             appendLine("Cuándo usar $localizedName con $championName ($roleName):")
             appendLine(scenario)
-            if (description.isNotBlank()) append("\nQué aporta el hechizo:\n$description")
         }.trim()
     }
 

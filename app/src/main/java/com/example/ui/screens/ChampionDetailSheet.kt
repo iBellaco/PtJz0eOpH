@@ -1506,13 +1506,24 @@ fun ChampionDetailSheet(
             val rawSynergies = roleProfile.synergies.ifEmpty {
                 champion.synergies.ifEmpty { synergyProfile.bestTeammates.map { it.championName } }
             }
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                BuildMatchupList("advantage", tr("Ventaja"), roleProfile.advantageAgainst,
-                    AllyBlue, isPremium, isSignedIn, isCompact, currentLang) { selectedMatchupName = it }
-                BuildMatchupList("weakness", tr("Débil"), roleProfile.counteredBy,
-                    DangerRed, isPremium, isSignedIn, isCompact, currentLang) { selectedMatchupName = it }
-                BuildMatchupList("synergy", tr("Sinergia"), rawSynergies,
-                    HextechGold, isPremium, isSignedIn, isCompact, currentLang) { selectedMatchupName = it }
+            androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
+                // Three portraits retain 48dp touch targets; narrow screens scroll the
+                // same compact row instead of stacking the three relationship groups.
+                val cardWidth = ((maxWidth - 8.dp) / 3).coerceAtLeast(156.dp)
+                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                    .testTag("build_matchup_groups_row"),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.Top) {
+                    BuildMatchupList("advantage", tr("Ventaja"), roleProfile.advantageAgainst,
+                        AllyBlue, isPremium, isSignedIn, isCompact, currentLang,
+                        Modifier.width(cardWidth)) { selectedMatchupName = it }
+                    BuildMatchupList("weakness", tr("Débil"), roleProfile.counteredBy,
+                        DangerRed, isPremium, isSignedIn, isCompact, currentLang,
+                        Modifier.width(cardWidth)) { selectedMatchupName = it }
+                    BuildMatchupList("synergy", tr("Sinergia"), rawSynergies,
+                        HextechGold, isPremium, isSignedIn, isCompact, currentLang,
+                        Modifier.width(cardWidth)) { selectedMatchupName = it }
+                }
             }
 
             if (!isSignedIn) {
@@ -1858,7 +1869,7 @@ fun ChampionDetailSheet(
                         )
                     }
 
-                    BuildElementCoachAdvice(selectedElementAdvice)
+                    BuildElementCoachAdvice(selectedElementAdvice, localizedPassive)
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
                         modifier = Modifier
@@ -1934,7 +1945,8 @@ fun ChampionDetailSheet(
                         text = rune.getLocalizedDescription(com.example.util.currentAppLanguage()),
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
-                    BuildElementCoachAdvice(selectedElementAdvice)
+                    BuildElementCoachAdvice(selectedElementAdvice,
+                        rune.getLocalizedDescription(currentLang))
                 }
             },
             confirmButton = {
@@ -1979,7 +1991,7 @@ fun ChampionDetailSheet(
                         text = presentation.description,
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
-                    if (!com.example.util.BuildElementAdvice.isSpellWithoutCoachAdvice(spell.name)) BuildElementCoachAdvice(selectedElementAdvice)
+                    if (!com.example.util.BuildElementAdvice.isSpellWithoutCoachAdvice(spell.name)) BuildElementCoachAdvice(selectedElementAdvice, presentation.description)
                 }
             },
             confirmButton = {

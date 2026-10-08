@@ -9,6 +9,24 @@ import org.junit.Test
 import java.io.File
 
 class BuildElementAdviceCoverageTest {
+    @Test
+    fun `rune and spell coaching never copies the catalog description in either language`() {
+        for (language in listOf("es", "pt")) {
+            com.example.data.WildRiftSpellsAndRunes.runes.forEach { rune ->
+                val description = rune.getLocalizedDescription(language).substringBefore("\n").trim()
+                val advice = BuildElementAdvice.contextualRuneAdvice(rune.name, "Vi", "Jungla", language, false)
+                if (description.length > 30) assertFalse("${rune.name}: $language repeats mechanics",
+                    advice.contains(description))
+            }
+            com.example.data.WildRiftSpellsAndRunes.summonerSpells.forEach { spell ->
+                val description = com.example.util.SpellCatalogFormatting.split(
+                    spell.getLocalizedDescription(language), language).description.substringBefore("\n").trim()
+                val advice = BuildElementAdvice.contextualSpellAdvice(spell.name, "Vi", "Jungla", language)
+                if (description.length > 30) assertFalse("${spell.name}: $language repeats mechanics",
+                    advice.contains(description))
+            }
+        }
+    }
     private fun builds() = Json { ignoreUnknownKeys = true }
         .decodeFromString<List<CustomChampionBuildRecord>>(
             File("src/main/assets/champions_creator_builds.json").readText()

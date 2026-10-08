@@ -65,6 +65,13 @@ class BuildCoachingRenderedTest {
                 }
             }
             compose.onNodeWithTag("advantage_insight_card").performScrollTo()
+            val cards = listOf("advantage", "weakness", "synergy").map {
+                compose.onNodeWithTag("${it}_insight_card").fetchSemanticsNode()
+            }
+            org.junit.Assert.assertEquals(cards[0].positionInRoot.y, cards[1].positionInRoot.y, 1f)
+            org.junit.Assert.assertEquals(cards[0].positionInRoot.y, cards[2].positionInRoot.y, 1f)
+            org.junit.Assert.assertTrue(cards[0].positionInRoot.x < cards[1].positionInRoot.x)
+            org.junit.Assert.assertTrue(cards[1].positionInRoot.x < cards[2].positionInRoot.x)
             val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
             compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-matchup-access-$count-$language.png").path)
         }
