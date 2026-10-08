@@ -16,11 +16,13 @@ Se incorporan únicamente los recortes de los retratos de Vi de las dos capturas
 
 LiteRTViewerNavigationTest ejercita los controles reales del asistente: ojo, abrir/cerrar visor y reanudar Auto-Scan. Comprueba conservación del estado pausado/activo, equipos, selección manual, memoria de nombres, roles y reporte. Se revisan español y portugués.
 
+DraftRivalNameInstalledTest procesa los dos retratos también en el APK release instalado: compara contra el catálogo de la aplicación, exige dos fotogramas y comprueba que Vi llegue a la vacante de jungla conservando los otros nueve campeones. Se conserva la verificación de nombres de Milio y Caitlyn con el lector nativo. El script de dispositivo exige los cuatro casos aprobados.
+
 El análisis local de los píxeles sitúa ambas capturas por encima del 86 % con las referencias intermedias. Este documento se prepara antes de la ejecución de Gradle y de las comprobaciones del APK: la entrega incluirá el acta con los resultados efectivos. compile_applet no está disponible; se utiliza la compilación y los dispositivos de validación de GitHub Actions del repositorio.
 
 ## Archivos modificados
 
-README.md, app/build.gradle.kts, FloatingOverlayContent.kt, PortraitMatcher.kt, PortraitMatcherTest.kt, LiteRTViewerNavigationTest.kt, portraits/vi-reported-draft.json y portraits/vi-reported-viewer.json.
+README.md, app/build.gradle.kts, FloatingOverlayContent.kt, PortraitMatcher.kt, PortraitMatcherTest.kt, LiteRTViewerNavigationTest.kt, DraftRivalNameInstalledTest.kt, verify-draft-rival-names-device.py y los fixtures vi-reported-draft.json/vi-reported-viewer.json en recursos unitarios y activos de instrumentación.
 
 ## Resumen para testers
 
