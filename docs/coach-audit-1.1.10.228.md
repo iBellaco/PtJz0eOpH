@@ -10,6 +10,8 @@
 - `.github/workflows/build-apk.yml`: lint y todas las pruebas unitarias Android pasan antes de compilar el APK final; continúan las comprobaciones de pantallas, firma e instalación.
 - `gradle/libs.versions.toml`, `app/build.gradle.kts`: las APIs de fecha utilizadas por Coach se adaptan a Android 7.0 y posteriores; lint había detectado una incompatibilidad en API 24/25.
 - `StreamerPublicationViews.kt`: se corrige la sangría del indicador animado que lint marcó como error de lectura de código.
+- Pruebas de draft, hub y pantallas: los escenarios administrativos proporcionan el permiso firmado en lugar de simular solo el texto del rol. La prueba completa de flujo usa memoria y entorno aislado para evitar un error del emulador SQLite.
+- `UserDetailManagementDialog.kt`: la edición de tiempo Premium continúa disponible para cuentas moderadoras; el estado vitalicio no editable se reserva a perfiles administrativos.
 - `.github/scripts/cleanup-completed-runs.cjs`, su prueba y `AGENTS.md`: la evidencia de las entregas se conserva separada del historial de ejecuciones frecuentes del servicio.
 - `README.md`, `docs/economy-operations.md`, `app/build.gradle.kts`: documentación de operación y versión actualizadas.
 

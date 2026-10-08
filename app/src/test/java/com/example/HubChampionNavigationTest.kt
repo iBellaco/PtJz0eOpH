@@ -43,6 +43,12 @@ import org.robolectric.annotation.GraphicsMode
 class HubChampionNavigationTest {
     @get:Rule val compose = createComposeRule()
 
+    @org.junit.After fun clearAdminFixture() {
+        val claim = com.example.util.AuthManager::class.java.getDeclaredField("_isAdminClaim").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        (claim.get(com.example.util.AuthManager) as kotlinx.coroutines.flow.MutableStateFlow<Boolean>).value = false
+    }
+
     @Test fun `open and return from champions without an activity in Spanish`() = exerciseHub("es", "Volver")
 
     @Test fun `open and return from champions without an activity in Portuguese`() = exerciseHub("pt", "Voltar")
@@ -57,6 +63,9 @@ class HubChampionNavigationTest {
         val roleField = com.example.util.SubscriptionManager::class.java.getDeclaredField("_userRole").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
         (roleField.get(com.example.util.SubscriptionManager) as kotlinx.coroutines.flow.MutableStateFlow<String>).value = "admin"
+        val claimField = com.example.util.AuthManager::class.java.getDeclaredField("_isAdminClaim").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        (claimField.get(com.example.util.AuthManager) as kotlinx.coroutines.flow.MutableStateFlow<Boolean>).value = true
         val first = com.example.data.local.CustomChampionBuildRecord(id = "delete-target", championId = "garen", championName = "Garen", buildTitle = "Build para excluir", role = "TOP", creatorName = "Teste")
         val second = first.copy(id = "keep-target", buildTitle = "Build preservada")
         val field = CustomChampionBuildsManager::class.java.getDeclaredField("_customBuilds").apply { isAccessible = true }
