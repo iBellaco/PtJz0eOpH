@@ -24,16 +24,16 @@ test('wallet validation rejects contracts, zero addresses and invalid Tron check
 for (const [network, expectedFee] of [['BEP20', 1], ['ERC20', 5], ['TRC20', 2]]) test(`${network} debits the server fee and rejects stale quotes`, () => {
   const wallet = network === 'TRC20' ? 'TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7' : '0x1111111111111111111111111111111111111111';
   const input = {amount: 10, network, wallet, expectedFee};
-  assert.equal(cashRedemption(account, input).remaining, 190 - expectedFee);
-  assert.throws(() => cashRedemption(account, {...input, expectedFee: 0}), /comisión/);
+  assert.equal(cashRedemption(account, input, true).remaining, 190 - expectedFee);
+  assert.throws(() => cashRedemption(account, {...input, expectedFee: 0}, true), /comisión/);
 });
 test('Binance email requires an exclusive destination and has no network fee', () => {
   const input = {amount: 25, binanceEmail: 'Recipient@example.com', expectedFee: 0};
-  assert.equal(cashRedemption(account, input).totalCost, 25);
-  assert.throws(() => cashRedemption(account, {...input, network: 'ERC20'}), /Destino/);
-  assert.throws(() => cashRedemption(account, {...input, binanceEmail: 'invalid'}), /Destino/);
+  assert.equal(cashRedemption(account, input, true).totalCost, 25);
+  assert.throws(() => cashRedemption(account, {...input, network: 'ERC20'}, true), /Destino/);
+  assert.throws(() => cashRedemption(account, {...input, binanceEmail: 'invalid'}, true), /Destino/);
 });
-test('free accounts cannot redeem and an admin document flag is not a claim', () => assert.throws(() => cashRedemption({...account, role: 'free', admin: true}, {amount: 10}), /rol/));
+test('free accounts cannot redeem and an admin document flag is not a claim', () => assert.throws(() => cashRedemption({...account, role: 'free', admin: true}, {amount: 10}), /administrador/));
 for (const status of ['PENDING', 'PROCESSING', 'DATA_PURGED', 'COMPLETED']) test(`deletion ${status} prevents a new financial operation`, () => assert.throws(() => allowedAccount(account, {status})));
 test('banned accounts cannot transact through an inherited role', () => assert.throws(() => allowedAccount({...account, secondaryRole: 'banned'})));
 test('payload rejects price, actor and arbitrary document paths', () => {
@@ -52,3 +52,7 @@ test('retry fingerprints ignore JSON object order without ignoring altered quant
   assert.equal(fingerprint({action: 'SPONSOR', notice: {title: 'A', content: 'B'}}), fingerprint({notice: {content: 'B', title: 'A'}, action: 'SPONSOR'}));
   assert.notEqual(fingerprint({amount: 10}), fingerprint({amount: 25}));
 });
+
+for (const role of ['admin','administrador','moderador','streamer','creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5','free','premium','patrocinador']) {
+  test(`redemption rejects ${role} without a signed claim`,()=>assert.throws(()=>cashRedemption({...account,role,secondaryRole:'admin'}, {amount:10}), /administrador/));
+}

@@ -85,18 +85,16 @@ class RuntimeBehaviorTest {
         println("MATCHUP_ACCESS_AUDIT: ${roster.size} champions; $profiles lane profiles; exact 3/6/12 in every category")
     }
 
-    @Test fun `orange redemption is restricted by both roles and suspended users are excluded`() {
-        for (role in listOf("admin", "moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5")) {
-            assertTrue(RolePanelAccess.canRedeemEssence(role))
-            assertEquals(role != "admin", RolePanelAccess.canRedeemEssence("free", role))
-            assertEquals(40L, EssenceEconomyPolicy.redeem(mapOf("role" to role, "orangeEssence" to 50L), 10L))
-        }
-        for (role in listOf("free", "premium", "patrocinador", "guest", "banned")) {
+    @Test fun `orange redemption requires the signed administrator claim exclusively`() {
+        for (role in listOf("admin", "administrador", "moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "free", "premium", "patrocinador", "guest")) {
             assertFalse(RolePanelAccess.canRedeemEssence(role))
+            assertFalse(RolePanelAccess.canRedeemEssence("free", role))
             assertTrue(runCatching { EssenceEconomyPolicy.redeem(mapOf("role" to role, "orangeEssence" to 100L), 10L) }.isFailure)
         }
         assertFalse(RolePanelAccess.canRedeemEssence("banned", "streamer", true))
-        assertEquals(40L, EssenceEconomyPolicy.redeem(mapOf("role" to "free", "orangeEssence" to 50L), 10L, adminClaim = true))
+        assertFalse(RolePanelAccess.canRedeemEssence("admin", "banned", true))
+        assertTrue(RolePanelAccess.canRedeemEssence("admin", adminClaim = true))
+        assertEquals(40L, EssenceEconomyPolicy.redeem(mapOf("role" to "admin", "orangeEssence" to 50L), 10L, adminClaim = true))
     }
 
     @Test fun `damage profiles and rounding never invent pure true damage`() {
@@ -162,22 +160,22 @@ class RuntimeBehaviorTest {
         val poor = mapOf<String, Any>("role" to "free", "blueEssence" to 99L, "orangeEssence" to 8L)
         assertTrue(runCatching { EssenceEconomyPolicy.purchase(poor, EssencePremiumPlan.MONTHLY, EssenceCurrency.BLUE, now) }.isFailure)
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor, 10) }.isFailure)
-        for (amount in listOf(10L, 25L, 50L)) assertEquals(60L - amount, EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 60L, "role" to "streamer"), amount))
+        for (amount in listOf(10L, 25L, 50L)) assertEquals(60L - amount, EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 60L, "role" to "admin"), amount, adminClaim = true))
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + mapOf("orangeEssence" to 100L, "role" to "banned"), 10) }.isFailure)
         assertTrue(runCatching { EssenceEconomyPolicy.redeem(poor + ("orangeEssence" to 100L), 11) }.isFailure)
 
         // Network fee tests in Orange Essence
         val userWith11En = mapOf<String, Any>("role" to "streamer", "orangeEssence" to 11L)
         // 10 USDT + TRC20 (2 EN fee) = 12 EN needed -> fails with 11 EN
-        assertTrue(runCatching { EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.TRC20.feeEn) }.isFailure)
+        assertTrue(runCatching { EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.TRC20.feeEn, adminClaim = true) }.isFailure)
         // 10 USDT + BEP20 (1 EN fee) = 11 EN needed -> succeeds, remaining is 0 EN
-        assertEquals(0L, EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.BEP20.feeEn))
+        assertEquals(0L, EssenceEconomyPolicy.redeem(userWith11En, 10L, UsdtNetwork.BEP20.feeEn, adminClaim = true))
 
         val userWith55En = mapOf<String, Any>("role" to "creador", "orangeEssence" to 55L)
         // 50 USDT + ERC20 (5 EN fee) = 55 EN needed -> succeeds, remaining is 0 EN
-        assertEquals(0L, EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.ERC20.feeEn))
+        assertEquals(0L, EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.ERC20.feeEn, adminClaim = true))
         // 50 USDT + TRC20 (2 EN fee) = 52 EN needed -> succeeds, remaining is 3 EN
-        assertEquals(3L, EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.TRC20.feeEn))
+        assertEquals(3L, EssenceEconomyPolicy.redeem(userWith55En, 50L, UsdtNetwork.TRC20.feeEn, adminClaim = true))
     }
 
     @Test fun `same installation and its legacy aliases consume only one slot across repeated logins`() {

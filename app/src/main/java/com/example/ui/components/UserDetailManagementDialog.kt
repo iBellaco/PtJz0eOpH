@@ -1434,7 +1434,7 @@ fun UserDetailManagementDialog(
                             if (failure is com.example.data.EconomyPendingException) {
                                 roleToConfirm = null
                                 showEconomyRequest = true
-                            } else roleChangeError = failure.message ?: com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo.")
+                            } else roleChangeError = com.example.util.appTr(failure.message ?: "No se pudo completar la operación. Vuelve a intentarlo.")
                         }
                         val succeeded: (String, Boolean, Long?) -> Unit = { newRole, isBanned, inheritedUntil ->
                             isChangingRole = false

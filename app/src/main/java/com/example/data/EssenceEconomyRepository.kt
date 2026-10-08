@@ -25,8 +25,4 @@ object EssenceEconomyRepository {
         Unit
     }
 
-    suspend fun cleanupExpiredResolvedRedemptions(now: Long = System.currentTimeMillis()): Result<Int> = runCatching {
-        // Retention uses the server clock.
-        (EconomyServiceClient.call("CLEANUP")["count"] as Number).toInt()
-    }
 }

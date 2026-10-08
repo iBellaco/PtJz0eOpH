@@ -88,18 +88,48 @@ service cloud.firestore {
           && request.resource.data.status == 'CANCELLED' && request.resource.data.cancelledAt == request.time);
       allow delete: if false;
     }
+    function roleDeadline(data) {
+      let value = data.get('premiumUntil', 0);
+      return value is timestamp ? value.toMillis() : (value is int ? value : 0);
+    }
+    function availableRoleTarget(userId) {
+      return !exists(/databases/$(database)/documents/account_deletions/$(userId))
+        || !(get(/databases/$(database)/documents/account_deletions/$(userId)).data.status in ['PROCESSING','DATA_PURGED','COMPLETED']);
+    }
+    function administrativeRoleChange(userId) {
+      let old = resource.data;
+      let next = request.resource.data;
+      let actor = account();
+      let role = next.get('role', '');
+      let day = 86400000;
+      return isAdmin() && actor.get('banned', false) == false
+        && actor.get('role', '') != 'banned' && actor.get('secondaryRole', '') != 'banned'
+        && availableRoleTarget(request.auth.uid) && availableRoleTarget(userId)
+        && next.diff(old).affectedKeys().hasOnly(['role','banned','bannedTimestamp','sessionToken','last_role_update','lastRoleChangedBy','premiumUntil','subscriptionPlan'])
+        && role in ['free','premium','banned','moderador','streamer','patrocinador','creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5']
+        && next.banned == (role == 'banned') && next.last_role_update == request.time
+        && next.lastRoleChangedBy == request.auth.uid
+        && (role == 'banned' ? next.bannedTimestamp == request.time && next.get('sessionToken', '') == ''
+          : next.bannedTimestamp == 0 && next.get('sessionToken', '') == old.get('sessionToken', ''))
+        && (role == 'free' ? next.premiumUntil == 0 && next.subscriptionPlan == 'FREE'
+          : next.get('subscriptionPlan', '') == old.get('subscriptionPlan', '')
+            && (role == 'premium' && roleDeadline(old) <= request.time.toMillis()
+              ? next.premiumUntil is int && next.premiumUntil >= request.time.toMillis() + 30 * day - 300000
+                && next.premiumUntil <= request.time.toMillis() + 30 * day + 300000
+              : next.get('premiumUntil', 0) == old.get('premiumUntil', 0)));
+    }
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if signedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
-        && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastModifiedByAdmin','lastEconomyOperation','subscribedCreators','creatorSubscriberCount'])
+        && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastModifiedByAdmin','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','last_role_update','lastRoleChangedBy','bannedTimestamp'])
         && request.resource.data.get('blueEssence', 0) == 0 && request.resource.data.get('orangeEssence', 0) == 0
         && request.resource.data.get('registeredDevices', []).size() <= 2;
-      // Financial state is exclusively written by the trusted service, including staff adjustments.
+      // Balances, purchases and ledger receipts remain service-only. Role grants use bounded signed-admin validation.
       allow update: if signedIn()
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blueEssence','orangeEssence','premiumUntil','subscriptionPlan','subscriptionHistory','lastEconomyOperation','subscribedCreators','creatorSubscriberCount'])
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blueEssence','orangeEssence','premiumUntil','subscriptionPlan','subscriptionHistory','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','role','banned','bannedTimestamp','last_role_update','lastRoleChangedBy'])
         && (isAdmin() || (request.auth.uid == userId
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','banned','isVerified','verified','admin','lastModifiedByAdmin'])
-          && request.resource.data.get('registeredDevices', []).size() <= 2));
+          && request.resource.data.get('registeredDevices', []).size() <= 2)) || administrativeRoleChange(userId);
       allow delete: if false;
       match /messages/{messageId} {
         function source() { return getAfter(/databases/$(database)/documents/support_reports/$(messageId)).data; }
@@ -149,8 +179,8 @@ service cloud.firestore {
           && d.createdAt == request.time && d.authTime == request.auth.token.get('auth_time', 0)
           && d.operationId is string && d.operationId.matches('^[a-zA-Z0-9_-]{8,80}$')
           && p is map && p.size() <= 15 && p.id == d.operationId
-          && (p.action in ['PURCHASE','REDEEM','SUBSCRIBE','UNSUBSCRIBE','SPONSOR']
-            || (isAdmin() && p.action in ['RESOLVE','ADJUST','PREMIUM_GRANT','PREMIUM_REMOVE','ROLE','CLEANUP']));
+          && (p.action in ['PURCHASE','SUBSCRIBE','UNSUBSCRIBE','SPONSOR']
+            || (isAdmin() && p.action in ['REDEEM','RESOLVE','ADJUST','PREMIUM_GRANT','PREMIUM_REMOVE','ROLE']));
       }
       allow read: if signedIn() && request.auth.uid == userId;
       allow create: if validCommand();
@@ -158,7 +188,7 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /cash_redemptions/{id} {
-      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow read: if isAdmin();
       allow write: if false;
     }
     match /pending_sponsor_ads/{id} {

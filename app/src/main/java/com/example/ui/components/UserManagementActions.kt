@@ -203,7 +203,7 @@ internal fun updateUserRoleInCloud(
     }
 
     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-        runCatching { com.example.data.EconomyServiceClient.call("ROLE", mapOf("uid" to uid, "role" to targetRoleId)) }
+        runCatching { com.example.data.AdminRoleRepository.change(uid, targetRoleId) }
             .onSuccess { response ->
                 val account = response["account"] as? Map<*, *>
                 val inherited = (account?.get("premiumUntil") as? Number)?.toLong()
@@ -212,7 +212,7 @@ internal fun updateUserRoleInCloud(
                 onSuccess(targetRoleId, targetRoleId == "banned", inherited)
             }.onFailure {
                 onError(it)
-                if (it !is com.example.data.EconomyPendingException) Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
+                if (it !is com.example.data.EconomyPendingException) Toast.makeText(context, com.example.util.appTr(it.message ?: "No se pudo completar la operación. Vuelve a intentarlo."), Toast.LENGTH_LONG).show()
             }
     }
 }
@@ -252,22 +252,8 @@ internal fun toggleUserBanStatus(
     newRole: String,
     onSuccess: () -> Unit
 ) {
-    val db = FirebaseFirestore.getInstance()
-    val updatePayload = hashMapOf<String, Any>(
-        "banned" to isBanned,
-        "role" to newRole,
-        "bannedTimestamp" to if (isBanned) System.currentTimeMillis() else 0L
-    )
+    updateUserRoleInCloud(context, uid, newRole) { _, _, _ -> onSuccess() }
 
-    db.collection("users").document(uid)
-        .set(updatePayload, SetOptions.merge())
-        .addOnSuccessListener {
-            Toast.makeText(context, com.example.util.appTr(if (isBanned) "Usuario BANEADO" else "Usuario Desbaneado"), Toast.LENGTH_SHORT).show()
-            onSuccess()
-        }
-        .addOnFailureListener { e ->
-            Toast.makeText(context, com.example.util.appTr("Error: ${e.message}"), Toast.LENGTH_LONG).show()
-        }
 }
 
 internal fun updateUserEmail(

@@ -43,7 +43,7 @@ export function validWallet(network, wallet) {
 }
 export function cashRedemption(account, input, admin = false, fees = FEES) {
   fees ??= FEES;
-  ensure(admin || [account.role, account.secondaryRole].some(r => ['moderador', 'streamer', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'].includes(r)), 'permission-denied', 'Canje no disponible para este rol');
+  ensure(admin === true, 'permission-denied', 'Canje disponible únicamente para el administrador');
   ensure([10, 25, 50].includes(input.amount), 'invalid-argument', 'Cantidad no válida');
   const binanceEmail = (input.binanceEmail ?? '').trim().toLowerCase();
   const network = input.network ?? '', wallet = input.wallet ?? '';

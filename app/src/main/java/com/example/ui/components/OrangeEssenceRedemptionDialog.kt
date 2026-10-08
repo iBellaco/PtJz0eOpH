@@ -233,6 +233,8 @@ fun CashRedemptionOptions(
 
 @Composable
 fun CashRedemptionReviewPanel() {
+    val adminClaim by AuthManager.isAdminClaim.collectAsState()
+    if (!adminClaim) return
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
@@ -245,10 +247,6 @@ fun CashRedemptionReviewPanel() {
     var selectedUserFilter by remember { mutableStateOf<String?>(null) }
     var resolvedUserNames by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     val fourteenDaysAgo = remember { System.currentTimeMillis() - EssenceEconomyRepository.CASH_HISTORY_RETENTION_MILLIS }
-
-    LaunchedEffect(Unit) {
-        EssenceEconomyRepository.cleanupExpiredResolvedRedemptions()
-    }
 
     DisposableEffect(retry) {
         val pendingListener = EssenceEconomyRepository.redemptions.whereEqualTo("status", "PENDING").addSnapshotListener { snapshot, failure ->
