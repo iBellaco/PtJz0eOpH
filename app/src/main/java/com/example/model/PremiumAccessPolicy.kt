@@ -1,8 +1,14 @@
 package com.example.model
 
+import java.text.ParsePosition
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
+
 /** Premium is a timed entitlement independent of account roles; staff retains system lifetime. */
 object PremiumAccessPolicy {
     const val DAY_MILLIS = 86_400_000L
+    private val isoDeadline = Regex("""^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,9}))?(Z|[+-]\d{2}:\d{2})$""")
     fun isLifetime(role: String, secondary: String = "", adminClaim: Boolean = false): Boolean =
         role != "banned" && secondary != "banned" && (adminClaim || role in setOf("admin", "administrador", "moderador") || secondary == "moderador")
 
@@ -13,8 +19,20 @@ object PremiumAccessPolicy {
         is Number -> value.toLong()
         is com.google.firebase.Timestamp -> value.toDate().time
         is java.util.Date -> value.time
-        is String -> value.toLongOrNull() ?: runCatching { java.time.Instant.parse(value).toEpochMilli() }.getOrNull()
+        is String -> value.toLongOrNull() ?: parseIsoDeadline(value)
         else -> null
+    }
+
+    private fun parseIsoDeadline(value: String): Long? {
+        val parts = isoDeadline.matchEntire(value) ?: return null
+        val milliseconds = parts.groupValues[2].take(3).padEnd(3, '0')
+        val normalized = "${parts.groupValues[1]}.$milliseconds${parts.groupValues[3]}"
+        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.ROOT).apply {
+            isLenient = false
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+        val position = ParsePosition(0)
+        return formatter.parse(normalized, position)?.time?.takeIf { position.index == normalized.length }
     }
 
     fun hasGrant(plan: String?): Boolean = plan?.startsWith("Admin Grant", ignoreCase = true) == true

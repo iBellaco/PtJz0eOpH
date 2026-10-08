@@ -18,6 +18,14 @@ import org.robolectric.annotation.Config
 class RuntimeBehaviorTest {
     private val now = 1_790_000_000_000L
 
+    @Config(sdk = [24])
+    @Test fun `premium deadline parses ISO dates without newer Android date APIs`() {
+        assertEquals(1_704_067_200_000L, PremiumAccessPolicy.deadline("2024-01-01T00:00:00Z"))
+        assertEquals(1_704_067_200_123L, PremiumAccessPolicy.deadline("2024-01-01T00:00:00.123456789Z"))
+        assertEquals(1_704_067_200_000L, PremiumAccessPolicy.deadline("2024-01-01T03:00:00+03:00"))
+        assertNull(PremiumAccessPolicy.deadline("2024-13-01T00:00:00Z"))
+    }
+
     @Test fun `every champion recommendation agrees with the build matchup knowledge`() {
         val context = RuntimeEnvironment.getApplication()
         DynamicTranslations.loadSync(context)

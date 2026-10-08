@@ -8,7 +8,7 @@
 - `RolePanelAccess.kt`, `PremiumAccessPolicy.kt`, `PremiumGrantPolicy.kt`, diálogo de usuarios y pruebas: los controles administrativos dependen del permiso firmado; los roles conservan su tratamiento Premium sin conceder autoridad.
 - `NoticeMediaStorageManager.kt` y pruebas de medios: se rechazan vídeos que superen el límite también antes de subirlos.
 - `.github/workflows/build-apk.yml`: lint y todas las pruebas unitarias Android pasan antes de compilar el APK final; continúan las comprobaciones de pantallas, firma e instalación.
-- `gradle/libs.versions.toml`, `app/build.gradle.kts`: las APIs de fecha utilizadas por Coach se adaptan a Android 7.0 y posteriores; lint había detectado una incompatibilidad en API 24/25.
+- `PremiumAccessPolicy.kt`, `gradle/libs.versions.toml`, `app/build.gradle.kts`: las fechas ISO se interpretan con APIs disponibles desde Android 7.0. Se retira la biblioteca de fechas que causaba un fallo en el APK instalado de prueba.
 - `StreamerPublicationViews.kt`: se corrige la sangría del indicador animado que lint marcó como error de lectura de código.
 - Pruebas de draft, hub y pantallas: los escenarios administrativos proporcionan el permiso firmado en lugar de simular solo el texto del rol. La prueba completa de flujo usa memoria y entorno aislado para evitar un error del emulador SQLite.
 - `UserDetailManagementDialog.kt`: la edición de tiempo Premium continúa disponible para cuentas moderadoras; el estado vitalicio no editable se reserva a perfiles administrativos.

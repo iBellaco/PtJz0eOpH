@@ -85,7 +85,6 @@ android {
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
-    isCoreLibraryDesugaringEnabled = true
   }
 
   buildFeatures {
@@ -130,7 +129,6 @@ secrets {
 // Some unused dependencies are commented out below instead of being removed.
 // This makes it easy to add them back in the future if needed.
 dependencies {
-  coreLibraryDesugaring(libs.desugar.jdk.libs)
   implementation(libs.androidx.security.crypto)
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.auth)
