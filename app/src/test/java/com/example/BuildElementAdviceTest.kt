@@ -5,6 +5,22 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class BuildElementAdviceTest {
+    @Test fun `copied mechanics with punctuation changes are removed but tactical additions survive`() {
+        val description = "Otorga poder de habilidad al participar en eliminaciones."
+        val copied = "OTORGA poder de habilidad al participar en eliminaciones!"
+        assertEquals("", BuildElementAdvice.distinctAdvice(copied, description))
+        assertEquals("Busca una rotación con prioridad de oleada.", BuildElementAdvice.distinctAdvice(
+            "$copied\nBusca una rotación con prioridad de oleada.", description))
+        assertEquals("", BuildElementAdvice.distinctAdvice(
+            "Otorga poder de habilidad adicional al participar en eliminaciones.", description))
+        assertEquals("", BuildElementAdvice.resolve("Runa", emptyList(), copied, description))
+    }
+
+    @Test fun `Portuguese duplicated mechanics are removed without hiding the decision`() {
+        val description = "Concede poder de habilidade ao participar de abates."
+        assertEquals("Recue antes de iniciar a próxima troca.", BuildElementAdvice.distinctAdvice(
+            "$description Recue antes de iniciar a próxima troca.", description))
+    }
     @Test fun `advice belongs to the tapped element and not the first element of a build`() {
         val entries=listOf("Objeto A" to "Contra curaciones", "Objeto B" to "Contra escudos")
         assertEquals("Contra escudos", BuildElementAdvice.resolve("Objeto B",entries,"Consejo general"))

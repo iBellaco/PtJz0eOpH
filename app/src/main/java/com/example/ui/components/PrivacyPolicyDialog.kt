@@ -269,19 +269,10 @@ private fun PrivacyPolicyContent() {
     PolicySection(title = localizedString(R.string.legal_deletion_title), body = localizedString(R.string.legal_deletion_body))
     PolicySection(title = localizedString(R.string.legal_contact_title), body = localizedString(R.string.legal_contact_body))
     val context = LocalContext.current
-    val language = com.example.util.AppLanguage.current.value
     OutlinedButton(onClick = {
-        val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO,
-            android.net.Uri.parse("mailto:DevWildRiftCoach@gmail.com"))
-        if (intent.resolveActivity(context.packageManager) != null) context.startActivity(intent)
+        com.example.util.PrivacyContact.open(context)
     }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("legal_privacy_contact")) {
         Text(localizedString(R.string.legal_contact_action))
-    }
-    OutlinedButton(onClick = {
-        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW,
-            android.net.Uri.parse("https://coach-legal-wild-rift-drafting.web.app/" + if (language == "pt") "pt/" else "")))
-    }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("legal_public_policy")) {
-        Text(localizedString(R.string.legal_web_action))
     }
 }
 

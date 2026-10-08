@@ -3,6 +3,7 @@ package com.example.ui.screens
 import androidx.compose.ui.platform.testTag
 import com.example.util.BuildChoiceRules
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import com.example.ui.components.coachClickable
@@ -53,16 +54,17 @@ internal fun BuildMatchupList(
     signedIn: Boolean,
     compact: Boolean,
     language: String,
+    modifier: Modifier = Modifier,
     onShowName: (String) -> Unit
 ) {
     val rows = BuildChoiceRules.matchupRows(candidates, premium, signedIn)
     Card(
-        modifier = Modifier.fillMaxWidth().testTag("${group}_insight_card"),
+        modifier = modifier.testTag("${group}_insight_card"),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = HextechSurface),
         border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.5f))
     ) {
-        Column(Modifier.fillMaxWidth().padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.fillMaxWidth().padding(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("$title (${rows.sumOf { it.size }})", color = accent,
                     fontWeight = FontWeight.Bold, fontSize = if (compact) 12.sp else 13.sp)
@@ -70,11 +72,11 @@ internal fun BuildMatchupList(
             }
             rows.forEachIndexed { index, row ->
                 Row(Modifier.fillMaxWidth().testTag("build_matchup_${group}_row_$index"),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     row.forEach { target ->
                         val champion = resolveTargetChampion(target)
                         val name = champion?.getLocalizedName(language) ?: tr(target)
-                        Box(Modifier.weight(1f).heightIn(min = 48.dp)
+                        Box(Modifier.weight(1f).widthIn(min = 48.dp).heightIn(min = 48.dp)
                             .testTag("build_matchup_name_$group")
                             .semantics { contentDescription = name }
                             .coachClickable { onShowName(name) },
@@ -105,15 +107,16 @@ private fun resolveTargetChampion(nameOrId: String): Champion? {
 }
 
 @Composable
-internal fun BuildElementCoachAdvice(advice: String) {
-    if (advice.isBlank()) return
+internal fun BuildElementCoachAdvice(advice: String, catalogDescription: String = "") {
+    val distinct = com.example.util.BuildElementAdvice.distinctAdvice(advice, catalogDescription)
+    if (distinct.isBlank()) return
     Spacer(Modifier.height(14.dp))
     androidx.compose.material3.Surface(modifier = Modifier.fillMaxWidth().testTag("build_element_advice_card"),
         shape = RoundedCornerShape(8.dp), color = HextechSurface,
         border = androidx.compose.foundation.BorderStroke(1.dp, HextechGold.copy(alpha = 0.5f))) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(tr("Consejo del coach"), color = HextechGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-            FormattedWildRiftText(text = tr(advice), color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
+            FormattedWildRiftText(text = tr(distinct), color = TextPrimary, fontSize = 12.sp, lineHeight = 16.sp)
         }
     }
 }
