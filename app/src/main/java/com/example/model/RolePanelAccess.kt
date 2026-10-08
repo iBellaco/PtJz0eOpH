@@ -9,7 +9,8 @@ object RolePanelAccess {
             adminClaim
 
 
-    fun isAdministrator(role: String, adminClaim: Boolean = false): Boolean = adminClaim
+    fun isAdministrator(role: String, adminClaim: Boolean = false): Boolean =
+        adminClaim && role.trim().lowercase(java.util.Locale.ROOT) != "banned"
 
     fun canOpen(panel: RolePanel, role: String, secondaryRole: String = "", adminClaim: Boolean = false): Boolean {
         val roles = setOf(role, secondaryRole).map { it.trim().lowercase(java.util.Locale.ROOT) }

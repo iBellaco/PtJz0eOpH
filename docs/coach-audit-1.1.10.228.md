@@ -8,6 +8,7 @@
 - `RolePanelAccess.kt`, `PremiumAccessPolicy.kt`, `PremiumGrantPolicy.kt`, diálogo de usuarios y pruebas: los controles administrativos dependen del permiso firmado; los roles conservan su tratamiento Premium sin conceder autoridad.
 - `NoticeMediaStorageManager.kt` y pruebas de medios: se rechazan vídeos que superen el límite también antes de subirlos.
 - `.github/workflows/build-apk.yml`: lint y todas las pruebas unitarias Android pasan antes de compilar el APK final; continúan las comprobaciones de pantallas, firma e instalación.
+- `gradle/libs.versions.toml`, `app/build.gradle.kts`: las APIs de fecha utilizadas por Coach se adaptan a Android 7.0 y posteriores; lint había detectado una incompatibilidad en API 24/25.
 - `.github/scripts/cleanup-completed-runs.cjs`, su prueba y `AGENTS.md`: la evidencia de las entregas se conserva separada del historial de ejecuciones frecuentes del servicio.
 - `README.md`, `docs/economy-operations.md`, `app/build.gradle.kts`: documentación de operación y versión actualizadas.
 

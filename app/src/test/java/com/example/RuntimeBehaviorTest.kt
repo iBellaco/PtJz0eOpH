@@ -277,6 +277,7 @@ class RuntimeBehaviorTest {
         assertFalse(RolePanelAccess.canOpen(RolePanel.ADMINISTRATION, "moderador"))
         assertFalse(RolePanelAccess.canOpen(RolePanel.SPONSOR, "streamer"))
         assertFalse(RolePanelAccess.canOpen(RolePanel.ADMINISTRATION, "banned", adminClaim = true))
+        assertFalse(RolePanelAccess.isAdministrator("banned", true))
         assertFalse(RolePanelAccess.canOpen(RolePanel.MODERATION, "free", "banned", true))
         assertFalse(RolePanelAccess.canCreateBuild("free", "banned", true))
     }
