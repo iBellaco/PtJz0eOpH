@@ -40,4 +40,6 @@
     <string name="streamer_history_active_retention">El conteo de 48 horas comenzará cuando finalice la publicación.</string>
     <string name="streamer_metrics_error">No se pudo activar el contador de clics. La aprobación no se completó. Revisa la sincronización en la nube.</string>
     <string name="streamer_clicks_cached">Último recuento guardado; esperando conexión en vivo.</string>
+    <string name="legal_economy_title">Operaciones de esencias y solicitudes de pago</string>
+    <string name="legal_economy_body">El servicio comprueba tu sesión, los permisos, el saldo, el precio y la comisión antes de confirmar una operación. Se guardan el movimiento y su comprobante. Un reintento de la misma solicitud no debe generar otro cobro. Los canjes USDT se revisan y pagan manualmente; enviar una solicitud no realiza una transferencia ni garantiza su aceptación. Revisa el destino y el total antes de confirmar. No envíes claves de billeteras, contraseñas ni códigos. Los derechos sobre Wild Rift y las fuentes consultadas pertenecen a sus titulares; la publicación de Coach no acredita autorización de esos terceros. La confirmación puede demorar varios minutos; mientras la solicitud esté pendiente, no la repitas. El procesamiento programado utiliza infraestructura de GitHub, sin publicar solicitudes ni destinos de pago en el repositorio.</string>
 </resources>

@@ -4,7 +4,6 @@ import android.util.Log
 import com.example.model.SubscriptionRecord
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 object SubscriptionHistoryManager {
@@ -73,31 +72,4 @@ object SubscriptionHistoryManager {
         return records.sortedByDescending { it.timestamp }
     }
 
-    suspend fun addRecord(durationMillis: Long, planName: String, status: String, amount: String) {
-        val user = AuthManager.getAuth()?.currentUser ?: FirebaseAuth.getInstance().currentUser ?: return
-        addRecordForUser(user.uid, durationMillis, planName, status, amount)
-    }
-
-    suspend fun addRecordForUser(uid: String, durationMillis: Long, planName: String, status: String, amount: String) {
-        val db = FirebaseFirestore.getInstance()
-        val now = System.currentTimeMillis()
-        val recordData = hashMapOf(
-            "timestamp" to now,
-            "durationMillis" to durationMillis,
-            "planName" to planName,
-            "status" to status,
-            "amount" to amount,
-            "created_at" to now
-        )
-        try {
-            db.collection("users").document(uid)
-                .collection("subscription_history")
-                .add(recordData)
-                .await()
-            Log.d(TAG, "Subscription record created successfully for $uid: $planName")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to add subscription record for $uid", e)
-        }
-    }
 }
-

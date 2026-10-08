@@ -123,7 +123,7 @@ export async function purgeAccountData(uid, email) {
       throw new Error('Legacy media ownership requires verification before deletion');
     if (owner === uid) await file.delete({ignoreNotFound:true});
   }
-  for (const name of ['support_reports', 'cash_redemptions', 'streamer_click_metrics', 'pending_sponsor_ads']) {
+  for (const name of ['support_reports', 'cash_redemptions', 'streamer_click_metrics', 'pending_sponsor_ads', 'economy_requests', 'economy_results']) {
     await deleteQuery(db.collection(name).where('userId','==',uid), uid, email);
     if (email) for (const field of ['userEmail','email','sponsorEmail'])
       await deleteQuery(db.collection(name).where(field,'==',email), uid, email);
@@ -131,6 +131,18 @@ export async function purgeAccountData(uid, email) {
   await cleanSharedRecords(uid,email);
   // Messages belonging to the account can also be mirrored outside its own profile.
   // A collection-group index is not assumed; parent-specific records are deleted recursively.
+  const departing = (await db.doc(`users/${uid}`).get()).data();
+  for (const creatorUid of (departing?.subscribedCreators || [])) {
+    if (!/^[a-zA-Z0-9_-]{1,128}$/.test(creatorUid) || creatorUid === uid) continue;
+    await db.runTransaction(async tx => {
+      const creator = db.doc(`users/${creatorUid}`), membership = creator.collection('creator_subscribers').doc(uid);
+      const parent = await tx.get(creator), entry = await tx.get(membership);
+      if (entry.get('userId') !== uid) return;
+      if (entry.get('active') && parent.exists) tx.update(creator,
+        {creatorSubscriberCount: Math.max(0, (parent.get('creatorSubscriberCount') || 0) - 1)});
+      tx.delete(membership);
+    });
+  }
   const subscribers = await db.collection('users').where('subscribedCreators','array-contains',uid).get();
   for (const doc of subscribers.docs) await doc.ref.update({subscribedCreators: FieldValue.arrayRemove(uid)});
   for (const [id, field, predicate] of [

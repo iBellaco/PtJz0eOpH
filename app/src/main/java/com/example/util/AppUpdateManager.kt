@@ -32,7 +32,7 @@ data class AppUpdateInfo(
 object AppUpdateManager {
 
     private const val TAG = "AppUpdateManager"
-    private const val DEFAULT_REPO = "barbadiego695/wild-rift-drafting"
+    private const val DEFAULT_REPO = "iBellaco/PtJz0eOpH"
     private const val PREFS_NAME = "app_update_prefs"
     private const val KEY_SNOOZED_VERSION = "snoozed_version_code"
 
@@ -57,7 +57,10 @@ object AppUpdateManager {
             try {
                 val customRepo = context.getSharedPreferences("feedback_prefs", Context.MODE_PRIVATE)
                     .getString("github_repo", DEFAULT_REPO)?.trim() ?: DEFAULT_REPO
-                val cleanRepo = customRepo.removePrefix("https://github.com/").removeSuffix("/")
+                val savedRepo = customRepo.removePrefix("https://github.com/").removeSuffix("/")
+                val cleanRepo = if (savedRepo in setOf("barbadiego695/wild-rift-drafting", "barbadiego695/wild-rift-coach")) DEFAULT_REPO else savedRepo
+                if (cleanRepo != savedRepo) context.getSharedPreferences("feedback_prefs", Context.MODE_PRIVATE)
+                    .edit().putString("github_repo", cleanRepo).apply()
 
                 val request = Request.Builder()
                     .url("https://api.github.com/repos/$cleanRepo/releases/latest")

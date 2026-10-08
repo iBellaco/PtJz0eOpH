@@ -15,17 +15,18 @@
 .cxx
 local.properties
 .env
-debug.keystore
-gradle/wrapper/gradle-wrapper.jar
-gradlew
-gradlew.bat
+*.keystore
+*.jks
+*.base64
+secrets.properties
+gha-creds-*.json
+*.attach_pid*
 venv/
 node_modules/
 venv/
 app/build/
 .build-outputs/
 tmp/
-github.keystore
 
 *-debug.log
 tests/firestore/node_modules

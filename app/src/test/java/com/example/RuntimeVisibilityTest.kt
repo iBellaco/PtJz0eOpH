@@ -124,7 +124,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             else -> "NONE"
         })
         setFlow(SubscriptionManager, "_premiumUntil", if (screen.startsWith("profile-admin-expiring-roles")) System.currentTimeMillis() + 23L * 3600000L else null)
-        setFlow(AuthManager, "_isAdminClaim", screen == "moderation-claim")
+        setFlow(AuthManager, "_isAdminClaim", screen in listOf("moderation-claim", "support-email-admin", "support-admin-notification"))
         if (screen == "creator-reader") setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
             com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
         if (screen.startsWith("champion")) setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",

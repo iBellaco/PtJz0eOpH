@@ -326,14 +326,15 @@ fun BuyEssenceDialog(
                             isPurchasing = true
                             scope.launch {
                                 val pack = currentPacks[selectedPackIndex.coerceIn(0, currentPacks.lastIndex)]
-                                if (isOrange) {
-                                    SubscriptionManager.addOrangeEssence(pack.second)
-                                } else {
-                                    SubscriptionManager.addBlueEssence(pack.second)
-                                }
+                                runCatching {
+                                    if (isOrange) SubscriptionManager.addOrangeEssence(pack.second)
+                                    else SubscriptionManager.addBlueEssence(pack.second)
+                                }.onSuccess {
+                                    Toast.makeText(context, com.example.util.appTr("¡Recarga de ${pack.first} aplicada exitosamente!"), Toast.LENGTH_LONG).show()
+                                    onDismiss()
+                                }.onFailure { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
                                 isPurchasing = false
-                                Toast.makeText(context, com.example.util.appTr("¡Recarga de ${pack.first} aplicada exitosamente!"), Toast.LENGTH_LONG).show()
-                                onDismiss()
+
                             }
                         }
                     },

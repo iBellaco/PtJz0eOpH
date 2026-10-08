@@ -40,9 +40,9 @@ object AuthManager {
                 user.getIdToken(false).addOnSuccessListener { result ->
                     val claims = result.claims
                     val isAdmin = claims["admin"] == true
-                    _isAdminClaim.value = isAdmin
+                    if (firebaseAuth.currentUser?.uid == user.uid) _isAdminClaim.value = isAdmin
                 }.addOnFailureListener {
-                    _isAdminClaim.value = false
+                    if (firebaseAuth.currentUser?.uid == user.uid) _isAdminClaim.value = false
                 }
             } else {
                 _isAdminClaim.value = false
@@ -51,12 +51,13 @@ object AuthManager {
 
         auth.addAuthStateListener(FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
+            _isAdminClaim.value = false
             _isSignedIn.value = !isGuestOrUnauthenticated(user)
             if (user != null && !isGuestOrUnauthenticated(user)) {
-                user.getIdToken(false).addOnSuccessListener { result ->
+                user.getIdToken(true).addOnSuccessListener { result ->
                     val claims = result.claims
                     val isAdmin = claims["admin"] == true
-                    _isAdminClaim.value = isAdmin
+                    if (firebaseAuth.currentUser?.uid == user.uid) _isAdminClaim.value = isAdmin
                 }.addOnFailureListener {
                     _isAdminClaim.value = false
                 }
@@ -92,10 +93,13 @@ object AuthManager {
         }
         user!!.getIdToken(true).addOnSuccessListener { result ->
             val isAdmin = result.claims["admin"] == true
-            _isAdminClaim.value = isAdmin
-            onComplete(isAdmin)
+            if (getAuth()?.currentUser?.uid == user.uid) {
+                _isAdminClaim.value = isAdmin
+                onComplete(isAdmin)
+            } else onComplete(false)
         }.addOnFailureListener {
-            onComplete(_isAdminClaim.value)
+            if (getAuth()?.currentUser?.uid == user.uid) _isAdminClaim.value = false
+            onComplete(false)
         }
     }
 

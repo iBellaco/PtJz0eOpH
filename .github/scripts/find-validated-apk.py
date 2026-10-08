@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import subprocess
 
-REQUIRED_JOBS = {'build-apk', 'core-and-rendered', 'installed-audit', 'installed-spanish', 'build-and-release'}
+REQUIRED_JOBS = {'security-and-data-tests', 'build-apk', 'core-and-rendered', 'installed-audit', 'installed-spanish', 'build-and-release'}
 
 
 def api(path):
