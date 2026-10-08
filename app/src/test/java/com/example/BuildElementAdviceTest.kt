@@ -21,6 +21,16 @@ class BuildElementAdviceTest {
         assertEquals("Recue antes de iniciar a próxima troca.", BuildElementAdvice.distinctAdvice(
             "$description Recue antes de iniciar a próxima troca.", description))
     }
+
+    @Test fun `shortened item mechanics cannot survive as almost identical coaching`() {
+        val passive = "Gélido: Las habilidades activas que infligen daño y los ataques potenciados ralentizan a los enemigos con menos del 60% de vida un 30% durante 1 s."
+        val copied = "Sus habilidades dañinas y ataques potenciados ralentizan un 30% durante 1 s a enemigos con menos del 60% de vida."
+        assertEquals("", BuildElementAdvice.distinctAdvice(copied, passive))
+        val advice = BuildElementAdvice.contextualItemAdvice("Rencor de Serylda", "Vi", "Jungla", "es", false)
+        assertFalse(advice.contains(copied))
+        assertTrue(advice.contains("Priorízalo"))
+        assertTrue(advice.contains("No aplica Heridas Graves"))
+    }
     @Test fun `advice belongs to the tapped element and not the first element of a build`() {
         val entries=listOf("Objeto A" to "Contra curaciones", "Objeto B" to "Contra escudos")
         assertEquals("Contra escudos", BuildElementAdvice.resolve("Objeto B",entries,"Consejo general"))

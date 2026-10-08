@@ -44,8 +44,10 @@ object BuildElementAdvice {
             else catalog.any { source ->
                 val words = normalized.split(" ").toSet()
                 val original = source.split(" ").toSet()
-                words.size >= 6 && original.size >= 6 &&
-                    words.intersect(original).size.toDouble() / words.union(original).size >= 0.8
+                val overlap = words.intersect(original).size.toDouble()
+                val similarity = overlap / words.union(original).size
+                words.size >= 6 && original.size >= 6 && (similarity >= 0.8 ||
+                    (similarity >= 0.65 && overlap / minOf(words.size, original.size) >= 0.9))
             }
         }.joinToString("\n").trim()
     }
