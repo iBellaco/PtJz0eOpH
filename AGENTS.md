@@ -18,7 +18,7 @@ Idioma principal del desarrollador: español latino (es-419). Traduce a portugu�
 ### REGLA DE COMMIT MESSAGE Y VERSIÓN DE DEPURADO
 - Siempre que termines una modificación o tarea en el proyecto, debes entregar un mensaje de commit copiable en español.
 - Además de entregar el commit, debes incrementar/modificar la versión de depurado de la aplicación (en `app/build.gradle.kts` incrementando `versionCode` y `versionName`) para que se actualice la versión que aparece en la parte de abajo derecha de la aplicación.
-- Consulta obligatoria de continuidad: Consulta `INSTRUCCIONES_AGENTES.md` para el protocolo maestro de lectura, registro y auditoría de modificaciones entre agentes.
+- Este archivo es la fuente única de instrucciones. `INSTRUCCIONES_AGENTES.md` mantiene un enlace de compatibilidad.
 
 ### REGLA DE REPORTE PARA TESTERS Y RESUMEN COPIABLE (CRÍTICO)
 - Siempre que realices cualquier modificación o tarea en la aplicación, debes entregar directamente un resumen copiable y conciso estructurado para el equipo de pruebas (testers).
@@ -56,3 +56,44 @@ El orden jerárquico de los rangos para consejos tácticos es:
 - Compilar las entregas con R8 en la variante release y comprobar la ofuscación real, la firma persistente y el funcionamiento del APK instalado antes de fusionar. Nunca entregar una variante sin ofuscación como versión final.
 
 - Mostrar al desarrollador las capturas en español latino. Las capturas portuguesas se muestran únicamente cuando se revisa específicamente ese idioma. Mantener actualizaciones breves de progreso durante el trabajo.
+
+## Continuidad y comprobaciones
+
+## 2. Protocolo de Lectura (Antes de Modificar)
+Antes de generar código o responder a un requerimiento, el agente debe seguir estos pasos de lectura:
+
+1. **Consultar versión actual:** Leer `app/build.gradle.kts` para conocer el `versionCode` y `versionName` activos.
+2. **Consultar identidad del proyecto:** Verificar `metadata.json` y `app/src/main/res/values/strings.xml`.
+3. **Consultar bitácora reciente:** Revisar los archivos más recientes en el directorio `docs/` (por ejemplo `docs/coach-audit-*.md`) para conocer las últimas correcciones y el contexto técnico de la app.
+4. **Consultar reglas maestras:** Leer `AGENTS.md`, fuente única de las instrucciones.
+5. **Comprobar definiciones de recursos:** Si se tocan cadenas de texto, revisar `app/src/main/res/values/` y `app/src/main/res/values-pt/`.
+
+---
+
+## 3. Protocolo de Escritura y Modificación de Código
+Al realizar cambios en la base de código:
+
+1. **No inventar bibliotecas ni romper el flujo de dependencias:** Usar las versiones y herramientas ya configuradas en el catálogo de versiones y Gradle.
+2. **Incremento obligatorio de versión:** En cada intervención que concluya con éxito, se DEBE incrementar `versionCode` (+1) y actualizar `versionName` (por ejemplo, de `1.1.10.173` a `1.1.10.174`) en `app/build.gradle.kts`.
+3. **Mantenimiento de reglas en la nube y permisos:** Si se tocan roles, validaciones o esquemas de datos, mantener sincronizados los modelos locales (`RolePanelAccess`, `SubscriptionManager`, etc.) con las reglas de acceso en la nube (`firestore.rules`).
+4. **Accesibilidad y pruebas en UI:** Cada elemento interactivo en Compose debe tener touch target de al menos 48dp y atributo `Modifier.testTag("nombre_en_snake_case")`.
+5. **No romper persistencia ni firmas:** Prohibido modificar o eliminar claves de firma (`debug.keystore`, `github.keystore`, etc.) o alterar rutas de compilación del APK.
+
+---
+
+## 4. Registro y Auditoría de Cambios
+Al completar una tarea:
+1. Crear o actualizar un reporte de auditoría en la carpeta `docs/` con el nombre de la versión (por ejemplo `docs/coach-audit-1.1.10.174.md`).
+2. Indicar en el documento:
+   - Versión y build.
+   - Lista de archivos modificados.
+   - Resumen del problema resuelto o característica añadida.
+   - Verificaciones y pruebas realizadas.
+
+---
+
+## 5. Protocolo de Verificación Técnica
+1. **Compilación:** Ejecutar `./gradlew :app:assembleRelease` en el entorno con SDK y configuración privada; si no están disponibles localmente, utilizar las comprobaciones obligatorias de Actions.
+2. **Pruebas Unitarias:** Si se modificó lógica de negocio, reglas o visibilidad, ejecutar las pruebas locales mediante `./gradlew :app:testDebugUnitTest`.
+
+---

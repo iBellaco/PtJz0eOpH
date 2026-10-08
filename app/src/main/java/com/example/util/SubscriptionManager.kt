@@ -351,17 +351,7 @@ object SubscriptionManager {
                 if (listenSnapshot != null && listenSnapshot.exists()) {
                     var role = listenSnapshot.getString("role") ?: "free"
                     val isAdminClaim = AuthManager.isCurrentUserAdmin()
-                    val userEmail = AuthManager.getAuth()?.currentUser?.email
-                    val rankBorderVal = listenSnapshot.getString("rankBorder")
-                    val isAdminRoleOrBorder = role.equals("admin", ignoreCase = true) ||
-                        role.equals("administrador", ignoreCase = true) ||
-                        rankBorderVal?.equals("ADMINISTRADOR", ignoreCase = true) == true ||
-                        rankBorderVal?.equals("ADMIN", ignoreCase = true) == true ||
-                        listenSnapshot.getBoolean("admin") == true ||
-                        userEmail?.equals("barbadiego695@gmail.com", ignoreCase = true) == true
-                    if (isAdminClaim || isAdminRoleOrBorder) {
-                        role = "admin"
-                    }
+                    if (isAdminClaim) role = "admin"
                     val sessionToken = listenSnapshot.getString("sessionToken")
                     val remoteDeviceId = listenSnapshot.getString("lastDeviceId")
                     // Cached/local snapshots cannot revoke a session before its server confirmation.
@@ -422,13 +412,13 @@ object SubscriptionManager {
                     updateModeratorSupportListener(db, role)
                     recalculateUnreadCount()
                 } else {
-                    val isEmailAdmin = AuthManager.isCurrentUserAdmin()
-                    val fallbackRole = if (isEmailAdmin) "admin" else "free"
+                    val isClaimAdmin = AuthManager.isCurrentUserAdmin()
+                    val fallbackRole = if (isClaimAdmin) "admin" else "free"
                     _userName.value = user.displayName?.takeIf { it.isNotBlank() } ?: "Usuario"
                     _userRole.value = fallbackRole
                     _secondaryRole.value = ""
-                    _isPremium.value = isEmailAdmin
-                    _isVerified.value = isEmailAdmin
+                    _isPremium.value = isClaimAdmin
+                    _isVerified.value = isClaimAdmin
                     _premiumUntil.value = null
                     _currentAvatarId.value = "default_poro"
                     _unlockedAvatars.value = emptyList()
@@ -586,63 +576,15 @@ object SubscriptionManager {
         return formatDuration(until)
     }
 
-    suspend fun addBlueEssence(amount: Long, reason: String? = null) {
-        val user = AuthManager.getAuth()?.currentUser ?: return
-        if (AuthManager.isGuestOrUnauthenticated(user)) return
-        val db = FirebaseFirestore.getInstance()
-        try {
-            val userRef = db.collection("users").document(user.uid)
-            val currentBlue = _blueEssence.value
-            val finalAmount = if (amount < 0 && currentBlue + amount < 0) -currentBlue else amount
-            if (finalAmount == 0L) return
-            userRef.update("blueEssence", FieldValue.increment(finalAmount)).await()
-            _blueEssence.value = (currentBlue + finalAmount).coerceAtLeast(0L)
+    suspend fun addBlueEssence(amount: Long, reason: String? = null) = adjustOwnEssence(amount, "BLUE")
 
-            val isSub = reason?.contains("Suscrip", ignoreCase = true) == true
-            val isAdmin = reason?.contains("Admin", ignoreCase = true) == true
-            val effectiveReason = reason ?: if (finalAmount > 0) "Recarga de Esencia Azul" else "Consumo de Esencia Azul"
-            val status = when {
-                isSub && finalAmount < 0 -> "Descontado por Suscripción"
-                isSub && finalAmount > 0 -> "Añadido por Suscripción"
-                isAdmin && finalAmount < 0 -> "Descontado por Administrador"
-                isAdmin && finalAmount > 0 -> "Añadido por Administrador"
-                finalAmount > 0 -> "Añadido"
-                else -> "Descontado"
-            }
-            val amountStr = if (finalAmount > 0) "+$finalAmount EA" else "$finalAmount EA"
-            SubscriptionHistoryManager.addRecordForUser(user.uid, 0L, effectiveReason, status, amountStr)
-        } catch (e: Exception) {
-            Log.e("SubscriptionManager", "Error incrementing blue essence", e)
-        }
-    }
+    suspend fun addOrangeEssence(amount: Long, reason: String? = null) = adjustOwnEssence(amount, "ORANGE")
 
-    suspend fun addOrangeEssence(amount: Long, reason: String? = null) {
-        val user = AuthManager.getAuth()?.currentUser ?: return
-        if (AuthManager.isGuestOrUnauthenticated(user)) return
-        val db = FirebaseFirestore.getInstance()
-        try {
-            val userRef = db.collection("users").document(user.uid)
-            val currentOrange = _orangeEssence.value
-            val finalAmount = if (amount < 0 && currentOrange + amount < 0) -currentOrange else amount
-            if (finalAmount == 0L) return
-            userRef.update("orangeEssence", FieldValue.increment(finalAmount)).await()
-            _orangeEssence.value = (currentOrange + finalAmount).coerceAtLeast(0L)
-
-            val isSub = reason?.contains("Suscrip", ignoreCase = true) == true
-            val isAdmin = reason?.contains("Admin", ignoreCase = true) == true
-            val effectiveReason = reason ?: if (finalAmount > 0) "Recarga de Esencia Naranja" else "Consumo de Esencia Naranja"
-            val status = when {
-                isSub && finalAmount < 0 -> "Descontado por Suscripción"
-                isSub && finalAmount > 0 -> "Añadido por Suscripción"
-                isAdmin && finalAmount < 0 -> "Descontado por Administrador"
-                isAdmin && finalAmount > 0 -> "Añadido por Administrador"
-                finalAmount > 0 -> "Añadido"
-                else -> "Descontado"
-            }
-            val amountStr = if (finalAmount > 0) "+$finalAmount EN" else "$finalAmount EN"
-            SubscriptionHistoryManager.addRecordForUser(user.uid, 0L, effectiveReason, status, amountStr)
-        } catch (e: Exception) {
-            Log.e("SubscriptionManager", "Error incrementing orange essence", e)
-        }
+    private suspend fun adjustOwnEssence(amount: Long, currency: String) {
+        val user = AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
+        if (amount == 0L) return
+        require(amount != Long.MIN_VALUE)
+        com.example.data.AdminEssenceAdjustment.apply(user.uid, kotlin.math.abs(amount), currency,
+            addition = amount > 0, notify = false, title = "", customBody = null)
     }
 }

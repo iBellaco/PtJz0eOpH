@@ -6,7 +6,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -154,124 +153,26 @@ object CreatorSubscriptionManager {
         context: Context,
         onResult: (Boolean, String) -> Unit
     ) {
-        val currentEssence = SubscriptionManager.orangeEssence.value
-        if (currentEssence < SUBSCRIPTION_EN_COST) {
-            onResult(false, "Necesitas al menos $SUBSCRIPTION_EN_COST de Esencia Naranja para suscribirte.")
-            return
-        }
-
-        val cleanKey = if (creatorUid.isNotBlank()) creatorUid else creatorName.trim()
-        if (cleanKey.isBlank()) {
-            onResult(false, "Creador no válido.")
-            return
-        }
-
-        val currentSet = _subscribedCreatorKeys.value.toMutableSet()
-        if (currentSet.contains(cleanKey)) {
-            onResult(true, "Ya estás suscrito a este creador.")
-            return
-        }
-
-        currentSet.add(cleanKey)
-        _subscribedCreatorKeys.value = currentSet
-        saveToLocalStorage(context, currentSet)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                var creatorRole = "creador"
-                if (creatorUid.isNotBlank()) {
-                    val db = FirebaseFirestore.getInstance()
-                    val doc = db.collection("users").document(creatorUid).get().await()
-                    if (doc.exists()) {
-                        creatorRole = doc.getString("role") ?: "creador"
-                    }
-                }
-
-                val percentage = when (creatorRole.trim().lowercase()) {
-                    "creador" -> 0.50
-                    "creador_lvl2" -> 0.60
-                    "creador_lvl3" -> 0.70
-                    "creador_lvl4" -> 0.80
-                    "creador_lvl5" -> 0.80
-                    "moderador" -> 0.80
-                    "streamer" -> 0.80
-                    else -> 0.50
-                }
-                val enRewarded = kotlin.math.round(SUBSCRIPTION_EN_COST * percentage).toLong()
-
-                SubscriptionManager.addOrangeEssence(-SUBSCRIPTION_EN_COST, "Suscripción a Creador: $creatorName")
-                val user = FirebaseAuth.getInstance().currentUser
-                if (user != null && !user.isAnonymous) {
-                    val db = FirebaseFirestore.getInstance()
-                    db.collection("users").document(user.uid)
-                        .set(
-                            mapOf("subscribedCreators" to FieldValue.arrayUnion(cleanKey)),
-                            SetOptions.merge()
-                        ).await()
-                }
-
-                // Reward creator and notify
-                if (creatorUid.isNotBlank()) {
-                    val db = FirebaseFirestore.getInstance()
-                    db.collection("users").document(creatorUid)
-                        .update("orangeEssence", FieldValue.increment(enRewarded))
-                        .await()
-
-                    // Log history for creator
-                    val subscriberName = SubscriptionManager.userName.value.ifBlank { "Un invocador" }
-                    SubscriptionHistoryManager.addRecordForUser(
-                        creatorUid,
-                        0L,
-                        "Pago por Suscriptor: $subscriberName ($creatorRole)",
-                        "Añadido por Suscripción",
-                        "+$enRewarded EN"
-                    )
-
-                    // Send notification to creator
-                    val messageId = java.util.UUID.randomUUID().toString()
-                    val messageData = hashMapOf<String, Any>(
-                        "id" to messageId,
-                        "title" to "¡Nueva Suscripción con Esencia Naranja!",
-                        "content" to "¡Felicidades! El invocador $subscriberName se ha suscrito a tu perfil con Esencia Naranja. De acuerdo con tu nivel de creador ($creatorRole), has recibido un pago de $enRewarded Esencias Naranjas (el ${ (percentage * 100).toInt() }% de la suscripción). ¡Sigue publicando builds grandiosas!",
-                        "tag" to "GENERAL", "panel" to "CREATOR",
-                        "timestamp" to System.currentTimeMillis(),
-                        "isRead" to false
-                    )
-                    val creatorDocRef = db.collection("users").document(creatorUid)
-                    creatorDocRef.collection("messages").document(messageId).set(messageData).await()
-                    creatorDocRef.update(
-                        "hasUnreadMessages", true,
-                        "unreadMessagesCount", FieldValue.increment(1),
-                        "privateMessages", FieldValue.arrayUnion(messageData)
-                    ).await()
-                }
-
-                CoroutineScope(Dispatchers.Main).launch {
-                    onResult(true, "¡Te has suscrito con éxito a $creatorName con Esencia Naranja!")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error subscribing to creator with Orange Essence: ${e.message}")
-                CoroutineScope(Dispatchers.Main).launch {
-                    onResult(true, "Suscripción guardada localmente.")
-                }
-            }
+        if (creatorUid.isBlank()) { onResult(false, appTr("Creador no válido.")); return }
+        CoroutineScope(Dispatchers.Main).launch {
+            runCatching { com.example.data.EconomyServiceClient.call("SUBSCRIBE", mapOf("creatorUid" to creatorUid)) }
+                .onSuccess {
+                    val currentSet = _subscribedCreatorKeys.value + creatorUid
+                    _subscribedCreatorKeys.value = currentSet
+                    saveToLocalStorage(context, currentSet)
+                    onResult(true, appTr("¡Te has suscrito con éxito a $creatorName con Esencia Naranja!"))
+                }.onFailure { onResult(false, it.message ?: appTr("No se pudo completar la operación. Vuelve a intentarlo.")) }
         }
     }
 
     fun unsubscribe(creatorKey: String, context: Context) {
-        val currentSet = _subscribedCreatorKeys.value.toMutableSet()
-        currentSet.remove(creatorKey)
-        _subscribedCreatorKeys.value = currentSet
-        saveToLocalStorage(context, currentSet)
-
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user != null && !user.isAnonymous) {
-            val db = FirebaseFirestore.getInstance()
-            db.collection("users").document(user.uid)
-                .set(
-                    mapOf("subscribedCreators" to FieldValue.arrayRemove(creatorKey)),
-                    SetOptions.merge()
-                )
+        CoroutineScope(Dispatchers.Main).launch {
+            runCatching { com.example.data.EconomyServiceClient.call("UNSUBSCRIBE", mapOf("creatorUid" to creatorKey)) }
+                .onSuccess {
+                    val currentSet = _subscribedCreatorKeys.value - creatorKey
+                    _subscribedCreatorKeys.value = currentSet
+                    saveToLocalStorage(context, currentSet)
+                }.onFailure { android.widget.Toast.makeText(context, it.message, android.widget.Toast.LENGTH_LONG).show() }
         }
     }
 }

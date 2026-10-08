@@ -4,7 +4,7 @@ import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebas
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, getCountFromServer, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment, onSnapshot } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8088, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
 const db = (uid, extra = {}) => env.authenticatedContext(uid, { email: `${uid}@test.invalid`, ...extra }).firestore();
-const user = db('user'), moderator = db('mod'), admin = db('admin'), other = db('other'), streamer = db('s1');
+const user = db('user'), moderator = db('mod'), admin = db('admin', {admin:true}), other = db('other'), streamer = db('s1');
 const greeting = 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.';
 const initial = id => [{ id: `${id}_initial`, senderRole: 'USER', senderUid: 'user', text: 'Ayuda', timestampMillis: 100 }, { id: `${id}_system`, senderRole: 'SYSTEM', senderUid: '', text: greeting, timestampMillis: 101 }];
 const ticket = (id, tag = 'SOPORTE') => ({ userId: 'user', userEmail: 'user@test.invalid', tag, type: tag, staffVisible: tag !== 'PATROCINADOR', userCanReply:false, status: 'PENDING', conversation: initial(id), userRead: true, isRead: true, hasNewAdminReply: false });
@@ -105,158 +105,45 @@ try {
     await assertFails(setDoc(doc(user,'system_config/saved_data_consumption'),{estimatedContentBytes:0}));
   });
   const economy = db('economy');
-  const future = Date.now() + 86400000 * 90;
   await env.withSecurityRulesDisabled(async context => {
     const store=context.firestore();
-    await setDoc(doc(store, 'users/economy'), { role:'creador', secondaryRole:'streamer', email:'economy@test.invalid', blueEssence:2000, orangeEssence:120, premiumUntil:Timestamp.fromMillis(future) });
-    await setDoc(doc(store, 'users/concurrent'), {role:'free', email:'concurrent@test.invalid', orangeEssence:10});
+    await setDoc(doc(store,'users/economy'),{role:'creador',orangeEssence:120,blueEssence:2000});
+    await setDoc(doc(store,'cash_redemptions/cash-ten'),{userId:'economy',status:'PENDING',amount:10,totalDeducted:15});
+    await setDoc(doc(store,'users/economy/subscription_history/cash-ten'),{source:'CASH_REDEMPTION',amount:'-15 EN'});
+    await setDoc(doc(store,'support_reports/payment_cash-ten'),{...ticket('payment_cash-ten','PAGO'),userId:'economy',userEmail:'economy@test.invalid',staffVisible:false});
   });
-  function purchase(store, uid, id, plan='MONTHLY', currency='BLUE', override={}) {
-    return runTransaction(store, async tx => {
-      const profile = doc(store, `users/${uid}`), operation = doc(store, `users/${uid}/economy_operations/${id}`);
-      if ((await tx.get(operation)).exists()) return;
-      const account = (await tx.get(profile)).data(), timestamp=Date.now();
-      const field=currency==='BLUE'?'blueEssence':'orangeEssence', days=plan==='MONTHLY'?30:365;
-      const cost=plan==='MONTHLY'?(currency==='BLUE'?100:9):(currency==='BLUE'?1100:95);
-      const old=account.premiumUntil instanceof Timestamp?account.premiumUntil.toMillis():(account.premiumUntil||0);
-      const until=Math.max(timestamp,old)+days*86400000;
-      const receipt={id,timestamp,durationMillis:days*86400000,planName:'Premium',status:'Completado',amount:`-${cost}`,source:'ESSENCE_PURCHASE'};
-      tx.set(operation,{id,userId:uid,kind:'PREMIUM',plan,currency,cost,premiumUntil:until,timestamp,createdAt:serverTimestamp(),receipt,...override});
-      tx.update(profile,{[field]:(account[field]||0)-cost,premiumUntil:until,subscriptionPlan:receipt.planName,lastEconomyOperation:id});
-      tx.set(doc(store,`users/${uid}/subscription_history/${id}`),receipt);
-    });
-  }
-  await test('essence plans use exact prices and inherit time without changing either role',async()=>{
-    for(const [id,plan,currency,days,price] of [['monthly-blue','MONTHLY','BLUE',30,100],['monthly-orange','MONTHLY','ORANGE',30,9],['annual-blue','ANNUAL','BLUE',365,1100],['annual-orange','ANNUAL','ORANGE',365,95]]) {
-      const before=(await getDoc(doc(economy,'users/economy'))).data();
-      await assertSucceeds(purchase(economy,'economy',id,plan,currency));
-      const after=(await getDoc(doc(economy,'users/economy'))).data();
-      const old=before.premiumUntil instanceof Timestamp?before.premiumUntil.toMillis():before.premiumUntil;
-      assert.equal(after.premiumUntil,old+days*86400000);assert.equal(after.role,'creador');assert.equal(after.secondaryRole,'streamer');
-      const field=currency==='BLUE'?'blueEssence':'orangeEssence'; assert.equal(after[field],before[field]-price);
-      assert.equal((await getDoc(doc(economy,`users/economy/economy_operations/${id}`))).data().cost,price);
+  await test('only a trusted claim grants access; emails, roles and borders cannot grant it',async()=>{
+    for(const [uid,fields,claims] of [['forged-role',{role:'admin'},{}],['forged-flag',{admin:true},{}],['forged-border',{rankBorder:'ADMIN'},{}],['old-owner-email',{role:'free'},{email:'barbadiego695@gmail.com'}]]) {
+      await env.withSecurityRulesDisabled(async context=>setDoc(doc(context.firestore(),`users/${uid}`),fields));
+      const forged=db(uid,claims);
+      await assertFails(getDocs(collection(forged,'users')));
+      await assertFails(setDoc(doc(forged,'system_config/admin-test'),{value:true}));
+    }
+    await assertSucceeds(getDocs(collection(db('claim-without-profile',{admin:true}),'users')));
+  });
+  await test('owner and staff cannot credit, debit or edit entitlements and memberships directly',async()=>{
+    for(const store of [economy,admin]) for(const change of [{orangeEssence:0},{blueEssence:0},{orangeEssence:1000000},{premiumUntil:Date.now()+86400000},{subscriptionPlan:'FREE'},{subscriptionHistory:[]},{lastEconomyOperation:'forged_operation'},{subscribedCreators:['another-user']},{creatorSubscriberCount:0}]) await assertFails(updateDoc(doc(store,'users/economy'),change));
+  });
+  await test('economic receipts and cash status cannot be forged even by staff clients',async()=>{
+    for(const store of [economy,admin]) {
+      await assertFails(setDoc(doc(store,'users/economy/economy_operations/forged'),{cost:0}));
+      await assertFails(setDoc(doc(store,'users/economy/subscription_history/forged'),{amount:'+99 EN'}));
+      await assertFails(updateDoc(doc(store,'users/economy/subscription_history/cash-ten'),{amount:'0'}));
+      await assertFails(setDoc(doc(store,'cash_redemptions/forged'),{userId:'economy',status:'PENDING'}));
+      await assertFails(updateDoc(doc(store,'cash_redemptions/cash-ten'),{status:'PAID'}));
+      await assertFails(deleteDoc(doc(store,'cash_redemptions/cash-ten')));
     }
   });
-  await test('purchase retries are idempotent and receipts cannot be overwritten',async()=>{
-    const before=(await getDoc(doc(economy,'users/economy'))).data();
-    await assertSucceeds(purchase(economy,'economy','monthly-blue'));
-    assert.deepEqual((await getDoc(doc(economy,'users/economy'))).data(),before);
-    await assertFails(updateDoc(doc(economy,'users/economy/economy_operations/monthly-blue'),{cost:0}));
-    await assertFails(updateDoc(doc(economy,'users/economy/subscription_history/monthly-blue'),{amount:'0'}));
-  });
-  await test('users cannot credit essence, forge purchases or change entitlement separately',async()=>{
-    await assertFails(updateDoc(doc(economy,'users/economy'),{orangeEssence:100000}));
-    await assertFails(purchase(economy,'economy','wrong-price','MONTHLY','BLUE',{cost:1}));
-    await assertFails(purchase(economy,'economy','wrong-duration','MONTHLY','BLUE',{premiumUntil:Date.now()+999999999999}));
-    await assertFails(setDoc(doc(economy,'users/economy/economy_operations/standalone'),{userId:'economy',id:'standalone',createdAt:serverTimestamp(),receipt:{}}));
-    await assertFails(setDoc(doc(economy,'users/economy/subscription_history/fake'),{source:'ESSENCE_PURCHASE',amount:'-9 EN'}));
-    assert.equal((await getDoc(doc(economy,'users/economy/economy_operations/wrong-price'))).exists(),false);
-  });
-  await test('concurrent purchases cannot overdraw a balance',async()=>{
-    const store=db('concurrent');
-    const result=await Promise.allSettled([purchase(store,'concurrent','first','MONTHLY','ORANGE'),purchase(store,'concurrent','second','MONTHLY','ORANGE')]);
-    assert.equal(result.filter(r=>r.status==='fulfilled').length,1);
-    assert.equal((await getDoc(doc(store,'users/concurrent'))).data().orangeEssence,1);
-    assert.equal((await getDocs(collection(store,'users/concurrent/subscription_history'))).size,1);
-  });
-  function redeem(id, amount, override={}, store=economy, uid="economy") {
-    return runTransaction(store,async tx=>{
-      const profile=doc(store,`users/${uid}`),operation=doc(store,`users/${uid}/economy_operations/${id}`);
-      if((await tx.get(operation)).exists())return;
-      const account=(await tx.get(profile)).data(),timestamp=Date.now();
-      const binanceEmail=(override.binanceEmail||'').trim().toLowerCase();
-      const network=binanceEmail?'':(override.network??'ERC20');
-      const wallet=binanceEmail?'':(override.wallet??'0x1111111111111111111111111111111111111111');
-      const fee=binanceEmail?0:(network==='BEP20'?1:(network==='TRC20'?2:(network==='ERC20'?5:-1)));
-      const totalCost=amount+fee;
-      const receipt={id,timestamp,durationMillis:0,planName:'Canje de Esencia Naranja',status:'Pendiente',amount:`-${totalCost} EN`,source:'CASH_REDEMPTION'};
-      tx.set(operation,{id,userId:uid,kind:'CASH',currency:'ORANGE',cost:amount,usd:amount,network,wallet,binanceEmail,fee,totalCost,timestamp,createdAt:serverTimestamp(),receipt});
-      tx.update(profile,{orangeEssence:account.orangeEssence-totalCost,lastEconomyOperation:id});
-      tx.set(doc(store,`cash_redemptions/${id}`),{id,userId:uid,email:`${uid}@test.invalid`,userName:account.name||'',amount,usd:amount,paymentCurrency:'USDT',network,wallet,binanceEmail,fee,totalDeducted:totalCost,status:'PENDING',requestedAt:serverTimestamp(),requestedAtMillis:timestamp,...override,network,wallet,binanceEmail,fee,totalDeducted:totalCost});
-      const reportId=`payment_${id}`;
-      const conversation=initial(reportId).map(entry=>entry.senderRole==='USER'?{...entry,senderUid:uid}:entry);
-      const payment={id:reportId,reportId,redemptionId:id,userId:uid,userEmail:`${uid}@test.invalid`,userName:account.name||'Usuario',title:'Solicitud de pago USDT',description:'Solicitud de pago USDT',content:'Solicitud de pago USDT',tag:'PAGO',type:'PAGO',panel:'HISTORY',staffVisible:false,status:'PENDING',staffRead:false,isRead:true,userRead:true,userCanReply:false,timestamp,createdAt:serverTimestamp(),conversation};
-      tx.set(doc(store,`support_reports/${reportId}`),payment);
-      tx.set(doc(store,`users/${uid}/messages/${reportId}`),payment);
-      tx.set(doc(store,`users/${uid}/subscription_history/${id}`),receipt);
-    });
-  }
-  await test('cash requests debit atomically and keep owner-only receipts',async()=>{
-    await assertSucceeds(redeem('cash-ten',10));
-    const before=(await getDoc(doc(economy,'users/economy'))).data();
-    await assertSucceeds(redeem('cash-ten',10));
-    assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before.orangeEssence);
-    await assertSucceeds(getDoc(doc(admin,'cash_redemptions/cash-ten')));
-    assert.equal((await getDoc(doc(admin,'support_reports/payment_cash-ten'))).data().redemptionId,'cash-ten');
-    assert.equal((await getDoc(doc(economy,'users/economy/messages/payment_cash-ten'))).data().tag,'PAGO');
-    await assertFails(getDoc(doc(moderator,'support_reports/payment_cash-ten')));
-    await assertFails(getDoc(doc(other,'users/economy/messages/payment_cash-ten')));
+  await test('cash and receipts remain private to owner and trusted claim',async()=>{
+    for(const store of [economy,admin]) await assertSucceeds(getDoc(doc(store,'cash_redemptions/cash-ten')));
     await assertFails(getDoc(doc(other,'cash_redemptions/cash-ten')));
-    await assertFails(getDocs(collection(other,'cash_redemptions')));
+    await assertFails(getDocs(collection(moderator,'cash_redemptions')));
     await assertSucceeds(getDocs(query(collection(economy,'cash_redemptions'),where('userId','==','economy'))));
+    await assertSucceeds(getDoc(doc(admin,'support_reports/payment_cash-ten')));
+    await assertFails(getDoc(doc(moderator,'support_reports/payment_cash-ten')));
   });
-  await test('pending payouts load for the administrator and remain private from moderators',async()=>{
-    await assertSucceeds(getDocs(query(collection(admin,'cash_redemptions'),where('status','==','PENDING'))));
-    await assertFails(getDocs(query(collection(moderator,'cash_redemptions'),where('status','==','PENDING'))));
-    await assertFails(getDocs(query(collection(other,'cash_redemptions'),where('status','==','PENDING'))));
-  });
-  await test('administrator redemption has the same atomic debit and idempotent receipt',async()=>{
-    await updateDoc(doc(admin,'users/admin'),{orangeEssence:400});
-    await assertSucceeds(redeem('admin-fifty',50,{},admin,'admin'));
-    assert.equal((await getDoc(doc(admin,'users/admin'))).data().orangeEssence,345);
-    await assertSucceeds(redeem('admin-fifty',50,{},admin,'admin'));
-    assert.equal((await getDoc(doc(admin,'users/admin'))).data().orangeEssence,345);
-    assert.equal((await getDoc(doc(admin,'cash_redemptions/admin-fifty'))).data().usd,50);
-    await assertFails(getDoc(doc(moderator,'support_reports/payment_admin-fifty')));
-  });
-  await test('cash amount, paid status and refunds cannot be forged by a user',async()=>{
-    await assertFails(redeem('wrong-cash-amount',3));
-    await assertFails(redeem('fake-paid',10,{status:'PAID'}));
-    await assertFails(redeem('fake-usd',10,{usd:1000}));
-    await assertFails(redeem('fake-wallet',10,{wallet:'wrong-wallet'}));
-    await assertFails(redeem('fake-network',10,{network:'UNKNOWN'}));
-    await assertFails(updateDoc(doc(economy,'cash_redemptions/cash-ten'),{status:'PAID'}));
-    await assertFails(deleteDoc(doc(economy,'cash_redemptions/cash-ten')));
-    await assertFails(redeem('insufficient',50));
-    await updateDoc(doc(admin,'users/economy'),{orangeEssence:50});
-    await assertSucceeds(redeem('binance-email',10,{binanceEmail:'payout@example.com'}));
-    const emailPayout=(await getDoc(doc(economy,'cash_redemptions/binance-email'))).data();
-    assert.equal(emailPayout.binanceEmail,'payout@example.com');
-    assert.equal(emailPayout.network,'');
-    assert.equal(emailPayout.wallet,'');
-    await assertFails(redeem('binance-email-invalid',10,{binanceEmail:'correo-invalido'}));
-    const binanceRef=doc(admin,'cash_redemptions/binance-email');
-    await assertFails(deleteDoc(binanceRef));
-    await assertSucceeds(updateDoc(binanceRef,{status:'PAID',resolvedAtMillis:Date.now()-1209601000,historyDeleteAtMillis:Date.now()-1000}));
-    await assertSucceeds(deleteDoc(binanceRef));
-  });
-  await test('staff can reject a cash request and refund once in one transaction',async()=>{
-    const before=(await getDoc(doc(admin,'users/economy'))).data().orangeEssence;
-    await assertSucceeds(runTransaction(admin,async tx=>{
-      const request=doc(admin,'cash_redemptions/cash-ten'),profile=doc(admin,'users/economy');
-      const r=await tx.get(request),p=await tx.get(profile);assert.equal(r.data().status,'PENDING');
-      tx.update(profile,{orangeEssence:p.data().orangeEssence+r.data().totalDeducted});
-      tx.update(request,{status:'REJECTED',resolvedAt:serverTimestamp()});
-      tx.update(doc(admin,'users/economy/subscription_history/cash-ten'),{status:'Rechazado y reembolsado'});
-    }));
-    assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before+15);
-  });
-  await test('payment conversation is private to its owner and the administrator',async()=>{
-    const data={...ticket('payment','PAGO'),staffVisible:false};
-    await assertSucceeds(setDoc(doc(user,'support_reports/payment'),data));
-    await assertSucceeds(getDoc(doc(admin,'support_reports/payment')));
-    await assertFails(getDoc(doc(moderator,'support_reports/payment')));
-    await assertFails(getDoc(doc(other,'support_reports/payment')));
-    await assertFails(setDoc(doc(user,'support_reports/payment-exposed'),{...data,staffVisible:true}));
-  });
-  await test('all cash request amounts debit the payout plus the exact network fee',async()=>{
-    await updateDoc(doc(admin,'users/economy'),{orangeEssence:100});
-    for(const amount of [25,50]) {
-      const before=(await getDoc(doc(economy,'users/economy'))).data().orangeEssence;
-      await assertSucceeds(redeem(`cash-${amount}`,amount));
-      assert.equal((await getDoc(doc(economy,'users/economy'))).data().orangeEssence,before-amount-5);
-      assert.equal((await getDoc(doc(economy,`cash_redemptions/cash-${amount}`))).data().usd,amount);
-    }
+  await test('pending advertisements cannot bypass the server debit',async()=>{
+    for(const store of [economy,admin]) await assertFails(setDoc(doc(store,'pending_sponsor_ads/free-ad'),{sponsorEmail:'economy@test.invalid',isApproved:false}));
   });
   await test('read acknowledgements synchronize without changing pending sponsorships',async()=>{
     await assertSucceeds(setDoc(doc(user,'users/user/panel_reads/sponsor-read'),{event:'notice:sponsor',revision:'',readAt:serverTimestamp()}));
@@ -378,7 +265,7 @@ try {
     await assertSucceeds(getDocs(query(collection(admin,'streamer_requests'),where('status','==','PENDING'))));
   });
   await test('pending streamer requests survive reopening on a second device before review', async () => {
-    const ownerSecondDevice=db('s1'), reviewerSecondDevice=db('admin');
+    const ownerSecondDevice=db('s1'), reviewerSecondDevice=db('admin',{admin:true});
     const fromFirst=(await getDoc(doc(streamer,'streamer_requests/s1'))).data();
     const fromSecond=(await assertSucceeds(getDoc(doc(ownerSecondDevice,'streamer_requests/s1')))).data();
     assert.equal(fromSecond.publicationId,fromFirst.publicationId);
@@ -460,13 +347,12 @@ try {
     await assertFails(setDoc(doc(db('s2'),'streamer_requests','s2'),{...request('s2'),submittedAtMillis:Date.now()+99999999}));
     await assertFails(deleteDoc(doc(streamer,`streamer_requests/s1/history/${current.publicationId}`)));
   });
-  await test('role edits preserve the stored premium deadline and members cannot edit it', async () => {
-    const until = Date.now()+7*86400000;
-    await assertSucceeds(updateDoc(doc(admin,'users','s1'),{premiumUntil:until,role:'premium'}));
-    await assertSucceeds(updateDoc(doc(admin,'users','s1'),{role:'streamer'}));
-    assert.equal((await getDoc(doc(streamer,'users','s1'))).data().premiumUntil,until);
-    await assertFails(updateDoc(doc(streamer,'users','s1'),{premiumUntil:until+86400000}));
-    await assertSucceeds(updateDoc(doc(admin,'users','s1'),{premiumUntil:until+86400000}));
+  await test('staff role edits preserve server deadlines and no client can edit time', async () => {
+    const until=Date.now()+86400000;
+    await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),'users/s1'),{premiumUntil:until,role:'premium'}));
+    await assertSucceeds(updateDoc(doc(admin,'users/s1'),{role:'streamer'}));
+    assert.equal((await getDoc(doc(streamer,'users/s1'))).data().premiumUntil,until);
+    for(const store of [streamer,admin]) await assertFails(updateDoc(doc(store,'users/s1'),{premiumUntil:until+86400000}));
   });
   await test('guests read published channels but cannot read private configuration or history', async () => {
     const guest = env.unauthenticatedContext().firestore();
@@ -509,7 +395,7 @@ try {
   await test('redemption role removal blocks a request without deducting the balance',async()=>{
     const profile=doc(admin,'users/economy'), before=(await getDoc(profile)).data().orangeEssence;
     await assertSucceeds(updateDoc(profile,{role:'free',secondaryRole:''}));
-    await assertFails(redeem('role-removed-cash',10));
+    await assertFails(setDoc(doc(economy,'cash_redemptions/role-removed-cash'),{userId:'economy',amount:10,status:'PENDING'}));
     assert.equal((await getDoc(profile)).data().orangeEssence,before);
     await assertSucceeds(updateDoc(profile,{role:'creador',secondaryRole:'streamer'}));
   });
@@ -624,56 +510,11 @@ try {
     });
     await assertSucceeds(deleteDoc(doc(owner,`streamer_requests/s2/history/${id}`)));
   });
-  await test('administrator grants Premium with access deadline and history atomically', async () => {
-    await env.withSecurityRulesDisabled(async context => setDoc(doc(context.firestore(),'users','gift-user'),{role:'free', registeredDevices:[]}));
-    const ref=doc(admin,'users','gift-user'), timestamp=Date.now();
-    const gift={id:'gift-one',timestamp,durationMillis:86400000,source:'ADMIN_GIFT',amount:'Regalo'};
-    await assertSucceeds(runTransaction(admin, async transaction => {
-      const account=await transaction.get(ref);
-      transaction.update(ref,{premiumUntil:timestamp+86400000,subscriptionPlan:'ADMIN_GIFT',lastModifiedByAdmin:timestamp,subscriptionHistory:[...(account.data().subscriptionHistory||[]),gift]});
-    }));
-    const own=db('gift-user'), data=(await assertSucceeds(getDoc(doc(own,'users','gift-user')))).data();
-    assert.equal(data.role,'free'); assert.equal(data.subscriptionHistory.length,1);
-    await assertFails(updateDoc(doc(own,'users','gift-user'),{subscriptionHistory:[]}));
-    await assertFails(updateDoc(doc(own,'users','gift-user'),{subscriptionPlan:'Admin Grant (100 days)',premiumUntil:timestamp+8640000000}));
-    await assertFails(updateDoc(doc(moderator,'users','gift-user'),{subscriptionHistory:[]}));
-    await assertSucceeds(updateDoc(ref,{subscriptionHistory:[gift,{...gift,id:'gift-two'}]}));
-    assert.equal((await getDoc(doc(own,'users','gift-user'))).data().subscriptionHistory.length,2);
-  });
-  await test('timed Premium extensions preserve two occupied roles and owners cannot grant themselves time', async () => {
-    const inherited=Date.parse('2030-11-18T19:27:00Z'), ref=doc(admin,'users','occupied-gift-user');
-    await env.withSecurityRulesDisabled(async context => setDoc(doc(context.firestore(),'users','occupied-gift-user'),
-      {role:'creador',secondaryRole:'streamer',premiumUntil:inherited,registeredDevices:[]}));
-    let expected=inherited;
-    for (const days of [1,7,30,90,365]) {
-      const timestamp=Date.now(), gift={id:`duration-${days}`,timestamp,durationMillis:days*86400000,source:'ADMIN_GIFT'};
-      await assertSucceeds(runTransaction(admin, async transaction => {
-        const data=(await transaction.get(ref)).data();
-        transaction.update(ref,{premiumUntil:data.premiumUntil+days*86400000,subscriptionPlan:'ADMIN_GIFT',
-          lastModifiedByAdmin:timestamp,subscriptionHistory:[...(data.subscriptionHistory||[]),gift]});
-      }));
-      expected+=days*86400000;
-      const data=(await getDoc(ref)).data();
-      assert.equal(data.premiumUntil,expected); assert.equal(data.role,'creador'); assert.equal(data.secondaryRole,'streamer');
-    }
-    assert.equal((await getDoc(ref)).data().subscriptionHistory.length,5);
-    await assertFails(updateDoc(doc(db('occupied-gift-user'),'users','occupied-gift-user'),{premiumUntil:expected+86400000}));
-    await assertFails(updateDoc(doc(moderator,'users','occupied-gift-user'),{premiumUntil:expected+86400000}));
-  });
-
   await test('own panel reads persist without granting roles or acknowledging another user', async () => {
     await assertSucceeds(updateDoc(doc(user,'users/user'),{panelReadKeys:['sponsor-seen']}));
     assert.deepEqual((await getDoc(doc(user,'users/user'))).data().panelReadKeys,['sponsor-seen']);
     await assertFails(updateDoc(doc(other,'users/user'),{panelReadKeys:['stolen']}));
     await assertFails(updateDoc(doc(user,'users/user'),{panelReadKeys:[],role:'admin'}));
-  });
-  await test('essence gifts save balances and receipts together and cannot be self awarded', async () => {
-    const ref=doc(admin,'users/user'), receipt={id:'actual-gift',timestamp:Date.now(),durationMillis:0,planName:'Regalo de Esencias',amount:'+25 EN',source:'ADMIN_ESSENCE_ADJUSTMENT'};
-    await assertSucceeds(runTransaction(admin,async tx=>{await tx.get(ref);tx.update(ref,{orangeEssence:25,subscriptionHistory:[receipt]});}));
-    const own=(await getDoc(doc(user,'users/user'))).data(); assert.equal(own.orangeEssence,25);assert.equal(own.subscriptionHistory[0].amount,'+25 EN');
-    await assertSucceeds(setDoc(doc(admin,'users/user/subscription_history/admin-gift'),receipt));
-    await assertFails(setDoc(doc(user,'users/user/subscription_history/self-gift'),receipt));
-    await assertFails(updateDoc(doc(user,'users/user'),{orangeEssence:50,subscriptionHistory:[receipt]}));
   });
   await test('streamer approval commits publication counter history and notification atomically',async()=>{
     const uid='review-atomic',id='publication-review-atomic';

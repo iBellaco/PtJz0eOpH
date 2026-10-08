@@ -30,7 +30,7 @@ jobs:
         COACH_REQUIRE_PERSISTENT_SIGNING: 'true'
       run: python3 .github/scripts/restore-private-signing.py --check-access
   build-apk:
-    needs: find-validated-apk
+    needs: [find-validated-apk, security-and-data-tests]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -52,9 +52,8 @@ jobs:
         COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
         COACH_REQUIRE_PERSISTENT_SIGNING: 'true'
       run: python3 .github/scripts/restore-private-signing.py --check-access
-    - name: Remove any legacy wrapper binaries
-      run: |
-        rm -f gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties gradlew gradlew.bat || true
+    - name: Validate the committed Gradle wrapper
+      uses: gradle/actions/wrapper-validation@v4
     - &id002
       name: Set up Java 21
       uses: actions/setup-java@v5
@@ -119,7 +118,7 @@ jobs:
         # Build the production APK first. Packaging the release APK and the
         # instrumented APK in one Gradle invocation can retain both R8 graphs
         # and exhaust the GitHub runner heap inside ApkFlinger.
-        gradle :app:assembleRelease \
+        ./gradlew :app:assembleRelease \
           -PcoachInstrumentedBuildType=release \
           -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true" \
           --max-workers=1 --stacktrace --no-daemon -x lint -x lintVitalRelease
@@ -135,7 +134,7 @@ jobs:
         # Build the instrumented release APK only after the production APK is
         # safely packaged, in a fresh Gradle JVM with the same bounded worker
         # count. This prevents packageRelease from competing for heap.
-        gradle :app:assembleReleaseAndroidTest \
+        ./gradlew :app:assembleReleaseAndroidTest \
           -PcoachInstrumentedBuildType=release \
           -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true" \
           --max-workers=1 --stacktrace --no-daemon -x lint -x lintVitalRelease
@@ -221,7 +220,7 @@ jobs:
         echo '::warning::La revisión temprana no pudo publicarse. Continúan las verificaciones obligatorias del APK firmado; la publicación final sigue siendo obligatoria.'
         echo 'La revisión temprana no se publicó. Los artefactos firmados siguen disponibles para las pruebas del APK instalado.' >> "$GITHUB_STEP_SUMMARY"
   core-and-rendered:
-    needs: find-validated-apk
+    needs: [find-validated-apk, security-and-data-tests]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -234,7 +233,7 @@ jobs:
     - name: Check core regressions
       env:
         CI: 'true'
-      run: gradle :app:testDebugUnitTest --tests com.example.HistoryConsistencyTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest
+      run: ./gradlew :app:testDebugUnitTest --tests com.example.HistoryConsistencyTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest
         --tests com.example.ChampionNameResolverRegressionTest --tests com.example.AllyDraftReconcilerTest --tests com.example.AllyDraftNameReaderTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests
         com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests
         com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.BuildElementAdviceCoverageTest --tests com.example.BuildChoiceRulesTest --tests com.example.CoachMatchupCoverageTest --tests com.example.SpellCatalogFormattingTest --tests com.example.BuildCoachingRegressionTest --tests com.example.DraftScoreFormatTest --tests com.example.SupportAndStreamerPolicyTest
@@ -249,7 +248,7 @@ jobs:
     - name: Inspect rendered Portuguese screens
       env:
         CI: 'true'
-      run: gradle :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests
+      run: ./gradlew :app:testDebugUnitTest --tests com.example.PortugueseRenderedAuditTest --tests com.example.PortugueseGeneratedSurfaceTest --tests
         com.example.HubChampionNavigationTest --tests com.example.HistoryConsistencyRenderedTest --tests com.example.BuildCoachingRenderedTest --tests com.example.SpellCatalogRenderedTest --tests com.example.SupportReportDecoderTest --tests com.example.OfflinePortugueseAuditTest --tests
         com.example.RuntimeBehaviorTest --tests com.example.RuntimeVisibilityTest --tests com.example.DraftChampionSelectionTest --tests com.example.RequiredItemCorrectionsTest --tests com.example.ComponentItemsCatalogTest --tests com.example.AccountDeletionRenderedTest
         -Proborazzi.test.record=true --stacktrace --no-daemon
@@ -304,6 +303,48 @@ jobs:
       with:
         name: portuguese-focused-audit
         path: app/build/reports/portuguese-focused/
+        retention-days: 14
+  security-and-data-tests:
+    needs: find-validated-apk
+    if: needs.find-validated-apk.outputs.run_id == ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - *id001
+    - *id002
+    - *id003
+    - *id004
+    - *id005
+    - name: Validate the committed Gradle wrapper
+      uses: gradle/actions/wrapper-validation@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - name: Install isolated service test dependencies
+      run: |
+        npm ci --ignore-scripts --no-audit --no-fund --prefix server/economy
+        npm ci --ignore-scripts --no-audit --no-fund --prefix server/account-deletion
+        npm ci --ignore-scripts --no-audit --no-fund --prefix tests/firestore
+    - name: Test authoritative economy and account lifecycle
+      run: |
+        npm test --prefix server/economy
+        npm test --prefix server/account-deletion
+    - name: Test cloud permissions and transactional economy in isolated emulators
+      run: npm test --prefix tests/firestore
+    - name: Check production matchup rules before APK compilation
+      env:
+        CI: 'true'
+      run: python3 test_matchup_rules.py
+    - name: Check production scraper with offline fixtures before APK compilation
+      env:
+        CI: 'true'
+      run: python3 test_scraper.py
+    - name: Upload required data-test reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-and-data-tests
+        path: app/build/test-results/testDebugUnitTest/TEST-*.xml
         retention-days: 14
   installed-audit:
     needs:
@@ -391,6 +432,7 @@ jobs:
     if: always()
     needs:
     - find-validated-apk
+    - security-and-data-tests
     - build-apk
     - core-and-rendered
     - installed-audit
@@ -399,6 +441,7 @@ jobs:
     steps:
     - name: Require all validations to pass
       env:
+        DATA_RESULT: ${{ needs.security-and-data-tests.result }}
         BUILD_RESULT: ${{ needs.build-apk.result }}
         RENDERED_RESULT: ${{ needs.core-and-rendered.result }}
         DEVICE_RESULT: ${{ needs.installed-audit.result }}
@@ -408,7 +451,7 @@ jobs:
       run: |
         python3 - <<'PYRESULT'
         import os
-        results = {key: os.environ[key] for key in ('BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT')}
+        results = {key: os.environ[key] for key in ('DATA_RESULT', 'BUILD_RESULT', 'RENDERED_RESULT', 'DEVICE_RESULT', 'SPANISH_RESULT')}
         print(results)
         expected = 'skipped' if os.environ.get('REUSE_RUN') and os.environ.get('REUSE_RESULT') == 'success' else 'success'
         if any(value != expected for value in results.values()):
@@ -469,6 +512,10 @@ jobs:
         echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
         echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
       if: github.ref == 'refs/heads/main'
+    - name: Package the two validated downloadable ZIPs
+      if: github.ref == 'refs/heads/main'
+      id: delivery
+      run: python3 .github/scripts/package-delivery.py
     - name: Create or Update GitHub Release
       if: github.ref == 'refs/heads/main'
       id: create_release
@@ -490,12 +537,13 @@ jobs:
         - **Ejecución GitHub Actions:** #${{ github.run_number }}
         - **Commit:** ${{ github.sha }}
 
-        Descarga el archivo APK directamente en tu teléfono Android desde los archivos adjuntos (Assets) abajo.
+        Se publican dos ZIP descargables: APK firmado y ofuscado, y proyecto completo sin archivos privados. El APK también está disponible por separado.
         Esta publicación usa la nueva firma persistente autorizada desde Coach 164. No puede actualizar directamente una instalación con una firma anterior. No borres los datos ni desinstales sin conservar lo necesario. Las versiones siguientes mantendrán la nueva firma.
         NOTE_EOF
 
         # Create new release with the APK attached
         gh release create "$TAG_NAME" "${{ steps.prepare_asset.outputs.asset_path }}" \
+           "${{ steps.delivery.outputs.apk_zip }}" "${{ steps.delivery.outputs.project_zip }}" "${{ steps.delivery.outputs.zip_checksums }}" \
            --title "$RELEASE_NAME" \
            --target "${{ github.sha }}" \
            --notes-file release_notes.md

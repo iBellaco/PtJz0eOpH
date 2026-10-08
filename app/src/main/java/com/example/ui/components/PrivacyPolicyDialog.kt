@@ -278,6 +278,8 @@ private fun PrivacyPolicyContent() {
 
 @Composable
 private fun TermsOfServiceContent() {
+    PolicySection(title = localizedString(R.string.legal_economy_title), body = localizedString(R.string.legal_economy_body))
+
     PolicySection(
         title = localizedString(R.string.legal_1_aceptacion_de_los_terminos),
         body = localizedString(R.string.legal_al_descargar_instalar_o_utilizar_la_aplicacion_coach_aceptas_cump)

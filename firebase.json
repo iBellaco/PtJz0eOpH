@@ -48,5 +48,17 @@
   },
   "storage": {
     "rules": "storage.rules"
-  }
+  },
+  "functions": [
+    {
+      "source": "server/economy",
+      "codebase": "economy",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "test",
+        "*.log"
+      ]
+    }
+  ]
 }

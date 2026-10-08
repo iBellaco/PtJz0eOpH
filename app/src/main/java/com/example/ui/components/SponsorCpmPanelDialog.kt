@@ -873,9 +873,11 @@ fun SponsorCpmPanelDialog(
                             sponsorEmail = userEmail
                         )
 
+                        coroutineScope.launch {
+                            runCatching { AppNoticeManager.submitPendingSponsorNotice(context, newPendingNotice, requiredEssences) }
+                                .onSuccess {
                         val updatedLocalList = localPendingAds + newPendingNotice
                         localPendingAds = updatedLocalList
-                        AppNoticeManager.submitPendingSponsorNotice(context, newPendingNotice)
 
                         val jsonArray = org.json.JSONArray()
                         updatedLocalList.forEach { n ->
@@ -900,11 +902,11 @@ fun SponsorCpmPanelDialog(
                             jsonArray.put(obj)
                         }
                         prefs.edit().putString("pending_ads", jsonArray.toString()).apply()
-                        coroutineScope.launch {
-                            com.example.util.SubscriptionManager.addBlueEssence(-requiredEssences)
-                        }
 
                         Toast.makeText(context, com.example.util.appTr("Anuncio enviado a revisión. Se descontaron $requiredEssences EA."), Toast.LENGTH_LONG).show()
+                                }.onFailure { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
+                        }
+
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
                 ) {

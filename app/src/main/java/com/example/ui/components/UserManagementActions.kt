@@ -13,51 +13,33 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import java.util.UUID
+import kotlinx.coroutines.launch
 
 internal fun applyPremiumDuration(context: Context, uid: String, days: Int, extendExisting: Boolean = true,
     onError: () -> Unit = {}, onSuccess: (Map<String, Any>) -> Unit) {
-    val db = FirebaseFirestore.getInstance()
-    val userRef = db.collection("users").document(uid)
-    val grantId = java.util.UUID.randomUUID().toString()
-    val grantedAt = System.currentTimeMillis()
-    db.runTransaction { transaction ->
-        val account = transaction.get(userRef)
-        val updated = com.example.data.PremiumGrantPolicy.apply(account.data.orEmpty(), days, extendExisting, grantedAt, grantId)
-        val fields = setOf("premiumUntil", "subscriptionPlan", "lastModifiedByAdmin", "subscriptionHistory")
-        transaction.update(userRef, updated.filterKeys { it in fields })
-        updated + ("uid" to uid)
-    }.addOnSuccessListener { updated ->
-        Toast.makeText(context, com.example.util.appTr("Tiempo premium actualizado"), Toast.LENGTH_SHORT).show()
-        onSuccess(updated)
-    }.addOnFailureListener { failure ->
-        onError()
-        val policyError = generateSequence<Throwable>(failure) { it.cause }.filterIsInstance<IllegalArgumentException>().firstOrNull()?.message
-        val message = policyError ?: "No se pudo actualizar Premium. Vuelve a intentarlo."
-        Toast.makeText(context, com.example.util.appTr(message), Toast.LENGTH_LONG).show()
+    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+        runCatching {
+            @Suppress("UNCHECKED_CAST")
+            com.example.data.EconomyServiceClient.call("PREMIUM_GRANT", mapOf("uid" to uid,
+                "days" to days, "extend" to extendExisting))["account"] as Map<String, Any>
+        }.onSuccess { updated ->
+            Toast.makeText(context, com.example.util.appTr("Tiempo premium actualizado"), Toast.LENGTH_SHORT).show()
+            onSuccess(updated)
+        }.onFailure { failure ->
+            onError()
+            Toast.makeText(context, failure.message ?: com.example.util.appTr("No se pudo actualizar Premium. Vuelve a intentarlo."), Toast.LENGTH_LONG).show()
+        }
     }
 }
 
-internal fun removePremiumFromUser(
-    context: Context,
-    uid: String,
-    onSuccess: () -> Unit
-) {
-    val db = FirebaseFirestore.getInstance()
-    val updatePayload = hashMapOf<String, Any>(
-        "premiumUntil" to 0L,
-        "subscriptionPlan" to "Gratuito",
-        "lastModifiedByAdmin" to System.currentTimeMillis()
-    )
-
-    db.collection("users").document(uid)
-        .set(updatePayload, SetOptions.merge())
-        .addOnSuccessListener {
-            Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
-            onSuccess()
-        }
-        .addOnFailureListener { e ->
-            Toast.makeText(context, com.example.util.appTr("Error: ${e.message}"), Toast.LENGTH_LONG).show()
-        }
+internal fun removePremiumFromUser(context: Context, uid: String, onSuccess: () -> Unit) {
+    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+        runCatching { com.example.data.EconomyServiceClient.call("PREMIUM_REMOVE", mapOf("uid" to uid)) }
+            .onSuccess {
+                Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
+                onSuccess()
+            }.onFailure { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
+    }
 }
 
 internal fun updateUserVerification(
@@ -218,49 +200,16 @@ internal fun updateUserRoleInCloud(
         return
     }
 
-    val db = FirebaseFirestore.getInstance()
-    val isBanned = (targetRoleId == "banned")
-    val updatePayload = hashMapOf<String, Any>(
-        "role" to targetRoleId,
-        "banned" to isBanned,
-        "last_role_update" to System.currentTimeMillis()
-    )
-
-    if (isBanned) {
-        updatePayload["bannedTimestamp"] = System.currentTimeMillis()
-        updatePayload["sessionToken"] = ""
-    } else {
-        updatePayload["bannedTimestamp"] = 0L
+    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+        runCatching { com.example.data.EconomyServiceClient.call("ROLE", mapOf("uid" to uid, "role" to targetRoleId)) }
+            .onSuccess { response ->
+                val account = response["account"] as? Map<*, *>
+                val inherited = (account?.get("premiumUntil") as? Number)?.toLong()
+                val roleName = AppUserRole.fromId(targetRoleId).displayName
+                Toast.makeText(context, com.example.util.appTr("Rol actualizado a $roleName"), Toast.LENGTH_SHORT).show()
+                onSuccess(targetRoleId, targetRoleId == "banned", inherited)
+            }.onFailure { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
     }
-
-    val userRef = db.collection("users").document(uid)
-    db.runTransaction { transaction ->
-        val account = transaction.get(userRef)
-        val inherited = com.example.model.PremiumAccessPolicy.deadline(account.get("premiumUntil"))
-        val deadline = com.example.model.PremiumAccessPolicy.deadlineForRole(targetRoleId, inherited, System.currentTimeMillis())
-        if (deadline != inherited && deadline != null) updatePayload["premiumUntil"] = deadline
-        if (targetRoleId == "free") {
-            updatePayload["premiumUntil"] = 0L
-            updatePayload["subscriptionPlan"] = "FREE"
-            if (inherited != null && inherited > 0L) {
-                updatePayload["subscriptionHistory"] = com.google.firebase.firestore.FieldValue.arrayUnion(mapOf(
-                    "id" to "premium_revoked_" + java.util.UUID.randomUUID(),
-                    "timestamp" to System.currentTimeMillis(), "durationMillis" to 0L,
-                    "planName" to "Suscripción Premium retirada", "status" to "Completado",
-                    "amount" to "0", "source" to "ADMIN_REVOCATION"))
-            }
-        }
-        transaction.update(userRef, updatePayload)
-        deadline
-    }
-        .addOnSuccessListener { deadline ->
-            val roleName = AppUserRole.fromId(targetRoleId).displayName
-            Toast.makeText(context, com.example.util.appTr("Rol actualizado a $roleName"), Toast.LENGTH_SHORT).show()
-            onSuccess(targetRoleId, isBanned, deadline)
-        }
-        .addOnFailureListener { e ->
-            Toast.makeText(context, com.example.util.appTr("Error al actualizar rol: ${e.message}"), Toast.LENGTH_LONG).show()
-        }
 }
 
 internal fun updateUserSecondaryRoleInCloud(

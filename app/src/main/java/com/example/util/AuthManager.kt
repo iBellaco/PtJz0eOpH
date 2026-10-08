@@ -51,12 +51,13 @@ object AuthManager {
 
         auth.addAuthStateListener(FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
+            _isAdminClaim.value = false
             _isSignedIn.value = !isGuestOrUnauthenticated(user)
             if (user != null && !isGuestOrUnauthenticated(user)) {
-                user.getIdToken(false).addOnSuccessListener { result ->
+                user.getIdToken(true).addOnSuccessListener { result ->
                     val claims = result.claims
                     val isAdmin = claims["admin"] == true
-                    _isAdminClaim.value = isAdmin
+                    if (firebaseAuth.currentUser?.uid == user.uid) _isAdminClaim.value = isAdmin
                 }.addOnFailureListener {
                     _isAdminClaim.value = false
                 }

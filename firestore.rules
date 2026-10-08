@@ -10,20 +10,7 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.get('auth_time', 0) * 1000 > request.time.toMillis() - 600000;
     }
     function account() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-    function isAdmin() {
-      let acc = account();
-      let role = acc.get('role', '');
-      let sec = acc.get('secondaryRole', '');
-      let border = acc.get('rankBorder', '');
-      return signedIn() && (
-        request.auth.token.get('admin', false) == true ||
-        request.auth.token.get('email', '').lower() == 'barbadiego695@gmail.com' ||
-        acc.get('admin', false) == true ||
-        role in ['admin', 'ADMIN', 'administrador'] ||
-        sec in ['admin', 'ADMIN', 'administrador'] ||
-        border in ['admin', 'ADMIN', 'administrador']
-      );
-    }
+    function isAdmin() { return signedIn() && request.auth.token.get('admin', false) == true; }
     function isModerator() {
       let acc = account();
       let role = acc.get('role', '');
@@ -32,8 +19,7 @@ service cloud.firestore {
       return signedIn() && (
         isAdmin() ||
         role in ['moderador', 'moderator', 'MODERADOR'] ||
-        sec in ['moderador', 'moderator', 'MODERADOR'] ||
-        border in ['moderador', 'moderator', 'MODERADOR']
+        sec in ['moderador', 'moderator', 'MODERADOR']
       );
     }
     function isStreamer() {
@@ -44,8 +30,7 @@ service cloud.firestore {
       return signedIn() && (
         isAdmin() ||
         role in ['streamer', 'STREAMER'] ||
-        sec in ['streamer', 'STREAMER'] ||
-        border in ['streamer', 'STREAMER']
+        sec in ['streamer', 'STREAMER']
       );
     }
     function canRedeem(data) {
@@ -92,64 +77,6 @@ service cloud.firestore {
         && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí.'
         && last.text != 'Hola. El sistema ha recibido tu mensaje. El equipo de Coach te responderá aquí. Ningún miembro del staff te pedirá información privada sobre tu cuenta de juego ni sobre tu vida personal.';
     }
-    function validUsdtWallet(network, wallet) {
-      return network in ['TRC20','ERC20','BEP20'] && wallet is string &&
-        !(wallet.lower() in ['txlaq63xg1nazckpwkhvzw7csemlmeqcdj','0xdac17f958d2ee523a2206206994597c13d831ec7','0x55d398326f99059ff775485246999027b3197955']) &&
-        ((network == 'TRC20' && wallet.matches('T[1-9A-HJ-NP-Za-km-z]{33}')) ||
-         (network != 'TRC20' && wallet.matches('0x[0-9a-fA-F]{40}') && wallet != '0x0000000000000000000000000000000000000000'));
-    }
-    function validBinanceEmail(email) {
-      return email is string && email.size() >= 5 && email.size() <= 254 &&
-        email.matches('[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}');
-    }
-    function validCashDestination(data) {
-      let email = data.get('binanceEmail', '');
-      return (email != '' && validBinanceEmail(email) && data.get('network', '') == '' && data.get('wallet', '') == '') ||
-        (email == '' && validUsdtWallet(data.get('network', ''), data.get('wallet', '')));
-    }
-    function expectedCashFee(data) {
-      let email = data.get('binanceEmail', '');
-      let network = data.get('network', '');
-      return email != '' ? 0 : (network == 'BEP20' ? 1 : (network == 'TRC20' ? 2 : (network == 'ERC20' ? 5 : -1)));
-    }
-    function cashHistoryExpired(data) {
-      let deleteAt = data.get('historyDeleteAtMillis', data.get('resolvedAtMillis', 0) + 1209600000);
-      return data.get('status', '') in ['PAID','REJECTED'] && deleteAt is int && request.time.toMillis() >= deleteAt;
-    }
-    function economyOperation(userId) {
-      return getAfter(/databases/$(database)/documents/users/$(userId)/economy_operations/$(request.resource.data.lastEconomyOperation)).data;
-    }
-    function premiumMillis(data) {
-      let value = data.get('premiumUntil', 0);
-      return value is timestamp ? value.toMillis() : (value is int ? value : 0);
-    }
-    function validEconomyChange(userId) {
-      let op = economyOperation(userId);
-      let oldUntil = premiumMillis(resource.data);
-      let base = oldUntil > op.timestamp ? oldUntil : op.timestamp;
-      let field = op.currency == 'BLUE' ? 'blueEssence' : 'orangeEssence';
-      let days = op.get('plan', '') == 'MONTHLY' ? 30 : 365;
-      let cost = op.kind == 'PREMIUM' ? (op.plan == 'MONTHLY' ? (op.currency == 'BLUE' ? 100 : 9) : (op.currency == 'BLUE' ? 1100 : 95)) : op.cost;
-      let fee = op.kind == 'CASH' ? op.get('fee', -1) : 0;
-      let debit = op.kind == 'CASH' ? cost + fee : cost;
-      return op.userId == userId && op.id == request.resource.data.lastEconomyOperation
-        && !exists(/databases/$(database)/documents/users/$(userId)/economy_operations/$(op.id))
-        && op.createdAt == request.time && op.timestamp is int
-        && op.timestamp >= request.time.toMillis() - 60000 && op.timestamp <= request.time.toMillis() + 60000
-        && !resource.data.get('banned', false) && resource.data.get('role', '') != 'banned' && resource.data.get('secondaryRole', '') != 'banned'
-        && op.cost == cost && request.resource.data[field] == resource.data.get(field, 0) - debit && request.resource.data[field] >= 0
-        && ((op.kind == 'PREMIUM' && op.plan in ['MONTHLY', 'ANNUAL'] && op.currency in ['BLUE', 'ORANGE']
-          && resource.data.get('role', '') != 'admin' && resource.data.get('role', '') != 'moderador' && resource.data.get('secondaryRole', '') != 'moderador'
-          && request.resource.data.premiumUntil == base + days * 86400000 && op.premiumUntil == request.resource.data.premiumUntil
-          && request.resource.data.subscriptionPlan == op.receipt.planName
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([field, 'premiumUntil', 'subscriptionPlan', 'lastEconomyOperation'])) ||
-          (canRedeem(resource.data) && op.kind == 'CASH' && op.currency == 'ORANGE' && cost in [10, 25, 50] && op.usd == cost && validCashDestination(op)
-           && fee == expectedCashFee(op) && op.get('totalCost', -1) == cost + fee
-           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['orangeEssence', 'lastEconomyOperation'])
-           && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.amount == cost
-           && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.fee == fee
-           && getAfter(/databases/$(database)/documents/cash_redemptions/$(op.id)).data.totalDeducted == op.totalCost));
-    }
     match /account_deletions/{userId} {
       function owner() { return request.auth != null && request.auth.uid == userId; }
       function newRequest() {
@@ -175,17 +102,15 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if signedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
-        && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastModifiedByAdmin','lastEconomyOperation'])
+        && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastModifiedByAdmin','lastEconomyOperation','subscribedCreators','creatorSubscriberCount'])
         && request.resource.data.get('blueEssence', 0) == 0 && request.resource.data.get('orangeEssence', 0) == 0
         && request.resource.data.get('registeredDevices', []).size() <= 2;
-      allow update: if isAdmin() || (signedIn() && request.auth.uid == userId
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','premiumUntil','banned','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastModifiedByAdmin','blueEssence','orangeEssence','lastEconomyOperation'])
-        && request.resource.data.get('registeredDevices', []).size() <= 2) ||
-        (signedIn() && request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['blueEssence','orangeEssence'])
-          && request.resource.data.get('blueEssence', 0) >= 0 && request.resource.data.get('orangeEssence', 0) >= 0
-          && request.resource.data.get('blueEssence', 0) <= resource.data.get('blueEssence', 0)
-          && request.resource.data.get('orangeEssence', 0) <= resource.data.get('orangeEssence', 0)) ||
-        (signedIn() && request.auth.uid == userId && validEconomyChange(userId));
+      // Financial state is exclusively written by the trusted service, including staff adjustments.
+      allow update: if signedIn()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blueEssence','orangeEssence','premiumUntil','subscriptionPlan','subscriptionHistory','lastEconomyOperation','subscribedCreators','creatorSubscriberCount'])
+        && (isAdmin() || (request.auth.uid == userId
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','banned','isVerified','verified','admin','lastModifiedByAdmin'])
+          && request.resource.data.get('registeredDevices', []).size() <= 2));
       allow delete: if false;
       match /messages/{messageId} {
         function source() { return getAfter(/databases/$(database)/documents/support_reports/$(messageId)).data; }
@@ -206,53 +131,27 @@ service cloud.firestore {
         allow delete: if signedIn() && request.auth.uid == userId;
       }
       match /economy_operations/{id} {
-        function profile() { return getAfter(/databases/$(database)/documents/users/$(userId)).data; }
         allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
-        allow create: if signedIn() && request.auth.uid == userId && request.resource.data.userId == userId
-          && request.resource.data.id == id && request.resource.data.createdAt == request.time
-          && request.resource.data.keys().hasOnly(['id','userId','kind','plan','currency','cost','premiumUntil','usd','network','wallet','binanceEmail','fee','totalCost','timestamp','createdAt','receipt'])
-          && profile().lastEconomyOperation == id
-          && get(/databases/$(database)/documents/users/$(userId)).data.get('lastEconomyOperation', '') != id
-          && getAfter(/databases/$(database)/documents/users/$(userId)/subscription_history/$(id)).data == request.resource.data.receipt;
-        allow update, delete: if false;
+        allow write: if false;
       }
       match /subscription_history/{id} {
         allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
-        allow create: if isAdmin() || (signedIn() && request.auth.uid == userId
-          && !exists(/databases/$(database)/documents/users/$(userId)/economy_operations/$(id))
-          && request.resource.data == getAfter(/databases/$(database)/documents/users/$(userId)/economy_operations/$(id)).data.receipt);
-        allow update: if isAdmin();
-        allow delete: if false;
+        allow write: if false;
       }
     }
+
     match /{path=**}/messages/{id} { allow read: if isAdmin(); }
     match /{path=**}/subscription_history/{id} { allow read: if isAdmin(); }
     match /{path=**}/history/{id} { allow read: if isAdmin(); }
     match /cash_redemptions/{id} {
-      function op() { return getAfter(/databases/$(database)/documents/users/$(request.auth.uid)/economy_operations/$(id)).data; }
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid
-        && (isAdmin() || canRedeem(account()))
-        && request.resource.data.keys().hasOnly(['id','userId','email','userName','amount','usd','paymentCurrency','network','wallet','binanceEmail','status','requestedAt','requestedAtMillis','fee','totalDeducted'])
-        && request.resource.data.id == id && (request.resource.data.email.lower() == request.auth.token.get('email', '').lower() || request.resource.data.email == '')
-        && request.resource.data.userName == account().get('name', '')
-        && request.resource.data.status == 'PENDING' && request.resource.data.requestedAt == request.time
-        && request.resource.data.amount in [10,25,50] && request.resource.data.usd == request.resource.data.amount
-        && request.resource.data.paymentCurrency == 'USDT'
-        && request.resource.data.network == op().get('network', '') && request.resource.data.wallet == op().get('wallet', '')
-        && request.resource.data.binanceEmail == op().get('binanceEmail', '')
-        && validCashDestination(request.resource.data)
-        && request.resource.data.fee == expectedCashFee(request.resource.data)
-        && request.resource.data.totalDeducted == request.resource.data.amount + request.resource.data.fee
-        && op().kind == 'CASH' && op().cost == request.resource.data.amount
-        && op().get('fee', -1) == request.resource.data.fee && op().get('totalCost', -1) == request.resource.data.totalDeducted
-        && op().timestamp == request.resource.data.requestedAtMillis;
-      allow update: if isAdmin();
-      allow delete: if isAdmin() && cashHistoryExpired(resource.data);
+      allow write: if false;
     }
     match /pending_sponsor_ads/{id} {
-      allow read, update, delete: if isAdmin();
-      allow create: if signedIn() && request.resource.data.sponsorEmail == request.auth.token.email && request.resource.data.isApproved == false;
+      allow read: if isAdmin() || (signedIn() && resource.data.get('userId', '') == request.auth.uid);
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isApproved','isEnabled','approvedAtMillis','expiresAtMillis']);
+      allow create: if false;
+      allow delete: if isAdmin();
     }
     // Avisos públicos y notificaciones generales
     match /app_notices/{noticeId} {

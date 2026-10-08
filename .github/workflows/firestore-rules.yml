@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      bootstrap_email:
+        description: Verified existing owner to migrate to a signed admin claim (optional)
+        required: false
+        type: string
 permissions:
   actions: write
   contents: read
@@ -16,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -27,13 +32,16 @@ jobs:
       - name: Test permissions and concurrent publications
         run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: server/account-deletion
+      - name: Install authoritative economy
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: server/economy
       - name: Test permissions and account deletion integration
         working-directory: tests/firestore
         run: npm test
 
   deploy:
     needs: rules
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +81,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.connection.outputs.available == 'true'
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Install deployment CLI
         if: steps.connection.outputs.method == 'token'
         working-directory: tests/firestore
@@ -82,15 +90,38 @@ jobs:
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         working-directory: server/account-deletion
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install authoritative economy for deployment
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        working-directory: server/economy
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Preserve verified owner access with a signed claim
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        working-directory: server/economy
+        env:
+          COACH_BOOTSTRAP_ADMIN_EMAIL: ${{ inputs.bootstrap_email }}
+        run: node prepare-claims.mjs
+      - name: Install deployment CLI
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        working-directory: tests/firestore
+        run: npm ci --no-audit --no-fund
+      - name: Deploy authoritative economy before restricting clients
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        run: tests/firestore/node_modules/.bin/firebase deploy --only functions:coachEconomy --project wild-rift-drafting --non-interactive
+      - name: Require the active economy and trusted administrator before changing permissions
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        working-directory: server/economy
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          node preflight.mjs
       - name: Publish and read back verified cloud permissions
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         working-directory: server/account-deletion
         run: node publish-permissions.mjs
-      - name: Publish verified cloud permissions
+      - name: Reject legacy token-only activation
         if: steps.connection.outputs.method == 'token'
-        env:
-          FIREBASE_TOKEN: ${{ steps.connection.outputs.method == 'token' && secrets.FIREBASE_TOKEN || '' }}
-        run: tests/firestore/node_modules/.bin/firebase deploy --only firestore:rules,storage --project wild-rift-drafting --non-interactive
+        run: |
+          echo 'A verified server identity is required to migrate signed privileges and financial operations.'
+          exit 1
 
   cleanup-history:
     if: always()

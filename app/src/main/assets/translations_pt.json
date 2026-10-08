@@ -15268,5 +15268,20 @@
   "🤝 SINERGIA DE EQUIPO (+{0})": "⌀ SINERGIA DE EQUIPE (+{0})",
   "🥈 2° Lugar": "🥈 2º Lugar",
   "🥉 3° Lugar": "🥉 3º Lugar",
-  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas)."
+  "🥊 **Mejor Desempeño 1v1 Calculado:** Tu rival más favorable es **{0}** con un **{1}% de Win Rate** ({2}V - {3}D en {4} partidas).": "⌀ ** Melhor Desempenho 1v1 Calculado:** Seu rival mais favorável é **{0}** com um **{1}% de Win Rate** ({2}V - {3}D em {4} partidas).",
+  "El servicio de canjes no está disponible. Vuelve a intentarlo más tarde.": "O serviço de trocas não está disponível. Tente novamente mais tarde.",
+  "No tienes permisos para esta operación": "Você não tem permissão para esta operação",
+  "No se pudo completar la operación. Vuelve a intentarlo.": "Não foi possível concluir a operação. Tente novamente.",
+  "La cuenta tiene una solicitud de eliminación": "A conta tem uma solicitação de exclusão",
+  "La comisión ha cambiado. Revisa el total antes de confirmar.": "A taxa mudou. Confira o total antes de confirmar.",
+  "El costo ha cambiado. Revisa el total antes de confirmar.": "O custo mudou. Confira o total antes de confirmar.",
+  "Un usuario se ha suscrito a tu perfil. Se añadieron {0} EN.": "Um usuário se inscreveu no seu perfil. Foram adicionadas {0} EN.",
+  "Resolución de canje": "Resolução de troca",
+  "Rol actualizado": "Função atualizada",
+  "Envío de anuncios temporalmente no disponible": "Envio de anúncios temporariamente indisponível",
+  "La cuenta no está disponible": "A conta não está disponível",
+  "El creador alcanzó su límite de suscriptores": "O criador atingiu o limite de inscritos",
+  "Se ha realizado un ajuste de {0} en tu saldo.": "Foi feito um ajuste de {0} no seu saldo.",
+  "Suscripción a Creador retirada": "Inscrição no criador removida",
+  "Anuncio enviado a revisión": "Anúncio enviado para análise"
 }

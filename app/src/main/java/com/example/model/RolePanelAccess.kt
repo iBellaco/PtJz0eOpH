@@ -12,8 +12,7 @@ object RolePanelAccess {
 
     fun isAdministrator(role: String, adminClaim: Boolean = false): Boolean =
         role.trim().lowercase(java.util.Locale.ROOT) in setOf("admin", "administrador") ||
-        adminClaim ||
-        com.example.util.AuthManager.getAuth()?.currentUser?.email?.equals("barbadiego695@gmail.com", ignoreCase = true) == true
+        adminClaim
 
     fun canOpen(panel: RolePanel, role: String, secondaryRole: String = "", adminClaim: Boolean = false): Boolean {
         if (isAdministrator(role, adminClaim)) return true

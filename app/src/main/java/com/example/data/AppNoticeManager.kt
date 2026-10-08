@@ -596,7 +596,12 @@ object AppNoticeManager {
      * Registra un nuevo anuncio de patrocinador como pendiente de moderación
      * y lo sincroniza con Firestore para que el administrador pueda verlo.
      */
-    fun submitPendingSponsorNotice(context: Context, notice: AppNotice) {
+    suspend fun submitPendingSponsorNotice(context: Context, notice: AppNotice, expectedCost: Long) {
+        EconomyServiceClient.call("SPONSOR", mapOf("expectedCost" to expectedCost, "notice" to mapOf(
+            "title" to notice.title, "content" to notice.content, "videoUrl" to notice.videoUrl,
+            "expandedImageUrl" to notice.expandedImageUrl, "externalUrl" to notice.externalUrl,
+            "titleColor" to notice.titleColor, "durationValue" to notice.durationValue,
+            "durationUnit" to notice.durationUnit)), notice.id)
         val appContext = context.applicationContext
         val current = _notices.value.toMutableList()
         val existingIndex = current.indexOfFirst { it.id == notice.id }
@@ -614,34 +619,6 @@ object AppNoticeManager {
         }
         _notices.value = current
         saveNoticesToPrefs(appContext, current)
-        pushNoticesToFirestore(appContext, current)
-
-        // Registrar documento individual en colección pending_sponsor_ads para alta disponibilidad
-        try {
-            val db = FirebaseFirestore.getInstance()
-            val map = hashMapOf<String, Any>(
-                "id" to pendingNotice.id,
-                "title" to pendingNotice.title,
-                "content" to pendingNotice.content,
-                "videoUrl" to pendingNotice.videoUrl,
-                "expandedImageUrl" to pendingNotice.expandedImageUrl,
-                "externalUrl" to pendingNotice.externalUrl,
-                "tag" to "PUBLICIDAD",
-                "budget" to pendingNotice.budget,
-                "budgetUnit" to pendingNotice.budgetUnit,
-                "durationValue" to pendingNotice.durationValue,
-                "durationUnit" to pendingNotice.durationUnit,
-                "isApproved" to false,
-                "isEnabled" to false,
-                "sponsorEmail" to pendingNotice.sponsorEmail,
-                "createdAt" to System.currentTimeMillis()
-            )
-            db.collection("pending_sponsor_ads").document(pendingNotice.id)
-                .set(map, SetOptions.merge())
-        } catch (e: Exception) {
-            Log.w(TAG, "Error subiendo anuncio a pending_sponsor_ads: ${e.message}")
-        }
-
         try {
             val prefs = appContext.getSharedPreferences("sponsor_ads_prefs", Context.MODE_PRIVATE)
             val jsonStr = prefs.getString("pending_ads", "[]") ?: "[]"
@@ -805,7 +782,10 @@ object AppNoticeManager {
         // 2. Cargar desde Firestore pending_sponsor_ads
         try {
             val db = FirebaseFirestore.getInstance()
-            val snap = db.collection("pending_sponsor_ads").get().await()
+            val pending = db.collection("pending_sponsor_ads")
+            val uid = com.example.util.AuthManager.getAuth()?.currentUser?.uid ?: return@withContext
+            val snap = (if (com.example.util.AuthManager.isCurrentUserAdmin()) pending
+                else pending.whereEqualTo("userId", uid)).get().await()
             for (doc in snap.documents) {
                 val id = doc.getString("id") ?: doc.id
                 val title = doc.getString("title") ?: "Publicidad"

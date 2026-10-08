@@ -24,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 939
-    versionName = "1.1.10.223"
+    versionCode = 940
+    versionName = "1.1.10.224"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -133,6 +133,7 @@ dependencies {
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.auth)
   implementation(libs.firebase.firestore)
+  implementation("com.google.firebase:firebase-functions")
     implementation(libs.firebase.storage)
   implementation(libs.firebase.appcheck.playintegrity)
   implementation(libs.kotlinx.serialization.json)
