@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -49,7 +50,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         fun screens() = listOf("information", "faq", "onboarding", "tutorial", "home", "catalog", "tier-list",
             "draft", "champion", "matchup", "personal-tier", "login", "register", "recover", "legal", "donation", "exit", "support-form", "support-inbox", "support-reply",
             "support-ticket-pending", "support-ticket-read", "support-ticket-solved", "support-ticket-unknown-date",
-            "support-panel", "support-mailbox")
+            "support-panel", "support-mailbox", "avatars", "avatar-premium", "themes", "theme-premium")
             .map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
@@ -72,6 +73,12 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
+        if (screen == "avatars" || screen == "avatar-premium") {
+            com.example.util.SubscriptionManager.init(context)
+        }
+        if (screen == "themes" || screen == "theme-premium") {
+            com.example.ui.theme.AppThemeManager.setTheme(com.example.ui.theme.AppTheme.PILTOVER, context)
+        }
         if (screen == "support-reply") {
             com.example.data.SupportReplyManager.saveConversation(context, "audit-reply",
                 com.example.data.SupportConversationPolicy.initial("audit-reply", "Tester",
@@ -123,6 +130,8 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             "legal" -> PrivacyPolicyDialog(isMandatoryAcceptance = true, onDismiss = {})
             "donation" -> DonationDialog({})
             "exit" -> ExitConfirmationDialog({}, {})
+            "avatars", "avatar-premium" -> AvatarSelectionBottomSheet({}, {})
+            "themes", "theme-premium" -> ThemeCustomizationBottomSheet(onDismiss = {})
             "support-panel" -> AdminFeedbackBottomSheet({})
             "support-mailbox" -> AdminSupportReportsDialog({})
             "support-form" -> SupportReportDialog({})
@@ -171,6 +180,27 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             compose.waitUntil(15_000) { compose.onAllNodesWithText("Ajuda com o hub").fetchSemanticsNodes().isNotEmpty() }
         }
         inspect("initial")
+        if (screen == "avatar-premium") {
+            val previousAvatar = com.example.util.SubscriptionManager.currentAvatarId.value
+            compose.onNode(hasSetTextAction()).performTextInput("Poro Volibear")
+            compose.onNodeWithTag("avatar_card_poro_volibear").performScrollTo().assertIsDisplayed()
+                .performSemanticsAction(SemanticsActions.OnClick) { it() }
+            inspect("locked")
+            compose.onNodeWithText("Avatar exclusivo Premium").assertExists()
+            compose.onNodeWithText("O Rugido do Trovão", substring = true).assertExists()
+            Assert.assertEquals(previousAvatar, com.example.util.SubscriptionManager.currentAvatarId.value)
+        }
+        if (screen == "theme-premium") {
+            val previousTheme = com.example.ui.theme.AppThemeManager.currentTheme
+            compose.onNodeWithTag("theme_scroll").performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 10_000f) }
+            compose.onNodeWithText("Águas de Sentina").assertIsDisplayed()
+                .performSemanticsAction(SemanticsActions.OnClick) { it() }
+            compose.onNodeWithTag("theme_apply_button").performScrollTo().assertIsDisplayed()
+                .performSemanticsAction(SemanticsActions.OnClick) { it() }
+            inspect("locked")
+            compose.onNodeWithText("Tema exclusivo Premium").assertExists()
+            Assert.assertEquals(previousTheme, com.example.ui.theme.AppThemeManager.currentTheme)
+        }
         if (screen == "onboarding" || screen == "tutorial") {
             repeat(3) { page ->
                 compose.onNodeWithText("Seguinte").performClick()

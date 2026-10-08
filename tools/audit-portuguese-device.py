@@ -88,12 +88,15 @@ size = re.search(r"(\d+)x(\d+)", adb("shell", "wm", "size"))
 WIDTH, HEIGHT = map(int, size.groups())
 
 
-def scroll():
-    adb("shell", "input", "swipe", str(WIDTH // 2), str(HEIGHT * 3 // 4), str(WIDTH // 2), str(HEIGHT // 3), "450")
+def scroll(direction="down"):
+    start, end = HEIGHT * 3 // 4, HEIGHT // 3
+    if direction == "up":
+        start, end = end, start
+    adb("shell", "input", "swipe", str(WIDTH // 2), str(start), str(WIDTH // 2), str(end), "450")
     time.sleep(0.6)
 
 
-def tap(label, scrolling=0):
+def tap(label, scrolling=0, scroll_direction="down"):
     labels = (label,) if isinstance(label, str) else tuple(label)
     for attempt in range(max(10, scrolling + 1)):
         nodes = app_nodes(window())
@@ -116,7 +119,7 @@ def tap(label, scrolling=0):
                     time.sleep(0.8)
                     return
         if attempt < scrolling:
-            scroll()
+            scroll(scroll_direction)
         else:
             time.sleep(1)
     snapshot("missing-" + str(len(screens)))
@@ -167,6 +170,14 @@ if MODE in ("pt", "both"):
         snapshot("onboarding-" + str(page + 1))
         tap("Seguinte" if page < 3 else "Começar agora!")
     snapshot("home")
+    tap("🎨")
+    snapshot("themes-portuguese")
+    tap("Águas de Sentina", scrolling=6)
+    snapshot("theme-preview-portuguese")
+    tap("Aplicar", scrolling=6, scroll_direction="up")
+    snapshot("theme-premium-portuguese")
+    tap("Entendido")
+    back()
     tap("Informação")
     snapshot("information")
     for page in range(3):
@@ -179,7 +190,7 @@ if MODE in ("pt", "both"):
     tap("Entendido")
     # FAQ returns directly to the dashboard; a second Back opens the exit dialog.
     back()
-    for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
+    for tab in ["Seleção", "Classificação", "Catálogo", "Usuário"]:
         tap(tab)
         snapshot("dashboard-" + tab)
         if tab == "Seleção":
@@ -189,7 +200,7 @@ if MODE in ("pt", "both"):
             texts = [n.get("text", "") for n in app_nodes(window())]
             if any("Melhor Opção segundo" in text for text in texts):
                 raise AssertionError("Empty draft must not show team recommendations")
-        if tab == "Tier List":
+        if tab == "Classificação":
             tap("Entrar ou cadastrar-se", scrolling=3)
             snapshot("tier-login")
             tap("Cadastre-se", scrolling=3)
@@ -261,7 +272,15 @@ if MODE in ("es", "both"):
         snapshot('onboarding-' + str(page + 1))
         tap('Siguiente' if page < 3 else '¡Comenzar ahora!')
     snapshot('home-spanish')
-    for tab in ['Selección', 'Tier List', 'Catálogo', 'Usuario']:
+    tap('🎨')
+    snapshot('themes-spanish')
+    tap('Aguas Estancadas', scrolling=6)
+    snapshot('theme-preview-spanish')
+    tap('Aplicar', scrolling=6, scroll_direction='up')
+    snapshot('theme-premium-spanish')
+    tap('Entendido')
+    back()
+    for tab in ['Selección', 'Clasificación', 'Catálogo', 'Usuario']:
         tap(tab)
         snapshot('dashboard-' + tab)
     tap('Catálogo')

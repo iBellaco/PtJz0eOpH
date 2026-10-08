@@ -2,7 +2,7 @@
 
 ## Estado de la intervención
 
-Cambios preparados sobre la versión 1.1.10.218. Esta revisión todavía no está validada como entrega instalable ni fusionada en main. GitHub rechazó con HTTP 403 la creación del Secret COACH_GOOGLE_SERVICES_JSON desde la conexión disponible: Resource not accessible by integration. Esta conexión no creó el Secret. Posteriormente, el run 37703349630 de Actions confirmó que COACH_GOOGLE_SERVICES_JSON ya estaba disponible: ambos trabajos consumidores completaron su restauración y validación. No se atribuye su creación a esta conexión; la compilación y las comprobaciones del APK continúan antes de declarar una entrega validada.
+La versión 1.1.10.219 se validó, fusionó y publicó. Este documento conservaba por error un estado previo a la entrega; se corrige en la revisión 220. El propietario confirma haber creado COACH_GOOGLE_SERVICES_JSON. La conexión recibió HTTP 403 al intentar crearlo, pero ese rechazo no es un fallo actual del Secret: el run 37703548670 restauró correctamente la configuración en los dos trabajos consumidores y aprobó la compilación y la validación instalada en ES/PT. El run 37706124268 publicó el APK de la misma fuente validada. PR 64, commit de entrega b7abd56707f4a013f7f7556a5782270860eb7a3c; versión 1.1.10.219, build 935, paquete instalado com.Coach. APK SHA-256: b4f39c0287647c65f13dbc08ef54dfcda326a72ad8f09710f3839c9b2ea939b1. La validación documentada comprende las pantallas examinadas; no demuestra que todos los textos de la aplicación estén traducidos.
 
 ## Hallazgos contrastados con el repositorio actual
 
@@ -37,9 +37,9 @@ Archivos principales después de dividirlos: MetaAndDraftScreen.kt, 782 líneas;
 
 ## Límites y riesgos pendientes
 
-- La conexión de GitHub no ofrece acceso a la gestión de Secrets; la creación por esta conexión fue rechazada. Actions sí confirmó posteriormente que el Secret ya está disponible y válido. El archivo existente se preparó fuera del repositorio y no está versionado.
+- El rechazo de la creación desde esta conexión es histórico. El propietario creó el Secret y Actions confirmó su disponibilidad y validez; no está pendiente volver a crearlo. El archivo local privado no está versionado.
 - Retirar los valores del workflow no los borra de commits ni registros históricos. La configuración cliente continúa incluida en el APK y no sustituye las reglas de acceso. No se rotaron claves ni se reescribió el historial.
-- La refactorización requiere compilación, pruebas de pantallas y validación del APK antes de fusionar o publicar. La primera compilación detectó una colisión de nombres al compartir un auxiliar y una constante Java inválida al dejar una propiedad opcional vacía. Se corrigen ambas antes de repetir las verificaciones. No se afirma que esas verificaciones hayan pasado por tener sintaxis válida.
+- La refactorización se compiló y validó antes de publicar. La primera compilación detectó una colisión de nombres al compartir un auxiliar y una constante Java inválida al dejar una propiedad opcional vacía. Se corrigieron ambas antes de las comprobaciones finales aprobadas: 138 pruebas de núcleo, 303 de pantallas, APK release con 1249 clases renombradas por R8 y recorridos instalados de 36 pantallas ES y 39 PT, más cinco casos controlados de eliminación de cuenta.
 - La autorización de Riot y la aceptación de Google Play siguen sin estar acreditadas; esta limpieza no las concede. La auditoría legal previa y su guía siguen aplicando.
 - Un nombre extraño no restringe el acceso a un repositorio público. No se cambió su visibilidad ni se eliminó el repositorio.
 

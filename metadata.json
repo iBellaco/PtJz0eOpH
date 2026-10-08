@@ -1,6 +1,6 @@
 {
   "name": "Coach",
-  "description": "Wild Rift Drafting Coach",
+  "description": "Coach para la selección de campeones de Wild Rift",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

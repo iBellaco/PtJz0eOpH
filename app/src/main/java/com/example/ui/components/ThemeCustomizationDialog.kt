@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,6 +76,8 @@ fun ThemeCustomizationBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.92f)
+                .verticalScroll(rememberScrollState())
+                .testTag("theme_scroll")
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -481,7 +484,7 @@ fun ThemeCustomizationBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = tr("Para personalizar y aplicar los temas visuales oficiales de League of Legends: Wild Rift (Jonia, Noxus, Zaun, Piltover, Shurima, Freljord, etc.) necesitas una suscripción Premium activa."),
+                        text = tr("Para aplicar estos temas de Coach inspirados en las regiones de Runaterra necesitas una suscripción Premium activa. No son temas oficiales ni acreditan aprobación de Riot Games."),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
@@ -649,7 +652,7 @@ private fun RegionVisualPreviewGridCard(
 
             // Section: Visual Swatch Grid (Primary & Secondary Focus)
             Text(
-                text = tr("Muestrario de Colores Oficiales:"),
+                text = tr("Paleta de colores del tema:"),
                 color = inspectedTheme.textPrimary,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold
@@ -711,10 +714,9 @@ private fun RegionVisualPreviewGridCard(
                     .border(1.dp, inspectedTheme.cardBorder, RoundedCornerShape(10.dp))
                     .padding(10.dp)
             ) {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         // Mini mock icon
@@ -750,7 +752,7 @@ private fun RegionVisualPreviewGridCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = com.example.util.tr("Sinergia S+ / Tier Soberano"),
+                                    text = com.example.util.tr("Sinergia S+ / Nivel Soberano"),
                                     color = inspectedTheme.secondary,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -761,6 +763,7 @@ private fun RegionVisualPreviewGridCard(
 
                     // Apply Action Button inside Preview (with Premium alert badge on the left when non-premium)
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
@@ -769,6 +772,8 @@ private fun RegionVisualPreviewGridCard(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(Brush.horizontalGradient(listOf(HextechGold, Color(0xFFD4AF37))))
+                                    .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                                    .testTag("theme_premium_notice_button")
                                     .coachClickable { onShowPremiumAlert() }
                                     .padding(horizontal = 6.dp, vertical = 5.dp)
                             ) {
@@ -791,13 +796,15 @@ private fun RegionVisualPreviewGridCard(
                         }
 
                         HextechAnimatedButton(
-                            onClick = onApply,
+                            onClick = {
+                                if (!isPremium && !isApplied) onShowPremiumAlert() else onApply()
+                            },
                             backgroundColor = if (isApplied) inspectedTheme.surfaceVariant else inspectedTheme.primary,
                             borderColor = if (isApplied) inspectedTheme.secondary else inspectedTheme.primaryGlow,
                             glowColor = if (isApplied) inspectedTheme.secondary else inspectedTheme.primary,
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                            modifier = Modifier.height(34.dp),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("theme_apply_button"),
                             scaleDown = 0.92f,
                             enableShimmer = !isApplied
                         ) {
@@ -811,6 +818,7 @@ private fun RegionVisualPreviewGridCard(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = tr("Aplicado"),
+                                    maxLines = 1,
                                     color = inspectedTheme.secondary,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -825,6 +833,7 @@ private fun RegionVisualPreviewGridCard(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = tr("Aplicar"),
+                                    maxLines = 1,
                                     color = inspectedTheme.background,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold

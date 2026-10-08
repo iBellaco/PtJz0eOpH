@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -410,8 +411,11 @@ fun AvatarSelectionBottomSheet(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .coachClickable(enabled = canEquip || isEquipped) {
-                                if (isEquipped) {
+                            .testTag("avatar_card_${avatar.id}")
+                            .coachClickable(enabled = !isUpdating) {
+                                if (!canEquip && !isEquipped) {
+                                    showPremiumRequiredDialog = avatar
+                                } else if (isEquipped) {
                                     Toast.makeText(context, com.example.util.appTr("Este avatar ya está equipado."), Toast.LENGTH_SHORT).show()
                                 } else {
                                     isUpdating = true

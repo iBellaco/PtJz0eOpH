@@ -67,11 +67,11 @@
     <string name="legal_utilizamos_infraestructura_en_la_nube_con_servidores_seguros_y_ba" formatted="false">Las funciones de cuenta utilizan proveedores de autenticación, almacenamiento y comprobación de seguridad. Algunos contenidos enlazan a fuentes de estadísticas, canales y sitios externos. Solo se envían los datos necesarios para cada función o los que decidas compartir. Los recursos publicados anteriormente sin una titularidad verificable o en servicios ajenos pueden requerir revisión y solicitud de retirada al proveedor; contacta a privacidad si te afectan.</string>
     <string name="legal_4_bibliotecas_de_codigo_abierto_open_source" formatted="false">4. Bibliotecas y condiciones de uso</string>
     <string name="legal_esta_aplicacion_utiliza_componentes_de_software_libre_licenciados" formatted="false">Coach utiliza componentes de Android, Kotlin y otros proveedores, incluidas herramientas de Google para reconocimiento de texto y seguridad. Cada componente conserva su licencia o sus términos correspondientes. No todos los componentes están sujetos a la misma licencia. La disponibilidad pública del código del proyecto no concede derechos sobre los recursos de Riot ni sobre componentes de terceros.</string>
-    <string name="onboarding_coach_de_elite_draft" formatted="false">Coach de Élite &amp; Draft</string>
+    <string name="onboarding_coach_de_elite_draft" formatted="false">Coach para la selección</string>
     <string name="onboarding_analisis_tactico_en_tiempo_real" formatted="false">Análisis Táctico en Tiempo Real</string>
     <string name="onboarding_selecciona_composiciones_optimas_con_evaluacion_para_los_5_roles" formatted="false">Selecciona composiciones óptimas con evaluación para los 5 roles de Wild Rift, sinergias de equipo, detección de counters y condición de victoria.</string>
-    <string name="onboarding_recomendador_de_3_mejores_picks" formatted="false">Recomendador de 3 mejores picks</string>
-    <string name="onboarding_wombo_combos_y_balance_de_dano" formatted="false">Wombo combos y balance de daño</string>
+    <string name="onboarding_recomendador_de_3_mejores_picks" formatted="false">Recomendación de tres campeones</string>
+    <string name="onboarding_wombo_combos_y_balance_de_dano" formatted="false">Combinaciones de equipo y equilibrio de daño</string>
     <string name="onboarding_condicion_de_victoria_del_equipo" formatted="false">Condición de victoria del equipo</string>
     <string name="onboarding_asistente_flotante_en_juego" formatted="false">Asistente Flotante en Juego</string>
     <string name="onboarding_burbuja_flotante_vision_ocr" formatted="false">Burbuja Flotante &amp; Visión OCR</string>
@@ -79,10 +79,10 @@
     <string name="onboarding_burbuja_flotante_movible" formatted="false">Burbuja flotante movible</string>
     <string name="onboarding_escaner_visual_de_seleccion" formatted="false">Escáner visual de selección</string>
     <string name="onboarding_consejos_tacticos_sin_cambiar_de_app" formatted="false">Consejos tácticos sin cambiar de app</string>
-    <string name="onboarding_tier_list_oficial" formatted="false">Tier List Oficial</string>
-    <string name="onboarding_meta_global_y_counters" formatted="false">Meta Global y Counters</string>
-    <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulta la Tier List oficial actualizada al último parche y descubre los mejores picks para asegurar tu ventaja en cada partida.</string>
-    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Tier List global y de servidores asiáticos</string>
+    <string name="onboarding_tier_list_oficial" formatted="false">Clasificación comunitaria</string>
+    <string name="onboarding_meta_global_y_counters" formatted="false">Análisis global y enfrentamientos</string>
+    <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulta clasificaciones comunitarias y recomendaciones del catálogo. La información puede estar desactualizada y no garantiza el resultado de una partida.</string>
+    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Consulta de fuentes globales</string>
     <string name="onboarding_identificacion_de_mejores_picks_del_meta" formatted="false">Identificación de mejores picks del meta</string>
     <string name="onboarding_analisis_de_enfrentamientos_directos" formatted="false">Análisis de enfrentamientos directos</string>
     <string name="onboarding_ventajas_suscripcion_premium" formatted="false">Ventajas &amp; Suscripción Premium</string>

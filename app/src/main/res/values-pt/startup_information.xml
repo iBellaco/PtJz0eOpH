@@ -71,7 +71,7 @@
     <string name="onboarding_analisis_tactico_en_tiempo_real" formatted="false">Análise Tática em Tempo Real</string>
     <string name="onboarding_selecciona_composiciones_optimas_con_evaluacion_para_los_5_roles" formatted="false">Selecione composições ideais com avaliação para as 5 funções do Wild Rift, sinergias de equipe, detecção de vantagens nos confrontos e condição de vitória.</string>
     <string name="onboarding_recomendador_de_3_mejores_picks" formatted="false">Recomendação das 3 melhores escolhas</string>
-    <string name="onboarding_wombo_combos_y_balance_de_dano" formatted="false">Wombo combos e equilíbrio de dano</string>
+    <string name="onboarding_wombo_combos_y_balance_de_dano" formatted="false">Combinações de equipe e equilíbrio de dano</string>
     <string name="onboarding_condicion_de_victoria_del_equipo" formatted="false">Condição de vitória da equipe</string>
     <string name="onboarding_asistente_flotante_en_juego" formatted="false">Assistente Flutuante em Jogo</string>
     <string name="onboarding_burbuja_flotante_vision_ocr" formatted="false">Bolha Flutuante &amp; Visão OCR</string>
@@ -79,10 +79,10 @@
     <string name="onboarding_burbuja_flotante_movible" formatted="false">Bolha flutuante móvel</string>
     <string name="onboarding_escaner_visual_de_seleccion" formatted="false">Leitura visual da seleção</string>
     <string name="onboarding_consejos_tacticos_sin_cambiar_de_app" formatted="false">Dicas táticas sem trocar de app</string>
-    <string name="onboarding_tier_list_oficial" formatted="false">Tier List oficial</string>
+    <string name="onboarding_tier_list_oficial" formatted="false">Classificação comunitária</string>
     <string name="onboarding_meta_global_y_counters" formatted="false">Meta Global e Vantagens nos confrontos</string>
-    <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulte a Tier List oficial atualizada para o última atualização e descubra as melhores escolhas para garantir sua vantagem em cada partida.</string>
-    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Tier List global e de servidores asiáticos</string>
+    <string name="onboarding_consulta_la_tier_list_oficial_actualizada_al_ultimo_parche_y_desc" formatted="false">Consulte classificações comunitárias e recomendações do catálogo. As informações podem estar desatualizadas e não garantem o resultado de uma partida.</string>
+    <string name="onboarding_tier_list_global_y_de_servidores_asiaticos" formatted="false">Consulta de fontes globais</string>
     <string name="onboarding_identificacion_de_mejores_picks_del_meta" formatted="false">Identificação das melhores escolhas do meta</string>
     <string name="onboarding_analisis_de_enfrentamientos_directos" formatted="false">Análise de confrontos diretos</string>
     <string name="onboarding_ventajas_suscripcion_premium" formatted="false">Vantagens &amp; Assinatura Premium</string>

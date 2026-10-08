@@ -85,6 +85,27 @@ class LocalizationSurfaceTest {
         compose.onAllNodesWithText(original).assertCountEquals(2)
         compose.onAllNodesWithText("Curação e Escudos").assertCountEquals(0)
     }
+    @Test fun `avatar catalog follows language changes without reopening`() {
+        compose.setContent { com.example.ui.theme.MyApplicationTheme { com.example.ui.components.AvatarSelectionBottomSheet({}, {}) } }
+        compose.onNodeWithText("Avatares Exclusivos de League of Legends").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "pt-BR") }
+        compose.onNodeWithText("Avatares exclusivos de League of Legends").assertExists()
+        compose.onNodeWithText("Poro Guardião").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "es-419") }
+        compose.onNodeWithText("Avatares Exclusivos de League of Legends").assertExists()
+        compose.onNodeWithText("Poro Guardián").assertExists()
+    }
+
+    @Test fun `theme catalog follows language changes without reopening`() {
+        compose.setContent { com.example.ui.theme.MyApplicationTheme { com.example.ui.components.ThemeCustomizationBottomSheet(onDismiss = {}) } }
+        compose.onNodeWithText("Personalización de Temas").assertExists()
+        compose.runOnIdle { AppLanguage.select(context, "pt") }
+        compose.onNodeWithText("Personalização de Temas").assertExists()
+        compose.onNodeWithText("Personalización de Temas").assertDoesNotExist()
+        compose.runOnIdle { AppLanguage.select(context, "es") }
+        compose.onNodeWithText("Personalización de Temas").assertExists()
+    }
+
     @Test fun `FAQ screen updates its actual questions and headings immediately`() {
         compose.setContent {
             val language by AppLanguage.current.collectAsState()
