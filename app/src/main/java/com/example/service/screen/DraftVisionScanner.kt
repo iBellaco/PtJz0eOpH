@@ -424,10 +424,6 @@ object DraftVisionScanner {
         val defaultRolesList = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
         val currentScanFrameOcrLanes = mutableMapOf<Int, LaneRole>()
         val previousLanes = allySlotOcrLaneCache.toMap()
-        val previousAssignments = allySlotRolesCache.toMap()
-        val previousChampions = allySlotConfirmedChampions.mapIndexedNotNull { i, champ ->
-            champ?.let { i to it }
-        }.toMap()
         val freshAllyChampions = mutableMapOf<Int, Champion>()
 
         // Calibración adaptativa multipantalla para cualquier relación de aspecto (16:9, 18:9, 19.5:9, 20:9, 21:9, tablets)
@@ -446,7 +442,7 @@ object DraftVisionScanner {
         val allyOcrChampions = Array<Champion?>(5) { null }
         val enemyOcrChampions = Array<Champion?>(5) { null }
         val textDiagnosticsList = mutableListOf<TextBlockDiagnostic>()
-        val targetedAllyChampions = Array<Champion?>(5) { null }
+        val targetedAllyReadings = Array(5) { AllyDraftNameReader.Reading() }
         val targetedEnemyChampions = Array<Champion?>(5) { null }
 
         // -----------------------------------------------------------------------------------------
@@ -492,6 +488,11 @@ object DraftVisionScanner {
                     }
                     scaled = Bitmap.createScaledBitmap(crop, (crop.width * 3).coerceAtMost(1400), (crop.height * 3).coerceAtMost(420), true)
                     val slotText = recognizer.process(InputImage.fromBitmap(scaled, 0)).await()
+                    if (isAlly) {
+                        targetedAllyReadings[i] = AllyDraftNameReader.readTitleRows(slotText.textBlocks.flatMap { it.lines }.map {
+                            it.text to (it.boundingBox?.centerY() ?: scaled.height / 2)
+                        }, (scaled.height * 0.30f).toInt(), allChamps)
+                    }
                     val centerY = scaled.height / 2
                     val candidates = slotText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
                         ChampionNameResolver.findChampionInText(line.text, allChamps)?.let { candidate ->
@@ -501,7 +502,7 @@ object DraftVisionScanner {
                     // Conflicting champion names inside one band are not a confirmed pick.
                     val best = candidates.takeIf { it.map { c -> c.first.id }.distinct().size == 1 }
                         ?.minByOrNull { it.second }?.first
-                    if (isAlly) targetedAllyChampions[i] = best else targetedEnemyChampions[i] = best
+                    if (!isAlly) targetedEnemyChampions[i] = best
                 } catch (_: Throwable) {
                     // A missing cropped reading is a gap, not a fabricated champion.
                 } finally {
@@ -718,107 +719,28 @@ object DraftVisionScanner {
 
                 var detectedRoleInSlot: LaneRole? = null
                 var detectedChampInSlot: Champion? = null
-                var isSlotShowingLane = false
                 val summonerCandidates = mutableListOf<String>()
 
+                val titleRect = AdaptiveScreenLayoutEngine.calculateSlotNameRect(width, height, true, i, calib)
+                val titleLines = entries.filter { (_, box) -> box != null && titleRect.contains(box.centerX(), box.centerY()) }
+                    .map { it.first to it.second!!.centerY() }
+                val isolated = targetedAllyReadings[i]
+                val reading = if (isolated.ambiguous || isolated.lane != null || isolated.champion != null) isolated
+                    else AllyDraftNameReader.readTitleRows(titleLines, (titleRect.height() * 0.30f).toInt(), allChamps)
+                detectedRoleInSlot = reading.lane
+                detectedChampInSlot = reading.champion
+                if (detectedRoleInSlot != null) {
+                    currentScanFrameOcrLanes[i] = detectedRoleInSlot
+                    slot.explicitRole = detectedRoleInSlot
+                }
+                if (detectedChampInSlot != null) freshAllyChampions[i] = detectedChampInSlot
                 if (entries.isNotEmpty()) {
-                    // En Wild Rift (Lado Aliado): cada slot muestra [ICONO_MAESTRIA_O_ROL] + [VALOR].
-                    // REGLA CRÍTICA DEL USUARIO:
-                    // 1) Si dice el nombre de su calle (ej. "Calle del Barón", "Calle Central", "Calle del Dragón", "Jungla", "Soporte"),
-                    //    ese es el carril 100% correcto de este slot.
-                    // 2) Si aún se visualiza el nombre de la calle, es que el jugador TODAVÍA NO HA SELECCIONADO campeón.
-                    //    Bajo ninguna circunstancia debe bloquearse un campeón en este slot mientras el nombre de la calle siga visible.
-                    // 3) Cuando ya NO diga el nombre de la calle y en su lugar aparezca el nombre del campeón, entonces se bloquea ese slot con ese campeón.
-                    
-                    // Un campeón visible tiene prioridad sobre cualquier etiqueta de línea del mismo recorte.
-                    if (detectedChampInSlot == null) for ((line, box) in entries) {
-                        if (DraftValidationLayer.isNoiseText(line)) continue
-                        val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
-                        val role = DraftValidationLayer.parseRoleFromText(strippedLine)
-                            ?: DraftValidationLayer.parseRoleFromText(line)
-
-                        if (role != null) {
-                            detectedRoleInSlot = role
-                            isSlotShowingLane = true
-                            slot.explicitRole = role
-                            currentScanFrameOcrLanes[i] = role
-
-                            // Al estar visible el nombre de la calle, el slot está 100% sin campeón seleccionado
-                            detectedChampInSlot = null
-                            allySlotConfirmedChampions[i] = null
-                            allySlotNameConfirmed[i] = false
-                            allyOcrChampions[i] = null
-                            slot.champion = null
-                            slot.confidencePercent = 0
-                            slot.isLikelyUnpicked = true
-                            allySlotFilters[i].reset()
-
-                            textDiagnosticsList.add(
-                                TextBlockDiagnostic(
-                                    text = line,
-                                    rect = box ?: Rect(0, 0, 10, 10),
-                                    isAlly = true,
-                                    slotIndex = i,
-                                    tag = "CALLE: ${role.shortName} (En Selección)",
-                                    color = android.graphics.Color.CYAN
-                                )
-                            )
-                            AppLogger.d(TAG, "OCR Aliado Slot $i -> Calle visible en pantalla: ${role.shortName} (Aún no ha seleccionado)")
-                            break
-                        }
-                    }
-
-                    // PASO 2: Solo si NO se detectó ningún nombre de calle visible en el slot, buscar nombre de campeón
-                    if (detectedRoleInSlot == null && detectedChampInSlot == null) {
-                        for ((line, box) in entries) {
-                            if (DraftValidationLayer.isNoiseText(line)) continue
-                            val strippedLine = DraftValidationLayer.stripLeadingMasteryOrRoleIcon(line)
-
-                            val matchedChamp = ChampionNameResolver.findChampionInText(strippedLine, allChamps)
-                                ?: ChampionNameResolver.findChampionInText(line, allChamps)
-
-                            if (matchedChamp != null) {
-                                detectedChampInSlot = matchedChamp
-                                freshAllyChampions[i] = matchedChamp
-                                isSlotShowingLane = false
-                                textDiagnosticsList.add(
-                                    TextBlockDiagnostic(
-                                        text = line,
-                                        rect = box ?: Rect(0, 0, 10, 10),
-                                        isAlly = true,
-                                        slotIndex = i,
-                                        tag = "CAMPEÓN: ${matchedChamp.name}",
-                                        color = android.graphics.Color.GREEN
-                                    )
-                                )
-                                AppLogger.d(TAG, "OCR Aliado Slot $i -> Nombre de calle desapareció, campeón bloqueado: ${matchedChamp.name}")
-                                break
-                            }
-                        }
-                    }
-
-                    if (detectedRoleInSlot == null) {
-                        val fullScreenChampion = detectedChampInSlot
-                        detectedChampInSlot = preferFullScreenAllyChampion(fullScreenChampion, targetedAllyChampions[i])
-                        if (fullScreenChampion == null && detectedChampInSlot != null) {
-                            freshAllyChampions[i] = detectedChampInSlot!!
-                            AppLogger.d(TAG, "OCR Aliado Slot $i -> usando OCR dirigido solo como respaldo: ${detectedChampInSlot!!.name}")
-                        }
-                    }
-
-                    if (detectedChampInSlot != null) {
-                        isSlotShowingLane = false
-                    } else if (detectedRoleInSlot != null) {
-                        isSlotShowingLane = true
-                    }
-
                     // 3. ANALIZAR NOMBRE DE INVOCADOR / TAG DE USUARIO:
                     for ((line, box) in entries) {
                         val safeBox = box ?: Rect(0, 0, 10, 10)
                         if (DraftValidationLayer.isNoiseText(line)) continue
 
                         val lineNorm = DraftValidationLayer.normalize(line).lowercase(Locale.ROOT)
-                        val lineCompressed = lineNorm.replace(" ", "")
 
                         // DETECCIÓN INFALIBLE DEL SLOT DEL USUARIO EN WILD RIFT:
                         // 1) En Wild Rift, el indicador/botón "Porcentaje de victorias..." ("Taxa de vit...", "Win rate...")
@@ -831,21 +753,10 @@ object DraftVisionScanner {
                             lineNorm.contains("win rate") ||
                             lineNorm.contains("winrate")
 
-                        // 2) Nombre de invocador conocido del usuario (ej: Diego / D I E G O / barbadiego):
-                        val isUserNameMatch = lineCompressed == "diego" ||
-                            lineCompressed.contains("diego") ||
-                            currentUserNameClean.any { it.length >= 3 && (lineCompressed == it || lineCompressed.contains(it)) }
-
-                        // 3) Indicadores canónicos de Riot ("Tú", "You", "Você"):
-                        val isExplicitTag = lineNorm == "tu" || lineNorm == "(tu)" || lineNorm == "you" || lineNorm == "(you)" ||
-                            lineNorm == "voce" || lineNorm == "(voce)" ||
-                            lineNorm.startsWith("(tu) ") || lineNorm.endsWith(" (tu)") ||
-                            lineNorm.startsWith("(you) ") || lineNorm.endsWith(" (you)") ||
-                            lineNorm.contains(" tú ") || lineNorm.contains("(tú)") ||
-                            lineNorm.contains("( tu )") || lineNorm.contains("[tu]") || lineNorm.contains("[tú]") ||
-                            lineNorm.contains("( you )") || lineNorm.contains("[you]")
-
-                        val isUserTag = !isLegendaryRanked && (isWinRateIndicator || isUserNameMatch || isExplicitTag)
+                        val selfMarker = AllyDraftNameReader.identifiesUser(line, emptyList())
+                        val isPlayerNameLine = box != null && box.centerY() > height * (calib.allySlotYRatios[i] - 0.01f)
+                        val isUserTag = !isLegendaryRanked && (selfMarker ||
+                            (isPlayerNameLine && AllyDraftNameReader.identifiesUser(line, currentUserNameClean)))
 
                         if (isUserTag) {
                             userSlotIndex = i
@@ -959,66 +870,31 @@ object DraftVisionScanner {
                     }
                 }
             }
-            val championsBySlot = allySlots.mapNotNull { slot ->
-                slot.champion?.let { slot.slotIndex to it }
-            }.toMap()
-            val rememberedRoles = AllyDraftReconciler.rememberedRoles(
-                currentScanFrameOcrLanes, previousLanes, championsBySlot, previousChampions
-            )
-            val resolvedRoles = AllyDraftReconciler.resolveRoles(
-                championsBySlot, rememberedRoles, previousAssignments,
-                allySlots.filter { slot ->
-                    slot.summonerSpells.any { it.equals("Castigo", true) || it.equals("Smite", true) }
-                }.map { it.slotIndex }.toSet()
-            )
+            val resolvedRoles = AllyDraftReconciler.observedRoles(currentScanFrameOcrLanes, previousLanes)
             allySlotOcrLaneCache.clear()
-            allySlotOcrLaneCache.putAll(rememberedRoles)
+            allySlotOcrLaneCache.putAll(resolvedRoles)
             allySlotRolesCache.clear()
             allySlotRolesCache.putAll(resolvedRoles)
             for (slot in allySlots) slot.explicitRole = resolvedRoles[slot.slotIndex]
 
-            // Si se detectó el slot del usuario (marcado con "(TÚ)", "Porcentaje de victorias" o nombre), asignar su rol; si no, preservar el rol activo del usuario
+            // Solo identidad observada y línea del mismo puesto pueden confirmar tu línea.
+            if (currentScanFrameOcrLanes.size == 5) cachedUserSlotIndex = null
             if (userSlotIndex != null) {
                 cachedUserSlotIndex = userSlotIndex
             } else if (cachedUserSlotIndex != null) {
                 userSlotIndex = cachedUserSlotIndex
                 userExplicitlyConfirmed = true
-            } else if (currentActiveRole != null) {
-                // Si el usuario tiene seleccionado un rol y coincide con el rol de un slot, vincular temporalmente
-                val matchingSlot = allySlots.indexOfFirst { it.explicitRole == currentActiveRole || allySlotRolesCache[it.slotIndex] == currentActiveRole }
-                if (matchingSlot != -1) {
-                    userSlotIndex = matchingSlot
-                    cachedUserSlotIndex = matchingSlot
-                    userExplicitlyConfirmed = false
-                }
             }
 
             val uIdx = userSlotIndex
             if (uIdx != null && uIdx in 0..4) {
-                var explicitRole = allySlots[uIdx].explicitRole ?: allySlotRolesCache[uIdx]
-                // Si aún no tenía rol explícito, comprobar si el campeón seleccionado tiene un rol primario (ej: Galio -> MID)
-                if (explicitRole == null) {
-                    val champ = allySlots[uIdx].champion ?: allySlotConfirmedChampions[uIdx] ?: allyOcrChampions[uIdx]
-                    if (champ != null) {
-                        explicitRole = champ.primaryRole
-                        allySlots[uIdx].explicitRole = explicitRole
-                        allySlotRolesCache[uIdx] = explicitRole
-                    }
-                }
+                val explicitRole = allySlotOcrLaneCache[uIdx] ?: allySlotRolesCache[uIdx]
                 if (explicitRole != null) {
                     userDetectedLane = explicitRole
                     AppLogger.d(TAG, "Rol de usuario confirmado explícitamente en Slot $uIdx -> ${userDetectedLane.shortName}")
                 } else {
-                    // Si el slot aliado tiene Castigo/Smite, asignar Jungla
-                    val hasSmite = allySlots[uIdx].summonerSpells.any { it.equals("Castigo", ignoreCase = true) || it.equals("Smite", ignoreCase = true) }
-                    if (hasSmite) {
-                        userDetectedLane = LaneRole.JUNGLE
-                        allySlots[uIdx].explicitRole = LaneRole.JUNGLE
-                        allySlotRolesCache[uIdx] = LaneRole.JUNGLE
-                    } else {
-                        // Preservar el rol previamente seleccionado por el usuario en lugar de forzar TOP/default
-                        userDetectedLane = currentActiveRole ?: allySlotRolesCache[uIdx]
-                    }
+                    userExplicitlyConfirmed = false
+                    userDetectedLane = currentActiveRole
                 }
             } else if (currentActiveRole != null) {
                 userDetectedLane = currentActiveRole
@@ -1133,7 +1009,7 @@ object DraftVisionScanner {
             val roiRect = Rect(startX, startY, startX + avatarDiameter, startY + avatarDiameter)
 
             val ocrChamp = allyOcrChampions[i]
-            val roleForSlot = allySlotRolesCache[i] ?: defaultRolesList[i]
+            val roleForSlot = allySlotRolesCache[i]
             val isUnpicked = (slot.champion == null && allySlotConfirmedChampions[i] == null)
 
             val finalChamp = allySlotFilters[i].process(ocrChamp, isUnpicked = isUnpicked, persistentCache = allySlotConfirmedChampions[i])
@@ -1152,9 +1028,9 @@ object DraftVisionScanner {
 
             val diagStatus = if (finalChamp != null) DiagnosticStatus.CONFIRMADO else DiagnosticStatus.VACIO
             val diagReason = if (finalChamp != null) {
-                "Campeón confirmado por nombre OCR: ${finalChamp.name} -> ${roleForSlot.shortName}"
+                "Campeón confirmado por nombre OCR: ${finalChamp.name} -> ${roleForSlot?.shortName ?: "Línea pendiente"}"
             } else {
-                "Esperando selección en carril ${roleForSlot.shortName} (${allySummonerNamesCache[i] ?: "Invocador"})"
+                "Esperando selección en carril ${roleForSlot?.shortName ?: "Línea pendiente"} (${allySummonerNamesCache[i] ?: "Invocador"})"
             }
 
             val diagnostic = SlotDiagnostic(
@@ -1386,7 +1262,7 @@ object DraftVisionScanner {
 
         for (i in 0..4) {
             val slot = allySlots[i]
-            val role = allySlotRolesCache[i] ?: slot.explicitRole ?: slot.assignedRole ?: defaultRolesList[i]
+            val role = allySlotRolesCache[i] ?: continue
             slot.assignedRole = role
             slot.explicitRole = role
             val champ = slot.champion
@@ -1457,11 +1333,11 @@ object DraftVisionScanner {
         allyRolesBySlotFlow.value = allySlotRolesCache.toMap()
         debugVisualMatches.value = visualMatches
 
-        val allyChampsList = alliesMap.values.toList()
+        val allyChampsList = alliesBySlotMap.values.distinctBy { it.id }
         val enemyChampsList = finalEnemiesMap.values.toList()
         val total = allyChampsList.size + enemyChampsList.size
 
-        val hasDraftActivity = total > 0 || allySummonerNamesCache.isNotEmpty() || userDetectedLane != null || detectedFirstPick != null || isLegendaryRanked || isPreparationPhase
+        val hasDraftActivity = total > 0 || currentScanFrameOcrLanes.isNotEmpty() || allySummonerNamesCache.isNotEmpty() || userDetectedLane != null || detectedFirstPick != null || isLegendaryRanked || isPreparationPhase
 
         val statusMsg = when {
             isLegendaryRanked && total == 0 -> "Clasificatoria Legendaria (Nombres anónimos)"

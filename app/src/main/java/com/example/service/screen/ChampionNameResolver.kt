@@ -236,6 +236,27 @@ object ChampionNameResolver {
     }
 
     // Encuentra el campeón correspondiente a una línea de texto OCR con validación anti-falsos positivos estricta
+    /** Whole title only: never extract a champion token from a player's nickname. */
+    fun findChampionInNameBand(text: String, allChampions: List<Champion>): Champion? {
+        val title = text.replace(Regex("\\s*\\((?:tu|tú|you|você|voce)\\)\\s*$", RegexOption.IGNORE_CASE), "")
+        val normalized = normalize(title).trim()
+        val variants = linkedSetOf(normalized)
+        val mastery = Regex("^(?:m\\d{1,2}|lvl?\\d{1,2}|(?:maestria|mastery|nivel|level)\\s*\\d{1,2}|[ivxlcdm]{1,4}|[wvykutxnhodcljfpsza0-9])\\s+")
+        variants.add(normalized.replace(mastery, ""))
+        variants.add(normalized.replace(Regex("^(?:m\\d{1,2}|lvl?\\d{1,2})"), ""))
+        val compact = normalizeCompact(title)
+        if (compact.length > 3 && compact.first() in "wvykutxnhodcljfpsza0123456789") variants.add(compact.drop(1))
+        for (variant in variants) {
+            val key = normalizeCompact(variant)
+            val id = if (key in setOf("vl", "v1")) "vi" else
+                KNOWN_CHAMPIONS_MAP[variant] ?: KNOWN_CHAMPIONS_MAP[key]
+            allChampions.firstOrNull { champion ->
+                (id != null && champion.id == id) || key == normalizeCompact(champion.name) || key == normalizeCompact(champion.id)
+            }?.let { return it }
+        }
+        return null
+    }
+
     fun findChampionInText(text: String, allChampions: List<Champion>): Champion? {
         val trimmed = text.trim()
         if (trimmed.isBlank() || trimmed.length < 2) return null

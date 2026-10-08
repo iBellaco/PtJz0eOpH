@@ -9,6 +9,7 @@ import androidx.compose.foundation.border
 import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -64,25 +65,29 @@ internal fun BuildMatchupList(
         colors = CardDefaults.cardColors(containerColor = HextechSurface),
         border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.5f))
     ) {
-        Column(Modifier.fillMaxWidth().padding(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        BoxWithConstraints(Modifier.fillMaxWidth().padding(2.dp)) {
+        val portraitSize = (maxWidth / 3 - 2.dp).coerceIn(12.dp, 28.dp)
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+            Column(Modifier.fillMaxWidth()) {
                 Text("$title (${rows.sumOf { it.size }})", color = accent,
-                    fontWeight = FontWeight.Bold, fontSize = if (compact) 12.sp else 13.sp)
-                if (!premium) Text("PRO 12", color = HextechGold, fontSize = 10.sp)
+                    fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                if (!premium) Text("PRO 12", color = HextechGold, fontSize = 9.sp)
             }
             rows.forEachIndexed { index, row ->
                 Row(Modifier.fillMaxWidth().testTag("build_matchup_${group}_row_$index"),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)) {
                     row.forEach { target ->
                         val champion = resolveTargetChampion(target)
                         val name = champion?.getLocalizedName(language) ?: tr(target)
-                        Box(Modifier.weight(1f).widthIn(min = 48.dp).heightIn(min = 48.dp)
+                        // clickable expands the touch bounds to Compose's 48dp minimum
+                        // without reserving 48dp of visible width for every portrait.
+                        Box(Modifier.weight(1f).heightIn(min = 48.dp)
                             .testTag("build_matchup_name_$group")
                             .semantics { contentDescription = name }
                             .coachClickable { onShowName(name) },
                             contentAlignment = Alignment.Center) {
                             if (champion != null) ChampionAvatar(champion = champion,
-                                size = if (compact) 32.dp else 36.dp,
+                                size = portraitSize,
                                 showTierBadge = false, borderColor = accent)
                             else Text(tr(target), color = TextPrimary, fontSize = 11.sp,
                                 textAlign = TextAlign.Center)
@@ -91,6 +96,7 @@ internal fun BuildMatchupList(
                     repeat(3 - row.size) { Spacer(Modifier.weight(1f).height(48.dp)) }
                 }
             }
+        }
         }
     }
 }

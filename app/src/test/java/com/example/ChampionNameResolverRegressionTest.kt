@@ -59,6 +59,8 @@ class ChampionNameResolverRegressionTest {
             for (text in listOf(champion.name, champion.name.uppercase(java.util.Locale.ROOT))) {
                 assertEquals("Incorrect champion identity for $text", champion,
                     ChampionNameResolver.findChampionInText(text, catalog))
+                assertEquals("Incorrect full title identity for $text", champion,
+                    ChampionNameResolver.findChampionInNameBand(text, catalog))
             }
             assertEquals("file:///android_asset/champions/${champion.id}.png", champion.avatarUrl)
             val bitmap = context.assets.open("champions/${champion.id}.png").use { BitmapFactory.decodeStream(it) }

@@ -20,24 +20,20 @@ object AllyDraftReconciler {
         val proposals = mutableMapOf<Int, LaneRole>()
         for (slot in 0..4) {
             if (slot in visible) continue
-            val champion = champions[slot]
-            val oldSlot = champion?.let { champ ->
-                previousChampions.entries.singleOrNull { it.value.id == champ.id }?.key
-            }
-            val previousOccupant = previousChampions[slot]
-            val occupantMoved = previousOccupant != null && champions.any {
-                it.key != slot && it.value.id == previousOccupant.id
-            }
-            val role = when {
-                oldSlot != null -> previousLanes[oldSlot]
-                occupantMoved -> null
-                else -> previousLanes[slot]
-            }
+            // A lane belongs to the player's slot, including when champions are
+            // exchanged. Champion identity cannot move or replace that evidence.
+            val role = previousLanes[slot]
             if (role != null && role !in visible.values) proposals[slot] = role
         }
         val rememberedCounts = proposals.values.groupingBy { it }.eachCount()
         resolved.putAll(proposals.filterValues { rememberedCounts[it] == 1 })
         return resolved.toMap()
+    }
+
+    fun observedRoles(visible: Map<Int, LaneRole>, previous: Map<Int, LaneRole>): Map<Int, LaneRole> {
+        val known = rememberedRoles(visible, previous)
+        // Four distinct observed lanes determine the remaining slot uniquely.
+        return if (known.size == 4) known + ((0..4).single { it !in known } to roles.single { it !in known.values }) else known
     }
 
     fun resolveRoles(
@@ -80,13 +76,15 @@ object AllyDraftReconciler {
     fun hudAllies(
         current: List<Champion?>,
         scannedByRole: Map<LaneRole, Champion>,
-        lockedIndices: Set<Int>
+        lockedIndices: Set<Int>,
+        observedRoles: Set<LaneRole> = roles.toSet()
     ): List<Champion?> {
         val lockedIds = lockedIndices.mapNotNull { current.getOrNull(it)?.id }.toSet()
         val used = lockedIds.toMutableSet()
         return roles.mapIndexed { index, role ->
             if (index in lockedIndices) current.getOrNull(index)
-            else scannedByRole[role]?.takeIf { used.add(it.id) }
+            else if (role in observedRoles) scannedByRole[role]?.takeIf { used.add(it.id) }
+            else current.getOrNull(index)?.takeIf { it.id !in scannedByRole.values.map { c -> c.id } && used.add(it.id) }
         }
     }
 }

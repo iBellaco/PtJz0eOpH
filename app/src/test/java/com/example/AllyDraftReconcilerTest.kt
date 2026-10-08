@@ -63,14 +63,36 @@ class AllyDraftReconcilerTest {
     }
 
     @Test
-    fun selectedChampionsCarryRememberedLanesWhenTheyExchangeScreenPositions() {
+    fun championExchangeKeepsThePlayersObservedSlotLanes() {
         val previous = mapOf(0 to sett, 4 to senna)
         val current = mapOf(0 to senna, 4 to sett)
         val remembered = AllyDraftReconciler.rememberedRoles(
             emptyMap(), mapOf(0 to LaneRole.TOP, 4 to LaneRole.SUPPORT), current, previous
         )
-        assertEquals(mapOf(0 to LaneRole.SUPPORT, 4 to LaneRole.TOP), remembered)
+        assertEquals(mapOf(0 to LaneRole.TOP, 4 to LaneRole.SUPPORT), remembered)
         assertUnique(AllyDraftReconciler.resolveRoles(current, remembered))
+    }
+
+    @Test fun observedLaneSurvivesOffMetaChampionSelection() {
+        val observed = mapOf(0 to LaneRole.JUNGLE, 1 to LaneRole.ADC, 2 to LaneRole.MID, 3 to LaneRole.TOP, 4 to LaneRole.SUPPORT)
+        assertEquals(observed, AllyDraftReconciler.observedRoles(emptyMap(), observed))
+        val selected = mapOf(LaneRole.JUNGLE to senna, LaneRole.ADC to sett)
+        val hud = AllyDraftReconciler.hudAllies(List(5) { null }, selected, emptySet(), observed.values.toSet())
+        assertEquals(senna, hud[1])
+        assertEquals(sett, hud[3])
+    }
+
+    @Test fun missingInitialLaneIsPendingRatherThanAssignedFromChampionAffinity() {
+        assertEquals(emptyMap<Int, LaneRole>(), AllyDraftReconciler.observedRoles(emptyMap(), emptyMap()))
+        val known = mapOf(0 to LaneRole.SUPPORT, 1 to LaneRole.ADC, 2 to LaneRole.MID, 3 to LaneRole.TOP)
+        assertEquals(known + (4 to LaneRole.JUNGLE), AllyDraftReconciler.observedRoles(known, emptyMap()))
+        assertEquals(mapOf(0 to LaneRole.ADC), AllyDraftReconciler.observedRoles(mapOf(0 to LaneRole.ADC), emptyMap()))
+    }
+
+    @Test fun partialObservationUpdatesKnownRoleWithoutErasingUnobservedHudRows() {
+        val current = listOf(sett, null, null, smolder, senna)
+        val result = AllyDraftReconciler.hudAllies(current, mapOf(LaneRole.ADC to senna), emptySet(), setOf(LaneRole.ADC))
+        assertEquals(listOf(sett, null, null, senna, null), result)
     }
 
     @Test
