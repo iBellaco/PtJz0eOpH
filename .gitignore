@@ -15,10 +15,11 @@
 .cxx
 local.properties
 .env
+# Local credentials and signing material never belong in source control.
+secrets.properties
 *.keystore
 *.jks
 *.base64
-secrets.properties
 gha-creds-*.json
 *.attach_pid*
 venv/
@@ -38,20 +39,18 @@ __pycache__/
 # Generated client configuration and one-off root repair files are local only.
 /google-services.json
 /app/google-services.json
-/fix_*.py
-/fix_*.sh
-/fix_*.js
-/patch_*.py
-/patch_*.sh
-/patch_*.js
-/update_*.py
-/update_*.js
-/temp_*.kt
-/temp_*.py
-/temp_*.js
+/fix_*
+/patch_*
+/update_*
+/temp_*
 /all_missing_keys.json
 /clean_missing_pt.json
 /filtered_ui_missing.json
 /missing_strings_full.json
 /pt_translations_bulk.json
 /untranslated_strings.txt
+
+# Keep the Gradle wrapper available in fresh clones.
+!/gradlew
+!/gradlew.bat
+!/gradle/wrapper/gradle-wrapper.jar
