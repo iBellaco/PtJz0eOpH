@@ -107,7 +107,7 @@ class BuildElementAdviceTest {
         assertTrue(exhaust.contains("Zed") || exhaust.contains("Akali"))
         assertTrue(barrier.contains("Syndra") || barrier.contains("Lux"))
         assertNotEquals(exhaust, barrier)
-        assertTrue(exhaust.contains("reduce su daño"))
+        assertTrue(exhaust.contains("lánzalo antes de su ráfaga principal"))
         assertFalse(exhaust.contains("Mapas aplicables:"))
         assertFalse(barrier.contains("Mapas aplicables:"))
     }
