@@ -491,7 +491,8 @@ object DraftVisionScanner {
                     if (isAlly) {
                         targetedAllyReadings[i] = AllyDraftNameReader.readTitleRows(slotText.textBlocks.flatMap { it.lines }.map {
                             it.text to (it.boundingBox?.centerY() ?: scaled.height / 2)
-                        }, (scaled.height * 0.30f).toInt(), allChamps)
+                        }, (scaled.height * 0.30f).toInt(), allChamps,
+                            ((height * (calib.allySlotYRatios[i] - 0.01f) - nameRect.top) * scaled.height / nameRect.height()).toInt())
                     }
                     val centerY = scaled.height / 2
                     val candidates = slotText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
@@ -726,7 +727,8 @@ object DraftVisionScanner {
                     .map { it.first to it.second!!.centerY() }
                 val isolated = targetedAllyReadings[i]
                 val reading = if (isolated.ambiguous || isolated.lane != null || isolated.champion != null) isolated
-                    else AllyDraftNameReader.readTitleRows(titleLines, (titleRect.height() * 0.30f).toInt(), allChamps)
+                    else AllyDraftNameReader.readTitleRows(titleLines, (titleRect.height() * 0.30f).toInt(), allChamps,
+                        (height * (calib.allySlotYRatios[i] - 0.01f)).toInt())
                 detectedRoleInSlot = reading.lane
                 detectedChampInSlot = reading.champion
                 if (detectedRoleInSlot != null) {

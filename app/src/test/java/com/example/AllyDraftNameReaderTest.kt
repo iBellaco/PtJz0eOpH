@@ -48,6 +48,7 @@ class AllyDraftNameReaderTest {
         assertEquals("pantheon", AllyDraftNameReader.readTitleRows(listOf("PANTHEON" to 0, "YUUMI" to 25), 10, catalog).champion?.id)
         assertEquals(LaneRole.JUNGLE, AllyDraftNameReader.readTitleRows(listOf("JUNGLA" to 0, "JINX" to 25), 10, catalog).lane)
         assertNull(AllyDraftNameReader.readTitleRows(listOf("???" to 0, "JINX" to 25), 10, catalog).champion)
+        assertNull(AllyDraftNameReader.readTitleRows(listOf("JINX" to 25), 10, catalog, titleMaxCenterY = 10).champion)
         assertEquals(LaneRole.TOP, AllyDraftNameReader.readTitleRows(listOf("CALLE DEL" to 0, "BARÓN" to 15), 10, catalog).lane)
     }
 }

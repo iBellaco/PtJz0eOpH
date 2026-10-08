@@ -7,15 +7,17 @@ import com.example.model.LaneRole
 object AllyDraftNameReader {
     data class Reading(val lane: LaneRole? = null, val champion: Champion? = null, val ambiguous: Boolean = false)
 
-    fun readTitleRows(lines: List<Pair<String, Int>>, rowDistance: Int, catalog: List<Champion>): Reading {
-        val top = lines.minOfOrNull { it.second } ?: return Reading()
-        val title = lines.filter { it.second <= top + rowDistance }.map { it.first }
+    fun readTitleRows(lines: List<Pair<String, Int>>, rowDistance: Int, catalog: List<Champion>,
+        titleMaxCenterY: Int = Int.MAX_VALUE): Reading {
+        val titleLines = lines.filter { it.second <= titleMaxCenterY }
+        val top = titleLines.minOfOrNull { it.second } ?: return Reading()
+        val title = titleLines.filter { it.second <= top + rowDistance }.map { it.first }
         val reading = read(title, catalog)
         if (reading.ambiguous || reading.lane != null || reading.champion != null) return reading
         // A long lane title may wrap. A player's second-line name cannot become
         // the selected champion when the first line was unreadable.
         if (title.any { Regex("\\b(calle|carril|linea|rota|lane)\\b").containsMatchIn(DraftValidationLayer.normalize(it)) }) {
-            return Reading(lane = laneTitle(lines.sortedBy { it.second }.joinToString(" ") { it.first }))
+            return Reading(lane = laneTitle(titleLines.sortedBy { it.second }.joinToString(" ") { it.first }))
         }
         return Reading()
     }
