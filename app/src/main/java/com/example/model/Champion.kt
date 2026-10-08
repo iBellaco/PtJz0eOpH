@@ -111,7 +111,7 @@ data class Champion(
     val winrateDelta: Double = 0.0, // vs. ayer (+0.3%, -0.2%)
     val pickRateDelta: Double = 0.0,
     val banRateDelta: Double = 0.0,
-    val cnTier: String = "", // T0, T1, T2, T3 en servidor chino
+    val cnTier: String = "", // Legacy serialized field; no longer populated or used by synchronization.
     val damageType: DamageType = DamageType.PHYSICAL,
     val summary: String = "",
     val advantageAgainst: List<String> = emptyList(),

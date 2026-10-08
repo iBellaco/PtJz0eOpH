@@ -17,7 +17,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
-import com.example.data.sync.ChineseMetaSyncService
+import com.example.data.sync.GlobalMetaSyncService
 import com.example.service.MetaScrapingWorker
 import com.example.util.AppLogger
 import com.example.util.DynamicTranslations
@@ -93,7 +93,7 @@ open class WildRiftApp : Application(), ImageLoaderFactory {
         }
 
         try {
-            ChineseMetaSyncService.loadRegion(this)
+            GlobalMetaSyncService.loadRegion(this)
         } catch (e: Exception) {
             AppLogger.e("WildRiftApp", "Error inicializando región de meta", e)
         }
