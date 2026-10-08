@@ -4,7 +4,7 @@ package com.example.model
 object PremiumAccessPolicy {
     const val DAY_MILLIS = 86_400_000L
     fun isLifetime(role: String, secondary: String = "", adminClaim: Boolean = false): Boolean =
-        role != "banned" && secondary != "banned" && (RolePanelAccess.isAdministrator(role, adminClaim) || role == "moderador" || secondary == "moderador")
+        role != "banned" && secondary != "banned" && (adminClaim || role in setOf("admin", "administrador", "moderador") || secondary == "moderador")
 
     fun isActive(role: String, until: Long?, now: Long = System.currentTimeMillis(), secondary: String = "", adminClaim: Boolean = false, banned: Boolean = false, granted: Boolean = false): Boolean =
         !banned && role != "banned" && secondary != "banned" && (isLifetime(role, secondary, adminClaim) || (until != null && until > now))

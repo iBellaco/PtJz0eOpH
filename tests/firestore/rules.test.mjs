@@ -119,7 +119,22 @@ try {
       await assertFails(getDocs(collection(forged,'users')));
       await assertFails(setDoc(doc(forged,'system_config/admin-test'),{value:true}));
     }
-    await assertSucceeds(getDocs(collection(db('claim-without-profile',{admin:true}),'users')));
+    await assertFails(getDocs(collection(db('claim-without-profile',{admin:true}),'users')));
+  });
+  await test('suspended staff cannot retain administrative or moderator access',async()=>{
+    await env.withSecurityRulesDisabled(async context=>{
+      const store=context.firestore();
+      await updateDoc(doc(store,'users/admin'),{banned:true});
+      await updateDoc(doc(store,'users/mod'),{secondaryRole:'banned'});
+    });
+    await assertFails(getDocs(collection(admin,'users')));
+    await assertFails(getDoc(doc(admin,'cash_redemptions/cash-ten')));
+    await assertFails(getDoc(doc(moderator,'support_reports/staff-suspension-check')));
+    await env.withSecurityRulesDisabled(async context=>{
+      const store=context.firestore();
+      await updateDoc(doc(store,'users/admin'),{banned:false});
+      await updateDoc(doc(store,'users/mod'),{secondaryRole:''});
+    });
   });
   await test('owner and staff cannot credit, debit or edit entitlements and memberships directly',async()=>{
     for(const store of [economy,admin]) for(const change of [{orangeEssence:0},{blueEssence:0},{orangeEssence:1000000},{premiumUntil:Date.now()+86400000},{subscriptionPlan:'FREE'},{subscriptionHistory:[]},{lastEconomyOperation:'forged_operation'},{subscribedCreators:['another-user']},{creatorSubscriberCount:0}]) await assertFails(updateDoc(doc(store,'users/economy'),change));
@@ -594,6 +609,8 @@ try {
     await assertFails(setDoc(doc(env.unauthenticatedContext().firestore(),'economy_requests/guest'),command()));
   });
   await test('a pending request cannot be replaced; a server-confirmed request can be followed by another', async()=>{
+    await assertFails(setDoc(doc(user,'economy_requests/user'),command({action:'PURCHASE',id:'queue_test_0002',plan:'ANNUAL',currency:'BLUE'})));
+    await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'economy_requests/user'),{status:'REVIEW',reviewReason:'UNCONFIRMED'});});
     await assertFails(setDoc(doc(user,'economy_requests/user'),command({action:'PURCHASE',id:'queue_test_0002',plan:'ANNUAL',currency:'BLUE'})));
     await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'economy_requests/user'),{status:'COMPLETED',result:{ok:true}});});
     await assertSucceeds(setDoc(doc(user,'economy_requests/user'),command({action:'PURCHASE',id:'queue_test_0002',plan:'ANNUAL',currency:'BLUE'})));

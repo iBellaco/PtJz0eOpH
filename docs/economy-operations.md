@@ -19,6 +19,7 @@ La existencia del código, un resultado de emulator o un workflow configurado no
 - Intentar cobrar desde una sesión sin permisos, suspendida o pendiente de eliminación. No debe aparecer un movimiento.
 - Rechazar dos veces un canje: un único reembolso. Una solicitud resuelta no cambia de pagada a rechazada ni viceversa.
 - Revisar español y portugués, pagos a creadores y anuncios. Un error de conexión no se anuncia como éxito ni concede una suscripción local.
+- Si una solicitud pasa a «requiere revisión», consultar primero el recibo y el movimiento originales en la consola privada. Después ejecutar manualmente **Private economy service → Run workflow** con `review_unconfirmed` activado: el procesador reutiliza exactamente el mismo identificador y vuelve a validar permisos y saldo. No crear una segunda solicitud ni marcar éxito sin el recibo confirmado. Si el servicio sigue fallando, la solicitud permanece en revisión y el titular ve ese estado.
 
 ## Revisión especializada pendiente
 

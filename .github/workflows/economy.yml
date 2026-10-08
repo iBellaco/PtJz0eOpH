@@ -6,6 +6,12 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+    inputs:
+      review_unconfirmed:
+        description: Recheck requests marked for manual review using their original IDs
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
   actions: write
@@ -28,6 +34,8 @@ jobs:
           credentials_json: ${{ secrets.COACH_FIREBASE_SERVICE_ACCOUNT || secrets.FIREBASE_SERVICE_ACCOUNT }}
       - name: Process private requests with the trusted server identity
         working-directory: server/economy
+        env:
+          COACH_REVIEW_PENDING: ${{ inputs.review_unconfirmed || 'false' }}
         run: node worker.mjs
   cleanup-history:
     if: always()

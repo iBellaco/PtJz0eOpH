@@ -10,12 +10,17 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.get('auth_time', 0) * 1000 > request.time.toMillis() - 600000;
     }
     function account() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-    function isAdmin() { return signedIn() && request.auth.token.get('admin', false) == true; }
+    function activeStaffAccount() {
+      let acc = account();
+      return acc.get('banned', false) == false && acc.get('role', '') != 'banned'
+        && acc.get('secondaryRole', '') != 'banned';
+    }
+    function isAdmin() { return signedIn() && request.auth.token.get('admin', false) == true && activeStaffAccount(); }
     function isModerator() {
       let acc = account();
       let role = acc.get('role', '');
       let sec = acc.get('secondaryRole', '');
-      return signedIn() && (
+      return signedIn() && activeStaffAccount() && (
         isAdmin() ||
         role in ['moderador', 'moderator', 'MODERADOR'] ||
         sec in ['moderador', 'moderator', 'MODERADOR']
@@ -25,7 +30,7 @@ service cloud.firestore {
       let acc = account();
       let role = acc.get('role', '');
       let sec = acc.get('secondaryRole', '');
-      return signedIn() && (
+      return signedIn() && activeStaffAccount() && (
         isAdmin() ||
         role in ['streamer', 'STREAMER'] ||
         sec in ['streamer', 'STREAMER']

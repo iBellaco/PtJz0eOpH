@@ -269,13 +269,16 @@ class RuntimeBehaviorTest {
 
     @Test fun `administrators have every role panel including a trusted claim`() {
         for (panel in RolePanel.entries) {
-            assertTrue(panel.name, RolePanelAccess.canOpen(panel, "admin"))
+            assertEquals(panel.name, panel == RolePanel.CREATOR, RolePanelAccess.canOpen(panel, "admin"))
             assertTrue(panel.name, RolePanelAccess.canOpen(panel, "free", adminClaim = true))
             assertEquals(panel.name, panel == RolePanel.CREATOR, RolePanelAccess.canOpen(panel, "free"))
         }
         assertTrue(RolePanelAccess.canOpen(RolePanel.STREAMER, "free", "streamer"))
         assertFalse(RolePanelAccess.canOpen(RolePanel.ADMINISTRATION, "moderador"))
         assertFalse(RolePanelAccess.canOpen(RolePanel.SPONSOR, "streamer"))
+        assertFalse(RolePanelAccess.canOpen(RolePanel.ADMINISTRATION, "banned", adminClaim = true))
+        assertFalse(RolePanelAccess.canOpen(RolePanel.MODERATION, "free", "banned", true))
+        assertFalse(RolePanelAccess.canCreateBuild("free", "banned", true))
     }
 
     @Test fun `only administrator test mode accepts the exact Google HTTPS home page`() {
@@ -450,10 +453,12 @@ class RuntimeBehaviorTest {
             assertTrue(RolePanelAccess.canOpen(RolePanel.CREATOR, role))
             assertFalse(RolePanelAccess.canCreateBuild(role))
         }
-        for (role in listOf("creador", "creador_lvl2", "creador_lvl5", "streamer", "moderador", "admin")) {
+        for (role in listOf("creador", "creador_lvl2", "creador_lvl5", "streamer", "moderador")) {
             assertTrue(RolePanelAccess.canCreateBuild(role))
-            if (role != "admin") assertTrue(RolePanelAccess.canCreateBuild("free", role))
+            assertTrue(RolePanelAccess.canCreateBuild("free", role))
         }
+        assertFalse(RolePanelAccess.canCreateBuild("admin"))
+        assertTrue(RolePanelAccess.canCreateBuild("admin", adminClaim = true))
         assertFalse(RolePanelAccess.canOpen(RolePanel.CREATOR, "guest"))
         assertFalse(RolePanelAccess.canCreateBuild("banned", "streamer"))
     }

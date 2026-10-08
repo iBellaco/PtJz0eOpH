@@ -6,6 +6,11 @@ service firebase.storage {
       // Immutable owner and path protect the deletion worker from forged ownership.
       allow create: if request.auth != null && request.auth.uid == userId
         && request.auth.token.email != 'coach.guest.reader@gmail.com'
+        && firestore.exists(/databases/(default)/documents/users/$(userId))
+        && firestore.get(/databases/(default)/documents/users/$(userId)).data.get('banned', false) == false
+        && firestore.get(/databases/(default)/documents/users/$(userId)).data.get('role', '') != 'banned'
+        && firestore.get(/databases/(default)/documents/users/$(userId)).data.get('secondaryRole', '') != 'banned'
+        && request.resource.size > 0 && request.resource.size <= 20 * 1024 * 1024
         && request.resource.metadata.uploaderUid == userId
         && request.resource.contentType == 'video/mp4';
       allow update, delete: if false;

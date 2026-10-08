@@ -15,16 +15,31 @@ import com.example.util.appTr
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.MetadataChanges
+import kotlinx.coroutines.delay
 import java.text.DateFormat
 
 private data class RequestView(val request: Map<String, Any>? = null, val loading: Boolean = true,
-    val unavailable: Boolean = false, val cached: Boolean = false, val target: String = "")
+    val unavailable: Boolean = false, val cached: Boolean = false, val target: String = "",
+    val serviceCheckedAt: Long? = null, val serviceObservedAt: Long = 0)
 
 @Composable
 private fun observeRequest(): RequestView {
     val user = AuthManager.getAuth()?.currentUser
     val uid = user?.uid.takeUnless { AuthManager.isGuestOrUnauthenticated(user) }
     var state by remember(uid) { mutableStateOf(RequestView(loading = uid != null)) }
+    var serviceCheckedAt by remember(uid) { mutableStateOf<Long?>(null) }
+    var serviceObservedAt by remember(uid) { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(uid) {
+        while (uid != null) { delay(60_000L); serviceObservedAt = System.currentTimeMillis() }
+    }
+    DisposableEffect(uid) {
+        val listener = uid?.let { FirebaseFirestore.getInstance().collection("system_config").document("economy_service")
+            .addSnapshotListener { snapshot, error ->
+                serviceCheckedAt = if (error != null || snapshot?.getBoolean("enabled") != true) 0L
+                    else snapshot.getTimestamp("checkedAt")?.toDate()?.time ?: 0L
+            } }
+        onDispose { listener?.remove() }
+    }
     DisposableEffect(uid) {
         val listener = uid?.let { FirebaseFirestore.getInstance().collection("economy_requests").document(it)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
@@ -44,7 +59,7 @@ private fun observeRequest(): RequestView {
             } else null
         onDispose { listener?.remove() }
     }
-    return state.copy(target = targetName)
+    return state.copy(target = targetName, serviceCheckedAt = serviceCheckedAt, serviceObservedAt = serviceObservedAt)
 }
 
 @Composable
@@ -53,29 +68,33 @@ fun EconomyPendingStatus(alwaysVisible: Boolean = false) {
     if (AuthManager.isGuestOrUnauthenticated(user)) return
     val state = observeRequest()
     var details by remember(user.uid) { mutableStateOf(false) }
-    val pending = state.request?.get("status") in setOf("PENDING", "PROCESSING")
+    val pending = state.request?.get("status") in setOf("PENDING", "PROCESSING", "REVIEW")
     if (alwaysVisible || pending || state.request != null || state.unavailable) {
         CoachOutlinedButton(onClick = { details = true }, modifier = Modifier.fillMaxWidth()
             .padding(bottom = 8.dp).heightIn(min = 48.dp).testTag("economy_request_open")) {
             Text(appTr(if (pending) "Ver solicitud en espera" else "Solicitudes"))
         }
     }
-    if (details) EconomyRequestDetails(state.request, state.loading, state.unavailable, state.cached, state.target) { details = false }
+    if (details) EconomyRequestDetails(state.request, state.loading, state.unavailable, state.cached, state.target,
+        state.serviceCheckedAt, state.serviceObservedAt) { details = false }
 }
 
 @Composable
 fun EconomyRequestDialog(onDismiss: () -> Unit) {
     val state = observeRequest()
-    EconomyRequestDetails(state.request, state.loading, state.unavailable, state.cached, state.target, onDismiss)
+    EconomyRequestDetails(state.request, state.loading, state.unavailable, state.cached, state.target,
+        state.serviceCheckedAt, state.serviceObservedAt, onDismiss)
 }
 
 /** Read-only details. Closing never cancels, repeats, or confirms a command. */
 @Composable
 fun EconomyRequestDetails(request: Map<String, Any>?, loading: Boolean = false, unavailable: Boolean = false,
-    cached: Boolean = false, targetName: String = "", onDismiss: () -> Unit) {
+    cached: Boolean = false, targetName: String = "", serviceCheckedAt: Long? = null,
+    serviceObservedAt: Long = 0, onDismiss: () -> Unit) {
     val payload = request?.get("payload") as? Map<*, *> ?: emptyMap<Any, Any>()
     val status = request?.get("status") as? String
     val pending = status in setOf("PENDING", "PROCESSING")
+    val serviceStale = serviceCheckedAt != null && serviceObservedAt - serviceCheckedAt > 15 * 60_000L
     AlertDialog(onDismissRequest = onDismiss, title = { Text(appTr("Tu solicitud")) }, text = {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).testTag("economy_request_details"),
             verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -102,6 +121,7 @@ fun EconomyRequestDetails(request: Map<String, Any>?, loading: Boolean = false, 
                     Text(appTr(when (status) {
                         "PENDING" -> "Estado: en espera"
                         "PROCESSING" -> "Estado: en procesamiento"
+                        "REVIEW" -> "Estado: requiere revisión"
                         "COMPLETED" -> "Estado: completada"
                         "FAILED" -> "Estado: no completada"
                         else -> "Estado: por confirmar"
@@ -121,6 +141,10 @@ fun EconomyRequestDetails(request: Map<String, Any>?, loading: Boolean = false, 
                         Text(appTr(error?.get("message") as? String ?: "No se pudo completar la operación. Vuelve a intentarlo."))
                     }
                     if (pending) Text(appTr("La confirmación puede tardar varios minutos o más si el servicio se retrasa. Puedes cerrar este aviso; la solicitud seguirá en espera. No la repitas."))
+                    if (pending && serviceStale) Text(appTr("El servicio está retrasado. La solicitud sigue guardada; no la repitas. Consulta Soporte si el retraso continúa."),
+                        modifier = Modifier.testTag("economy_service_delayed"))
+                    if (status == "REVIEW") Text(appTr("No se pudo confirmar esta operación automáticamente. Contacta con Soporte e indica la fecha de la solicitud. No la repitas."),
+                        modifier = Modifier.testTag("economy_request_review"))
                     if (status == "COMPLETED") Text(appTr("La operación fue confirmada. Los datos se actualizarán al sincronizarse."))
                 }
             }

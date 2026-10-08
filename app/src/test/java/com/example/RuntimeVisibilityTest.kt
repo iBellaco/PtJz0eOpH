@@ -253,7 +253,9 @@ class RuntimeVisibilityTest(private val screen: String) {
             screen == "premium-status-near-expiry" -> PremiumStatusCard("premium", until = System.currentTimeMillis() + 65000L, onRenew = { renewed = true })
             screen.startsWith("cash-access-") -> AuthenticatedProfilePanel(onSignOut = {})
             screen == "cash-review-hidden-es" -> CashRedemptionReviewPanel()
-            screen.startsWith("economy-details-") -> EconomyRequestDetails(requestData, targetName = "Test gratis", onDismiss = { copiedSummary = "closed" })
+            screen.startsWith("economy-details-") -> EconomyRequestDetails(requestData, targetName = "Test gratis",
+                serviceCheckedAt = System.currentTimeMillis() - 16 * 60_000L,
+                serviceObservedAt = System.currentTimeMillis(), onDismiss = { copiedSummary = "closed" })
             screen.startsWith("role-change-") -> UserDetailManagementDialog(mapOf("uid" to "local-role", "name" to "Test gratis", "role" to "creador"),
                 {}, { grantedAccount = it }, {}, {}, roleChangeAction = { _, result -> roleResult = result })
             screen == "premium-editor-admin" -> UserDetailManagementDialog(mapOf("uid" to "local-admin", "role" to "admin"), {}, {}, {}, {})
@@ -380,8 +382,13 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("economy_request_action").assertTextEquals(appTr("Cambio de rol"))
                 compose.onNodeWithTag("economy_request_target").assertTextEquals(appTr("Cuenta") + ": Test gratis")
                 compose.onNodeWithTag("economy_request_status").assertTextEquals(appTr("Estado: en espera"))
+                compose.onNodeWithTag("economy_service_delayed").performScrollTo().assertIsDisplayed()
                 compose.onNodeWithText("private-account-225").assertDoesNotExist()
                 inspect("pending")
+                compose.runOnIdle { requestData = requestData + ("status" to "REVIEW") }
+                compose.onNodeWithTag("economy_request_status").assertTextEquals(appTr("Estado: requiere revisión"))
+                compose.onNodeWithTag("economy_request_review").performScrollTo().assertIsDisplayed()
+                inspect("review")
                 compose.runOnIdle { requestData = requestData + ("status" to "PROCESSING") }
                 compose.onNodeWithTag("economy_request_status").assertTextEquals(appTr("Estado: en procesamiento"))
                 compose.runOnIdle { requestData = requestData + ("status" to "COMPLETED") }

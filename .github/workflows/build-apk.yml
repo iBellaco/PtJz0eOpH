@@ -30,7 +30,7 @@ jobs:
         COACH_REQUIRE_PERSISTENT_SIGNING: 'true'
       run: python3 .github/scripts/restore-private-signing.py --check-access
   build-apk:
-    needs: [find-validated-apk, security-and-data-tests]
+    needs: [find-validated-apk, security-and-data-tests, core-and-rendered]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -223,21 +223,21 @@ jobs:
     needs: [find-validated-apk, security-and-data-tests]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
     - *id001
     - *id002
     - *id003
     - *id004
     - *id005
-    - name: Check core regressions
+    - name: Check Android lint
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --tests com.example.HistoryConsistencyTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest
-        --tests com.example.ChampionNameResolverRegressionTest --tests com.example.AllyDraftReconcilerTest --tests com.example.AllyDraftNameReaderTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests
-        com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests
-        com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.BuildElementAdviceCoverageTest --tests com.example.BuildChoiceRulesTest --tests com.example.CoachMatchupCoverageTest --tests com.example.SpellCatalogFormattingTest --tests com.example.BuildCoachingRegressionTest --tests com.example.DraftScoreFormatTest --tests com.example.SupportAndStreamerPolicyTest
-        --tests com.example.WildRiftItemsCatalogTest --tests com.example.AccountDeletionPolicyTest --tests com.example.EconomyRequestPolicyTest --stacktrace --no-daemon
+      run: ./gradlew :app:lintDebug --max-workers=1 --stacktrace --no-daemon
+    - name: Run the complete Android unit test suite
+      env:
+        CI: 'true'
+      run: ./gradlew :app:testDebugUnitTest --max-workers=1 --stacktrace --no-daemon
     - name: Upload core regression results
       if: always()
       uses: actions/upload-artifact@v4
