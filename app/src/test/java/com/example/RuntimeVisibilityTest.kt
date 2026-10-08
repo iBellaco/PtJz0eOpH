@@ -110,6 +110,8 @@ class RuntimeVisibilityTest(private val screen: String) {
         @Suppress("UNCHECKED_CAST")
         (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered") || screen == "champion-premium" || screen == "champion-situational-boot" || screen == "creator-reader" || screen == "support-admin-notification"
         SubscriptionManager.userRole.value
+        // Deliver initial signed-out listeners before assigning each isolated account fixture.
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
         fun setFlow(target: Any, name: String, value: Any?) {
             val variable = target.javaClass.getDeclaredField(name).apply { isAccessible = true }
             @Suppress("UNCHECKED_CAST")
@@ -118,8 +120,6 @@ class RuntimeVisibilityTest(private val screen: String) {
         setFlow(SubscriptionManager, "_userRole", if (screen.startsWith("profile-admin-expiring-roles")) "creador" else if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("role-change-") || screen.startsWith("profile-admin") && !screen.startsWith("profile-admin-image-frame") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
         if (screen.startsWith("cash-access-")) {
             setFlow(SubscriptionManager,"_userRole",screen.removePrefix("cash-access-").substringBeforeLast('-').replace("fake_admin","admin"))
-            setFlow(SubscriptionManager,"_secondaryRole","streamer")
-            setFlow(SubscriptionManager,"_orangeEssence",10L)
         }
         if (screen == "premium-purchase-confirm") { setFlow(SubscriptionManager,"_blueEssence",1200L); setFlow(SubscriptionManager,"_orangeEssence",100L) }
         else { setFlow(SubscriptionManager,"_blueEssence",0L); setFlow(SubscriptionManager,"_orangeEssence",0L) }
@@ -129,7 +129,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             database.collection("support_reports").document("admin-new-message").set(mapOf("userId" to "other-user", "status" to "PENDING", "staffRead" to false,
                 "conversation" to listOf(mapOf("id" to "new-message", "senderRole" to "USER", "text" to "Ajuda"))))
         }
-        setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else if (screen.startsWith("profile-admin-secondary-frame")) "soberano" else if (screen.startsWith("profile-admin-expiring-roles")) "streamer" else "")
+        setFlow(SubscriptionManager, "_secondaryRole", if (screen.startsWith("cash-access-")) "streamer" else if (screen == "moderation-secondary") "moderador" else if (screen.startsWith("profile-admin-secondary-frame")) "soberano" else if (screen.startsWith("profile-admin-expiring-roles")) "streamer" else "")
         setFlow(SubscriptionManager, "_currentRankBorder", when {
             screen.startsWith("profile-admin-secondary-frame") -> "SOBERANO"
             screen.startsWith("profile-admin-image-frame") -> "ESMERALDA"
@@ -251,7 +251,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             screen == "creator-reader" -> AdminCreatorBuildsDialog {}
             screen == "premium-status-near-expiry" -> PremiumStatusCard("premium", until = System.currentTimeMillis() + 65000L, onRenew = { renewed = true })
-            screen.startsWith("cash-access-") -> Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) { AuthenticatedProfilePanel(onSignOut = {}) }
+            screen.startsWith("cash-access-") -> AuthenticatedProfilePanel(onSignOut = {})
             screen == "cash-review-hidden-es" -> CashRedemptionReviewPanel()
             screen.startsWith("economy-details-") -> EconomyRequestDetails(requestData, targetName = "Test gratis", onDismiss = { copiedSummary = "closed" })
             screen.startsWith("role-change-") -> UserDetailManagementDialog(mapOf("uid" to "local-role", "name" to "Test gratis", "role" to "creador"),
