@@ -167,6 +167,14 @@ if MODE in ("pt", "both"):
         snapshot("onboarding-" + str(page + 1))
         tap("Seguinte" if page < 3 else "Começar agora!")
     snapshot("home")
+    tap("🎨")
+    snapshot("themes-portuguese")
+    tap("Águas de Sentina", scrolling=6)
+    snapshot("theme-preview-portuguese")
+    tap("Aplicar", scrolling=6)
+    snapshot("theme-premium-portuguese")
+    tap("Entendido")
+    back()
     tap("Informação")
     snapshot("information")
     for page in range(3):
@@ -179,7 +187,7 @@ if MODE in ("pt", "both"):
     tap("Entendido")
     # FAQ returns directly to the dashboard; a second Back opens the exit dialog.
     back()
-    for tab in ["Seleção", "Tier List", "Catálogo", "Usuário"]:
+    for tab in ["Seleção", "Classificação", "Catálogo", "Usuário"]:
         tap(tab)
         snapshot("dashboard-" + tab)
         if tab == "Seleção":
@@ -189,7 +197,7 @@ if MODE in ("pt", "both"):
             texts = [n.get("text", "") for n in app_nodes(window())]
             if any("Melhor Opção segundo" in text for text in texts):
                 raise AssertionError("Empty draft must not show team recommendations")
-        if tab == "Tier List":
+        if tab == "Classificação":
             tap("Entrar ou cadastrar-se", scrolling=3)
             snapshot("tier-login")
             tap("Cadastre-se", scrolling=3)
@@ -261,7 +269,15 @@ if MODE in ("es", "both"):
         snapshot('onboarding-' + str(page + 1))
         tap('Siguiente' if page < 3 else '¡Comenzar ahora!')
     snapshot('home-spanish')
-    for tab in ['Selección', 'Tier List', 'Catálogo', 'Usuario']:
+    tap('🎨')
+    snapshot('themes-spanish')
+    tap('Aguas Estancadas', scrolling=6)
+    snapshot('theme-preview-spanish')
+    tap('Aplicar', scrolling=6)
+    snapshot('theme-premium-spanish')
+    tap('Entendido')
+    back()
+    for tab in ['Selección', 'Clasificación', 'Catálogo', 'Usuario']:
         tap(tab)
         snapshot('dashboard-' + tab)
     tap('Catálogo')

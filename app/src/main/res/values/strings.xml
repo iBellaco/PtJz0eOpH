@@ -2,7 +2,7 @@
   <string name="app_name">Coach</string>
   <string name="inicio">Inicio</string>
   <string name="seleccion">Selección</string>
-  <string name="tier_list">Tier List</string>
+    <string name="tier_list">Clasificación</string>
   <string name="catalogo">Catálogo</string>
   <string name="usuario">Usuario</string>
   <string name="cancelar">Cancelar</string>

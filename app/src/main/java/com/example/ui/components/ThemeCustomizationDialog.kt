@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -481,7 +482,7 @@ fun ThemeCustomizationBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = tr("Para personalizar y aplicar los temas visuales oficiales de League of Legends: Wild Rift (Jonia, Noxus, Zaun, Piltover, Shurima, Freljord, etc.) necesitas una suscripción Premium activa."),
+                        text = tr("Para aplicar estos temas de Coach inspirados en las regiones de Runaterra necesitas una suscripción Premium activa. No son temas oficiales ni acreditan aprobación de Riot Games."),
                         color = TextPrimary,
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
@@ -649,7 +650,7 @@ private fun RegionVisualPreviewGridCard(
 
             // Section: Visual Swatch Grid (Primary & Secondary Focus)
             Text(
-                text = tr("Muestrario de Colores Oficiales:"),
+                text = tr("Paleta de colores del tema:"),
                 color = inspectedTheme.textPrimary,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold
@@ -750,7 +751,7 @@ private fun RegionVisualPreviewGridCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = com.example.util.tr("Sinergia S+ / Tier Soberano"),
+                                    text = com.example.util.tr("Sinergia S+ / Nivel Soberano"),
                                     color = inspectedTheme.secondary,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -797,7 +798,7 @@ private fun RegionVisualPreviewGridCard(
                             glowColor = if (isApplied) inspectedTheme.secondary else inspectedTheme.primary,
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                            modifier = Modifier.height(34.dp),
+                            modifier = Modifier.heightIn(min = 48.dp).testTag("theme_apply_button"),
                             scaleDown = 0.92f,
                             enableShimmer = !isApplied
                         ) {

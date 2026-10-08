@@ -98,15 +98,45 @@ class LocalizationRegressionTest {
         assertEquals("Perguntas Frequentes", trStr("pt", "Preguntas  Frecuentes"))
         assertEquals("Preguntas Frecuentes", trStr("es", "Preguntas Frecuentes"))
         assertFalse(trStr("pt", "Aplica 40% de Heridas Graves al recibir ataques de los rivales e inmovilizarlos.").contains("Heridas Graves"))
-        assertEquals("NA sem fonte disponível • Consulte a lista Global", trStr("pt", "NA sin fuente disponible • Consulta la lista Global"))
     }
 
     @Test fun `known UI labels never leak Spanish panel wording into Portuguese`() {
         assertEquals("Expandir painel", trStr("pt", "Expandir panel"))
         assertEquals("Minimizar painel", trStr("pt", "Minimizar panel"))
         assertEquals("Recarga de Essência Azul", trStr("pt", "Recarga de Esencia Azul"))
-        assertEquals("Tier List Global ativa", trStr("pt", "Tier List Global activa"))
-        assertEquals("Tier List NA ativa", trStr("pt", "Tier List NA activa"))
+        assertEquals("Classificação global ativa", trStr("pt", "Tier List Global activa"))
+    }
+
+    @Test fun `avatar and theme catalogs localize their actual fields and titles`() {
+        val avatars = com.example.data.AvatarCatalog.avatars
+        assertTrue(avatars.size > 100)
+        for (avatar in avatars) {
+            for (field in listOf(avatar.name, avatar.title, avatar.region, avatar.rarity, avatar.description)) {
+                val localized = trStr("pt-BR", field)
+                assertFalse("${avatar.id}: $localized", SpanishUiResidue.pattern.containsMatchIn(localized))
+            }
+        }
+        for (theme in com.example.ui.theme.AppTheme.entries) {
+            for (field in listOf(theme.titleKey, theme.regionTag, theme.descKey)) {
+                assertFalse("${theme.id}: $field", SpanishUiResidue.pattern.containsMatchIn(trStr("pt", field)))
+            }
+        }
+        assertEquals("A Assassina Renegada", trStr("pt", "La Asesina Sigilosa"))
+        assertEquals("Avatar exclusivo Premium", trStr("pt", "Avatar Exclusivo Premium"))
+        assertEquals("Tema exclusivo Premium", trStr("pt", "Tema Exclusivo Premium"))
+        assertEquals("Clasificación", trStr("es", "Tier List"))
+        assertEquals("Classificação", trStr("pt", "Tier List"))
+        assertEquals("Vista previa de Coach", trStr("es", "Coach Live UI"))
+        assertEquals("Interface Coach ao vivo", trStr("pt", "Coach Live UI"))
+    }
+
+    @Test fun `Brazilian Portuguese retention matches Portuguese and Spanish`() {
+        for (locale in listOf(java.util.Locale.forLanguageTag("pt"), java.util.Locale.forLanguageTag("pt-BR"), java.util.Locale.forLanguageTag("es-419"))) {
+            val configuration = android.content.res.Configuration(context.resources.configuration)
+            configuration.setLocale(locale)
+            val text = context.createConfigurationContext(configuration).getString(com.example.R.string.streamer_history_active_retention)
+            assertTrue("${locale.toLanguageTag()}: $text", text.contains("48"))
+        }
     }
 
     @Test fun `unknown user text and URLs remain intact`() {

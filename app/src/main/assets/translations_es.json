@@ -117,8 +117,12 @@
   "Selecione o idioma do assistente tático": "Selecciona el idioma del asistente táctico",
   "Continuar em Português": "Continuar en Portugués",
   "Referência local": "Referencia local",
-  "Tier List Global ativa": "Tier List Global activa",
-  "Tier List NA ativa": "Tier List NA activa",
   "Meta ao Vivo": "Meta en vivo",
-  "Painel": "Panel"
+  "Painel": "Panel",
+  "Tier List": "Clasificación",
+  "Tier List & Campeones": "Clasificación y campeones",
+  "Tier List Global activa": "Clasificación global activa",
+  "Coach Live UI": "Vista previa de Coach",
+  "Modo OLED Ultra-Black": "Modo OLED negro absoluto",
+  "Acciones / Draft": "Acciones / selección"
 }

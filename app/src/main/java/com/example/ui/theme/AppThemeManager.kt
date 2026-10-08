@@ -7,7 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
 /**
- * Temas oficiales de League of Legends basados en las regiones del Universo de Runaterra
+ * Temas de Coach inspirados en las regiones del Universo de Runaterra.
+ * No representan temas oficiales ni una autorización de Riot Games.
  * (https://universe.leagueoflegends.com/es_ES/regions/)
  *
  * Piltover es el tema por defecto.

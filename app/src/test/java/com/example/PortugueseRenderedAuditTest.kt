@@ -49,7 +49,7 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         fun screens() = listOf("information", "faq", "onboarding", "tutorial", "home", "catalog", "tier-list",
             "draft", "champion", "matchup", "personal-tier", "login", "register", "recover", "legal", "donation", "exit", "support-form", "support-inbox", "support-reply",
             "support-ticket-pending", "support-ticket-read", "support-ticket-solved", "support-ticket-unknown-date",
-            "support-panel", "support-mailbox")
+            "support-panel", "support-mailbox", "avatars", "avatar-premium", "themes", "theme-premium")
             .map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
@@ -123,6 +123,8 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             "legal" -> PrivacyPolicyDialog(isMandatoryAcceptance = true, onDismiss = {})
             "donation" -> DonationDialog({})
             "exit" -> ExitConfirmationDialog({}, {})
+            "avatars", "avatar-premium" -> AvatarSelectionBottomSheet({}, {})
+            "themes", "theme-premium" -> ThemeCustomizationBottomSheet(onDismiss = {})
             "support-panel" -> AdminFeedbackBottomSheet({})
             "support-mailbox" -> AdminSupportReportsDialog({})
             "support-form" -> SupportReportDialog({})
@@ -171,6 +173,19 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             compose.waitUntil(15_000) { compose.onAllNodesWithText("Ajuda com o hub").fetchSemanticsNodes().isNotEmpty() }
         }
         inspect("initial")
+        if (screen == "avatar-premium") {
+            compose.onNodeWithText("Buscar avatar...").performTextInput("Poro Volibear")
+            compose.onNodeWithTag("avatar_card_poro_volibear").performClick()
+            compose.onNodeWithText("Avatar exclusivo Premium").assertExists()
+            compose.onNodeWithText("O Rugido do Trovão", substring = true).assertExists()
+            inspect("locked")
+        }
+        if (screen == "theme-premium") {
+            compose.onNodeWithText("Águas de Sentina").performClick()
+            compose.onNodeWithTag("theme_apply_button").performScrollTo().performClick()
+            compose.onNodeWithText("Tema exclusivo Premium").assertExists()
+            inspect("locked")
+        }
         if (screen == "onboarding" || screen == "tutorial") {
             repeat(3) { page ->
                 compose.onNodeWithText("Seguinte").performClick()

@@ -1,6 +1,8 @@
 # Coach
 
-Aplicación Android independiente de consulta y asistencia para la selección de campeones de League of Legends: Wild Rift. Nombre de la aplicación: **Coach**. Idiomas seleccionables: español y portugués. Versión: **1.1.10.219**, código **935**.
+Aplicación Android independiente de consulta y asistencia para la selección de campeones de League of Legends: Wild Rift. Nombre de la aplicación: **Coach**. Idiomas seleccionables: español y portugués. Versión: **1.1.10.220**, código **936**.
+
+El identificador instalado y usado para las actualizaciones es **com.Coach**. **com.example** es el namespace del código Kotlin, no otro paquete instalable. La firma persistente identifica al certificado como **CN=Coach, O=Coach, C=US**; no acredita una autorización de Riot ni de Google.
 
 Este repositorio se utiliza para compilar el APK y respaldar el desarrollo. Su visibilidad pública no equivale a una licencia de software libre. El proyecto no ofrece una licencia de distribución o reutilización fuera de los permisos de la plataforma y los términos aplicables de terceros. Un nombre poco reconocible no impide consultar o copiar un repositorio público.
 
@@ -30,7 +32,7 @@ Contacto público: **DevWildRiftCoach@gmail.com**. Nunca enviar contraseñas, c�
 
 Coach no está respaldado ni patrocinado por Riot Games. Los recursos de Wild Rift conservan los derechos de sus titulares. **No se ha acreditado una autorización específica de Riot para esta aplicación.** Una clave de otro juego, el acceso al código o este aviso no conceden esa autorización. Antes de presentar la app en una tienda o monetizarla, deben resolverse las autorizaciones aplicables y completarse las declaraciones exigidas por la tienda. El plazo de 60 días es una decisión del producto, no un plazo aprobado expresamente por Google ni una garantía de cumplimiento de las leyes locales.
 
-Consulta la [guía de autorización de Riot y publicación en Google Play](docs/riot-google-play-authorization.md) y la [auditoría de esta versión](docs/coach-audit-1.1.10.219.md). El repositorio no permite certificar aprobación legal ni de Google Play. No se afirma que todos sus componentes compartan una misma licencia.
+Consulta la [guía de autorización de Riot y publicación en Google Play](docs/riot-google-play-authorization.md) y la [auditoría de esta versión](docs/coach-audit-1.1.10.220.md). El repositorio no permite certificar aprobación legal ni de Google Play. No se afirma que todos sus componentes compartan una misma licencia.
 
 ## Desarrollo y comprobaciones
 
@@ -45,7 +47,7 @@ cd PtJz0eOpH
 
 El wrapper no está versionado. Para una compilación local se necesitan Gradle, Java, Android SDK y la configuración privada de los servicios y firma. No publicar credenciales ni sustituir la identidad de firma de entregas anteriores. Los flujos de GitHub Actions preparan esas herramientas, comprueban el código, generan el APK release con R8 y verifican firma, ofuscación e instalación antes de publicarlo.
 
-La configuración Android `google-services.json` se obtiene del Secret de Actions `COACH_GOOGLE_SERVICES_JSON`; contiene el JSON completo de la aplicación `com.Coach`. El workflow no incluye sus valores ni los imprime. Sin el Secret, la compilación se detiene con un error explícito. Para desarrollo local, el archivo se coloca en `app/google-services.json`, excluido de Git. La clave de configuración cliente sigue estando en el APK: Secrets evita publicarla en el workflow, pero no la convierte en una credencial de servidor ni sustituye las reglas de acceso. Los valores publicados anteriormente permanecen en commits y registros históricos; esta limpieza no reescribe el historial ni rota la clave.
+La configuración Android `google-services.json` se obtiene del Secret de Actions `COACH_GOOGLE_SERVICES_JSON`; contiene el JSON completo de la aplicación `com.Coach`. El propietario confirma haber creado el Secret y Actions verificó su restauración en la entrega 219. El rechazo HTTP 403 previo correspondía al intento de esta conexión de crearlo, no a un fallo actual de compilación. El workflow no incluye sus valores ni los imprime. Sin el Secret, la compilación se detiene con un error explícito. Para desarrollo local, el archivo se coloca en `app/google-services.json`, excluido de Git. La clave de configuración cliente sigue estando en el APK: Secrets evita publicarla en el workflow, pero no la convierte en una credencial de servidor ni sustituye las reglas de acceso. Los valores publicados anteriormente permanecen en commits y registros históricos; esta limpieza no reescribe el historial ni rota la clave.
 
 Los scripts mantenidos están en `tools/` y `.github/scripts/`. Se retiraron 25 scripts e informes de reparación de la raíz. Las pantallas y el asistente flotante están divididos por sección, preservando sus nombres de funciones para los consumidores Kotlin.
 
