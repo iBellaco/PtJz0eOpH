@@ -75,21 +75,28 @@ class DraftRivalNameInstalledTest {
                 canvas.drawText(if (i == 1) "(TÚ)" else "JINX", x, cy + 3f, paint)
             }
         }
-        suspend fun scan(titles: List<String>): com.example.service.screen.DraftScanResult {
+        suspend fun scan(phase: String, titles: List<String>): com.example.service.screen.DraftScanResult {
+            fun progress(message: String) = InstrumentationRegistry.getInstrumentation().sendStatus(2,
+                android.os.Bundle().apply { putString("stream", "\nDRAFT_NATIVE_FRAME: $language $phase $message\n") })
+            progress("start")
             val bitmap = frame(titles)
-            return try { scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP) } finally { bitmap.recycle() }
+            return try {
+                kotlinx.coroutines.withTimeout(60_000L) {
+                    scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                }.also { progress("done ${it.allyRolesBySlot} ${it.alliesBySlot.mapValues { entry -> entry.value.id }}") }
+            } finally { bitmap.recycle() }
         }
         try {
-            val initial = scan(labels)
+            val initial = scan("lanes", labels)
             assertEquals(roles.mapIndexed { index, role -> index to role }.toMap(), initial.allyRolesBySlot)
             assertTrue(initial.allies.isEmpty())
             assertEquals(com.example.model.LaneRole.ADC, initial.userExplicitlyDetectedRole)
-            val selected = scan(picks.map { it.uppercase() })
+            val selected = scan("selection", picks.map { it.uppercase() })
             picks.forEachIndexed { index, id -> assertEquals(id, selected.alliesByRole[roles[index]]?.id) }
             assertEquals(com.example.model.LaneRole.ADC, selected.userExplicitlyDetectedRole)
-            val gap = scan(List(5) { "" })
+            val gap = scan("gap", List(5) { "" })
             assertEquals(selected.alliesByRole, gap.alliesByRole)
-            val traded = scan(listOf("SKARNER", "SENNA", "BRAND", "YUUMI", "PANTHEON"))
+            val traded = scan("trade", listOf("SKARNER", "SENNA", "BRAND", "YUUMI", "PANTHEON"))
             assertEquals("skarner", traded.alliesByRole[com.example.model.LaneRole.JUNGLE]?.id)
             assertEquals("yuumi", traded.alliesByRole[com.example.model.LaneRole.TOP]?.id)
             assertEquals(com.example.model.LaneRole.ADC, traded.userExplicitlyDetectedRole)

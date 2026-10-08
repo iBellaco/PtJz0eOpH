@@ -21,6 +21,8 @@ El APK instalado ejecuta el escáner completo sobre una secuencia de líneas, se
 
 Este registro se prepara antes de ejecutar las comprobaciones. El acta incluida con el APK debe reflejar los resultados efectivos. compile_applet no está disponible; se emplea el flujo Gradle y Android del repositorio.
 
+Durante la validación, 172 pruebas de lógica y 309 de pantallas pasaron; se revisaron las capturas de relaciones a 330 dp en ES/PT. El recorrido instalado español completó 39 pantallas y el historial antes de que los siete casos de reconocimiento excedieran el límite original de 150 segundos. La batería ampliada realiza ocho fotogramas completos y 88 lecturas dirigidas adicionales: se reserva un máximo de 420 segundos, cada fotograma tiene un límite de 60 segundos y se registra su inicio/fin. Los resultados parciales se conservan si vence el límite. No se omite ningún caso.
+
 ## Archivos
 
 ChampionDetailSheet.kt, ChampionBuildDetails.kt, AdaptiveScreenLayoutEngine.kt, AllyDraftNameReader.kt, AllyDraftReconciler.kt, ChampionNameResolver.kt, DraftVisionScanner.kt, OverlayState.kt, FloatingOverlayContent.kt, FloatingDraftCoachView.kt, recursos draft_observation ES/PT, pruebas de relaciones/nombres/reconciliación/navegación y APK instalado, fixtures de títulos aliados, script de validación instalada, workflow, README.md y app/build.gradle.kts.
