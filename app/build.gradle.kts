@@ -133,7 +133,6 @@ dependencies {
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.auth)
   implementation(libs.firebase.firestore)
-  implementation("com.google.firebase:firebase-functions")
     implementation(libs.firebase.storage)
   implementation(libs.firebase.appcheck.playintegrity)
   implementation(libs.kotlinx.serialization.json)

@@ -15,7 +15,6 @@ service cloud.firestore {
       let acc = account();
       let role = acc.get('role', '');
       let sec = acc.get('secondaryRole', '');
-      let border = acc.get('rankBorder', '');
       return signedIn() && (
         isAdmin() ||
         role in ['moderador', 'moderator', 'MODERADOR'] ||
@@ -26,21 +25,11 @@ service cloud.firestore {
       let acc = account();
       let role = acc.get('role', '');
       let sec = acc.get('secondaryRole', '');
-      let border = acc.get('rankBorder', '');
       return signedIn() && (
         isAdmin() ||
         role in ['streamer', 'STREAMER'] ||
         sec in ['streamer', 'STREAMER']
       );
-    }
-    function canRedeem(data) {
-      let r = data.get('role', '');
-      let s = data.get('secondaryRole', '');
-      let b = data.get('rankBorder', '');
-      return isAdmin() ||
-             r in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'] ||
-             s in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'] ||
-             b in ['admin', 'ADMIN', 'administrador', 'moderador', 'MODERADOR', 'moderator', 'streamer', 'STREAMER', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'];
     }
     function sponsor(data) {
       let tags = ['PATROCINADOR', 'PATROCINIO', 'SPONSOR', 'PUBLICIDAD', 'PAGO', 'PAYMENT', 'PAGAMENTO'];
@@ -143,6 +132,31 @@ service cloud.firestore {
     match /{path=**}/messages/{id} { allow read: if isAdmin(); }
     match /{path=**}/subscription_history/{id} { allow read: if isAdmin(); }
     match /{path=**}/history/{id} { allow read: if isAdmin(); }
+    match /economy_results/{id} {
+      allow read: if signedIn() && request.auth.uid.matches('^[a-zA-Z0-9_-]{1,128}$')
+        && id.matches('^' + request.auth.uid + '~[a-zA-Z0-9_-]{8,80}$');
+      allow write: if false;
+    }
+    match /economy_requests/{userId} {
+      function validCommand() {
+        let d = request.resource.data;
+        let p = d.payload;
+        return signedIn() && request.auth.uid == userId
+          && request.auth.token.get('email', '') != 'coach.guest.reader@gmail.com'
+          && request.auth.token.get('firebase', {}).get('sign_in_provider', '') != 'anonymous'
+          && d.keys().hasOnly(['userId','operationId','payload','status','schema','createdAt','authTime'])
+          && d.userId == userId && d.status == 'PENDING' && d.schema == 2
+          && d.createdAt == request.time && d.authTime == request.auth.token.get('auth_time', 0)
+          && d.operationId is string && d.operationId.matches('^[a-zA-Z0-9_-]{8,80}$')
+          && p is map && p.size() <= 15 && p.id == d.operationId
+          && (p.action in ['PURCHASE','REDEEM','SUBSCRIBE','UNSUBSCRIBE','SPONSOR']
+            || (isAdmin() && p.action in ['RESOLVE','ADJUST','PREMIUM_GRANT','PREMIUM_REMOVE','ROLE','CLEANUP']));
+      }
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if validCommand();
+      allow update: if validCommand() && resource.data.status in ['COMPLETED','FAILED'];
+      allow delete: if false;
+    }
     match /cash_redemptions/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
       allow write: if false;
@@ -272,11 +286,11 @@ service cloud.firestore {
     }
     match /system_config/{document} {
       allow read: if signedIn();
-      allow write: if document != 'streamer_live' && isAdmin();
+      allow write: if !(document in ['streamer_live','economy_service','account_deletion_service']) && isAdmin();
     }
     match /system_config/{document}/{nested=**} {
       allow read: if signedIn();
-      allow write: if document != 'streamer_live' && isAdmin();
+      allow write: if !(document in ['streamer_live','economy_service','account_deletion_service']) && isAdmin();
     }
     match /system_config/streamer_live {
       allow get: if true;

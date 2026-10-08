@@ -579,5 +579,35 @@ try {
     const target=(await assertSucceeds(getDoc(doc(admin,'users/stats-target')))).data();
     assert.equal(target.blueEssence,0);assert.equal(target.orangeEssence,100);
   });
+  const command = (payload = {action:'PURCHASE',id:'queue_test_0001',plan:'MONTHLY',currency:'BLUE'}) => ({userId:'user',operationId:payload.id,payload,status:'PENDING',schema:2,createdAt:serverTimestamp(),authTime:0});
+  await test('private requests cannot forge results, identities, timestamps or administrative commands', async()=>{
+    await assertSucceeds(setDoc(doc(user,'economy_requests/user'),command()));
+    await assertFails(getDoc(doc(other,'economy_requests/user')));
+    await assertFails(setDoc(doc(other,'economy_requests/user'),command()));
+    await assertFails(updateDoc(doc(user,'economy_requests/user'),{status:'COMPLETED',result:{ok:true}}));
+    await assertFails(deleteDoc(doc(user,'economy_requests/user')));
+    await assertFails(setDoc(doc(other,'economy_requests/other'),{...command(),userId:'other',status:'COMPLETED'}));
+    await assertFails(setDoc(doc(other,'economy_requests/other'),{...command(),userId:'other',createdAt:Timestamp.fromMillis(1)}));
+    await assertFails(setDoc(doc(other,'economy_requests/other'),{...command(),userId:'other',authTime:1234}));
+    await assertFails(setDoc(doc(other,'economy_requests/other'),{...command(),userId:'other',payload:{action:'ADJUST',id:'queue_test_0001',uid:'other',amount:100}}));
+    await assertFails(setDoc(doc(env.unauthenticatedContext().firestore(),'economy_requests/guest'),command()));
+  });
+  await test('a pending request cannot be replaced; a server-confirmed request can be followed by another', async()=>{
+    await assertFails(setDoc(doc(user,'economy_requests/user'),command({action:'PURCHASE',id:'queue_test_0002',plan:'ANNUAL',currency:'BLUE'})));
+    await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'economy_requests/user'),{status:'COMPLETED',result:{ok:true}});});
+    await assertSucceeds(setDoc(doc(user,'economy_requests/user'),command({action:'PURCHASE',id:'queue_test_0002',plan:'ANNUAL',currency:'BLUE'})));
+    await assertSucceeds(setDoc(doc(admin,'economy_requests/admin'),{...command({action:'ADJUST',id:'queue_admin_0001',uid:'user',amount:100,currency:'BLUE',addition:true,notify:false}),userId:'admin'}));
+  });
+  await test('queue receipts are private and server-written even before creation',async()=>{
+    await assertSucceeds(getDoc(doc(user,'economy_results/user~queue_test_0001')));
+    await assertFails(getDoc(doc(other,'economy_results/user~queue_test_0001')));
+    await assertFails(setDoc(doc(user,'economy_results/user~queue_test_0001'),{userId:'user',result:{ok:true}}));
+    await env.withSecurityRulesDisabled(async context=>{await setDoc(doc(context.firestore(),'economy_results/user~queue_test_0001'),{userId:'user',status:'COMPLETED',result:{ok:true}});});
+    await assertSucceeds(getDoc(doc(user,'economy_results/user~queue_test_0001')));
+    await assertFails(getDoc(doc(admin,'economy_results/user~queue_test_0001')));
+  });
+  await test('availability markers are server-owned even with an administrative claim',async()=>{
+    for(const store of [user,admin]) await assertFails(setDoc(doc(store,'system_config/economy_service'),{enabled:true,schema:2}));
+  });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }

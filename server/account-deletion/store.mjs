@@ -123,7 +123,7 @@ export async function purgeAccountData(uid, email) {
       throw new Error('Legacy media ownership requires verification before deletion');
     if (owner === uid) await file.delete({ignoreNotFound:true});
   }
-  for (const name of ['support_reports', 'cash_redemptions', 'streamer_click_metrics', 'pending_sponsor_ads']) {
+  for (const name of ['support_reports', 'cash_redemptions', 'streamer_click_metrics', 'pending_sponsor_ads', 'economy_requests', 'economy_results']) {
     await deleteQuery(db.collection(name).where('userId','==',uid), uid, email);
     if (email) for (const field of ['userEmail','email','sponsorEmail'])
       await deleteQuery(db.collection(name).where(field,'==',email), uid, email);

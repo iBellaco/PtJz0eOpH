@@ -5,7 +5,7 @@ import {integer, DAY} from './policy.mjs';
 
 /** Run by the existing hourly trusted worker; never infer a refund from a legacy client budget. */
 export async function maintainEconomy(db, now = Date.now()) {
-  integer(now); const stats = {refundedSponsors: 0, expiredRequests: 0}; let last;
+  integer(now); const stats = {refundedSponsors: 0, expiredRequests: 0, expiredResults: 0}; let last;
   do {
     const query = db.collection('pending_sponsor_ads').where('isApproved', '==', false);
     const page = await (last ? query.startAfter(last) : query).limit(100).get();
@@ -35,6 +35,9 @@ export async function maintainEconomy(db, now = Date.now()) {
   const removable = expired.docs.filter(doc => ['PAID', 'REJECTED'].includes(doc.get('status')));
   if (removable.length) { const batch = db.batch(); removable.forEach(doc => batch.delete(doc.ref)); await batch.commit(); }
   stats.expiredRequests = removable.length;
+  const results = await db.collection('economy_results').where('expiresAtMillis', '<=', now).limit(400).get();
+  if (results.size) { const batch = db.batch(); results.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit(); }
+  stats.expiredResults = results.size;
   return stats;
 }
 

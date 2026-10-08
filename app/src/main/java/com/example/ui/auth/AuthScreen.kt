@@ -350,6 +350,8 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             var showBuyEssenceDialog by remember { mutableStateOf(false) }
             var buyEssenceCurrency by remember { mutableStateOf("BLUE") }
 
+            com.example.ui.components.EconomyPendingStatus()
+
             // Top Row with Inbox (top-left), Blue Essence (top-center), and History (top-right)
             Row(
                 modifier = Modifier

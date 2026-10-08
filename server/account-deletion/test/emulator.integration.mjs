@@ -18,6 +18,9 @@ await db.doc('support_reports/deletion-owned').set({userId:uid,userEmail:email})
 await db.doc('support_reports/deletion-foreign').set({userId:other,userEmail:email});
 await db.doc('support_reports/deletion-legacy').set({userEmail:email});
 await db.doc('cash_redemptions/deletion-owned').set({userId:uid});
+await db.doc(`economy_requests/${uid}`).set({userId:uid,status:'PENDING'});
+await db.doc(`economy_results/${uid}~operation_owned`).set({userId:uid,status:'COMPLETED'});
+await db.doc(`economy_results/${other}~operation_other`).set({userId:other,status:'COMPLETED'});
 await db.doc(`streamer_requests/${uid}`).set({userId:uid});
 await db.doc(`streamer_requests/${uid}/history/private`).set({userId:uid});
 await db.doc('streamer_click_metrics/deletion-owned').set({userId:uid});
@@ -35,7 +38,7 @@ await db.doc('system_config/app_notices').set({notices:[{sponsorEmail:email},{sp
 await db.doc(`account_deletions/${uid}`).set({userId:uid,requestId:'12345678-1234-1234-1234-123456789012',status:'PENDING',graceDays:60,requestedAt:Timestamp.fromMillis(now-GRACE_MS-1000)});
 assert.equal(await processRequest(uid,adapter,now),'deleted');
 for(const path of [`users/${uid}`,`users/${uid}/messages/private`,`users/${uid}/subscription_history/receipt`,
-  'support_reports/deletion-owned','support_reports/deletion-legacy','cash_redemptions/deletion-owned',
+  'support_reports/deletion-owned','support_reports/deletion-legacy','cash_redemptions/deletion-owned',`economy_requests/${uid}`,`economy_results/${uid}~operation_owned`,
   `streamer_requests/${uid}`,`streamer_requests/${uid}/history/private`,'streamer_click_metrics/deletion-owned','pending_sponsor_ads/deletion-owned',
   'moderator_requests/deletion-target','support_reports/deletion-moderation-target'])
   assert.equal((await db.doc(path).get()).exists,false,path);
@@ -52,6 +55,7 @@ assert.equal((await db.doc(`users/${other}`).get()).get('creatorSubscriberCount'
 assert.deepEqual((await db.doc('system_config/streamer_live').get()).get('entries'),[{userId:other}]);
 await assert.rejects(auth.getUser(uid),error=>error.code==='auth/user-not-found');
 assert.ok(await auth.getUser(other));
+assert.equal((await db.doc(`economy_results/${other}~operation_other`).get()).exists,true);
 const tombstone=(await db.doc(`account_deletions/${uid}`).get()).data();
 assert.equal(tombstone.status,'COMPLETED');assert.equal(tombstone.accountEmail,undefined);assert.equal(tombstone.mediaObjects,undefined);
 assert.equal(await processRequest(uid,adapter,now+1),'skipped');

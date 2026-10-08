@@ -1,6 +1,8 @@
 import {initializeApp, deleteApp} from 'firebase-admin/app';
 import {getFirestore, Timestamp} from 'firebase-admin/firestore';
 import assert from 'node:assert/strict';
+import {getAuth} from 'firebase-admin/auth';
+import {processQueue} from '../queue.mjs';
 import {executeEconomy} from '../service.mjs';
 import {maintainEconomy} from '../maintenance.mjs';
 if (!/^127\.0\.0\.1:\d+$/.test(process.env.FIRESTORE_EMULATOR_HOST ?? '')) throw new Error('Isolated emulator required; production writes prohibited.');
@@ -116,5 +118,61 @@ try {
     assert.equal((await db.doc('cash_redemptions/cash_server_ten').get()).exists, false);
     assert.equal((await db.doc('cash_redemptions/pending_retention_guard').get()).exists, true);
   });
+  const identities = getAuth(app), queueUid='economy-queue-user';
+  await identities.createUser({uid:queueUid,email:'queue@test.invalid',password:'Isolated-test-password-123'});
+  await db.doc(`users/${queueUid}`).set({role:'free',blueEssence:500,orangeEssence:100});
+  const queueRef=db.doc(`economy_requests/${queueUid}`);
+  const queued=(id,fields={})=>({userId:queueUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'PENDING',schema:2,payload:{action:'PURCHASE',id,plan:'MONTHLY',currency:'BLUE',...fields}});
+  await test('concurrent private workers execute one charge and preserve a private result',async()=>{
+    await queueRef.set(queued('queue_concurrent_01'));
+    await Promise.all([processQueue(db,identities),processQueue(db,identities)]);
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),400);
+    assert.equal((await queueRef.get()).get('status'),'COMPLETED');
+    assert.equal((await db.doc(`economy_results/${queueUid}~queue_concurrent_01`).get()).get('result.ok'),true);
+  });
+  await test('an interrupted worker recovers an expired lease without charging the committed operation again',async()=>{
+    const request=queued('queue_lost_commit_01');
+    await executeEconomy(db,auth(queueUid),request.payload);
+    await queueRef.set({...request,status:'PROCESSING',lease:'lost-worker',leaseUntil:Date.now()-1});
+    await processQueue(db,identities);
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),300);
+    assert.equal((await queueRef.get()).get('status'),'COMPLETED');
+  });
+  await test('a queued document cannot grant admin authority; current Auth claims govern execution',async()=>{
+    await db.doc(`users/${queueUid}`).update({role:'admin',admin:true});
+    await queueRef.set(queued('queue_forged_admin_01',{action:'ADJUST',uid:queueUid,amount:500,currency:'BLUE',addition:true,notify:false}));
+    await processQueue(db,identities);
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),300);
+    assert.equal((await queueRef.get()).get('status'),'FAILED');
+    await identities.setCustomUserClaims(queueUid,{admin:true});
+    const request=queued('queue_revoked_admin_01',{action:'ADJUST',uid:queueUid,amount:500,currency:'BLUE',addition:true,notify:false});
+    delete request.payload.plan;
+    await queueRef.set(request);await identities.setCustomUserClaims(queueUid,{});
+    await processQueue(db,identities);
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),300);
+    assert.equal((await queueRef.get()).get('error.code'),'permission-denied');
+  });
+  await test('disabled accounts and revoked sessions cannot execute queued payments',async()=>{
+    await identities.updateUser(queueUid,{disabled:true});
+    await queueRef.set(queued('queue_disabled_01'));await processQueue(db,identities);
+    assert.equal((await queueRef.get()).get('error.code'),'unauthenticated');
+    await identities.updateUser(queueUid,{disabled:false});
+    await queueRef.set(queued('queue_revoked_session_01'));
+    const revoked={getUser:async uid=>({...await identities.getUser(uid),tokensValidAfterTime:new Date(Date.now()+60000).toUTCString()})};
+    await processQueue(db,revoked);
+    assert.equal((await queueRef.get()).get('error.code'),'unauthenticated');
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),300);
+  });
+  await test('temporary results expire without deleting the durable receipt or pending request',async()=>{
+    const result=db.doc(`economy_results/${queueUid}~queue_concurrent_01`);
+    await result.update({expiresAtMillis:Date.now()-1});
+    await queueRef.set(queued('queue_retention_guard_01'));
+    await maintainEconomy(db);
+    assert.equal((await result.get()).exists,false);
+    assert.equal((await db.doc(`users/${queueUid}/subscription_history/queue_concurrent_01`).get()).exists,true);
+    assert.equal((await queueRef.get()).get('status'),'PENDING');
+    await queueRef.delete();
+  });
+  await identities.deleteUser(queueUid);
   console.log(`PASS ${passed} server economy integration cases`);
 } finally { await deleteApp(app); }

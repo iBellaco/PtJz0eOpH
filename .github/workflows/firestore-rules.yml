@@ -100,13 +100,10 @@ jobs:
         env:
           COACH_BOOTSTRAP_ADMIN_EMAIL: ${{ inputs.bootstrap_email }}
         run: node prepare-claims.mjs
-      - name: Install deployment CLI
+      - name: Activate the private economy worker without a paid cloud deployment
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
-        working-directory: tests/firestore
-        run: npm ci --no-audit --no-fund
-      - name: Deploy authoritative economy before restricting clients
-        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
-        run: tests/firestore/node_modules/.bin/firebase deploy --only functions:economy --project wild-rift-drafting --non-interactive
+        working-directory: server/economy
+        run: node worker.mjs
       - name: Require the active economy and trusted administrator before changing permissions
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         working-directory: server/economy
