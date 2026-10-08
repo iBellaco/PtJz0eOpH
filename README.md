@@ -4,6 +4,8 @@ Aplicación Android independiente de consulta y asistencia para la selección de
 
 El identificador instalado y usado para las actualizaciones es **com.Coach**. **com.example** es el namespace del código Kotlin, no otro paquete instalable. La firma persistente identifica al certificado como **CN=Coach, O=Coach, C=US**; no acredita una autorización de Riot ni de Google.
 
+La configuración privada de Firebase incluye también un cliente Android llamado **com.aistudio.wildriftdrafting.wrdftx**, además de **com.Coach**. Ese registro explica el otro nombre encontrado al revisar los servicios, pero no cambia el identificador del APK distribuido. Los dos identificadores representan clientes distintos; no son alias intercambiables para instalar actualizaciones o registrar la aplicación en Google Play.
+
 Este repositorio se utiliza para compilar el APK y respaldar el desarrollo. Su visibilidad pública no equivale a una licencia de software libre. El proyecto no ofrece una licencia de distribución o reutilización fuera de los permisos de la plataforma y los términos aplicables de terceros. Un nombre poco reconocible no impide consultar o copiar un repositorio público.
 
 ## Funciones implementadas

@@ -53,6 +53,7 @@ object AppLanguage {
         val normalized = normalize(language)
         _current.value = normalized
         applyLocale(context.applicationContext, normalized)
+        if (context !== context.applicationContext) applyLocale(context, normalized)
         preferences!!.edit().putString("selected_language", normalized).putBoolean("is_language_set", true).apply()
     }
 }

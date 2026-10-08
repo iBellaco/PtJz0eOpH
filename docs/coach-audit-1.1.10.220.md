@@ -8,6 +8,7 @@ Registro de cambios y comprobaciones de esta revisión. Se redacta antes de la v
 
 - El APK publicado 219 se descargó de la release v1.1.10.219-b935. Su manifiesto declara com.Coach, versión 1.1.10.219, código 935, y su SHA-256 coincide con la entrega: b4f39c0287647c65f13dbc08ef54dfcda326a72ad8f09710f3839c9b2ea939b1.
 - com.example es el namespace y paquete del código; no es el applicationId instalado. Se conserva com.Coach y la identidad de firma para admitir actualizaciones de la aplicación existente. CN=Coach, O=Coach, C=US; certificado SHA-256 27dba5165e26d0da19274edfd21a8f0439e6d7d7cc979efd449c7c71c7b4c055.
+- El identificador indicado por el propietario, com.aistudio.wildriftdrafting.wrdftx, figura como segundo cliente Android en el JSON privado, junto a com.Coach. Se comprobaron únicamente sus nombres, sin publicar claves. La auditoría histórica 178 ya mencionaba ese registro: su expresión “compatibilidad dual” no convierte ambos paquetes en alias instalables. No se acredita qué ficha esté actualmente activa en Google Play; para actualizar el APK publicado corresponde com.Coach y su certificado existente. No se cambia applicationId sin una decisión explícita sobre una aplicación distinta.
 - El propietario confirma que creó COACH_GOOGLE_SERVICES_JSON. El run 37703548670 completó la restauración del Secret en los dos trabajos consumidores; el run 37706124268 publicó la entrega validada. El HTTP 403 previo era un rechazo a crear el Secret desde esta conexión. No es un fallo actual de compilación y no se atribuye a esta conexión la creación realizada por el propietario.
 - Se corrige el estado obsoleto de la auditoría 219 en el repositorio y se documenta la distinción de identificadores en el README.
 
@@ -23,11 +24,13 @@ Registro de cambios y comprobaciones de esta revisión. Se redacta antes de la v
 - Los temas dejan de presentarse como oficiales de Riot. El aviso Premium aclara que son temas de Coach inspirados en Runaterra y que no acreditan aprobación de Riot. El botón Aplicar tiene un área mínima de 48dp y un identificador de prueba.
 - La comprobación visual inicial encontró que la pantalla de temas no permitía desplazarse hasta todo el contenido. Se agrega desplazamiento vertical. Aplicar mostraba la insignia Premium pero permitía cambiar a otro tema sin esa condición; ahora abre el aviso sin cambiar el tema. La insignia también tiene un área de 48dp. Las dos nuevas pruebas de avisos fallaron inicialmente por el selector del campo de búsqueda y por la ausencia de desplazamiento; se corrigen las interacciones y la pantalla antes de validar la entrega.
 - La captura de la vista previa mostró “Aplicar” partido en dos líneas junto a su insignia. Se coloca la fila de acciones debajo del texto de ejemplo y se reserva el ancho disponible para el botón, manteniendo el texto en una línea.
+- La primera revisión instalada completa aprobó ES y detectó “Cerrar hoja” en la accesibilidad de temas en PT: la actividad retenía recursos españoles mientras los textos propios ya usaban portugués. La selección de idioma actualiza ahora también los recursos del contexto que llamó a la selección, además de los de la aplicación. Se añade una regresión con un contexto de configuración independiente. No se publica como válida la ejecución 37709533890, que falló esta comprobación; se exige repetirla con el APK corregido.
 
 ## Comprobaciones
 
 - Treinta pruebas Python de scripts de compilación y cinco del auditor de texto del dispositivo aprobadas.
 - Pruebas locales de núcleo: 142 pruebas en 21 clases, sin fallos, errores ni omisiones; incluyen los nuevos casos de catálogos, cambio de idioma y recursos regionales.
+- Después del fallo instalado de idioma, se ejecutó y aprobó LocalizationRegressionTest con la regresión adicional del contexto que cambia de ES a PT y vuelve a ES. El conjunto completo se vuelve a ejecutar sobre esta corrección en la validación de entrega.
 - Cuatro casos visuales locales de avatares, temas y sus avisos Premium aprobados después de las correcciones. Usan una sesión local sin Premium, comprueban controles visibles y sus acciones de accesibilidad, y verifican que abrir el aviso no cambie el avatar ni el tema. El recorrido instalado comprueba los toques de temas en Android.
 - Generador de builds en modo --check: 142 campeones, 300 perfiles de línea, sin diferencias de generación.
 - Auditoría estática: 2536 apariciones de literales visibles, sin hallazgos del patrón de español usado por la herramienta. Ese patrón no demuestra corrección lingüística de toda la aplicación; se amplía la comprobación con catálogos y pantallas reales.
@@ -45,4 +48,4 @@ Registro de cambios y comprobaciones de esta revisión. Se redacta antes de la v
 
 ## Archivos afectados
 
-README.md, metadata.json, app/build.gradle.kts, traducciones ES/PT, recursos strings.xml ES/PT/PT-BR, startup_information.xml ES/PT, AvatarSelectionDialog.kt, ThemeCustomizationDialog.kt, LocalizationRegressionTest.kt, LocalizationSurfaceTest.kt, PortugueseRenderedAuditTest.kt, tools/audit-portuguese-device.py y las auditorías 219/220.
+README.md, metadata.json, app/build.gradle.kts, traducciones ES/PT, recursos strings.xml ES/PT/PT-BR, startup_information.xml ES/PT, AvatarSelectionDialog.kt, ThemeCustomizationDialog.kt, AppLanguage.kt, LocalizationRegressionTest.kt, LocalizationSurfaceTest.kt, PortugueseRenderedAuditTest.kt, tools/audit-portuguese-device.py y las auditorías 219/220.

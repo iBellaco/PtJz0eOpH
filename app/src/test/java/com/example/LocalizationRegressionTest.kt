@@ -38,6 +38,20 @@ class LocalizationRegressionTest {
         assertEquals("Cuenta Suspendida", appTr("Cuenta Suspendida"))
     }
 
+    @Test fun `language selection updates caller resources with a separate locale override`() {
+        AppLanguage.select(context, "es-419")
+        val configuration = android.content.res.Configuration(context.resources.configuration)
+        configuration.setLocale(java.util.Locale.forLanguageTag("es-419"))
+        val caller = context.createConfigurationContext(configuration)
+        assertEquals("Usuario", caller.getString(com.example.R.string.usuario))
+        AppLanguage.select(caller, "pt-BR")
+        assertEquals("pt-BR", caller.resources.configuration.locales[0].toLanguageTag())
+        assertEquals("Usuário", caller.getString(com.example.R.string.usuario))
+        assertEquals("Usuário", context.getString(com.example.R.string.usuario))
+        AppLanguage.select(caller, "es-419")
+        assertEquals("Usuario", caller.getString(com.example.R.string.usuario))
+    }
+
     @Test fun `Latin American Spanish stays authoritative for canonical labels and catalog fields`() {
         AppLanguage.select(context, "pt")
         AppLanguage.select(context, "es-419")
