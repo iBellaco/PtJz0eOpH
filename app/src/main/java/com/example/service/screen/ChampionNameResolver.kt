@@ -241,7 +241,7 @@ object ChampionNameResolver {
         val title = text.replace(Regex("\\s*\\((?:tu|tú|you|você|voce)\\)\\s*$", RegexOption.IGNORE_CASE), "")
         val normalized = normalize(title).trim()
         val variants = linkedSetOf(normalized)
-        val mastery = Regex("^(?:m\\d{1,2}|lvl?\\d{1,2}|(?:maestria|mastery|nivel|level)\\s*\\d{1,2}|[ivxlcdm]{1,4}|[wvykutxnhodcljfpsza0-9])\\s+")
+        val mastery = Regex("^(?:m\\d{1,2}|lvl?\\d{1,2}|(?:maestria|mastery|nivel|level)\\s*\\d{1,2}|i{1,3}|iv|vi{0,3}|ix|x|[wvykutxnhodcljfpsza0-9])\\s+")
         variants.add(normalized.replace(mastery, ""))
         variants.add(normalized.replace(Regex("^(?:m\\d{1,2}|lvl?\\d{1,2})"), ""))
         val compact = normalizeCompact(title)

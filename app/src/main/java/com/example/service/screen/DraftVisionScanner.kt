@@ -1300,13 +1300,13 @@ object DraftVisionScanner {
         val finalEnemiesMap = enemiesMap.filterNot { allyChampIds.contains(it.value.id) }
         val enemyConfidences = enemyResolved.confidences.filterKeys { finalEnemiesMap.containsKey(it) }
 
-        // Mapear nombres de invocador y hechizos al rol final asignado (o rol por defecto del slot)
+        // Los datos aliados siguen la misma línea observada que el campeón.
         val allySummonerNamesByRole = mutableMapOf<LaneRole, String>()
         val allySpellsByRole = mutableMapOf<LaneRole, List<String>>()
 
         for (i in 0..4) {
             val slot = allySlots[i]
-            val role = slot.assignedRole ?: slot.explicitRole ?: defaultRolesList.getOrNull(i)
+            val role = allySlotRolesCache[i]
             if (role != null) {
                 val sName = allySummonerNamesCache[i]
                 if (!sName.isNullOrBlank()) {

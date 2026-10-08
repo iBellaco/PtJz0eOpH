@@ -29,7 +29,7 @@ class AllyDraftNameReaderTest {
     }
 
     @Test fun explicitMasteryPrefixesAndSelfTagKeepTheWholeChampionName() {
-        for (text in listOf("• JINX", "M7 JINX", "M7JINX", "WJINX", "JINX (TÚ)"))
+        for (text in listOf("• JINX", "M7 JINX", "M7JINX", "VII JINX", "WJINX", "JINX (TÚ)"))
             assertEquals(text, "jinx", ChampionNameResolver.findChampionInNameBand(text, catalog)?.id)
         assertEquals("vi", ChampionNameResolver.findChampionInNameBand("V1", catalog)?.id)
         assertEquals("lee_sin", ChampionNameResolver.findChampionInNameBand("LEE SIN", catalog)?.id)
