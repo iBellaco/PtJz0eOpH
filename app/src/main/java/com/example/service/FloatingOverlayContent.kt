@@ -299,13 +299,12 @@ internal fun FloatingOverlayContent(
                     val isDraftComplete = (confirmedPicksCount >= 10)
                     val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
-                    // Garantizar ciclo de sincronización global periódico o continuo si el visor está abierto
+                    // La navegación y las cajas de diagnóstico no cambian la cadencia del escaneo.
                     val isGlobalSyncCycle = com.example.service.screen.DraftSyncCadence.globalCycle(
                         confirmedPicksCount, hasActiveTurns, isTenthPickActive, loopCycleCounter)
 
 
                     val dynamicLoopDelay = when {
-                        showLiteRTViewer -> 50L // 20 Hz ultra-fluido en vivo para pruebas del usuario
                         isDraftComplete -> 800L
                         !isGlobalSyncCycle && hasActiveTurns -> 50L
                         isTenthPickActive -> 60L
@@ -821,7 +820,7 @@ internal fun FloatingOverlayContent(
                                 // 1. Botón de Visión en Vivo (Solo icono de ojo, sin texto)
                                 Surface(
                                     modifier = Modifier
-                                        .size(26.dp)
+                                        .size(48.dp)
                                         .clickable {
                                             com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = !isLiveVisionActive
                                         }
@@ -843,9 +842,8 @@ internal fun FloatingOverlayContent(
                                 // 2. Botón de Depurado LiteRT (Solo icono)
                                 Surface(
                                     modifier = Modifier
-                                        .size(26.dp)
+                                        .size(48.dp)
                                         .clickable {
-                                            autoScanEnabled = true
                                             showLiteRTViewer = true
                                         }
                                         .testTag("btn_debug_overlay"),
@@ -866,7 +864,7 @@ internal fun FloatingOverlayContent(
                                 // 3. Botón Minimizar (a Burbuja flotante) - Visible, resaltado y siempre asegurado
                                 Surface(
                                     modifier = Modifier
-                                        .size(26.dp)
+                                        .size(48.dp)
                                         .clickable {
                                             isExpanded = false
                                             onExpandedChange(false)
@@ -1181,7 +1179,6 @@ internal fun FloatingOverlayContent(
                                             },
                                             onManualEdit = { autoScanEnabled = false },
                                             onOpenLiteRTViewer = {
-                                                autoScanEnabled = true
                                                 showLiteRTViewer = true
                                             }
                                         )
@@ -1252,7 +1249,6 @@ internal fun FloatingOverlayContent(
                                     onCheckedChange = { isChecked ->
                                         if (isChecked) {
                                             autoScanEnabled = true
-                                            DraftVisionScanner.resetSlotMemory()
                                             if (screenCaptureManager?.isReady() != true) {
                                                 scanNoticeMessage = "Requiere permiso de pantalla. Toca aquí para activarlo."
                                                 try {
@@ -1267,7 +1263,7 @@ internal fun FloatingOverlayContent(
                                             autoScanEnabled = false
                                         }
                                     },
-                                    modifier = Modifier.scale(0.7f),
+                                    modifier = Modifier.size(48.dp).testTag("overlay_auto_scan_toggle"),
                                     colors = SwitchDefaults.colors(
                                         checkedThumbColor = HextechDarkBg,
                                         checkedTrackColor = Color(0xFF00FF7F),

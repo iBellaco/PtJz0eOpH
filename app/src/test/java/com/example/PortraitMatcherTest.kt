@@ -63,8 +63,8 @@ class PortraitMatcherTest {
         } finally { crop.recycle() }
     }
 
-    private fun viFixture(): Bitmap {
-        val json = javaClass.classLoader!!.getResourceAsStream("portraits/vi-tenth-slot.json")!!
+    private fun viFixture(name: String = "vi-tenth-slot"): Bitmap {
+        val json = javaClass.classLoader!!.getResourceAsStream("portraits/$name.json")!!
             .bufferedReader().use { it.readText() }
         val bytes = java.util.Base64.getDecoder().decode(org.json.JSONObject(json).getString("pngBase64"))
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!
@@ -79,8 +79,14 @@ class PortraitMatcherTest {
         }
     }
 
-    @Test fun screenshotViAutomaticallyFillsOnlyTenthHudVacancyOnEitherSide() = runBlocking {
-        val crop = viFixture()
+    @Test fun screenshotViAutomaticallyFillsOnlyTenthHudVacancyOnEitherSide() = verifyViFixture("vi-tenth-slot")
+
+    @Test fun reportedDraftCaptureAutomaticallySelectsViOnEitherSide() = verifyViFixture("vi-reported-draft")
+
+    @Test fun reportedViewerCaptureAutomaticallySelectsViOnEitherSide() = verifyViFixture("vi-reported-viewer")
+
+    private fun verifyViFixture(name: String) = runBlocking {
+        val crop = viFixture(name)
         try {
             for (finalIsAlly in listOf(false, true)) {
                 LiteRTVisionClassifier.reset()
@@ -123,6 +129,24 @@ class PortraitMatcherTest {
                 assertEquals("vi", LiteRTVisionClassifier.executeTenthPickInference(null, finalIsAlly, selected, 9, context = context)?.first?.id)
                 if (teamCrop !== crop) teamCrop.recycle()
             }
+        } finally { crop.recycle() }
+    }
+
+    @Test fun reportedViKeepsConfidenceCountAndExcludedChampionGuards() = runBlocking {
+        val crop = viFixture("vi-reported-viewer")
+        try {
+            LiteRTVisionClassifier.setThreshold(0.95f, context)
+            repeat(3) { assertNull(LiteRTVisionClassifier.executeTenthPickInference(crop, false, emptySet(), 9, context = context)) }
+            assertEquals("vi", LiteRTVisionClassifier.reportFlow.value.pickedChampion?.id)
+            assertFalse(LiteRTVisionClassifier.reportFlow.value.isConfirmed)
+            LiteRTVisionClassifier.setThreshold(0.80f, context)
+            LiteRTVisionClassifier.reset()
+            repeat(3) { assertNull(LiteRTVisionClassifier.executeTenthPickInference(crop, false, emptySet(), 8, context = context)) }
+            assertFalse(LiteRTVisionClassifier.reportFlow.value.isConfirmed)
+            LiteRTVisionClassifier.reset()
+            repeat(3) { assertNull(LiteRTVisionClassifier.executeTenthPickInference(crop, false, setOf("vi"), 9, context = context)) }
+            assertTrue(LiteRTVisionClassifier.reportFlow.value.topCandidates.none { it.champion.id == "vi" })
+            assertFalse(LiteRTVisionClassifier.reportFlow.value.isConfirmed)
         } finally { crop.recycle() }
     }
 

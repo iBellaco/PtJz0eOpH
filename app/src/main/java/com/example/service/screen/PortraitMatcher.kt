@@ -54,6 +54,13 @@ internal object PortraitMatcher {
             for (dx in floatArrayOf(-0.04f, 0f, 0.04f))
                 for (dy in floatArrayOf(-0.04f, 0f, 0.04f))
                     add(descriptor(pixels, width, height, scale, dx, dy))
+        // Small slot crops can fall between the coarse scales/offsets, especially
+        // after ring recentering or JPEG compression. Fill those gaps in the cached
+        // references, rather than weakening confidence or the ambiguity margin.
+        for (scale in floatArrayOf(0.925f, 1.075f))
+            for (dx in floatArrayOf(-0.03f, 0f, 0.03f))
+                for (dy in floatArrayOf(-0.03f, 0f, 0.03f))
+                    add(descriptor(pixels, width, height, scale, dx, dy))
     }
 
     fun similarity(input: FloatArray, references: List<FloatArray>): Float =
