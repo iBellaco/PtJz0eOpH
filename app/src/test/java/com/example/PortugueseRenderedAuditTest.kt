@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -72,6 +73,12 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         DynamicTranslations.loadSync(context)
         WildRiftRepository.initChampions(context, forceReload = true)
         AppLanguage.select(context, "pt")
+        if (screen == "avatars" || screen == "avatar-premium") {
+            com.example.util.SubscriptionManager.init(context)
+        }
+        if (screen == "themes" || screen == "theme-premium") {
+            com.example.ui.theme.AppThemeManager.setTheme(com.example.ui.theme.AppTheme.PILTOVER, context)
+        }
         if (screen == "support-reply") {
             com.example.data.SupportReplyManager.saveConversation(context, "audit-reply",
                 com.example.data.SupportConversationPolicy.initial("audit-reply", "Tester",
@@ -176,19 +183,23 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         if (screen == "avatar-premium") {
             val previousAvatar = com.example.util.SubscriptionManager.currentAvatarId.value
             compose.onNode(hasSetTextAction()).performTextInput("Poro Volibear")
-            compose.onNodeWithTag("avatar_card_poro_volibear").performClick()
+            compose.onNodeWithTag("avatar_card_poro_volibear").performScrollTo().assertIsDisplayed()
+                .performSemanticsAction(SemanticsActions.OnClick) { it() }
+            inspect("locked")
             compose.onNodeWithText("Avatar exclusivo Premium").assertExists()
             compose.onNodeWithText("O Rugido do Trovão", substring = true).assertExists()
             Assert.assertEquals(previousAvatar, com.example.util.SubscriptionManager.currentAvatarId.value)
-            inspect("locked")
         }
         if (screen == "theme-premium") {
             val previousTheme = com.example.ui.theme.AppThemeManager.currentTheme
-            compose.onNodeWithText("Águas de Sentina").performScrollTo().performClick()
-            compose.onNodeWithTag("theme_apply_button").performScrollTo().performClick()
+            compose.onNodeWithTag("theme_scroll").performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 10_000f) }
+            compose.onNodeWithText("Águas de Sentina").assertIsDisplayed()
+                .performSemanticsAction(SemanticsActions.OnClick) { it() }
+            compose.onNodeWithTag("theme_apply_button").performScrollTo().assertIsDisplayed()
+                .performSemanticsAction(SemanticsActions.OnClick) { it() }
+            inspect("locked")
             compose.onNodeWithText("Tema exclusivo Premium").assertExists()
             Assert.assertEquals(previousTheme, com.example.ui.theme.AppThemeManager.currentTheme)
-            inspect("locked")
         }
         if (screen == "onboarding" || screen == "tutorial") {
             repeat(3) { page ->

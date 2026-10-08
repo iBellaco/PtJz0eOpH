@@ -27,6 +27,7 @@ Registro de cambios y comprobaciones de esta revisión. Se redacta antes de la v
 
 - Treinta pruebas Python de scripts de compilación y cinco del auditor de texto del dispositivo aprobadas.
 - Pruebas locales de núcleo: 142 pruebas en 21 clases, sin fallos, errores ni omisiones; incluyen los nuevos casos de catálogos, cambio de idioma y recursos regionales.
+- Cuatro casos visuales locales de avatares, temas y sus avisos Premium aprobados después de las correcciones. Usan una sesión local sin Premium, comprueban controles visibles y sus acciones de accesibilidad, y verifican que abrir el aviso no cambie el avatar ni el tema. El recorrido instalado comprueba los toques de temas en Android.
 - Generador de builds en modo --check: 142 campeones, 300 perfiles de línea, sin diferencias de generación.
 - Auditoría estática: 2536 apariciones de literales visibles, sin hallazgos del patrón de español usado por la herramienta. Ese patrón no demuestra corrección lingüística de toda la aplicación; se amplía la comprobación con catálogos y pantallas reales.
 - Regresiones añadidas: campos reales de todos los avatares/temas, recursos PT/PT-BR/ES del historial, cambio de idioma sin reabrir ambos catálogos y renderizado de los avisos Premium.
