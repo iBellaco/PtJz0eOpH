@@ -19,6 +19,7 @@ object EconomyServiceClient {
         val user = AuthManager.getAuth()?.currentUser
         check(!AuthManager.isGuestOrUnauthenticated(user)) { appTr("Inicia sesión") }
         val token = user!!.getIdToken(false).await()
+        check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
         val ref = FirebaseFirestore.getInstance().collection("economy_requests").document(user.uid)
         val payload = fields + mapOf("action" to action, "id" to id)
         val operationId = try {
@@ -71,6 +72,7 @@ object EconomyServiceClient {
                 if (!continuation.isActive) listener?.remove()
             }
         }
+        check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
         return result ?: throw IllegalStateException(appTr("Tu solicitud sigue pendiente. Se actualizará al procesarse; no la repitas."))
     }
 
