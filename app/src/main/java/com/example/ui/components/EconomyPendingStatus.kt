@@ -14,6 +14,7 @@ import com.example.util.AppLanguage
 import com.example.util.appTr
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.MetadataChanges
 import java.text.DateFormat
 
 private data class RequestView(val request: Map<String, Any>? = null, val loading: Boolean = true,
@@ -26,7 +27,7 @@ private fun observeRequest(): RequestView {
     var state by remember(uid) { mutableStateOf(RequestView(loading = uid != null)) }
     DisposableEffect(uid) {
         val listener = uid?.let { FirebaseFirestore.getInstance().collection("economy_requests").document(it)
-            .addSnapshotListener { snapshot, error ->
+            .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 state = if (error != null) state.copy(loading = false, unavailable = true)
                     else RequestView(snapshot?.data, false, cached = snapshot?.metadata?.isFromCache == true)
             } }
@@ -55,7 +56,7 @@ fun EconomyPendingStatus(alwaysVisible: Boolean = false) {
     val pending = state.request?.get("status") in setOf("PENDING", "PROCESSING")
     if (alwaysVisible || pending || state.request != null || state.unavailable) {
         CoachOutlinedButton(onClick = { details = true }, modifier = Modifier.fillMaxWidth()
-            .heightIn(min = 48.dp).padding(bottom = 8.dp).testTag("economy_request_open")) {
+            .padding(bottom = 8.dp).heightIn(min = 48.dp).testTag("economy_request_open")) {
             Text(appTr(if (pending) "Ver solicitud en espera" else "Solicitudes"))
         }
     }
