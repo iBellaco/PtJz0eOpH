@@ -149,7 +149,7 @@ service cloud.firestore {
     }
     match /pending_sponsor_ads/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.get('userId', '') == request.auth.uid);
-      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isApproved','isEnabled','approvedAtMillis','expiresAtMillis']);
+      allow update: if isAdmin() && resource.data.get('refundedAtMillis', 0) == 0 && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isApproved','isEnabled','approvedAtMillis','expiresAtMillis']);
       allow create: if false;
       allow delete: if isAdmin();
     }
@@ -265,6 +265,10 @@ service cloud.firestore {
           .hasOnly(['status','endedAtMillis','reviewedAtMillis','rejectionReason','streamerHistoryDeleteAt']) && validStreamerHistoryDeadline(request.resource.data)));
         allow delete: if (isAdmin() || (signedIn() && request.auth.uid == userId)) && streamerHistoryExpired(resource.data);
       }
+    }
+    match /app_config/binance_fees {
+      allow read: if signedIn();
+      allow write: if false;
     }
     match /system_config/{document} {
       allow read: if signedIn();

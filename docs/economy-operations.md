@@ -1,6 +1,6 @@
 # Operaciones de esencias de Coach
 
-La función `coachEconomy` concentra compras, solicitudes y resoluciones de canje, ajustes, tiempo Premium, suscripciones a creadores y envíos de anuncios. No se transmiten criptomonedas ni se almacenan claves de billeteras: el operador confirma un pago realizado por otro medio. Debe verificar destino, importe y evidencia del pago antes de marcarlo pagado. Un rechazo devuelve el débito completo una sola vez.
+La función `coachEconomy` concentra compras, solicitudes y resoluciones de canje, ajustes, tiempo Premium, suscripciones a creadores y envíos de anuncios. No se transmiten criptomonedas ni se almacenan claves de billeteras: el operador confirma un pago realizado por otro medio. Debe verificar destino, importe y evidencia del pago antes de marcarlo pagado. Un rechazo devuelve el débito completo una sola vez. El servicio horario existente también devuelve el costo de un anuncio nuevo que no fue aceptado en siete días, comprobando su cargo original; no inventa reembolsos a partir de presupuestos antiguos. Conserva las solicitudes de pago pendientes y elimina las solicitudes ya resueltas cuando vence su retención de 14 días.
 
 ## Activación y permisos
 

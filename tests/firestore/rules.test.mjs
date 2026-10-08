@@ -145,6 +145,15 @@ try {
   await test('pending advertisements cannot bypass the server debit',async()=>{
     for(const store of [economy,admin]) await assertFails(setDoc(doc(store,'pending_sponsor_ads/free-ad'),{sponsorEmail:'economy@test.invalid',isApproved:false}));
   });
+  await test('clients may read server fee quotes but cannot set their own commission',async()=>{
+    await env.withSecurityRulesDisabled(async context=>setDoc(doc(context.firestore(),'app_config/binance_fees'),{ERC20:5}));
+    await assertSucceeds(getDoc(doc(economy,'app_config/binance_fees')));
+    for(const store of [economy,admin]) await assertFails(updateDoc(doc(store,'app_config/binance_fees'),{ERC20:0}));
+  });
+  await test('a refunded advertisement cannot be approved again from a staff client',async()=>{
+    await env.withSecurityRulesDisabled(async context=>setDoc(doc(context.firestore(),'pending_sponsor_ads/refunded'),{userId:'economy',refundedAtMillis:Date.now(),isApproved:false}));
+    await assertFails(updateDoc(doc(admin,'pending_sponsor_ads/refunded'),{isApproved:true}));
+  });
   await test('read acknowledgements synchronize without changing pending sponsorships',async()=>{
     await assertSucceeds(setDoc(doc(user,'users/user/panel_reads/sponsor-read'),{event:'notice:sponsor',revision:'',readAt:serverTimestamp()}));
     await assertSucceeds(getDoc(doc(db('user'),'users/user/panel_reads/sponsor-read')));

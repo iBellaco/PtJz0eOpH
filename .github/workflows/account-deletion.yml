@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: server/account-deletion
       - run: npm test
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: server/account-deletion
       - uses: google-github-actions/auth@v2
@@ -57,6 +57,10 @@ jobs:
       - name: Publish public privacy and account deletion pages
         if: github.event_name != 'schedule'
         run: tests/firestore/node_modules/.bin/firebase deploy --only hosting --project wild-rift-drafting --non-interactive
+      - name: Install and run trusted economy retention
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund --prefix server/economy
+          node server/economy/maintenance.mjs
       - name: Process eligible requests and refresh service availability
         run: npm run process
         working-directory: server/account-deletion

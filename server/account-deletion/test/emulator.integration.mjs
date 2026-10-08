@@ -9,10 +9,11 @@ const now=Date.now(),uid='deletion-integration-owner',other='deletion-integratio
 const email='deletion-owner@test.invalid';
 await auth.createUser({uid,email,password:'EmulatorOnlyPass123!'});
 await auth.createUser({uid:other,email:'deletion-other@test.invalid',password:'EmulatorOnlyPass123!'});
-await db.doc(`users/${uid}`).set({role:'free',email});
+await db.doc(`users/${uid}`).set({role:'free',email,subscribedCreators:[other]});
 await db.doc(`users/${uid}/messages/private`).set({userId:uid,photos:['private-test-image']});
 await db.doc(`users/${uid}/subscription_history/receipt`).set({amount:'test',userId:uid});
-await db.doc(`users/${other}`).set({role:'free',subscribedCreators:[uid,'keep-creator']});
+await db.doc(`users/${other}`).set({role:'free',subscribedCreators:[uid,'keep-creator'],creatorSubscriberCount:1});
+await db.doc(`users/${other}/creator_subscribers/${uid}`).set({userId:uid,active:true});
 await db.doc('support_reports/deletion-owned').set({userId:uid,userEmail:email});
 await db.doc('support_reports/deletion-foreign').set({userId:other,userEmail:email});
 await db.doc('support_reports/deletion-legacy').set({userEmail:email});
@@ -46,6 +47,8 @@ for(const path of ['support_reports/deletion-shared',`users/${other}/messages/de
 const authored=(await db.doc('moderator_requests/deletion-authored').get()).data();
 assert.equal(authored.targetUid,other);assert.equal(authored.requestedByUid,undefined);assert.equal(authored.requestedByName,'Moderador');
 assert.deepEqual((await db.doc(`users/${other}`).get()).get('subscribedCreators'),['keep-creator']);
+assert.equal((await db.doc(`users/${other}/creator_subscribers/${uid}`).get()).exists,false);
+assert.equal((await db.doc(`users/${other}`).get()).get('creatorSubscriberCount'),0);
 assert.deepEqual((await db.doc('system_config/streamer_live').get()).get('entries'),[{userId:other}]);
 await assert.rejects(auth.getUser(uid),error=>error.code==='auth/user-not-found');
 assert.ok(await auth.getUser(other));

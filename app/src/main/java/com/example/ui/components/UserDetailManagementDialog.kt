@@ -118,7 +118,7 @@ fun UserDetailManagementDialog(
         currentSecondaryRole = (updated["secondaryRole"] as? String).orEmpty()
         currentPremiumUntil = com.example.model.PremiumAccessPolicy.deadline(updated["premiumUntil"])
         currentPremiumPlan = (updated["subscriptionPlan"] as? String).orEmpty()
-        onUserUpdated(updated)
+        onUserUpdated(user + updated)
     }
     fun submitPremiumDays(days: Int, extend: Boolean = true, afterSuccess: () -> Unit = {}) {
         if (isProcessing || !isAdmin) return

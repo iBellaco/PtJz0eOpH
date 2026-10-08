@@ -2,6 +2,7 @@ import {initializeApp, deleteApp} from 'firebase-admin/app';
 import {getFirestore, Timestamp} from 'firebase-admin/firestore';
 import assert from 'node:assert/strict';
 import {executeEconomy} from '../service.mjs';
+import {maintainEconomy} from '../maintenance.mjs';
 if (!/^127\.0\.0\.1:\d+$/.test(process.env.FIRESTORE_EMULATOR_HOST ?? '')) throw new Error('Isolated emulator required; production writes prohibited.');
 const app = initializeApp({projectId: 'demo-coach-tests'}, 'economy-tests'), db = getFirestore(app);
 const auth = (uid, admin = false) => ({uid, token: {admin, email: `${uid}@test.invalid`, firebase: {sign_in_provider: 'password'}}});
@@ -96,6 +97,24 @@ try {
     await assert.rejects(call('SPONSOR', 'sponsor_zero_price', {notice, expectedCost: 0}), /costo/);
     await call('SPONSOR', 'sponsor_valid_price', {notice, expectedCost: 27});
     assert.equal((await db.doc('pending_sponsor_ads/sponsor_valid_price').get()).get('chargedEssence'), 27);
+  });
+  await test('an unaccepted sponsor receives exactly one refund after seven server days', async () => {
+    const now = Date.now(), profile = db.doc(`users/${owner.uid}`), before = (await profile.get()).get('blueEssence');
+    await db.doc('pending_sponsor_ads/sponsor_valid_price').update({createdAt: now - 7 * 86400000 - 1000});
+    await db.doc('pending_sponsor_ads/legacy_untrusted_budget').set({userId: owner.uid, isApproved: false, createdAt: now - 8 * 86400000, chargedEssence: 100000});
+    await Promise.all([maintainEconomy(db, now), maintainEconomy(db, now)]);
+    assert.equal((await profile.get()).get('blueEssence'), before + 27);
+    assert.equal((await db.doc('pending_sponsor_ads/sponsor_valid_price').get()).get('status'), 'REFUNDED');
+    assert.equal((await db.doc(`users/${owner.uid}/subscription_history/sponsor_refund_sponsor_valid_price`).get()).get('amount'), '+27 EA');
+    await maintainEconomy(db, now + 1); assert.equal((await profile.get()).get('blueEssence'), before + 27);
+  });
+  await test('retention removes expired resolved requests and preserves pending money', async () => {
+    const now = Date.now();
+    await db.doc('cash_redemptions/cash_server_ten').update({historyDeleteAtMillis: now - 1});
+    await db.doc('cash_redemptions/pending_retention_guard').set({userId: owner.uid, status: 'PENDING', historyDeleteAtMillis: now - 1});
+    await maintainEconomy(db, now);
+    assert.equal((await db.doc('cash_redemptions/cash_server_ten').get()).exists, false);
+    assert.equal((await db.doc('cash_redemptions/pending_retention_guard').get()).exists, true);
   });
   console.log(`PASS ${passed} server economy integration cases`);
 } finally { await deleteApp(app); }

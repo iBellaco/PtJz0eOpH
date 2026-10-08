@@ -13,7 +13,9 @@
 
 ## Validación y límites
 
-Las pruebas de política y operaciones se ejecutan en el proyecto aislado demo-coach-tests; incluyen los cuatro planes/precios, carreras de saldo, replay, cambios de comisión, destinos USDT, claims falsos, suspensión/eliminación, pagos a creadores y anuncios. Los resultados de compilación, instalación y publicación corresponden a las ejecuciones de esta versión y deben comprobarse antes de entregar. No se declara activa una función por tener código o tests de emulator.
+La cuenta del titular indicada por el usuario ya recibió un claim firmado, preservando los anteriores, durante la verificación privilegiada. El primer selector de despliegue no coincidía con el codebase; se corrigió a `functions:economy`. La activación completa sigue condicionada al resultado real del despliegue y la lectura de vuelta de las reglas.
+
+Las pruebas de política y operaciones se ejecutan en el proyecto aislado demo-coach-tests; incluyen los cuatro planes/precios, carreras de saldo, replay, cambios de comisión, destinos USDT, claims falsos, suspensión/eliminación, pagos a creadores, anuncios, reembolso a los siete días, conservación de solicitudes pendientes y limpieza de membresías al borrar una cuenta. Los resultados de compilación, instalación y publicación corresponden a las ejecuciones de esta versión y deben comprobarse antes de entregar. No se declara activa una función por tener código o tests de emulator.
 
 El intento de cambiar la descripción pública del repositorio fue rechazado con HTTP 403 por la conexión de GitHub. El propietario debe sustituirla desde Settings; descripción propuesta: «Coach: aplicación Android de asistencia al draft de Wild Rift, con reconocimiento local y contenido en español y portugués».
 

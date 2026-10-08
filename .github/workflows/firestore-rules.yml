@@ -106,7 +106,7 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Deploy authoritative economy before restricting clients
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
-        run: tests/firestore/node_modules/.bin/firebase deploy --only functions:coachEconomy --project wild-rift-drafting --non-interactive
+        run: tests/firestore/node_modules/.bin/firebase deploy --only functions:economy --project wild-rift-drafting --non-interactive
       - name: Require the active economy and trusted administrator before changing permissions
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         working-directory: server/economy

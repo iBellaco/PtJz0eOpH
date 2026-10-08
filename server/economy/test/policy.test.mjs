@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {allowedAccount, cashRedemption, premiumPurchase, validWallet, validateInput, integer, sponsorPrice, DAY} from '../policy.mjs';
+import {allowedAccount, cashRedemption, premiumPurchase, validWallet, validateInput, integer, sponsorPrice, fingerprint, DAY} from '../policy.mjs';
 const account = {role: 'creador', blueEssence: 2000, orangeEssence: 200, premiumUntil: 9000000000000};
 for (const [plan, currency, days, cost] of [['MONTHLY', 'BLUE', 30, 100], ['MONTHLY', 'ORANGE', 30, 9], ['ANNUAL', 'BLUE', 365, 1100], ['ANNUAL', 'ORANGE', 365, 95]]) {
   test(`${plan} ${currency} inherits existing time and uses the fixed price`, () => {
@@ -46,4 +46,9 @@ test('sponsor pricing uses server publication count and verified fields', () => 
   assert.deepEqual(sponsorPrice(notice, 0), {budget: 2.78, cost: 27});
   assert.throws(() => sponsorPrice({...notice, durationValue: 100}, 1));
   assert.throws(() => sponsorPrice({...notice, externalUrl: 'javascript:alert(1)'}, 1));
+});
+
+test('retry fingerprints ignore JSON object order without ignoring altered quantities', () => {
+  assert.equal(fingerprint({action: 'SPONSOR', notice: {title: 'A', content: 'B'}}), fingerprint({notice: {content: 'B', title: 'A'}, action: 'SPONSOR'}));
+  assert.notEqual(fingerprint({amount: 10}), fingerprint({amount: 25}));
 });

@@ -122,15 +122,16 @@ export async function executeEconomy(db, auth, raw, clock = Date.now) {
         const rawReward = 5 * level[1] / 100, reward = rawReward === 2.5 ? 2 : Math.round(rawReward);
         updates.orangeEssence = remaining; updates.subscribedCreators = [...subscriptions, input.creatorUid];
         record = receipt(input.id, now, 'CREATOR_SUBSCRIPTION', 'Suscripción a Creador', '-5 EN');
+        ensure(!(await tx.get(creatorRef.collection('economy_operations').doc(input.id))).exists && !(await tx.get(creatorRef.collection('subscription_history').doc(input.id))).exists, 'already-exists', 'El identificador ya pertenece a otra operación');
         const creatorReceipt = receipt(input.id, now, 'CREATOR_SUBSCRIPTION_REWARD', 'Pago por Suscriptor', `+${reward} EN`, 'Añadido por Suscripción');
-        writes.push([entry, {userId: uid, operationId: input.id, active: true, subscribedAt: serverTime()}], [creatorRef.collection('subscription_history').doc(input.id), creatorReceipt], [creatorRef.collection('economy_operations').doc(input.id), {id: input.id, kind: 'CREATOR_REWARD', userId: input.creatorUid, actorUid: auth.uid, timestamp: now, createdAt: serverTime(), cost: 5, reward, receipt: creatorReceipt}], [creatorRef.collection('messages').doc(input.id), {id: input.id, title: '¡Nueva Suscripción con Esencia Naranja!', content: `Un usuario se ha suscrito a tu perfil. Se añadieron ${reward} EN.`, tag: 'GENERAL', panel: 'CREATOR', timestamp: now, isRead: false}]);
+        writes.push([entry, {userId: uid, operationId: input.id, active: true, subscribedAt: serverTime()}], [creatorRef.collection('subscription_history').doc(input.id), creatorReceipt], [creatorRef.collection('economy_operations').doc(input.id), {id: input.id, kind: 'CREATOR_REWARD', userId: input.creatorUid, actorUid: 'service', timestamp: now, createdAt: serverTime(), cost: 5, reward, receipt: creatorReceipt}], [creatorRef.collection('messages').doc(input.id), {id: input.id, title: '¡Nueva Suscripción con Esencia Naranja!', content: `Un usuario se ha suscrito a tu perfil. Se añadieron ${reward} EN.`, tag: 'GENERAL', panel: 'CREATOR', timestamp: now, isRead: false}]);
         tx.update(creatorRef, {orangeEssence: integer(balance(creator, 'ORANGE') + reward), creatorSubscriberCount: count + 1, hasUnreadMessages: true, unreadMessagesCount: FieldValue.increment(1)});
         metadata = {kind: 'CREATOR_SUBSCRIPTION', creatorUid: input.creatorUid, cost: 5, reward};
       } else {
         updates.subscribedCreators = subscriptions.filter(v => v !== input.creatorUid);
         if (creator && membership?.active) {
           tx.update(creatorRef, {creatorSubscriberCount: Math.max(0, integer(creator.creatorSubscriberCount ?? 1) - 1)});
-          writes.push([entry, {...membership, active: false, unsubscribedAt: serverTime()}]);
+          tx.delete(entry);
         }
         record = receipt(input.id, now, 'CREATOR_UNSUBSCRIBE', 'Suscripción a Creador retirada', '0 EN');
       }

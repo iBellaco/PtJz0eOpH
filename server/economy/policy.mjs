@@ -55,7 +55,8 @@ export function cashRedemption(account, input, admin = false, fees = FEES) {
   return {remaining, fee, totalCost, binanceEmail, network, wallet};
 }
 export function fingerprint(input) {
-  return createHash('sha256').update(JSON.stringify(Object.fromEntries(Object.entries(input).sort(([a], [b]) => a.localeCompare(b))))).digest('hex');
+  const ordered = value => Array.isArray(value) ? value.map(ordered) : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key => [key, ordered(value[key])])) : value;
+  return createHash('sha256').update(JSON.stringify(ordered(input))).digest('hex');
 }
 export function sponsorPrice(notice, activeCount) {
   ensure(notice && typeof notice === 'object' && !Array.isArray(notice), 'invalid-argument', 'Anuncio no válido');
