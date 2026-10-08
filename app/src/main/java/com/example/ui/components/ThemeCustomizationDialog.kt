@@ -76,6 +76,8 @@ fun ThemeCustomizationBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.92f)
+                .verticalScroll(rememberScrollState())
+                .testTag("theme_scroll")
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -770,6 +772,8 @@ private fun RegionVisualPreviewGridCard(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(Brush.horizontalGradient(listOf(HextechGold, Color(0xFFD4AF37))))
+                                    .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                                    .testTag("theme_premium_notice_button")
                                     .coachClickable { onShowPremiumAlert() }
                                     .padding(horizontal = 6.dp, vertical = 5.dp)
                             ) {
@@ -792,7 +796,9 @@ private fun RegionVisualPreviewGridCard(
                         }
 
                         HextechAnimatedButton(
-                            onClick = onApply,
+                            onClick = {
+                                if (!isPremium && !isApplied) onShowPremiumAlert() else onApply()
+                            },
                             backgroundColor = if (isApplied) inspectedTheme.surfaceVariant else inspectedTheme.primary,
                             borderColor = if (isApplied) inspectedTheme.secondary else inspectedTheme.primaryGlow,
                             glowColor = if (isApplied) inspectedTheme.secondary else inspectedTheme.primary,

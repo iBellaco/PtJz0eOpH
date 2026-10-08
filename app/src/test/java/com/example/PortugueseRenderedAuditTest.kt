@@ -174,16 +174,20 @@ class PortugueseRenderedAuditTest(private val screen: String) {
         }
         inspect("initial")
         if (screen == "avatar-premium") {
-            compose.onNodeWithText("Buscar avatar...").performTextInput("Poro Volibear")
+            val previousAvatar = com.example.util.SubscriptionManager.currentAvatarId.value
+            compose.onNode(hasSetTextAction()).performTextInput("Poro Volibear")
             compose.onNodeWithTag("avatar_card_poro_volibear").performClick()
             compose.onNodeWithText("Avatar exclusivo Premium").assertExists()
             compose.onNodeWithText("O Rugido do Trovão", substring = true).assertExists()
+            Assert.assertEquals(previousAvatar, com.example.util.SubscriptionManager.currentAvatarId.value)
             inspect("locked")
         }
         if (screen == "theme-premium") {
-            compose.onNodeWithText("Águas de Sentina").performClick()
+            val previousTheme = com.example.ui.theme.AppThemeManager.currentTheme
+            compose.onNodeWithText("Águas de Sentina").performScrollTo().performClick()
             compose.onNodeWithTag("theme_apply_button").performScrollTo().performClick()
             compose.onNodeWithText("Tema exclusivo Premium").assertExists()
+            Assert.assertEquals(previousTheme, com.example.ui.theme.AppThemeManager.currentTheme)
             inspect("locked")
         }
         if (screen == "onboarding" || screen == "tutorial") {

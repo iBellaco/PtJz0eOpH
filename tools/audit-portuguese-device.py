@@ -88,12 +88,15 @@ size = re.search(r"(\d+)x(\d+)", adb("shell", "wm", "size"))
 WIDTH, HEIGHT = map(int, size.groups())
 
 
-def scroll():
-    adb("shell", "input", "swipe", str(WIDTH // 2), str(HEIGHT * 3 // 4), str(WIDTH // 2), str(HEIGHT // 3), "450")
+def scroll(direction="down"):
+    start, end = HEIGHT * 3 // 4, HEIGHT // 3
+    if direction == "up":
+        start, end = end, start
+    adb("shell", "input", "swipe", str(WIDTH // 2), str(start), str(WIDTH // 2), str(end), "450")
     time.sleep(0.6)
 
 
-def tap(label, scrolling=0):
+def tap(label, scrolling=0, scroll_direction="down"):
     labels = (label,) if isinstance(label, str) else tuple(label)
     for attempt in range(max(10, scrolling + 1)):
         nodes = app_nodes(window())
@@ -116,7 +119,7 @@ def tap(label, scrolling=0):
                     time.sleep(0.8)
                     return
         if attempt < scrolling:
-            scroll()
+            scroll(scroll_direction)
         else:
             time.sleep(1)
     snapshot("missing-" + str(len(screens)))
@@ -171,7 +174,7 @@ if MODE in ("pt", "both"):
     snapshot("themes-portuguese")
     tap("Águas de Sentina", scrolling=6)
     snapshot("theme-preview-portuguese")
-    tap("Aplicar", scrolling=6)
+    tap("Aplicar", scrolling=6, scroll_direction="up")
     snapshot("theme-premium-portuguese")
     tap("Entendido")
     back()
@@ -273,7 +276,7 @@ if MODE in ("es", "both"):
     snapshot('themes-spanish')
     tap('Aguas Estancadas', scrolling=6)
     snapshot('theme-preview-spanish')
-    tap('Aplicar', scrolling=6)
+    tap('Aplicar', scrolling=6, scroll_direction='up')
     snapshot('theme-premium-spanish')
     tap('Entendido')
     back()

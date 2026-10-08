@@ -21,6 +21,7 @@ Registro de cambios y comprobaciones de esta revisión. Se redacta antes de la v
 - Se corrige el recurso pt-BR del historial: 48 horas, igual que ES y PT, en lugar de siete días.
 - Se corrige la introducción que prometía una clasificación “oficial”, actualizada al último parche y servidores asiáticos. Ahora identifica fuentes comunitarias globales y explica que pueden estar desactualizadas y no garantizan resultados.
 - Los temas dejan de presentarse como oficiales de Riot. El aviso Premium aclara que son temas de Coach inspirados en Runaterra y que no acreditan aprobación de Riot. El botón Aplicar tiene un área mínima de 48dp y un identificador de prueba.
+- La comprobación visual inicial encontró que la pantalla de temas no permitía desplazarse hasta todo el contenido. Se agrega desplazamiento vertical. Aplicar mostraba la insignia Premium pero permitía cambiar a otro tema sin esa condición; ahora abre el aviso sin cambiar el tema. La insignia también tiene un área de 48dp. Las dos nuevas pruebas de avisos fallaron inicialmente por el selector del campo de búsqueda y por la ausencia de desplazamiento; se corrigen las interacciones y la pantalla antes de validar la entrega.
 
 ## Comprobaciones
 
