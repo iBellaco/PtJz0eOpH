@@ -47,7 +47,8 @@ fun UserDetailManagementDialog(
     onUserUpdated: (Map<String, Any>) -> Unit,
     onOpenAvatarGift: () -> Unit,
     onReloadAll: () -> Unit,
-    premiumGrantAction: ((Int, Boolean, (Result<Map<String, Any>>) -> Unit) -> Unit)? = null
+    premiumGrantAction: ((Int, Boolean, (Result<Map<String, Any>>) -> Unit) -> Unit)? = null,
+    roleChangeAction: ((String, (Result<Map<String, Any>>) -> Unit) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val uid = user["uid"] as? String ?: ""
@@ -72,6 +73,10 @@ fun UserDetailManagementDialog(
                 if (error == null && snapshot != null && snapshot.exists()) {
                     currentBlueEssence = snapshot.getLong("blueEssence") ?: 0L
                     currentOrangeEssence = snapshot.getLong("orangeEssence") ?: 0L
+                    snapshot.getString("role")?.let { currentRole = it }
+                    snapshot.getBoolean("banned")?.let { currentBanned = it }
+                    if (snapshot.contains("premiumUntil")) currentPremiumUntil = com.example.model.PremiumAccessPolicy.deadline(snapshot.get("premiumUntil"))
+                    snapshot.getString("subscriptionPlan")?.let { currentPremiumPlan = it }
                 }
             } else null
         onDispose { listener?.remove() }
@@ -87,6 +92,9 @@ fun UserDetailManagementDialog(
     var roleToConfirm by remember { mutableStateOf<AppUserRole?>(null) }
     var secondaryRoleToConfirm by remember { mutableStateOf<AppUserRole?>(null) }
     var isChangingRole by remember { mutableStateOf(false) }
+    var showEconomyRequest by remember { mutableStateOf(false) }
+    var roleChangeError by remember { mutableStateOf<String?>(null) }
+    if (showEconomyRequest) EconomyRequestDialog(onDismiss = { showEconomyRequest = false })
     var isChangingSecondaryRole by remember { mutableStateOf(false) }
 
     var isProcessing by remember { mutableStateOf(false) }
@@ -173,6 +181,7 @@ fun UserDetailManagementDialog(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
+                EconomyPendingStatus(alwaysVisible = true)
                 // Header del Dialog
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -556,6 +565,7 @@ fun UserDetailManagementDialog(
                                             com.example.ui.components.CoachClickableSurface(
                                                 onClick = {
                                                     if (!isSelected && !isChangingRole && isAdmin) {
+                                                        roleChangeError = null
                                                         roleToConfirm = targetRole
                                                     }
                                                 },
@@ -566,7 +576,7 @@ fun UserDetailManagementDialog(
                                                     width = if (isSelected) 1.2.dp else 0.8.dp,
                                                     color = if (isSelected) targetRole.primaryColor else HextechCardBorder
                                                 ),
-                                                modifier = Modifier.fillMaxWidth()
+                                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("managed_role_${targetRole.id}")
                                             ) {
                                                 Row(
                                                     modifier = Modifier
@@ -1359,6 +1369,7 @@ fun UserDetailManagementDialog(
                         fontSize = 13.sp
                     )
 
+                    roleChangeError?.let { Text(it, color = DangerRed, modifier = Modifier.testTag("role_change_error")) }
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Surface(
@@ -1417,7 +1428,15 @@ fun UserDetailManagementDialog(
                 Button(
                     onClick = {
                         isChangingRole = true
-                        updateUserRoleInCloud(context, uid, target.id) { newRole, isBanned, inheritedUntil ->
+                        roleChangeError = null
+                        val failed: (Throwable) -> Unit = { failure ->
+                            isChangingRole = false
+                            if (failure is com.example.data.EconomyPendingException) {
+                                roleToConfirm = null
+                                showEconomyRequest = true
+                            } else roleChangeError = failure.message ?: com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo.")
+                        }
+                        val succeeded: (String, Boolean, Long?) -> Unit = { newRole, isBanned, inheritedUntil ->
                             isChangingRole = false
                             roleToConfirm = null
                             currentRole = newRole
@@ -1432,7 +1451,14 @@ fun UserDetailManagementDialog(
                             })
                             onReloadAll()
                         }
+                        if (roleChangeAction != null) roleChangeAction(target.id) { outcome ->
+                            outcome.onSuccess { response ->
+                                val account = response["account"] as? Map<*, *>
+                                succeeded(target.id, target.id == "banned", (account?.get("premiumUntil") as? Number)?.toLong())
+                            }.onFailure(failed)
+                        } else updateUserRoleInCloud(context, uid, target.id, onError = failed, onSuccess = succeeded)
                     },
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("role_change_confirm"),
                     enabled = !isChangingRole,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (target == AppUserRole.BANNED) DangerRed else HextechGold
@@ -1453,6 +1479,7 @@ fun UserDetailManagementDialog(
             dismissButton = {
                 TextButton(
                     onClick = { if (!isChangingRole) roleToConfirm = null },
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("role_change_cancel"),
                     enabled = !isChangingRole
                 ) {
                     Text(tr("Cancelar"), color = TextSecondary)

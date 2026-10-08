@@ -14,42 +14,49 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /** Only a private command is submitted here. The trusted worker owns every balance and receipt. */
+class EconomyPendingException : IllegalStateException(appTr(
+    "Tienes una solicitud en espera. Puedes verla en Usuario → Solicitudes o en Ver solicitud."))
+
 object EconomyServiceClient {
     suspend fun call(action: String, fields: Map<String, Any> = emptyMap(), id: String = UUID.randomUUID().toString()): Map<String, Any> {
-        val user = AuthManager.getAuth()?.currentUser
+        val user = AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
         check(!AuthManager.isGuestOrUnauthenticated(user)) { appTr("Inicia sesión") }
-        val token = user!!.getIdToken(false).await()
+        val token = withTimeoutOrNull(10_000L) { user.getIdToken(false).await() }
+            ?: throw IllegalStateException(appTr("No se pudo enviar la solicitud. Comprueba tu conexión y vuelve a intentarlo."))
         check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
         val ref = FirebaseFirestore.getInstance().collection("economy_requests").document(user.uid)
         val payload = fields + mapOf("action" to action, "id" to id)
-        val operationId = try {
-            FirebaseFirestore.getInstance().runTransaction { tx ->
-                val current = tx.get(ref)
-                if (current.getString("status") in setOf("PENDING", "PROCESSING")) {
-                    val pending = current.get("payload") as? Map<*, *> ?: emptyMap<Any, Any>()
-                    check(canonical(pending.filterKeys { it != "id" }) == canonical(payload.filterKeys { it != "id" })) {
-                        appTr("Tienes una solicitud pendiente. Espera a que termine antes de enviar otra.")
+        val submission = try {
+            withTimeoutOrNull(15_000L) {
+                FirebaseFirestore.getInstance().runTransaction { tx ->
+                    val current = tx.get(ref)
+                    if (current.getString("status") in setOf("PENDING", "PROCESSING")) {
+                        val pending = current.get("payload") as? Map<*, *> ?: emptyMap<Any, Any>()
+                        val same = EconomyRequestPolicy.sameCommand(pending, payload)
+                        (current.getString("operationId") ?: "") to !same
+                    } else {
+                        tx.set(ref, mapOf("userId" to user.uid, "operationId" to id, "payload" to payload,
+                            "status" to "PENDING", "schema" to 2, "createdAt" to FieldValue.serverTimestamp(),
+                            "authTime" to ((token.claims["auth_time"] as? Number)?.toLong() ?: 0L)))
+                        id to false
                     }
-                    current.getString("operationId") ?: error(appTr("No se pudo completar la operación. Vuelve a intentarlo."))
-                } else {
-                    tx.set(ref, mapOf("userId" to user.uid, "operationId" to id, "payload" to payload,
-                        "status" to "PENDING", "schema" to 2, "createdAt" to FieldValue.serverTimestamp(),
-                        "authTime" to ((token.claims["auth_time"] as? Number)?.toLong() ?: 0L)))
-                    id
-                }
-            }.await()
+                }.await()
+            } ?: throw EconomyPendingException()
         } catch (error: FirebaseFirestoreException) {
             throw IllegalStateException(appTr(if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED)
                 "No tienes permisos para esta operación" else "No se pudo enviar la solicitud. Comprueba tu conexión y vuelve a intentarlo."), error)
         }
-        val result = withTimeoutOrNull(45_000L) {
+        if (submission.second) throw EconomyPendingException()
+        val operationId = submission.first
+        check(operationId.isNotBlank()) { appTr("No se pudo completar la operación. Vuelve a intentarlo.") }
+        val result = withTimeoutOrNull(5_000L) {
             suspendCancellableCoroutine<Map<String, Any>> { continuation ->
                 var listener: ListenerRegistration? = null
                 listener = FirebaseFirestore.getInstance().collection("economy_results")
                     .document("${user.uid}~$operationId").addSnapshotListener { snapshot, error ->
                     if (!continuation.isActive) return@addSnapshotListener
                     if (error != null) {
-                        continuation.resumeWithException(IllegalStateException(appTr("Tu solicitud sigue pendiente. Se actualizará al procesarse; no la repitas."), error))
+                        continuation.resumeWithException(EconomyPendingException().apply { initCause(error) })
                         listener?.remove()
                     } else if (snapshot?.getString("operationId") == operationId) {
                         when (snapshot.getString("status")) {
@@ -73,13 +80,7 @@ object EconomyServiceClient {
             }
         }
         check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
-        return result ?: throw IllegalStateException(appTr("Tu solicitud sigue pendiente. Se actualizará al procesarse; no la repitas."))
+        return result ?: throw EconomyPendingException()
     }
 
-    private fun canonical(value: Any?): Any? = when (value) {
-        is Map<*, *> -> value.entries.associate { it.key.toString() to canonical(it.value) }.toSortedMap()
-        is List<*> -> value.map(::canonical)
-        is Number -> value.toDouble()
-        else -> value
-    }
 }
