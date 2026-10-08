@@ -31,8 +31,8 @@ class BuildCoachingRenderedTest {
     @Test fun `Syndra build and element decisions are localized in Portuguese`()=inspect("pt")
     @Test fun `Vi boot selections keep their own tier two and tier three advice in Spanish`()=inspectBoots("es")
     @Test fun `Vi boot selections keep their own tier two and tier three advice in Portuguese`()=inspectBoots("pt")
-    @Test fun `matchup avatars show their name without navigating in Spanish`()=inspectMatchupNames("es")
-    @Test fun `matchup avatars show their name without navigating in Portuguese`()=inspectMatchupNames("pt")
+    @Test @Config(qualifiers="w330dp-h720dp-xhdpi") fun `matchup avatars show their name without navigating in Spanish`()=inspectMatchupNames("es")
+    @Test @Config(qualifiers="w330dp-h720dp-xhdpi") fun `matchup avatars show their name without navigating in Portuguese`()=inspectMatchupNames("pt")
 
     private fun inspectMatchupNames(language: String) {
         val context = RuntimeEnvironment.getApplication()
@@ -64,7 +64,8 @@ class BuildCoachingRenderedTest {
                     compose.onNodeWithTag("build_matchup_${group}_row_$row").assertExists()
                 }
             }
-            compose.onNodeWithTag("advantage_insight_card").performScrollTo()
+            compose.onNodeWithTag("build_matchup_groups_row").performScrollTo().assertIsDisplayed()
+            val viewport = compose.onNodeWithTag("build_matchup_groups_row").fetchSemanticsNode().boundsInRoot
             val cards = listOf("advantage", "weakness", "synergy").map {
                 compose.onNodeWithTag("${it}_insight_card").fetchSemanticsNode()
             }
@@ -72,13 +73,25 @@ class BuildCoachingRenderedTest {
             org.junit.Assert.assertEquals(cards[0].positionInRoot.y, cards[2].positionInRoot.y, 1f)
             org.junit.Assert.assertTrue(cards[0].positionInRoot.x < cards[1].positionInRoot.x)
             org.junit.Assert.assertTrue(cards[1].positionInRoot.x < cards[2].positionInRoot.x)
+            cards.forEach { card ->
+                org.junit.Assert.assertTrue("All groups fit without horizontal scrolling", card.boundsInRoot.right <= viewport.right + 1f)
+                org.junit.Assert.assertTrue(card.boundsInRoot.left >= viewport.left - 1f)
+            }
+            for (group in listOf("advantage", "weakness", "synergy")) {
+                val portraits = compose.onAllNodesWithTag("build_matchup_name_$group").fetchSemanticsNodes()
+                portraits.chunked(3).forEach { row ->
+                    org.junit.Assert.assertEquals(3, row.size)
+                    org.junit.Assert.assertTrue(row.zipWithNext().all { (left, right) -> left.boundsInRoot.right <= right.boundsInRoot.left + 1f })
+                    row.forEach { org.junit.Assert.assertTrue("48dp expanded touch width", it.touchBoundsInRoot.width >= 48f * context.resources.displayMetrics.density - 1f) }
+                }
+            }
             val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
             compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-matchup-access-$count-$language.png").path)
         }
         for (group in listOf("advantage", "weakness", "synergy")) {
             val avatar = compose.onAllNodesWithTag("build_matchup_name_$group").onFirst().performScrollTo()
             val name = avatar.fetchSemanticsNode().config[SemanticsProperties.ContentDescription].first()
-            avatar.performSemanticsAction(SemanticsActions.OnClick) { it() }
+            avatar.performTouchInput { click(center) }
             compose.onNodeWithTag("build_matchup_visible_name", useUnmergedTree = true).assertTextEquals(name).assertIsDisplayed()
             val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
             compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-matchup-name-$group-$language.png").path)

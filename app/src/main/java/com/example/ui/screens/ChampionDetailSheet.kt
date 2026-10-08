@@ -1506,25 +1506,20 @@ fun ChampionDetailSheet(
             val rawSynergies = roleProfile.synergies.ifEmpty {
                 champion.synergies.ifEmpty { synergyProfile.bestTeammates.map { it.championName } }
             }
-            androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
-                // Three portraits retain 48dp touch targets; narrow screens scroll the
-                // same compact row instead of stacking the three relationship groups.
-                val cardWidth = ((maxWidth - 8.dp) / 3).coerceAtLeast(156.dp)
-                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                Row(Modifier.fillMaxWidth()
                     .testTag("build_matchup_groups_row"),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.Top) {
                     BuildMatchupList("advantage", tr("Ventaja"), roleProfile.advantageAgainst,
                         AllyBlue, isPremium, isSignedIn, isCompact, currentLang,
-                        Modifier.width(cardWidth)) { selectedMatchupName = it }
+                        Modifier.weight(1f)) { selectedMatchupName = it }
                     BuildMatchupList("weakness", tr("Débil"), roleProfile.counteredBy,
                         DangerRed, isPremium, isSignedIn, isCompact, currentLang,
-                        Modifier.width(cardWidth)) { selectedMatchupName = it }
+                        Modifier.weight(1f)) { selectedMatchupName = it }
                     BuildMatchupList("synergy", tr("Sinergia"), rawSynergies,
                         HextechGold, isPremium, isSignedIn, isCompact, currentLang,
-                        Modifier.width(cardWidth)) { selectedMatchupName = it }
+                        Modifier.weight(1f)) { selectedMatchupName = it }
                 }
-            }
 
             if (!isSignedIn) {
                 Spacer(Modifier.height(10.dp))

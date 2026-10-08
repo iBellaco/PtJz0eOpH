@@ -235,7 +235,7 @@ jobs:
       env:
         CI: 'true'
       run: gradle :app:testDebugUnitTest --tests com.example.HistoryConsistencyTest --tests com.example.CoachRoutineRegressionTest --tests com.example.ChampionBuildsCatalogValidationTest
-        --tests com.example.ChampionNameResolverRegressionTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests
+        --tests com.example.ChampionNameResolverRegressionTest --tests com.example.AllyDraftReconcilerTest --tests com.example.AllyDraftNameReaderTest --tests com.example.PortraitMatcherTest --tests com.example.TenthPickRegressionTest --tests com.example.LocalizationRegressionTest --tests
         com.example.MetaRegionRegressionTest --tests com.example.LocalizationSurfaceTest --tests com.example.LiteRTViewerNavigationTest --tests
         com.example.CoachingGeneratorLocalizationTest --tests com.example.BuildElementAdviceTest --tests com.example.BuildElementAdviceCoverageTest --tests com.example.BuildChoiceRulesTest --tests com.example.CoachMatchupCoverageTest --tests com.example.SpellCatalogFormattingTest --tests com.example.BuildCoachingRegressionTest --tests com.example.DraftScoreFormatTest --tests com.example.SupportAndStreamerPolicyTest
         --tests com.example.WildRiftItemsCatalogTest --tests com.example.AccountDeletionPolicyTest --stacktrace --no-daemon
@@ -377,9 +377,9 @@ jobs:
         emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
         script: |
           python3 tools/verify-account-deletion-device.py
+          python3 tools/verify-draft-rival-names-device.py
           COACH_AUDIT_LANGUAGE=es python3 tools/audit-portuguese-device.py
           python3 tools/verify-overlay-history-device.py
-          python3 tools/verify-draft-rival-names-device.py
     - name: Upload installed Spanish and overlay evidence
       if: always()
       uses: actions/upload-artifact@v4

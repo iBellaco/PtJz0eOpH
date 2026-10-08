@@ -31,6 +31,7 @@ class OverlayState {
     var isLoadingScreenMode by androidx.compose.runtime.mutableStateOf(false)
     var isOverlayTabsMinimized by androidx.compose.runtime.mutableStateOf(false)
     val allies = androidx.compose.runtime.mutableStateListOf<com.example.model.Champion?>().apply { repeat(5) { add(null) } }
+    val unassignedAllies = androidx.compose.runtime.mutableStateListOf<com.example.model.Champion>()
     val enemies = androidx.compose.runtime.mutableStateListOf<com.example.model.Champion?>().apply { repeat(5) { add(null) } }
     val enemyConfidences = androidx.compose.runtime.mutableStateMapOf<LaneRole, Int>()
     val manualLockedAllySlots = androidx.compose.runtime.mutableStateMapOf<Int, Boolean>()

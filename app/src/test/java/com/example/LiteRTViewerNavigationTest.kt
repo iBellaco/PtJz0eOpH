@@ -32,6 +32,17 @@ class LiteRTViewerNavigationTest {
 
     @After fun clearScanner() { com.example.service.screen.DraftVisionScanner.resetSlotMemory() }
 
+    @Test fun `detected champion without observed lane is visible as pending in Spanish`() = exercisePendingLane("es", "Línea pendiente: Skarner")
+    @Test fun `detected champion without observed lane is visible as pending in Portuguese`() = exercisePendingLane("pt", "Rota pendente: Skarner")
+
+    private fun exercisePendingLane(language: String, expected: String) {
+        val state = overlayState(false)
+        state.unassignedAllies.add(com.example.model.Champion(id = "skarner", name = "Skarner"))
+        AppLanguage.select(RuntimeEnvironment.getApplication(), language)
+        renderOverlay(state)
+        compose.onNodeWithTag("draft_unassigned_allies").assertIsDisplayed().assertTextEquals(expected)
+    }
+
     @Test fun `Spanish capture shortcuts preserve paused scan and detected draft`() = exerciseShortcuts("es", false)
 
     @Test fun `Portuguese capture shortcuts preserve active scan and detected draft`() = exerciseShortcuts("pt", true)

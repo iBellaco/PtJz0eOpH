@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -94,9 +95,11 @@ internal fun FloatingDraftCoachView(
     isSavedRecently: Boolean,
     onClearAll: () -> Unit,
     onManualEdit: () -> Unit,
-    onOpenLiteRTViewer: () -> Unit = {}
+    onOpenLiteRTViewer: () -> Unit = {},
+    unassignedAllies: List<Champion> = emptyList()
 ) {
     val isPremium by com.example.util.SubscriptionManager.isPremium.collectAsStateWithLifecycle()
+    val currentLanguage = com.example.util.currentAppLanguage()
 
     val defaultRoles = remember { listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT) }
 
@@ -150,6 +153,12 @@ internal fun FloatingDraftCoachView(
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 4.dp)
     ) {
+        if (unassignedAllies.isNotEmpty()) {
+            Text(com.example.util.localizedString(com.example.R.string.draft_unassigned_allies,
+                unassignedAllies.joinToString { it.getLocalizedName(currentLanguage) }),
+                color = TextSecondary, fontSize = 10.sp,
+                modifier = Modifier.fillMaxWidth().padding(4.dp).testTag("draft_unassigned_allies"))
+        }
         // TABLERO DE DRAFT VERSUS (ALIADO VS RIVAL POR LÍNEAS)
         OverlayVersusDraftBoard(
             allySlots = allySlots,
