@@ -714,10 +714,9 @@ private fun RegionVisualPreviewGridCard(
                     .border(1.dp, inspectedTheme.cardBorder, RoundedCornerShape(10.dp))
                     .padding(10.dp)
             ) {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         // Mini mock icon
@@ -764,6 +763,7 @@ private fun RegionVisualPreviewGridCard(
 
                     // Apply Action Button inside Preview (with Premium alert badge on the left when non-premium)
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
@@ -804,7 +804,7 @@ private fun RegionVisualPreviewGridCard(
                             glowColor = if (isApplied) inspectedTheme.secondary else inspectedTheme.primary,
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                            modifier = Modifier.heightIn(min = 48.dp).testTag("theme_apply_button"),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("theme_apply_button"),
                             scaleDown = 0.92f,
                             enableShimmer = !isApplied
                         ) {
@@ -818,6 +818,7 @@ private fun RegionVisualPreviewGridCard(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = tr("Aplicado"),
+                                    maxLines = 1,
                                     color = inspectedTheme.secondary,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -832,6 +833,7 @@ private fun RegionVisualPreviewGridCard(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = tr("Aplicar"),
+                                    maxLines = 1,
                                     color = inspectedTheme.background,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
