@@ -91,6 +91,9 @@ class PortugueseRenderedAuditTest(private val screen: String) {
             val role = com.example.util.SubscriptionManager::class.java.getDeclaredField("_userRole").apply { isAccessible = true }
             @Suppress("UNCHECKED_CAST")
             (role.get(com.example.util.SubscriptionManager) as kotlinx.coroutines.flow.MutableStateFlow<String>).value = "admin"
+            val claim = com.example.util.AuthManager::class.java.getDeclaredField("_isAdminClaim").apply { isAccessible = true }
+            @Suppress("UNCHECKED_CAST")
+            (claim.get(com.example.util.AuthManager) as kotlinx.coroutines.flow.MutableStateFlow<Boolean>).value = true
             database.collection("support_reports").document("audit-seeded-ticket").set(mapOf(
                 "subject" to "Ajuda com o hub", "content" to "Olá, preciso de ajuda com o hub.",
                 "created_at" to System.currentTimeMillis(), "app_version" to "1.1.10.147 (863)",

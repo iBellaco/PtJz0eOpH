@@ -40,4 +40,6 @@
     <string name="streamer_history_active_retention">A contagem de 48 horas começará quando a publicação for encerrada.</string>
     <string name="streamer_metrics_error">Não foi possível ativar o contador de cliques. A aprovação não foi concluída. Verifique a sincronização na nuvem.</string>
     <string name="streamer_clicks_cached">Última contagem salva; aguardando conexão ao vivo.</string>
+    <string name="legal_economy_title">Operações de essências e solicitações de pagamento</string>
+    <string name="legal_economy_body">O serviço verifica sua sessão, as permissões, o saldo, o preço e a taxa antes de confirmar uma operação. O movimento e seu comprovante são registrados. Repetir a mesma solicitação não deve gerar outra cobrança. As trocas por USDT são analisadas e pagas manualmente; enviar uma solicitação não realiza uma transferência nem garante sua aceitação. Confira o destino e o total antes de confirmar. Não envie chaves de carteiras, senhas nem códigos. Os direitos sobre Wild Rift e as fontes consultadas pertencem a seus titulares; a publicação do Coach não comprova autorização desses terceiros.</string>
 </resources>

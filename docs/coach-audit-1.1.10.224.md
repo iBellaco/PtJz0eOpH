@@ -13,7 +13,7 @@
 
 ## Validación y límites
 
-La cuenta del titular indicada por el usuario ya recibió un claim firmado, preservando los anteriores, durante la verificación privilegiada. El primer selector de despliegue no coincidía con el codebase; se corrigió a `functions:economy`. La activación completa sigue condicionada al resultado real del despliegue y la lectura de vuelta de las reglas.
+La cuenta del titular indicada por el usuario ya recibió un claim firmado, preservando los anteriores, durante la verificación privilegiada. El primer selector de despliegue no coincidía con el codebase; se corrigió a `functions:economy`. El despliegue se detuvo porque Cloud Build está desactivado y la identidad configurada no puede habilitar APIs del proyecto. La activación y publicación de reglas siguen pendientes de habilitar el servicio y comprobar el resultado real; no se publicaron permisos restrictivos antes de activar el servidor.
 
 Las pruebas de política y operaciones se ejecutan en el proyecto aislado demo-coach-tests; incluyen los cuatro planes/precios, carreras de saldo, replay, cambios de comisión, destinos USDT, claims falsos, suspensión/eliminación, pagos a creadores, anuncios, reembolso a los siete días, conservación de solicitudes pendientes y limpieza de membresías al borrar una cuenta. Los resultados de compilación, instalación y publicación corresponden a las ejecuciones de esta versión y deben comprobarse antes de entregar. No se declara activa una función por tener código o tests de emulator.
 
