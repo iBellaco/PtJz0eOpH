@@ -21,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +41,7 @@ import java.util.Locale
 fun AdminModeratorRequestsDialog(
     onDismiss: () -> Unit
 ) {
+    val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsState()
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
@@ -157,9 +159,10 @@ fun AdminModeratorRequestsDialog(
                     TextButton(onClick = { showStreamers = false; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_roles), color = if (!showStreamers) HextechGold else TextSecondary) }
                     TextButton(onClick = { showStreamers = true; showPayments = false }) { Text(com.example.util.localizedString(com.example.R.string.streamer_reviews), color = if (showStreamers) HextechGold else TextSecondary) }
                 }
-                TextButton(onClick = { showPayments = true; showStreamers = false }) { Text(tr("Pagos USDT")) }
+                if (adminClaim) TextButton(onClick = { showPayments = true; showStreamers = false },
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("admin_cash_payments_open")) { Text(tr("Pagos USDT")) }
                 PanelReadControl(com.example.data.NotificationPanel.ADMINISTRATION)
-                if (showPayments) {
+                if (showPayments && adminClaim) {
                     Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) { CashRedemptionReviewPanel() }
                 } else
                 if (showStreamers) {

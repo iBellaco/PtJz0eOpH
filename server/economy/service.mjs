@@ -2,12 +2,12 @@ import {FieldValue} from 'firebase-admin/firestore';
 import {allowedAccount, balance, cashRedemption, deadline, ensure, fingerprint, integer, premiumPurchase, sponsorPrice, validateInput, DAY} from './policy.mjs';
 
 const serverTime = () => FieldValue.serverTimestamp();
-const adminActions = new Set(['RESOLVE', 'ADJUST', 'PREMIUM_GRANT', 'PREMIUM_REMOVE', 'ROLE', 'CLEANUP']);
+const adminActions = new Set(['REDEEM', 'RESOLVE', 'ADJUST', 'PREMIUM_GRANT', 'PREMIUM_REMOVE', 'ROLE', 'CLEANUP']);
 const receipt = (id, now, source, planName, amount, status = 'Completado', days = 0) => ({id, timestamp: now, durationMillis: days * DAY, source, planName, amount, status});
 function visible(account, uid) {
   return {uid, role: account.role ?? 'free', secondaryRole: account.secondaryRole ?? '', blueEssence: balance(account, 'BLUE'), orangeEssence: balance(account, 'ORANGE'), premiumUntil: deadline(account.premiumUntil), subscriptionPlan: account.subscriptionPlan ?? ''};
 }
-export async function executeEconomy(db, auth, raw, clock = Date.now) {
+export async function executeEconomy(db, auth, raw, clock = Date.now, {requestedAtMillis} = {}) {
   ensure(auth && auth.uid && auth.token?.firebase?.sign_in_provider !== 'anonymous' && auth.token?.email !== 'coach.guest.reader@gmail.com', 'unauthenticated', 'Inicia sesión');
   const input = validateInput(raw), admin = auth.token?.admin === true;
   ensure(!adminActions.has(input.action) || admin, 'permission-denied', 'No tienes permisos para esta operación');
@@ -97,6 +97,8 @@ export async function executeEconomy(db, auth, raw, clock = Date.now) {
       updates.subscriptionPlan = days ? 'ADMIN_GIFT' : 'FREE'; updates.lastModifiedByAdmin = now;
       record = receipt(input.id, now, days ? 'ADMIN_GIFT' : 'ADMIN_REVOCATION', days ? 'Suscripción Premium regalada' : 'Suscripción Premium retirada', days ? 'Regalo' : '0', 'Completado', days);
     } else if (input.action === 'ROLE') {
+      ensure(requestedAtMillis === undefined || deadline(account.last_role_update) <= requestedAtMillis,
+        'failed-precondition', 'El rol ya fue actualizado por una operación más reciente');
       ensure(['free', 'premium', 'banned', 'moderador', 'streamer', 'patrocinador', 'creador', 'creador_lvl2', 'creador_lvl3', 'creador_lvl4', 'creador_lvl5'].includes(input.role), 'invalid-argument', 'Rol no válido');
       Object.assign(updates, {role: input.role, banned: input.role === 'banned', last_role_update: now, bannedTimestamp: input.role === 'banned' ? now : 0});
       if (input.role === 'banned') updates.sessionToken = '';

@@ -389,5 +389,9 @@
   "La confirmación puede tardar varios minutos o más si el servicio se retrasa. Puedes cerrar este aviso; la solicitud seguirá en espera. No la repitas.": "A confirmação pode levar vários minutos ou mais se o serviço atrasar. Você pode fechar este aviso; a solicitação continuará em espera. Não a repita.",
   "La operación fue confirmada. Los datos se actualizarán al sincronizarse.": "A operação foi confirmada. Os dados serão atualizados ao sincronizar.",
   "Sin confirmación en vivo. El estado mostrado puede estar desactualizado; comprueba tu conexión.": "Sem confirmação em tempo real. O estado exibido pode estar desatualizado; verifique sua conexão.",
-  "Puedes volver a verla en Usuario → Solicitudes o en Ver solicitud.": "Você pode consultá-la novamente em Usuário → Solicitações ou em Ver solicitação."
+  "Puedes volver a verla en Usuario → Solicitudes o en Ver solicitud.": "Você pode consultá-la novamente em Usuário → Solicitações ou em Ver solicitação.",
+  "No se pudo confirmar el cambio de rol. Revisa la cuenta y la conexión antes de intentarlo de nuevo.": "Não foi possível confirmar a mudança de cargo. Verifique a conta e a conexão antes de tentar novamente.",
+  "Canje disponible únicamente para el administrador": "Troca disponível apenas para o administrador",
+  "El rol ya fue actualizado por una operación más reciente": "O cargo já foi atualizado por uma operação mais recente",
+  "Rol no válido": "Cargo inválido"
 }

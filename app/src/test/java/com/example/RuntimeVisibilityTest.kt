@@ -48,7 +48,7 @@ import org.robolectric.annotation.GraphicsMode
 class RuntimeVisibilityTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun screens() = listOf("economy-details-es", "economy-details-pt", "role-change-failure-es", "role-change-pending-es", "draft-known-first-pick", "draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
+        fun screens() = listOf("role-change-success-es", "cash-access-admin-es", "cash-access-admin-pt", "cash-access-creador-es", "cash-access-moderador-es", "cash-access-streamer-es", "cash-access-free-es", "cash-access-premium-es", "cash-access-patrocinador-es", "cash-access-fake_admin-es", "cash-review-hidden-es", "economy-details-es", "economy-details-pt", "role-change-failure-es", "role-change-pending-es", "draft-known-first-pick", "draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered", "champion-premium", "champion-situational-boot", "champion-item-advice", "champion-spell-advice", "champion-rune-advice",
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-email-mod", "support-email-admin", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
@@ -110,27 +110,33 @@ class RuntimeVisibilityTest(private val screen: String) {
         @Suppress("UNCHECKED_CAST")
         (field.get(AuthManager) as MutableStateFlow<Boolean>).value = screen.endsWith("-registered") || screen == "champion-premium" || screen == "champion-situational-boot" || screen == "creator-reader" || screen == "support-admin-notification"
         SubscriptionManager.userRole.value
+        // Deliver initial signed-out listeners before assigning each isolated account fixture.
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
         fun setFlow(target: Any, name: String, value: Any?) {
             val variable = target.javaClass.getDeclaredField(name).apply { isAccessible = true }
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any?>).value = value
         }
         setFlow(SubscriptionManager, "_userRole", if (screen.startsWith("profile-admin-expiring-roles")) "creador" else if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("role-change-") || screen.startsWith("profile-admin") && !screen.startsWith("profile-admin-image-frame") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
+        if (screen.startsWith("cash-access-")) {
+            setFlow(SubscriptionManager,"_userRole",screen.removePrefix("cash-access-").substringBeforeLast('-').replace("fake_admin","admin"))
+        }
         if (screen == "premium-purchase-confirm") { setFlow(SubscriptionManager,"_blueEssence",1200L); setFlow(SubscriptionManager,"_orangeEssence",100L) }
         else { setFlow(SubscriptionManager,"_blueEssence",0L); setFlow(SubscriptionManager,"_orangeEssence",0L) }
+        if (screen.startsWith("cash-access-")) setFlow(SubscriptionManager,"_orangeEssence",10L)
         setFlow(SubscriptionManager,"_currentUserUid",if (screen == "support-admin-notification") "local-notification-admin" else "")
         if (screen == "support-admin-notification") {
             database.collection("support_reports").document("admin-new-message").set(mapOf("userId" to "other-user", "status" to "PENDING", "staffRead" to false,
                 "conversation" to listOf(mapOf("id" to "new-message", "senderRole" to "USER", "text" to "Ajuda"))))
         }
-        setFlow(SubscriptionManager, "_secondaryRole", if (screen == "moderation-secondary") "moderador" else if (screen.startsWith("profile-admin-secondary-frame")) "soberano" else if (screen.startsWith("profile-admin-expiring-roles")) "streamer" else "")
+        setFlow(SubscriptionManager, "_secondaryRole", if (screen.startsWith("cash-access-")) "streamer" else if (screen == "moderation-secondary") "moderador" else if (screen.startsWith("profile-admin-secondary-frame")) "soberano" else if (screen.startsWith("profile-admin-expiring-roles")) "streamer" else "")
         setFlow(SubscriptionManager, "_currentRankBorder", when {
             screen.startsWith("profile-admin-secondary-frame") -> "SOBERANO"
             screen.startsWith("profile-admin-image-frame") -> "ESMERALDA"
             else -> "NONE"
         })
         setFlow(SubscriptionManager, "_premiumUntil", if (screen.startsWith("profile-admin-expiring-roles")) System.currentTimeMillis() + 23L * 3600000L else null)
-        setFlow(AuthManager, "_isAdminClaim", screen in listOf("moderation-claim", "support-email-admin", "support-admin-notification"))
+        setFlow(AuthManager, "_isAdminClaim", screen in listOf("moderation-claim", "support-email-admin", "support-admin-notification", "cash-access-admin-es", "cash-access-admin-pt"))
         if (screen == "creator-reader") setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
             com.example.data.local.CustomChampionBuildsManager.getDefaultBuilds(context))
         if (screen.startsWith("champion")) setFlow(com.example.data.local.CustomChampionBuildsManager, "_customBuilds",
@@ -245,6 +251,8 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             screen == "creator-reader" -> AdminCreatorBuildsDialog {}
             screen == "premium-status-near-expiry" -> PremiumStatusCard("premium", until = System.currentTimeMillis() + 65000L, onRenew = { renewed = true })
+            screen.startsWith("cash-access-") -> AuthenticatedProfilePanel(onSignOut = {})
+            screen == "cash-review-hidden-es" -> CashRedemptionReviewPanel()
             screen.startsWith("economy-details-") -> EconomyRequestDetails(requestData, targetName = "Test gratis", onDismiss = { copiedSummary = "closed" })
             screen.startsWith("role-change-") -> UserDetailManagementDialog(mapOf("uid" to "local-role", "name" to "Test gratis", "role" to "creador"),
                 {}, { grantedAccount = it }, {}, {}, roleChangeAction = { _, result -> roleResult = result })
@@ -385,6 +393,30 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("economy_request_close").assertHeightIsAtLeast(48.dp).performClick()
                 Assert.assertEquals("closed", copiedSummary)
                 Assert.assertNull(grantedAccount)
+            }
+            "role-change-success-es" -> {
+                compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
+                compose.onNodeWithTag("managed_role_free").performClick()
+                compose.onNodeWithTag("role_change_confirm").performClick().assertIsNotEnabled()
+                compose.runOnIdle { roleResult!!.invoke(Result.success(mapOf("account" to mapOf("role" to "free", "premiumUntil" to 0L)))) }
+                compose.onNodeWithTag("role_change_confirm").assertDoesNotExist()
+                Assert.assertEquals("free",grantedAccount?.get("role"))
+                compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
+                compose.onNodeWithTag("managed_role_free").assertIsNotEnabled()
+                inspect("applied")
+            }
+            "cash-access-admin-es", "cash-access-admin-pt" -> {
+                compose.onNodeWithTag("orange_redemption_entry").performScrollTo().assertIsDisplayed()
+                inspect("admin-visible")
+            }
+            "cash-access-creador-es", "cash-access-moderador-es", "cash-access-streamer-es", "cash-access-free-es", "cash-access-premium-es", "cash-access-patrocinador-es", "cash-access-fake_admin-es" -> {
+                compose.onNodeWithTag("orange_redemption_entry").assertDoesNotExist()
+                inspect("hidden")
+            }
+            "cash-review-hidden-es" -> {
+                compose.onNodeWithText(appTr("Pagos USDT")).assertDoesNotExist()
+                compose.onNodeWithText(appTr("PENDIENTES")).assertDoesNotExist()
+                return
             }
             "role-change-failure-es", "role-change-pending-es" -> {
                 compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))

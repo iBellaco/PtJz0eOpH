@@ -135,10 +135,11 @@ try {
     }
   });
   await test('cash and receipts remain private to owner and trusted claim',async()=>{
-    for(const store of [economy,admin]) await assertSucceeds(getDoc(doc(store,'cash_redemptions/cash-ten')));
+    await assertSucceeds(getDoc(doc(admin,'cash_redemptions/cash-ten')));
+    await assertFails(getDoc(doc(economy,'cash_redemptions/cash-ten')));
     await assertFails(getDoc(doc(other,'cash_redemptions/cash-ten')));
     await assertFails(getDocs(collection(moderator,'cash_redemptions')));
-    await assertSucceeds(getDocs(query(collection(economy,'cash_redemptions'),where('userId','==','economy'))));
+    await assertFails(getDocs(query(collection(economy,'cash_redemptions'),where('userId','==','economy'))));
     await assertSucceeds(getDoc(doc(admin,'support_reports/payment_cash-ten')));
     await assertFails(getDoc(doc(moderator,'support_reports/payment_cash-ten')));
   });
@@ -359,7 +360,7 @@ try {
   await test('staff role edits preserve server deadlines and no client can edit time', async () => {
     const until=Date.now()+86400000;
     await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),'users/s1'),{premiumUntil:until,role:'premium'}));
-    await assertSucceeds(updateDoc(doc(admin,'users/s1'),{role:'streamer'}));
+    await assertSucceeds(updateDoc(doc(admin,'users/s1'),{role:'streamer',banned:false,bannedTimestamp:0,last_role_update:serverTimestamp(),lastRoleChangedBy:'admin'}));
     assert.equal((await getDoc(doc(streamer,'users/s1'))).data().premiumUntil,until);
     for(const store of [streamer,admin]) await assertFails(updateDoc(doc(store,'users/s1'),{premiumUntil:until+86400000}));
   });
@@ -403,10 +404,10 @@ try {
   });
   await test('redemption role removal blocks a request without deducting the balance',async()=>{
     const profile=doc(admin,'users/economy'), before=(await getDoc(profile)).data().orangeEssence;
-    await assertSucceeds(updateDoc(profile,{role:'free',secondaryRole:''}));
+    await assertSucceeds(updateDoc(profile,{role:'free',banned:false,bannedTimestamp:0,premiumUntil:0,subscriptionPlan:'FREE',last_role_update:serverTimestamp(),lastRoleChangedBy:'admin'}));
     await assertFails(setDoc(doc(economy,'cash_redemptions/role-removed-cash'),{userId:'economy',amount:10,status:'PENDING'}));
     assert.equal((await getDoc(profile)).data().orangeEssence,before);
-    await assertSucceeds(updateDoc(profile,{role:'creador',secondaryRole:'streamer'}));
+    await assertSucceeds(updateDoc(profile,{role:'creador',banned:false,bannedTimestamp:0,last_role_update:serverTimestamp(),lastRoleChangedBy:'admin'}));
   });
   await test('visitors cannot forge counters reset counts alter owners or count an inactive publication', async () => {
     const guest = env.unauthenticatedContext().firestore();
@@ -597,6 +598,40 @@ try {
     await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'economy_requests/user'),{status:'COMPLETED',result:{ok:true}});});
     await assertSucceeds(setDoc(doc(user,'economy_requests/user'),command({action:'PURCHASE',id:'queue_test_0002',plan:'ANNUAL',currency:'BLUE'})));
     await assertSucceeds(setDoc(doc(admin,'economy_requests/admin'),{...command({action:'ADJUST',id:'queue_admin_0001',uid:'user',amount:100,currency:'BLUE',addition:true,notify:false}),userId:'admin'}));
+  });
+  await test('redemption submission is admin-only and opening history cannot enqueue cleanup',async()=>{
+    for(const [uid,store] of [['user',user],['mod',moderator],['s1',streamer]]) {
+      await assertFails(setDoc(doc(store,`economy_requests/${uid}`),{userId:uid,operationId:'cash_admin_only',payload:{action:'REDEEM',id:'cash_admin_only',amount:10},status:'PENDING',schema:2,createdAt:serverTimestamp(),authTime:0}));
+    }
+    await env.withSecurityRulesDisabled(async context=>{await deleteDoc(doc(context.firestore(),'economy_requests/admin'));});
+    const command={userId:'admin',operationId:'cash_admin_only',payload:{action:'REDEEM',id:'cash_admin_only',amount:10},status:'PENDING',schema:2,createdAt:serverTimestamp(),authTime:0};
+    await assertSucceeds(setDoc(doc(admin,'economy_requests/admin'),command));
+    await env.withSecurityRulesDisabled(async context=>{await deleteDoc(doc(context.firestore(),'economy_requests/admin'));});
+    await assertFails(setDoc(doc(admin,'economy_requests/admin'),{...command,payload:{action:'CLEANUP',id:'cash_admin_only'}}));
+  });
+  await test('a pending legacy cleanup does not block an atomic role assignment',async()=>{
+    await env.withSecurityRulesDisabled(async context=>{
+      const store=context.firestore();
+      await setDoc(doc(store,'users/role-target'),{role:'creador',premiumUntil:Date.now()+86400000,subscriptionPlan:'ADMIN_GIFT',blueEssence:99,orangeEssence:25});
+      await setDoc(doc(store,'economy_requests/admin'),{userId:'admin',operationId:'old_cleanup_226',payload:{action:'CLEANUP',id:'old_cleanup_226'},status:'PENDING'});
+    });
+    const target=doc(admin,'users/role-target');
+    const change=(role)=>({role,banned:role==='banned',bannedTimestamp:role==='banned'?serverTimestamp():0,last_role_update:serverTimestamp(),lastRoleChangedBy:'admin'});
+    await assertSucceeds(runTransaction(admin,async tx=>{await tx.get(target);tx.update(target,{...change('free'),premiumUntil:0,subscriptionPlan:'FREE'});}));
+    let actual=(await getDoc(target)).data();assert.equal(actual.role,'free');assert.equal(actual.premiumUntil,0);assert.equal(actual.orangeEssence,25);
+    assert.equal((await getDoc(doc(admin,'economy_requests/admin'))).data().status,'PENDING');
+    for(const store of [user,moderator]) await assertFails(updateDoc(doc(store,'users/role-target'),change('creador')));
+    await assertFails(updateDoc(target,{...change('free'),orangeEssence:1000}));
+    await assertFails(updateDoc(target,change('admin')));
+    await assertFails(updateDoc(target,{...change('premium'),premiumUntil:Date.now()+365*86400000}));
+    await assertSucceeds(updateDoc(target,{...change('premium'),premiumUntil:Date.now()+30*86400000}));
+    actual=(await getDoc(target)).data();const until=actual.premiumUntil;
+    await assertSucceeds(updateDoc(target,change('streamer')));
+    assert.equal((await getDoc(target)).data().premiumUntil,until);
+    await assertSucceeds(updateDoc(target,{...change('banned'),sessionToken:''}));
+    await assertSucceeds(updateDoc(target,{...change('free'),premiumUntil:0,subscriptionPlan:'FREE'}));
+    await env.withSecurityRulesDisabled(async context=>{await setDoc(doc(context.firestore(),'account_deletions/role-target'),{status:'DATA_PURGED'});});
+    await assertFails(updateDoc(target,change('creador')));
   });
   await test('queue receipts are private and server-written even before creation',async()=>{
     await assertSucceeds(getDoc(doc(user,'economy_results/user~queue_test_0001')));

@@ -24,7 +24,7 @@ export async function processQueue(db, auth, {clock = Date.now, limit = 30, leas
       const revokedAt = Date.parse(user.tokensValidAfterTime ?? '') || 0;
       ensure(Number.isInteger(command.authTime) && command.authTime * 1000 >= revokedAt, 'unauthenticated', 'Inicia sesión');
       // Read current signed claims from Auth, never privileges supplied in the command.
-      result = await executeEconomy(db, {uid: row.id, token: {...user.customClaims, email: user.email ?? '', firebase: {sign_in_provider: 'password'}}}, command.payload, clock);
+      result = await executeEconomy(db, {uid: row.id, token: {...user.customClaims, email: user.email ?? '', firebase: {sign_in_provider: 'password'}}}, command.payload, clock, {requestedAtMillis: command.createdAt?.toMillis?.() ?? 0});
     } catch (error) {
       failure = error instanceof EconomyError ? {code: error.code, message: error.message}
         : error.code === 'auth/user-not-found' ? {code: 'unauthenticated', message: 'Inicia sesión'} : null;

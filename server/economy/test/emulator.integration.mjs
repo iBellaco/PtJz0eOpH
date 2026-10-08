@@ -12,7 +12,7 @@ const owner = auth('economy-server'), admin = auth('economy-admin', true), other
 const base = {role: 'creador', secondaryRole: 'streamer', blueEssence: 2500, orangeEssence: 300, premiumUntil: Timestamp.fromMillis(Date.now() + 90 * 86400000)};
 let passed = 0;
 async function test(name, fn) { await fn(); console.log(`PASS server economy: ${name}`); passed++; }
-const call = (action, id, fields = {}, caller = owner) => executeEconomy(db, caller, {action, id, ...fields});
+const call = (action, id, fields = {}, caller = action === 'REDEEM' ? auth(owner.uid, true) : owner) => executeEconomy(db, caller, {action, id, ...fields});
 try {
   for (const uid of [owner.uid, admin.uid, other.uid]) await db.doc(`users/${uid}`).set({...base, role: uid === admin.uid ? 'admin' : 'creador'});
   await test('all four Premium prices, inherited deadline and roles', async () => {
@@ -55,6 +55,20 @@ try {
     assert.equal((await ref.get()).get('orangeEssence'), before + 15);
     await assert.rejects(call('RESOLVE', 'resolution_paid', {redemptionId: 'cash_server_ten', paid: true}, admin), /pendiente/);
     assert.equal((await db.doc(`users/${owner.uid}/subscription_history/cash_server_ten`).get()).get('status'), 'Rechazado y reembolsado');
+  });
+  await test('only a signed administrator can redeem; profile roles and flags never debit', async () => {
+    const ref=db.doc(`users/${other.uid}`), before=(await ref.get()).data();
+    for (const role of ['admin','moderador','streamer','creador','creador_lvl2','creador_lvl3','creador_lvl4','creador_lvl5','premium','free']) {
+      await ref.update({role,admin:true,secondaryRole:'admin'});
+      await assert.rejects(call('REDEEM', `denied_cash_${role}`, destination, other), /permisos/);
+      assert.equal((await ref.get()).get('orangeEssence'),before.orangeEssence);
+    }
+  });
+  await test('a delayed legacy role command cannot overwrite a newer direct assignment', async()=>{
+    const ref=db.doc(`users/${other.uid}`);
+    await ref.update({role:'free',last_role_update:Timestamp.fromMillis(Date.now())});
+    await assert.rejects(executeEconomy(db,admin,{action:'ROLE',id:'stale_role_226',uid:other.uid,role:'creador'},Date.now,{requestedAtMillis:Date.now()-60000}), /reciente/);
+    assert.equal((await ref.get()).get('role'),'free');
   });
   await test('server-owned fees reject a stale quote without debiting', async () => {
     await db.doc('app_config/binance_fees').set({ERC20: 7});
