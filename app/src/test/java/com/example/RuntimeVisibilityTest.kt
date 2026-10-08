@@ -2,6 +2,8 @@ package com.example
 
 import android.app.Application
 import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -46,7 +48,7 @@ import org.robolectric.annotation.GraphicsMode
 class RuntimeVisibilityTest(private val screen: String) {
     companion object {
         @JvmStatic @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun screens() = listOf("draft-known-first-pick", "draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
+        fun screens() = listOf("economy-details-es", "economy-details-pt", "role-change-failure-es", "role-change-pending-es", "draft-known-first-pick", "draft-empty", "draft-own-only", "draft-rival-only", "draft-both",
             "tier-guest", "tier-registered", "tier-registration", "champion-guest", "champion-registered", "champion-premium", "champion-situational-boot", "champion-item-advice", "champion-spell-advice", "champion-rune-advice",
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-email-mod", "support-email-admin", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
@@ -55,6 +57,10 @@ class RuntimeVisibilityTest(private val screen: String) {
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
+    private var roleResult: ((Result<Map<String, Any>>) -> Unit)? = null
+    private var requestData by androidx.compose.runtime.mutableStateOf<Map<String, Any>>(mapOf(
+        "operationId" to "private-request-225", "status" to "PENDING", "createdAt" to com.google.firebase.Timestamp(1720000000, 0),
+        "payload" to mapOf("action" to "ROLE", "role" to "free", "uid" to "private-account-225")))
     private var grantResult: ((Result<Map<String, Any>>) -> Unit)? = null
     private var grantedAccount: Map<String, Any>? = null
     private var readAttempts = 0
@@ -109,7 +115,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any?>).value = value
         }
-        setFlow(SubscriptionManager, "_userRole", if (screen.startsWith("profile-admin-expiring-roles")) "creador" else if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("profile-admin") && !screen.startsWith("profile-admin-image-frame") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
+        setFlow(SubscriptionManager, "_userRole", if (screen.startsWith("profile-admin-expiring-roles")) "creador" else if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("role-change-") || screen.startsWith("profile-admin") && !screen.startsWith("profile-admin-image-frame") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
         if (screen == "premium-purchase-confirm") { setFlow(SubscriptionManager,"_blueEssence",1200L); setFlow(SubscriptionManager,"_orangeEssence",100L) }
         else { setFlow(SubscriptionManager,"_blueEssence",0L); setFlow(SubscriptionManager,"_orangeEssence",0L) }
         setFlow(SubscriptionManager,"_currentUserUid",if (screen == "support-admin-notification") "local-notification-admin" else "")
@@ -239,6 +245,9 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             screen == "creator-reader" -> AdminCreatorBuildsDialog {}
             screen == "premium-status-near-expiry" -> PremiumStatusCard("premium", until = System.currentTimeMillis() + 65000L, onRenew = { renewed = true })
+            screen.startsWith("economy-details-") -> EconomyRequestDetails(requestData, targetName = "Test gratis", onDismiss = { copiedSummary = "closed" })
+            screen.startsWith("role-change-") -> UserDetailManagementDialog(mapOf("uid" to "local-role", "name" to "Test gratis", "role" to "creador"),
+                {}, { grantedAccount = it }, {}, {}, roleChangeAction = { _, result -> roleResult = result })
             screen == "premium-editor-admin" -> UserDetailManagementDialog(mapOf("uid" to "local-admin", "role" to "admin"), {}, {}, {}, {})
             screen == "premium-editor-occupied" -> UserDetailManagementDialog(occupiedAccount, {}, { occupiedAccount = it; grantedAccount = it }, {}, {},
                 premiumGrantAction = { days, extend, complete -> requestedDays = days; requestedExtension = extend; grantResult = complete })
@@ -359,6 +368,43 @@ class RuntimeVisibilityTest(private val screen: String) {
             inspect("unified")
         }
         when (screen) {
+            "economy-details-es", "economy-details-pt" -> {
+                compose.onNodeWithTag("economy_request_action").assertTextEquals(appTr("Cambio de rol"))
+                compose.onNodeWithTag("economy_request_target").assertTextEquals(appTr("Cuenta") + ": Test gratis")
+                compose.onNodeWithTag("economy_request_status").assertTextEquals(appTr("Estado: en espera"))
+                compose.onNodeWithText("private-account-225").assertDoesNotExist()
+                inspect("pending")
+                compose.runOnIdle { requestData = requestData + ("status" to "PROCESSING") }
+                compose.onNodeWithTag("economy_request_status").assertTextEquals(appTr("Estado: en procesamiento"))
+                compose.runOnIdle { requestData = requestData + ("status" to "COMPLETED") }
+                compose.onNodeWithTag("economy_request_status").assertTextEquals(appTr("Estado: completada"))
+                inspect("completed")
+                compose.runOnIdle { requestData = requestData + mapOf("status" to "FAILED", "error" to mapOf("message" to "No tienes permisos para esta operación")) }
+                compose.onNodeWithText(appTr("No tienes permisos para esta operación")).performScrollTo().assertIsDisplayed()
+                inspect("failed")
+                compose.onNodeWithTag("economy_request_close").assertHeightIsAtLeast(48.dp).performClick()
+                Assert.assertEquals("closed", copiedSummary)
+                Assert.assertNull(grantedAccount)
+            }
+            "role-change-failure-es", "role-change-pending-es" -> {
+                compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
+                compose.onNodeWithTag("managed_role_free").performClick()
+                compose.onNodeWithTag("role_change_confirm").performClick().assertIsNotEnabled()
+                compose.runOnIdle { roleResult!!.invoke(Result.failure(if (screen.contains("pending")) com.example.data.EconomyPendingException()
+                    else IllegalStateException(appTr("No tienes permisos para esta operación")))) }
+                if (screen.contains("pending")) {
+                    compose.onNodeWithTag("role_change_confirm").assertDoesNotExist()
+                    compose.onNodeWithTag("economy_request_close").assertIsDisplayed().performClick()
+                    compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
+                    compose.onNodeWithTag("managed_role_free").assertIsEnabled().performClick()
+                } else {
+                    compose.onNodeWithTag("role_change_error").assertTextEquals(appTr("No tienes permisos para esta operación"))
+                    compose.onNodeWithTag("role_change_cancel").assertIsEnabled()
+                }
+                compose.onNodeWithTag("role_change_confirm").assertIsEnabled()
+                Assert.assertNull(grantedAccount)
+                inspect("unblocked")
+            }
             "history-receipts" -> {
                 compose.onNodeWithText("+100 EA").assertExists()
                 compose.onNodeWithText("-25 EN").performScrollTo().assertIsDisplayed()

@@ -193,10 +193,12 @@ internal fun updateUserRoleInCloud(
     context: Context,
     uid: String,
     targetRoleId: String,
+    onError: (Throwable) -> Unit = {},
     onSuccess: (newRole: String, isBanned: Boolean, inheritedUntil: Long?) -> Unit
 ) {
     if (targetRoleId == "admin") {
         Toast.makeText(context, com.example.util.appTr("Operación denegada: No se puede asignar el rol de Administrador por directivas de seguridad."), Toast.LENGTH_LONG).show()
+        onError(IllegalStateException(com.example.util.appTr("No tienes permisos para esta operación")))
         return
     }
 
@@ -208,7 +210,10 @@ internal fun updateUserRoleInCloud(
                 val roleName = AppUserRole.fromId(targetRoleId).displayName
                 Toast.makeText(context, com.example.util.appTr("Rol actualizado a $roleName"), Toast.LENGTH_SHORT).show()
                 onSuccess(targetRoleId, targetRoleId == "banned", inherited)
-            }.onFailure { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
+            }.onFailure {
+                onError(it)
+                if (it !is com.example.data.EconomyPendingException) Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
+            }
     }
 }
 
