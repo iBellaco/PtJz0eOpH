@@ -302,13 +302,13 @@ fun UserDetailManagementDialog(
                         }
                     }
 
-                    if (com.example.model.RolePanelAccess.isAdministrator(currentRole, user["admin"] == true)) item(key = "premium-status") {
+                    if (currentRole in setOf("admin", "administrador") || user["admin"] == true) item(key = "premium-status") {
                         PremiumStatusCard(currentRole, currentSecondaryRole, currentPremiumUntil,
                             adminClaim = user["admin"] == true, banned = currentBanned,
                             granted = com.example.model.PremiumAccessPolicy.hasGrant(currentPremiumPlan))
                     }
                     // System lifetime access is not an editable subscription.
-                    if (!com.example.model.RolePanelAccess.isAdministrator(currentRole, user["admin"] == true)) item {
+                    if (currentRole !in setOf("admin", "administrador") && user["admin"] != true) item {
 
                         Surface(
                             color = HextechSurfaceBg,

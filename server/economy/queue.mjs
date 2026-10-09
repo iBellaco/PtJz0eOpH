@@ -4,16 +4,38 @@ import {executeEconomy} from './service.mjs';
 import {ensure, EconomyError} from './policy.mjs';
 
 /** One private outstanding command per actor; balances and receipts remain server-only. */
-export async function processQueue(db, auth, {clock = Date.now, limit = 30, leaseMillis = 120000} = {}) {
-  const stats = {completed: 0, failed: 0, skipped: 0};
-  const rows = await db.collection('economy_requests').where('status', 'in', ['PENDING', 'PROCESSING']).limit(limit).get();
-  for (const row of rows.docs) {
+export async function processQueue(db, auth, {clock = Date.now, limit = 30, leaseMillis = 120000, manualReview = false} = {}) {
+  const stats = {completed: 0, failed: 0, review: 0, skipped: 0};
+  const requests = db.collection('economy_requests'), startedAt = clock();
+  // Separate pending commands from expired leases so one broken command cannot block new users.
+  let pending, recovery, review = {docs: []};
+  try {
+    [pending, recovery, review] = await Promise.all([
+      requests.where('status', '==', 'PENDING').orderBy('createdAt').limit(limit).get(),
+      requests.where('status', '==', 'PROCESSING').where('leaseUntil', '<=', startedAt).orderBy('leaseUntil').limit(limit).get(),
+      manualReview ? requests.where('status', '==', 'REVIEW').orderBy('createdAt').limit(limit).get() : {docs: []}
+    ]);
+  } catch (error) {
+    if (error.code !== 9 && error.code !== 'failed-precondition') throw error;
+    // The service remains usable while newly published composite indexes build.
+    console.warn('Economy indexes are not ready; processing bounded requests with the single-field indexes.');
+    [pending, recovery, review] = await Promise.all([
+      requests.where('status', '==', 'PENDING').limit(limit).get(),
+      requests.where('leaseUntil', '<=', startedAt).limit(limit).get(),
+      manualReview ? requests.where('status', '==', 'REVIEW').limit(limit).get() : {docs: []}
+    ]);
+  }
+  const rows = (manualReview ? review.docs : [...pending.docs, ...recovery.docs]).sort((a, b) =>
+    (a.get('createdAt')?.toMillis?.() ?? 0) - (b.get('createdAt')?.toMillis?.() ?? 0)).slice(0, limit);
+  for (const row of rows) {
     const lease = randomUUID(), now = clock();
     const command = await db.runTransaction(async tx => {
       const fresh = await tx.get(row.ref), data = fresh.data();
-      if (!data || !['PENDING', 'PROCESSING'].includes(data.status) || (data.status === 'PROCESSING' && data.leaseUntil > now)) return null;
-      tx.update(row.ref, {status: 'PROCESSING', lease, leaseUntil: now + leaseMillis});
-      return data;
+      if (!data || !['PENDING', 'PROCESSING', ...(manualReview ? ['REVIEW'] : [])].includes(data.status)
+        || (data.status === 'PROCESSING' && data.leaseUntil > now)) return null;
+      const attempts = (data.attempts ?? 0) + 1;
+      tx.update(row.ref, {status: 'PROCESSING', lease, leaseUntil: now + leaseMillis, attempts});
+      return {...data, attempts};
     });
     if (!command) { stats.skipped++; continue; }
     let result, failure;
@@ -28,7 +50,20 @@ export async function processQueue(db, auth, {clock = Date.now, limit = 30, leas
     } catch (error) {
       failure = error instanceof EconomyError ? {code: error.code, message: error.message}
         : error.code === 'auth/user-not-found' ? {code: 'unauthenticated', message: 'Inicia sesión'} : null;
-      if (!failure) { stats.skipped++; continue; } // Retry the same ID after the lease; never claim failure after a lost commit response.
+      if (!failure) {
+        // A commit may have succeeded even if its response was lost. Keep the same ID
+        // and require human reconciliation after bounded retries; never start a new charge.
+        const review = command.attempts >= 8;
+        await db.runTransaction(async tx => {
+          const fresh = await tx.get(row.ref);
+          if (!fresh.exists || fresh.get('lease') !== lease || fresh.get('operationId') !== command.operationId) return;
+          tx.update(row.ref, review ? {status: 'REVIEW', lease: FieldValue.delete(), leaseUntil: FieldValue.delete(),
+            reviewAt: FieldValue.serverTimestamp(), reviewReason: 'UNCONFIRMED'} :
+            {leaseUntil: clock() + Math.min(3600000, leaseMillis * 2 ** Math.min(command.attempts - 1, 5))});
+        });
+        stats[review ? 'review' : 'skipped']++;
+        continue;
+      }
     }
     await db.runTransaction(async tx => {
       const fresh = await tx.get(row.ref);

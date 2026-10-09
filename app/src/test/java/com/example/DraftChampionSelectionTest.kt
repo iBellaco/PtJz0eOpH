@@ -54,6 +54,7 @@ class DraftChampionSelectionTest(private val language: String) {
         context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE).edit()
             .putString("saved_active_role", LaneRole.MID.name).commit()
         setRole("free")
+        setAdminClaim(false)
         DraftSessionManager.clearAll()
     }
 
@@ -61,6 +62,11 @@ class DraftChampionSelectionTest(private val language: String) {
         val field = com.example.util.SubscriptionManager::class.java.getDeclaredField("_userRole").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
         (field.get(com.example.util.SubscriptionManager) as kotlinx.coroutines.flow.MutableStateFlow<String>).value = role
+    }
+    private fun setAdminClaim(enabled: Boolean) {
+        val field = com.example.util.AuthManager::class.java.getDeclaredField("_isAdminClaim").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        (field.get(com.example.util.AuthManager) as kotlinx.coroutines.flow.MutableStateFlow<Boolean>).value = enabled
     }
 
     @Test fun savingDraftRequiresACompleteScoreAndOffersOnlyTwoRankedQueues() {
@@ -84,6 +90,7 @@ class DraftChampionSelectionTest(private val language: String) {
 
     @After fun release() {
         DraftSessionManager.clearAll()
+        setAdminClaim(false)
         CompletableFuture.runAsync { Tasks.await(FirebaseFirestore.getInstance().terminate()) }.get(10, TimeUnit.SECONDS)
         FirebaseApp.getApps(context).forEach { it.delete() }
     }
@@ -124,7 +131,10 @@ class DraftChampionSelectionTest(private val language: String) {
         // Initial anonymous-auth callbacks run first. Then simulate the account's
         // confirmed role arriving, just as the profile listener does after login.
         compose.waitForIdle()
-        compose.runOnIdle { setRole("admin") }
+        compose.runOnIdle {
+            setRole("admin")
+            setAdminClaim(true)
+        }
         compose.waitUntil(5_000) {
             compose.onAllNodesWithTag("random_draft_button").fetchSemanticsNodes().size == 1
         }

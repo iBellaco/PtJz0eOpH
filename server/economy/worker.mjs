@@ -8,7 +8,7 @@ initializeApp({credential: applicationDefault(), projectId: 'wild-rift-drafting'
 try {
   const db = getFirestore(), auth = getAuth();
   await ensureAdministrator(auth, db);
-  const stats = await processQueue(db, auth);
+  const stats = await processQueue(db, auth, {manualReview: process.env.COACH_REVIEW_PENDING === 'true'});
   await db.doc('system_config/economy_service').set({enabled: true, schema: 2, transport: 'PRIVATE_QUEUE', checkedAt: FieldValue.serverTimestamp()}, {merge: true});
   console.log('Private economy worker verified:', JSON.stringify(stats));
 } catch (error) { console.error('Economy worker not verified:', error.code ?? 'internal'); process.exitCode = 1; }

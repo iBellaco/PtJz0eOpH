@@ -136,7 +136,8 @@ try {
   await identities.createUser({uid:queueUid,email:'queue@test.invalid',password:'Isolated-test-password-123'});
   await db.doc(`users/${queueUid}`).set({role:'free',blueEssence:500,orangeEssence:100});
   const queueRef=db.doc(`economy_requests/${queueUid}`);
-  const queued=(id,fields={})=>({userId:queueUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'PENDING',schema:2,payload:{action:'PURCHASE',id,plan:'MONTHLY',currency:'BLUE',...fields}});
+  const queued=(id,fields={})=>({userId:queueUid,operationId:id,authTime:Math.floor(Date.now()/1000),status:'PENDING',schema:2,
+    createdAt:Timestamp.now(),payload:{action:'PURCHASE',id,plan:'MONTHLY',currency:'BLUE',...fields}});
   await test('concurrent private workers execute one charge and preserve a private result',async()=>{
     await queueRef.set(queued('queue_concurrent_01'));
     await Promise.all([processQueue(db,identities),processQueue(db,identities)]);
@@ -152,21 +153,62 @@ try {
     assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),300);
     assert.equal((await queueRef.get()).get('status'),'COMPLETED');
   });
+  await test('transient failures recover the same request without a second charge',async()=>{
+    const before=(await db.doc(`users/${queueUid}`).get()).get('blueEssence');
+    await queueRef.set(queued('queue_transient_01'));
+    let now=Date.now();
+    await processQueue(db,{getUser:async()=>{throw new Error('temporary service error');}},{clock:()=>now});
+    assert.equal((await queueRef.get()).get('status'),'PROCESSING');
+    now=(await queueRef.get()).get('leaseUntil')+1;
+    await processQueue(db,identities,{clock:()=>now});
+    assert.equal((await queueRef.get()).get('status'),'COMPLETED');
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),before-100);
+  });
+  await test('repeated unconfirmed failures require review without opening another charge',async()=>{
+    const before=(await db.doc(`users/${queueUid}`).get()).get('blueEssence');
+    await queueRef.set(queued('queue_review_01'));
+    let now=Date.now();
+    const unavailable={getUser:async()=>{throw new Error('unconfirmed response');}};
+    for(let attempt=1;attempt<=8;attempt++) {
+      await processQueue(db,unavailable,{clock:()=>now});
+      const current=(await queueRef.get()).data();
+      assert.equal(current.attempts,attempt);
+      now=(current.leaseUntil ?? now)+1;
+    }
+    assert.equal((await queueRef.get()).get('status'),'REVIEW');
+    await processQueue(db,identities,{clock:()=>now+86400000});
+    assert.equal((await queueRef.get()).get('status'),'REVIEW');
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),before);
+    await processQueue(db,identities,{clock:()=>now+86400000,manualReview:true});
+    assert.equal((await queueRef.get()).get('status'),'COMPLETED');
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),before-100);
+  });
+  await test('manual review recognizes an earlier committed debit without charging twice',async()=>{
+    const request=queued('queue_review_committed_01');
+    const before=(await db.doc(`users/${queueUid}`).get()).get('blueEssence');
+    await executeEconomy(db,auth(queueUid),request.payload);
+    await queueRef.set({...request,status:'REVIEW',attempts:8,reviewReason:'UNCONFIRMED'});
+    await processQueue(db,identities,{manualReview:true});
+    assert.equal((await queueRef.get()).get('status'),'COMPLETED');
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),before-100);
+  });
   await test('a queued document cannot grant admin authority; current Auth claims govern execution',async()=>{
+    const before=(await db.doc(`users/${queueUid}`).get()).get('blueEssence');
     await db.doc(`users/${queueUid}`).update({role:'admin',admin:true});
     await queueRef.set(queued('queue_forged_admin_01',{action:'ADJUST',uid:queueUid,amount:500,currency:'BLUE',addition:true,notify:false}));
     await processQueue(db,identities);
-    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),300);
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),before);
     assert.equal((await queueRef.get()).get('status'),'FAILED');
     await identities.setCustomUserClaims(queueUid,{admin:true});
     const request=queued('queue_revoked_admin_01',{action:'ADJUST',uid:queueUid,amount:500,currency:'BLUE',addition:true,notify:false});
     delete request.payload.plan;
     await queueRef.set(request);await identities.setCustomUserClaims(queueUid,{});
     await processQueue(db,identities);
-    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),300);
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),before);
     assert.equal((await queueRef.get()).get('error.code'),'permission-denied');
   });
   await test('disabled accounts and revoked sessions cannot execute queued payments',async()=>{
+    const before=(await db.doc(`users/${queueUid}`).get()).get('blueEssence');
     await identities.updateUser(queueUid,{disabled:true});
     await queueRef.set(queued('queue_disabled_01'));await processQueue(db,identities);
     assert.equal((await queueRef.get()).get('error.code'),'unauthenticated');
@@ -175,7 +217,7 @@ try {
     const revoked={getUser:async uid=>({...await identities.getUser(uid),tokensValidAfterTime:new Date(Date.now()+60000).toUTCString()})};
     await processQueue(db,revoked);
     assert.equal((await queueRef.get()).get('error.code'),'unauthenticated');
-    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),300);
+    assert.equal((await db.doc(`users/${queueUid}`).get()).get('blueEssence'),before);
   });
   await test('temporary results expire without deleting the durable receipt or pending request',async()=>{
     const result=db.doc(`economy_results/${queueUid}~queue_concurrent_01`);

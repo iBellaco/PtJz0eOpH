@@ -94,6 +94,13 @@ jobs:
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         working-directory: server/economy
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install database index publisher
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        working-directory: tests/firestore
+        run: npm ci --no-audit --no-fund
+      - name: Publish ordered queue indexes
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        run: tests/firestore/node_modules/.bin/firebase deploy --only firestore:indexes --project wild-rift-drafting --non-interactive
       - name: Preserve verified owner access with a signed claim
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         working-directory: server/economy

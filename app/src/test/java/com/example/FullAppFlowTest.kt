@@ -1,5 +1,6 @@
 package com.example
 
+import android.app.Application
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -18,12 +19,34 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
 
 @RunWith(AndroidJUnit4::class)
-@Config(sdk = [34])
-@SQLiteMode(SQLiteMode.Mode.LEGACY)
+@Config(sdk = [34], application = Application::class)
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
 class FullAppFlowTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    @org.junit.Before fun prepareOfflineFirestore() {
+        val context = org.robolectric.RuntimeEnvironment.getApplication()
+        if (com.google.firebase.FirebaseApp.getApps(context).isEmpty()) {
+            com.google.firebase.FirebaseApp.initializeApp(context, com.google.firebase.FirebaseOptions.Builder()
+                .setApplicationId("1:123:android:full-flow")
+                .setProjectId("demo-coach-full-flow").setApiKey("local-test-only").build())
+        }
+        val database = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        database.firestoreSettings = com.google.firebase.firestore.FirebaseFirestoreSettings.Builder()
+            .setLocalCacheSettings(com.google.firebase.firestore.MemoryCacheSettings.newBuilder().build()).build()
+        java.util.concurrent.CompletableFuture.runAsync {
+            com.google.android.gms.tasks.Tasks.await(database.disableNetwork())
+        }.get(10, java.util.concurrent.TimeUnit.SECONDS)
+    }
+
+    @org.junit.After fun closeOfflineFirestore() {
+        java.util.concurrent.CompletableFuture.runAsync {
+            com.google.android.gms.tasks.Tasks.await(com.google.firebase.firestore.FirebaseFirestore.getInstance().terminate())
+        }.get(10, java.util.concurrent.TimeUnit.SECONDS)
+        com.google.firebase.FirebaseApp.getApps(org.robolectric.RuntimeEnvironment.getApplication()).forEach { it.delete() }
+    }
 
     @Test
     fun testAllCatalogTabsAndInteractions() {

@@ -29,6 +29,7 @@ object NoticeMediaStorageManager {
     private const val TAG = "NoticeMediaStorage"
     private const val MEDIA_DIR = "notice_media"
     private const val VIDEO_CACHE_DIR = "notice_video_cache"
+    private const val MAX_UPLOAD_BYTES = 20L * 1024 * 1024
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
@@ -326,7 +327,8 @@ object NoticeMediaStorageManager {
                     }
                 }
 
-                if (!tempUploadFile.exists() || tempUploadFile.length() == 0L) {
+                if (!tempUploadFile.exists() || tempUploadFile.length() !in 1..MAX_UPLOAD_BYTES) {
+                    tempUploadFile.delete()
                     return@withTimeoutOrNull null
                 }
 

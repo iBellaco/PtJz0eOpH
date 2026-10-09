@@ -10,12 +10,12 @@ object RolePanelAccess {
 
 
     fun isAdministrator(role: String, adminClaim: Boolean = false): Boolean =
-        role.trim().lowercase(java.util.Locale.ROOT) in setOf("admin", "administrador") ||
-        adminClaim
+        adminClaim && role.trim().lowercase(java.util.Locale.ROOT) != "banned"
 
     fun canOpen(panel: RolePanel, role: String, secondaryRole: String = "", adminClaim: Boolean = false): Boolean {
-        if (isAdministrator(role, adminClaim)) return true
         val roles = setOf(role, secondaryRole).map { it.trim().lowercase(java.util.Locale.ROOT) }
+        if ("banned" in roles) return false
+        if (isAdministrator(role, adminClaim)) return true
         return when (panel) {
             RolePanel.ADMINISTRATION -> false
             RolePanel.MODERATION -> "moderador" in roles
@@ -26,7 +26,7 @@ object RolePanelAccess {
     }
 
     fun canCreateBuild(role: String, secondaryRole: String = "", adminClaim: Boolean = false): Boolean {
-        if (role == "banned") return false
+        if (role == "banned" || secondaryRole == "banned") return false
         if (isAdministrator(role, adminClaim)) return true
         return setOf(role, secondaryRole).any { it in setOf("moderador", "streamer", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5") }
     }
