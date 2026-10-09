@@ -1350,7 +1350,7 @@ fun ChampionDetailSheet(
                                         color = finalRuneBorderColor,
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .testTag("build_rune_details_${foundRune?.id ?: rName.lowercase().replace(" ", "_")}")
+                                    .testTag("build_rune_details")
                                     .coachClickable {
                                         selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
                                             runeName = rName,
