@@ -29,8 +29,20 @@ jobs:
         COACH_SIGNING_CERT_SHA256: ${{ vars.COACH_SIGNING_CERT_SHA256 }}
         COACH_REQUIRE_PERSISTENT_SIGNING: 'true'
       run: python3 .github/scripts/restore-private-signing.py --check-access
+  source-integrity:
+    needs: find-validated-apk
+    if: needs.find-validated-apk.outputs.run_id == ''
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check generated catalogs and Portuguese text before Android validation
+      run: |
+        python3 tools/generate-component-items.py --check
+        python3 tools/import-component-icons.py --check
+        python3 tools/update-champion-builds.py --check
+        bash tools/audit-portuguese.sh
   build-apk:
-    needs: [find-validated-apk, security-and-data-tests, core-and-rendered]
+    needs: [find-validated-apk, source-integrity, security-and-data-tests, core-and-rendered]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -103,12 +115,6 @@ jobs:
       run: |
         python3 -m unittest discover -s .github/scripts -p test_google_services.py
         python3 .github/scripts/restore-google-services.py
-    - name: Audit Portuguese text sinks
-      run: |
-        python3 tools/generate-component-items.py --check
-        python3 tools/import-component-icons.py --check
-        python3 tools/update-champion-builds.py --check
-        bash tools/audit-portuguese.sh
     - name: Build obfuscated release APK
       env:
         CI: 'true'
@@ -297,7 +303,7 @@ jobs:
         path: app/build/reports/portuguese-focused/
         retention-days: 14
   security-and-data-tests:
-    needs: find-validated-apk
+    needs: [find-validated-apk, source-integrity]
     if: needs.find-validated-apk.outputs.run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
