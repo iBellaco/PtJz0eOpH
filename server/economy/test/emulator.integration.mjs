@@ -106,6 +106,10 @@ try {
     await call('PREMIUM_REMOVE', 'premium_remove_creator', {uid: 'premium-removal-creator'}, admin);
     account = (await db.doc('users/premium-removal-creator').get()).data();
     assert.equal(account.role, 'creador'); assert.equal(account.secondaryRole, 'streamer'); assert.equal(account.premiumUntil, 0);
+    await db.doc('users/premium-removal-secondary-moderator').set({...base, role: 'creador', secondaryRole: 'moderador', premiumUntil: expires});
+    await call('PREMIUM_REMOVE', 'premium_remove_secondary_moderator', {uid: 'premium-removal-secondary-moderator'}, admin);
+    account = (await db.doc('users/premium-removal-secondary-moderator').get()).data();
+    assert.equal(account.role, 'creador'); assert.equal(account.secondaryRole, ''); assert.equal(account.premiumUntil, 0);
   });
   await test('deletion and suspension block financial operations without recreating accounts', async () => {
     await db.doc(`account_deletions/${owner.uid}`).set({status: 'PENDING'});

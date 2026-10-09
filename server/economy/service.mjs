@@ -97,11 +97,11 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
       updates.subscriptionPlan = days ? 'ADMIN_GIFT' : 'FREE'; updates.lastModifiedByAdmin = now;
       if (!days && ['premium', 'moderador'].includes(account.role)) {
         updates.role = 'free';
-        updates.secondaryRole = account.secondaryRole === 'moderador' ? '' : (account.secondaryRole ?? '');
         updates.last_role_update = now;
         updates.banned = false;
         updates.bannedTimestamp = 0;
       }
+      if (!days && account.secondaryRole === 'moderador') updates.secondaryRole = '';
       record = receipt(input.id, now, days ? 'ADMIN_GIFT' : 'ADMIN_REVOCATION', days ? 'Suscripción Premium regalada' : 'Suscripción Premium retirada', days ? 'Regalo' : '0', 'Completado', days);
     } else if (input.action === 'ROLE') {
       ensure(requestedAtMillis === undefined || deadline(account.last_role_update) <= requestedAtMillis,

@@ -409,5 +409,12 @@
   "¿Quitar Premium?": "Remover Premium?",
   "Este usuario volverá al rol Gratis y perderá el tiempo Premium restante.": "Este usuário voltará ao papel Gratuito e perderá o tempo Premium restante.",
   "Se retirará el tiempo Premium restante sin cambiar el rol actual.": "O tempo Premium restante será removido sem alterar o papel atual.",
-  "Confirmar y quitar": "Confirmar e remover"
+  "Confirmar y quitar": "Confirmar e remover",
+  "¿Otorgar verificación?": "Conceder verificação?",
+  "¿Revocar verificación?": "Revogar verificação?",
+  "La cuenta mostrará la insignia de verificada al confirmar.": "A conta exibirá o selo de verificada ao confirmar.",
+  "La cuenta dejará de mostrar la insignia de verificada al confirmar.": "A conta deixará de exibir o selo de verificada ao confirmar.",
+  "¿Reiniciar dispositivos?": "Redefinir dispositivos?",
+  "Se cerrarán las sesiones de esta cuenta y se liberarán todos sus dispositivos vinculados.": "As sessões desta conta serão encerradas e todos os dispositivos vinculados serão liberados.",
+  "Confirmando el cambio de Premium…": "Confirmando a alteração do Premium…"
 }
