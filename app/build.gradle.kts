@@ -24,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 952
-    versionName = "1.1.10.236"
+    versionCode = 953
+    versionName = "1.1.10.237"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -178,6 +178,8 @@ dependencies {
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.runner)
+  // Avoid the stale 2.30.0 lookup retained by the CI dependency cache.
+  androidTestImplementation("com.google.errorprone:error_prone_annotations:2.31.0")
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   debugImplementation(libs.androidx.compose.ui.tooling)
 
