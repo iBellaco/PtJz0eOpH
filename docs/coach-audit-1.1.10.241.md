@@ -1,11 +1,11 @@
-# Coach 1.1.10.240 — código 956
+# Coach 1.1.10.241 — código 957
 
 ## Cambios
 
 - Cada runa situacional conserva al abrirse el nombre, icono y explicación de la opción pulsada. Las coincidencias flexibles del catálogo ya no pueden convertir dos alternativas distintas en el mismo detalle.
 - Los controles de runas principales y situacionales usan identificadores únicos, lo que permite verificar cada alternativa de forma independiente.
 - La dependencia de anotaciones usada por las pruebas instrumentadas se fija en la versión 2.26.0, la misma que exige estrictamente la aplicación. Así se evita el conflicto con la versión 2.30.0 solicitada por Espresso.
-- Todas las configuraciones instrumentadas fuerzan esa misma versión para que la resolución también se aplique a lint.
+- Espresso se ajusta a la versión compatible con las anotaciones ya fijadas por la aplicación, evitando que lint solicite una versión conflictiva.
 - El trabajador económico mantiene el límite de 30 solicitudes si Firestore aún está creando sus índices, y el flujo de permisos conserva el trabajador programado cuando Cloud Functions no puede desplegarse por permisos.
 
 ## Verificación
@@ -15,4 +15,4 @@
 
 ## Resumen para testers
 
-Coach 1.1.10.240: abre cada runa situacional de una build que tenga varias alternativas. Cada una debe mostrar su propio nombre, icono y explicación, sin repetir el detalle de otra runa.
+Coach 1.1.10.241: abre cada runa situacional de una build que tenga varias alternativas. Cada una debe mostrar su propio nombre, icono y explicación, sin repetir el detalle de otra runa.
