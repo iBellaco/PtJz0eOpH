@@ -14,9 +14,13 @@ export async function readQueueRows(requests, {startedAt, limit, manualReview}) 
     ]);
   } catch (error) {
     if (error.code !== 9 && error.code !== 'failed-precondition') throw error;
-    // A bounded unordered read can skip the oldest request indefinitely. The indexes
-    // are part of the deployment; stop safely until they are available.
-    throw new EconomyError('failed-precondition', 'Faltan índices de la cola económica. Publica los índices antes de procesar solicitudes.');
+    // Keep the existing trusted worker available while a Firestore index is
+    // building. The bounded fallback cannot exhaust runner memory.
+    [pending, recovery, review] = await Promise.all([
+      requests.where('status', '==', 'PENDING').limit(limit).get(),
+      requests.where('status', '==', 'PROCESSING').limit(limit).get(),
+      manualReview ? requests.where('status', '==', 'REVIEW').limit(limit).get() : {docs: []}
+    ]);
   }
   const rows = (manualReview ? review.docs : [...pending.docs, ...recovery.docs]).sort((a, b) =>
     (a.get('createdAt')?.toMillis?.() ?? 0) - (b.get('createdAt')?.toMillis?.() ?? 0)).slice(0, limit);

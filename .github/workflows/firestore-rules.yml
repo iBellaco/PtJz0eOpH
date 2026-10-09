@@ -115,7 +115,18 @@ jobs:
           fi
       - name: Publish direct Premium processing when permitted
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
-        run: tests/firestore/node_modules/.bin/firebase deploy --only functions:economy:coachEconomy --project wild-rift-drafting --non-interactive
+        run: |
+          DEPLOY_LOG="$RUNNER_TEMP/coach-functions.log"
+          if tests/firestore/node_modules/.bin/firebase deploy --only functions:economy:coachEconomy --project wild-rift-drafting --non-interactive > "$DEPLOY_LOG" 2>&1; then
+            cat "$DEPLOY_LOG"
+          else
+            cat "$DEPLOY_LOG"
+            if grep -Fq 'HTTP Error: 403, Permission denied to get service' "$DEPLOY_LOG"; then
+              echo '::warning::La cuenta de GitHub no puede desplegar Cloud Functions; se mantiene activo el trabajador privado programado.'
+            else
+              exit 1
+            fi
+          fi
       - name: Preserve verified owner access with a signed claim
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         working-directory: server/economy
