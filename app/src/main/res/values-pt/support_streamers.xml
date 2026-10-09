@@ -24,6 +24,10 @@
     <string name="streamer_reviews">Streamers</string>
     <string name="streamer_roles">Verificação e papéis</string>
     <string name="streamer_open">Abrir canal</string>
+    <string name="streamer_confirm_approve_title">Confirmar aprovação?</string>
+    <string name="streamer_confirm_approve_body">O canal será publicado ao confirmar esta ação.</string>
+    <string name="streamer_confirm_reject_title">Confirmar rejeição?</string>
+    <string name="streamer_confirm_reject_body">A solicitação será rejeitada ao confirmar esta ação.</string>
     <string name="streamer_verify">Confirmei que está usando o Coach na transmissão.</string>
     <string name="streamer_approve">Aprovar</string>
     <string name="streamer_reject">Rejeitar</string>

@@ -326,6 +326,7 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
     var requests by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var requestAvailable by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
+    var reviewToConfirm by remember { mutableStateOf<Triple<String, Boolean, Boolean>?>(null) }
     var result by remember { mutableStateOf<Result<Unit>?>(null) }
     val scope = rememberCoroutineScope()
     val uri = LocalUriHandler.current
@@ -392,13 +393,31 @@ fun StreamerReviewPanel(modifier: Modifier = Modifier) {
                         TextButton(onClick = { channel?.let { runCatching { uri.openUri(it.url) } } }, enabled = channel != null) { Text(localizedString(R.string.streamer_open)) }
                         Row { Checkbox(checked = verified, onCheckedChange = { verified = it }, enabled = !busy); Text(localizedString(R.string.streamer_verify), color = Color.White, modifier = Modifier.weight(1f)) }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = { busy = true; scope.launch { result = StreamerRepository.review(uid, true, verified); busy = false } }, enabled = !busy && available && requestAvailable && verified && channel != null && entries.size < 5) { Text(localizedString(R.string.streamer_approve)) }
-                            TextButton(onClick = { busy = true; scope.launch { result = StreamerRepository.review(uid, false, false); busy = false } }, enabled = !busy && requestAvailable) { Text(localizedString(R.string.streamer_reject)) }
+                            Button(onClick = { reviewToConfirm = Triple(uid, true, verified) }, enabled = !busy && available && requestAvailable && verified && channel != null && entries.size < 5) { Text(localizedString(R.string.streamer_approve)) }
+                            TextButton(onClick = { reviewToConfirm = Triple(uid, false, false) }, enabled = !busy && requestAvailable) { Text(localizedString(R.string.streamer_reject)) }
                         }
                     }
                 }
             }
         }
+    }
+    reviewToConfirm?.let { (uid, approve, verified) ->
+        AlertDialog(
+            onDismissRequest = { if (!busy) reviewToConfirm = null },
+            title = { Text(localizedString(if (approve) R.string.streamer_confirm_approve_title else R.string.streamer_confirm_reject_title), color = StreamGold) },
+            text = { Text(localizedString(if (approve) R.string.streamer_confirm_approve_body else R.string.streamer_confirm_reject_body), color = Color.White) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        busy = true
+                        reviewToConfirm = null
+                        scope.launch { result = StreamerRepository.review(uid, approve, verified); busy = false }
+                    },
+                    enabled = !busy
+                ) { Text(localizedString(R.string.confirmar)) }
+            },
+            dismissButton = { TextButton(onClick = { reviewToConfirm = null }, enabled = !busy) { Text(localizedString(R.string.cancelar)) } }
+        )
     }
 }
 

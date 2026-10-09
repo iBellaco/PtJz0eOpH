@@ -32,13 +32,18 @@ internal fun applyPremiumDuration(context: Context, uid: String, days: Int, exte
     }
 }
 
-internal fun removePremiumFromUser(context: Context, uid: String, onSuccess: () -> Unit) {
+internal fun removePremiumFromUser(context: Context, uid: String, onError: () -> Unit = {}, onSuccess: (Map<String, Any>) -> Unit) {
     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-        runCatching { com.example.data.EconomyServiceClient.call("PREMIUM_REMOVE", mapOf("uid" to uid)) }
-            .onSuccess {
+        runCatching {
+            @Suppress("UNCHECKED_CAST")
+            com.example.data.EconomyServiceClient.call("PREMIUM_REMOVE", mapOf("uid" to uid))["account"] as Map<String, Any>
+        }.onSuccess { updated ->
                 Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
-                onSuccess()
-            }.onFailure { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }
+                onSuccess(updated)
+            }.onFailure {
+                onError()
+                Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
+            }
     }
 }
 

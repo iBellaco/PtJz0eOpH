@@ -103,9 +103,9 @@ object StreamerRepository {
             val reviewedAt = System.currentTimeMillis()
             if (approve) {
                 check(verifiedUsingCoach && request.getBoolean("usingCoachAcknowledged") == true) { "streamer_requirement" }
-                // Only a trusted staff writer can create adminTest; ordinary requests forbid this field.
+                // The administrator who reviews has already been authorized above. The applicant
+                // only needs the streamer role when submitting, never when their request is reviewed.
                 val trustedTest = request.getBoolean("adminTest") == true
-                check(hasRole(account.getString("role"), account.getString("secondaryRole"), trustedTest)) { "streamer_role_error" }
                 val channel = StreamChannelUrl.parse(request.getString("channelUrl").orEmpty(),
                     allowAdminTest = trustedTest) ?: error("streamer_url_error")
                 val durHours = (request.getLong("durationHours") ?: (request.get("durationHours") as? Number)?.toLong() ?: 3L).toInt()

@@ -90,6 +90,23 @@ try {
     assert.equal(after.role, before.role); assert.equal(after.secondaryRole, before.secondaryRole);
     await assert.rejects(call('PREMIUM_REMOVE', 'premium_self_remove', {uid: owner.uid}), /permisos/);
   });
+  await test('removing Premium resets premium and moderator to free while preserving other roles', async () => {
+    const expires = Timestamp.fromMillis(Date.now() + 30 * 86400000);
+    await assert.rejects(call('PREMIUM_REMOVE', 'premium_remove_admin', {uid: admin.uid}, admin), /vitalicio/);
+    assert.equal((await db.doc(`users/${admin.uid}`).get()).get('role'), 'admin');
+    await db.doc('users/premium-removal-premium').set({...base, role: 'premium', secondaryRole: '', premiumUntil: expires});
+    await call('PREMIUM_REMOVE', 'premium_remove_primary', {uid: 'premium-removal-premium'}, admin);
+    let account = (await db.doc('users/premium-removal-premium').get()).data();
+    assert.equal(account.role, 'free'); assert.equal(account.premiumUntil, 0); assert.equal(account.subscriptionPlan, 'FREE');
+    await db.doc('users/premium-removal-moderator').set({...base, role: 'moderador', secondaryRole: 'moderador', premiumUntil: expires});
+    await call('PREMIUM_REMOVE', 'premium_remove_moderator', {uid: 'premium-removal-moderator'}, admin);
+    account = (await db.doc('users/premium-removal-moderator').get()).data();
+    assert.equal(account.role, 'free'); assert.equal(account.secondaryRole, ''); assert.equal(account.premiumUntil, 0);
+    await db.doc('users/premium-removal-creator').set({...base, role: 'creador', secondaryRole: 'streamer', premiumUntil: expires});
+    await call('PREMIUM_REMOVE', 'premium_remove_creator', {uid: 'premium-removal-creator'}, admin);
+    account = (await db.doc('users/premium-removal-creator').get()).data();
+    assert.equal(account.role, 'creador'); assert.equal(account.secondaryRole, 'streamer'); assert.equal(account.premiumUntil, 0);
+  });
   await test('deletion and suspension block financial operations without recreating accounts', async () => {
     await db.doc(`account_deletions/${owner.uid}`).set({status: 'PENDING'});
     await assert.rejects(call('REDEEM', 'cash_deleted_user', destination), /eliminación/);
