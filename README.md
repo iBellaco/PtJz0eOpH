@@ -38,7 +38,7 @@ Consulta la [guía de autorización de Riot y publicación en Google Play](docs/
 
 ## Desarrollo y comprobaciones
 
-Repositorio: <https://github.com/iBellaco/PtJz0eOpH>. Ramas de trabajo: `pruebas` y `main`.
+Repositorio: <https://github.com/iBellaco/PtJz0eOpH>. Ramas de trabajo: `coach-validacion` y `main`.
 
 Configuración: Kotlin **2.2.10**, Gradle **9.3.1**, Java **21**, Android mínimo **API 24**, compilación y destino **API 36**, Jetpack Compose y Material 3. Las versiones exactas se mantienen en `gradle/libs.versions.toml` y los archivos Gradle.
 

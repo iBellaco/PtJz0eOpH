@@ -10,7 +10,7 @@ spec.loader.exec_module(validated)
 class ValidatedApkTest(unittest.TestCase):
     repository = 'example/coach'
     fixture_run = {'id': 42, 'status': 'completed', 'conclusion': 'success', 'event': 'pull_request',
-           'head_branch': 'pruebas', 'head_repository': {'full_name': repository}, 'head_sha': 'a' * 40}
+           'head_branch': 'coach-validacion', 'head_repository': {'full_name': repository}, 'head_sha': 'a' * 40}
 
     def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None):
         def request(path):
