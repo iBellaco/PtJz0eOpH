@@ -199,25 +199,6 @@ jobs:
         cp app/build/outputs/apk/release/app-release.apk "$ASSET_PATH"
         echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
         echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
-    - name: Publish early review APK
-      id: early_review
-      continue-on-error: true
-      if: github.event_name == 'pull_request' || github.ref == 'refs/heads/pruebas'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        TAG="review-v${{ steps.app_version.outputs.version_name }}-b${{ steps.app_version.outputs.version_code }}"
-        cat > review-notes.md <<'NOTES'
-        Coach: APK de revisión temprana. Las comprobaciones de pantallas y del APK instalado siguen en ejecución.
-        Coach 164 inicia una nueva firma persistente autorizada. No actualiza directamente instalaciones anteriores con otra firma. Los datos existentes deben conservarse antes de cambiar de instalación. Las versiones siguientes conservarán esta identidad. No es una publicación final validada.
-        NOTES
-        gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease --target "${{ github.event.pull_request.head.sha || github.sha }}" --title "Coach: revisión temprana ${{ steps.app_version.outputs.version_name }}" --notes-file review-notes.md
-        gh release upload "$TAG" "${{ steps.prepare_asset.outputs.asset_path }}" --clobber
-        printf 'APK de revisión disponible. Las comprobaciones completas siguen ejecutándose.\n' >> "$GITHUB_STEP_SUMMARY"
-    - name: Report unavailable early review publication
-      if: steps.early_review.outcome == 'failure'
-      run: |
-        echo '::warning::La revisión temprana no pudo publicarse. Continúan las verificaciones obligatorias del APK firmado; la publicación final sigue siendo obligatoria.'
         echo 'La revisión temprana no se publicó. Los artefactos firmados siguen disponibles para las pruebas del APK instalado.' >> "$GITHUB_STEP_SUMMARY"
   core-and-rendered:
     needs: [find-validated-apk, security-and-data-tests]
@@ -523,7 +504,7 @@ jobs:
         echo "asset_path=$ASSET_PATH" >> "$GITHUB_OUTPUT"
         echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
       if: github.ref == 'refs/heads/main'
-    - name: Package the two validated downloadable ZIPs
+    - name: Package the validated project ZIP
       if: github.ref == 'refs/heads/main'
       id: delivery
       run: python3 .github/scripts/package-delivery.py
@@ -548,13 +529,13 @@ jobs:
         - **Ejecución GitHub Actions:** #${{ github.run_number }}
         - **Commit:** ${{ github.sha }}
 
-        Se publican dos ZIP descargables: APK firmado y ofuscado, y proyecto completo sin archivos privados. El APK también está disponible por separado.
+        Se publican únicamente el APK firmado y ofuscado y el ZIP del proyecto sin archivos privados.
         Esta publicación usa la nueva firma persistente autorizada desde Coach 164. No puede actualizar directamente una instalación con una firma anterior. No borres los datos ni desinstales sin conservar lo necesario. Las versiones siguientes mantendrán la nueva firma.
         NOTE_EOF
 
         # Create new release with the APK attached
         gh release create "$TAG_NAME" "${{ steps.prepare_asset.outputs.asset_path }}" \
-           "${{ steps.delivery.outputs.apk_zip }}" "${{ steps.delivery.outputs.project_zip }}" "${{ steps.delivery.outputs.zip_checksums }}" \
+           "${{ steps.delivery.outputs.project_zip }}" \
            --title "$RELEASE_NAME" \
            --target "${{ github.sha }}" \
            --notes-file release_notes.md
@@ -571,7 +552,7 @@ jobs:
       cancel-in-progress: false
     steps:
     - uses: actions/checkout@v4
-    - name: Keep at most 15 completed workflow runs
+    - name: Keep at most 30 completed runs per category and 30 releases
       uses: actions/github-script@v7
       with:
         script: |

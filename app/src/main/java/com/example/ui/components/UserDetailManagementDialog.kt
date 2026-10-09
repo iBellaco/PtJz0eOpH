@@ -181,7 +181,6 @@ fun UserDetailManagementDialog(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                EconomyPendingStatus(alwaysVisible = true)
                 // Header del Dialog
                 Row(
                     modifier = Modifier.fillMaxWidth(),

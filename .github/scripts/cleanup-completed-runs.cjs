@@ -1,5 +1,5 @@
 /** Preserve delivery evidence separately from the high-frequency service runs. */
-module.exports = async ({ github, context, core }, limit = 15) => {
+module.exports = async ({ github, context, core }, limit = 30) => {
   const repo = { owner: context.repo.owner, repo: context.repo.repo };
   const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo,
     { ...repo, status: 'completed', per_page: 100 });
@@ -21,4 +21,17 @@ module.exports = async ({ github, context, core }, limit = 15) => {
     }
   }
   core.info(`Removed ${removed} completed runs; up to ${limit} deliveries and ${limit} service runs are retained.`);
+  const releases = await github.paginate(github.rest.repos.listReleases, { ...repo, per_page: 100 });
+  const published = releases.filter(release => !release.draft)
+    .sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at));
+  let removedReleases = 0;
+  for (const release of published.slice(limit)) {
+    try {
+      await github.rest.repos.deleteRelease({ ...repo, release_id: release.id });
+      removedReleases++;
+    } catch (error) {
+      if (error.status !== 404) throw error;
+    }
+  }
+  core.info(`Removed ${removedReleases} old releases; up to ${limit} published releases are retained.`);
 };
