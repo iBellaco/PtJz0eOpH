@@ -403,5 +403,11 @@
   "No se pudo confirmar el cambio de rol. Revisa la cuenta y la conexión antes de intentarlo de nuevo.": "Não foi possível confirmar a mudança de cargo. Verifique a conta e a conexão antes de tentar novamente.",
   "Canje disponible únicamente para el administrador": "Troca disponível apenas para o administrador",
   "El rol ya fue actualizado por una operación más reciente": "O cargo já foi atualizado por uma operação mais recente",
-  "Rol no válido": "Cargo inválido"
+  "Rol no válido": "Cargo inválido",
+  "¿Otorgar Premium?": "Conceder Premium?",
+  "Se agregarán días Premium a este usuario.": "dias Premium serão adicionados a este usuário.",
+  "¿Quitar Premium?": "Remover Premium?",
+  "Este usuario volverá al rol Gratis y perderá el tiempo Premium restante.": "Este usuário voltará ao papel Gratuito e perderá o tempo Premium restante.",
+  "Se retirará el tiempo Premium restante sin cambiar el rol actual.": "O tempo Premium restante será removido sem alterar o papel atual.",
+  "Confirmar y quitar": "Confirmar e remover"
 }

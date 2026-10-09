@@ -100,6 +100,8 @@ fun UserDetailManagementDialog(
     var isProcessing by remember { mutableStateOf(false) }
     var customDaysInput by remember { mutableStateOf("") }
     var showCustomDaysDialog by remember { mutableStateOf(false) }
+    var premiumDaysToConfirm by remember { mutableStateOf<Int?>(null) }
+    var showRemovePremiumConfirmation by remember { mutableStateOf(false) }
     var showGiveEssenceDialog by remember { mutableStateOf(false) }
     var showPrivateMessageDialog by remember { mutableStateOf(false) }
     var showUserMessagesViewerDialog by remember { mutableStateOf(false) }
@@ -144,6 +146,8 @@ fun UserDetailManagementDialog(
         onDismissRequest = {
             when {
                 showCustomDaysDialog -> showCustomDaysDialog = false
+                premiumDaysToConfirm != null -> premiumDaysToConfirm = null
+                showRemovePremiumConfirmation -> showRemovePremiumConfirmation = false
                 showGiveEssenceDialog -> showGiveEssenceDialog = false
                 showPrivateMessageDialog -> showPrivateMessageDialog = false
                 showUserMessagesViewerDialog -> showUserMessagesViewerDialog = false
@@ -160,6 +164,8 @@ fun UserDetailManagementDialog(
         BackHandler(enabled = true) {
             when {
                 showCustomDaysDialog -> showCustomDaysDialog = false
+                premiumDaysToConfirm != null -> premiumDaysToConfirm = null
+                showRemovePremiumConfirmation -> showRemovePremiumConfirmation = false
                 showGiveEssenceDialog -> showGiveEssenceDialog = false
                 showPrivateMessageDialog -> showPrivateMessageDialog = false
                 showUserMessagesViewerDialog -> showUserMessagesViewerDialog = false
@@ -363,25 +369,19 @@ fun UserDetailManagementDialog(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+1 Día",
                                         modifier = Modifier.weight(1f),
-                                        onClick = {
-                                            submitPremiumDays(1)
-                                        }
+                                        onClick = { premiumDaysToConfirm = 1 }
                                     )
                                     DurationButton(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+7 Días",
                                         modifier = Modifier.weight(1f),
-                                        onClick = {
-                                            submitPremiumDays(7)
-                                        }
+                                        onClick = { premiumDaysToConfirm = 7 }
                                     )
                                     DurationButton(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+30 Días",
                                         modifier = Modifier.weight(1f),
-                                        onClick = {
-                                            submitPremiumDays(30)
-                                        }
+                                        onClick = { premiumDaysToConfirm = 30 }
                                     )
                                 }
 
@@ -392,17 +392,13 @@ fun UserDetailManagementDialog(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+90 Días (3m)",
                                         modifier = Modifier.weight(1f),
-                                        onClick = {
-                                            submitPremiumDays(90)
-                                        }
+                                        onClick = { premiumDaysToConfirm = 90 }
                                     )
                                     DurationButton(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+1 Año (365d)",
                                         modifier = Modifier.weight(1f),
-                                        onClick = {
-                                            submitPremiumDays(365)
-                                        }
+                                        onClick = { premiumDaysToConfirm = 365 }
                                     )
 
                                 }
@@ -427,15 +423,8 @@ fun UserDetailManagementDialog(
 
                                     // Quitar Premium
                                     OutlinedButton(
-                                        enabled = isAdmin && !isProcessing && !com.example.model.PremiumAccessPolicy.isLifetime(currentRole, currentSecondaryRole),
-                                        onClick = {
-                                            removePremiumFromUser(context, uid) {
-                                                currentPremiumUntil = null
-                                                onUserUpdated(user.toMutableMap().apply {
-                                                    put("premiumUntil", 0L)
-                                                })
-                                            }
-                                        },
+                                        enabled = isAdmin && !isProcessing && currentRole !in setOf("admin", "administrador"),
+                                        onClick = { showRemovePremiumConfirmation = true },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(6.dp),
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
@@ -1335,6 +1324,63 @@ fun UserDetailManagementDialog(
                     Text(tr("Cancelar"), color = TextMuted)
                 }
             }
+        )
+    }
+
+    premiumDaysToConfirm?.let { days ->
+        AlertDialog(
+            onDismissRequest = { if (!isProcessing) premiumDaysToConfirm = null },
+            title = { Text(tr("¿Otorgar Premium?"), color = HextechGold, fontWeight = FontWeight.Bold) },
+            text = { Text("$days ${tr("Se agregarán días Premium a este usuario.")}", color = TextPrimary) },
+            confirmButton = {
+                Button(
+                    onClick = { submitPremiumDays(days) { premiumDaysToConfirm = null } },
+                    enabled = !isProcessing,
+                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
+                ) { Text(tr("Confirmar"), color = HextechDarkBg) }
+            },
+            dismissButton = {
+                TextButton(onClick = { premiumDaysToConfirm = null }, enabled = !isProcessing) {
+                    Text(tr("Cancelar"), color = TextSecondary)
+                }
+            },
+            containerColor = HextechSurfaceBg
+        )
+    }
+
+    if (showRemovePremiumConfirmation) {
+        AlertDialog(
+            onDismissRequest = { if (!isProcessing) showRemovePremiumConfirmation = false },
+            title = { Text(tr("¿Quitar Premium?"), color = DangerRed, fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    tr(if (currentRole in setOf("premium", "moderador"))
+                        "Este usuario volverá al rol Gratis y perderá el tiempo Premium restante."
+                    else "Se retirará el tiempo Premium restante sin cambiar el rol actual."),
+                    color = TextPrimary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        isProcessing = true
+                        removePremiumFromUser(context, uid, onError = { isProcessing = false }) { updated ->
+                            isProcessing = false
+                            showRemovePremiumConfirmation = false
+                            acceptPremiumUpdate(updated)
+                            onReloadAll()
+                        }
+                    },
+                    enabled = !isProcessing,
+                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
+                ) { Text(tr("Confirmar y quitar"), color = Color.White) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemovePremiumConfirmation = false }, enabled = !isProcessing) {
+                    Text(tr("Cancelar"), color = TextSecondary)
+                }
+            },
+            containerColor = HextechSurfaceBg
         )
     }
 
