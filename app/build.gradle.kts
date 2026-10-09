@@ -24,8 +24,8 @@ android {
     applicationId = "com.Coach"
     minSdk = 24
     targetSdk = 36
-    versionCode = 954
-    versionName = "1.1.10.238"
+    versionCode = 955
+    versionName = "1.1.10.239"
     ndk {
       abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
     }
@@ -184,6 +184,12 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
 
   "ksp"(libs.androidx.room.compiler)
+}
+
+configurations.configureEach {
+  if (name.contains("AndroidTest")) {
+    resolutionStrategy.force("com.google.errorprone:error_prone_annotations:2.26.0")
+  }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
