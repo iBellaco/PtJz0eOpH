@@ -7,6 +7,7 @@
 - `service.mjs`, `UserManagementActions.kt` y `UserDetailManagementDialog.kt`: retirar Premium actualiza de inmediato el perfil mostrado. Un perfil con rol Premium o Moderador pasa a Gratis; los demás roles conservan su rol y pierden únicamente el tiempo Premium. El rol Administrador sigue protegido.
 - `UserDetailManagementDialog.kt` y `translations_ui_pt.json`: las duraciones rápidas de Premium y su retirada solicitan confirmación antes de aplicarse, también en portugués.
 - `emulator.integration.mjs`: se cubren los tres resultados de retirada de Premium y la protección del rol Administrador.
+- `RuntimeVisibilityTest.kt`: las pruebas de duraciones rápidas confirman el nuevo paso explícito de confirmación antes de aplicar el cambio.
 - `app/build.gradle.kts`: versión 1.1.10.233, código 949.
 
 ## Verificación

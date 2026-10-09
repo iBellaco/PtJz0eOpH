@@ -788,6 +788,8 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             "premium-editor-grant" -> {
                 compose.onNodeWithTag("premium_duration_+1 Día").performScrollTo().performClick()
+                compose.onNodeWithText(appTr("¿Otorgar Premium?")).assertExists()
+                compose.onNodeWithText(appTr("Confirmar")).performClick()
                 compose.onNodeWithTag("premium_duration_+1 Día").assertIsNotEnabled()
                 compose.runOnIdle {
                     val update = com.example.data.PremiumGrantPolicy.apply(mapOf("uid" to "local-gift", "role" to "free"), 1, true, System.currentTimeMillis(), "gift-ui")
@@ -803,6 +805,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 for ((label, days) in listOf("+1 Día" to 1, "+7 Días" to 7, "+30 Días" to 30, "+90 Días (3m)" to 90, "+1 Año (365d)" to 365)) {
                     val before = occupiedAccount["premiumUntil"] as Long
                     compose.onNodeWithTag("premium_duration_$label").performScrollTo().performClick()
+                    compose.onNodeWithText(appTr("¿Otorgar Premium?")).assertExists()
+                    compose.onNodeWithText(appTr("Confirmar")).performClick()
                     compose.onNodeWithTag("premium_duration_$label").assertIsNotEnabled()
                     Assert.assertEquals(days, requestedDays)
                     Assert.assertTrue(requestedExtension)
