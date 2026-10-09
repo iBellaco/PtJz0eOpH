@@ -3,10 +3,7 @@ import {randomUUID} from 'node:crypto';
 import {executeEconomy} from './service.mjs';
 import {ensure, EconomyError} from './policy.mjs';
 
-/** One private outstanding command per actor; balances and receipts remain server-only. */
-export async function processQueue(db, auth, {clock = Date.now, limit = 30, leaseMillis = 120000, manualReview = false} = {}) {
-  const stats = {completed: 0, failed: 0, review: 0, skipped: 0};
-  const requests = db.collection('economy_requests'), startedAt = clock();
+export async function readQueueRows(requests, {startedAt, limit, manualReview}) {
   // Separate pending commands from expired leases so one broken command cannot block new users.
   let pending, recovery, review = {docs: []};
   try {
@@ -17,16 +14,27 @@ export async function processQueue(db, auth, {clock = Date.now, limit = 30, leas
     ]);
   } catch (error) {
     if (error.code !== 9 && error.code !== 'failed-precondition') throw error;
-    // The service remains usable while newly published composite indexes build.
-    console.warn('Economy indexes are not ready; processing bounded requests with the single-field indexes.');
+    // An account without index-management permission can still process the oldest
+    // request fairly. Read each status group through its automatic single-field
+    // index, then sort in memory before taking the bounded work batch.
+    console.warn('Economy composite indexes are unavailable; scanning pending status groups in oldest-first order.');
     [pending, recovery, review] = await Promise.all([
-      requests.where('status', '==', 'PENDING').limit(limit).get(),
-      requests.where('leaseUntil', '<=', startedAt).limit(limit).get(),
-      manualReview ? requests.where('status', '==', 'REVIEW').limit(limit).get() : {docs: []}
+      requests.where('status', '==', 'PENDING').get(),
+      requests.where('status', '==', 'PROCESSING').get(),
+      manualReview ? requests.where('status', '==', 'REVIEW').get() : {docs: []}
     ]);
+    recovery = {docs: recovery.docs.filter(row => row.get('leaseUntil') <= startedAt)};
   }
   const rows = (manualReview ? review.docs : [...pending.docs, ...recovery.docs]).sort((a, b) =>
     (a.get('createdAt')?.toMillis?.() ?? 0) - (b.get('createdAt')?.toMillis?.() ?? 0)).slice(0, limit);
+  return rows;
+}
+
+/** One private outstanding command per actor; balances and receipts remain server-only. */
+export async function processQueue(db, auth, {clock = Date.now, limit = 30, leaseMillis = 120000, manualReview = false} = {}) {
+  const stats = {completed: 0, failed: 0, review: 0, skipped: 0};
+  const requests = db.collection('economy_requests');
+  const rows = await readQueueRows(requests, {startedAt: clock(), limit, manualReview});
   for (const row of rows) {
     const lease = randomUUID(), now = clock();
     const command = await db.runTransaction(async tx => {
