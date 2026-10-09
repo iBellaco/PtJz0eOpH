@@ -1,6 +1,6 @@
 # Coach
 
-Aplicación Android independiente de consulta y asistencia para la selección de campeones de League of Legends: Wild Rift. Nombre de la aplicación: **Coach**. Idiomas seleccionables: español y portugués. Versión: **1.1.10.228**, código **944**.
+Aplicación Android independiente de consulta y asistencia para la selección de campeones de League of Legends: Wild Rift. Nombre de la aplicación: **Coach**. Idiomas seleccionables: español y portugués. Versión: **1.1.10.229**, código **945**.
 
 El identificador instalado y usado para las actualizaciones es **com.Coach**. **com.example** es el namespace del código Kotlin, no otro paquete instalable. La firma persistente identifica al certificado como **CN=Coach, O=Coach, C=US**; no acredita una autorización de Riot ni de Google.
 
