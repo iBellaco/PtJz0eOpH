@@ -15,6 +15,7 @@ test('missing composite indexes still select the oldest eligible requests', asyn
       assert.equal(operator, '==');
       return {
         orderBy() { throw Object.assign(new Error('missing composite index'), {code: 9}); },
+        limit(received) { assert.equal(received, 2); return {get: async () => ({docs: rows.filter(entry => entry.get('status') === status)})}; },
         get: async () => ({docs: rows.filter(entry => entry.get('status') === status)})
       };
     }

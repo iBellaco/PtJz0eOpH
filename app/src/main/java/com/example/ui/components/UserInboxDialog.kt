@@ -121,8 +121,9 @@ fun UserInboxDialog(
                 val status = snapshot?.getString("status")
                 val operationId = snapshot?.getString("operationId").orEmpty()
                 economyPendingMessage = if (status in setOf("PENDING", "PROCESSING", "REVIEW") && operationId.isNotBlank())
-                    mapOf("id" to "economy_pending_$operationId", "title" to "Solicitud pendiente",
-                        "content" to "Tienes una solicitud pendiente. Se procesa automáticamente; no debes enviarla otra vez.",
+                    mapOf("id" to "economy_pending_$operationId", "title" to if (status == "REVIEW") "Solicitud requiere revisión" else "Solicitud pendiente",
+                        "content" to if (status == "REVIEW") "Tu solicitud requiere revisión. Contacta con Soporte; no la repitas."
+                            else "Tienes una solicitud pendiente. Se procesa automáticamente; no debes enviarla otra vez.",
                         "tag" to "GENERAL", "panel" to "INBOX", "timestamp" to (snapshot?.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis()),
                         "isRead" to false)
                     else null

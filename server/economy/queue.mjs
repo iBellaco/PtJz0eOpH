@@ -19,9 +19,9 @@ export async function readQueueRows(requests, {startedAt, limit, manualReview}) 
     // index, then sort in memory before taking the bounded work batch.
     console.warn('Economy composite indexes are unavailable; scanning pending status groups in oldest-first order.');
     [pending, recovery, review] = await Promise.all([
-      requests.where('status', '==', 'PENDING').get(),
-      requests.where('status', '==', 'PROCESSING').get(),
-      manualReview ? requests.where('status', '==', 'REVIEW').get() : {docs: []}
+      requests.where('status', '==', 'PENDING').limit(limit).get(),
+      requests.where('status', '==', 'PROCESSING').limit(limit).get(),
+      manualReview ? requests.where('status', '==', 'REVIEW').limit(limit).get() : {docs: []}
     ]);
     recovery = {docs: recovery.docs.filter(row => row.get('leaseUntil') <= startedAt)};
   }

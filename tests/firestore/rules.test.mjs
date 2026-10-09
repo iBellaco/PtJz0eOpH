@@ -211,6 +211,8 @@ try {
     await assertSucceeds(updateDoc(doc(user, 'support_reports', 'ticket'), { userRead: true, isRead: true, hasNewAdminReply: false, hasNewReply: false }));
     const secondDevice = db('user'); assert.equal((await getDoc(doc(secondDevice, 'support_reports', 'ticket'))).data().userRead, true);
     await assertFails(updateDoc(doc(user, 'support_reports', 'ticket'), { adminReply: 'Respuesta falsa' })); await assertFails(updateDoc(doc(user, 'support_reports', 'ticket'), { status: 'SOLVED' }));
+    await assertFails(updateDoc(doc(user, 'users/user/messages/ticket'), { title: 'Aviso falso' }));
+    await assertSucceeds(updateDoc(doc(user, 'users/user/messages/ticket'), { userRead: true, isRead: true, hasNewAdminReply: false, hasNewReply: false }));
   });
   await test('user must wait for real staff reply and cannot bypass the waiting state', async () => {
     await assertSucceeds(setDoc(doc(user, 'support_reports', 'new'), ticket('new')));
