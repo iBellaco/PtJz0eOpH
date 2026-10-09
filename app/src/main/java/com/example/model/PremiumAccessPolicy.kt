@@ -53,7 +53,7 @@ object PremiumAccessPolicy {
         if (role == "free") 0L else inherited
 
     fun extend(until: Long?, days: Int, now: Long): Long {
-        require(days in 1..36500)
+        require(days in 1..3650)
         return maxOf(now, until ?: 0L) + days.toLong() * DAY_MILLIS
     }
 }

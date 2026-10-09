@@ -14,16 +14,9 @@ export async function readQueueRows(requests, {startedAt, limit, manualReview}) 
     ]);
   } catch (error) {
     if (error.code !== 9 && error.code !== 'failed-precondition') throw error;
-    // An account without index-management permission can still process the oldest
-    // request fairly. Read each status group through its automatic single-field
-    // index, then sort in memory before taking the bounded work batch.
-    console.warn('Economy composite indexes are unavailable; scanning pending status groups in oldest-first order.');
-    [pending, recovery, review] = await Promise.all([
-      requests.where('status', '==', 'PENDING').limit(limit).get(),
-      requests.where('status', '==', 'PROCESSING').limit(limit).get(),
-      manualReview ? requests.where('status', '==', 'REVIEW').limit(limit).get() : {docs: []}
-    ]);
-    recovery = {docs: recovery.docs.filter(row => row.get('leaseUntil') <= startedAt)};
+    // A bounded unordered read can skip the oldest request indefinitely. The indexes
+    // are part of the deployment; stop safely until they are available.
+    throw new EconomyError('failed-precondition', 'Faltan índices de la cola económica. Publica los índices antes de procesar solicitudes.');
   }
   const rows = (manualReview ? review.docs : [...pending.docs, ...recovery.docs]).sort((a, b) =>
     (a.get('createdAt')?.toMillis?.() ?? 0) - (b.get('createdAt')?.toMillis?.() ?? 0)).slice(0, limit);

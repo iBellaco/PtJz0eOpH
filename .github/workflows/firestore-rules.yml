@@ -107,12 +107,15 @@ jobs:
           else
             cat "$INDEX_LOG"
             if grep -Fq 'HTTP Error: 403, The caller does not have permission' "$INDEX_LOG"; then
-              echo '::warning::La cuenta de despliegue no puede crear índices. La cola utiliza la consulta ordenada de respaldo; continúan los permisos.'
-              echo 'Índices pendientes por permisos de la cuenta de despliegue. La cola usa su consulta ordenada de respaldo.' >> "$GITHUB_STEP_SUMMARY"
+              echo '::warning::La cuenta de despliegue no puede crear índices. La cola se detendrá de forma segura hasta que se publiquen.'
+              echo 'Índices pendientes por permisos de la cuenta de despliegue. La cola se detendrá de forma segura para no relegar solicitudes antiguas.' >> "$GITHUB_STEP_SUMMARY"
             else
               exit 1
             fi
           fi
+      - name: Publish direct Premium processing when permitted
+        if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
+        run: tests/firestore/node_modules/.bin/firebase deploy --only functions:economy:coachEconomy --project wild-rift-drafting --non-interactive
       - name: Preserve verified owner access with a signed claim
         if: steps.connection.outputs.method == 'identity' || steps.connection.outputs.method == 'account'
         working-directory: server/economy

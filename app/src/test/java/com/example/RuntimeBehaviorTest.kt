@@ -549,7 +549,7 @@ class RuntimeBehaviorTest {
             assertFalse(PremiumAccessPolicy.isActiveAccount(changed + ("premiumUntil" to now), now))
         }
         assertFalse(PremiumAccessPolicy.isActive("free", inherited, now, secondary = "banned"))
-        for (days in listOf(0, -1, 36501)) assertTrue(runCatching {
+        for (days in listOf(0, -1, 3651)) assertTrue(runCatching {
             PremiumGrantPolicy.apply(account, days, true, now, "invalid")
         }.isFailure)
     }

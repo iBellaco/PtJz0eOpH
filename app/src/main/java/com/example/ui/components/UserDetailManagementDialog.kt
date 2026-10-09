@@ -38,6 +38,7 @@ import com.example.util.AuthManager
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +52,7 @@ fun UserDetailManagementDialog(
     roleChangeAction: ((String, (Result<Map<String, Any>>) -> Unit) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val managementScope = rememberCoroutineScope()
     val uid = user["uid"] as? String ?: ""
     var currentName by remember { mutableStateOf(user["name"] as? String ?: "Sin Nombre") }
     val email = user["email"] as? String ?: ""
@@ -102,6 +104,8 @@ fun UserDetailManagementDialog(
     var showCustomDaysDialog by remember { mutableStateOf(false) }
     var premiumDaysToConfirm by remember { mutableStateOf<Int?>(null) }
     var showRemovePremiumConfirmation by remember { mutableStateOf(false) }
+    var verificationToConfirm by remember { mutableStateOf<Boolean?>(null) }
+    var showResetSlotsConfirmation by remember { mutableStateOf(false) }
     var showGiveEssenceDialog by remember { mutableStateOf(false) }
     var showPrivateMessageDialog by remember { mutableStateOf(false) }
     var showUserMessagesViewerDialog by remember { mutableStateOf(false) }
@@ -138,7 +142,7 @@ fun UserDetailManagementDialog(
             result.onSuccess { acceptPremiumUpdate(it); afterSuccess() }
         }
         if (premiumGrantAction != null) premiumGrantAction(days, extend, ::complete)
-        else applyPremiumDuration(context, uid, days, extend, onError = { isProcessing = false }) { complete(Result.success(it)) }
+        else managementScope.launch { complete(runCatching { applyPremiumDuration(uid, days, extend) }) }
     }
 
 
@@ -148,6 +152,8 @@ fun UserDetailManagementDialog(
                 showCustomDaysDialog -> showCustomDaysDialog = false
                 premiumDaysToConfirm != null -> premiumDaysToConfirm = null
                 showRemovePremiumConfirmation -> showRemovePremiumConfirmation = false
+                verificationToConfirm != null -> verificationToConfirm = null
+                showResetSlotsConfirmation -> showResetSlotsConfirmation = false
                 showGiveEssenceDialog -> showGiveEssenceDialog = false
                 showPrivateMessageDialog -> showPrivateMessageDialog = false
                 showUserMessagesViewerDialog -> showUserMessagesViewerDialog = false
@@ -166,6 +172,8 @@ fun UserDetailManagementDialog(
                 showCustomDaysDialog -> showCustomDaysDialog = false
                 premiumDaysToConfirm != null -> premiumDaysToConfirm = null
                 showRemovePremiumConfirmation -> showRemovePremiumConfirmation = false
+                verificationToConfirm != null -> verificationToConfirm = null
+                showResetSlotsConfirmation -> showResetSlotsConfirmation = false
                 showGiveEssenceDialog -> showGiveEssenceDialog = false
                 showPrivateMessageDialog -> showPrivateMessageDialog = false
                 showUserMessagesViewerDialog -> showUserMessagesViewerDialog = false
@@ -360,6 +368,7 @@ fun UserDetailManagementDialog(
 
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(tr("Editar o extender tiempo premium:"), color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                if (isProcessing) Text(tr("Confirmando el cambio de Premium…"), color = HextechCyan, fontSize = 11.sp)
                                 Text(com.example.util.localizedString(com.example.R.string.premium_duration_hint), color = TextMuted, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
                                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -906,26 +915,7 @@ fun UserDetailManagementDialog(
                                 Button(
                                     onClick = {
                                         val newStatus = !currentVerified
-                                        if (isAdmin) {
-                                            updateUserVerification(context, uid, newStatus) {
-                                                currentVerified = newStatus
-                                                onUserUpdated(user.toMutableMap().apply {
-                                                    put("isVerified", newStatus)
-                                                    put("verified", newStatus)
-                                                })
-                                            }
-                                        } else if (isMod) {
-                                            createUserManagementApprovalRequest(
-                                                context = context,
-                                                requestType = "VERIFICATION",
-                                                targetUid = uid,
-                                                targetName = currentName,
-                                                targetEmail = email,
-                                                newValue = newStatus.toString()
-                                            ) {
-                                                // Success callback
-                                            }
-                                        }
+                                        verificationToConfirm = newStatus
                                     },
                                     enabled = canAssignSecondaryOrVerify,
                                     modifier = Modifier.fillMaxWidth(),
@@ -954,48 +944,7 @@ fun UserDetailManagementDialog(
 
                     // SECCIÓN 2: GESTIÓN DE HARDWARE Y SLOTS DE DISPOSITIVOS
                     item {
-                        Surface(
-                            color = HextechSurfaceBg,
-                            shape = RoundedCornerShape(10.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, HextechCardBorder)
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Devices, contentDescription = null, tint = Color(0xFF60A5FA), modifier = Modifier.size(18.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(tr("Slots de Hardware y Dispositivos"), fontWeight = FontWeight.Bold, color = Color(0xFF60A5FA), fontSize = 13.sp)
-                                }
-
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = com.example.util.tr("El usuario tiene $currentDeviceCount de 2 slots de hardware vinculados. Si el usuario cambió de teléfono o tiene problemas de sesión, puedes liberar todos sus slots."),
-                                    color = TextMuted,
-                                    fontSize = 11.sp
-                                )
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                Button(
-                                    onClick = {
-                                        resetUserHardwareSlots(context, uid) {
-                                            currentDeviceCount = 0
-                                            onUserUpdated(user.toMutableMap().apply {
-                                                put("registeredDevices", emptyList<String>())
-                                                put("sessionToken", "")
-                                            })
-                                            Toast.makeText(context, com.example.util.appTr("Slots de hardware liberados (0/2 en uso)"), Toast.LENGTH_SHORT).show()
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(tr("Liberar / Reiniciar Todos los Slots de Hardware"), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
+                        UserDeviceManagementCard(currentDeviceCount) { showResetSlotsConfirmation = true }
                     }
 
                     // SECCIÓN 3: COSMÉTICOS Y REGALOS DE AVATARES
@@ -1308,7 +1257,7 @@ fun UserDetailManagementDialog(
                 Button(
                     onClick = {
                         val days = customDaysInput.toIntOrNull()
-                        if (days != null && days in 1..36500) {
+                        if (days != null && days in 1..3650) {
                             submitPremiumDays(days, false) { showCustomDaysDialog = false }
                         } else {
                             Toast.makeText(context, com.example.util.appTr("Ingresa una cantidad válida de días"), Toast.LENGTH_SHORT).show()
@@ -1364,11 +1313,17 @@ fun UserDetailManagementDialog(
                 Button(
                     onClick = {
                         isProcessing = true
-                        removePremiumFromUser(context, uid, onError = { isProcessing = false }) { updated ->
+                        managementScope.launch {
+                            runCatching { removePremiumFromUser(uid) }.onSuccess { updated ->
                             isProcessing = false
                             showRemovePremiumConfirmation = false
                             acceptPremiumUpdate(updated)
+                            Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
                             onReloadAll()
+                            }.onFailure { failure ->
+                                isProcessing = false
+                                Toast.makeText(context, failure.message, Toast.LENGTH_LONG).show()
+                            }
                         }
                     },
                     enabled = !isProcessing,
@@ -1380,6 +1335,41 @@ fun UserDetailManagementDialog(
                     Text(tr("Cancelar"), color = TextSecondary)
                 }
             },
+            containerColor = HextechSurfaceBg
+        )
+    }
+
+    verificationToConfirm?.let { newStatus ->
+        AlertDialog(
+            onDismissRequest = { verificationToConfirm = null },
+            title = { Text(tr(if (newStatus) "¿Otorgar verificación?" else "¿Revocar verificación?"), color = HextechCyan, fontWeight = FontWeight.Bold) },
+            text = { Text(tr(if (newStatus) "La cuenta mostrará la insignia de verificada al confirmar." else "La cuenta dejará de mostrar la insignia de verificada al confirmar."), color = TextPrimary) },
+            confirmButton = { Button(onClick = {
+                verificationToConfirm = null
+                if (isAdmin) updateUserVerification(context, uid, newStatus) {
+                    currentVerified = newStatus
+                    onUserUpdated(user.toMutableMap().apply { put("isVerified", newStatus); put("verified", newStatus) })
+                } else if (isMod) createUserManagementApprovalRequest(context, "VERIFICATION", uid, currentName, email, newStatus.toString()) {}
+            }, modifier = Modifier.testTag("confirm_verification_change"), colors = ButtonDefaults.buttonColors(containerColor = HextechCyan)) { Text(tr("Confirmar"), color = HextechDarkBg) } },
+            dismissButton = { TextButton(onClick = { verificationToConfirm = null }, modifier = Modifier.testTag("cancel_verification_change")) { Text(tr("Cancelar"), color = TextSecondary) } },
+            containerColor = HextechSurfaceBg
+        )
+    }
+
+    if (showResetSlotsConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showResetSlotsConfirmation = false },
+            title = { Text(tr("¿Reiniciar dispositivos?"), color = Color(0xFF60A5FA), fontWeight = FontWeight.Bold) },
+            text = { Text(tr("Se cerrarán las sesiones de esta cuenta y se liberarán todos sus dispositivos vinculados."), color = TextPrimary) },
+            confirmButton = { Button(onClick = {
+                showResetSlotsConfirmation = false
+                resetUserHardwareSlots(context, uid) {
+                    currentDeviceCount = 0
+                    onUserUpdated(user.toMutableMap().apply { put("registeredDevices", emptyList<String>()); put("sessionToken", "") })
+                    Toast.makeText(context, com.example.util.appTr("Slots de hardware liberados (0/2 en uso)"), Toast.LENGTH_SHORT).show()
+                }
+            }, modifier = Modifier.testTag("confirm_reset_user_devices"), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))) { Text(tr("Confirmar"), color = Color.White) } },
+            dismissButton = { TextButton(onClick = { showResetSlotsConfirmation = false }, modifier = Modifier.testTag("cancel_reset_user_devices")) { Text(tr("Cancelar"), color = TextSecondary) } },
             containerColor = HextechSurfaceBg
         )
     }

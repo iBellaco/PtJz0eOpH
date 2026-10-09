@@ -15,36 +15,15 @@ import com.google.firebase.firestore.SetOptions
 import java.util.UUID
 import kotlinx.coroutines.launch
 
-internal fun applyPremiumDuration(context: Context, uid: String, days: Int, extendExisting: Boolean = true,
-    onError: () -> Unit = {}, onSuccess: (Map<String, Any>) -> Unit) {
-    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-        runCatching {
-            @Suppress("UNCHECKED_CAST")
-            com.example.data.EconomyServiceClient.call("PREMIUM_GRANT", mapOf("uid" to uid,
-                "days" to days, "extend" to extendExisting))["account"] as Map<String, Any>
-        }.onSuccess { updated ->
-            Toast.makeText(context, com.example.util.appTr("Tiempo premium actualizado"), Toast.LENGTH_SHORT).show()
-            onSuccess(updated)
-        }.onFailure { failure ->
-            onError()
-            Toast.makeText(context, failure.message ?: com.example.util.appTr("No se pudo actualizar Premium. Vuelve a intentarlo."), Toast.LENGTH_LONG).show()
-        }
-    }
+internal suspend fun applyPremiumDuration(uid: String, days: Int, extendExisting: Boolean = true): Map<String, Any> {
+    @Suppress("UNCHECKED_CAST")
+    return com.example.data.EconomyServiceClient.call("PREMIUM_GRANT", mapOf("uid" to uid,
+        "days" to days, "extend" to extendExisting))["account"] as Map<String, Any>
 }
 
-internal fun removePremiumFromUser(context: Context, uid: String, onError: () -> Unit = {}, onSuccess: (Map<String, Any>) -> Unit) {
-    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-        runCatching {
-            @Suppress("UNCHECKED_CAST")
-            com.example.data.EconomyServiceClient.call("PREMIUM_REMOVE", mapOf("uid" to uid))["account"] as Map<String, Any>
-        }.onSuccess { updated ->
-                Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
-                onSuccess(updated)
-            }.onFailure {
-                onError()
-                Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
-            }
-    }
+internal suspend fun removePremiumFromUser(uid: String): Map<String, Any> {
+    @Suppress("UNCHECKED_CAST")
+    return com.example.data.EconomyServiceClient.call("PREMIUM_REMOVE", mapOf("uid" to uid))["account"] as Map<String, Any>
 }
 
 internal fun updateUserVerification(
