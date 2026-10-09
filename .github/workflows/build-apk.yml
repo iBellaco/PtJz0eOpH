@@ -221,7 +221,10 @@ jobs:
       env:
         CI: 'true'
       run: |
-        ./gradlew :app:lintDebug --max-workers=1 --stacktrace --no-daemon || {
+        # A cached negative Maven lookup can survive between runners and makes
+        # lint fail before it reads the Android sources. Refresh dependencies
+        # here so the validation always verifies the repository directly.
+        ./gradlew :app:lintDebug --refresh-dependencies --max-workers=1 --stacktrace --no-daemon || {
           grep -F 'Error:' app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt || true
           exit 1
         }
