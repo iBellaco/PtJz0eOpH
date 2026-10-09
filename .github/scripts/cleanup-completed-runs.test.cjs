@@ -19,7 +19,7 @@ const cleanup = require('./cleanup-completed-runs.cjs');
     return runs;
   } };
   await cleanup({ github, context, core: { info() {} } });
-  assert.equal(deleted.length, 61);
+  assert.equal(deleted.length, 91);
   assert.equal(releaseDeleted.length, 12);
   assert.ok(!releaseDeleted.includes(require('../coach-signing.json').release_id));
   assert.ok(releaseDeleted.includes(1000));

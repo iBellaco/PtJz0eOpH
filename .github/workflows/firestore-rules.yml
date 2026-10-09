@@ -148,7 +148,7 @@ jobs:
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
-      - name: Keep at most 30 completed runs per category and 30 releases
+      - name: Keep at most 30 completed runs and 30 releases
         uses: actions/github-script@v7
         with:
           script: |
