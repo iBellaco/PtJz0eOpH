@@ -106,7 +106,7 @@ jobs:
             cat "$INDEX_LOG"
           else
             cat "$INDEX_LOG"
-            if rg -q 'HTTP Error: 403, The caller does not have permission' "$INDEX_LOG"; then
+            if grep -Fq 'HTTP Error: 403, The caller does not have permission' "$INDEX_LOG"; then
               echo '::warning::La cuenta de despliegue no puede crear índices. La cola utiliza la consulta ordenada de respaldo; continúan los permisos.'
               echo 'Índices pendientes por permisos de la cuenta de despliegue. La cola usa su consulta ordenada de respaldo.' >> "$GITHUB_STEP_SUMMARY"
             else

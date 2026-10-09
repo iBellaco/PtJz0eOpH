@@ -235,7 +235,7 @@ jobs:
         CI: 'true'
       run: |
         ./gradlew :app:lintDebug --max-workers=1 --stacktrace --no-daemon || {
-          rg 'Error:' app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt || true
+          grep -F 'Error:' app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt || true
           exit 1
         }
     - name: Upload Android lint report
