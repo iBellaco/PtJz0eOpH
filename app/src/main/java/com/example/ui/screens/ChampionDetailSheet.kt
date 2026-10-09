@@ -1350,7 +1350,7 @@ fun ChampionDetailSheet(
                                         color = finalRuneBorderColor,
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .testTag("build_rune_details")
+                                    .testTag("build_rune_details_${foundRune?.id ?: rName.lowercase().replace(" ", "_")}")
                                     .coachClickable {
                                         selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
                                             runeName = rName,
@@ -1433,11 +1433,27 @@ fun ChampionDetailSheet(
                                 val foundRune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(rName)
                                     ?: com.example.data.WildRiftRepository.runes.find { r -> r.name.equals(rName, ignoreCase = true) }
                                 val iconUrl = sRune.iconUrl.ifBlank { foundRune?.iconUrl ?: com.example.data.WildRiftSpellsAndRunes.getRuneIconByName(rName) }
+                                // A creator's situational entry is the source of truth for its
+                                // label, icon and advice. Do not replace it with a fuzzy catalog
+                                // match, which can make two distinct choices open the same detail.
+                                val detailRune = foundRune?.copy(
+                                    id = "situational_${foundRune.id}_${rName.lowercase().replace(" ", "_")}",
+                                    name = rName,
+                                    iconUrl = iconUrl,
+                                    description = sRune.description.ifBlank { foundRune.description }
+                                ) ?: com.example.model.RuneItem(
+                                    id = "situational_${rName.lowercase().replace(" ", "_")}",
+                                    name = rName,
+                                    category = "Situacional",
+                                    iconUrl = iconUrl,
+                                    description = sRune.description
+                                )
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                        .testTag("build_situational_rune_${detailRune.id}")
                                         .coachClickable {
                                             selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
                                                 runeName = rName,
@@ -1446,13 +1462,7 @@ fun ChampionDetailSheet(
                                                 language = currentLang,
                                                 situational = true
                                             )
-                                            runeForDetail = foundRune ?: com.example.model.RuneItem(
-                                                id = rName.lowercase().replace(" ", "_"),
-                                                name = rName,
-                                                category = "Situacional",
-                                                iconUrl = iconUrl,
-                                                description = sRune.description
-                                            )
+                                            runeForDetail = detailRune
                                         }
                                         .padding(6.dp),
                                     verticalAlignment = Alignment.CenterVertically
