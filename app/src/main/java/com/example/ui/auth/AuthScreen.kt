@@ -350,7 +350,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             var showBuyEssenceDialog by remember { mutableStateOf(false) }
             var buyEssenceCurrency by remember { mutableStateOf("BLUE") }
 
-            com.example.ui.components.EconomyPendingStatus(alwaysVisible = true)
 
             // Top Row with Inbox (top-left), Blue Essence (top-center), and History (top-right)
             Row(
@@ -362,7 +361,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             ) {
                 // Top-Left: Inbox button
                 com.example.ui.components.CircularPanelNotificationButton(
-                    notifications.count(com.example.data.NotificationPanel.INBOX), com.example.data.NotificationPanel.INBOX,
+                    notifications.count(com.example.data.NotificationPanel.INBOX) +
+                        if (notifications.events[com.example.data.NotificationPanel.INBOX].orEmpty().any { it.startsWith("economy_pending_") }) 0
+                        else com.example.ui.components.EconomyPendingInboxCount(), com.example.data.NotificationPanel.INBOX,
                     inboxLabel, Icons.Default.Message) { showInboxDialog = true }
 
                 // Top-Center: Blue Essence & Orange Essence side-by-side badges

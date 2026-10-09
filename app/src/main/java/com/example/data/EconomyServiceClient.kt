@@ -15,9 +15,9 @@ import kotlin.coroutines.resumeWithException
 
 /** Only a private command is submitted here. The trusted worker owns every balance and receipt. */
 class EconomyPendingException : IllegalStateException(appTr(
-    "Tienes una solicitud en espera. Puedes verla en Usuario → Solicitudes o en Ver solicitud."))
+    "Tienes una solicitud pendiente. Se procesará automáticamente; consulta tu bandeja de entrada."))
 class EconomyReviewException : IllegalStateException(appTr(
-    "Tu solicitud requiere revisión. Consulta Usuario → Solicitudes y contacta con Soporte; no la repitas."))
+    "Tu solicitud requiere revisión. Contacta con Soporte; no la repitas."))
 
 object EconomyServiceClient {
     suspend fun call(action: String, fields: Map<String, Any> = emptyMap(), id: String = UUID.randomUUID().toString()): Map<String, Any> {

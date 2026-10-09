@@ -71,6 +71,7 @@ fun UserInboxDialog(
     var subcollectionMessages by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var arrayMessages by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var supportReportMessages by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var economyPendingMessage by remember(userUid) { mutableStateOf<Map<String, Any>?>(null) }
     var deletedIds by remember(userUid) {
         val raw = inboxPrefs.getStringSet("deleted_ids", emptySet())?.toSet() ?: emptySet()
         val sanitized = raw.filter { id -> !id.contains(" ") && id.length <= 48 }.toSet()
@@ -115,6 +116,18 @@ fun UserInboxDialog(
             if (error == null && snapshot != null) subcollectionMessages = snapshot.documents.mapNotNull { it.data?.plus("id" to it.id) }
             isLoading = false
         }
+        listeners += db.collection("economy_requests").document(userUid).addSnapshotListener { snapshot, error ->
+            if (error == null) {
+                val status = snapshot?.getString("status")
+                val operationId = snapshot?.getString("operationId").orEmpty()
+                economyPendingMessage = if (status in setOf("PENDING", "PROCESSING", "REVIEW") && operationId.isNotBlank())
+                    mapOf("id" to "economy_pending_$operationId", "title" to "Solicitud pendiente",
+                        "content" to "Tienes una solicitud pendiente. Se procesa automáticamente; no debes enviarla otra vez.",
+                        "tag" to "GENERAL", "panel" to "INBOX", "timestamp" to (snapshot?.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis()),
+                        "isRead" to false)
+                    else null
+            }
+        }
         listeners += userDoc.addSnapshotListener { snapshot, error ->
             if (error == null && snapshot != null) {
                 @Suppress("UNCHECKED_CAST")
@@ -141,7 +154,7 @@ fun UserInboxDialog(
     }
 
     // Unir mensajes de todas las fuentes eliminando duplicados por id y filtrando soporte eliminado/cerrado
-    val messages = remember(subcollectionMessages, arrayMessages, supportReportMessages, deletedIds, deletedRefreshTrigger, activeSupportIds, localReadIds) {
+    val messages = remember(subcollectionMessages, arrayMessages, supportReportMessages, economyPendingMessage, deletedIds, deletedRefreshTrigger, activeSupportIds, localReadIds) {
         val currActive = activeSupportIds
         val validSupportIds = supportReportMessages.mapNotNull { it["id"] as? String }.toSet()
         val all = mutableMapOf<String, Map<String, Any>>()
@@ -191,6 +204,7 @@ fun UserInboxDialog(
         for (m in subcollectionMessages) {
             processMessage(m)
         }
+        economyPendingMessage?.let { processMessage(it + ("isRead" to ((it["id"] as? String)?.let(localReadIds::contains) == true))) }
         com.example.data.InboxMessageOrder.newestFirst(all.values.filter { m ->
             val id = m["id"] as? String ?: ""
             val reportId = m["reportId"] as? String ?: ""
@@ -217,6 +231,11 @@ fun UserInboxDialog(
         localReadIds = newReadSet
         inboxPrefs.edit().putStringSet("read_ids", newReadSet).apply()
         SubscriptionManager.setUnreadMessageIds(com.example.data.InboxNotificationPolicy.unreadKeys(updated(messages)))
+
+        if (id.startsWith("economy_pending_")) {
+            readingIds -= id
+            return null
+        }
 
         return coroutineScope.launch {
             val ticket = target["conversation"] != null || supportReportMessages.any { it["id"] == reportId } || (target["tag"] as? String)?.uppercase() == "PAGO"

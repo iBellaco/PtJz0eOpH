@@ -18,7 +18,7 @@ def api(path):
 
 def eligible(run, repository):
     return (run.get('status') == 'completed' and run.get('conclusion') == 'success'
-            and run.get('event') == 'pull_request' and run.get('head_branch') == 'pruebas'
+            and run.get('event') == 'pull_request' and run.get('head_branch') == 'coach-validacion'
             and (run.get('head_repository') or {}).get('full_name') == repository
             and re.fullmatch(r'[0-9a-f]{40}', run.get('head_sha', '')) is not None)
 

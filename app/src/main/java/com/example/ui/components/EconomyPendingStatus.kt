@@ -80,6 +80,14 @@ fun EconomyPendingStatus(alwaysVisible: Boolean = false) {
 }
 
 @Composable
+fun EconomyPendingInboxCount(): Int {
+    val user = AuthManager.getAuth()?.currentUser ?: return 0
+    if (AuthManager.isGuestOrUnauthenticated(user)) return 0
+    val state = observeRequest()
+    return if (state.request?.get("status") in setOf("PENDING", "PROCESSING", "REVIEW")) 1 else 0
+}
+
+@Composable
 fun EconomyRequestDialog(onDismiss: () -> Unit) {
     val state = observeRequest()
     EconomyRequestDetails(state.request, state.loading, state.unavailable, state.cached, state.target,
@@ -140,7 +148,7 @@ fun EconomyRequestDetails(request: Map<String, Any>?, loading: Boolean = false, 
                         val error = request["error"] as? Map<*, *>
                         Text(appTr(error?.get("message") as? String ?: "No se pudo completar la operación. Vuelve a intentarlo."))
                     }
-                    if (pending) Text(appTr("La confirmación puede tardar varios minutos o más si el servicio se retrasa. Puedes cerrar este aviso; la solicitud seguirá en espera. No la repitas."))
+                    if (pending) Text(appTr("Esta solicitud se procesa automáticamente; no tienes que aceptarla. Puede tardar varios minutos. No la repitas."))
                     if (pending && serviceStale) Text(appTr("El servicio está retrasado. La solicitud sigue guardada; no la repitas. Consulta Soporte si el retraso continúa."),
                         modifier = Modifier.testTag("economy_service_delayed"))
                     if (status == "REVIEW") Text(appTr("No se pudo confirmar esta operación automáticamente. Contacta con Soporte e indica la fecha de la solicitud. No la repitas."),
@@ -149,7 +157,6 @@ fun EconomyRequestDetails(request: Map<String, Any>?, loading: Boolean = false, 
                 }
             }
             if (cached || unavailable) Text(appTr("Sin confirmación en vivo. El estado mostrado puede estar desactualizado; comprueba tu conexión."))
-            Text(appTr("Puedes volver a verla en Usuario → Solicitudes o en Ver solicitud."))
         }
     }, confirmButton = {
         CoachTextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = 48.dp).testTag("economy_request_close")) {

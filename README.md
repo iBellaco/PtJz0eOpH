@@ -38,7 +38,7 @@ Consulta la [guía de autorización de Riot y publicación en Google Play](docs/
 
 ## Desarrollo y comprobaciones
 
-Repositorio: <https://github.com/iBellaco/PtJz0eOpH>. Ramas de trabajo: `pruebas` y `main`.
+Repositorio: <https://github.com/iBellaco/PtJz0eOpH>. Ramas de trabajo: `coach-validacion` y `main`.
 
 Configuración: Kotlin **2.2.10**, Gradle **9.3.1**, Java **21**, Android mínimo **API 24**, compilación y destino **API 36**, Jetpack Compose y Material 3. Las versiones exactas se mantienen en `gradle/libs.versions.toml` y los archivos Gradle.
 
@@ -74,4 +74,4 @@ La autorización de administración requiere el claim firmado `admin: true`; los
 
 Antes de compilar un APK, el flujo de entrega ejecuta las reglas y operaciones en emuladores aislados, las pruebas del servicio y `python3 test_matchup_rules.py` y `python3 test_scraper.py`. Los dos últimos ejecutan los tests reales del catálogo y del parser Kotlin con fixtures locales; no dependen de una página externa ni consideran válido un error de red. Después se ejecutan lint y toda la suite de pruebas unitarias de Android, seguidos por las comprobaciones de pantallas, firma R8 e instalación. Las ejecuciones de entrega y las del servicio conservan historiales separados.
 
-Cada entrega final publica dos archivos ZIP descargables mediante HTTPS: **APK ofuscado** (APK, suma y pruebas de firma/ofuscación) y **proyecto** (código versionado y wrapper, sin APK ni archivos privados). Los enlaces locales de un entorno de trabajo no sustituyen esos archivos públicos. La verificación final debe descargar los ZIP y comprobar su integridad antes de compartirlos.
+Cada entrega final publica únicamente dos archivos descargables mediante HTTPS: el **APK ofuscado** y el **ZIP del proyecto** (código versionado y wrapper, sin APK ni archivos privados). La verificación de firma y ofuscación se realiza antes de publicar; no se añade un archivo de sumas al release. La verificación final debe descargar ambos archivos y comprobar su integridad antes de compartirlos.
