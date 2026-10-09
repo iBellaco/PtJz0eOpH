@@ -22,10 +22,13 @@ module.exports = async ({ github, context, core }, limit = 30) => {
   }
   core.info(`Removed ${removed} completed runs; up to ${limit} deliveries and ${limit} service runs are retained.`);
   const releases = await github.paginate(github.rest.repos.listReleases, { ...repo, per_page: 100 });
-  const published = releases.filter(release => !release.draft)
+  const signingReleaseId = Number(require('../coach-signing.json').release_id);
+  const published = releases.filter(release => !release.draft && !release.prerelease)
     .sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at));
+  const keep = new Set(published.slice(0, limit - 1).map(release => release.id));
+  keep.add(signingReleaseId);
   let removedReleases = 0;
-  for (const release of published.slice(limit)) {
+  for (const release of releases.filter(release => !keep.has(release.id))) {
     try {
       await github.rest.repos.deleteRelease({ ...repo, release_id: release.id });
       removedReleases++;
@@ -33,5 +36,5 @@ module.exports = async ({ github, context, core }, limit = 30) => {
       if (error.status !== 404) throw error;
     }
   }
-  core.info(`Removed ${removedReleases} old releases; up to ${limit} published releases are retained.`);
+  core.info(`Removed ${removedReleases} old releases; up to ${limit - 1} final releases and the protected signing draft are retained.`);
 };
