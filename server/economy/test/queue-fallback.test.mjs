@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readQueueRows} from '../queue.mjs';
 
-test('missing composite indexes stop processing instead of relegating older requests', async () => {
+test('missing composite indexes use a bounded fallback and exclude active leases', async () => {
   const row = (id, status, createdAt, leaseUntil) => ({
     id,
     get: field => field === 'createdAt' ? {toMillis: () => createdAt} : field === 'leaseUntil' ? leaseUntil : status
@@ -20,5 +20,6 @@ test('missing composite indexes stop processing instead of relegating older requ
       };
     }
   };
-  await assert.rejects(readQueueRows(requests, {startedAt: 500, limit: 2, manualReview: false}), /Faltan índices/);
+  const selected = await readQueueRows(requests, {startedAt: 500, limit: 2, manualReview: false});
+  assert.deepEqual(selected.map(entry => entry.id), ['old', 'expired']);
 });

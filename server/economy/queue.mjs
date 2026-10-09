@@ -22,7 +22,8 @@ export async function readQueueRows(requests, {startedAt, limit, manualReview}) 
       manualReview ? requests.where('status', '==', 'REVIEW').limit(limit).get() : {docs: []}
     ]);
   }
-  const rows = (manualReview ? review.docs : [...pending.docs, ...recovery.docs]).sort((a, b) =>
+  const eligibleRecovery = recovery.docs.filter(row => (row.get('leaseUntil') ?? 0) <= startedAt);
+  const rows = (manualReview ? review.docs : [...pending.docs, ...eligibleRecovery]).sort((a, b) =>
     (a.get('createdAt')?.toMillis?.() ?? 0) - (b.get('createdAt')?.toMillis?.() ?? 0)).slice(0, limit);
   return rows;
 }
