@@ -100,6 +100,11 @@ class PersonalTierListRegressionTest {
         val drafts = (1L..5L).map { draft(it,"DEFEAT") } + draft(6).copy(myChampionId="ahri",myChampionName="Ahri")
         assertEquals("Teemo",Manager.calculatePersonalTierList(drafts).overview.signatureChampion?.championName)
     }
+    @Test fun `pending selections never become most played champion`() {
+        val pending = (2L..12L).map { draft(it,"PENDING").copy(myChampionId="ahri",myChampionName="Ahri") }
+        assertEquals("Teemo", Manager.calculatePersonalTierList(listOf(draft()) + pending).overview.signatureChampion?.championName)
+        assertNull(Manager.calculatePersonalTierList(pending).overview.signatureChampion)
+    }
     @Test fun `five outcomes allow descriptive matchup but never claim duel mastery in either language`() {
         for (lang in listOf("es", "pt")) {
             val result=Manager.calculatePersonalTierList((1L..5L).map { draft(it) },lang=lang)

@@ -340,8 +340,9 @@ object PersonalTierListManager {
         val totalPending = totalGames - (totalWins + totalLosses)
         val overallWr = if (totalWins + totalLosses > 0) (totalWins.toDouble() / (totalWins + totalLosses) * 100.0) else 0.0
 
-        val signatureChamp = allRanked.maxWithOrNull(compareBy<PersonalChampionStats> { it.totalGames }
-            .thenBy { it.wins + it.losses }.thenBy { it.tierScore })
+        val signatureChamp = allRanked.filter { it.wins + it.losses > 0 }
+            .maxWithOrNull(compareBy<PersonalChampionStats> { it.wins + it.losses }
+                .thenBy { it.tierScore }.thenBy { it.totalGames })
 
         // Mejor rol
         val allRoleMatches = identifiedDrafts.filter { recordedRole(it) != null }.groupBy { recordedRole(it)!! }
