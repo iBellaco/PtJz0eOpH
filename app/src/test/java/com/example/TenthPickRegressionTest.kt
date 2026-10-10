@@ -218,6 +218,21 @@ class TenthPickRegressionTest {
         assertNull(policy.targetIndex(true, vi, other, own, emptySet()))
     }
 
+    @Test fun finalAllyPickUsesItsOnlyVacancyWhenRoleOcrIsMissing() {
+        val hud = OverlayState()
+        repeat(4) { hud.allies[it] = Champion(id = "ally$it") }
+        repeat(5) { hud.enemies[it] = Champion(id = "enemy$it") }
+        val initialNine = (hud.allies + hud.enemies).filterNotNull().map { it.id }
+        hud.applyConfirmedLastPick(DraftScanResult(
+            allies = hud.allies.filterNotNull(), enemies = hud.enemies.filterNotNull(),
+            isSuccessful = true, statusMessage = "", isLastPickConfirmed = true,
+            lastPickChampion = vi, tenthPickIsAlly = true, tenthPickSlotIndex = 4
+        ))
+        assertEquals("vi", hud.allies[4]?.id)
+        assertEquals(initialNine, (hud.allies.take(4) + hud.enemies).filterNotNull().map { it.id })
+        assertEquals(10, (hud.allies + hud.enemies).filterNotNull().map { it.id }.distinct().size)
+    }
+
     @Test fun previewChangesReplaceOnlyTheTrackedTenthChampionOnEitherTeam() {
         for (isAlly in listOf(true, false)) {
             val hud = OverlayState()
