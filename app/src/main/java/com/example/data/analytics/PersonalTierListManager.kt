@@ -9,11 +9,11 @@ import kotlinx.serialization.json.Json
 
 enum class TierGrade(val label: String, val description: String, val minWinRate: Double) {
     PROVISIONAL("—", "En evaluación / Menos de 5 resultados", 0.0),
-    S_PLUS("S+", "God Tier / Dominio Absoluto", 75.0),
-    S("S", "Élite / Alto Rendimiento", 60.0),
-    A("A", "Sólido / Competitivo", 50.0),
-    B("B", "En Aprendizaje / Irregular", 35.0),
-    C("C", "Bajo Rendimiento / Requiere Práctica", 0.0)
+    S_PLUS("S+", "75% o más de victorias registradas", 75.0),
+    S("S", "60% a menos de 75% de victorias registradas", 60.0),
+    A("A", "50% a menos de 60% de victorias registradas", 50.0),
+    B("B", "35% a menos de 50% de victorias registradas", 35.0),
+    C("C", "Menos de 35% de victorias registradas", 0.0)
 }
 
 data class MatchupRecord(
