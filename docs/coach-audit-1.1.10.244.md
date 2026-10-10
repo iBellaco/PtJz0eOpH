@@ -1,0 +1,29 @@
+# Coach 1.1.10.244 — código 960
+
+## Cambios
+
+- La tier list muestra exclusivamente campeones propios identificados en las partidas guardadas. Se elimina la inclusión del catálogo sin partidas y la selección arbitraria del primer aliado o rival cuando falta el slot de línea. Los registros no identificados siguen guardados y se indica cuántos no entran en el análisis.
+- Menos de cinco resultados finalizados: clasificación provisional. La ordenación suaviza muestras pequeñas con cuatro resultados neutrales; no se concede una clasificación S+ por una sola victoria. La línea destacada y los rivales destacados requieren cinco resultados. Cinco resultados es un umbral de presentación, no una garantía estadística.
+- El campeón más jugado se elige por volumen registrado. El historial de rivales describe resultados de partidas completas, sin atribuir dominio de duelos, prioridades de oleada o errores de microjuego que no se registraron.
+- El KDA opcional muestra promedio de ratios por partida y cobertura de resultados informados. Vacíos, notas inválidas y partidas pendientes no se consideran cero; cero muertes utiliza divisor uno. Se conserva compatibilidad estricta con ratios de registros antiguos. El KDA aporta preguntas de revisión y no infla la clasificación.
+- Durante el draft, el historial ante un rival corresponde al perfil activo, campeón propio y línea, sin mezclar otros campeones o cuentas.
+- Guardar una partida no identifica campeones a partir de slots vacíos o roles duplicados. Actualizar un draft existente también actualiza la identidad guardada.
+- Textos nuevos en español y portugués; sin cambios de esquema ni pérdida del historial.
+
+## Archivos
+
+- `PersonalTierListManager.kt`, `PersonalTierListView.kt`, `DraftAnalysisTab.kt`.
+- `DraftHistoryRepository.kt`, `translations_ui_pt.json`.
+- `PersonalTierListRegressionTest.kt`, `HistoryConsistencyRenderedTest.kt`.
+- `app/build.gradle.kts`, esta auditoría.
+
+## Verificación
+
+- Once pruebas locales del cálculo aprobadas con el gestor y entidad reales, sustituyendo dependencias Android externas por dobles mínimos para el compilador Kotlin. Actions comprobará también las dependencias reales.
+- Catálogos generados, iconos y formato de diferencias comprobados. Auditoría de portugués: 2.593 textos visibles, sin residuos españoles.
+- Pendientes las comprobaciones Android obligatorias de Actions: pruebas completas, pantallas español/portugués, APK release ofuscado, firma persistente y validación instalada.
+- El despliegue previo del servicio directo continúa bloqueado externamente por la habilitación o acceso a Cloud Build; esta intervención no oculta ese fallo.
+
+## Resumen para testers
+
+Coach 1.1.10.244: verificar que la tier list solo incluya campeones propios registrados, que una sola victoria no otorgue una calificación definitiva y que los rivales correspondan a la línea guardada. Comprobar el promedio y la cobertura del KDA opcional; dejarlo vacío no debe contar como cero. Cambiar de perfil, línea y cola y revisar que las estadísticas correspondan al filtro. Repetir en español y portugués.
