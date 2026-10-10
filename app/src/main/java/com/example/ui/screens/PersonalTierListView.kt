@@ -442,8 +442,11 @@ fun PersonalTierListView(
                             text = com.example.util.tr(if (selectedRoleFilter != null) {
                                 "🏆 Tier List Personal: ${com.example.util.tr(selectedRoleFilter!!.displayName)}"
                             } else {
-                                "Tier List Personal (Mis campeones registrados)"
+                                "Mis campeones registrados"
                             }),
+                            modifier = Modifier.weight(1f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
                             color = HextechGold,
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold
@@ -459,9 +462,13 @@ fun PersonalTierListView(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
+                                    .width(76.dp)
+                                    .heightIn(min = 48.dp)
+                                    .testTag("personal_tier_mode_tiers")
                                     .background(if (viewMode == "TIERS") HextechGold else Color.Transparent)
                                     .coachClickable { viewMode = "TIERS" }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = tr("Tiers"),
@@ -473,9 +480,13 @@ fun PersonalTierListView(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
+                                    .width(76.dp)
+                                    .heightIn(min = 48.dp)
+                                    .testTag("personal_tier_mode_table")
                                     .background(if (viewMode == "TABLE") HextechGold else Color.Transparent)
                                     .coachClickable { viewMode = "TABLE" }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = tr("Detallado"),

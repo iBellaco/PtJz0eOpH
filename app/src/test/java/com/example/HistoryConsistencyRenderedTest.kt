@@ -50,6 +50,10 @@ class HistoryConsistencyRenderedTest(private val language: String) {
         compose.onNodeWithTag("tier_pill_ahri").assertDoesNotExist()
         compose.onNodeWithTag("tier_row_S_PLUS").assertDoesNotExist()
         compose.onNodeWithTag("tier_row_PROVISIONAL").assertExists()
+        val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+        compose.onNodeWithText(if(language=="pt") "Detalhado" else "Detallado", useUnmergedTree=true)
+            .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        Assert.assertEquals(1, layouts.single().lineCount)
         capture("personal-provisional")
         compose.onNodeWithTag("tier_pill_teemo").performClick()
         compose.onNodeWithTag("personal_champion_kda").assertTextEquals(

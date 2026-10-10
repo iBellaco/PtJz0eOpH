@@ -9,6 +9,7 @@
 - Durante el draft, el historial ante un rival corresponde al perfil activo, campeón propio y línea, sin mezclar otros campeones o cuentas.
 - Guardar una partida no identifica campeones a partir de slots vacíos o roles duplicados. Actualizar un draft existente también actualiza la identidad guardada.
 - Textos nuevos en español y portugués; sin cambios de esquema ni pérdida del historial.
+- La revisión de capturas detectó que el título comprimía el selector Detallado. Se reserva ancho para ambos botones y se añade una regresión de texto de una sola línea en ambos idiomas.
 
 ## Archivos
 
@@ -21,7 +22,7 @@
 
 - Once pruebas locales del cálculo aprobadas con el gestor y entidad reales, sustituyendo dependencias Android externas por dobles mínimos para el compilador Kotlin. Actions comprobará también las dependencias reales.
 - Catálogos generados, iconos y formato de diferencias comprobados. Auditoría de portugués: 2.593 textos visibles, sin residuos españoles.
-- Pendientes las comprobaciones Android obligatorias de Actions: pruebas completas, pantallas español/portugués, APK release ofuscado, firma persistente y validación instalada.
+- La ejecución `38015247180` aprobó lint, 560 pruebas sin fallos ni omisiones y la revisión de pantallas español/portugués. Sus capturas motivaron el ajuste de ancho del selector; la última revisión debe repetir la validación Android y completar APK release ofuscado, firma persistente y validación instalada.
 - El despliegue previo del servicio directo continúa bloqueado externamente por la habilitación o acceso a Cloud Build; esta intervención no oculta ese fallo.
 
 ## Resumen para testers
