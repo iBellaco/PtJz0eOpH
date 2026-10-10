@@ -472,15 +472,13 @@ fun DashboardScreen(
     val navSelectedIcon = AppThemeManager.getNavBarSelectedIconColor()
     val navSelectedText = AppThemeManager.getNavBarSelectedTextColor()
     val navUnselected = AppThemeManager.getNavBarUnselectedColor()
-    val navDestinations = remember(navAccent, navSelectedText) {
-        listOf(
-            CoachNavItem(tr("Inicio"), Icons.Default.Home, navAccent),
-            CoachNavItem(tr("Selección"), Icons.Default.Groups, navSelectedText),
-            CoachNavItem(tr("Tier List"), Icons.Default.TrendingUp, navAccent),
-            CoachNavItem(tr("Catálogo"), Icons.AutoMirrored.Filled.MenuBook, navSelectedText),
-            CoachNavItem(tr("Usuario"), Icons.Default.Person, navAccent)
-        )
-    }
+    val navDestinations = listOf(
+        CoachNavItem(tr("Inicio"), Icons.Default.Home, navAccent),
+        CoachNavItem(tr("Selección"), Icons.Default.Groups, navSelectedText),
+        CoachNavItem(tr("Tier List"), Icons.Default.TrendingUp, navAccent),
+        CoachNavItem(tr("Catálogo"), Icons.AutoMirrored.Filled.MenuBook, navSelectedText),
+        CoachNavItem(tr("Usuario"), Icons.Default.Person, navAccent)
+    )
 
     Scaffold(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
