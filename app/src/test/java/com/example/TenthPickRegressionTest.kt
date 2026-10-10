@@ -27,6 +27,13 @@ import org.robolectric.annotation.Config
 class TenthPickRegressionTest {
     private val vi = Champion(id = "vi", name = "Vi", primaryRole = LaneRole.JUNGLE)
 
+    private fun assertFloatListEquals(expected: List<Float>, actual: List<Float>) {
+        assertEquals(expected.size, actual.size)
+        expected.zip(actual).forEachIndexed { index, (expectedValue, actualValue) ->
+            assertEquals("Valor calibrado en el slot $index", expectedValue, actualValue, 0.000001f)
+        }
+    }
+
     @Before
     fun setUp() {
         DraftVisionScanner.resetSlotMemory()
@@ -366,6 +373,43 @@ class TenthPickRegressionTest {
             assertEquals((width * (0.157f + 0.035f)).toInt(), allyName.left)
             assertEquals((width * (0.843f - 0.025f - 0.185f)).toInt(), enemyName.left)
         }
+    }
+
+    @Test fun calibratorMovesAndResizesEveryCircleInOnlyTheSelectedColumn() {
+        val original = com.example.service.screen.VisionCalibrationConfig()
+        val adjusted = original.adjustDraftColumn(
+            isAlly = true,
+            deltaX = 0.01f,
+            deltaY = 0.02f,
+            deltaDiameter = 0.01f
+        )
+
+        assertEquals(0.082f, adjusted.allyAvatarCenterX, 0.0001f)
+        assertFloatListEquals(List(5) { 0.082f }, adjusted.allySlotXRatios)
+        assertFloatListEquals(original.allySlotYRatios.map { it + 0.02f }, adjusted.allySlotYRatios)
+        assertFloatListEquals(List(5) { 0.12f }, adjusted.allySlotDiameterRatios)
+        assertEquals(original.enemyAvatarCenterX, adjusted.enemyAvatarCenterX, 0f)
+        assertEquals(original.enemySlotXRatios, adjusted.enemySlotXRatios)
+        assertEquals(original.enemySlotYRatios, adjusted.enemySlotYRatios)
+        assertEquals(original.enemySlotDiameterRatios, adjusted.enemySlotDiameterRatios)
+
+        val leftAdjustment = adjusted.adjustDraftColumn(isAlly = false, deltaX = -0.01f, deltaY = -0.01f, deltaDiameter = -0.01f)
+        assertFloatListEquals(List(5) { 0.949f }, leftAdjustment.enemySlotXRatios)
+        assertFloatListEquals(original.enemySlotYRatios.map { it - 0.01f }, leftAdjustment.enemySlotYRatios)
+        assertFloatListEquals(List(5) { 0.10f }, leftAdjustment.enemySlotDiameterRatios)
+        assertEquals(adjusted.allySlotXRatios, leftAdjustment.allySlotXRatios)
+    }
+
+    @Test fun scanCropUsesTheSelectedColumnPositionAndCircleSize() {
+        val engine = com.example.service.screen.AdaptiveScreenLayoutEngine
+        val config = com.example.service.screen.VisionCalibrationConfig()
+            .adjustDraftColumn(isAlly = true, deltaX = 0.01f, deltaY = 0.02f, deltaDiameter = 0.01f)
+        val crop = engine.calculateSlotCropRect(1280, 579, true, 2, config)
+
+        assertEquals((1280 * 0.082f).toInt(), crop.centerX())
+        assertEquals((579 * config.allySlotYRatios[2]).toInt(), crop.centerY())
+        assertEquals((579 * 0.12f).toInt(), crop.width())
+        assertEquals(crop.width(), crop.height())
     }
 
     @Test
