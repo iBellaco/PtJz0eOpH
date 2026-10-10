@@ -142,8 +142,11 @@ fun ScannerDebugOverlay(
             )
 
             // Región de detección OCR para el nombre de campeón y carril aliado
-            val allyOcrLeft = w * currentConfig.allyOcrMinX
-            val allyOcrRight = w * currentConfig.allyOcrMaxX
+            val allyNameRect = AdaptiveScreenLayoutEngine.calculateSlotNameRect(
+                w.toInt(), h.toInt(), true, sIdx, currentConfig
+            )
+            val allyOcrLeft = allyNameRect.left.toFloat()
+            val allyOcrRight = allyNameRect.right.toFloat()
             val allyOcrTop = allyY - (allyAvatarDiam * 0.40f)
             val allyOcrHeight = allyAvatarDiam * 0.80f
 
@@ -192,8 +195,11 @@ fun ScannerDebugOverlay(
             )
 
             // Región OCR para nombre de rival
-            val enemyOcrLeft = w * currentConfig.enemyOcrMinX
-            val enemyOcrRight = w * currentConfig.enemyOcrMaxX
+            val enemyNameRect = AdaptiveScreenLayoutEngine.calculateSlotNameRect(
+                w.toInt(), h.toInt(), false, sIdx, currentConfig
+            )
+            val enemyOcrLeft = enemyNameRect.left.toFloat()
+            val enemyOcrRight = enemyNameRect.right.toFloat()
             val enemyOcrTop = enemyY - (enemyAvatarDiam * 0.40f)
             val enemyOcrHeight = enemyAvatarDiam * 0.80f
 

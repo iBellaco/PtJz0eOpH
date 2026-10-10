@@ -18,8 +18,10 @@ object AdaptiveScreenLayoutEngine {
     fun calculateSlotNameRect(width: Int, height: Int, isAlly: Boolean, slot: Int,
         config: VisionCalibrationConfig): Rect {
         val center = height * (if (isAlly) config.allySlotYRatios else config.enemySlotYRatios)[slot]
-        val leftRatio = if (isAlly) config.allyAvatarCenterX + 0.035f else config.enemyOcrMinX
-        val rightRatio = if (isAlly) config.allyOcrMaxX else config.enemyAvatarCenterX - 0.025f
+        val avatarX = if (isAlly) config.getAllySlotX(slot) else config.getEnemySlotX(slot)
+        val ocrBoxWidth = 0.185f
+        val leftRatio = if (isAlly) avatarX + 0.035f else avatarX - 0.025f - ocrBoxWidth
+        val rightRatio = if (isAlly) leftRatio + ocrBoxWidth else avatarX - 0.025f
         val left = (width * leftRatio).toInt().coerceIn(0, width - 1)
         val right = (width * rightRatio).toInt().coerceIn(left + 1, width)
         val top = (center - height * 0.05f).toInt().coerceIn(0, height - 1)

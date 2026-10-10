@@ -361,6 +361,10 @@ class TenthPickRegressionTest {
             assertEquals(0.092f, effective.getSlotDiameter(false, 4), 0.0001f)
             assertTrue(effective.allyOcrMinX < effective.allyOcrMaxX)
             assertTrue(effective.enemyOcrMinX < effective.enemyOcrMaxX)
+            val allyName = engine.calculateSlotNameRect(width, height, true, 0, effective)
+            val enemyName = engine.calculateSlotNameRect(width, height, false, 4, effective)
+            assertEquals((width * (0.157f + 0.035f)).toInt(), allyName.left)
+            assertEquals((width * (0.843f - 0.025f - 0.185f)).toInt(), enemyName.left)
         }
     }
 
