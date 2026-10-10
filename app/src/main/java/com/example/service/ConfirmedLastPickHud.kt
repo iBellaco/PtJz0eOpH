@@ -23,6 +23,7 @@ internal fun OverlayState.syncScannedEnemies(result: DraftScanResult): Int {
 /** Apply the final confirmed portrait to the same state displayed by the overlay. */
 internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
     val champion = result.lastPickChampion ?: return
+    val previousId = trackedLastPick?.takeIf { it.first == result.tenthPickIsAlly }?.second
     val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
     when (result.tenthPickIsAlly) {
         true -> {
@@ -30,14 +31,19 @@ internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
             val expected = roles.indexOf(role).takeIf { it >= 0 } ?: return
             TenthPickHudPolicy.targetIndex(result.isLastPickConfirmed, champion,
                 allies.toList(), enemies.toList(), manualLockedAllySlots.filterValues { it }.keys,
-                expected)?.let { allies[it] = champion }
+                expected, previousId)?.let { allies[it] = champion }
         }
         false -> TenthPickHudPolicy.targetIndex(result.isLastPickConfirmed, champion,
-            enemies.toList(), allies.toList(), manualLockedEnemySlots.filterValues { it }.keys
+            enemies.toList(), allies.toList(), manualLockedEnemySlots.filterValues { it }.keys,
+            replaceChampionId = previousId
         )?.let { index ->
             enemies[index] = champion
             enemyConfidences[roles[index]] = 100
         }
         null -> Unit
+    }
+    val ownTeam = if (result.tenthPickIsAlly == true) allies else enemies
+    if (result.isLastPickConfirmed && result.tenthPickIsAlly != null && ownTeam.any { it?.id == champion.id }) {
+        trackedLastPick = result.tenthPickIsAlly to champion.id
     }
 }

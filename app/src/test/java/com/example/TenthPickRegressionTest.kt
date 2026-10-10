@@ -218,6 +218,31 @@ class TenthPickRegressionTest {
         assertNull(policy.targetIndex(true, vi, other, own, emptySet()))
     }
 
+    @Test fun previewChangesReplaceOnlyTheTrackedTenthChampionOnEitherTeam() {
+        for (isAlly in listOf(true, false)) {
+            val hud = OverlayState()
+            val own = if (isAlly) hud.allies else hud.enemies
+            val other = if (isAlly) hud.enemies else hud.allies
+            repeat(4) { own[it] = Champion(id = "own$it") }
+            repeat(5) { other[it] = Champion(id = "other$it") }
+            val initialNine = (own + other).filterNotNull().map { it.id }
+            fun result(champion: Champion) = DraftScanResult(emptyList(), emptyList(),
+                isSuccessful = true, statusMessage = "", isLastPickConfirmed = true,
+                lastPickChampion = champion, tenthPickIsAlly = isAlly, tenthPickSlotIndex = 4,
+                allyRolesBySlot = mapOf(4 to LaneRole.SUPPORT))
+            hud.applyConfirmedLastPick(result(vi))
+            repeat(3) { hud.applyConfirmedLastPick(result(vi)) }
+            assertEquals("vi", own[4]?.id)
+            val changed = Champion(id = "changed", name = "Changed")
+            hud.applyConfirmedLastPick(result(changed))
+            assertEquals("changed", own[4]?.id)
+            assertEquals(initialNine, (own.take(4) + other).filterNotNull().map { it.id })
+            (if (isAlly) hud.manualLockedAllySlots else hud.manualLockedEnemySlots)[4] = true
+            hud.applyConfirmedLastPick(result(vi))
+            assertEquals("changed", own[4]?.id)
+        }
+    }
+
     @Test fun incompleteOrDuplicatedHudCannotInflateTheEarlierPickCount() {
         val picks = (0..7).map { Champion(id="picked$it") }
         val turn = DraftPickTurn(10, false, 4)

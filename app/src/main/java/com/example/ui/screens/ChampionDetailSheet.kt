@@ -1433,15 +1433,9 @@ fun ChampionDetailSheet(
                                 val foundRune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(rName)
                                     ?: com.example.data.WildRiftRepository.runes.find { r -> r.name.equals(rName, ignoreCase = true) }
                                 val iconUrl = sRune.iconUrl.ifBlank { foundRune?.iconUrl ?: com.example.data.WildRiftSpellsAndRunes.getRuneIconByName(rName) }
-                                // A creator's situational entry is the source of truth for its
-                                // label, icon and advice. Do not replace it with a fuzzy catalog
-                                // match, which can make two distinct choices open the same detail.
-                                val detailRune = foundRune?.copy(
-                                    id = "situational_${foundRune.id}_${rName.lowercase().replace(" ", "_")}",
-                                    name = rName,
-                                    iconUrl = iconUrl,
-                                    description = sRune.description.ifBlank { foundRune.description }
-                                ) ?: com.example.model.RuneItem(
+                                // Catalog mechanics and build-specific coaching are separate.
+                                // Resolve the tapped rune without copying another rune's effect.
+                                val detailRune = foundRune ?: com.example.model.RuneItem(
                                     id = "situational_${rName.lowercase().replace(" ", "_")}",
                                     name = rName,
                                     category = "Situacional",
@@ -1455,12 +1449,18 @@ fun ChampionDetailSheet(
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                                         .testTag("build_situational_rune_${detailRune.id}")
                                         .coachClickable {
-                                            selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
+                                            val fallbackAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
                                                 runeName = rName,
                                                 championName = champion.getLocalizedName(currentLang),
                                                 roleName = selectedRole.getLocalizedName(currentLang),
                                                 language = currentLang,
                                                 situational = true
+                                            )
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(
+                                                rName,
+                                                listOf(rName to com.example.util.trStr(currentLang, sRune.description)),
+                                                fallbackAdvice,
+                                                detailRune.getLocalizedDescription(currentLang)
                                             )
                                             runeForDetail = detailRune
                                         }
@@ -1948,6 +1948,7 @@ fun ChampionDetailSheet(
                 Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
                     FormattedWildRiftText(
                         text = rune.getLocalizedDescription(com.example.util.currentAppLanguage()),
+                        modifier = Modifier.testTag("build_rune_effect"),
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
                     BuildElementCoachAdvice(selectedElementAdvice,

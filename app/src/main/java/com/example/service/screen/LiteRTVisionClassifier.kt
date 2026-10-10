@@ -132,7 +132,7 @@ object LiteRTVisionClassifier {
     }
 
     /** Keep only evidence from a visible draft slot, never from the loading background. */
-    private fun hasSlotRing(bitmap: Bitmap, isAlly: Boolean): Boolean {
+    internal fun hasSlotRing(bitmap: Bitmap, isAlly: Boolean): Boolean {
         var matches = 0
         for (i in 0 until 64) {
             val angle = i * 2.0 * Math.PI / 64

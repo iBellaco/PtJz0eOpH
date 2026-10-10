@@ -216,6 +216,7 @@ object DraftVisionScanner {
 
             if (decision != null) {
                 val (champ, conf) = decision
+                lastVisualPick = turn.isAlly to champ
                 return ScannedSlotInfo(
                     slotIndex = turn.slotIndex,
                     isAlly = turn.isAlly,
@@ -335,6 +336,25 @@ object DraftVisionScanner {
     // Las predicciones visuales del décimo pick deben volver a evaluarse en cada fotograma.
     private val allySlotNameConfirmed = BooleanArray(5)
     private val enemySlotNameConfirmed = BooleanArray(5)
+    private var lastVisualPick: Pair<Boolean, Champion>? = null
+    private val slotLifecycle = DraftSlotLifecycle()
+
+    fun resetSlotLifecycle() = slotLifecycle.reset()
+
+    fun observeSelectionSlots(bitmap: Bitmap, confirmedPicksCount: Int): DraftSlotLifecycle.Observation {
+        if (bitmap.isRecycled || bitmap.width < bitmap.height) return DraftSlotLifecycle.Observation.DISAPPEARING
+        val config = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(bitmap.width, bitmap.height, calibrationConfig)
+        val visible = listOf(true, false).any { isAlly ->
+            (0..4).any { index ->
+                val crop = AdaptiveScreenLayoutEngine.extractSlotAvatarBitmap(
+                    bitmap, bitmap.width, bitmap.height, isAlly, index, config)
+                try {
+                    crop != null && !crop.isRecycled && LiteRTVisionClassifier.hasSlotRing(crop, isAlly)
+                } finally { crop?.recycle() }
+            }
+        }
+        return slotLifecycle.observe(visible, confirmedPicksCount >= 9)
+    }
 
     // Filtros de estabilización temporal (anti-parpadeo y anti-oscilación)
     private class SlotTemporalFilter {
@@ -369,6 +389,8 @@ object DraftVisionScanner {
     private val enemySlotFilters = Array(5) { SlotTemporalFilter() }
 
     fun resetSlotMemory() {
+        lastVisualPick = null
+        slotLifecycle.reset()
         observedFirstPick = null
         isLegendaryRankedCache = false
         cachedUserSlotIndex = null
@@ -1224,6 +1246,7 @@ object DraftVisionScanner {
 
         if (liteRTDecision != null && confirmedPicksCount >= 9) {
             val (champWinner, confidence) = liteRTDecision
+            lastVisualPick = tenthIsAlly to champWinner
             detectedTenthChampion = champWinner
             isTenthConfirmed = true
             if (tenthIsAlly) {
@@ -1238,17 +1261,21 @@ object DraftVisionScanner {
                 enemySlotConfirmedChampions[tenthSlotIndex] = champWinner
             }
             AppLogger.d(TAG, "Reconocimiento visual local decidió el 10º Pick -> ${champWinner.name} ($confidence%)")
-        } else if (targetAlreadyConfirmed) {
+        } else if (targetAlreadyConfirmed || lastVisualPick?.first == tenthIsAlly) {
             // Preservar la confirmación previa del 10º pick en el modelo de juego
-            val cachedChamp = if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] else enemySlotConfirmedChampions[tenthSlotIndex]
+            val cachedChamp = if (targetAlreadyConfirmed) {
+                if (tenthIsAlly) allySlotConfirmedChampions[tenthSlotIndex] else enemySlotConfirmedChampions[tenthSlotIndex]
+            } else lastVisualPick?.second
             if (cachedChamp != null) {
                 detectedTenthChampion = cachedChamp
                 isTenthConfirmed = true
                 if (tenthIsAlly) {
+                    allySlotConfirmedChampions[tenthSlotIndex] = cachedChamp
                     allySlots[tenthSlotIndex].champion = cachedChamp
                     allySlots[tenthSlotIndex].confidencePercent = 100
                     allySlots[tenthSlotIndex].isLikelyUnpicked = false
                 } else {
+                    enemySlotConfirmedChampions[tenthSlotIndex] = cachedChamp
                     enemySlots[tenthSlotIndex].champion = cachedChamp
                     enemySlots[tenthSlotIndex].confidencePercent = 100
                     enemySlots[tenthSlotIndex].isLikelyUnpicked = false
