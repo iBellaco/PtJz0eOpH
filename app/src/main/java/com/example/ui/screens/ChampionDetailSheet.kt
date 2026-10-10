@@ -1449,18 +1449,14 @@ fun ChampionDetailSheet(
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                                         .testTag("build_situational_rune_${detailRune.id}")
                                         .coachClickable {
-                                            val fallbackAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
+                                            val buildAdvice = com.example.util.trStr(currentLang, sRune.description)
+                                            selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
                                                 runeName = rName,
                                                 championName = champion.getLocalizedName(currentLang),
                                                 roleName = selectedRole.getLocalizedName(currentLang),
                                                 language = currentLang,
-                                                situational = true
-                                            )
-                                            selectedElementAdvice = com.example.util.BuildElementAdvice.resolve(
-                                                rName,
-                                                listOf(rName to com.example.util.trStr(currentLang, sRune.description)),
-                                                fallbackAdvice,
-                                                detailRune.getLocalizedDescription(currentLang)
+                                                situational = true,
+                                                buildAdvice = buildAdvice
                                             )
                                             runeForDetail = detailRune
                                         }

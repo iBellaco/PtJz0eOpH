@@ -99,6 +99,23 @@ class BuildElementAdviceTest {
         assertNotEquals(comet, bones)
     }
 
+    @Test fun `situational rune advice always keeps its own activation scenario and build note`() {
+        val buildNote = "Conserva tu salida y espera la entrada rival antes de gastar la protección."
+        val orb = BuildElementAdvice.contextualRuneAdvice(
+            "Orbe Anulador", "Hwei", "Línea Central", "es", true, buildNote
+        )
+        val bones = BuildElementAdvice.contextualRuneAdvice(
+            "Revestimiento de Huesos", "Hwei", "Línea Central", "es", true, buildNote
+        )
+
+        assertTrue(orb.contains("por debajo del 35%"))
+        assertTrue(orb.contains(buildNote))
+        assertTrue(orb.contains("Nota específica de esta build:"))
+        assertTrue(bones.contains("Renekton"))
+        assertTrue(bones.contains(buildNote))
+        assertNotEquals(orb, bones)
+    }
+
     @Test fun `spell advice is matchup specific but flash never has coaching`() {
         assertEquals("", BuildElementAdvice.contextualSpellAdvice("Destello", "Hwei", "Línea Central", "es"))
         assertEquals("", BuildElementAdvice.contextualSpellAdvice("FLASH", "Hwei", "Línea Central", "es"))

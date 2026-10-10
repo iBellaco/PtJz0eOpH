@@ -57,6 +57,32 @@ class BuildElementAdviceCoverageTest {
     }
 
     @Test
+    fun `every bundled situational rune keeps rune specific advice beside its build note`() {
+        val translations = Json.decodeFromString<Map<String, String>>(
+            File("src/main/assets/translations_pt.json").readText()
+        )
+        val situational = builds().flatMap { build ->
+            build.situationalRunes.map { build to it }
+        }
+        assertTrue("Expected situational rune coverage", situational.isNotEmpty())
+        for (language in listOf("es", "pt")) {
+            for ((build, entry) in situational) {
+                val note = if (language == "pt") translations[entry.description].orEmpty() else entry.description
+                val advice = BuildElementAdvice.contextualRuneAdvice(
+                    entry.runeName, build.championName, build.role, language,
+                    situational = true, buildAdvice = note
+                )
+                assertTrue("${build.championName}/${entry.runeName} lost its activation scenario in $language",
+                    advice.contains(if (language == "pt") "Quando usar:" else "Cuándo usarla:"))
+                assertTrue("${build.championName}/${entry.runeName} lost its build note in $language",
+                    advice.contains(if (language == "pt") "Nota específica desta build:" else "Nota específica de esta build:"))
+                assertTrue("${build.championName}/${entry.runeName} lost its coach diagnosis in $language",
+                    advice.contains(if (language == "pt") "Diagnóstico" else "Diagnóstico del error/situación"))
+            }
+        }
+    }
+
+    @Test
     fun `every bundled coached spell has an explicit decision and silent spells stay silent`() {
         val names = builds().flatMap { it.coreSpells + it.situationalSpells }
             .map { it.spellName }.filter { it.isNotBlank() }.distinct()

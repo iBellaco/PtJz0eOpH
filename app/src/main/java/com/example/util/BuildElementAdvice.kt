@@ -159,7 +159,8 @@ object BuildElementAdvice {
         championName: String,
         roleName: String,
         language: String,
-        situational: Boolean
+        situational: Boolean,
+        buildAdvice: String = ""
     ): String {
         val lang = AppLanguage.normalize(language)
         val pt = lang == "pt"
@@ -167,7 +168,7 @@ object BuildElementAdvice {
         val localizedName = rune?.getLocalizedName(lang) ?: runeName
         val scenario = runeScenario(runeName, pt)
 
-        return if (pt) buildString {
+        val contextual = if (pt) buildString {
             appendLine("Função de $localizedName para $championName ($roleName):")
             appendLine("\nQuando usar:")
             appendLine(scenario)
@@ -178,6 +179,11 @@ object BuildElementAdvice {
             appendLine(scenario)
             if (situational) append("\nCámbiala por una runa principal solo cuando esa condición realmente aparezca en la partida.")
         }.trim()
+
+        val buildSpecific = distinctAdvice(buildAdvice, rune?.getLocalizedDescription(lang).orEmpty())
+        if (buildSpecific.isBlank()) return contextual
+        val heading = if (pt) "Nota específica desta build:" else "Nota específica de esta build:"
+        return "$contextual\n\n$heading\n$buildSpecific"
     }
 
     fun contextualSpellAdvice(
