@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.ui.test.*
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
 import com.example.data.local.CustomChampionBuildsManager
