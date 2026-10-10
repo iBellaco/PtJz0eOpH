@@ -395,13 +395,21 @@ fun PersonalTierListView(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = tr("Aún no tienes partidas registradas para este filtro"),
+                        text = tr(if (tierData.overview.excludedUnidentifiedGames > 0)
+                            "No se pudo identificar tu campeón en las partidas guardadas" else "Aún no tienes partidas registradas para este filtro"),
                         color = TextPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                    if (tierData.overview.excludedUnidentifiedGames > 0) {
+                        Text(
+                            text = tr("Partidas sin campeón propio identificado, excluidas del análisis:") + " ${tierData.overview.excludedUnidentifiedGames}",
+                            color = TextMuted, fontSize = 11.sp,
+                            modifier = Modifier.testTag("personal_tier_unidentified_note")
+                        )
+                    }
                     Text(
                         text = tr("Guarda tus selecciones de campeones y registra si ganaste o perdiste para construir tu Tier List Personal con estadísticas de rendimiento."),
                         color = TextMuted,
