@@ -119,8 +119,10 @@ object DraftHistoryRepository {
             )
         }
 
-        val myChampion = allies.find { it.assignedRole == myRole }?.champion
-        val enemyLaneOpponent = enemies.find { it.assignedRole == myRole }?.champion
+        val myChampion = allies.filter { it.assignedRole == myRole }.singleOrNull()?.champion
+            ?.takeUnless { it.id.isBlank() || it.id.equals("empty", true) }
+        val enemyLaneOpponent = enemies.filter { it.assignedRole == myRole }.singleOrNull()?.champion
+            ?.takeUnless { it.id.isBlank() || it.id.equals("empty", true) }
         
         val bestPick = analysis.bestOverallPick ?: analysis.recommendations.firstOrNull()
         val estimatedWr = if (myChampion != null) {
@@ -189,6 +191,9 @@ object DraftHistoryRepository {
                 title = entity.title,
                 notes = if (notes.isNotBlank()) notes else existingDraft.notes,
                 matchResult = matchResult,
+                myChampionId = entity.myChampionId,
+                myChampionName = entity.myChampionName,
+                enemyLaneOpponentName = entity.enemyLaneOpponentName,
                 estimatedWinrate = estimatedWr,
                 timestamp = System.currentTimeMillis(),
                 accountProfileName = profileName,

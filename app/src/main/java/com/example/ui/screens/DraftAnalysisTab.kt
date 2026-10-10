@@ -695,15 +695,12 @@ fun DraftAnalysisTab(
 
         // Cálculo Automático de Matchup 1v1 vs Rival de Línea
         if (selectedEnemyChampion != null && selectedOwnChampion != null) {
-            val allSavedDraftsState by DraftHistoryRepository.getAllDrafts(tabContext).collectAsState(initial = emptyList())
-            val matchesVsOpponent = remember(allSavedDraftsState, selectedEnemyChampion.name, selectedOwnChampion?.name) {
-                allSavedDraftsState.filter { draft ->
-                    val opp = draft.enemyLaneOpponentName.ifBlank {
-                        val enemies = DraftHistoryRepository.parseDraftSlots(draft.enemyPicksJson)
-                        enemies.find { it.assignedRole.name == draft.userRole }?.champion?.name ?: ""
-                    }
-                    opp.equals(selectedEnemyChampion.name, ignoreCase = true)
-                }
+            val historyProfile = com.example.data.AccountProfileManager.getActiveProfile(tabContext)
+            val profileDrafts = remember(historyProfile.id) { DraftHistoryRepository.getDraftsByProfile(tabContext, historyProfile.id) }
+            val allSavedDraftsState by profileDrafts.collectAsState(initial = emptyList())
+            val matchesVsOpponent = remember(allSavedDraftsState, selectedEnemyChampion.name, selectedOwnChampion.name, activeRole, historyProfile.id) {
+                com.example.data.analytics.PersonalTierListManager.draftsForMatchup(allSavedDraftsState,
+                    selectedOwnChampion.name, selectedEnemyChampion.name, activeRole, historyProfile.id)
             }
             val winsVsOpp = matchesVsOpponent.count { it.matchResult.equals("VICTORY", ignoreCase = true) }
             val lossesVsOpp = matchesVsOpponent.count { it.matchResult.equals("DEFEAT", ignoreCase = true) }
@@ -731,7 +728,7 @@ fun DraftAnalysisTab(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = com.example.util.tr("${tr("Cálculo 1v1 Automático")}: vs ${selectedEnemyChampion.name}"),
+                                text = tr("Resultados con tu campeón ante este rival:") + " ${selectedOwnChampion.name} vs ${selectedEnemyChampion.name}",
                                 color = HextechGold,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.5.sp
@@ -766,10 +763,10 @@ fun DraftAnalysisTab(
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        val adviceText = if (wrVsOpp != null && wrVsOpp >= 50) {
-                            "Tus cálculos automáticos confirman ventaja en el 1v1. Domina el control de la primera oleada usando tu Habilidad 1 (H1) y busca intercambios cortos aprovechando sus enfriamientos."
+                        val adviceText = if (totalDecidedOpp < 5) {
+                            "Muestra pequeña: registra al menos 5 resultados con este campeón y rival en la misma línea. Son victorias de partidas, no de duelos 1v1."
                         } else {
-                            "Historial desfavorable en el 1v1. No te expongas a niveles 1-3; farmea con seguridad usando tu Habilidad 1 o Habilidad 2 desde distancia y espera tu pico de poder con Definitiva (H4)."
+                            "Estos resultados pertenecen a tu perfil, campeón y línea. Revisa las derrotas para identificar oleadas, recursos y objetivos; el porcentaje no demuestra ventaja en el duelo."
                         }
                         Text(
                             text = com.example.util.tr(adviceText),
@@ -779,7 +776,7 @@ fun DraftAnalysisTab(
                         )
                     } else {
                         Text(
-                            text = tr("Sin duelos 1v1 registrados previamente contra este rival. Al finalizar y guardar esta partida se calibrará automáticamente tu tasa de victoria directa."),
+                            text = tr("Sin resultados registrados con tu campeón ante este rival en esta línea y perfil."),
                             color = TextMuted,
                             fontSize = 11.sp,
                             lineHeight = 15.sp

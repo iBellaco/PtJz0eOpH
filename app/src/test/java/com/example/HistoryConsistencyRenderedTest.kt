@@ -38,6 +38,27 @@ class HistoryConsistencyRenderedTest(private val language: String) {
         val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
         compose.onRoot().captureRoboImage(File(out, "history-consistency-$name-$language.png").path)
     }
+    @Test fun `personal list contains only player and shows optional KDA coverage`() {
+        WildRiftRepository.initChampions(RuntimeEnvironment.getApplication(), forceReload = true)
+        val matches = listOf(
+            com.example.data.local.entity.SavedDraftEntity(id=1, myChampionId="teemo", myChampionName="Teemo", userRole="TOP", matchResult="VICTORY", myScore="4/2/6"),
+            com.example.data.local.entity.SavedDraftEntity(id=2, myChampionId="teemo", myChampionName="Teemo", userRole="TOP", matchResult="DEFEAT"))
+        compose.setContent { MyApplicationTheme { com.example.ui.screens.PersonalTierListView(matches, {}, isOverlay=true) } }
+        compose.onNodeWithTag("personal_overview_toggle").performClick()
+        compose.onNodeWithTag("personal_tier_sample_note").assertExists()
+        compose.onNodeWithTag("tier_pill_teemo").performScrollTo().assertExists()
+        compose.onNodeWithTag("tier_pill_ahri").assertDoesNotExist()
+        compose.onNodeWithTag("tier_row_S_PLUS").assertDoesNotExist()
+        compose.onNodeWithTag("tier_row_PROVISIONAL").assertExists()
+        val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+        compose.onNodeWithText(if(language=="pt") "Detalhado" else "Detallado", useUnmergedTree=true)
+            .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        Assert.assertEquals(1, layouts.single().lineCount)
+        capture("personal-provisional")
+        compose.onNodeWithTag("tier_pill_teemo").performClick()
+        compose.onNodeWithTag("personal_champion_kda").assertTextEquals(
+            if(language=="pt") "5.0 KDA • Resultados com KDA: 1/2" else "5.0 KDA • Resultados con KDA: 1/2")
+    }
     @Test fun `managed balance updates without a personal recharge action`() {
         val balances = mutableStateOf(HistoryBalances(0, 100))
         var recharged = false

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -394,13 +395,21 @@ fun PersonalTierListView(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = tr("Aún no tienes partidas registradas para este filtro"),
+                        text = tr(if (tierData.overview.excludedUnidentifiedGames > 0)
+                            "No se pudo identificar tu campeón en las partidas guardadas" else "Aún no tienes partidas registradas para este filtro"),
                         color = TextPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                    if (tierData.overview.excludedUnidentifiedGames > 0) {
+                        Text(
+                            text = tr("Partidas sin campeón propio identificado, excluidas del análisis:") + " ${tierData.overview.excludedUnidentifiedGames}",
+                            color = TextMuted, fontSize = 11.sp,
+                            modifier = Modifier.testTag("personal_tier_unidentified_note")
+                        )
+                    }
                     Text(
                         text = tr("Guarda tus selecciones de campeones y registra si ganaste o perdiste para construir tu Tier List Personal con estadísticas de rendimiento."),
                         color = TextMuted,
@@ -433,8 +442,11 @@ fun PersonalTierListView(
                             text = com.example.util.tr(if (selectedRoleFilter != null) {
                                 "🏆 Tier List Personal: ${com.example.util.tr(selectedRoleFilter!!.displayName)}"
                             } else {
-                                "🏆 Tier List Personal (Todos los Campeones)"
+                                "Mis campeones registrados"
                             }),
+                            modifier = Modifier.weight(1f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
                             color = HextechGold,
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold
@@ -450,9 +462,13 @@ fun PersonalTierListView(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
+                                    .width(76.dp)
+                                    .heightIn(min = 48.dp)
+                                    .testTag("personal_tier_mode_tiers")
                                     .background(if (viewMode == "TIERS") HextechGold else Color.Transparent)
                                     .coachClickable { viewMode = "TIERS" }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = tr("Tiers"),
@@ -464,9 +480,13 @@ fun PersonalTierListView(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
+                                    .width(76.dp)
+                                    .heightIn(min = 48.dp)
+                                    .testTag("personal_tier_mode_table")
                                     .background(if (viewMode == "TABLE") HextechGold else Color.Transparent)
                                     .coachClickable { viewMode = "TABLE" }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = tr("Detallado"),
@@ -480,6 +500,18 @@ fun PersonalTierListView(
                 }
 
                 if (viewMode == "TIERS") {
+                    val provisional = allRankedFiltered.filter { it.tier == TierGrade.PROVISIONAL }
+                    if (provisional.isNotEmpty()) {
+                        item {
+                            TierRowVisual(
+                                grade = TierGrade.PROVISIONAL,
+                                champions = provisional,
+                                badgeColor = TextMuted,
+                                headerGradient = Brush.horizontalGradient(listOf(HextechSurfaceVariant, HextechDarkBg)),
+                                onChampionClick = { selectedChampionStats = it }
+                            )
+                        }
+                    }
                     // TIER S+
                     if (sPlusFiltered.isNotEmpty()) {
                         item {
@@ -540,7 +572,7 @@ fun PersonalTierListView(
                         }
                     }
 
-                    // TIER C (Incluye campeones con bajo WR y campeones con 0 partidas al 0% WR)
+                    // TIER C: campeones registrados con al menos cinco resultados.
                     if (cFiltered.isNotEmpty()) {
                         item {
                             TierRowVisual(
@@ -605,6 +637,8 @@ private fun PersonalOverviewCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .testTag("personal_overview_toggle")
                     .coachClickable { isExpanded = !isExpanded },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -711,7 +745,7 @@ private fun PersonalOverviewCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(tr("Signature Pick"), color = TextMuted, fontSize = 10.sp)
+                            Text(tr("Campeón más jugado"), color = TextMuted, fontSize = 10.sp)
                             Text(
                                 text = com.example.util.tr(overview.signatureChampion?.championName ?: "N/A"),
                                 color = HextechGold,
@@ -723,7 +757,19 @@ private fun PersonalOverviewCard(
                 }
 
                 // Sección de Cálculo Automático 1v1 y Análisis de Matchups
-                if (overview.best1v1Matchup != null || overview.nemesisOpponent != null) {
+                Text(
+                    text = tr("Solo tus campeones registrados. Menos de 5 resultados: en evaluación. El resultado de una partida no demuestra quién ganó el duelo de línea."),
+                    color = TextMuted, fontSize = 11.sp,
+                    modifier = Modifier.padding(top = 8.dp).testTag("personal_tier_sample_note")
+                )
+                if (overview.excludedUnidentifiedGames > 0) {
+                    Text(
+                        text = tr("Partidas sin campeón propio identificado, excluidas del análisis:") + " ${overview.excludedUnidentifiedGames}",
+                        color = TextMuted, fontSize = 11.sp,
+                        modifier = Modifier.testTag("personal_tier_unidentified_note")
+                    )
+                }
+                if (overview.coach1v1Analysis.isNotBlank()) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -744,7 +790,7 @@ private fun PersonalOverviewCard(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = tr("Cálculo Automático de Matchups 1v1"),
+                                    text = tr("Resultados con rivales de tu línea"),
                                     color = HextechGold,
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -784,7 +830,7 @@ private fun PersonalOverviewCard(
                                             }
                                             Column {
                                                 Text(
-                                                    text = tr("Mayor Ventaja 1v1"),
+                                                    text = tr("Mayor tasa de victorias"),
                                                     color = Color(0xFF81C784),
                                                     fontSize = 8.5.sp,
                                                     fontWeight = FontWeight.Bold
@@ -834,7 +880,7 @@ private fun PersonalOverviewCard(
                                             }
                                             Column {
                                                 Text(
-                                                    text = tr("Mayor Desafío (Némesis)"),
+                                                    text = tr("Menor tasa de victorias"),
                                                     color = DangerRed,
                                                     fontSize = 8.5.sp,
                                                     fontWeight = FontWeight.Bold
@@ -868,7 +914,7 @@ private fun PersonalOverviewCard(
                                 ) {
                                     Column(modifier = Modifier.padding(8.dp)) {
                                         Text(
-                                            text = tr("Veredicto del Coach (Cálculo Automático 1v1):"),
+                                            text = tr("Análisis del historial de partidas:"),
                                             color = HextechCyan,
                                             fontSize = 9.5.sp,
                                             fontWeight = FontWeight.Bold
@@ -1154,6 +1200,7 @@ private fun PersonalChampionDetailedCard(
 
                 // Tier Pill
                 val tierBg = when (stats.tier) {
+                    TierGrade.PROVISIONAL -> TextMuted
                     TierGrade.S_PLUS -> Color(0xFFFFD700)
                     TierGrade.S -> Color(0xFFE5A93B)
                     TierGrade.A -> HextechCyan
@@ -1293,6 +1340,12 @@ private fun PersonalChampionDetailModal(
                 }
 
                 // Desglose por Líneas / Roles
+                Text(
+                    text = if (stats.kdaGames > 0) "${stats.avgScore} • " + tr("Resultados con KDA:") + " ${stats.kdaGames}/${stats.wins + stats.losses}"
+                        else tr("KDA no informado"),
+                    color = TextSecondary, fontSize = 11.5.sp,
+                    modifier = Modifier.testTag("personal_champion_kda")
+                )
                 if (stats.roleBreakdown.isNotEmpty()) {
                     Column {
                         Text(
