@@ -75,22 +75,9 @@ import com.example.service.screen.LiteRTVisionClassifier
 import com.example.service.screen.TenthPickDiagnosticManager
 import com.example.service.screen.VisionCalibrationConfig
 
-enum class CircleTarget(val title: String, val shortName: String) {
-    ALLY_0("Aliado 1 (TOP)", "A1 TOP"),
-    ALLY_1("Aliado 2 (JG)", "A2 JG"),
-    ALLY_2("Aliado 3 (MID)", "A3 MID"),
-    ALLY_3("Aliado 4 (ADC)", "A4 ADC"),
-    ALLY_4("Aliado 5 (SUP)", "A5 SUP"),
-    ENEMY_0("Rival 1", "R1"),
-    ENEMY_1("Rival 2", "R2"),
-    ENEMY_2("Rival 3", "R3"),
-    ENEMY_3("Rival 4", "R4"),
-    ENEMY_4("Rival 5", "R5"),
-    COL_ALLIES_X("Columna Aliados X", "Col Aliados"),
-    COL_ENEMIES_X("Columna Rivales X", "Col Rivales"),
-    GLOBAL_Y("Todos los Slots Y", "Slots Y"),
-    GLOBAL_SIZE("Tamaño Global (⌀)", "Tam Global"),
-    TOP_10TH_PICK("10º Pick (Barra Sup)", "10º Pick")
+enum class CircleTarget(val title: String, val isAlly: Boolean) {
+    ALLY_COLUMN_X("Columna Aliado X", true),
+    ENEMY_COLUMN_X("Columna Rival X", false)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -113,95 +100,16 @@ fun LiteRTEngineViewerDialog(
             if (inspectingFrame != null) inspectingFrame = null else onDismissRequest()
         }
     }
-    var selectedTarget by remember { mutableStateOf(CircleTarget.ALLY_0) }
+    var selectedTarget by remember { mutableStateOf(CircleTarget.ALLY_COLUMN_X) }
     var calibrationStep by remember { mutableStateOf(0.005f) } // 0.5% por defecto
 
     fun modifyDetectionCircle(deltaX: Float = 0f, deltaY: Float = 0f, deltaSize: Float = 0f) {
-        val cur = calibrationConfig
-        val updated = when (selectedTarget) {
-            CircleTarget.ALLY_0 -> cur.copy(
-                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[0] = (it[0] + deltaX).coerceIn(0.01f, 0.45f) },
-                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[0] = (it[0] + deltaY).coerceIn(0.05f, 0.95f) },
-                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[0] = (it[0] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ALLY_1 -> cur.copy(
-                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[1] = (it[1] + deltaX).coerceIn(0.01f, 0.45f) },
-                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[1] = (it[1] + deltaY).coerceIn(0.05f, 0.95f) },
-                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[1] = (it[1] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ALLY_2 -> cur.copy(
-                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[2] = (it[2] + deltaX).coerceIn(0.01f, 0.45f) },
-                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[2] = (it[2] + deltaY).coerceIn(0.05f, 0.95f) },
-                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[2] = (it[2] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ALLY_3 -> cur.copy(
-                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[3] = (it[3] + deltaX).coerceIn(0.01f, 0.45f) },
-                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[3] = (it[3] + deltaY).coerceIn(0.05f, 0.95f) },
-                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[3] = (it[3] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ALLY_4 -> cur.copy(
-                allySlotXRatios = cur.allySlotXRatios.toMutableList().also { it[4] = (it[4] + deltaX).coerceIn(0.01f, 0.45f) },
-                allySlotYRatios = cur.allySlotYRatios.toMutableList().also { it[4] = (it[4] + deltaY).coerceIn(0.05f, 0.95f) },
-                allySlotDiameterRatios = cur.allySlotDiameterRatios.toMutableList().also { it[4] = (it[4] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ENEMY_0 -> cur.copy(
-                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[0] = (it[0] + deltaX).coerceIn(0.55f, 0.99f) },
-                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[0] = (it[0] + deltaY).coerceIn(0.05f, 0.95f) },
-                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[0] = (it[0] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ENEMY_1 -> cur.copy(
-                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[1] = (it[1] + deltaX).coerceIn(0.55f, 0.99f) },
-                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[1] = (it[1] + deltaY).coerceIn(0.05f, 0.95f) },
-                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[1] = (it[1] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ENEMY_2 -> cur.copy(
-                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[2] = (it[2] + deltaX).coerceIn(0.55f, 0.99f) },
-                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[2] = (it[2] + deltaY).coerceIn(0.05f, 0.95f) },
-                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[2] = (it[2] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ENEMY_3 -> cur.copy(
-                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[3] = (it[3] + deltaX).coerceIn(0.55f, 0.99f) },
-                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[3] = (it[3] + deltaY).coerceIn(0.05f, 0.95f) },
-                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[3] = (it[3] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.ENEMY_4 -> cur.copy(
-                enemySlotXRatios = cur.enemySlotXRatios.toMutableList().also { it[4] = (it[4] + deltaX).coerceIn(0.55f, 0.99f) },
-                enemySlotYRatios = cur.enemySlotYRatios.toMutableList().also { it[4] = (it[4] + deltaY).coerceIn(0.05f, 0.95f) },
-                enemySlotDiameterRatios = cur.enemySlotDiameterRatios.toMutableList().also { it[4] = (it[4] + deltaSize).coerceIn(0.03f, 0.30f) }
-            )
-            CircleTarget.COL_ALLIES_X -> {
-                val newX = (cur.allyAvatarCenterX + deltaX).coerceIn(0.01f, 0.45f)
-                cur.copy(
-                    allyAvatarCenterX = newX,
-                    allySlotXRatios = cur.allySlotXRatios.map { (it + deltaX).coerceIn(0.01f, 0.45f) }
-                )
-            }
-            CircleTarget.COL_ENEMIES_X -> {
-                val newX = (cur.enemyAvatarCenterX + deltaX).coerceIn(0.55f, 0.99f)
-                cur.copy(
-                    enemyAvatarCenterX = newX,
-                    enemySlotXRatios = cur.enemySlotXRatios.map { (it + deltaX).coerceIn(0.55f, 0.99f) }
-                )
-            }
-            CircleTarget.GLOBAL_Y -> cur.copy(
-                allySlotYRatios = cur.allySlotYRatios.map { (it + deltaY).coerceIn(0.05f, 0.95f) },
-                enemySlotYRatios = cur.enemySlotYRatios.map { (it + deltaY).coerceIn(0.05f, 0.95f) }
-            )
-            CircleTarget.GLOBAL_SIZE -> {
-                val newSize = (cur.avatarDiameterRatio + deltaSize).coerceIn(0.04f, 0.28f)
-                cur.copy(
-                    avatarDiameterRatio = newSize,
-                    allySlotDiameterRatios = cur.allySlotDiameterRatios.map { (it + deltaSize).coerceIn(0.04f, 0.28f) },
-                    enemySlotDiameterRatios = cur.enemySlotDiameterRatios.map { (it + deltaSize).coerceIn(0.04f, 0.28f) }
-                )
-            }
-            CircleTarget.TOP_10TH_PICK -> cur.copy(
-                topEnemy5XRatio = (cur.topEnemy5XRatio + deltaX).coerceIn(0.60f, 0.99f),
-                topAlly5XRatio = (cur.topAlly5XRatio + deltaX).coerceIn(0.01f, 0.40f),
-                topAvatarYRatio = (cur.topAvatarYRatio + deltaY).coerceIn(0.01f, 0.30f),
-                topAvatarDiameterRatio = (cur.topAvatarDiameterRatio + deltaSize).coerceIn(0.03f, 0.20f)
-            )
-        }
+        val updated = calibrationConfig.adjustDraftColumn(
+            isAlly = selectedTarget.isAlly,
+            deltaX = deltaX,
+            deltaY = deltaY,
+            deltaDiameter = deltaSize
+        )
         DraftVisionScanner.updateCalibration(context, updated)
     }
 
@@ -622,23 +530,10 @@ fun LiteRTEngineViewerDialog(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Indicador de Coordenadas Actuales del Objetivo
-                        val currentCoordsText = when (selectedTarget) {
-                            CircleTarget.ALLY_0 -> "Slot 1 TOP: X=${(calibrationConfig.getAllySlotX(0) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[0] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 0) * 100).format(2)}%"
-                            CircleTarget.ALLY_1 -> "Slot 2 JG: X=${(calibrationConfig.getAllySlotX(1) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[1] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 1) * 100).format(2)}%"
-                            CircleTarget.ALLY_2 -> "Slot 3 MID: X=${(calibrationConfig.getAllySlotX(2) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[2] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 2) * 100).format(2)}%"
-                            CircleTarget.ALLY_3 -> "Slot 4 ADC: X=${(calibrationConfig.getAllySlotX(3) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[3] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 3) * 100).format(2)}%"
-                            CircleTarget.ALLY_4 -> "Slot 5 SUP: X=${(calibrationConfig.getAllySlotX(4) * 100).format(2)}% | Y=${(calibrationConfig.allySlotYRatios[4] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(true, 4) * 100).format(2)}%"
-                            CircleTarget.ENEMY_0 -> "Rival 1: X=${(calibrationConfig.getEnemySlotX(0) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[0] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 0) * 100).format(2)}%"
-                            CircleTarget.ENEMY_1 -> "Rival 2: X=${(calibrationConfig.getEnemySlotX(1) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[1] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 1) * 100).format(2)}%"
-                            CircleTarget.ENEMY_2 -> "Rival 3: X=${(calibrationConfig.getEnemySlotX(2) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[2] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 2) * 100).format(2)}%"
-                            CircleTarget.ENEMY_3 -> "Rival 4: X=${(calibrationConfig.getEnemySlotX(3) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[3] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 3) * 100).format(2)}%"
-                            CircleTarget.ENEMY_4 -> "Rival 5: X=${(calibrationConfig.getEnemySlotX(4) * 100).format(2)}% | Y=${(calibrationConfig.enemySlotYRatios[4] * 100).format(2)}% | ⌀=${(calibrationConfig.getSlotDiameter(false, 4) * 100).format(2)}%"
-                            CircleTarget.COL_ALLIES_X -> "Columna Aliada X: ${(calibrationConfig.allyAvatarCenterX * 100).format(2)}% (${calibrationConfig.allyAvatarCenterX}f)"
-                            CircleTarget.COL_ENEMIES_X -> "Columna Rival X: ${(calibrationConfig.enemyAvatarCenterX * 100).format(2)}% (${calibrationConfig.enemyAvatarCenterX}f)"
-                            CircleTarget.GLOBAL_Y -> "Desplazamiento Vertical Slots Y: 18.8% ~ 73.2%"
-                            CircleTarget.GLOBAL_SIZE -> "Diámetro Avatar Global: ${(calibrationConfig.avatarDiameterRatio * 100).format(2)}% (${calibrationConfig.avatarDiameterRatio}f)"
-                            CircleTarget.TOP_10TH_PICK -> "Top 10º Rival: X=${(calibrationConfig.topEnemy5XRatio * 100).format(2)}% | Y=${(calibrationConfig.topAvatarYRatio * 100).format(2)}% | ⌀=${(calibrationConfig.topAvatarDiameterRatio * 100).format(2)}%"
-                        }
+                        val selectedX = if (selectedTarget.isAlly) calibrationConfig.allyAvatarCenterX else calibrationConfig.enemyAvatarCenterX
+                        val selectedY = if (selectedTarget.isAlly) calibrationConfig.allySlotYRatios else calibrationConfig.enemySlotYRatios
+                        val selectedDiameter = if (selectedTarget.isAlly) calibrationConfig.allySlotDiameterRatios else calibrationConfig.enemySlotDiameterRatios
+                        val currentCoordsText = "${selectedTarget.title}: X=${(selectedX * 100).format(2)}% | Y=${((selectedY.minOrNull() ?: 0f) * 100).format(2)}–${((selectedY.maxOrNull() ?: 0f) * 100).format(2)}% | ⌀=${(selectedDiameter.average().toFloat() * 100).format(2)}%"
 
                         Box(
                             modifier = Modifier

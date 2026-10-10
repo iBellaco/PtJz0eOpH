@@ -94,6 +94,38 @@ data class VisionCalibrationConfig(
         if (isAlly) allySlotDiameterRatios.getOrElse(slotIdx) { avatarDiameterRatio }
         else enemySlotDiameterRatios.getOrElse(slotIdx) { avatarDiameterRatio }
 
+    /** Applies the calibrator's four-way movement and size controls to every circle in one column. */
+    fun adjustDraftColumn(
+        isAlly: Boolean,
+        deltaX: Float = 0f,
+        deltaY: Float = 0f,
+        deltaDiameter: Float = 0f
+    ): VisionCalibrationConfig {
+        val centerX = if (isAlly) allyAvatarCenterX else enemyAvatarCenterX
+        val minX = if (isAlly) 0.01f else 0.55f
+        val maxX = if (isAlly) 0.45f else 0.99f
+        val adjustedCenterX = (centerX + deltaX).coerceIn(minX, maxX)
+        val appliedX = adjustedCenterX - centerX
+        val xRatios = (if (isAlly) allySlotXRatios else enemySlotXRatios)
+            .map { (it + appliedX).coerceIn(minX, maxX) }
+        val yRatios = (if (isAlly) allySlotYRatios else enemySlotYRatios)
+            .map { (it + deltaY).coerceIn(0.05f, 0.95f) }
+        val diameterRatios = (if (isAlly) allySlotDiameterRatios else enemySlotDiameterRatios)
+            .map { (it + deltaDiameter).coerceIn(0.03f, 0.30f) }
+
+        return if (isAlly) copy(
+            allyAvatarCenterX = adjustedCenterX,
+            allySlotXRatios = xRatios,
+            allySlotYRatios = yRatios,
+            allySlotDiameterRatios = diameterRatios
+        ) else copy(
+            enemyAvatarCenterX = adjustedCenterX,
+            enemySlotXRatios = xRatios,
+            enemySlotYRatios = yRatios,
+            enemySlotDiameterRatios = diameterRatios
+        )
+    }
+
     fun toFormattedCoordinatesString(): String {
         val sb = StringBuilder()
         sb.append("=== COORDENADAS DE CALIBRACIÓN VISION DRAFT ===\n")

@@ -1017,9 +1017,6 @@ object DraftVisionScanner {
         // -----------------------------------------------------------------------------------------
         // PASO 3: EVALUACIÓN DE SLOTS Y DIAGNÓSTICO EN TIEMPO REAL (100% BASADO EN OCR Y ROLES)
         // -----------------------------------------------------------------------------------------
-        val avatarDiameter = (height * calib.avatarDiameterRatio).toInt().coerceAtLeast(32)
-        val allyAvatarCenterX = (width * calib.allyAvatarCenterX).toInt()
-        val enemyAvatarCenterX = (width * calib.enemyAvatarCenterX).toInt()
         val allySlotYRatios = calib.allySlotYRatios
         val enemySlotYRatios = calib.enemySlotYRatios
         val diagnosticsList = mutableListOf<SlotDiagnostic>()
@@ -1027,10 +1024,7 @@ object DraftVisionScanner {
         // 3.1 Aliados: Si se detectó el nombre del campeón en el slot, se asocia directamente a la línea memorizada de ese slot
         for (i in 0..4) {
             val slot = allySlots[i]
-            val yCenter = (height * allySlotYRatios[i]).toInt()
-            val startX = (allyAvatarCenterX - avatarDiameter / 2).coerceIn(0, width - avatarDiameter)
-            val startY = (yCenter - avatarDiameter / 2).coerceIn(0, height - avatarDiameter)
-            val roiRect = Rect(startX, startY, startX + avatarDiameter, startY + avatarDiameter)
+            val roiRect = AdaptiveScreenLayoutEngine.calculateSlotCropRect(width, height, true, i, calib)
 
             val ocrChamp = allyOcrChampions[i]
             val roleForSlot = allySlotRolesCache[i]
@@ -1078,10 +1072,7 @@ object DraftVisionScanner {
         // 3.2 Rivales: Se detecta el nombre del campeón cuando desaparece 'Jugador X'
         for (i in 0..4) {
             val slot = enemySlots[i]
-            val yCenter = (height * enemySlotYRatios[i]).toInt()
-            val startX = (enemyAvatarCenterX - avatarDiameter / 2).coerceIn(0, width - avatarDiameter)
-            val startY = (yCenter - avatarDiameter / 2).coerceIn(0, height - avatarDiameter)
-            val roiRect = Rect(startX, startY, startX + avatarDiameter, startY + avatarDiameter)
+            val roiRect = AdaptiveScreenLayoutEngine.calculateSlotCropRect(width, height, false, i, calib)
 
             val ocrChamp = enemyOcrChampions[i]
             val isUnpicked = (slot.champion == null && enemySlotConfirmedChampions[i] == null)
