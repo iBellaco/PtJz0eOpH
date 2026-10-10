@@ -12,6 +12,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import com.example.ui.components.coachClickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,6 +25,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -56,6 +59,7 @@ enum class CalibrationTarget(val title: String, val subtitle: String) {
     GLOBAL_Y("Mover Todos los Slots (Y)", "Desplazar verticalmente todas las casillas")
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DraftCalibrationPanel(
     onDismiss: () -> Unit,
@@ -395,11 +399,11 @@ fun DraftCalibrationPanel(
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                maxItemsInEachRow = 3
             ) {
                 CalibrationTarget.entries.forEach { target ->
                     val isSel = selectedTarget == target
@@ -413,7 +417,9 @@ fun DraftCalibrationPanel(
                                 RoundedCornerShape(6.dp)
                             )
                             .coachClickable { selectedTarget = target }
+                            .heightIn(min = 48.dp)
                             .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .testTag("draft_calibration_target_${target.name.lowercase()}")
                     ) {
                         Text(
                             text = com.example.util.tr(target.title),
@@ -441,8 +447,9 @@ fun DraftCalibrationPanel(
                     // Arriba
                     Surface(
                         modifier = Modifier
-                            .size(34.dp)
-                            .coachClickable { modify(deltaY = -stepFactor) },
+                            .size(48.dp)
+                            .coachClickable { modify(deltaY = -stepFactor) }
+                            .testTag("draft_calibration_up"),
                         shape = RoundedCornerShape(6.dp),
                         color = HextechSurface,
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
@@ -459,8 +466,9 @@ fun DraftCalibrationPanel(
                         // Izquierda
                         Surface(
                             modifier = Modifier
-                                .size(34.dp)
-                                .coachClickable { modify(deltaX = -stepFactor) },
+                                .size(48.dp)
+                                .coachClickable { modify(deltaX = -stepFactor) }
+                                .testTag("draft_calibration_left"),
                             shape = RoundedCornerShape(6.dp),
                             color = HextechSurface,
                             border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
@@ -489,8 +497,9 @@ fun DraftCalibrationPanel(
                         // Derecha
                         Surface(
                             modifier = Modifier
-                                .size(34.dp)
-                                .coachClickable { modify(deltaX = stepFactor) },
+                            .size(48.dp)
+                            .coachClickable { modify(deltaX = stepFactor) }
+                            .testTag("draft_calibration_right"),
                             shape = RoundedCornerShape(6.dp),
                             color = HextechSurface,
                             border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
@@ -504,8 +513,9 @@ fun DraftCalibrationPanel(
                     // Abajo
                     Surface(
                         modifier = Modifier
-                            .size(34.dp)
-                            .coachClickable { modify(deltaY = stepFactor) },
+                            .size(48.dp)
+                            .coachClickable { modify(deltaY = stepFactor) }
+                            .testTag("draft_calibration_down"),
                         shape = RoundedCornerShape(6.dp),
                         color = HextechSurface,
                         border = BorderStroke(1.dp, HextechGold.copy(alpha = 0.6f))
@@ -536,7 +546,7 @@ fun DraftCalibrationPanel(
                     ) {
                         Button(
                             onClick = { modify(deltaSize = stepFactor) },
-                            modifier = Modifier.weight(1f).height(32.dp),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("draft_calibration_size_increase"),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B3854)),
                             shape = RoundedCornerShape(6.dp),
                             contentPadding = PaddingValues(0.dp)
@@ -550,7 +560,7 @@ fun DraftCalibrationPanel(
 
                         Button(
                             onClick = { modify(deltaSize = -stepFactor) },
-                            modifier = Modifier.weight(1f).height(32.dp),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("draft_calibration_size_decrease"),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E1C22)),
                             shape = RoundedCornerShape(6.dp),
                             contentPadding = PaddingValues(0.dp)
@@ -584,6 +594,8 @@ fun DraftCalibrationPanel(
                                     .background(if (isSel) HextechGold.copy(alpha = 0.25f) else HextechSurface)
                                     .border(0.6.dp, if (isSel) HextechGold else HextechCardBorder, RoundedCornerShape(4.dp))
                                     .coachClickable { stepFactor = value }
+                                    .heightIn(min = 48.dp)
+                                    .testTag("draft_calibration_step_${label.replace('.', '_').replace('%', 'p')}")
                                     .padding(vertical = 2.dp),
                                 contentAlignment = Alignment.Center
                             ) {
