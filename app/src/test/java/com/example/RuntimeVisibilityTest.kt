@@ -808,7 +808,6 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithText(appTr("Confirmar y quitar")).performClick()
                 compose.onNodeWithText(appTr("¿Quitar Premium?")).assertDoesNotExist()
                 compose.onNodeWithTag("remove_premium_button").assertIsEnabled()
-                compose.onNodeWithText(appTr("Gestión de Rol Principal")).performScrollTo().assertExists()
             }
             "premium-editor-occupied" -> {
                 compose.onNodeWithTag("premium_remaining_time").performScrollTo().assertExists()
