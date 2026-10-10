@@ -10,12 +10,13 @@
 - Guardar una partida no identifica campeones a partir de slots vacíos o roles duplicados. Actualizar un draft existente también actualiza la identidad guardada.
 - Textos nuevos en español y portugués; sin cambios de esquema ni pérdida del historial.
 - La revisión de capturas detectó que el título comprimía el selector Detallado. Se reserva ancho para ambos botones y se añade una regresión de texto de una sola línea en ambos idiomas.
+- La auditoría de pantallas ahora desmonta los listeners de la composición antes de cerrar la conexión de prueba y permite procesar callbacks del hilo principal mientras espera el cierre. Se mantiene un timeout real y no se ignoran errores de la tarea.
 
 ## Archivos
 
 - `PersonalTierListManager.kt`, `PersonalTierListView.kt`, `DraftAnalysisTab.kt`.
 - `DraftHistoryRepository.kt`, `translations_ui_pt.json`.
-- `PersonalTierListRegressionTest.kt`, `HistoryConsistencyRenderedTest.kt`.
+- `PersonalTierListRegressionTest.kt`, `HistoryConsistencyRenderedTest.kt`, `PortugueseRenderedAuditTest.kt`.
 - `app/build.gradle.kts`, esta auditoría.
 
 ## Verificación
@@ -23,6 +24,7 @@
 - Once pruebas locales del cálculo aprobadas con el gestor y entidad reales, sustituyendo dependencias Android externas por dobles mínimos para el compilador Kotlin. Actions comprobará también las dependencias reales.
 - Catálogos generados, iconos y formato de diferencias comprobados. Auditoría de portugués: 2.593 textos visibles, sin residuos españoles.
 - La ejecución `38015247180` aprobó lint, 560 pruebas sin fallos ni omisiones y la revisión de pantallas español/portugués. Sus capturas motivaron el ajuste de ancho del selector; la última revisión debe repetir la validación Android y completar APK release ofuscado, firma persistente y validación instalada.
+- La ejecución `38016599971` volvió a aprobar las 560 pruebas y el selector corregido, pero falló el cierre de la conexión en una auditoría de tema Premium durante la segunda pasada. Se corrigió el ciclo de cierre del test; sus capturas muestran el selector sin cortes en ambos idiomas. La entrega espera las comprobaciones obligatorias de la revisión final.
 - El despliegue previo del servicio directo continúa bloqueado externamente por la habilitación o acceso a Cloud Build; esta intervención no oculta ese fallo.
 
 ## Resumen para testers

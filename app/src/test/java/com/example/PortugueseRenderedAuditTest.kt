@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.SemanticsActions
@@ -32,6 +33,7 @@ import com.google.android.gms.tasks.Task
 import java.io.File
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import org.json.JSONArray
 import org.junit.*
 import org.junit.runner.RunWith
@@ -57,6 +59,8 @@ class PortugueseRenderedAuditTest(private val screen: String) {
     private val context get() = RuntimeEnvironment.getApplication()
     private val findings = linkedSetOf<String>()
     private val output = File("build/reports/portuguese-rendered").apply { mkdirs() }
+    private val renderSurface = mutableStateOf(true)
+    private var contentMounted = false
 
     @Before fun prepare() {
         if (FirebaseApp.getApps(context).isEmpty()) {
@@ -103,15 +107,30 @@ class PortugueseRenderedAuditTest(private val screen: String) {
     }
 
     @After fun releaseCloudResources() {
-        // Await shutdown before Robolectric tears down the current Android sandbox.
+        // Dispose screen listeners and launched effects before shutting down their client.
+        // JUnit @After runs before the Compose rule disposes its activity.
+        if (contentMounted) {
+            compose.runOnIdle { renderSurface.value = false }
+            compose.waitForIdle()
+        }
         awaitDatabaseTask(FirebaseFirestore.getInstance().terminate())
         FirebaseApp.getApps(context).forEach { it.delete() }
     }
 
     private fun awaitDatabaseTask(task: Task<Void>) {
-        // Google Tasks forbid blocking Android's main thread, including Robolectric's.
-        CompletableFuture.runAsync { Tasks.await(task, 10, TimeUnit.SECONDS) }
-            .get(15, TimeUnit.SECONDS)
+        // Await off the main thread, while allowing Robolectric's paused main queue
+        // to deliver callbacks. A slow runner still has a bounded, failing deadline.
+        val awaiting = CompletableFuture.runAsync { Tasks.await(task, 30, TimeUnit.SECONDS) }
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(32)
+        while (!awaiting.isDone && System.nanoTime() < deadline) {
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            try {
+                awaiting.get(50, TimeUnit.MILLISECONDS)
+            } catch (_: TimeoutException) {
+                // Poll timeout only; task failures propagate instead of being ignored.
+            }
+        }
+        awaiting.get(1, TimeUnit.SECONDS)
     }
 
     @Composable private fun surface() {
@@ -178,7 +197,8 @@ class PortugueseRenderedAuditTest(private val screen: String) {
     }
 
     @Test fun `Portuguese rendered surfaces contain no Spanish wording`() {
-        compose.setContent { MyApplicationTheme(animateButtons = true) { Box(Modifier.fillMaxSize()) { surface() } } }
+        compose.setContent { MyApplicationTheme(animateButtons = true) { Box(Modifier.fillMaxSize()) { if (renderSurface.value) surface() } } }
+        contentMounted = true
         if (screen == "support-panel" || screen == "support-mailbox") {
             compose.waitUntil(15_000) { compose.onAllNodesWithText("Ajuda com o hub").fetchSemanticsNodes().isNotEmpty() }
         }
