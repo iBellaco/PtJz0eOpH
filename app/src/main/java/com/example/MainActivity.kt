@@ -1,6 +1,9 @@
 package com.example
 
 import com.example.ui.components.CoachNavigationBarItem as NavigationBarItem
+import com.example.ui.components.CoachNavItem
+import com.example.ui.components.CoachNavStyleRenderer
+import com.example.ui.theme.CoachNavStyle
 
 import android.content.Context
 import android.Manifest
@@ -469,6 +472,13 @@ fun DashboardScreen(
     val navSelectedIcon = AppThemeManager.getNavBarSelectedIconColor()
     val navSelectedText = AppThemeManager.getNavBarSelectedTextColor()
     val navUnselected = AppThemeManager.getNavBarUnselectedColor()
+    val navDestinations = listOf(
+        CoachNavItem(tr("Inicio"), Icons.Default.Home, navAccent),
+        CoachNavItem(tr("Selección"), Icons.Default.Groups, navSelectedText),
+        CoachNavItem(tr("Tier List"), Icons.Default.TrendingUp, navAccent),
+        CoachNavItem(tr("Catálogo"), Icons.AutoMirrored.Filled.MenuBook, navSelectedText),
+        CoachNavItem(tr("Usuario"), Icons.Default.Person, navAccent)
+    )
 
     Scaffold(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
@@ -508,83 +518,12 @@ fun DashboardScreen(
                             )
                     )
 
-                    NavigationBar(
-                        containerColor = Color.Transparent,
-                        contentColor = navSelectedText
-                    ) {
-                    // 1. Inicio
-                    NavigationBarItem(
-                        selected = pagerState.currentPage == 0,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
-                        icon = { Icon(Icons.Default.Home, contentDescription = tr("Inicio")) },
-                        label = { Text(tr("Inicio")) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = navSelectedIcon,
-                            selectedTextColor = navSelectedText,
-                            indicatorColor = navIndicator,
-                            unselectedIconColor = navUnselected,
-                            unselectedTextColor = navUnselected
-                        )
+                    CoachNavStyleRenderer(
+                        style = if (isPremium) AppThemeManager.currentNavStyle else CoachNavStyle.ARC_GLOWING,
+                        items = navDestinations,
+                        selectedIndex = pagerState.currentPage,
+                        onSelected = { page -> coroutineScope.launch { pagerState.animateScrollToPage(page) } }
                     )
-                    // 2. Selección (Drafting)
-                    NavigationBarItem(
-                        selected = pagerState.currentPage == 1,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                        icon = { Icon(Icons.Default.Groups, contentDescription = tr("Selección")) },
-                        label = { Text(tr("Selección")) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = navSelectedIcon,
-                            selectedTextColor = navSelectedText,
-                            indicatorColor = navIndicator,
-                            unselectedIconColor = navUnselected,
-                            unselectedTextColor = navUnselected
-                        )
-                    )
-                    // 3. Tier List
-                    NavigationBarItem(
-                        selected = pagerState.currentPage == 2,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
-                        icon = { Icon(Icons.Default.TrendingUp, contentDescription = tr("Tier List")) },
-                        label = { Text(tr("Tier List")) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = navSelectedIcon,
-                            selectedTextColor = navSelectedText,
-                            indicatorColor = navIndicator,
-                            unselectedIconColor = navUnselected,
-                            unselectedTextColor = navUnselected
-                        )
-                    )
-                    // 4. Catálogo (Objetos, Runas, Hechizos)
-                    NavigationBarItem(
-                        selected = pagerState.currentPage == 3,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(3) } },
-                        icon = { Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = tr("Catálogo")) },
-                        label = { Text(tr("Catálogo")) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = navSelectedIcon,
-                            selectedTextColor = navSelectedText,
-                            indicatorColor = navIndicator,
-                            unselectedIconColor = navUnselected,
-                            unselectedTextColor = navUnselected
-                        )
-                    )
-                    // 5. Usuario
-                    NavigationBarItem(
-                        selected = pagerState.currentPage == 4,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
-                        icon = {
-                            com.example.ui.components.UserNotificationIcon(com.example.ui.components.userPanelNotificationCount())
-                        },
-                        label = { Text(tr("Usuario")) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = navSelectedIcon,
-                            selectedTextColor = navSelectedText,
-                            indicatorColor = navIndicator,
-                            unselectedIconColor = navUnselected,
-                            unselectedTextColor = navUnselected
-                        )
-                    )
-                }
                 }
 
                 // Ambient Runic Particles Floating across Bottom Navigation Bar

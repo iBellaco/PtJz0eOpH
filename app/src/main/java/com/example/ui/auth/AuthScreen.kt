@@ -1342,15 +1342,15 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             title = { Text(tr("Cerrar Sesión"), color = DangerRed, fontWeight = FontWeight.Bold) },
             text = { Text(tr("¿Estás seguro de que deseas cerrar sesión? Se recomienda mantener la sesión abierta para asegurar la sincronización correcta de tu cuenta y licencias."), color = activeTheme.textSecondary, fontSize = 13.sp) },
             confirmButton = {
-                Button(
-                    onClick = {
+                com.example.ui.components.AnimatedLogoutButton(
+                    onLogoutComplete = {
                         showSignOutConfirm = false
                         onSignOut()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
-                ) {
-                    Text(tr("Cerrar Sesión"), color = Color.White, fontWeight = FontWeight.Bold)
-                }
+                    label = tr("Cerrar Sesión"),
+                    darkMode = !com.example.ui.theme.isLightAppTheme,
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                )
             },
             dismissButton = {
                 TextButton(onClick = { showSignOutConfirm = false }) {

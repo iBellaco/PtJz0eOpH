@@ -503,15 +503,32 @@ enum class NavBarColorOption(
     )
 }
 
+/** Estilos visuales de navegación disponibles desde Temas para cuentas Premium. */
+enum class CoachNavStyle(val id: String, val title: String) {
+    ARC_GLOWING("arc_glowing", "Anillo Hextech"),
+    LIQUID("liquid", "Flujo arcano"),
+    CURVED_FAB("curved_fab", "Orbe central"),
+    CURVED_SCOOP("curved_scoop", "Muesca elevada"),
+    NEON_WAVE("neon_wave", "Onda de energía");
+
+    companion object {
+        fun fromId(id: String?): CoachNavStyle = entries.firstOrNull { it.id == id } ?: ARC_GLOWING
+    }
+}
+
 object AppThemeManager {
     private const val PREFS_KEY_THEME = "selected_app_theme_id"
     private const val PREFS_KEY_NAV_BAR = "selected_app_navbar_id"
+    private const val PREFS_KEY_NAV_STYLE = "selected_coach_nav_style"
     private const val PREFS_KEY_OLED_MODE = "selected_app_oled_mode"
 
     var currentTheme by mutableStateOf(AppTheme.PILTOVER)
         private set
 
     var currentNavBarOption by mutableStateOf(NavBarColorOption.THEME_AUTO)
+        private set
+
+    var currentNavStyle by mutableStateOf(CoachNavStyle.ARC_GLOWING)
         private set
 
     var isOledMode by mutableStateOf(false)
@@ -529,6 +546,7 @@ object AppThemeManager {
 
         currentTheme = AppTheme.fromId(savedThemeId)
         currentNavBarOption = NavBarColorOption.entries.find { it.id == savedNavId } ?: NavBarColorOption.THEME_AUTO
+        currentNavStyle = CoachNavStyle.fromId(prefs.getString(PREFS_KEY_NAV_STYLE, CoachNavStyle.ARC_GLOWING.id))
         isOledMode = savedOled
         isParticlesEnabled = savedParticles
     }
@@ -563,6 +581,12 @@ object AppThemeManager {
             val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(it, "app_prefs_enc")
             prefs.edit().putString(PREFS_KEY_NAV_BAR, option.id).apply()
         }
+    }
+
+    fun setNavStyle(style: CoachNavStyle, context: Context? = null) {
+        currentNavStyle = style
+        context?.let { com.example.util.AppSecurityManager.getEncryptedSharedPreferences(it, "app_prefs_enc")
+            .edit().putString(PREFS_KEY_NAV_STYLE, style.id).apply() }
     }
 
     fun toggleLightDark(context: Context? = null) {
