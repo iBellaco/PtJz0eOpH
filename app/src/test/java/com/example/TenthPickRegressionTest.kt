@@ -233,6 +233,8 @@ class TenthPickRegressionTest {
             hud.applyConfirmedLastPick(result(vi))
             repeat(3) { hud.applyConfirmedLastPick(result(vi)) }
             assertEquals("vi", own[4]?.id)
+            // An earlier pick cannot become the tracked preview through a bad report.
+            hud.applyConfirmedLastPick(result(own[0]!!))
             val changed = Champion(id = "changed", name = "Changed")
             hud.applyConfirmedLastPick(result(changed))
             assertEquals("changed", own[4]?.id)
