@@ -327,7 +327,20 @@ internal fun FloatingOverlayContent(
                                 val slotObservation = DraftVisionScanner.observeSelectionSlots(bitmap, confirmedPicksCount)
                                 if (slotObservation != com.example.service.screen.DraftSlotLifecycle.Observation.ACTIVE) {
                                     if (slotObservation == com.example.service.screen.DraftSlotLifecycle.Observation.FINISHED) {
-                                        withContext(Dispatchers.Main) { autoScanEnabled = false }
+                                        withContext(Dispatchers.Main) {
+                                            val finalReport = com.example.service.screen.LiteRTVisionClassifier.finishLastVisibleSelection()
+                                            if (finalReport?.pickedChampion != null) {
+                                                state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
+                                                    allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+                                                    isLastPickConfirmed = true, lastPickChampion = finalReport.pickedChampion,
+                                                    tenthPickIsAlly = finalReport.slotDescription.startsWith("Aliado"),
+                                                    tenthPickSlotIndex = 4,
+                                                    allyRolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value,
+                                                    isSuccessful = true, statusMessage = ""
+                                                ))
+                                            }
+                                            autoScanEnabled = false
+                                        }
                                     }
                                 } else if (!isGlobalSyncCycle && hasActiveTurns) {
                                     // -----------------------------------------------------------------

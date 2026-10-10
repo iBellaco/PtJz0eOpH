@@ -243,6 +243,16 @@ class TenthPickRegressionTest {
         }
     }
 
+    @Test fun departureUsesTheLatestVisibleDecisionAndResetCannotRestoreAnOldDraft() {
+        LiteRTVisionClassifier.manuallyConfirmTenthPick(vi)
+        assertEquals(vi, LiteRTVisionClassifier.finishLastVisibleSelection()?.pickedChampion)
+        val changed = Champion(id = "changed", name = "Changed")
+        LiteRTVisionClassifier.manuallyConfirmTenthPick(changed)
+        assertEquals(changed, LiteRTVisionClassifier.finishLastVisibleSelection()?.pickedChampion)
+        LiteRTVisionClassifier.reset()
+        assertNull(LiteRTVisionClassifier.finishLastVisibleSelection())
+    }
+
     @Test fun incompleteOrDuplicatedHudCannotInflateTheEarlierPickCount() {
         val picks = (0..7).map { Champion(id="picked$it") }
         val turn = DraftPickTurn(10, false, 4)
