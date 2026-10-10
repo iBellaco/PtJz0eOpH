@@ -27,6 +27,13 @@ import org.robolectric.annotation.Config
 class TenthPickRegressionTest {
     private val vi = Champion(id = "vi", name = "Vi", primaryRole = LaneRole.JUNGLE)
 
+    private fun assertFloatListEquals(expected: List<Float>, actual: List<Float>) {
+        assertEquals(expected.size, actual.size)
+        expected.zip(actual).forEachIndexed { index, (expectedValue, actualValue) ->
+            assertEquals("Valor calibrado en el slot $index", expectedValue, actualValue, 0.000001f)
+        }
+    }
+
     @Before
     fun setUp() {
         DraftVisionScanner.resetSlotMemory()
@@ -378,18 +385,18 @@ class TenthPickRegressionTest {
         )
 
         assertEquals(0.082f, adjusted.allyAvatarCenterX, 0.0001f)
-        assertEquals(List(5) { 0.082f }, adjusted.allySlotXRatios)
-        assertEquals(original.allySlotYRatios.map { it + 0.02f }, adjusted.allySlotYRatios)
-        assertEquals(List(5) { 0.12f }, adjusted.allySlotDiameterRatios)
+        assertFloatListEquals(List(5) { 0.082f }, adjusted.allySlotXRatios)
+        assertFloatListEquals(original.allySlotYRatios.map { it + 0.02f }, adjusted.allySlotYRatios)
+        assertFloatListEquals(List(5) { 0.12f }, adjusted.allySlotDiameterRatios)
         assertEquals(original.enemyAvatarCenterX, adjusted.enemyAvatarCenterX, 0f)
         assertEquals(original.enemySlotXRatios, adjusted.enemySlotXRatios)
         assertEquals(original.enemySlotYRatios, adjusted.enemySlotYRatios)
         assertEquals(original.enemySlotDiameterRatios, adjusted.enemySlotDiameterRatios)
 
         val leftAdjustment = adjusted.adjustDraftColumn(isAlly = false, deltaX = -0.01f, deltaY = -0.01f, deltaDiameter = -0.01f)
-        assertEquals(List(5) { 0.949f }, leftAdjustment.enemySlotXRatios)
-        assertEquals(original.enemySlotYRatios.map { it - 0.01f }, leftAdjustment.enemySlotYRatios)
-        assertEquals(List(5) { 0.10f }, leftAdjustment.enemySlotDiameterRatios)
+        assertFloatListEquals(List(5) { 0.949f }, leftAdjustment.enemySlotXRatios)
+        assertFloatListEquals(original.enemySlotYRatios.map { it - 0.01f }, leftAdjustment.enemySlotYRatios)
+        assertFloatListEquals(List(5) { 0.10f }, leftAdjustment.enemySlotDiameterRatios)
         assertEquals(adjusted.allySlotXRatios, leftAdjustment.allySlotXRatios)
     }
 
