@@ -16,7 +16,11 @@
 
 ## Verificación
 
-- Pendiente de revisión de pruebas y compilación de entrega.
+- Auditoría de idioma y catálogos: 2.595 textos visibles, sin hallazgos de español en portugués.
+- Android Lint aprobado y `:app:testDebugUnitTest` aprobó 562 pruebas, 0 fallidas, 0 errores y 0 omitidas.
+- Auditoría renderizada portuguesa aprobada. La primera ejecución encontró una aserción de prueba con un encabezado incorrecto; se retiró esa comprobación adicional y la ejecución completa posterior pasó.
+- La ejecución de Actions `38023630309` aprobó la compilación release con R8, la verificación de firma y los recorridos instalados en español y portugués.
+- La descarga local de Gradle no estuvo disponible; la compilación y todas las comprobaciones de Android se realizaron en Actions.
 
 ## Resumen para testers
 
