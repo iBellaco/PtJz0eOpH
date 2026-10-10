@@ -58,8 +58,9 @@ class BuildCoachingRenderedTest {
         for ((index, entry) in entries.withIndex()) {
             val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(entry.runeName)!!
             compose.onNodeWithTag("build_situational_rune_${rune.id}").performScrollTo().performClick()
+            compose.onNodeWithTag("build_rune_detail_title").assertTextEquals(rune.getLocalizedName(language))
             val effect = compose.onNodeWithTag("build_rune_effect").fetchSemanticsNode().config[SemanticsProperties.Text].joinToString { it.text }
-            org.junit.Assert.assertTrue(effect.isNotBlank())
+            org.junit.Assert.assertEquals(rune.getLocalizedDescription(language), effect)
             if (previousEffect != null) org.junit.Assert.assertNotEquals(previousEffect, effect)
             previousEffect = effect
             compose.onNode(hasText(entry.description, substring = true) and hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertExists()
