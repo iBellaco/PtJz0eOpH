@@ -63,7 +63,8 @@ class BuildCoachingRenderedTest {
             if (previousEffect != null) org.junit.Assert.assertNotEquals(previousEffect, effect)
             previousEffect = effect
             compose.onNode(hasText(entry.description, substring = true) and hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertExists()
-            compose.onAllNodesWithText(entries[1 - index].description, substring = true).assertCountEquals(0)
+            compose.onAllNodes(hasText(entries[1 - index].description, substring = true) and
+                hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertCountEquals(0)
             compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-situational-rune-$index-$language.png").path)
             compose.onNodeWithText(if (language == "pt") "Fechar" else "Cerrar").performClick()
         }

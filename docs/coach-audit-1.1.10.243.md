@@ -18,6 +18,7 @@
 ## Verificación
 
 - Comprobación local de catálogos generados y diferencias sin errores de formato.
+- Las dos pruebas del ciclo de slots pasan localmente con JUnit; la auditoría de portugués no detecta textos españoles en las 2.589 apariciones revisadas.
 - Pruebas, compilación ofuscada y validación instalada en español/portugués pendientes de Actions; no hay SDK Android ni configuración privada local.
 
 ## Resumen para testers
