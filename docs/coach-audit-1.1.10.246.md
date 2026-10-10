@@ -18,7 +18,10 @@
 ## Verificación
 
 - Auditoría del catálogo: 300 builds oficiales, 14 registros de runas situacionales y 2 opciones distintas; no hay dos runas situacionales idénticas dentro de una misma build.
-- Pruebas locales pendientes: este entorno no pudo descargar Gradle por rechazo de conexión. La validación de pruebas, compilación R8, firma e instalación se ejecutará en GitHub Actions antes de fusionar.
+- Las comprobaciones `source-integrity` y `security-and-data-tests` pasaron.
+- Android Lint y la suite completa `:app:testDebugUnitTest` pasaron sin fallos; también pasó la auditoría renderizada portuguesa, incluida la interacción con runas situacionales.
+- El APK release pasó R8: se confirmaron 1.264 clases ofuscadas, la firma persistente y la instalación/recorrido en español y portugués.
+- El flujo de validación Build and Release pasó en GitHub Actions, ejecución `38057854130`.
 
 ## Resumen para testers
 
