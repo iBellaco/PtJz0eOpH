@@ -47,94 +47,16 @@ object WildRiftSpellsAndRunes {
         }
     }
 
-    fun getRuneIconByName(name: String): String {
-        val clean = name.replace(Regex("\\s*\\(.*\\)"), "").replace(Regex("^(Clave|Secundarias|Secundaria):\\s*"), "").trim()
-        if (clean.isEmpty()) return "file:///android_asset/runes/conqueror.png"
-        
-        // Direct match
-        val exact = runes.find { it.name.equals(clean, ignoreCase = true) }
-        if (exact != null) return exact.iconUrl
-
-        // Check canonical aliases
-        val canonicalName = when (clean.lowercase()) {
-            "cadencia letal", "lethal tempo", "compas letal" -> "Compás Letal"
-            "sobre la marcha", "fleet footwork", "pies veloces" -> "Pies Veloces"
-            "estrategia ofensiva", "press the attack", "fortalecimiento", "ataque intensificado", "matakrakens", "kraken slayer" -> "Fortalecimiento"
-            "invocar a aery", "summon aery", "aery" -> "Aery"
-            "agarre del perpetuo", "grasp of the undying", "garras del inmortal", "replica", "réplica", "aftershock" -> "Garras del Inmortal"
-            "aumento glacial", "glacial augment", "soberano gelido", "soberano gélido" -> "Soberano Gélido"
-            "guardian" -> "Guardián"
-            "dark harvest" -> "Cosecha Oscura"
-            "electrocute" -> "Electrocutar"
-            "phase rush", "irrupcion de fase", "irrupción de fase" -> "Irrupción de Fase"
-            "first strike" -> "Primer Golpe"
-            "conqueror" -> "Conquistador"
-            "arcane comet", "cometa arcano" -> "Cometa Arcano"
-            // Brujería / Sorcery aliases
-            "arcanólogo axiomático", "arcanologo axiomatico", "arcanólogo", "arcanologo", "axiomatic arcanist" -> "Arcanólogo Axiomático"
-            "banda de maná", "banda de mana", "banda de flujo de mana", "banda de flujo de maná", "manaflow band", "flujo de mana" -> "Banda de Maná"
-            "botanista", "dulces frutos", "sweet tooth", "sweettooth" -> "Botanista"
-            "hextello", "destello hextech", "hextech flashtraption", "hexflash" -> "Hextello"
-            "trascendencia", "transcendence" -> "Trascendencia"
-            "celeridad", "celerity" -> "Celeridad"
-            "concentración absoluta", "concentracion absoluta", "absolute focus" -> "Concentración Absoluta"
-            "piroláser", "pirolaser", "quemadura", "scorch" -> "Piroláser"
-            "capa del nimbo", "nimbus cloak" -> "Capa del Nimbo"
-            "se avecina tormenta", "tormenta creciente", "gathering storm" -> "Se Avecina Tormenta"
-            "semillero ixtalí", "semillero ixtali", "ixtali seedjar", "semillero", "ixtali" -> "Semillero Ixtalí"
-            // Precisión / Precision aliases
-            "brutal", "brutalidad" -> "Brutal"
-            "triunfo", "triumph" -> "Triunfo"
-            "fervor de batalla", "fervor", "battle fervor", "fervor of battle" -> "Fervor de Batalla"
-            "último esfuerzo", "ultimo esfuerzo", "last stand" -> "Último Esfuerzo"
-            "derribado", "cut down", "cazagigantes", "giant slayer" -> "Derribado"
-            "golpe de gracia", "coup de grace" -> "Golpe de Gracia"
-            "leyenda: velocidad", "leyenda velocidad", "velocidad", "legend haste", "haste", "leyenda: tenacidad", "leyenda tenacidad", "tenacidad", "legend tenacity" -> "Leyenda: Velocidad"
-            "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Presteza"
-            "leyenda: linaje", "leyenda linaje", "linaje", "legend bloodline" -> "Leyenda: Linaje"
-            // Dominación / Domination aliases
-            "golpe bajo", "cheap shot", "cheapshot" -> "Golpe Bajo"
-            "impacto repentino", "sudden impact" -> "Impacto Repentino"
-            "ataque potenciado", "empowered attack" -> "Ataque Potenciado"
-            "asalto encadenado", "asalto en cadena", "chain assault" -> "Asalto Encadenado"
-            "tirano", "tyrant" -> "Tirano"
-            "soberbia", "arrogancia", "hubris" -> "Soberbia"
-            "colección de globos oculares", "coleccion de globos oculares", "colección de ojos", "coleccion de ojos", "eyeball collection", "eyeball collector", "globos oculares" -> "Colección de Globos Oculares"
-            "cazador ingenioso", "ingenious hunter" -> "Cazador Ingenioso"
-            "cazador incesante", "cazador implacable", "relentless hunter" -> "Cazador Incesante"
-            "guardián zombi", "guardian zombi", "centinela zombi", "zombie ward" -> "Guardián Zombi"
-            // Extra WR and Community aliases
-            "coraza osea", "coraza ósea", "revestimiento de huesos", "bone plating" -> "Revestimiento de Huesos"
-            "segundo aire", "second wind", "fuerzas renovadas" -> "Fuerzas Renovadas"
-            "orbe de anulacion", "orbe de anulación", "orbe anulador", "nullifying orb" -> "Orbe Anulador"
-            "fuerza indomable", "inquebrantable", "unflinching" -> "Inquebrantable"
-            "verdugo de gigantes", "derribado", "giant slayer", "cut down" -> "Derribado"
-            "demolicion", "demolición", "demoler", "demolish" -> "Demoler"
-            "impacto subito", "impacto súbito", "impacto repentino", "sudden impact" -> "Impacto Repentino"
-            "coleccion de ojos", "colección de ojos", "coleccion de globos oculares", "colección de globos oculares", "eyeball collection" -> "Colección de Globos Oculares"
-            "cazador voraz", "cazador ingenioso", "ingenious hunter" -> "Cazador Ingenioso"
-            "claridad mental", "triunfo", "triumph" -> "Triunfo"
-            "perspicacia cosmica", "perspicacia cósmica", "trascendencia", "transcendence" -> "Trascendencia"
-            "piromancia", "pirolaser", "piroláser", "scorch" -> "Piroláser"
-            "mercado del futuro", "se avecina tormenta", "gathering storm" -> "Se Avecina Tormenta"
-            "dulces frutos", "botanista", "sweet tooth" -> "Botanista"
-            "reverberaccion", "reverberacción", "aftershock", "soberano gelido", "soberano gélido", "glacial augment" -> "Soberano Gélido"
-            "coraje del coloso", "valor de coloso", "courage of the colossus" -> "Coraje del Coloso"
-            else -> null
-        }
-        if (canonicalName != null) {
-            val target = runes.find { it.name.equals(canonicalName, ignoreCase = true) }
-            if (target != null) return target.iconUrl
-        }
-
-        val partial = runes.find { clean.contains(it.name, ignoreCase = true) || it.name.contains(clean, ignoreCase = true) }
-        return partial?.iconUrl ?: "file:///android_asset/runes/conqueror.png"
-    }
+    fun getRuneIconByName(name: String): String =
+        getRuneByName(name)?.iconUrl ?: "file:///android_asset/runes/conqueror.png"
 
     fun getRuneByName(name: String): RuneItem? {
+        val catalog = (WildRiftRepository.runes + runes).distinctBy { it.name.lowercase() }
         val clean = name.replace(Regex("\\s*\\(.*\\)"), "").replace(Regex("^(Clave|Secundarias|Secundaria):\\s*"), "").trim()
         if (clean.isEmpty()) return null
-        val exact = runes.find { it.name.equals(clean, ignoreCase = true) }
+        val exact = catalog.find { it.name.equals(clean, ignoreCase = true) ||
+            it.nameEn.equals(clean, ignoreCase = true) || it.namePt.equals(clean, ignoreCase = true) ||
+            it.id.equals(clean, ignoreCase = true) }
         if (exact != null) return exact
 
         val canonicalName = when (clean.lowercase()) {
@@ -142,7 +64,8 @@ object WildRiftSpellsAndRunes {
             "sobre la marcha", "fleet footwork", "pies veloces" -> "Pies Veloces"
             "estrategia ofensiva", "press the attack", "fortalecimiento", "ataque intensificado", "matakrakens", "kraken slayer" -> "Fortalecimiento"
             "invocar a aery", "summon aery", "aery" -> "Aery"
-            "agarre del perpetuo", "grasp of the undying", "garras del inmortal", "replica", "réplica", "aftershock" -> "Garras del Inmortal"
+            "agarre del perpetuo", "grasp of the undying", "garras del inmortal" -> "Garras del Inmortal"
+            "replica", "réplica", "reverberaccion", "reverberacción", "aftershock" -> "Réplica"
             "aumento glacial", "glacial augment", "soberano gelido", "soberano gélido" -> "Soberano Gélido"
             "guardian" -> "Guardián"
             "dark harvest" -> "Cosecha Oscura"
@@ -170,7 +93,7 @@ object WildRiftSpellsAndRunes {
             "último esfuerzo", "ultimo esfuerzo", "last stand" -> "Último Esfuerzo"
             "derribado", "cut down", "cazagigantes", "giant slayer" -> "Derribado"
             "golpe de gracia", "coup de grace" -> "Golpe de Gracia"
-            "leyenda: velocidad", "leyenda velocidad", "velocidad", "legend haste", "haste", "leyenda: tenacidad", "leyenda tenacidad", "tenacidad", "legend tenacity" -> "Leyenda: Velocidad"
+            "leyenda: velocidad", "leyenda velocidad", "velocidad", "legend haste", "haste" -> "Leyenda: Velocidad"
             "leyenda: presteza", "leyenda presteza", "presteza", "legend alacrity", "alacrity", "leyenda: celeridad", "leyenda celeridad" -> "Leyenda: Presteza"
             "leyenda: linaje", "leyenda linaje", "linaje", "legend bloodline" -> "Leyenda: Linaje"
             // Dominación / Domination aliases
@@ -193,21 +116,16 @@ object WildRiftSpellsAndRunes {
             "demolicion", "demolición", "demoler", "demolish" -> "Demoler"
             "impacto subito", "impacto súbito", "impacto repentino", "sudden impact" -> "Impacto Repentino"
             "coleccion de ojos", "colección de ojos", "coleccion de globos oculares", "colección de globos oculares", "eyeball collection" -> "Colección de Globos Oculares"
-            "cazador voraz", "cazador ingenioso", "ingenious hunter" -> "Cazador Ingenioso"
-            "claridad mental", "triunfo", "triumph" -> "Triunfo"
-            "perspicacia cosmica", "perspicacia cósmica", "trascendencia", "transcendence" -> "Trascendencia"
             "piromancia", "pirolaser", "piroláser", "scorch" -> "Piroláser"
-            "mercado del futuro", "se avecina tormenta", "gathering storm" -> "Se Avecina Tormenta"
             "dulces frutos", "botanista", "sweet tooth" -> "Botanista"
-            "reverberaccion", "reverberacción", "aftershock", "soberano gelido", "soberano gélido", "glacial augment" -> "Soberano Gélido"
             "coraje del coloso", "valor de coloso", "courage of the colossus" -> "Coraje del Coloso"
             else -> null
         }
         if (canonicalName != null) {
-            return runes.find { it.name.equals(canonicalName, ignoreCase = true) }
+            return catalog.find { it.name.equals(canonicalName, ignoreCase = true) }
         }
 
-        return runes.find { clean.contains(it.name, ignoreCase = true) || it.name.contains(clean, ignoreCase = true) }
+        return null
     }
 
     fun getRuneDescription(name: String): String {
@@ -354,6 +272,16 @@ object WildRiftSpellsAndRunes {
     )
 
     val runes: List<RuneItem> = listOf(
+        RuneItem(
+            id = "aftershock",
+            name = "Réplica",
+            nameEn = "Aftershock",
+            namePt = "Pós-choque",
+            category = "Clave",
+            iconUrl = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/styles/resolve/veteranaftershock/veteranaftershock.png",
+            description = "Inmovilizar a un campeón enemigo otorga armadura y resistencia mágica durante 2.5 s; después, una explosión inflige daño mágico a los enemigos cercanos.",
+            descriptionPt = "Imobilizar um campeão inimigo concede Armadura e Resistência Mágica por 2,5 s; depois, uma explosão causa Dano Mágico aos inimigos próximos."
+        ),
         // =========================================================================
         // 1. RUNAS CLAVE (KEYSTONES - OFICIALES WILD RIFT)
         // =========================================================================

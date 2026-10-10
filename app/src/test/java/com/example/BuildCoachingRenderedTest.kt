@@ -31,6 +31,44 @@ class BuildCoachingRenderedTest {
     @Test fun `Syndra build and element decisions are localized in Portuguese`()=inspect("pt")
     @Test fun `Vi boot selections keep their own tier two and tier three advice in Spanish`()=inspectBoots("es")
     @Test fun `Vi boot selections keep their own tier two and tier three advice in Portuguese`()=inspectBoots("pt")
+    @Test fun `situational runes have individual effects and build advice in Spanish`()=inspectSituationalRunes("es")
+    @Test fun `situational runes have individual effects and build advice in Portuguese`()=inspectSituationalRunes("pt")
+
+    private fun inspectSituationalRunes(language: String) {
+        val context = RuntimeEnvironment.getApplication()
+        com.example.util.DynamicTranslations.loadSync(context)
+        AppLanguage.select(context, language)
+        WildRiftRepository.initChampions(context, forceReload = true)
+        FavoriteChampionsManager.init(context)
+        CustomChampionBuildsManager.init(context)
+        val field = CustomChampionBuildsManager::class.java.getDeclaredField("_customBuilds").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        val records = field.get(CustomChampionBuildsManager) as kotlinx.coroutines.flow.MutableStateFlow<List<com.example.data.local.CustomChampionBuildRecord>>
+        val entries = listOf(
+            com.example.data.local.RuneBuildEntry(runeName = "Orbe Anulador", description = if (language == "pt") "Guarde a saída para acompanhar o escudo." else "Conserva la salida para acompañar el escudo."),
+            com.example.data.local.RuneBuildEntry(runeName = "Revestimiento de Huesos", description = if (language == "pt") "Reserve a defesa para a sequência de golpes." else "Reserva la defensa para la secuencia de golpes.")
+        )
+        records.value = CustomChampionBuildsManager.getDefaultBuilds(context).map {
+            if (it.championId == "syndra") it.copy(situationalRunes = entries) else it
+        }
+        val champion = WildRiftRepository.champions.first { it.id == "syndra" }
+        compose.setContent { MyApplicationTheme { ChampionDetailSheet(champion = champion, isOverlay = false, onDismiss = {}) } }
+        var previousEffect: String? = null
+        val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
+        for ((index, entry) in entries.withIndex()) {
+            val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(entry.runeName)!!
+            compose.onNodeWithTag("build_situational_rune_${rune.id}").performScrollTo().performClick()
+            val effect = compose.onNodeWithTag("build_rune_effect").fetchSemanticsNode().config[SemanticsProperties.Text].joinToString { it.text }
+            org.junit.Assert.assertTrue(effect.isNotBlank())
+            if (previousEffect != null) org.junit.Assert.assertNotEquals(previousEffect, effect)
+            previousEffect = effect
+            compose.onNode(hasText(entry.description, substring = true) and hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertExists()
+            compose.onAllNodes(hasText(entries[1 - index].description, substring = true) and
+                hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertCountEquals(0)
+            compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-situational-rune-$index-$language.png").path)
+            compose.onNodeWithText(if (language == "pt") "Fechar" else "Cerrar").performClick()
+        }
+    }
     @Test @Config(qualifiers="w330dp-h720dp-xhdpi") fun `matchup avatars show their name without navigating in Spanish`()=inspectMatchupNames("es")
     @Test @Config(qualifiers="w330dp-h720dp-xhdpi") fun `matchup avatars show their name without navigating in Portuguese`()=inspectMatchupNames("pt")
 

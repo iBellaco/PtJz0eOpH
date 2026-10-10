@@ -57,6 +57,16 @@ object LiteRTVisionClassifier {
     // Variables de seguimiento de estabilidad temporal entre fotogramas
     private var lastCandidateId: String? = null
     private var stableFramesCounter: Int = 0
+    private var lastVisibleSelection: LiteRTInferenceReport? = null
+
+    /** The last unambiguous visible portrait is authoritative at draft departure. */
+    fun finishLastVisibleSelection(): LiteRTInferenceReport? {
+        val last = lastVisibleSelection ?: return null
+        return last.copy(status = EngineStatus.COMPLETED, isConfirmed = true,
+            decisionReason = "Último retrato válido antes de desaparecer los slots.").also {
+            _reportFlow.value = it
+        }
+    }
 
     fun resetStabilityTracker() {
         lastCandidateId = null
@@ -132,7 +142,7 @@ object LiteRTVisionClassifier {
     }
 
     /** Keep only evidence from a visible draft slot, never from the loading background. */
-    private fun hasSlotRing(bitmap: Bitmap, isAlly: Boolean): Boolean {
+    internal fun hasSlotRing(bitmap: Bitmap, isAlly: Boolean): Boolean {
         var matches = 0
         for (i in 0 until 64) {
             val angle = i * 2.0 * Math.PI / 64
@@ -165,6 +175,7 @@ object LiteRTVisionClassifier {
                 decisionReason = "Nombre confirmado por texto: ${confirmedTargetChampion.name}",
                 minConfidenceThreshold = threshold
             )
+            lastVisibleSelection = _reportFlow.value
             return@withContext confirmedTargetChampion to 100
         }
         if (!allowVisualConfirmation) {
@@ -178,6 +189,7 @@ object LiteRTVisionClassifier {
             _reportFlow.value = _reportFlow.value.copy(status = EngineStatus.COMPLETED,
                 pickedChampion = champion, confidencePercent = 100, isConfirmed = true,
                 slotDescription = slotDesc, evaluatedPicksCount = confirmedPicksCount)
+            lastVisibleSelection = _reportFlow.value
             return@withContext champion to 100
         }
         val previous = _reportFlow.value
@@ -244,6 +256,7 @@ object LiteRTVisionClassifier {
             isConfirmed = confirmed, stableFramesCount = stableFramesCounter,
             minConfidenceThreshold = threshold
         )
+        if (accepted && confirmedPicksCount >= 9) lastVisibleSelection = _reportFlow.value
         TenthPickDiagnosticManager.recordTenthPickCrop(cropCopy ?: cropBitmap, isAlly, slotIndex,
             stage = if (confirmed) "CONFIRMED" else "INFERENCE", candidateName = best.first.name,
             confidence = (best.second * 100).toInt(), similarityScore = best.second, context = context)
@@ -311,9 +324,11 @@ object LiteRTVisionClassifier {
         _reportFlow.value = _reportFlow.value.copy(status = EngineStatus.COMPLETED,
             pickedChampion = champion, confidencePercent = 100, isConfirmed = true,
             decisionReason = "Confirmado manualmente: ${champion.name}")
+        lastVisibleSelection = _reportFlow.value
     }
 
     fun reset() {
+        lastVisibleSelection = null
         resetStabilityTracker()
         targetKey = null
         manuallyConfirmedChampion = null

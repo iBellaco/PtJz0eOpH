@@ -245,6 +245,7 @@ internal fun FloatingOverlayContent(
     //    para evitar saturación térmica y mantener estabilidad de fotogramas en Android.
     // 4. Null-Frame Drop: Si el ImageReader no tiene un fotograma nuevo, se salta el ciclo sin re-analizar imágenes estáticas.
     LaunchedEffect(autoScanEnabled) {
+        if (autoScanEnabled) DraftVisionScanner.resetSlotLifecycle()
         if (!autoScanEnabled) {
             DraftVisionScanner.isVisionEngineBusy.value = false
             return@LaunchedEffect
@@ -290,14 +291,15 @@ internal fun FloatingOverlayContent(
                     val confirmedPicksCount = allies.count { it != null } + enemies.count { it != null }
                     val tentativeFirstPick = isFirstPick ?: true
                     val sequence = DraftVisionScanner.getDraftPickSequence(tentativeFirstPick)
-                    val activeTurns = DraftVisionScanner.computeActiveSelectionTurns(
+                    val unresolvedTurns = DraftVisionScanner.computeActiveSelectionTurns(
                         sequence,
                         DraftVisionScanner.allySlotConfirmedChampions,
                         DraftVisionScanner.enemySlotConfirmedChampions
                     )
 
                     val isDraftComplete = (confirmedPicksCount >= 10)
-                    val hasActiveTurns = activeTurns.isNotEmpty() && !isDraftComplete
+                    val activeTurns = if (isDraftComplete) listOf(sequence.last()) else unresolvedTurns
+                    val hasActiveTurns = activeTurns.isNotEmpty()
                     val isTenthPickActive = activeTurns.any { it.turnNumber == 10 } || confirmedPicksCount >= 8
                     // La navegación y las cajas de diagnóstico no cambian la cadencia del escaneo.
                     val isGlobalSyncCycle = com.example.service.screen.DraftSyncCadence.globalCycle(
@@ -305,7 +307,6 @@ internal fun FloatingOverlayContent(
 
 
                     val dynamicLoopDelay = when {
-                        isDraftComplete -> 800L
                         !isGlobalSyncCycle && hasActiveTurns -> 50L
                         isTenthPickActive -> 60L
                         else -> 120L
@@ -323,7 +324,25 @@ internal fun FloatingOverlayContent(
                             DraftVisionScanner.recordFrameSkipped()
                         } else {
                             try {
-                                if (!isGlobalSyncCycle && hasActiveTurns) {
+                                val slotObservation = DraftVisionScanner.observeSelectionSlots(bitmap, confirmedPicksCount)
+                                if (slotObservation != com.example.service.screen.DraftSlotLifecycle.Observation.ACTIVE) {
+                                    if (slotObservation == com.example.service.screen.DraftSlotLifecycle.Observation.FINISHED) {
+                                        withContext(Dispatchers.Main) {
+                                            val finalReport = com.example.service.screen.LiteRTVisionClassifier.finishLastVisibleSelection()
+                                            if (finalReport?.pickedChampion != null) {
+                                                state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
+                                                    allies = allies.filterNotNull(), enemies = enemies.filterNotNull(),
+                                                    isLastPickConfirmed = true, lastPickChampion = finalReport.pickedChampion,
+                                                    tenthPickIsAlly = finalReport.slotDescription.startsWith("Aliado"),
+                                                    tenthPickSlotIndex = 4,
+                                                    allyRolesBySlot = DraftVisionScanner.allyRolesBySlotFlow.value,
+                                                    isSuccessful = true, statusMessage = ""
+                                                ))
+                                            }
+                                            autoScanEnabled = false
+                                        }
+                                    }
+                                } else if (!isGlobalSyncCycle && hasActiveTurns) {
                                     // -----------------------------------------------------------------
                                     // RUTA DE ALTA PRIORIDAD: ESCANEO DIRIGIDO DEL SLOT ACTIVO (<30ms)
                                     // -----------------------------------------------------------------
@@ -1166,6 +1185,7 @@ internal fun FloatingOverlayContent(
                                             },
                                             isSavedRecently = isSavedRecently,
                                             onClearAll = {
+                                                state.trackedLastPick = null
                                                 for (i in 0 until 5) {
                                                     allies[i] = null
                                                     enemies[i] = null
