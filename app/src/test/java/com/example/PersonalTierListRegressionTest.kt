@@ -7,17 +7,24 @@ import com.example.data.local.entity.SavedDraftEntity
 import com.example.model.Champion
 import com.example.model.LaneRole
 import org.junit.Assert.*
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
 class PersonalTierListRegressionTest {
+    private var originalCatalog = emptyList<Champion>()
     @Before fun catalog() {
+        originalCatalog = WildRiftRepository.champions.toList()
         WildRiftRepository.champions.clear()
         WildRiftRepository.champions.addAll(listOf(
             Champion(id="teemo", name="Teemo", primaryRole=LaneRole.TOP),
             Champion(id="ahri", name="Ahri", primaryRole=LaneRole.MID),
             Champion(id="garen", name="Garen", primaryRole=LaneRole.TOP),
             Champion(id="hecarim", name="Hecarim", primaryRole=LaneRole.JUNGLE)))
+    }
+    @After fun restoreCatalog() {
+        WildRiftRepository.champions.clear()
+        WildRiftRepository.champions.addAll(originalCatalog)
     }
     private fun draft(id: Long = 1, result: String = "VICTORY", score: String = "") = SavedDraftEntity(
         id=id, userRole="TOP", myChampionId="teemo", myChampionName="Teemo",
