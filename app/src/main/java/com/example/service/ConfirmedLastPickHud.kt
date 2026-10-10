@@ -28,8 +28,11 @@ internal fun OverlayState.applyConfirmedLastPick(result: DraftScanResult) {
     val roles = listOf(LaneRole.TOP, LaneRole.JUNGLE, LaneRole.MID, LaneRole.ADC, LaneRole.SUPPORT)
     when (result.tenthPickIsAlly) {
         true -> {
-            val role = result.tenthPickSlotIndex?.let { result.allyRolesBySlot[it] } ?: return
-            val expected = roles.indexOf(role).takeIf { it >= 0 } ?: return
+            // La detección del retrato puede ser válida aunque el OCR no haya
+            // asociado una línea al slot. En ese caso, conserva los nueve picks
+            // y coloca el último únicamente en el hueco aliado libre.
+            val expected = result.tenthPickSlotIndex?.let { result.allyRolesBySlot[it] }
+                ?.let(roles::indexOf)?.takeIf { it >= 0 }
             TenthPickHudPolicy.targetIndex(result.isLastPickConfirmed, champion,
                 allies.toList(), enemies.toList(), manualLockedAllySlots.filterValues { it }.keys,
                 expected, previousId)?.let { allies[it] = champion; applied = true }
