@@ -57,6 +57,7 @@ fun ThemeCustomizationBottomSheet(
     val isParticlesEnabled = AppThemeManager.isParticlesEnabled
     var previewTheme by remember { mutableStateOf(currentTheme) }
     var showPremiumRequiredDialog by remember { mutableStateOf(false) }
+    var showNavigationShowcase by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentTheme) {
         previewTheme = currentTheme
@@ -276,6 +277,59 @@ fun ThemeCustomizationBottomSheet(
             }
 
             Spacer(modifier = Modifier.height(4.dp))
+
+            // Barra de navegación personalizable: preferencia exclusiva Premium.
+            Card(
+                modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = HextechSurface),
+                border = BorderStroke(1.dp, HextechGold.copy(alpha = .45f))
+            ) {
+                Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Navigation, null, tint = HextechCyan, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(tr("Barra de navegación"), color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text(tr("Elige su animación y colores según el tema activo"), color = TextSecondary, fontSize = 10.5.sp)
+                        }
+                        if (!isPremium) Icon(Icons.Default.Lock, "Premium", tint = HextechGold, modifier = Modifier.size(17.dp))
+                    }
+                    CoachNavStyle.entries.forEach { style ->
+                        val selected = AppThemeManager.currentNavStyle == style
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .coachClickable {
+                                    if (isPremium) AppThemeManager.setNavStyle(style, context)
+                                    else showPremiumRequiredDialog = true
+                                }.testTag("theme_nav_style_${style.id}"),
+                            shape = RoundedCornerShape(9.dp),
+                            color = if (selected) HextechCyan.copy(alpha = .14f) else HextechSurfaceVariant,
+                            border = BorderStroke(if (selected) 1.5.dp else 1.dp, if (selected) HextechCyan else HextechCardBorder)
+                        ) {
+                            Row(Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
+                            Text(tr(style.title), modifier = Modifier.weight(1f), color = if (selected) HextechCyan else TextPrimary,
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, fontSize = 12.sp)
+                                if (selected) Icon(Icons.Default.CheckCircle, null, tint = HextechCyan, modifier = Modifier.size(18.dp))
+                                else if (!isPremium) Icon(Icons.Default.Lock, null, tint = TextMuted, modifier = Modifier.size(15.dp))
+                            }
+                        }
+                    }
+                    OutlinedButton(
+                        onClick = { if (isPremium) showNavigationShowcase = true else showPremiumRequiredDialog = true },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("theme_nav_showcase"),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = HextechGold)
+                    ) { Text(tr("Probar navegación"), fontWeight = FontWeight.SemiBold) }
+                }
+            }
+
+            if (showNavigationShowcase) {
+                Dialog(onDismissRequest = { showNavigationShowcase = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+                    Surface(Modifier.fillMaxWidth(.96f).fillMaxHeight(.82f), shape = RoundedCornerShape(20.dp), color = HextechDarkBg) {
+                        ShowcaseScreen(onClose = { showNavigationShowcase = false })
+                    }
+                }
+            }
 
             // Friendly Coach Advice Card
             Surface(

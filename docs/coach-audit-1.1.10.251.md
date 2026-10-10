@@ -1,0 +1,22 @@
+# Auditoría Coach 1.1.10.251
+
+- Build: 967
+- Cambio: se agregan cinco estilos animados para la barra de navegación, selección persistente desde Temas y una vista de muestra interactiva. Las opciones de estilo solo se aplican con Premium activo; la barra recupera automáticamente el estilo base si el acceso Premium no está activo. Los acentos toman los colores del tema de Coach seleccionado.
+- Cierre de sesión: la confirmación actual ejecuta ahora una animación de salida antes de completar la acción.
+- Archivos modificados:
+  - `app/src/main/java/com/example/MainActivity.kt`
+  - `app/src/main/java/com/example/ui/auth/AuthScreen.kt`
+  - `app/src/main/java/com/example/ui/components/AnimatedLogoutButton.kt`
+  - `app/src/main/java/com/example/ui/components/ArcGlowingNavBar.kt`
+  - `app/src/main/java/com/example/ui/components/CoachNavBarCore.kt`
+  - `app/src/main/java/com/example/ui/components/CurvedFabNavBar.kt`
+  - `app/src/main/java/com/example/ui/components/CurvedScoopFloatingNavBar.kt`
+  - `app/src/main/java/com/example/ui/components/LiquidNavBar.kt`
+  - `app/src/main/java/com/example/ui/components/NeonWaveNavBar.kt`
+  - `app/src/main/java/com/example/ui/components/ShowcaseScreen.kt`
+  - `app/src/main/java/com/example/ui/components/ThemeCustomizationDialog.kt`
+  - `app/src/main/java/com/example/ui/theme/AppThemeManager.kt`
+  - `app/src/main/assets/translations_pt.json`
+  - `app/src/test/java/com/example/CoachNavStyleTest.kt`
+  - `app/build.gradle.kts`
+- Verificaciones: cinco pruebas del auditor de portugués, auditoría completa de traducciones, JSON válido y `git diff --check` correctos. La compilación local no pudo iniciarse porque Gradle 9.3.1 no está en caché y la descarga de Gradle está inaccesible desde este entorno; compilación y pruebas de Android quedan a cargo de CI.
