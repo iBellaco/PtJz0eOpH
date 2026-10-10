@@ -340,6 +340,34 @@ class TenthPickRegressionTest {
         assertFalse(caitlyn.contains(1170, 330))
     }
 
+    @Test fun adaptiveLayoutPreservesManualCalibrationAcrossPhoneTabletAndCaptureSizes() {
+        val engine = com.example.service.screen.AdaptiveScreenLayoutEngine
+        val calibrated = com.example.service.screen.VisionCalibrationConfig(
+            allyAvatarCenterX = 0.157f,
+            enemyAvatarCenterX = 0.843f,
+            allySlotXRatios = List(5) { 0.157f },
+            enemySlotXRatios = List(5) { 0.843f },
+            allySlotDiameterRatios = List(5) { 0.086f },
+            enemySlotDiameterRatios = List(5) { 0.092f }
+        )
+        // Poco X7 Pro class (20:9), common 16:9, tablet 4:3, and a wide capture frame.
+        listOf(1440 to 3200, 2400 to 1350, 1600 to 1200, 2560 to 1080).forEach { (width, height) ->
+            val effective = engine.computeAdaptiveConfig(width, height, calibrated)
+            assertEquals(0.157f, effective.allyAvatarCenterX, 0.0001f)
+            assertEquals(0.843f, effective.enemyAvatarCenterX, 0.0001f)
+            assertEquals(0.157f, effective.getAllySlotX(0), 0.0001f)
+            assertEquals(0.843f, effective.getEnemySlotX(4), 0.0001f)
+            assertEquals(0.086f, effective.getSlotDiameter(true, 0), 0.0001f)
+            assertEquals(0.092f, effective.getSlotDiameter(false, 4), 0.0001f)
+            assertTrue(effective.allyOcrMinX < effective.allyOcrMaxX)
+            assertTrue(effective.enemyOcrMinX < effective.enemyOcrMaxX)
+            val allyName = engine.calculateSlotNameRect(width, height, true, 0, effective)
+            val enemyName = engine.calculateSlotNameRect(width, height, false, 4, effective)
+            assertEquals((width * (0.157f + 0.035f)).toInt(), allyName.left)
+            assertEquals((width * (0.843f - 0.025f - 0.185f)).toInt(), enemyName.left)
+        }
+    }
+
     @Test
     fun fullChampionNamesKeepViSeparateFromViktorAndSummonerText() {
         val viktor = Champion(id = "viktor", name = "Viktor")

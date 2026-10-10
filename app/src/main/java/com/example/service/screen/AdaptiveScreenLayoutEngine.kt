@@ -18,8 +18,10 @@ object AdaptiveScreenLayoutEngine {
     fun calculateSlotNameRect(width: Int, height: Int, isAlly: Boolean, slot: Int,
         config: VisionCalibrationConfig): Rect {
         val center = height * (if (isAlly) config.allySlotYRatios else config.enemySlotYRatios)[slot]
-        val leftRatio = if (isAlly) config.allyAvatarCenterX + 0.035f else config.enemyOcrMinX
-        val rightRatio = if (isAlly) config.allyOcrMaxX else config.enemyAvatarCenterX - 0.025f
+        val avatarX = if (isAlly) config.getAllySlotX(slot) else config.getEnemySlotX(slot)
+        val ocrBoxWidth = 0.185f
+        val leftRatio = if (isAlly) avatarX + 0.035f else avatarX - 0.025f - ocrBoxWidth
+        val rightRatio = if (isAlly) leftRatio + ocrBoxWidth else avatarX - 0.025f
         val left = (width * leftRatio).toInt().coerceIn(0, width - 1)
         val right = (width * rightRatio).toInt().coerceIn(left + 1, width)
         val top = (center - height * 0.05f).toInt().coerceIn(0, height - 1)
@@ -80,30 +82,23 @@ object AdaptiveScreenLayoutEngine {
         val geometry = analyzeScreen(width, height)
         val ratio = geometry.aspectRatio
 
-        // En Wild Rift, las columnas verticales de avatares están fijadas en los extremos de la pantalla:
-        // - Columna aliada (izquierda): avatar circular centrado en x ≈ 0.072f (junto a hechizos de invocador)
-        // - Columna rival (derecha): avatar circular centrado en x ≈ 0.959f (al extremo derecho del slot rival)
-        // En tablets/plegables (ratio < 1.65f), la pantalla es más estrecha respecto al alto; se escala suavemente hacia adentro
-        // para garantizar que los avatares y el texto OCR no colisionen con los bordes físicos.
-        val tabletScale = if (geometry.isTabletOrFoldable) (BASE_ASPECT_RATIO / ratio).coerceIn(1.0f, 1.25f) else 1.0f
-        val adaptiveAllyCenterX = (baseConfig.allyAvatarCenterX * tabletScale).coerceIn(0.065f, 0.110f)
-        val adaptiveEnemyCenterX = (1.0f - (1.0f - baseConfig.enemyAvatarCenterX) * tabletScale).coerceIn(0.890f, 0.965f)
-
-        val adaptiveAllySlotXRatios = baseConfig.allySlotXRatios.map { 
-            (it * tabletScale).coerceIn(0.065f, 0.110f) 
-        }
-        val adaptiveEnemySlotXRatios = baseConfig.enemySlotXRatios.map { 
-            (1.0f - (1.0f - it) * tabletScale).coerceIn(0.890f, 0.965f) 
-        }
+        // Las coordenadas X ya están normalizadas respecto al frame capturado. No deben
+        // escalarse ni limitarse a los valores predeterminados: eso anulaba la calibración
+        // manual (por ejemplo, 15.7% terminaba escaneándose en 11%) y variaba entre formatos.
+        // El recorte final se limita a los bordes físicos en calculateSlotCropRect.
+        val adaptiveAllyCenterX = baseConfig.allyAvatarCenterX.coerceIn(0.005f, 0.495f)
+        val adaptiveEnemyCenterX = baseConfig.enemyAvatarCenterX.coerceIn(0.505f, 0.995f)
+        val adaptiveAllySlotXRatios = baseConfig.allySlotXRatios.map { it.coerceIn(0.005f, 0.495f) }
+        val adaptiveEnemySlotXRatios = baseConfig.enemySlotXRatios.map { it.coerceIn(0.505f, 0.995f) }
 
         // Rango de búsqueda OCR adaptativo:
         // Dimensiones perfectamente simétricas e idénticas en anchura horizontal para ambos bandos (Aliado y Rival)
         // Evita que el lado aliado se extienda demasiado y evita que el lado rival corte letras finales o colisione con el carrusel.
         val ocrBoxWidth = 0.185f
-        val allyOcrMinX = (adaptiveAllyCenterX - 0.024f).coerceIn(0.040f, 0.075f)
+        val allyOcrMinX = (adaptiveAllyCenterX - 0.024f).coerceIn(0.005f, 0.795f)
         val allyOcrMaxX = allyOcrMinX + ocrBoxWidth
 
-        val enemyOcrMaxX = (adaptiveEnemyCenterX + 0.024f).coerceIn(0.935f, 0.965f)
+        val enemyOcrMaxX = (adaptiveEnemyCenterX + 0.024f).coerceIn(0.205f, 0.995f)
         val enemyOcrMinX = enemyOcrMaxX - ocrBoxWidth
 
         // Ajuste de las posiciones horizontales de la barra superior (los 10 avatares de la cabecera)

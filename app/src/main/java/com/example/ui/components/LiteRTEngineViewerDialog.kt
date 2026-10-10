@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -91,6 +93,7 @@ enum class CircleTarget(val title: String, val shortName: String) {
     TOP_10TH_PICK("10º Pick (Barra Sup)", "10º Pick")
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LiteRTEngineViewerDialog(
     onDismissRequest: () -> Unit,
@@ -584,11 +587,11 @@ fun LiteRTEngineViewerDialog(
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            maxItemsInEachRow = 3
                         ) {
                             CircleTarget.entries.forEach { target ->
                                 val isSel = selectedTarget == target
@@ -602,7 +605,9 @@ fun LiteRTEngineViewerDialog(
                                             RoundedCornerShape(6.dp)
                                         )
                                         .coachClickable { selectedTarget = target }
+                                        .heightIn(min = 48.dp)
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .testTag("calibration_target_${target.name.lowercase()}")
                                 ) {
                                     Text(
                                         text = com.example.util.tr(target.title),
@@ -668,8 +673,9 @@ fun LiteRTEngineViewerDialog(
                                 // Arriba
                                 Surface(
                                     modifier = Modifier
-                                        .size(34.dp)
-                                        .coachClickable { modifyDetectionCircle(deltaY = -calibrationStep) },
+                                        .size(48.dp)
+                                        .coachClickable { modifyDetectionCircle(deltaY = -calibrationStep) }
+                                        .testTag("vision_calibration_up"),
                                     shape = RoundedCornerShape(6.dp),
                                     color = Color(0xFF0F172A),
                                     border = BorderStroke(1.dp, Color(0xFF38BDF8))
@@ -686,8 +692,9 @@ fun LiteRTEngineViewerDialog(
                                     // Izquierda
                                     Surface(
                                         modifier = Modifier
-                                            .size(34.dp)
-                                            .coachClickable { modifyDetectionCircle(deltaX = -calibrationStep) },
+                                            .size(48.dp)
+                                            .coachClickable { modifyDetectionCircle(deltaX = -calibrationStep) }
+                                            .testTag("vision_calibration_left"),
                                         shape = RoundedCornerShape(6.dp),
                                         color = Color(0xFF0F172A),
                                         border = BorderStroke(1.dp, Color(0xFF38BDF8))
@@ -700,7 +707,7 @@ fun LiteRTEngineViewerDialog(
                                     // Indicador de paso
                                     Box(
                                         modifier = Modifier
-                                            .size(34.dp)
+                                            .size(48.dp)
                                             .clip(RoundedCornerShape(6.dp))
                                             .background(Color(0xFF0C4A6E)),
                                         contentAlignment = Alignment.Center
@@ -716,8 +723,9 @@ fun LiteRTEngineViewerDialog(
                                     // Derecha
                                     Surface(
                                         modifier = Modifier
-                                            .size(34.dp)
-                                            .coachClickable { modifyDetectionCircle(deltaX = calibrationStep) },
+                                            .size(48.dp)
+                                            .coachClickable { modifyDetectionCircle(deltaX = calibrationStep) }
+                                            .testTag("vision_calibration_right"),
                                         shape = RoundedCornerShape(6.dp),
                                         color = Color(0xFF0F172A),
                                         border = BorderStroke(1.dp, Color(0xFF38BDF8))
@@ -731,8 +739,9 @@ fun LiteRTEngineViewerDialog(
                                 // Abajo
                                 Surface(
                                     modifier = Modifier
-                                        .size(34.dp)
-                                        .coachClickable { modifyDetectionCircle(deltaY = calibrationStep) },
+                                        .size(48.dp)
+                                        .coachClickable { modifyDetectionCircle(deltaY = calibrationStep) }
+                                        .testTag("vision_calibration_down"),
                                     shape = RoundedCornerShape(6.dp),
                                     color = Color(0xFF0F172A),
                                     border = BorderStroke(1.dp, Color(0xFF38BDF8))
@@ -763,7 +772,7 @@ fun LiteRTEngineViewerDialog(
                                 ) {
                                     Button(
                                         onClick = { modifyDetectionCircle(deltaSize = calibrationStep) },
-                                        modifier = Modifier.weight(1f).height(32.dp),
+                                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("calibration_size_increase"),
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0369A1)),
                                         shape = RoundedCornerShape(6.dp),
                                         contentPadding = PaddingValues(0.dp)
@@ -777,7 +786,7 @@ fun LiteRTEngineViewerDialog(
 
                                     Button(
                                         onClick = { modifyDetectionCircle(deltaSize = -calibrationStep) },
-                                        modifier = Modifier.weight(1f).height(32.dp),
+                                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("calibration_size_decrease"),
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF881337)),
                                         shape = RoundedCornerShape(6.dp),
                                         contentPadding = PaddingValues(0.dp)
@@ -812,6 +821,8 @@ fun LiteRTEngineViewerDialog(
                                                 .background(if (isSel) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFF0F172A))
                                                 .border(0.6.dp, if (isSel) Color(0xFF38BDF8) else Color(0xFF334155), RoundedCornerShape(4.dp))
                                                 .coachClickable { calibrationStep = value }
+                                                .heightIn(min = 48.dp)
+                                                .testTag("calibration_step_${label.replace('.', '_').replace('%', 'p')}")
                                                 .padding(vertical = 3.dp),
                                             contentAlignment = Alignment.Center
                                         ) {
