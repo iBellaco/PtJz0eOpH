@@ -53,7 +53,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "user-notification", "user-notification-empty", "streamer", "streamer-admin", "streamer-live", "streamer-feedback", "streamer-history", "streamer-guest-live", "streamer-approved-review", "support-email-mod", "support-email-admin", "support-followup", "support-legacy-followup", "support-closed",
             "matchup-varus", "matchup-jhin", "matchup-garen",
             "draft-placeholder", "draft-placeholder-own", "draft-placeholder-rival",
-            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "profile-admin-expiring-roles", "profile-admin-expiring-roles-es", "profile-admin-secondary-frame", "profile-admin-secondary-frame-es", "profile-admin-image-frame", "profile-admin-image-frame-es", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "storage-summary", "storage-summary-partial", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
+            "moderation-admin", "moderation-claim", "moderation-secondary", "premium-editor", "premium-editor-secondary", "profile-admin", "profile-admin-large", "profile-admin-expiring-roles", "profile-admin-expiring-roles-es", "profile-admin-secondary-frame", "profile-admin-secondary-frame-es", "profile-admin-image-frame", "profile-admin-image-frame-es", "premium-editor-admin", "premium-editor-grant", "premium-status-near-expiry", "creator-reader", "premium-editor-occupied", "premium-editor-remove", "profile-admin-notifications", "panel-notification-animation", "streamer-live-name-preserved", "essence-plans-blue", "essence-plans-orange", "essence-plans-insufficient", "cash-redemption-options", "saved-data-statistics", "storage-summary", "storage-summary-partial", "inbox-circle-badge", "premium-purchase-confirm", "usdt-wallet-fields", "support-admin-notification", "cash-redemption-confirm", "sponsor-layout-small", "sponsor-layout-large", "sponsor-read-retry", "managed-user-secondary", "managed-user-balance-live", "history-circle-notification", "redemption-entry-visible", "redemption-entry-hidden", "premium-plans-overview", "history-receipts", "component-catalog-luchador", "component-catalog-asesino", "component-catalog-tirador", "component-catalog-magico", "component-catalog-defensa", "component-catalog-apoyo").map { arrayOf(it) }
     }
     @get:Rule val compose = createComposeRule()
     private var copiedSummary = ""
@@ -117,7 +117,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             @Suppress("UNCHECKED_CAST")
             (variable.get(target) as MutableStateFlow<Any?>).value = value
         }
-        setFlow(SubscriptionManager, "_userRole", if (screen.startsWith("profile-admin-expiring-roles")) "creador" else if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("role-change-") || screen.startsWith("profile-admin") && !screen.startsWith("profile-admin-image-frame") || screen in listOf("premium-editor-grant", "premium-editor-occupied")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
+        setFlow(SubscriptionManager, "_userRole", if (screen.startsWith("profile-admin-expiring-roles")) "creador" else if (screen == "support-email-admin" || screen == "support-admin-notification" || screen == "moderation-admin" || screen.startsWith("role-change-") || screen.startsWith("profile-admin") && !screen.startsWith("profile-admin-image-frame") || screen in listOf("premium-editor-grant", "premium-editor-occupied", "premium-editor-remove")) "admin" else if (screen == "support-email-mod") "moderador" else "free")
         if (screen.startsWith("cash-access-")) {
             setFlow(SubscriptionManager,"_userRole",screen.removePrefix("cash-access-").substringBeforeLast('-').replace("fake_admin","admin"))
         }
@@ -264,6 +264,8 @@ class RuntimeVisibilityTest(private val screen: String) {
                 premiumGrantAction = { days, extend, complete -> requestedDays = days; requestedExtension = extend; grantResult = complete })
             screen == "premium-editor-grant" -> UserDetailManagementDialog(mapOf("uid" to "local-gift", "role" to "free"), {}, { grantedAccount = it }, {}, {},
                 premiumGrantAction = { _, _, complete -> grantResult = complete })
+            screen == "premium-editor-remove" -> UserDetailManagementDialog(mapOf("uid" to "local-remove", "role" to "premium"), {}, {}, {}, {},
+                premiumRemoveAction = { _, complete -> complete(Result.failure(com.example.data.EconomyPendingException())) })
             screen.startsWith("premium-editor") -> UserDetailManagementDialog(mapOf("uid" to "local-test", "name" to "Teste",
                 "role" to if (screen == "premium-editor-secondary") "creador" else "premium",
                 "secondaryRole" to if (screen == "premium-editor-secondary") "moderador" else "",
@@ -799,6 +801,13 @@ class RuntimeVisibilityTest(private val screen: String) {
                 compose.onNodeWithTag("premium_remaining_time").performScrollTo().assertExists()
                 Assert.assertEquals("free", grantedAccount!!["role"])
                 Assert.assertEquals(1, (grantedAccount!!["subscriptionHistory"] as List<*>).size)
+            }
+            "premium-editor-remove" -> {
+                compose.onNodeWithTag("remove_premium_button").performScrollTo().performClick()
+                compose.onNodeWithText(appTr("¿Quitar Premium?")).assertExists()
+                compose.onNodeWithText(appTr("Confirmar y quitar")).performClick()
+                compose.onNodeWithText(appTr("¿Quitar Premium?")).assertDoesNotExist()
+                compose.onNodeWithTag("remove_premium_button").assertIsEnabled()
             }
             "premium-editor-occupied" -> {
                 compose.onNodeWithTag("premium_remaining_time").performScrollTo().assertExists()

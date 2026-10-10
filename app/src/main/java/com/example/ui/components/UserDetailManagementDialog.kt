@@ -49,7 +49,8 @@ fun UserDetailManagementDialog(
     onOpenAvatarGift: () -> Unit,
     onReloadAll: () -> Unit,
     premiumGrantAction: ((Int, Boolean, (Result<Map<String, Any>>) -> Unit) -> Unit)? = null,
-    roleChangeAction: ((String, (Result<Map<String, Any>>) -> Unit) -> Unit)? = null
+    roleChangeAction: ((String, (Result<Map<String, Any>>) -> Unit) -> Unit)? = null,
+    premiumRemoveAction: ((String, (Result<Map<String, Any>>) -> Unit) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val managementScope = rememberCoroutineScope()
@@ -434,7 +435,7 @@ fun UserDetailManagementDialog(
                                     OutlinedButton(
                                         enabled = isAdmin && !isProcessing && currentRole !in setOf("admin", "administrador"),
                                         onClick = { showRemovePremiumConfirmation = true },
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier.weight(1f).testTag("remove_premium_button"),
                                         shape = RoundedCornerShape(6.dp),
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
                                         border = androidx.compose.foundation.BorderStroke(1.dp, DangerRed.copy(alpha = 0.6f)),
@@ -1313,17 +1314,29 @@ fun UserDetailManagementDialog(
                 Button(
                     onClick = {
                         isProcessing = true
-                        managementScope.launch {
-                            runCatching { removePremiumFromUser(uid) }.onSuccess { updated ->
-                            isProcessing = false
-                            showRemovePremiumConfirmation = false
-                            acceptPremiumUpdate(updated)
-                            Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
-                            onReloadAll()
+                        val finishRemoval: (Result<Map<String, Any>>) -> Unit = { outcome ->
+                            outcome.onSuccess { updated ->
+                                isProcessing = false
+                                showRemovePremiumConfirmation = false
+                                acceptPremiumUpdate(updated)
+                                Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
+                                onReloadAll()
                             }.onFailure { failure ->
                                 isProcessing = false
-                                Toast.makeText(context, failure.message, Toast.LENGTH_LONG).show()
+                                if (failure is com.example.data.EconomyPendingException) {
+                                    // The request is safely queued; don't leave the confirmation
+                                    // over the manager while the scheduled worker processes it.
+                                    showRemovePremiumConfirmation = false
+                                    Toast.makeText(context, failure.message, Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(context, failure.message, Toast.LENGTH_LONG).show()
+                                }
                             }
+                        }
+                        if (premiumRemoveAction != null) {
+                            premiumRemoveAction(uid, finishRemoval)
+                        } else {
+                            managementScope.launch { finishRemoval(runCatching { removePremiumFromUser(uid) }) }
                         }
                     },
                     enabled = !isProcessing,

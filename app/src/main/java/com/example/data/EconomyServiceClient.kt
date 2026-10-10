@@ -23,7 +23,12 @@ class EconomyReviewException : IllegalStateException(appTr(
     "Tu solicitud requiere revisión. Contacta con Soporte; no la repitas."))
 
 object EconomyServiceClient {
-    suspend fun call(action: String, fields: Map<String, Any> = emptyMap(), id: String = UUID.randomUUID().toString()): Map<String, Any> {
+    suspend fun call(
+        action: String,
+        fields: Map<String, Any> = emptyMap(),
+        id: String = UUID.randomUUID().toString(),
+        awaitQueuedResult: Boolean = true
+    ): Map<String, Any> {
         val user = AuthManager.getAuth()?.currentUser ?: error(appTr("Inicia sesión"))
         check(!AuthManager.isGuestOrUnauthenticated(user)) { appTr("Inicia sesión") }
         val token = withTimeoutOrNull(10_000L) { user.getIdToken(false).await() }
@@ -73,6 +78,9 @@ object EconomyServiceClient {
         if (submission.second) throw EconomyPendingException()
         val operationId = submission.first
         check(operationId.isNotBlank()) { appTr("No se pudo completar la operación. Vuelve a intentarlo.") }
+        // Administrative screens must remain usable while the scheduled worker processes
+        // a durable request. Callers that opt out still receive the queued/pending state.
+        if (!awaitQueuedResult) throw EconomyPendingException()
         val result = withTimeoutOrNull(6 * 60_000L) {
             suspendCancellableCoroutine<Map<String, Any>> { continuation ->
                 var listener: ListenerRegistration? = null
