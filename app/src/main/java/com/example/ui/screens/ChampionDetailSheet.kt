@@ -93,6 +93,11 @@ import com.example.util.CoachingGenerator
 import com.example.util.tr
 import androidx.compose.ui.semantics.contentDescription
 
+private data class RuneDetailSelection(
+    val rune: com.example.model.RuneItem,
+    val advice: String
+)
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ChampionDetailSheet(
@@ -129,7 +134,7 @@ fun ChampionDetailSheet(
     var selectedElementAdvice by remember { mutableStateOf("") }
     var buildAdvice by remember { mutableStateOf<Pair<String, String>?>(null) }
     var itemForDetail by remember { mutableStateOf<com.example.model.WildRiftItem?>(null) }
-    var runeForDetail by remember { mutableStateOf<com.example.model.RuneItem?>(null) }
+    var runeDetailSelection by remember { mutableStateOf<RuneDetailSelection?>(null) }
     var spellForDetail by remember { mutableStateOf<com.example.model.SummonerSpellItem?>(null) }
     var selectedBuildOptionIndex by remember(champion.id, selectedRole) { mutableStateOf(0) }
 
@@ -144,8 +149,8 @@ fun ChampionDetailSheet(
                 buildAdvice = null
             } else if (itemForDetail != null) {
                 itemForDetail = null
-            } else if (runeForDetail != null) {
-                runeForDetail = null
+            } else if (runeDetailSelection != null) {
+                runeDetailSelection = null
             } else if (spellForDetail != null) {
                 spellForDetail = null
             } else if (selectedSituationalItem != null) {
@@ -1352,20 +1357,21 @@ fun ChampionDetailSheet(
                                     )
                                     .testTag("build_rune_details")
                                     .coachClickable {
-                                        selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
+                                        val advice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
                                             runeName = rName,
                                             championName = champion.getLocalizedName(currentLang),
                                             roleName = selectedRole.getLocalizedName(currentLang),
                                             language = currentLang,
                                             situational = false
                                         )
-                                        runeForDetail = foundRune ?: com.example.model.RuneItem(
+                                        val rune = foundRune ?: com.example.model.RuneItem(
                                             id = rName.lowercase().replace(" ", "_"),
                                             name = rName,
                                             category = if (isKeystone) "Clave" else "Secundaria",
                                             iconUrl = iconUrl,
                                             description = "Runa recomendada para esta opción táctica en Wild Rift."
                                         )
+                                        runeDetailSelection = RuneDetailSelection(rune, advice)
                                     }
                             ) {
                                 AppAssetImage(
@@ -1450,7 +1456,7 @@ fun ChampionDetailSheet(
                                         .testTag("build_situational_rune_${detailRune.id}")
                                         .coachClickable {
                                             val buildAdvice = com.example.util.trStr(currentLang, sRune.description)
-                                            selectedElementAdvice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
+                                            val advice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
                                                 runeName = rName,
                                                 championName = champion.getLocalizedName(currentLang),
                                                 roleName = selectedRole.getLocalizedName(currentLang),
@@ -1458,7 +1464,7 @@ fun ChampionDetailSheet(
                                                 situational = true,
                                                 buildAdvice = buildAdvice
                                             )
-                                            runeForDetail = detailRune
+                                            runeDetailSelection = RuneDetailSelection(detailRune, advice)
                                         }
                                         .padding(6.dp),
                                     verticalAlignment = Alignment.CenterVertically
@@ -1909,10 +1915,11 @@ fun ChampionDetailSheet(
         }
     }
 
-    runeForDetail?.let { rune ->
+    runeDetailSelection?.let { selection ->
+        val rune = selection.rune
         AdaptiveDetailAlertDialog(
             isOverlay = isOverlay,
-            onDismissRequest = { runeForDetail = null },
+            onDismissRequest = { runeDetailSelection = null },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     com.example.ui.components.AppAssetImage(
@@ -1927,6 +1934,7 @@ fun ChampionDetailSheet(
                     Column {
                         Text(
                             text = rune.getLocalizedName(com.example.util.currentAppLanguage()),
+                            modifier = Modifier.testTag("build_rune_detail_title"),
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -1947,12 +1955,12 @@ fun ChampionDetailSheet(
                         modifier = Modifier.testTag("build_rune_effect"),
                         color = TextPrimary, fontSize = 13.sp, lineHeight = 18.sp
                     )
-                    BuildElementCoachAdvice(selectedElementAdvice,
+                    BuildElementCoachAdvice(selection.advice,
                         rune.getLocalizedDescription(currentLang))
                 }
             },
             confirmButton = {
-                TextButton(onClick = { runeForDetail = null }) {
+                TextButton(onClick = { runeDetailSelection = null }) {
                     Text(tr("Cerrar"), color = com.example.ui.theme.HextechCyan, fontWeight = FontWeight.Bold)
                 }
             }
