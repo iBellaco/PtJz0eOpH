@@ -68,6 +68,29 @@ class BuildCoachingRenderedTest {
                 hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertCountEquals(0)
             compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-situational-rune-$index-$language.png").path)
             compose.onNodeWithText(if (language == "pt") "Fechar" else "Cerrar").performClick()
+            // Tap the OTHER icon in the same replacement pair, not another alternative row.
+            // This is the interaction that previously bubbled to the row's alternative handler.
+            val sourceMatcher = SemanticsMatcher("source of ${rune.id}") {
+                it.config.getOrNull(SemanticsProperties.TestTag)?.startsWith("build_source_rune_${rune.id}_") == true
+            }
+            val sourceCount = compose.onAllNodes(sourceMatcher).fetchSemanticsNodes().size
+            org.junit.Assert.assertTrue("Replacement icons must be independently clickable", sourceCount > 0)
+            for (sourceIndex in 0 until sourceCount) {
+                val sourceNode = compose.onAllNodes(sourceMatcher)[sourceIndex]
+                val sourceLabel = sourceNode.fetchSemanticsNode().config[SemanticsProperties.ContentDescription].first()
+                val sourceRune = com.example.data.WildRiftRepository.runes.first {
+                    it.getLocalizedName(language) == sourceLabel
+                }
+                sourceNode.performScrollTo().performClick()
+                compose.onNodeWithTag("build_rune_detail_title").assertTextEquals(sourceRune.getLocalizedName(language))
+                val sourceEffect = compose.onNodeWithTag("build_rune_effect").fetchSemanticsNode()
+                    .config[SemanticsProperties.Text].joinToString { it.text }
+                org.junit.Assert.assertEquals(sourceRune.getLocalizedDescription(language), sourceEffect)
+                org.junit.Assert.assertNotEquals(effect, sourceEffect)
+                compose.onAllNodes(hasText(entry.description, substring = true) and
+                    hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertCountEquals(0)
+                compose.onNodeWithText(if (language == "pt") "Fechar" else "Cerrar").performClick()
+            }
         }
     }
     @Test @Config(qualifiers="w330dp-h720dp-xhdpi") fun `matchup avatars show their name without navigating in Spanish`()=inspectMatchupNames("es")
