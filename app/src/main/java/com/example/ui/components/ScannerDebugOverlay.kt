@@ -63,6 +63,14 @@ fun ScannerDebugOverlay(
         }
     }
 
+    // Keep the first row's diagnostic caption out of the header ban labels.
+    val firstAllyLabelPaint = remember(density) {
+        android.graphics.Paint(allyLabelPaint).apply { textSize = with(density) { 8.sp.toPx() } }
+    }
+    val firstEnemyLabelPaint = remember(density) {
+        android.graphics.Paint(enemyLabelPaint).apply { textSize = with(density) { 8.sp.toPx() } }
+    }
+
     val labelPaint = remember(density) {
         android.graphics.Paint().apply {
             color = android.graphics.Color.WHITE
@@ -192,11 +200,14 @@ fun ScannerDebugOverlay(
             val slotLabel = if (detectedAllyRole != null) "Aliado ${sIdx + 1} ($detectedAllyRole)" else "Aliado ${sIdx + 1}"
             val allyLabelX = (allyX - allyAvatarRad).coerceAtLeast(8f)
             val allyMatch = debugMatches["ally_$sIdx"]
+            val belowHeader = detectingBans && sIdx == 0
+            val allyCaptionPaint = if (belowHeader) firstAllyLabelPaint else allyLabelPaint
             drawDiagnosticText(
                 if (allyMatch != null) "$slotLabel: $allyMatch" else slotLabel,
                 allyLabelX,
-                allyY - allyAvatarRad - 6f,
-                allyLabelPaint
+                if (belowHeader) allyY + allyAvatarRad - allyCaptionPaint.fontMetrics.top + 3f
+                else allyY - allyAvatarRad - 6f,
+                allyCaptionPaint, margin = if (belowHeader) 1f else 5f
             )
 
 
@@ -261,12 +272,14 @@ fun ScannerDebugOverlay(
                 "Rival ${sIdx + 1}"
             }
 
-            val enemyLabelX = (enemyX + avatarRadius).coerceAtMost(w - 10f)
+            val enemyLabelX = (enemyX + enemyAvatarRad).coerceAtMost(w - 10f)
+            val enemyCaptionPaint = if (belowHeader) firstEnemyLabelPaint else enemyLabelPaint
             drawDiagnosticText(
                 if (enemyMatch != null) "$enemySlotLabel: $enemyMatch" else enemySlotLabel,
                 enemyLabelX,
-                enemyY - avatarRadius - 6f,
-                enemyLabelPaint
+                if (belowHeader) enemyY + enemyAvatarRad - enemyCaptionPaint.fontMetrics.top + 3f
+                else enemyY - enemyAvatarRad - 6f,
+                enemyCaptionPaint, margin = if (belowHeader) 1f else 5f
             )
 
         }
