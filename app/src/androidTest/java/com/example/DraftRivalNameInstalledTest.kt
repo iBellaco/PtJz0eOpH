@@ -58,7 +58,7 @@ class DraftRivalNameInstalledTest {
         val fixture = InstrumentationRegistry.getInstrumentation().context.assets.open("draft/reported-ten-slots.json")
             .bufferedReader().use { org.json.JSONObject(it.readText()).getString("pngBase64") }
         val bytes = android.util.Base64.decode(fixture, android.util.Base64.DEFAULT)
-        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!.copy(android.graphics.Bitmap.Config.ARGB_8888, true)
+        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!.copy(android.graphics.Bitmap.Config.ARGB_8888, true)!!
         try {
             scanner.resetSlotMemory()
             scanner.updateCalibration(context, com.example.service.screen.VisionCalibrationConfig())
