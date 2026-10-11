@@ -4,6 +4,9 @@ import android.app.Application
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.platform.testTag
+import androidx.compose.material.icons.filled.Home
+import com.github.takahirom.roborazzi.captureRoboImage
 import com.example.ui.components.AnimatedLogoutButton
 import com.example.ui.components.ThemeCustomizationBottomSheet
 import com.example.ui.theme.AppThemeManager
@@ -23,6 +26,34 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class NavigationCustomizationRenderedTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun liquidIndicatorIsCenteredOnTheSelectedIcon() {
+        var density = 1f
+        compose.setContent {
+            density = androidx.compose.ui.platform.LocalDensity.current.density
+            com.example.ui.components.LiquidNavBar(
+                items = listOf(com.example.ui.components.CoachNavItem("Inicio",
+                    androidx.compose.material.icons.Icons.Default.Home, androidx.compose.ui.graphics.Color.Red)),
+                selectedIndex = 0, backgroundColor = androidx.compose.ui.graphics.Color.Black,
+                selectedColor = androidx.compose.ui.graphics.Color.White, unselectedColor = androidx.compose.ui.graphics.Color.Gray,
+                onSelected = {}, modifier = androidx.compose.ui.Modifier.testTag("liquid_alignment")
+            )
+        }
+        compose.waitForIdle()
+        val path = java.io.File("build/reports/portuguese-rendered/liquid-alignment-es.png")
+        path.parentFile.mkdirs()
+        compose.onNodeWithTag("liquid_alignment").captureRoboImage(path.path)
+        val bitmap = android.graphics.BitmapFactory.decodeFile(path.path)
+        val x = (bitmap.width / 2 + 14 * density).toInt()
+        val rows = (0 until bitmap.height).filter { y ->
+            val pixel = bitmap.getPixel(x, y)
+            android.graphics.Color.red(pixel) > 20 && android.graphics.Color.green(pixel) < 20 && android.graphics.Color.blue(pixel) < 20
+        }
+        assertTrue("Indicator must be visible", rows.isNotEmpty())
+        val center = (rows.first() + rows.last()) / 2f
+        assertTrue("Indicator $center must be centered in ${bitmap.height}px", kotlin.math.abs(center - bitmap.height / 2f) <= 2 * density)
+        bitmap.recycle()
+    }
 
     @Test fun premiumUserPreviewsAndNavigatesBeforeApplyingStyle() {
         val context = RuntimeEnvironment.getApplication()

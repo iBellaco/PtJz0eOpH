@@ -487,7 +487,7 @@ fun DashboardScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(navBg)
+                        .background(Color.Transparent)
                 ) {
                 // Ambient Runic Particles Floating across Bottom Navigation Bar in background
                 if (AppThemeManager.isParticlesEnabled && isPremium) {
