@@ -162,6 +162,15 @@ data class VisionCalibrationConfig(
             banDiameterRatio = diameter, manualEnemyBans = true)
     }
 
+    /** Start manual movement at the row actually seen on this phone, never at another phone's defaults. */
+    internal fun withObservedBanRow(isAlly: Boolean, regions: List<BanRegion>): VisionCalibrationConfig {
+        if ((if (isAlly) manualAllyBans else manualEnemyBans) || regions.size != 5) return this
+        val y = regions.map { it.y }.average().toFloat()
+        val diameter = (regions.map { it.radius }.average().toFloat() * 2f).coerceIn(.03f, .09f)
+        return if (isAlly) copy(allyBanXRatios = regions.map { it.x }, allyBanYRatio = y, banDiameterRatio = diameter)
+        else copy(enemyBanXRatios = regions.map { it.x }, enemyBanYRatio = y, banDiameterRatio = diameter)
+    }
+
     internal fun banRegions(isAlly: Boolean): List<BanRegion> =
         (if (isAlly) allyBanXRatios else enemyBanXRatios).map {
             BanRegion(it, if (isAlly) allyBanYRatio else enemyBanYRatio, banDiameterRatio / 2f)
@@ -224,6 +233,13 @@ VisionCalibrationConfig(
     topAvatarDiameterRatio = ${topAvatarDiameterRatio}f,
     topAlly5XRatio = ${topAlly5XRatio}f,
     topEnemy5XRatio = ${topEnemy5XRatio}f,
+    allyBanXRatios = listOf(${allyBanXRatios.joinToString(", ") { "${it}f" }}),
+    enemyBanXRatios = listOf(${enemyBanXRatios.joinToString(", ") { "${it}f" }}),
+    allyBanYRatio = ${allyBanYRatio}f,
+    enemyBanYRatio = ${enemyBanYRatio}f,
+    banDiameterRatio = ${banDiameterRatio}f,
+    manualAllyBans = $manualAllyBans,
+    manualEnemyBans = $manualEnemyBans,
     topAllyXRatios = listOf(${topAllyXRatios.joinToString(", ") { "${it}f" }}),
     topEnemyXRatios = listOf(${topEnemyXRatios.joinToString(", ") { "${it}f" }})
 )
