@@ -157,50 +157,33 @@ fun AuthFlowContainer(
         )
     }
 
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = HextechSurface),
-            border = BorderStroke(1.dp, HextechCardBorder)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                AnimatedContent(
-                    targetState = uiState.authScreen,
-                    transitionSpec = {
-                        (slideInHorizontally { width -> if (targetState > initialState) width else -width } + fadeIn()).togetherWith(
-                            slideOutHorizontally { width -> if (targetState > initialState) -width else width } + fadeOut()
-                        )
-                    },
-                    label = "auth_screen_transition"
-                ) { targetScreen ->
-                    when (targetScreen) {
-                        AuthScreenType.LOGIN -> LoginScreen(
-                            viewModel = viewModel,
-                            onNavigateToRegister = { viewModel.navigateTo(AuthScreenType.REGISTER) },
-                            onNavigateToForgot = { viewModel.navigateTo(AuthScreenType.FORGOT_PASSWORD) },
-                            onLoginSuccess = onAuthSuccess
-                        )
-                        AuthScreenType.REGISTER -> RegisterScreen(
-                            viewModel = viewModel,
-                            onNavigateToLogin = { viewModel.navigateTo(AuthScreenType.LOGIN) },
-                            onRegisterSuccess = onAuthSuccess
-                        )
-                        AuthScreenType.FORGOT_PASSWORD -> ForgotPasswordScreen(
-                            viewModel = viewModel,
-                            onNavigateToLogin = { viewModel.navigateTo(AuthScreenType.LOGIN) }
-                        )
-                        else -> { }
-                    }
-                }
+    AuthFormContainer(screen = uiState.authScreen) {
+        AnimatedContent(
+            targetState = uiState.authScreen,
+            transitionSpec = {
+                (slideInHorizontally { width -> if (targetState > initialState) width else -width } + fadeIn()).togetherWith(
+                    slideOutHorizontally { width -> if (targetState > initialState) -width else width } + fadeOut()
+                )
+            },
+            label = "auth_screen_transition"
+        ) { targetScreen ->
+            when (targetScreen) {
+                AuthScreenType.LOGIN -> LoginScreen(
+                    viewModel = viewModel,
+                    onNavigateToRegister = { viewModel.navigateTo(AuthScreenType.REGISTER) },
+                    onNavigateToForgot = { viewModel.navigateTo(AuthScreenType.FORGOT_PASSWORD) },
+                    onLoginSuccess = onAuthSuccess
+                )
+                AuthScreenType.REGISTER -> RegisterScreen(
+                    viewModel = viewModel,
+                    onNavigateToLogin = { viewModel.navigateTo(AuthScreenType.LOGIN) },
+                    onRegisterSuccess = onAuthSuccess
+                )
+                AuthScreenType.FORGOT_PASSWORD -> ForgotPasswordScreen(
+                    viewModel = viewModel,
+                    onNavigateToLogin = { viewModel.navigateTo(AuthScreenType.LOGIN) }
+                )
+                else -> { }
             }
         }
     }

@@ -18,6 +18,8 @@ import com.example.ui.components.coachClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -30,6 +32,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
@@ -46,6 +50,29 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.ui.theme.*
 import com.example.util.tr
+
+/** A bounded viewport keeps every authentication action reachable, including above the IME. */
+@Composable
+internal fun AuthFormContainer(screen: AuthScreenType, content: @Composable () -> Unit) {
+    val scrollState = rememberScrollState()
+    LaunchedEffect(screen) { scrollState.scrollTo(0) }
+    BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        // A dialog can supply unbounded height through its own scrolling parent.
+        val viewportHeight = if (constraints.hasBoundedHeight) maxHeight
+            else LocalConfiguration.current.screenHeightDp.dp
+        Card(
+            modifier = Modifier.fillMaxWidth().heightIn(max = viewportHeight)
+                .imePadding().padding(vertical = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = HextechSurface),
+            border = BorderStroke(1.dp, HextechCardBorder)
+        ) {
+            Column(Modifier.fillMaxWidth().verticalScroll(scrollState).testTag("auth_form_scroll")) {
+                content()
+            }
+        }
+    }
+}
 
 @Composable
 fun AuthHeader(title: String, subtitle: String, compact: Boolean = false) {
@@ -247,12 +274,13 @@ fun AuthPrimaryButton(
     text: String,
     onClick: () -> Unit,
     isLoading: Boolean = false,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier
 ) {
     com.example.ui.components.HextechAnimatedButton(
         onClick = onClick,
         enabled = enabled && !isLoading,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(52.dp),
         backgroundBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
