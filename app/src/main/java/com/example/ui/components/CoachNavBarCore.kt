@@ -70,9 +70,6 @@ internal fun CoachNavBarCore(
                     }
                     drawPath(path, active.copy(alpha = .2f)); drawPath(path, active.copy(alpha = .85f), style = Stroke(1.5.dp.toPx()))
                 }
-                else -> {
-                    drawCircle(active.copy(alpha = .15f), 22.dp.toPx(), Offset(centerX, centerY))
-                }
                 CoachNavStyle.NEON_WAVE -> {
                     val path = Path().apply {
                         moveTo(0f, size.height - 3.dp.toPx())
@@ -81,6 +78,9 @@ internal fun CoachNavBarCore(
                     }
                     drawPath(path, active.copy(alpha = .25f), style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
                     drawPath(path, active, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
+                }
+                else -> {
+                    drawCircle(active.copy(alpha = .15f), 22.dp.toPx(), Offset(centerX, centerY))
                 }
             }
         }
