@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 import re
 import subprocess
+from urllib.request import urlopen
+from urllib.error import URLError
 
 # These files cannot change the APK: delivery housekeeping and its own tests.
 DELIVERY_ONLY_FILES = {
@@ -20,6 +22,14 @@ REQUIRED_JOBS = {'security-and-data-tests', 'build-apk', 'core-and-rendered', 'i
 
 
 def api(path):
+    # The publication verification step has read access to this public repo.
+    # Use the public API when the step intentionally has no write token.
+    if not (os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')):
+        try:
+            with urlopen('https://api.github.com/' + path, timeout=30) as response:
+                return json.load(response)
+        except (URLError, TimeoutError) as error:
+            raise RuntimeError('No se pudo comprobar la fuente del APK validado.') from error
     result = subprocess.run(['gh', 'api', path], stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, text=True)
     if result.returncode:
