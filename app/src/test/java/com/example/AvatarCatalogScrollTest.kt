@@ -20,10 +20,11 @@ class AvatarCatalogScrollTest {
     @get:Rule val compose = createComposeRule()
     @Test fun shortScreenCanScrollPastHeaderToLastAvatarAndReturn() {
         compose.mainClock.autoAdvance = false
-        compose.setContent { MyApplicationTheme { AvatarSelectionBottomSheet({}, {}) } }
+        val grid = androidx.compose.foundation.lazy.grid.LazyGridState()
+        compose.setContent { MyApplicationTheme { AvatarSelectionBottomSheet({}, {}, grid) } }
         compose.mainClock.advanceTimeBy(1000)
         val last = AvatarCatalog.avatars.filter { it.region == "Zaun" }.last()
-        compose.onNodeWithTag("avatar_catalog_scroll").performScrollToNode(hasTestTag("avatar_card_${last.id}"))
+        compose.onNodeWithTag("avatar_catalog_scroll").performScrollToIndex(grid.layoutInfo.totalItemsCount - 1)
         compose.mainClock.advanceTimeBy(1000)
         compose.onNodeWithTag("avatar_card_${last.id}").assertIsDisplayed()
         compose.onNodeWithTag("avatar_catalog_scroll").performScrollToIndex(0)

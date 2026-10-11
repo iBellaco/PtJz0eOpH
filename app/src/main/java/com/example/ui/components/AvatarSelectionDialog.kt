@@ -12,6 +12,8 @@ import com.example.ui.components.coachClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.shape.CircleShape
@@ -64,7 +66,8 @@ fun getRarityColor(rarity: String): Color {
 @Composable
 fun AvatarSelectionBottomSheet(
     onDismiss: () -> Unit,
-    onOpenPremiumPlans: () -> Unit
+    onOpenPremiumPlans: () -> Unit,
+    gridState: LazyGridState = rememberLazyGridState()
 ) {
     val context = LocalContext.current
     val isPremium by SubscriptionManager.isPremium.collectAsState()
@@ -129,6 +132,7 @@ fun AvatarSelectionBottomSheet(
         // One scroll owner: the banner, filters and catalog all move together on short screens.
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 100.dp),
+            state = gridState,
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
