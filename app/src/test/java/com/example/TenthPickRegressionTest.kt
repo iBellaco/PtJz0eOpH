@@ -387,7 +387,7 @@ class TenthPickRegressionTest {
         assertEquals(0.082f, adjusted.allyAvatarCenterX, 0.0001f)
         assertFloatListEquals(List(5) { 0.082f }, adjusted.allySlotXRatios)
         assertFloatListEquals(original.allySlotYRatios.map { it + 0.02f }, adjusted.allySlotYRatios)
-        assertFloatListEquals(List(5) { 0.12f }, adjusted.allySlotDiameterRatios)
+        assertFloatListEquals(listOf(0.12f, 0.12f, 0.12f, 0.12f, 0.115f), adjusted.allySlotDiameterRatios)
         assertEquals(original.enemyAvatarCenterX, adjusted.enemyAvatarCenterX, 0f)
         assertEquals(original.enemySlotXRatios, adjusted.enemySlotXRatios)
         assertEquals(original.enemySlotYRatios, adjusted.enemySlotYRatios)
