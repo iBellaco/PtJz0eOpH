@@ -29,6 +29,7 @@ fun ScannerDebugOverlay(
     val rawConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
     val allyRoles by DraftVisionScanner.allyRolesBySlotFlow.collectAsStateWithLifecycle()
+    val language = com.example.util.currentAppLanguage()
     val density = LocalDensity.current
 
     // Telemetría del motor de visión y estrategia de salto de fotogramas
@@ -98,7 +99,7 @@ fun ScannerDebugOverlay(
         if (w <= 0 || h <= 0) return@Canvas
 
         val textRects = mutableListOf<android.graphics.Rect>()
-        fun drawDiagnosticText(rawText: String, x: Float, y: Float, paint: android.graphics.Paint) {
+        fun drawDiagnosticText(rawText: String, x: Float, y: Float, paint: android.graphics.Paint, margin: Float = 5f) {
             val text = com.example.util.appTr(rawText)
             val width = paint.measureText(text)
             val left = when (paint.textAlign) {
@@ -108,8 +109,8 @@ fun ScannerDebugOverlay(
             }
             val metrics = paint.fontMetrics
             textRects.add(android.graphics.Rect(
-                (left - 5f).toInt(), (y + metrics.top - 5f).toInt(),
-                (left + width + 5f).toInt(), (y + metrics.bottom + 5f).toInt()
+                (left - margin).toInt(), (y + metrics.top - margin).toInt(),
+                (left + width + margin).toInt(), (y + metrics.bottom + margin).toInt()
             ))
             drawContext.canvas.nativeCanvas.drawText(text, x, y, paint)
         }
@@ -132,12 +133,14 @@ fun ScannerDebugOverlay(
                     drawCircle(if (slot.state == com.example.service.screen.BanState.EMPTY) Color.Gray else color,
                         radius, center, style = Stroke(if (slot.state == com.example.service.screen.BanState.CONFIRMED) 2f else 1f))
                     val status = when (slot.state) {
-                        com.example.service.screen.BanState.CONFIRMED -> "Ban"
-                        com.example.service.screen.BanState.EMPTY -> "Sin ban"
-                        else -> "Sin confirmar"
+                        com.example.service.screen.BanState.CONFIRMED ->
+                            com.example.data.WildRiftRepository.champions.firstOrNull { it.id == slot.championId }?.getLocalizedName(language) ?: "Ban ${slot.index + 1}"
+                        com.example.service.screen.BanState.EMPTY -> com.example.util.appTr("Sin ban")
+                        else -> "Ban ${slot.index + 1}"
                     }
-                    drawDiagnosticText("${com.example.util.appTr(status)} ${slot.index + 1}", center.x.coerceIn(28f, w - 28f),
-                        h * .12f - labelPaint.fontMetrics.top + 6f, labelPaint)
+                    val halfText = labelPaint.measureText(status) / 2f
+                    drawDiagnosticText(status, center.x.coerceIn(halfText + 2f, w - halfText - 2f),
+                        center.y + radius - labelPaint.fontMetrics.top + 6f, labelPaint, margin = 1f)
                 }
             }
         }
@@ -173,8 +176,8 @@ fun ScannerDebugOverlay(
             )
             val allyOcrLeft = allyNameRect.left.toFloat()
             val allyOcrRight = allyNameRect.right.toFloat()
-            val allyOcrTop = allyY - (allyAvatarDiam * 0.40f)
-            val allyOcrHeight = allyAvatarDiam * 0.80f
+            val allyOcrTop = allyNameRect.top.toFloat()
+            val allyOcrHeight = allyNameRect.height().toFloat()
 
             drawRoundRect(
                 color = Color(0x8800E5FF),
@@ -226,8 +229,8 @@ fun ScannerDebugOverlay(
             )
             val enemyOcrLeft = enemyNameRect.left.toFloat()
             val enemyOcrRight = enemyNameRect.right.toFloat()
-            val enemyOcrTop = enemyY - (enemyAvatarDiam * 0.40f)
-            val enemyOcrHeight = enemyAvatarDiam * 0.80f
+            val enemyOcrTop = enemyNameRect.top.toFloat()
+            val enemyOcrHeight = enemyNameRect.height().toFloat()
 
             drawRoundRect(
                 color = Color(0x88FF1744),

@@ -130,12 +130,9 @@ internal fun FloatingOverlayContent(
     val activeProfileId by com.example.data.AccountProfileManager.activeProfileId.collectAsStateWithLifecycle()
     val isLoggedInAndPremium = isPremium && activeProfileId != null
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
-    val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsStateWithLifecycle()
-    val canDetectBans = com.example.service.screen.BanDetectionAccess.canDetect(userRole, adminClaim)
     val detectedBans by DraftVisionScanner.bannedChampionIdsFlow.collectAsStateWithLifecycle()
     val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
-    val bannedIds = if (canDetectBans) detectedBans else emptySet()
-    LaunchedEffect(canDetectBans) { if (!canDetectBans) DraftVisionScanner.clearDetectedBans() }
+    val bannedIds = detectedBans
     val currentAuthEmail = remember { com.example.util.AuthManager.getAuth()?.currentUser?.email }
     val isAdmin = userRole == "admin" || userRole == "moderador" || (currentAuthEmail != null && currentAuthEmail.contains("barbadiego", ignoreCase = true)) || com.example.util.AuthManager.isCurrentUserAdmin()
     val context = LocalContext.current
@@ -251,7 +248,7 @@ internal fun FloatingOverlayContent(
     // 3. Adaptive Cooldown: Si una inferencia toma más tiempo del previsto, se aplica un intervalo compensatorio
     //    para evitar saturación térmica y mantener estabilidad de fotogramas en Android.
     // 4. Null-Frame Drop: Si el ImageReader no tiene un fotograma nuevo, se salta el ciclo sin re-analizar imágenes estáticas.
-    LaunchedEffect(autoScanEnabled, canDetectBans) {
+    LaunchedEffect(autoScanEnabled) {
         if (autoScanEnabled) {
             DraftVisionScanner.resetSlotLifecycle()
             if (allies.all { it == null } && enemies.all { it == null }) DraftVisionScanner.clearDetectedBans()
@@ -397,7 +394,7 @@ internal fun FloatingOverlayContent(
                                     // -----------------------------------------------------------------
                                     // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
                                     // -----------------------------------------------------------------
-                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = canDetectBans)
+                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = true)
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
                                             if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
@@ -522,7 +519,7 @@ internal fun FloatingOverlayContent(
         coroutineScope.launch(Dispatchers.IO) {
             val bitmap = screenCaptureManager?.captureCurrentFrame()
             if (bitmap != null) {
-                val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = canDetectBans)
+                val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = true)
                 withContext(Dispatchers.Main) {
                     if (result.isSuccessful) {
                         // Sincronizar primera selección si se detectó y no ha sido fijada manualmente
@@ -1149,7 +1146,7 @@ internal fun FloatingOverlayContent(
                                 when (overlayHubTab) {
                                     OverlayHubTab.DRAFT -> {
                                         FloatingDraftCoachView(
-                                            banSlots = if (canDetectBans) banSlots else emptyList(),
+                                            banSlots = banSlots,
                                             isLandscapeMode = isLandscapeMode,
                                             activeRole = activeRole,
                                             onActiveRoleChange = {

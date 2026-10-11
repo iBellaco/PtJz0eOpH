@@ -19,11 +19,11 @@ object AdaptiveScreenLayoutEngine {
         config: VisionCalibrationConfig): Rect {
         val center = height * (if (isAlly) config.allySlotYRatios else config.enemySlotYRatios)[slot]
         val avatarX = if (isAlly) config.getAllySlotX(slot) else config.getEnemySlotX(slot)
-        val ocrBoxWidth = 0.185f
-        val leftRatio = if (isAlly) avatarX + 0.035f else avatarX - 0.025f - ocrBoxWidth
-        val rightRatio = if (isAlly) leftRatio + ocrBoxWidth else avatarX - 0.025f
-        val left = (width * leftRatio).toInt().coerceIn(0, width - 1)
-        val right = (width * rightRatio).toInt().coerceIn(left + 1, width)
+        val radius = height * config.getSlotDiameter(isAlly, slot) / 2f
+        val bandWidth = height * .31f
+        val avatarEdge = width * avatarX + if (isAlly) radius else -radius
+        val left = (if (isAlly) avatarEdge else avatarEdge - bandWidth).toInt().coerceIn(0, width - 1)
+        val right = (if (isAlly) avatarEdge + bandWidth else avatarEdge).toInt().coerceIn(left + 1, width)
         val top = (center - height * 0.05f).toInt().coerceIn(0, height - 1)
         // The ally's next line is the summoner name, which can itself contain a
         // champion name. Read only the title that switches from lane to champion.

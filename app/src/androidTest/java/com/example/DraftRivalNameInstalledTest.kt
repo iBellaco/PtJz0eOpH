@@ -51,6 +51,40 @@ class DraftRivalNameInstalledTest {
         } finally { recognizer.close() }
     }
 
+    @Test fun firstSelectionsAreReadWithRedMagicAndPocoCoordinates() = kotlinx.coroutines.runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val scanner = com.example.service.screen.DraftVisionScanner
+        val original = scanner.calibrationConfig
+        val redMagic = com.example.service.screen.VisionCalibrationConfig()
+        val poco = redMagic.copy(allyAvatarCenterX = .12f, enemyAvatarCenterX = .911f,
+            allySlotXRatios = List(5) { .12f }, enemySlotXRatios = List(5) { .911f },
+            allySlotYRatios = listOf(.184f, .320f, .454f, .592f, .728f),
+            enemySlotYRatios = listOf(.179f, .315f, .449f, .587f, .723f))
+        try {
+            for (config in listOf(redMagic, poco)) {
+                scanner.resetSlotMemory()
+                scanner.updateCalibration(context, config)
+                val bitmap = Bitmap.createBitmap(1920, 868, Bitmap.Config.ARGB_8888)
+                try {
+                    bitmap.eraseColor(android.graphics.Color.BLACK)
+                    val canvas = android.graphics.Canvas(bitmap)
+                    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                        color = android.graphics.Color.WHITE; textSize = 20f; typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    }
+                    val allyBand = com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotNameRect(1920, 868, true, 0, config)
+                    val enemyBand = com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotNameRect(1920, 868, false, 0, config)
+                    canvas.drawText("SERAPHINE", allyBand.left + 8f, 868 * config.allySlotYRatios[0] - 18f, paint)
+                    canvas.drawText("MEL", enemyBand.right - paint.measureText("MEL") - 8f, 868 * config.enemySlotYRatios[0] - 18f, paint)
+                    val result = kotlinx.coroutines.withTimeout(60_000L) {
+                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                    }
+                    assertEquals("seraphine", result.alliesBySlot[0]?.id)
+                    assertEquals("mel", result.enemiesBySlot[0]?.id)
+                } finally { bitmap.recycle() }
+            }
+        } finally { scanner.resetSlotMemory(); scanner.updateCalibration(context, original) }
+    }
+
     private fun inspectAlliedTransition(language: String) = kotlinx.coroutines.runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val scanner = com.example.service.screen.DraftVisionScanner
