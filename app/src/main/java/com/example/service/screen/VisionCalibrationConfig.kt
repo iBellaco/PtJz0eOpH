@@ -249,6 +249,7 @@ VisionCalibrationConfig(
     fun saveToPrefs(context: Context) {
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
+            putString("calibration_device_model", deviceModelKey())
             putInt("calibration_version", CURRENT_CALIBRATION_VERSION)
             allyBanXRatios.forEachIndexed { i, x -> putFloat("ban_ally_x_$i", x) }
             enemyBanXRatios.forEachIndexed { i, x -> putFloat("ban_enemy_x_$i", x) }
@@ -282,6 +283,8 @@ VisionCalibrationConfig(
 
     companion object {
         private const val CURRENT_CALIBRATION_VERSION = 9
+        private fun deviceModelKey(): String =
+            "${android.os.Build.MANUFACTURER}:${android.os.Build.MODEL}".lowercase(java.util.Locale.ROOT)
 
         /** Measured normalized capture coordinates; saved individual adjustments take precedence. */
         internal fun defaultsForDevice(manufacturer: String, model: String): VisionCalibrationConfig {
@@ -308,6 +311,12 @@ VisionCalibrationConfig(
 
         fun loadFromPrefs(context: Context): VisionCalibrationConfig {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
+            val savedModel = prefs.getString("calibration_device_model", null)
+            if (savedModel != null && savedModel != deviceModelKey()) {
+                // Cloud restore may also target a different phone; its portrait positions are independent.
+                prefs.edit().clear().apply()
+            }
+            prefs.edit().putString("calibration_device_model", deviceModelKey()).apply()
             if (!prefs.getBoolean("device_profile_checked", false)) {
                 val poco = defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
                 val generic = VisionCalibrationConfig()

@@ -32,6 +32,10 @@ class DeviceDraftProfileTest {
             com.example.service.screen.DraftVisionScanner.initCalibration(context)
             assertEquals(manual, com.example.service.screen.DraftVisionScanner.calibrationConfig)
             assertEquals(manual, com.example.service.screen.DraftVisionScanner.calibrationConfigFlow.value)
+            ShadowBuild.setManufacturer("nubia")
+            ShadowBuild.setModel("NX789J")
+            com.example.service.screen.DraftVisionScanner.initCalibration(context)
+            assertEquals(VisionCalibrationConfig(), com.example.service.screen.DraftVisionScanner.calibrationConfig)
         } finally { prefs.edit().clear().commit(); ShadowBuild.reset() }
     }
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {
