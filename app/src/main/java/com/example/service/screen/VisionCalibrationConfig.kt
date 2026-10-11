@@ -283,10 +283,24 @@ VisionCalibrationConfig(
     companion object {
         private const val CURRENT_CALIBRATION_VERSION = 9
 
+        /** Measured normalized capture coordinates; saved individual adjustments take precedence. */
+        internal fun defaultsForDevice(manufacturer: String, model: String): VisionCalibrationConfig {
+            val device = "$manufacturer $model".lowercase(java.util.Locale.ROOT)
+            // POCO X7 Pro regional identifiers, including the global 2412DPC0AG.
+            val poco = "poco x7 pro" in device || "2412dpc0a" in device || "2412dpc0i" in device
+            return if (!poco) VisionCalibrationConfig() else VisionCalibrationConfig(
+                allyAvatarCenterX = .120f, enemyAvatarCenterX = .911f,
+                allySlotXRatios = List(5) { .120f }, enemySlotXRatios = List(5) { .911f },
+                allySlotYRatios = listOf(.184f, .320f, .454f, .592f, .728f),
+                enemySlotYRatios = listOf(.179f, .315f, .449f, .587f, .723f),
+                allySlotDiameterRatios = List(5) { .110f }
+            )
+        }
+
         fun resetToDefaults(context: Context): VisionCalibrationConfig {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
             prefs.edit().clear().apply()
-            val defaultConfig = VisionCalibrationConfig()
+            val defaultConfig = defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
             defaultConfig.saveToPrefs(context)
             prefs.edit().putInt("calibration_version", CURRENT_CALIBRATION_VERSION).apply()
             return defaultConfig
@@ -294,8 +308,29 @@ VisionCalibrationConfig(
 
         fun loadFromPrefs(context: Context): VisionCalibrationConfig {
             val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
+            if (!prefs.getBoolean("device_profile_checked", false)) {
+                val poco = defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
+                val generic = VisionCalibrationConfig()
+                val untouched = (0..4).all { i ->
+                    prefs.getFloat("ally_slot_x_$i", generic.getAllySlotX(i)) == generic.getAllySlotX(i) &&
+                    prefs.getFloat("enemy_slot_x_$i", generic.getEnemySlotX(i)) == generic.getEnemySlotX(i) &&
+                    prefs.getFloat("ally_slot_y_$i", generic.allySlotYRatios[i]) == generic.allySlotYRatios[i] &&
+                    prefs.getFloat("enemy_slot_y_$i", generic.enemySlotYRatios[i]) == generic.enemySlotYRatios[i] &&
+                    prefs.getFloat("ally_slot_diam_$i", generic.getSlotDiameter(true, i)) == generic.getSlotDiameter(true, i) &&
+                    prefs.getFloat("enemy_slot_diam_$i", generic.getSlotDiameter(false, i)) == generic.getSlotDiameter(false, i)
+                }
+                if (poco != generic && untouched) {
+                    // Preserve existing ban adjustments while replacing only the player-column preset.
+                    val old = prefs.all.filterKeys { it.startsWith("ban_") }
+                    poco.saveToPrefs(context)
+                    prefs.edit().apply { old.forEach { (key, value) -> when(value) {
+                        is Float -> putFloat(key, value); is Boolean -> putBoolean(key, value)
+                    } }; apply() }
+                }
+                prefs.edit().putBoolean("device_profile_checked", true).apply()
+            }
             val version = prefs.getInt("calibration_version", 0)
-            val default = VisionCalibrationConfig()
+            val default = defaultsForDevice(android.os.Build.MANUFACTURER, android.os.Build.MODEL)
 
             if (!prefs.contains("avatarDiameterRatio") || version < CURRENT_CALIBRATION_VERSION) {
                 val savedAllyX = prefs.getFloat("allyAvatarCenterX", default.allyAvatarCenterX)

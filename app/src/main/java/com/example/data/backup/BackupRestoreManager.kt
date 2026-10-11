@@ -42,7 +42,10 @@ data class BackupDraftItem(
     val directMatchupWarning: String = "",
     val notes: String = "",
     val accountProfileId: String = "default",
-    val accountProfileName: String = "Cuenta Principal"
+    val accountProfileName: String = "Cuenta Principal",
+    val isLegendary: Boolean = false,
+    val matchMode: String = "RANKED",
+    val myScore: String = ""
 )
 
 @Serializable
@@ -110,7 +113,10 @@ object BackupRestoreManager {
                 directMatchupWarning = entity.directMatchupWarning,
                 notes = entity.notes,
                 accountProfileId = entity.accountProfileId,
-                accountProfileName = entity.accountProfileName
+                accountProfileName = entity.accountProfileName,
+                isLegendary = entity.isLegendary,
+                matchMode = entity.matchMode,
+                myScore = entity.myScore
             )
         }
 
@@ -200,7 +206,10 @@ object BackupRestoreManager {
                         directMatchupWarning = item.directMatchupWarning,
                         notes = item.notes,
                         accountProfileId = item.accountProfileId,
-                        accountProfileName = item.accountProfileName
+                        accountProfileName = item.accountProfileName,
+                        isLegendary = item.isLegendary,
+                        matchMode = item.matchMode,
+                        myScore = com.example.data.DraftScoreFormat.normalize(item.myScore)
                     )
                     draftDao.insertDraft(entity)
                     draftsAddedCount++

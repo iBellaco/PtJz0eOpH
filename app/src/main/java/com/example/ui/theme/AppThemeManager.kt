@@ -543,7 +543,15 @@ object AppThemeManager {
         private set
 
     fun init(context: Context) {
-        val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, "app_prefs_enc")
+        val prefs = context.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)
+        if (!prefs.contains(PREFS_KEY_THEME)) {
+            val previous = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(context, "app_prefs_enc")
+            prefs.edit().putString(PREFS_KEY_THEME, previous.getString(PREFS_KEY_THEME, AppTheme.PILTOVER.id))
+                .putString(PREFS_KEY_NAV_BAR, previous.getString(PREFS_KEY_NAV_BAR, NavBarColorOption.THEME_AUTO.id))
+                .putString(PREFS_KEY_NAV_STYLE, previous.getString(PREFS_KEY_NAV_STYLE, CoachNavStyle.ORIGINAL.id))
+                .putBoolean(PREFS_KEY_OLED_MODE, previous.getBoolean(PREFS_KEY_OLED_MODE, false))
+                .putBoolean("particles_enabled", previous.getBoolean("particles_enabled", false)).apply()
+        }
         val savedThemeId = prefs.getString(PREFS_KEY_THEME, AppTheme.PILTOVER.id) ?: AppTheme.PILTOVER.id
         val savedNavId = prefs.getString(PREFS_KEY_NAV_BAR, NavBarColorOption.THEME_AUTO.id) ?: NavBarColorOption.THEME_AUTO.id
         val savedOled = prefs.getBoolean(PREFS_KEY_OLED_MODE, false)
@@ -559,7 +567,7 @@ object AppThemeManager {
     fun setOledMode(enabled: Boolean, context: Context? = null) {
         isOledMode = enabled
         context?.let {
-            val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(it, "app_prefs_enc")
+            val prefs = it.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)
             prefs.edit().putBoolean(PREFS_KEY_OLED_MODE, enabled).apply()
         }
     }
@@ -567,7 +575,7 @@ object AppThemeManager {
     fun setParticlesEnabled(enabled: Boolean, context: Context? = null) {
         isParticlesEnabled = enabled
         context?.let {
-            val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(it, "app_prefs_enc")
+            val prefs = it.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)
             prefs.edit().putBoolean("particles_enabled", enabled).apply()
         }
     }
@@ -575,7 +583,7 @@ object AppThemeManager {
     fun setTheme(theme: AppTheme, context: Context? = null) {
         currentTheme = theme
         context?.let {
-            val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(it, "app_prefs_enc")
+            val prefs = it.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)
             prefs.edit().putString(PREFS_KEY_THEME, theme.id).apply()
         }
     }
@@ -583,14 +591,14 @@ object AppThemeManager {
     fun setNavBarOption(option: NavBarColorOption, context: Context? = null) {
         currentNavBarOption = option
         context?.let {
-            val prefs = com.example.util.AppSecurityManager.getEncryptedSharedPreferences(it, "app_prefs_enc")
+            val prefs = it.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)
             prefs.edit().putString(PREFS_KEY_NAV_BAR, option.id).apply()
         }
     }
 
     fun setNavStyle(style: CoachNavStyle, context: Context? = null) {
         currentNavStyle = style
-        context?.let { com.example.util.AppSecurityManager.getEncryptedSharedPreferences(it, "app_prefs_enc")
+        context?.let { it.getSharedPreferences("coach_visual_preferences", Context.MODE_PRIVATE)
             .edit().putString(PREFS_KEY_NAV_STYLE, style.id).apply() }
     }
 

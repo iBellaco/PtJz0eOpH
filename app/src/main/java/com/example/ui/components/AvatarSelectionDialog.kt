@@ -29,6 +29,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -125,12 +126,16 @@ fun AvatarSelectionBottomSheet(
             ) {}
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.88f)
-                .padding(horizontal = 16.dp)
+        // One scroll owner: the banner, filters and catalog all move together on short screens.
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 100.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.88f).testTag("avatar_catalog_scroll")
         ) {
+            item(key = "catalog_header", span = { GridItemSpan(maxLineSpan) }) {
+            Column {
             // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -286,7 +291,11 @@ fun AvatarSelectionBottomSheet(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            }
+            }
             if (selectedCategory == "Avatares") {
+            item(key = "catalog_filters", span = { GridItemSpan(maxLineSpan) }) {
+            Column {
             // Search Bar
             OutlinedTextField(
                 value = searchQuery,
@@ -380,16 +389,9 @@ fun AvatarSelectionBottomSheet(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
+            }
+            }
             // Grid of Avatars
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 100.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(bottom = 16.dp)
-            ) {
                 groupedAvatars.forEach { (region, avatarsInRegion) ->
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Text(
@@ -605,7 +607,6 @@ fun AvatarSelectionBottomSheet(
                 }
                 } // End of items
             } // End of forEach
-            } // End of LazyVerticalGrid
         } else {
                     // MARCOS (BORDERS) SECTION: Marco por defecto, sin marco, rangos competitivos y roles especiales
                     val mainRoleFrame = when (userRole.lowercase().trim()) {
@@ -651,15 +652,6 @@ fun AvatarSelectionBottomSheet(
                         list.distinct()
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
-                        columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
-                        contentPadding = PaddingValues(vertical = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.weight(1f, fill = false)
-                    ) {
                         items(borders.size) { index ->
                             val border = borders[index]
                             val activeBorder = if (currentRankBorder.isBlank()) "NONE" else currentRankBorder
@@ -736,9 +728,8 @@ fun AvatarSelectionBottomSheet(
                                 }
                             }
                         }
-                    }
                 }
-        } // End of Column
+        } // End of catalog grid
     } // End of ModalBottomSheet
 
     // Modal when user tries to equip a locked avatar
