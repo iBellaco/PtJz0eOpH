@@ -4,12 +4,12 @@ package com.example.service.screen
 object DraftPickOrderPolicy {
     fun firstPickFromTenthSide(tenthIsAlly: Boolean): Boolean = !tenthIsAlly
 
-    /** A lane title is an unselected ally, never a tenth-pick portrait confirmation. */
-    fun tenthSideFromTitles(allies: List<Boolean>, rivals: List<Boolean>, allyLaneSlots: Set<Int>): Boolean? {
+    /** Nine confirmed names locate the final slot even while its ally title still shows the lane. */
+    fun tenthSideFromTitles(allies: List<Boolean>, rivals: List<Boolean>): Boolean? {
         if (allies.size != 5 || rivals.size != 5) return null
         return when {
             allies.all { it } && rivals.take(4).all { it } && !rivals[4] -> false
-            rivals.all { it } && allies.take(4).all { it } && !allies[4] && 4 !in allyLaneSlots -> true
+            rivals.all { it } && allies.take(4).all { it } && !allies[4] -> true
             else -> null
         }
     }

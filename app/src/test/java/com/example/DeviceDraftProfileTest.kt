@@ -34,9 +34,8 @@ class DeviceDraftProfileTest {
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {
         val all = List(5) { true }
         val ninth = listOf(true, true, true, true, false)
-        assertEquals(false, DraftPickOrderPolicy.tenthSideFromTitles(all, ninth, emptySet()))
-        assertEquals(true, DraftPickOrderPolicy.tenthSideFromTitles(ninth, all, emptySet()))
-        assertNull(DraftPickOrderPolicy.tenthSideFromTitles(ninth, all, setOf(4)))
-        assertNull(DraftPickOrderPolicy.tenthSideFromTitles(ninth, ninth, emptySet()))
+        assertEquals(false, DraftPickOrderPolicy.tenthSideFromTitles(all, ninth))
+        assertEquals(true, DraftPickOrderPolicy.tenthSideFromTitles(ninth, all))
+        assertNull(DraftPickOrderPolicy.tenthSideFromTitles(ninth, ninth))
     }
 }

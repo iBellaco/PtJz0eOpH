@@ -1196,7 +1196,7 @@ object DraftVisionScanner {
         // Recover the order from a valid prefix even when auto-scan starts late.
         // Ambiguous prefixes preserve observed order; only an explicit manual choice overrides it.
         val missingTenthSide = DraftPickOrderPolicy.tenthSideFromTitles(
-            allySlotNameConfirmed.toList(), enemySlotNameConfirmed.toList(), currentScanFrameOcrLanes.keys)
+            allySlotNameConfirmed.toList(), enemySlotNameConfirmed.toList())
         detectedFirstPick = if (missingTenthSide != null) {
             DraftPickOrderPolicy.firstPickFromTenthSide(missingTenthSide).also { observedFirstPick = it }
         } else recoverFirstPick(totalAllyOcr, totalEnemyOcr, detectedFirstPick)
@@ -1271,7 +1271,7 @@ object DraftVisionScanner {
             slotIndex = tenthSlotIndex,
             context = context,
             confirmedTargetChampion = targetSlot.champion?.takeIf { targetNameConfirmed },
-            allowVisualConfirmation = !tenthIsAlly || currentScanFrameOcrLanes[tenthSlotIndex] == null
+            allowVisualConfirmation = !tenthIsAlly || currentScanFrameOcrLanes[tenthSlotIndex] == null || otherPicks.size >= 9
         )
 
         if (liteRTDecision != null && confirmedPicksCount >= 9) {

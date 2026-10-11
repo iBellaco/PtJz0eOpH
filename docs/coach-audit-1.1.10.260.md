@@ -3,7 +3,7 @@
 - Build: 976.
 - Perfil Poco X7 Pro: coordenadas medidas para modelos comercial/global/India; instalación nueva y migración del preset genérico intacto. Conserva ajustes individuales existentes y baneos manuales. Restablecer utiliza el perfil del teléfono.
 - Visor: las etiquetas del primer slot vuelven al espacio superior del avatar; evita ocupar el título del segundo slot y taparlo en el OCR. El círculo del décimo utiliza la coordenada individual del avatar final.
-- Décimo pick: nueve títulos confirmados identifican el lado restante y corrigen un prefijo previo errado; una línea aliada pendiente no se trata como selección visual. Mantiene la elección manual explícita.
+- Décimo pick: nueve títulos confirmados identifican el lado restante y corrigen un prefijo previo errado; al llegar a nueve títulos, el último avatar aliado se puede reconocer aunque aún muestre el nombre de la línea. Antes de nueve no se confirma por esa vía. Mantiene la elección manual explícita.
 - Baneos: amplía la búsqueda local de posición/tamaño en retratos desconocidos conservando el umbral de confianza y separación. Regresión con la cabecera real reportada, incluyendo Zeri.
 - Controles: cada toque aplica el cambio al valor más reciente del motor, sin esperar una recomposición intermedia.
 - Avatares y marcos: catálogo con un solo contenedor desplazable para encabezado, filtros y elementos; no deja la lista con altura cero cuando el encabezado ocupa una pantalla corta.
