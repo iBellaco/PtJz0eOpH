@@ -1198,7 +1198,7 @@ object DraftVisionScanner {
         if (!detectBannedPortraits) clearDetectedBans()
         else if (draftVisible) {
             val exclusions = debugTextRects + listOfNotNull(overlayRect)
-            val pickedIds = (allyOcrChampions.filterNotNull() + enemyOcrChampions.filterNotNull() + confirmedHudPicks).map { it.id }.toSet()
+            val pickedIds = (allyOcrChampions.filterNotNull() + enemyOcrChampions.filterNotNull()).map { it.id }.toSet()
             bannedChampionIdsFlow.value = bannedPortraitScanner.scan(bitmap, context,
                 android.os.SystemClock.elapsedRealtime(), exclusions) - pickedIds
         }
