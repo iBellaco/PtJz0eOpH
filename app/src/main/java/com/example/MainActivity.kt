@@ -487,7 +487,7 @@ fun DashboardScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(navBg)
+                        .background(Color.Transparent)
                 ) {
                 // Ambient Runic Particles Floating across Bottom Navigation Bar in background
                 if (AppThemeManager.isParticlesEnabled && isPremium) {
@@ -519,7 +519,7 @@ fun DashboardScreen(
                     )
 
                     CoachNavStyleRenderer(
-                        style = if (isPremium) AppThemeManager.currentNavStyle else CoachNavStyle.ARC_GLOWING,
+                        style = if (isPremium) AppThemeManager.currentNavStyle else CoachNavStyle.ORIGINAL,
                         items = navDestinations,
                         selectedIndex = pagerState.currentPage,
                         onSelected = { page -> coroutineScope.launch { pagerState.animateScrollToPage(page) } }

@@ -23,7 +23,7 @@ import com.example.util.tr
 /** Galería interactiva para revisar los cinco estilos, destinos y salida animada. */
 @Composable
 fun ShowcaseScreen(onClose: () -> Unit = {}, modifier: Modifier = Modifier) {
-    var style by remember { mutableStateOf(CoachNavStyle.ARC_GLOWING) }
+    var style by remember { mutableStateOf(CoachNavStyle.ORIGINAL) }
     var selected by remember { mutableIntStateOf(0) }
     val items = CoachNavPreviewItems()
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -44,18 +44,19 @@ fun ShowcaseScreen(onClose: () -> Unit = {}, modifier: Modifier = Modifier) {
                 CoachNavStyleRenderer(style, items, selected, onSelected = { selected = it })
             }
         }
-        AnimatedLogoutButton(onLogoutComplete = {}, label = tr("Probar cierre de sesión"), modifier = Modifier.fillMaxWidth())
     }
 }
 
 @Composable
 fun CoachNavStyleRenderer(style: CoachNavStyle, items: List<CoachNavItem>, selectedIndex: Int,
                           onSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
+    val background = com.example.ui.theme.AppThemeManager.getNavBarBackgroundColor()
+    val selected = com.example.ui.theme.AppThemeManager.getNavBarSelectedIconColor()
+    val unselected = com.example.ui.theme.AppThemeManager.getNavBarUnselectedColor()
     when (style) {
-        CoachNavStyle.ARC_GLOWING -> ArcGlowingNavBar(items, selectedIndex, HextechDarkBg, HextechGold, TextSecondary, onSelected, modifier)
-        CoachNavStyle.LIQUID -> LiquidNavBar(items, selectedIndex, HextechDarkBg, HextechGold, TextSecondary, onSelected, modifier)
-        CoachNavStyle.CURVED_FAB -> CurvedFabNavBar(items, selectedIndex, HextechDarkBg, HextechGold, TextSecondary, onSelected, modifier)
-        CoachNavStyle.CURVED_SCOOP -> CurvedScoopFloatingNavBar(items, selectedIndex, HextechDarkBg, HextechGold, TextSecondary, onSelected, modifier)
-        CoachNavStyle.NEON_WAVE -> NeonWaveNavBar(items, selectedIndex, HextechDarkBg, HextechGold, TextSecondary, onSelected, modifier)
+        CoachNavStyle.ORIGINAL -> OriginalCoachNavBar(items, selectedIndex, onSelected, modifier)
+        CoachNavStyle.ARC_GLOWING -> ArcGlowingNavBar(items, selectedIndex, background, selected, unselected, onSelected, modifier)
+        CoachNavStyle.LIQUID -> LiquidNavBar(items, selectedIndex, background, selected, unselected, onSelected, modifier)
+        CoachNavStyle.NEON_WAVE -> NeonWaveNavBar(items, selectedIndex, background, selected, unselected, onSelected, modifier)
     }
 }

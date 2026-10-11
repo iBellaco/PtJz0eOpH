@@ -141,6 +141,64 @@ object LiteRTVisionClassifier {
         indexedIds = championEmbeddingCache.keys.toSet()
     }
 
+    /** Locates small header portraits at multiple scales, independently from the pick-column calibrator. */
+    internal fun findHeaderBans(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>): Set<String> {
+        ensureIndexed(context)
+        val catalog = WildRiftRepository.champions.distinctBy { it.id }
+            .filter { championEmbeddingCache.containsKey(it.id) }
+        if (catalog.isEmpty()) return emptySet()
+        val height = bitmap.height
+        val width = bitmap.width
+        val headerHeight = (height * .12f).toInt()
+        val header = IntArray(width * headerHeight)
+        bitmap.getPixels(header, 0, width, 0, 0, width, headerHeight)
+        data class Proposal(val x: Int, val y: Int, val radius: Int, val score: Float,
+                            val descriptor: FloatArray, val shortlist: List<Champion>)
+        val proposals = mutableListOf<Proposal>()
+        // Use image height to preserve physical portrait proportions on every aspect ratio.
+        // Translation/scale refinement is performed against the existing local reference descriptors.
+        for (ratio in floatArrayOf(.026f, .030f, .034f, .038f)) {
+            val radius = (height * ratio).toInt().coerceAtLeast(6)
+            val diameter = radius * 2
+            if (diameter > headerHeight) continue
+            val cropPixels = IntArray(diameter * diameter)
+            for (yRatio in floatArrayOf(.044f, .048f, .052f, .056f, .060f)) {
+                val y = (height * yRatio).toInt()
+                if (y - radius < 0 || y + radius > headerHeight) continue
+                for (x in radius until width - radius step (radius / 4).coerceAtLeast(3)) {
+                    if (x > width * .27f && x < width * .73f) continue
+                    val cropRect = android.graphics.Rect(x - radius, y - radius, x + radius, y + radius)
+                    if (exclusions.any { android.graphics.Rect.intersects(it, cropRect) }) continue
+                    for (row in 0 until diameter) {
+                        System.arraycopy(header, (y - radius + row) * width + x - radius, cropPixels, row * diameter, diameter)
+                    }
+                    val input = PortraitMatcher.descriptor(cropPixels, diameter, diameter)
+                    val coarse = catalog.map { champ ->
+                        champ to PortraitMatcher.correlation(input, championEmbeddingCache.getValue(champ.id)[13])
+                    }.sortedByDescending { it.second }
+                    if (coarse.first().second >= .60f) {
+                        proposals.add(Proposal(x, y, radius, coarse.first().second, input, coarse.take(8).map { it.first }))
+                    }
+                }
+            }
+        }
+        val found = mutableListOf<Pair<Proposal, Champion>>()
+        for (proposal in proposals.sortedByDescending { it.score }.take(200)) {
+            if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 5) continue
+            if (found.any { kotlin.math.abs(it.first.x - proposal.x) < maxOf(it.first.radius, proposal.radius) * 1.4f }) continue
+            val ranked = proposal.shortlist.map { champ ->
+                champ to PortraitMatcher.similarity(proposal.descriptor, championEmbeddingCache.getValue(champ.id))
+            }.sortedByDescending { it.second }
+            val best = ranked.first()
+            if (PortraitMatcher.accepts(best.second, ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
+                found.add(proposal to best.first)
+            }
+        }
+        // A single gameplay HUD portrait must not be interpreted as a ban row.
+        if (found.size < 3 || found.none { it.first.x < width / 2 } || found.none { it.first.x > width / 2 }) return emptySet()
+        return found.map { it.second.id }.toSet()
+    }
+
     /** Keep only evidence from a visible draft slot, never from the loading background. */
     internal fun hasSlotRing(bitmap: Bitmap, isAlly: Boolean): Boolean {
         var matches = 0

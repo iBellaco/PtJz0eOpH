@@ -125,7 +125,14 @@ object DraftVisionScanner {
 
     val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
     val allySlotOcrLaneCache = mutableMapOf<Int, LaneRole>()
-    val detectedBannedChampionIds = mutableSetOf<String>()
+    private val bannedPortraitScanner = BannedPortraitScanner()
+    val bannedChampionIdsFlow = kotlinx.coroutines.flow.MutableStateFlow<Set<String>>(emptySet())
+    val detectedBannedChampionIds: Set<String> get() = bannedChampionIdsFlow.value
+
+    fun clearDetectedBans() {
+        bannedPortraitScanner.reset()
+        bannedChampionIdsFlow.value = emptySet()
+    }
 
     fun recordFrameSkipped() {
         framesSkippedCount.value = framesSkippedCount.value + 1L
@@ -403,7 +410,7 @@ object DraftVisionScanner {
         enemySlotConfirmedChampions.fill(null)
         allySlotNameConfirmed.fill(false)
         enemySlotNameConfirmed.fill(false)
-        detectedBannedChampionIds.clear()
+        clearDetectedBans()
         allySlotFilters.forEach { it.reset() }
         enemySlotFilters.forEach { it.reset() }
         LiteRTVisionClassifier.reset()
@@ -427,7 +434,8 @@ object DraftVisionScanner {
         context: android.content.Context? = null,
         currentIsFirstPick: Boolean? = null,
         currentActiveRole: LaneRole? = null,
-        confirmedHudPicks: List<Champion> = emptyList()
+        confirmedHudPicks: List<Champion> = emptyList(),
+        detectBannedPortraits: Boolean = false
     ): DraftScanResult {
         if (bitmap.isRecycled || bitmap.width < bitmap.height) {
             return DraftScanResult(emptyList(), emptyList(), isSuccessful = false, statusMessage = "Orientación no horizontal")
@@ -659,14 +667,8 @@ object DraftVisionScanner {
                     
                     detectedWords.add(text)
 
-                    // Detectar en la barra superior (< 0.12f) si aparecen campeones baneados
-                    if (yRatio < 0.12f) {
-                        val bannedChamp = ChampionNameResolver.findChampionInText(text, allChamps)
-                        if (bannedChamp != null) {
-                            detectedBannedChampionIds.add(bannedChamp.id)
-                        }
-                        continue
-                    }
+                    // Header names are not evidence of bans; only stable header portraits qualify.
+                    if (yRatio < 0.12f) continue
                     if (yRatio > 0.880f) continue
 
                     val boxLeftRatio = if (box != null && width > 0) box.left.toFloat() / width.toFloat() else xRatio
@@ -1190,6 +1192,16 @@ object DraftVisionScanner {
         val tenthTurn = pickSequence.last()
         val tenthIsAlly = tenthTurn.isAlly
         val tenthSlotIndex = tenthTurn.slotIndex
+
+        val draftVisible = allyOcrChampions.any { it != null } || enemyOcrChampions.any { it != null } ||
+            currentScanFrameOcrLanes.isNotEmpty() || isActiveSelectionDetected || isPreparationPhase
+        if (!detectBannedPortraits) clearDetectedBans()
+        else if (draftVisible) {
+            val exclusions = debugTextRects + listOfNotNull(overlayRect)
+            val pickedIds = (allyOcrChampions.filterNotNull() + enemyOcrChampions.filterNotNull()).map { it.id }.toSet()
+            bannedChampionIdsFlow.value = bannedPortraitScanner.scan(bitmap, context,
+                android.os.SystemClock.elapsedRealtime(), exclusions) - pickedIds
+        }
 
         val otherPicks = getConfirmedPicksExcept(tenthTurn, confirmedHudPicks)
         val confirmedPicksCount = otherPicks.size

@@ -30,7 +30,9 @@ fun AnimatedLogoutButton(
     modifier: Modifier = Modifier,
     darkMode: Boolean = true,
     label: String = "Cerrar sesión",
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    startAnimation: Boolean = false,
+    onRequestConfirmation: (() -> Unit)? = null
 ) {
     var running by remember { mutableStateOf(false) }
     var phase by remember { mutableIntStateOf(0) }
@@ -39,9 +41,10 @@ fun AnimatedLogoutButton(
     val shake by animateFloatAsState(if (phase == 3) 5f else 0f, tween(90), label = "logout_shake")
     val fall by animateFloatAsState(if (phase >= 4) 24f else 0f, tween(360), label = "logout_fall")
     val alpha by animateFloatAsState(if (phase >= 4) 0f else 1f, tween(360), label = "logout_fade")
-    val bg = if (darkMode) Color(0xFF172333) else Color(0xFFF1F4F7)
-    val fg = if (darkMode) Color(0xFFEAF2FA) else Color(0xFF26364A)
-    val danger = Color(0xFFE35D6A)
+    val bg = com.example.ui.theme.HextechSurfaceVariant
+    val fg = com.example.ui.theme.TextPrimary
+    val danger = com.example.ui.theme.DangerRed
+    LaunchedEffect(startAnimation) { if (startAnimation) running = true }
     LaunchedEffect(running) {
         if (running) {
             phase = 1; delay(270); phase = 2; delay(190); phase = 3; delay(110); phase = 4; delay(380)
@@ -51,7 +54,9 @@ fun AnimatedLogoutButton(
     }
     Row(
         modifier = modifier.heightIn(min = 52.dp).clip(RoundedCornerShape(13.dp)).background(bg)
-            .clickable(enabled = enabled && !running) { running = true }.testTag("animated_logout_button")
+            .clickable(enabled = enabled && !running) {
+                if (onRequestConfirmation != null) onRequestConfirmation() else running = true
+            }.testTag("animated_logout_button")
             .graphicsLayer { translationX = if (phase == 3) shake else 0f },
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center
     ) {

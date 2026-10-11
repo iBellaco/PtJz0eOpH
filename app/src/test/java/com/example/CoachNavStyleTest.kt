@@ -11,8 +11,13 @@ class CoachNavStyleTest {
         }
     }
 
+    @Test fun removedNotchedStylesRecoverTheOriginalBar() {
+        assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId("curved_fab"))
+        assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId("curved_scoop"))
+    }
+
     @Test fun unknownPersistedStyleFallsBackToTheStableDefault() {
-        assertEquals(CoachNavStyle.ARC_GLOWING, CoachNavStyle.fromId("missing"))
-        assertEquals(CoachNavStyle.ARC_GLOWING, CoachNavStyle.fromId(null))
+        assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId("missing"))
+        assertEquals(CoachNavStyle.ORIGINAL, CoachNavStyle.fromId(null))
     }
 }

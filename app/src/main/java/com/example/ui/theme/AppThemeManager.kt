@@ -505,14 +505,13 @@ enum class NavBarColorOption(
 
 /** Estilos visuales de navegación disponibles desde Temas para cuentas Premium. */
 enum class CoachNavStyle(val id: String, val title: String) {
+    ORIGINAL("original", "Original de Coach"),
     ARC_GLOWING("arc_glowing", "Anillo Hextech"),
     LIQUID("liquid", "Flujo arcano"),
-    CURVED_FAB("curved_fab", "Orbe central"),
-    CURVED_SCOOP("curved_scoop", "Muesca elevada"),
     NEON_WAVE("neon_wave", "Onda de energía");
 
     companion object {
-        fun fromId(id: String?): CoachNavStyle = entries.firstOrNull { it.id == id } ?: ARC_GLOWING
+        fun fromId(id: String?): CoachNavStyle = entries.firstOrNull { it.id == id } ?: ORIGINAL
     }
 }
 
@@ -528,7 +527,7 @@ object AppThemeManager {
     var currentNavBarOption by mutableStateOf(NavBarColorOption.THEME_AUTO)
         private set
 
-    var currentNavStyle by mutableStateOf(CoachNavStyle.ARC_GLOWING)
+    var currentNavStyle by mutableStateOf(CoachNavStyle.ORIGINAL)
         private set
 
     var isOledMode by mutableStateOf(false)
@@ -546,7 +545,7 @@ object AppThemeManager {
 
         currentTheme = AppTheme.fromId(savedThemeId)
         currentNavBarOption = NavBarColorOption.entries.find { it.id == savedNavId } ?: NavBarColorOption.THEME_AUTO
-        currentNavStyle = CoachNavStyle.fromId(prefs.getString(PREFS_KEY_NAV_STYLE, CoachNavStyle.ARC_GLOWING.id))
+        currentNavStyle = CoachNavStyle.fromId(prefs.getString(PREFS_KEY_NAV_STYLE, CoachNavStyle.ORIGINAL.id))
         isOledMode = savedOled
         isParticlesEnabled = savedParticles
     }
