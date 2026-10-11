@@ -16,8 +16,14 @@ class ValidatedApkTest(unittest.TestCase):
         def request(path):
             if '/git/commits/' in path:
                 return {'tree': {'sha': 'different' if changed_tree and path.endswith('a' * 40) else 'same'}}
-            if '/compare/' in path:
-                return {'files': files if files is not None else [{'filename': 'app/src/main/Example.kt'}]}
+            if '/git/trees/' in path:
+                changed = files if files is not None else [{'filename': 'app/src/main/Example.kt'}]
+                entries = [{'path': 'app/build.gradle.kts', 'type': 'blob', 'sha': 'base'}]
+                for f in changed:
+                    entries.append({'path': f.get('previous_filename', f['filename'])
+                                    if '/different?' in path else f['filename'],
+                                    'type': 'blob', 'sha': 'old' if '/different?' in path else 'new'})
+                return {'truncated': len(changed) >= 300, 'tree': entries}
             if '/workflows/' in path:
                 return {'workflow_runs': [run or self.fixture_run]}
             if '/jobs?' in path:
@@ -44,7 +50,7 @@ class ValidatedApkTest(unittest.TestCase):
         self.assertEqual(('', ''), self.invoke(changed_tree=True, files=[{
             'filename': '.github/scripts/cleanup-completed-runs.cjs',
             'previous_filename': 'app/src/main/Example.kt'}]))
-        self.assertEqual(('', ''), self.invoke(changed_tree=True, files=[]))
+        self.assertEqual(('42', 'a' * 40), self.invoke(changed_tree=True, files=[]))
         self.assertEqual(('', ''), self.invoke(changed_tree=True,
             files=[{'filename': '.github/scripts/cleanup-completed-runs.cjs'}] * 300))
 

@@ -41,14 +41,15 @@ def find(repository, target_sha, request=api):
             continue
         source_tree = request(f"{prefix}/git/commits/{run['head_sha']}")['tree']['sha']
         if source_tree != target_tree:
-            comparison = request(f"{prefix}/compare/{run['head_sha']}...{target_sha}")
-            files = comparison.get('files', [])
-            # Comparisons cap files at 300. Fail closed for large/incomplete diffs.
-            if not files or len(files) >= 300 or any(
-                f.get('filename') not in DELIVERY_ONLY_FILES
-                or f.get('previous_filename', f.get('filename')) not in DELIVERY_ONLY_FILES
-                for f in files
-            ):
+            previous = request(f"{prefix}/git/trees/{source_tree}?recursive=1")
+            current = request(f"{prefix}/git/trees/{target_tree}?recursive=1")
+            if previous.get('truncated', True) or current.get('truncated', True):
+                continue
+            def apk_inputs(tree):
+                return {entry['path']: (entry['type'], entry['sha'])
+                        for entry in tree['tree'] if entry['type'] != 'tree'
+                        and entry['path'] not in DELIVERY_ONLY_FILES}
+            if apk_inputs(previous) != apk_inputs(current):
                 continue
         jobs = request(f"{prefix}/actions/runs/{run['id']}/jobs?per_page=100")['jobs']
         passed = {job['name'] for job in jobs if job.get('conclusion') == 'success'}
