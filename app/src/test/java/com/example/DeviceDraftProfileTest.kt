@@ -21,14 +21,17 @@ class DeviceDraftProfileTest {
         ShadowBuild.setManufacturer("Xiaomi")
         ShadowBuild.setModel("2412DPC0AG")
         try {
-            val preset = VisionCalibrationConfig.loadFromPrefs(context)
+            com.example.service.screen.DraftVisionScanner.initCalibration(context)
+            val preset = com.example.service.screen.DraftVisionScanner.calibrationConfig
             assertEquals(.120f, preset.getAllySlotX(0), .00001f)
             assertEquals(.911f, preset.getEnemySlotX(0), .00001f)
             assertEquals(listOf(.184f, .320f, .454f, .592f, .728f), preset.allySlotYRatios)
             assertEquals(listOf(.179f, .315f, .449f, .587f, .723f), preset.enemySlotYRatios)
             val manual = preset.adjustDraftSlot(true, 0, deltaX = .005f, deltaY = -.005f)
             manual.saveToPrefs(context)
-            assertEquals(manual, VisionCalibrationConfig.loadFromPrefs(context))
+            com.example.service.screen.DraftVisionScanner.initCalibration(context)
+            assertEquals(manual, com.example.service.screen.DraftVisionScanner.calibrationConfig)
+            assertEquals(manual, com.example.service.screen.DraftVisionScanner.calibrationConfigFlow.value)
         } finally { prefs.edit().clear().commit(); ShadowBuild.reset() }
     }
     @Test fun nineConfirmedTitlesIdentifyTheSideRegardlessOfAnEarlierWrongPrefix() {

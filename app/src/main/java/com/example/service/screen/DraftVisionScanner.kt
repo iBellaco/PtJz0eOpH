@@ -313,7 +313,7 @@ object DraftVisionScanner {
         }
     }
 
-    var calibrationConfig = VisionCalibrationConfig()
+    @Volatile var calibrationConfig = VisionCalibrationConfig()
     val calibrationConfigFlow = kotlinx.coroutines.flow.MutableStateFlow(VisionCalibrationConfig())
 
     fun initCalibration(context: android.content.Context) {

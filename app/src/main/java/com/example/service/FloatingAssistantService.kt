@@ -188,6 +188,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
         try {
             // Desactivar visor de depuración por defecto al iniciar o reabrir el overlay
             com.example.service.screen.DraftVisionScanner.showCalibrationBoxes.value = false
+            com.example.service.screen.DraftVisionScanner.initCalibration(applicationContext)
             com.example.data.WildRiftRepository.initChampions(applicationContext)
             screenCaptureManager = ScreenCaptureManager(this)
             savedStateRegistryController.performRestore(null)
