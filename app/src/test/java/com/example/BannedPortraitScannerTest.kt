@@ -23,6 +23,18 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun latestReportedHeaderRecognizesAllNineRealBansAndTheEmptyPosition() {
+        val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/reported-7296.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
+        val scanner = BannedPortraitScanner()
+        try {
+            scanner.scan(bitmap, context, 0)
+            val ids = scanner.scan(bitmap, context, 1500)
+            assertTrue(ids.toString(), ids.containsAll(setOf("samira", "nocturne", "cho_gath", "hwei", "zeri", "fiora", "rammus", "blitzcrank", "vex")))
+            assertEquals(com.example.service.screen.BanState.EMPTY, scanner.slots.first {
+                it.side == com.example.service.screen.BanSide.ALLY && it.index == 2 }.state)
+        } finally { bitmap.recycle() }
+    }
+
     @Test fun reportedGreenPortraitIsZeriRatherThanAnEmptyBan() {
         val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/zeri-header.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
         val scanner = BannedPortraitScanner()

@@ -313,7 +313,7 @@ object DraftVisionScanner {
         }
     }
 
-    var calibrationConfig = VisionCalibrationConfig()
+    @Volatile var calibrationConfig = VisionCalibrationConfig()
     val calibrationConfigFlow = kotlinx.coroutines.flow.MutableStateFlow(VisionCalibrationConfig())
 
     fun initCalibration(context: android.content.Context) {
@@ -340,9 +340,8 @@ object DraftVisionScanner {
     }
 
     fun resetCalibration(context: android.content.Context) {
-        calibrationConfig = VisionCalibrationConfig()
+        calibrationConfig = VisionCalibrationConfig.resetToDefaults(context)
         calibrationConfigFlow.value = calibrationConfig
-        calibrationConfig.saveToPrefs(context)
     }
 
     private var recognizerInstance: com.google.mlkit.vision.text.TextRecognizer? = null
@@ -1196,7 +1195,11 @@ object DraftVisionScanner {
 
         // Recover the order from a valid prefix even when auto-scan starts late.
         // Ambiguous prefixes preserve observed order; only an explicit manual choice overrides it.
-        detectedFirstPick = recoverFirstPick(totalAllyOcr, totalEnemyOcr, detectedFirstPick)
+        val missingTenthSide = DraftPickOrderPolicy.tenthSideFromTitles(
+            allySlotNameConfirmed.toList(), enemySlotNameConfirmed.toList())
+        detectedFirstPick = if (missingTenthSide != null) {
+            DraftPickOrderPolicy.firstPickFromTenthSide(missingTenthSide).also { observedFirstPick = it }
+        } else recoverFirstPick(totalAllyOcr, totalEnemyOcr, detectedFirstPick)
 
         val effectiveFirstPick = currentIsFirstPick ?: detectedFirstPick ?: false
         isFirstPickState.value = effectiveFirstPick
@@ -1268,7 +1271,7 @@ object DraftVisionScanner {
             slotIndex = tenthSlotIndex,
             context = context,
             confirmedTargetChampion = targetSlot.champion?.takeIf { targetNameConfirmed },
-            allowVisualConfirmation = !tenthIsAlly || currentScanFrameOcrLanes[tenthSlotIndex] == null
+            allowVisualConfirmation = !tenthIsAlly || currentScanFrameOcrLanes[tenthSlotIndex] == null || otherPicks.size >= 9
         )
 
         if (liteRTDecision != null && confirmedPicksCount >= 9) {

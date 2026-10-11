@@ -205,8 +205,7 @@ fun ScannerDebugOverlay(
             drawDiagnosticText(
                 if (allyMatch != null) "$slotLabel: $allyMatch" else slotLabel,
                 allyLabelX,
-                if (belowHeader) allyY + allyAvatarRad - allyCaptionPaint.fontMetrics.top + 3f
-                else allyY - allyAvatarRad - 6f,
+                allyY - allyAvatarRad - 6f,
                 allyCaptionPaint, margin = if (belowHeader) 1f else 5f
             )
 
@@ -277,8 +276,7 @@ fun ScannerDebugOverlay(
             drawDiagnosticText(
                 if (enemyMatch != null) "$enemySlotLabel: $enemyMatch" else enemySlotLabel,
                 enemyLabelX,
-                if (belowHeader) enemyY + enemyAvatarRad - enemyCaptionPaint.fontMetrics.top + 3f
-                else enemyY - enemyAvatarRad - 6f,
+                enemyY - enemyAvatarRad - 6f,
                 enemyCaptionPaint, margin = if (belowHeader) 1f else 5f
             )
 
@@ -294,9 +292,9 @@ fun ScannerDebugOverlay(
             h * currentConfig.enemySlotYRatios.getOrElse(4) { 0.732f }
         }
         val tenthTargetX = if (tenthIsAlly) {
-            w * currentConfig.allyAvatarCenterX
+            w * currentConfig.getAllySlotX(4)
         } else {
-            w * currentConfig.enemyAvatarCenterX
+            w * currentConfig.getEnemySlotX(4)
         }
         val tenthLabel = if (tenthIsAlly) "10º PICK (Aliado 5)" else "10º PICK (Rival 5)"
 

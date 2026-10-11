@@ -118,6 +118,8 @@ fun LiteRTEngineViewerDialog(
     var calibrationStep by remember { mutableStateOf(0.005f) } // 0.5% por defecto
 
     fun modifyDetectionCircle(deltaX: Float = 0f, deltaY: Float = 0f, deltaSize: Float = 0f) {
+        // Read the latest committed value even before Compose consumes the next flow emission.
+        val calibrationConfig = DraftVisionScanner.calibrationConfig
         val updated = if (selectedTarget.isBan) calibrationConfig.withObservedBanRow(selectedTarget.isAlly,
             observedBans.filter { (it.side == com.example.service.screen.BanSide.ALLY) == selectedTarget.isAlly }
                 .sortedBy { it.index }.mapNotNull { it.region }).adjustBanRow(
