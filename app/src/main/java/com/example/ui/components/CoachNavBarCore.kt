@@ -79,6 +79,9 @@ internal fun CoachNavBarCore(
                     drawPath(path, active.copy(alpha = .25f), style = Stroke(8.dp.toPx(), cap = StrokeCap.Round))
                     drawPath(path, active, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
                 }
+                else -> {
+                    drawCircle(active.copy(alpha = .15f), 22.dp.toPx(), Offset(centerX, centerY))
+                }
             }
         }
         Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
@@ -96,7 +99,7 @@ internal fun CoachNavBarCore(
                         modifier = if (style == CoachNavStyle.LIQUID) Modifier.fillMaxSize() else Modifier.fillMaxWidth().height(48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (itemIndex == 4 && items.size == 5) UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount())
+                        if (itemIndex == 4 && items.size == 5) UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount(), if (selected) selectedColor else unselectedColor)
                         else Icon(item.icon, contentDescription = tr(item.title), tint = if (selected) selectedColor else unselectedColor,
                             modifier = Modifier.size(21.dp).graphicsLayer { scaleX = iconScale; scaleY = iconScale })
                     }
@@ -116,5 +119,5 @@ internal fun CoachNavPreviewItems(): List<CoachNavItem> = listOf(
     CoachNavItem("Selección", Icons.Default.Groups, com.example.ui.theme.AppThemeManager.getNavBarAccentColor()),
     CoachNavItem("Clasificación", Icons.Default.TrendingUp, com.example.ui.theme.AppThemeManager.getNavBarAccentColor()),
     CoachNavItem("Catálogo", Icons.AutoMirrored.Filled.MenuBook, com.example.ui.theme.AppThemeManager.getNavBarAccentColor()),
-    CoachNavItem("Usuario", Icons.Default.Person, com.example.ui.theme.AppThemeManager.getNavBarAccentColor())
+    CoachNavItem("Usuario", Icons.Default.Person, com.example.ui.theme.AppThemeManager.getNavBarAccentColor(), notificationCount = 0)
 )

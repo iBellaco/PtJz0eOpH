@@ -508,7 +508,13 @@ enum class CoachNavStyle(val id: String, val title: String) {
     ORIGINAL("original", "Original de Coach"),
     ARC_GLOWING("arc_glowing", "Anillo Hextech"),
     LIQUID("liquid", "Flujo arcano"),
-    NEON_WAVE("neon_wave", "Onda de energía");
+    NEON_WAVE("neon_wave", "Onda de energía"),
+    CAPSULE("capsule", "Cápsula Hextech"),
+    RUNIC_TILE("runic_tile", "Sello rúnico"),
+    TOP_BEACON("top_beacon", "Faro superior"),
+    UNDERLINE("underline", "Trazo luminoso"),
+    ACTIVE_LABEL("active_label", "Etiqueta activa"),
+    ORBIT("orbit", "Órbita de cristal");
 
     companion object {
         fun fromId(id: String?): CoachNavStyle = entries.firstOrNull { it.id == id } ?: ORIGINAL

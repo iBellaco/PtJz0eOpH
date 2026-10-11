@@ -49,15 +49,23 @@ fun ShowcaseScreen(onClose: () -> Unit = {}, modifier: Modifier = Modifier) {
 
 @Composable
 fun CoachNavStyleRenderer(style: CoachNavStyle, items: List<CoachNavItem>, selectedIndex: Int,
-                          onSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
+                          onSelected: (Int) -> Unit, modifier: Modifier = Modifier,
+                          particlesEnabled: Boolean = com.example.ui.theme.AppThemeManager.isParticlesEnabled) {
     val background = com.example.ui.theme.AppThemeManager.getNavBarBackgroundColor()
     val selected = com.example.ui.theme.AppThemeManager.getNavBarSelectedIconColor()
     val unselected = com.example.ui.theme.AppThemeManager.getNavBarUnselectedColor()
-    val safeModifier = if (style == CoachNavStyle.ORIGINAL) modifier else modifier.windowInsetsPadding(WindowInsets.navigationBars)
-    when (style) {
-        CoachNavStyle.ORIGINAL -> OriginalCoachNavBar(items, selectedIndex, onSelected, modifier)
-        CoachNavStyle.ARC_GLOWING -> ArcGlowingNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
-        CoachNavStyle.LIQUID -> LiquidNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
-        CoachNavStyle.NEON_WAVE -> NeonWaveNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
+    val safeModifier = if (style == CoachNavStyle.ORIGINAL) Modifier else Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+    Box(modifier) {
+        when (style) {
+            CoachNavStyle.ORIGINAL -> OriginalCoachNavBar(items, selectedIndex, onSelected)
+            CoachNavStyle.ARC_GLOWING -> ArcGlowingNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
+            CoachNavStyle.LIQUID -> LiquidNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
+            CoachNavStyle.NEON_WAVE -> NeonWaveNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
+            else -> ReferenceCoachNavBar(items, selectedIndex, style, onSelected,
+                Modifier.windowInsetsPadding(WindowInsets.navigationBars))
+        }
+        if (particlesEnabled) com.example.RunicNavBarParticleAnimation(
+            modifier = Modifier.matchParentSize().testTag("nav_particles"),
+            accentColor = com.example.ui.theme.AppThemeManager.getNavBarAccentColor())
     }
 }

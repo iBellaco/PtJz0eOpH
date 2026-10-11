@@ -77,7 +77,7 @@ fun PanelNotificationBadge(count: Int, panel: NotificationPanel) {
 
 /** Same bell pulse as the inbox, including draw-layer scaling without layout churn. */
 @Composable
-fun UserNotificationIcon(count: Int) {
+fun UserNotificationIcon(count: Int, tint: Color = LocalContentColor.current) {
     val showBadge = count > 0
     val scale = if (showBadge) {
         val transition = rememberInfiniteTransition(label = "bellPulseAnim")
@@ -90,6 +90,7 @@ fun UserNotificationIcon(count: Int) {
     }) {
         Icon(if (showBadge) Icons.Default.Notifications else Icons.Default.Person,
             contentDescription = tr(if (showBadge) "Notificaciones" else "Usuario"),
+            tint = tint,
             modifier = Modifier.size(24.dp).testTag("user_navigation_icon").graphicsLayer {
                 if (showBadge) { scaleX = scale.value; scaleY = scale.value }
             })

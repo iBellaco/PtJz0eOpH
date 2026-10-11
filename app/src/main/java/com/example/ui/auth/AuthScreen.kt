@@ -213,6 +213,13 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     var showPlansDialog by remember { mutableStateOf(false) }
     var showHistoryDialog by remember { mutableStateOf(false) }
     var showInboxDialog by remember { mutableStateOf(false) }
+    val openInboxFromPhone by com.example.data.InboxPhoneNotifications.openInbox.collectAsState()
+    LaunchedEffect(openInboxFromPhone) {
+        if (openInboxFromPhone) {
+            showInboxDialog = true
+            com.example.data.InboxPhoneNotifications.consumed()
+        }
+    }
     var showAdminDashboard by remember { mutableStateOf(false) }
     var showModeratorDashboard by remember { mutableStateOf(false) }
     var showAdminCreatorDialog by remember { mutableStateOf(false) }

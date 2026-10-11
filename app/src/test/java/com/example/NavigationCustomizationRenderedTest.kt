@@ -29,6 +29,91 @@ class NavigationCustomizationRenderedTest {
     @get:Rule val compose = createComposeRule()
 
     @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
+    @Test fun everyStyleShowsParticlesAboveItsBackgroundAndGivesUserTheSameTint() {
+        var style by mutableStateOf(CoachNavStyle.ORIGINAL)
+        var selected by mutableIntStateOf(4)
+        var particles by mutableStateOf(false)
+        AppThemeManager.setNavBarOption(com.example.ui.theme.NavBarColorOption.THEME_AUTO)
+        compose.setContent { MyApplicationTheme {
+            androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
+                com.example.ui.components.CoachNavStyleRenderer(style,
+                    com.example.ui.components.CoachNavPreviewItems(), selected, {},
+                    androidx.compose.ui.Modifier.align(androidx.compose.ui.Alignment.BottomCenter)
+                        .testTag("nav_pixels"), particlesEnabled = particles)
+            }
+        } }
+        for (option in CoachNavStyle.entries) {
+            compose.runOnIdle {
+                style = option; selected = 4; particles = false
+                androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+            }
+            compose.mainClock.advanceTimeBy(1000)
+            fun snapshot(tag: String, phase: String, unmerged: Boolean = false): android.graphics.Bitmap {
+                val file = java.io.File("build/reports/portuguese-rendered/nav-${option.id}-$phase-es.png")
+                file.parentFile.mkdirs()
+                val bounds = compose.onNodeWithTag(tag, useUnmergedTree = unmerged)
+                    .fetchSemanticsNode().boundsInRoot
+                assertTrue("$tag must have a visible area in $option: $bounds", bounds.width > 0 && bounds.height > 0)
+                // Capture the stable full-screen host before cropping a destination.
+                compose.onRoot().captureRoboImage(file.path,
+                    roborazziOptions = com.github.takahirom.roborazzi.RoborazziOptions(
+                        taskType = com.github.takahirom.roborazzi.RoborazziTaskType.Record))
+                val full = requireNotNull(android.graphics.BitmapFactory.decodeFile(file.path))
+                val crop = android.graphics.Bitmap.createBitmap(full, bounds.left.toInt(), bounds.top.toInt(),
+                    bounds.width.toInt(), bounds.height.toInt())
+                if (crop !== full) full.recycle()
+                return crop
+            }
+            fun assertTint(expected: androidx.compose.ui.graphics.Color, phase: String, tolerance: Float = .03f) {
+                val bitmap = snapshot("user_navigation_icon", phase, unmerged = true)
+                try {
+                    var matches = 0
+                    for (x in 0 until bitmap.width) for (y in 0 until bitmap.height) {
+                        val color = androidx.compose.ui.graphics.Color(bitmap.getPixel(x, y))
+                        if (kotlin.math.abs(color.red - expected.red) < tolerance &&
+                            kotlin.math.abs(color.green - expected.green) < tolerance &&
+                            kotlin.math.abs(color.blue - expected.blue) < tolerance) matches++
+                    }
+                    assertTrue("User tint must match $expected in $option", matches > 10)
+                } finally { bitmap.recycle() }
+            }
+            assertTint(AppThemeManager.getNavBarSelectedIconColor(), "selected")
+            val off = snapshot("nav_pixels", "particles-off")
+            compose.onNodeWithTag("nav_particles").assertDoesNotExist()
+            compose.runOnIdle {
+                particles = true
+                androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+            }
+            compose.mainClock.advanceTimeBy(1000)
+            // Synchronize the newly inserted Canvas after a native image capture.
+            compose.waitUntil(timeoutMillis = 5000) {
+                compose.mainClock.advanceTimeByFrame()
+                compose.onAllNodesWithTag("nav_particles", useUnmergedTree = true).fetchSemanticsNodes().size == 1
+            }
+            val particleBounds = compose.onNodeWithTag("nav_particles", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val barBounds = compose.onNodeWithTag("nav_pixels").fetchSemanticsNode().boundsInRoot
+            assertEquals("Particles must cover the visible bar in $option", barBounds, particleBounds)
+            assertTrue("Particles must have a nonzero area in $option: $particleBounds",
+                particleBounds.width > 0 && particleBounds.height > 0)
+            val on = snapshot("nav_pixels", "particles-on")
+            try {
+                assertEquals(off.width, on.width)
+                assertEquals(off.height, on.height)
+                var changed = 0
+                for (x in 0 until off.width step 3) for (y in 0 until off.height step 3)
+                    if (off.getPixel(x, y) != on.getPixel(x, y)) changed++
+                assertTrue("Particles must change visible pixels in $option", changed > 25)
+            } finally { off.recycle(); on.recycle() }
+            compose.runOnIdle {
+                particles = false; selected = 0
+                androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+            }
+            compose.mainClock.advanceTimeBy(1000)
+            assertTint(AppThemeManager.getNavBarUnselectedColor(), "inactive", .16f)
+        }
+    }
+
+    @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
     @Test fun liquidIndicatorIsCenteredOnTheSelectedIcon() {
         var density = 1f
         compose.setContent {
@@ -87,11 +172,18 @@ class NavigationCustomizationRenderedTest {
         val context = RuntimeEnvironment.getApplication()
         com.example.util.DynamicTranslations.loadSync(context)
         AppThemeManager.setNavStyle(CoachNavStyle.ORIGINAL)
+        // Advance the animated sheet and indicator explicitly for deterministic UI input.
+        compose.mainClock.autoAdvance = false
         compose.setContent { MyApplicationTheme { ThemeCustomizationBottomSheet(isPremium=true, onDismiss={}) } }
+        compose.mainClock.advanceTimeBy(1000)
+        compose.onNodeWithTag("theme_nav_catalog").performScrollTo().performClick()
+        compose.mainClock.advanceTimeBy(1000)
         compose.onNodeWithTag("theme_nav_style_liquid").performScrollTo().performClick()
+        compose.mainClock.advanceTimeBy(1000)
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
         compose.onNodeWithTag("theme_nav_preview").performScrollTo().assertExists()
         compose.onNodeWithTag("coach_nav_item_3").performClick()
+        compose.mainClock.advanceTimeBy(1000)
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
         compose.onNodeWithTag("theme_nav_apply").performScrollTo().performClick()
         assertEquals(CoachNavStyle.LIQUID, AppThemeManager.currentNavStyle)
@@ -103,7 +195,7 @@ class NavigationCustomizationRenderedTest {
         compose.setContent { MyApplicationTheme { ThemeCustomizationBottomSheet(isPremium=false, onDismiss={}) } }
         compose.onNodeWithTag("theme_nav_preview").assertDoesNotExist()
         compose.onNodeWithTag("theme_nav_apply").assertDoesNotExist()
-        compose.onNodeWithTag("theme_nav_style_liquid").performScrollTo().performClick()
+        compose.onNodeWithTag("theme_nav_catalog").performScrollTo().performClick()
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
     }
 

@@ -308,7 +308,7 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Permission is granted
+            com.example.util.SubscriptionManager.refreshPhoneNotifications(this)
         } else {
             // Permission is denied
         }
@@ -330,6 +330,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        com.example.data.InboxPhoneNotifications.consumeIntent(intent)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -345,6 +346,7 @@ class MainActivity : ComponentActivity() {
 
         AppThemeManager.init(this)
         com.example.util.SubscriptionManager.init(this)
+        com.example.data.InboxPhoneNotifications.consumeIntent(intent)
         val currentAuthUser = com.example.util.AuthManager.getAuth()?.currentUser
         if (currentAuthUser != null && !com.example.util.AuthManager.isGuestOrUnauthenticated(currentAuthUser)) {
             com.example.util.DeviceAndSessionManager.resumeDeviceAndSession(this, onError = { msg ->
@@ -426,6 +428,10 @@ fun DashboardScreen(
     val targetChampId = activity?.intent?.getStringExtra("OPEN_CHAMPION_DETAIL")
     val initialPage = if (activity?.intent?.getBooleanExtra("OPEN_TIER_LIST", false) == true || targetChampId != null) 2 else 0
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { 5 })
+    val openInboxFromPhone by com.example.data.InboxPhoneNotifications.openInbox.collectAsStateWithLifecycle()
+    LaunchedEffect(openInboxFromPhone) {
+        if (openInboxFromPhone) pagerState.scrollToPage(4)
+    }
 
     // Clear intent so we don't reopen tier list on rotation
     androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -490,15 +496,6 @@ fun DashboardScreen(
                         .fillMaxWidth()
                         .background(Color.Transparent)
                 ) {
-                // Ambient Runic Particles Floating across Bottom Navigation Bar in background
-                if (AppThemeManager.isParticlesEnabled && isPremium) {
-                    RunicNavBarParticleAnimation(
-                        modifier = Modifier.matchParentSize(),
-                        particleCount = 16,
-                        accentColor = navAccent
-                    )
-                }
-
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -523,6 +520,7 @@ fun DashboardScreen(
                         style = if (isPremium) AppThemeManager.currentNavStyle else CoachNavStyle.ORIGINAL,
                         items = navDestinations,
                         selectedIndex = pagerState.currentPage,
+                        particlesEnabled = AppThemeManager.isParticlesEnabled && isPremium,
                         onSelected = { page -> coroutineScope.launch { pagerState.scrollToPage(page) } }
                     )
                 }
