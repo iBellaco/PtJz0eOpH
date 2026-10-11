@@ -29,6 +29,7 @@ fun ScannerDebugOverlay(
     val rawConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
     val allyRoles by DraftVisionScanner.allyRolesBySlotFlow.collectAsStateWithLifecycle()
+    val language = com.example.util.currentAppLanguage()
     val density = LocalDensity.current
 
     // Telemetría del motor de visión y estrategia de salto de fotogramas
@@ -60,6 +61,14 @@ fun ScannerDebugOverlay(
             textAlign = android.graphics.Paint.Align.RIGHT
             setShadowLayer(4f, 0f, 0f, android.graphics.Color.BLACK)
         }
+    }
+
+    // Keep the first row's diagnostic caption out of the header ban labels.
+    val firstAllyLabelPaint = remember(density) {
+        android.graphics.Paint(allyLabelPaint).apply { textSize = with(density) { 8.sp.toPx() } }
+    }
+    val firstEnemyLabelPaint = remember(density) {
+        android.graphics.Paint(enemyLabelPaint).apply { textSize = with(density) { 8.sp.toPx() } }
     }
 
     val labelPaint = remember(density) {
@@ -98,7 +107,7 @@ fun ScannerDebugOverlay(
         if (w <= 0 || h <= 0) return@Canvas
 
         val textRects = mutableListOf<android.graphics.Rect>()
-        fun drawDiagnosticText(rawText: String, x: Float, y: Float, paint: android.graphics.Paint) {
+        fun drawDiagnosticText(rawText: String, x: Float, y: Float, paint: android.graphics.Paint, margin: Float = 5f) {
             val text = com.example.util.appTr(rawText)
             val width = paint.measureText(text)
             val left = when (paint.textAlign) {
@@ -108,8 +117,8 @@ fun ScannerDebugOverlay(
             }
             val metrics = paint.fontMetrics
             textRects.add(android.graphics.Rect(
-                (left - 5f).toInt(), (y + metrics.top - 5f).toInt(),
-                (left + width + 5f).toInt(), (y + metrics.bottom + 5f).toInt()
+                (left - margin).toInt(), (y + metrics.top - margin).toInt(),
+                (left + width + margin).toInt(), (y + metrics.bottom + margin).toInt()
             ))
             drawContext.canvas.nativeCanvas.drawText(text, x, y, paint)
         }
@@ -132,12 +141,14 @@ fun ScannerDebugOverlay(
                     drawCircle(if (slot.state == com.example.service.screen.BanState.EMPTY) Color.Gray else color,
                         radius, center, style = Stroke(if (slot.state == com.example.service.screen.BanState.CONFIRMED) 2f else 1f))
                     val status = when (slot.state) {
-                        com.example.service.screen.BanState.CONFIRMED -> "Ban"
-                        com.example.service.screen.BanState.EMPTY -> "Sin ban"
-                        else -> "Sin confirmar"
+                        com.example.service.screen.BanState.CONFIRMED ->
+                            com.example.data.WildRiftRepository.champions.firstOrNull { it.id == slot.championId }?.getLocalizedName(language) ?: "Ban ${slot.index + 1}"
+                        com.example.service.screen.BanState.EMPTY -> com.example.util.appTr("Sin ban")
+                        else -> "Ban ${slot.index + 1}"
                     }
-                    drawDiagnosticText("${com.example.util.appTr(status)} ${slot.index + 1}", center.x.coerceIn(28f, w - 28f),
-                        h * .12f - labelPaint.fontMetrics.top + 6f, labelPaint)
+                    val halfText = labelPaint.measureText(status) / 2f
+                    drawDiagnosticText(status, center.x.coerceIn(halfText + 2f, w - halfText - 2f),
+                        center.y + radius - labelPaint.fontMetrics.top + 6f, labelPaint, margin = 1f)
                 }
             }
         }
@@ -173,8 +184,8 @@ fun ScannerDebugOverlay(
             )
             val allyOcrLeft = allyNameRect.left.toFloat()
             val allyOcrRight = allyNameRect.right.toFloat()
-            val allyOcrTop = allyY - (allyAvatarDiam * 0.40f)
-            val allyOcrHeight = allyAvatarDiam * 0.80f
+            val allyOcrTop = allyNameRect.top.toFloat()
+            val allyOcrHeight = allyNameRect.height().toFloat()
 
             drawRoundRect(
                 color = Color(0x8800E5FF),
@@ -189,11 +200,14 @@ fun ScannerDebugOverlay(
             val slotLabel = if (detectedAllyRole != null) "Aliado ${sIdx + 1} ($detectedAllyRole)" else "Aliado ${sIdx + 1}"
             val allyLabelX = (allyX - allyAvatarRad).coerceAtLeast(8f)
             val allyMatch = debugMatches["ally_$sIdx"]
+            val belowHeader = detectingBans && sIdx == 0
+            val allyCaptionPaint = if (belowHeader) firstAllyLabelPaint else allyLabelPaint
             drawDiagnosticText(
                 if (allyMatch != null) "$slotLabel: $allyMatch" else slotLabel,
                 allyLabelX,
-                allyY - allyAvatarRad - 6f,
-                allyLabelPaint
+                if (belowHeader) allyY + allyAvatarRad - allyCaptionPaint.fontMetrics.top + 3f
+                else allyY - allyAvatarRad - 6f,
+                allyCaptionPaint, margin = if (belowHeader) 1f else 5f
             )
 
 
@@ -226,8 +240,8 @@ fun ScannerDebugOverlay(
             )
             val enemyOcrLeft = enemyNameRect.left.toFloat()
             val enemyOcrRight = enemyNameRect.right.toFloat()
-            val enemyOcrTop = enemyY - (enemyAvatarDiam * 0.40f)
-            val enemyOcrHeight = enemyAvatarDiam * 0.80f
+            val enemyOcrTop = enemyNameRect.top.toFloat()
+            val enemyOcrHeight = enemyNameRect.height().toFloat()
 
             drawRoundRect(
                 color = Color(0x88FF1744),
@@ -258,12 +272,14 @@ fun ScannerDebugOverlay(
                 "Rival ${sIdx + 1}"
             }
 
-            val enemyLabelX = (enemyX + avatarRadius).coerceAtMost(w - 10f)
+            val enemyLabelX = (enemyX + enemyAvatarRad).coerceAtMost(w - 10f)
+            val enemyCaptionPaint = if (belowHeader) firstEnemyLabelPaint else enemyLabelPaint
             drawDiagnosticText(
                 if (enemyMatch != null) "$enemySlotLabel: $enemyMatch" else enemySlotLabel,
                 enemyLabelX,
-                enemyY - avatarRadius - 6f,
-                enemyLabelPaint
+                if (belowHeader) enemyY + enemyAvatarRad - enemyCaptionPaint.fontMetrics.top + 3f
+                else enemyY - enemyAvatarRad - 6f,
+                enemyCaptionPaint, margin = if (belowHeader) 1f else 5f
             )
 
         }

@@ -38,8 +38,8 @@ internal fun DetectedBansCard(slots: List<BanSlot>) {
                             WildRiftRepository.champions.firstOrNull { it.id == slot.championId } else null
                         val label = champion?.getLocalizedName(language) ?: tr(when(slot.state) {
                             BanState.EMPTY -> "Sin ban"
-                            BanState.PENDING -> "Detectando"
-                            else -> "Sin confirmar"
+                            BanState.PENDING -> "Ban"
+                            else -> "Ban"
                         })
                         Column(Modifier.weight(1f).testTag("draft_ban_${sideKey}_$index")
                             .semantics { contentDescription = label }, horizontalAlignment = Alignment.CenterHorizontally) {

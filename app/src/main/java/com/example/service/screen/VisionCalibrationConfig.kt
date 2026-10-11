@@ -126,6 +126,21 @@ data class VisionCalibrationConfig(
         )
     }
 
+    /** Moves/resizes one portrait without changing its neighbours or the other team. */
+    fun adjustDraftSlot(isAlly: Boolean, slotIndex: Int, deltaX: Float = 0f,
+                        deltaY: Float = 0f, deltaDiameter: Float = 0f): VisionCalibrationConfig {
+        require(slotIndex in 0..4)
+        val xs = List(5) { if (isAlly) getAllySlotX(it) else getEnemySlotX(it) }.toMutableList()
+        val ys = List(5) { (if (isAlly) allySlotYRatios else enemySlotYRatios)
+            .getOrElse(it) { 0.188f + it * 0.136f } }.toMutableList()
+        val diameters = List(5) { getSlotDiameter(isAlly, it) }.toMutableList()
+        xs[slotIndex] = (xs[slotIndex] + deltaX).coerceIn(if (isAlly) 0.01f else 0.55f, if (isAlly) 0.45f else 0.99f)
+        ys[slotIndex] = (ys[slotIndex] + deltaY).coerceIn(0.05f, 0.95f)
+        diameters[slotIndex] = (diameters[slotIndex] + deltaDiameter).coerceIn(0.03f, 0.30f)
+        return if (isAlly) copy(allySlotXRatios = xs, allySlotYRatios = ys, allySlotDiameterRatios = diameters)
+        else copy(enemySlotXRatios = xs, enemySlotYRatios = ys, enemySlotDiameterRatios = diameters)
+    }
+
     fun toFormattedCoordinatesString(): String {
         val sb = StringBuilder()
         sb.append("=== COORDENADAS DE CALIBRACIÓN VISION DRAFT ===\n")

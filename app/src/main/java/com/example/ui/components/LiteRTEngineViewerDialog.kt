@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,9 +76,19 @@ import com.example.service.screen.LiteRTVisionClassifier
 import com.example.service.screen.TenthPickDiagnosticManager
 import com.example.service.screen.VisionCalibrationConfig
 
-enum class CircleTarget(val title: String, val isAlly: Boolean) {
+enum class CircleTarget(val title: String, val isAlly: Boolean, val slotIndex: Int? = null) {
     ALLY_COLUMN_X("Columna Aliado X", true),
-    ENEMY_COLUMN_X("Columna Rival X", false)
+    ENEMY_COLUMN_X("Columna Rival X", false),
+    ALLY_SLOT_1("Aliado 1", true, 0),
+    ALLY_SLOT_2("Aliado 2", true, 1),
+    ALLY_SLOT_3("Aliado 3", true, 2),
+    ALLY_SLOT_4("Aliado 4", true, 3),
+    ALLY_SLOT_5("Aliado 5", true, 4),
+    ENEMY_SLOT_1("Rival 1", false, 0),
+    ENEMY_SLOT_2("Rival 2", false, 1),
+    ENEMY_SLOT_3("Rival 3", false, 2),
+    ENEMY_SLOT_4("Rival 4", false, 3),
+    ENEMY_SLOT_5("Rival 5", false, 4)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -104,7 +115,9 @@ fun LiteRTEngineViewerDialog(
     var calibrationStep by remember { mutableStateOf(0.005f) } // 0.5% por defecto
 
     fun modifyDetectionCircle(deltaX: Float = 0f, deltaY: Float = 0f, deltaSize: Float = 0f) {
-        val updated = calibrationConfig.adjustDraftColumn(
+        val updated = selectedTarget.slotIndex?.let { index ->
+            calibrationConfig.adjustDraftSlot(selectedTarget.isAlly, index, deltaX, deltaY, deltaSize)
+        } ?: calibrationConfig.adjustDraftColumn(
             isAlly = selectedTarget.isAlly,
             deltaX = deltaX,
             deltaY = deltaY,
@@ -513,6 +526,7 @@ fun LiteRTEngineViewerDialog(
                                             RoundedCornerShape(6.dp)
                                         )
                                         .coachClickable { selectedTarget = target }
+                                        .widthIn(min = 48.dp)
                                         .heightIn(min = 48.dp)
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                         .testTag("calibration_target_${target.name.lowercase()}")
@@ -530,10 +544,13 @@ fun LiteRTEngineViewerDialog(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Indicador de Coordenadas Actuales del Objetivo
-                        val selectedX = if (selectedTarget.isAlly) calibrationConfig.allyAvatarCenterX else calibrationConfig.enemyAvatarCenterX
-                        val selectedY = if (selectedTarget.isAlly) calibrationConfig.allySlotYRatios else calibrationConfig.enemySlotYRatios
-                        val selectedDiameter = if (selectedTarget.isAlly) calibrationConfig.allySlotDiameterRatios else calibrationConfig.enemySlotDiameterRatios
-                        val currentCoordsText = "${selectedTarget.title}: X=${(selectedX * 100).format(2)}% | Y=${((selectedY.minOrNull() ?: 0f) * 100).format(2)}–${((selectedY.maxOrNull() ?: 0f) * 100).format(2)}% | ⌀=${(selectedDiameter.average().toFloat() * 100).format(2)}%"
+                        val slotIndex = selectedTarget.slotIndex
+                        val selectedX = if (slotIndex != null) {
+                            if (selectedTarget.isAlly) calibrationConfig.getAllySlotX(slotIndex) else calibrationConfig.getEnemySlotX(slotIndex)
+                        } else if (selectedTarget.isAlly) calibrationConfig.allyAvatarCenterX else calibrationConfig.enemyAvatarCenterX
+                        val selectedY = (if (selectedTarget.isAlly) calibrationConfig.allySlotYRatios else calibrationConfig.enemySlotYRatios).let { ys -> if (slotIndex != null) listOf(ys[slotIndex]) else ys }
+                        val selectedDiameter = (if (selectedTarget.isAlly) calibrationConfig.allySlotDiameterRatios else calibrationConfig.enemySlotDiameterRatios).let { ds -> if (slotIndex != null) listOf(ds[slotIndex]) else ds }
+                        val currentCoordsText = "${com.example.util.tr(selectedTarget.title)}: X=${(selectedX * 100).format(2)}% | Y=${((selectedY.minOrNull() ?: 0f) * 100).format(2)}–${((selectedY.maxOrNull() ?: 0f) * 100).format(2)}% | ⌀=${(selectedDiameter.average().toFloat() * 100).format(2)}%"
 
                         Box(
                             modifier = Modifier

@@ -51,6 +51,51 @@ class DraftRivalNameInstalledTest {
         } finally { recognizer.close() }
     }
 
+    @Test fun firstSelectionsAreReadWithRedMagicAndPocoCoordinates() = kotlinx.coroutines.runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val scanner = com.example.service.screen.DraftVisionScanner
+        val original = scanner.calibrationConfig
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        val fixture = InstrumentationRegistry.getInstrumentation().context.assets.open("draft/seraphine-first-title.json")
+            .bufferedReader().use { org.json.JSONObject(it.readText()).getString("pngBase64") }
+        val bytes = android.util.Base64.decode(fixture, android.util.Base64.DEFAULT)
+        val titleCrop = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!
+        val titleScaled = Bitmap.createScaledBitmap(titleCrop, titleCrop.width * 3, titleCrop.height * 3, true)
+        try {
+            val reading = com.google.android.gms.tasks.Tasks.await(recognizer.process(InputImage.fromBitmap(titleScaled, 0)), 30, TimeUnit.SECONDS)
+            assertTrue("Reported first selection: ${reading.text}", reading.text.contains("SERAPHINE", ignoreCase = true))
+        } finally { titleScaled.recycle(); titleCrop.recycle(); recognizer.close() }
+        val redMagic = com.example.service.screen.VisionCalibrationConfig()
+        val poco = redMagic.copy(allyAvatarCenterX = .12f, enemyAvatarCenterX = .911f,
+            allySlotXRatios = List(5) { .12f }, enemySlotXRatios = List(5) { .911f },
+            allySlotYRatios = listOf(.184f, .320f, .454f, .592f, .728f),
+            enemySlotYRatios = listOf(.179f, .315f, .449f, .587f, .723f))
+        try {
+            for (config in listOf(redMagic, poco)) {
+                scanner.resetSlotMemory()
+                scanner.updateCalibration(context, config)
+                val bitmap = Bitmap.createBitmap(1920, 868, Bitmap.Config.ARGB_8888)
+                try {
+                    bitmap.eraseColor(android.graphics.Color.BLACK)
+                    val canvas = android.graphics.Canvas(bitmap)
+                    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                        color = android.graphics.Color.WHITE; textSize = 20f; typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    }
+                    // Game title positions are independent of the scanner's rectangle calculation.
+                    canvas.drawText("SERAPHINE", 1920 * config.getAllySlotX(0) + 868 * .074f,
+                        868 * config.allySlotYRatios[0] - 18f, paint)
+                    canvas.drawText("MEL", 1920 * config.getEnemySlotX(0) - 868 * .074f - paint.measureText("MEL"),
+                        868 * config.enemySlotYRatios[0] - 18f, paint)
+                    val result = kotlinx.coroutines.withTimeout(60_000L) {
+                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                    }
+                    assertEquals("seraphine", result.alliesBySlot[0]?.id)
+                    assertEquals("mel", result.enemiesBySlot[0]?.id)
+                } finally { bitmap.recycle() }
+            }
+        } finally { scanner.resetSlotMemory(); scanner.updateCalibration(context, original) }
+    }
+
     private fun inspectAlliedTransition(language: String) = kotlinx.coroutines.runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val scanner = com.example.service.screen.DraftVisionScanner

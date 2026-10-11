@@ -224,7 +224,7 @@ object LiteRTVisionClassifier {
                 BanRegion(proposal.x.toFloat() / width, proposal.y.toFloat() / height,
                     proposal.radius.toFloat() / height), champion?.id, champion == null)
         }
-        return fillHeaderPositions(observations, width.toFloat() / height) { region ->
+        val positioned = fillHeaderPositions(observations, width.toFloat() / height) { region ->
             val cx = region.x * width
             val cy = region.y * height
             val radius = region.radius * height
@@ -248,6 +248,45 @@ object LiteRTVisionClassifier {
                 }
                 (0..2).sumOf { squares[it] / count - (sums[it] / count) * (sums[it] / count) } / 3 >= 144.0
             }
+        }
+        // Refine only textured but unidentified positions. A single central template can miss
+        // differently scaled portraits; the final confidence and separation gates stay unchanged.
+        return positioned.map { observation ->
+            if (observation.championId != null || observation.empty) return@map observation
+            val region = observation.region
+            val centerX = kotlin.math.round(region.x * width).toInt()
+            val centerY = kotlin.math.round(region.y * height).toInt()
+            val baseRadius = kotlin.math.round(region.radius * height).toInt()
+            var bestScore = 0f
+            var refined = observation
+            for (dx in intArrayOf(-2, 0, 2)) for (dy in -2..2) for (dr in -4..4) {
+                val x = centerX + dx; val y = centerY + dy
+                val radius = (baseRadius + dr).coerceAtLeast(6)
+                val rect = android.graphics.Rect(x-radius, y-radius, x+radius, y+radius)
+                if (rect.left < 0 || rect.right > width || rect.top < 0 || rect.bottom > headerHeight ||
+                    exclusions.any { android.graphics.Rect.intersects(it, rect) }) continue
+                val diameter = radius * 2
+                val pixels = IntArray(diameter * diameter)
+                for (row in 0 until diameter) System.arraycopy(header,
+                    (y-radius+row)*width+x-radius, pixels, row*diameter, diameter)
+                val descriptor = PortraitMatcher.descriptor(pixels, diameter, diameter)
+                val candidates = catalog.map { champion ->
+                    val references = championEmbeddingCache.getValue(champion.id)
+                    champion to intArrayOf(4, 13, 22).maxOf { PortraitMatcher.correlation(descriptor, references[it]) }
+                }.sortedByDescending { it.second }.take(8)
+                if (candidates.first().second < .60f) continue
+                val ranked = candidates.map { (champion, _) -> champion to
+                    PortraitMatcher.similarity(descriptor, championEmbeddingCache.getValue(champion.id))
+                }.sortedByDescending { it.second }
+                val best = ranked.first()
+                if (best.second > bestScore && PortraitMatcher.accepts(best.second,
+                        ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
+                    bestScore = best.second
+                    refined = observation.copy(region = BanRegion(x.toFloat()/width, y.toFloat()/height,
+                        radius.toFloat()/height), championId = best.first.id)
+                }
+            }
+            refined
         }
     }
 

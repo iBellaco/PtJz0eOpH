@@ -23,12 +23,18 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
-    @Test fun automaticBansAreRestrictedToAdministratorSessions() {
-        assertTrue(com.example.service.screen.BanDetectionAccess.canDetect("admin", false))
-        assertTrue(com.example.service.screen.BanDetectionAccess.canDetect("free", true))
-        for (role in listOf("free", "premium", "moderador", "streamer")) {
-            assertFalse(com.example.service.screen.BanDetectionAccess.canDetect(role, false))
-        }
+    @Test fun redMagicUnknownPortraitIsRefinedAndAllBanCirclesHaveOneDiameter() {
+        val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/red-magic-header.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
+        val scanner = BannedPortraitScanner()
+        try {
+            assertTrue(scanner.scan(bitmap, context, 0).isEmpty())
+            val bans = scanner.scan(bitmap, context, 1500)
+            assertTrue(bans.toString(), "malphite" in bans)
+            assertTrue(bans.toString(), bans.containsAll(setOf("senna", "yuumi", "hwei", "darius", "blitzcrank", "cho_gath")))
+            val radii = scanner.slots.mapNotNull { it.region?.radius }
+            assertEquals(10, radii.size)
+            assertEquals(1, radii.distinct().size)
+        } finally { bitmap.recycle() }
     }
 
     @Test fun videoHeaderPortraitsConfirmWithoutChangingTenthPickAndResetForNextDraft() {

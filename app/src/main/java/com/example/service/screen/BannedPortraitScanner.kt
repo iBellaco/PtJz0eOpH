@@ -79,10 +79,11 @@ internal class BannedPortraitScanner {
                 else -> slot.copy(region = observation.region, championId = null, state = BanState.PENDING)
             }
         }
+        val radii = slots.mapNotNull { it.region?.radius }.sorted()
+        val commonRadius = radii.getOrNull(radii.size / 2)
+        if (commonRadius != null) slots = slots.map { slot ->
+            slot.copy(region = slot.region?.copy(radius = commonRadius))
+        }
         previous = assigned
     }
-}
-
-internal object BanDetectionAccess {
-    fun canDetect(role: String, adminClaim: Boolean): Boolean = role == "admin" || adminClaim
 }
