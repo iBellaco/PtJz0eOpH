@@ -27,6 +27,7 @@ import org.robolectric.annotation.GraphicsMode
 class NavigationCustomizationRenderedTest {
     @get:Rule val compose = createComposeRule()
 
+    @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
     @Test fun liquidIndicatorIsCenteredOnTheSelectedIcon() {
         var density = 1f
         compose.setContent {
@@ -42,7 +43,12 @@ class NavigationCustomizationRenderedTest {
         compose.waitForIdle()
         val path = java.io.File("build/reports/portuguese-rendered/liquid-alignment-es.png")
         path.parentFile.mkdirs()
-        compose.onNodeWithTag("liquid_alignment").captureRoboImage(path.path)
+        compose.onNodeWithTag("liquid_alignment").captureRoboImage(
+            path.path,
+            roborazziOptions = com.github.takahirom.roborazzi.RoborazziOptions(
+                taskType = com.github.takahirom.roborazzi.RoborazziTaskType.Record
+            )
+        )
         val bitmap = android.graphics.BitmapFactory.decodeFile(path.path)
         val x = (bitmap.width / 2 + 14 * density).toInt()
         val rows = (0 until bitmap.height).filter { y ->
