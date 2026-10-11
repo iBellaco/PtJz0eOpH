@@ -90,6 +90,15 @@ try {
     assert.equal(after.role, before.role); assert.equal(after.secondaryRole, before.secondaryRole);
     await assert.rejects(call('PREMIUM_REMOVE', 'premium_self_remove', {uid: owner.uid}), /permisos/);
   });
+  await test('old queued Premium commands cannot overwrite a newer direct change', async () => {
+    const ref = db.doc('users/premium-newer');
+    const now = Date.now();
+    await ref.set({...base, premiumUntil: 0, subscriptionPlan: 'FREE', lastPremiumChangedAt: Timestamp.fromMillis(now)});
+    for (const action of ['PREMIUM_GRANT', 'PREMIUM_REMOVE']) {
+      await assert.rejects(executeEconomy(db, admin, {action, id: `old_${action}`, uid: 'premium-newer', ...(action === 'PREMIUM_GRANT' ? {days: 7, extend: true} : {})}, Date.now, {requestedAtMillis: now - 60000}), /reciente/);
+    }
+    assert.equal((await ref.get()).get('premiumUntil'), 0);
+  });
   await test('removing Premium resets premium and moderator to free while preserving other roles', async () => {
     const expires = Timestamp.fromMillis(Date.now() + 30 * 86400000);
     await assert.rejects(call('PREMIUM_REMOVE', 'premium_remove_admin', {uid: admin.uid}, admin), /vitalicio/);

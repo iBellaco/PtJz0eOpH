@@ -1,0 +1,12 @@
+# Auditoría Coach 1.1.10.257
+
+- Build: 973.
+- Gestión: Premium, roles, verificación y dispositivos se ejecutan directamente para el administrador. Premium se confirma mediante una transacción autorizada con días limitados, historial inmutable, protección del administrador vitalicio y retirada de Moderador principal/secundario. Esta vía no depende de la función HTTP ausente. Las solicitudes antiguas no pueden sobrescribir un cambio más reciente. Los comandos privilegiados no se envían a la cola programada si el servicio inmediato no responde; los reintentos no confirmados conservan la clave de idempotencia mientras sigue abierta la aplicación. Se mantienen los permisos y solicitudes de cuentas sin privilegios.
+- Bandeja: borrado transaccional de copias actuales y antiguas, con errores visibles. Las conversaciones asociadas se eliminan junto a los mensajes del destinatario. La lectura solo se presenta como completada tras confirmar la escritura. El contador descarta revisiones ya leídas sin silenciar respuestas nuevas. Se elimina el enlace de texto individual; se conserva su icono accesible y la acción global.
+- Navegación: el mismo aviso animado aparece en los cuatro estilos. Se elimina el desplazamiento animado del pager al elegir una pestaña, una capa duplicada de partículas y las recomposiciones del contenedor durante el movimiento continuo del indicador.
+- Pantalla: área útil basada en los límites de recorte que informa Android; barras personalizadas respetan la navegación del sistema.
+- Salida: puerta de 20 dp sin icono extra; marcha de 1,25 segundos y secuencia de aproximadamente 3,5 segundos, con bloqueo de pulsaciones repetidas y callback final.
+- Ayuda: español neutro y traducciones portuguesas correspondientes; indicaciones actualizadas sobre temas y consumo de recursos, sin cifras de rendimiento sin verificar.
+- Archivos: cliente de operaciones, gestor de usuarios, repositorios de lectura y borrado, contador compartido, bandeja y visor de mensajes, navegación, contenedor de pantalla segura, salida animada, preguntas frecuentes, traducciones, pruebas y versión.
+- Verificación: auditoría fuente portuguesa sin residuos; pendientes comprobaciones completas de Actions y APK instalado ES/PT antes de publicar.
+- Límites: no se afirma haber realizado una prueba física en todos los modelos de teléfono ni una medición de fluidez de cada uno.

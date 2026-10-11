@@ -1,6 +1,7 @@
 package com.example
 
 import android.app.Application
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -117,4 +118,51 @@ class NavigationCustomizationRenderedTest {
         assertEquals(1, requests)
         assertEquals(0, logouts)
     }
+    @Test fun everyNavigationStyleShowsAndClearsTheSameAnimatedNotification() {
+        var style by mutableStateOf(CoachNavStyle.ORIGINAL)
+        var count by mutableIntStateOf(2)
+        compose.setContent { MyApplicationTheme {
+            val items = com.example.ui.components.CoachNavPreviewItems().mapIndexed { index, item ->
+                if (index == 4) item.copy(notificationCount = count) else item
+            }
+            com.example.ui.components.CoachNavStyleRenderer(style, items, 0, {})
+        } }
+        for (option in CoachNavStyle.entries) {
+            compose.runOnIdle { style = option; count = 2 }
+            compose.onNodeWithTag("user_navigation_badge", useUnmergedTree = true).assertIsDisplayed()
+            compose.onNodeWithTag("user_navigation_icon", useUnmergedTree = true).assertContentDescriptionEquals(com.example.util.appTr("Notificaciones"))
+            compose.runOnIdle { count = 0 }
+            compose.onNodeWithTag("user_navigation_badge", useUnmergedTree = true).assertDoesNotExist()
+        }
+    }
+
+    @Test fun logoutCompletesOnceAfterTheVisibleAnimationAndIgnoresExtraTaps() {
+        var logouts = 0
+        compose.mainClock.autoAdvance = false
+        compose.setContent { MyApplicationTheme { AnimatedLogoutButton(onLogoutComplete = { logouts++ }) } }
+        compose.onNodeWithTag("animated_logout_button").performClick()
+        compose.mainClock.advanceTimeBy(1000)
+        assertEquals(0, logouts)
+        compose.onNodeWithTag("animated_logout_button").performClick()
+        compose.mainClock.advanceTimeBy(2100)
+        assertEquals(0, logouts)
+        compose.mainClock.advanceTimeBy(1000)
+        compose.waitForIdle()
+        assertEquals(1, logouts)
+    }
+
+    @Test fun contentAvoidsLeftAndTopCutoutsWithoutGuessingThePhoneModel() {
+        var insets by mutableStateOf(androidx.compose.foundation.layout.WindowInsets(left = 60, top = 0))
+        compose.setContent {
+            com.example.ui.components.SafeDisplayContent(cutout = insets) {
+                androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier
+                    .fillMaxSize()
+                    .testTag("cutout_content"))
+            }
+        }
+        assertEquals(60f, compose.onNodeWithTag("cutout_content").fetchSemanticsNode().boundsInRoot.left, 1f)
+        compose.runOnIdle { insets = androidx.compose.foundation.layout.WindowInsets(top = 40) }
+        assertEquals(40f, compose.onNodeWithTag("cutout_content").fetchSemanticsNode().boundsInRoot.top, 1f)
+    }
+
 }

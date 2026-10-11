@@ -407,7 +407,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             "role-change-success-es" -> {
                 compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
                 compose.onNodeWithTag("managed_role_free").performClick()
-                compose.onNodeWithTag("role_change_confirm").performClick().assertIsNotEnabled()
+                compose.onNodeWithTag("managed_role_free").assertIsNotEnabled()
                 compose.runOnIdle { roleResult!!.invoke(Result.success(mapOf("account" to mapOf("role" to "free", "premiumUntil" to 0L)))) }
                 compose.onNodeWithTag("role_change_confirm").assertDoesNotExist()
                 Assert.assertEquals("free",grantedAccount?.get("role"))
@@ -431,19 +431,15 @@ class RuntimeVisibilityTest(private val screen: String) {
             "role-change-failure-es", "role-change-pending-es" -> {
                 compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
                 compose.onNodeWithTag("managed_role_free").performClick()
-                compose.onNodeWithTag("role_change_confirm").performClick().assertIsNotEnabled()
+                compose.onNodeWithTag("managed_role_free").assertIsNotEnabled()
                 compose.runOnIdle { roleResult!!.invoke(Result.failure(if (screen.contains("pending")) com.example.data.EconomyPendingException()
                     else IllegalStateException(appTr("No tienes permisos para esta operación")))) }
-                if (screen.contains("pending")) {
-                    compose.onNodeWithTag("role_change_confirm").assertDoesNotExist()
-                    compose.onNodeWithTag("economy_request_close").assertIsDisplayed().performClick()
-                    compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
-                    compose.onNodeWithTag("managed_role_free").assertIsEnabled().performClick()
-                } else {
-                    compose.onNodeWithTag("role_change_error").assertTextEquals(appTr("No tienes permisos para esta operación"))
-                    compose.onNodeWithTag("role_change_cancel").assertIsEnabled()
-                }
-                compose.onNodeWithTag("role_change_confirm").assertIsEnabled()
+                compose.onNodeWithTag("economy_request_close").assertDoesNotExist()
+                compose.onNodeWithTag("role_change_confirm").assertDoesNotExist()
+                compose.onNodeWithTag("role_change_error").assertTextEquals(appTr(if (screen.contains("pending"))
+                    "No se pudo completar la operación. Vuelve a intentarlo." else "No tienes permisos para esta operación"))
+                compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("managed_role_free"))
+                compose.onNodeWithTag("managed_role_free").assertIsEnabled()
                 Assert.assertNull(grantedAccount)
                 inspect("unblocked")
             }
@@ -790,8 +786,7 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             "premium-editor-grant" -> {
                 compose.onNodeWithTag("premium_duration_+1 Día").performScrollTo().performClick()
-                compose.onNodeWithText(appTr("¿Otorgar Premium?")).assertExists()
-                compose.onNodeWithText(appTr("Confirmar")).performClick()
+                compose.onNodeWithText(appTr("¿Otorgar Premium?")).assertDoesNotExist()
                 compose.onNodeWithTag("premium_duration_+1 Día").assertIsNotEnabled()
                 compose.runOnIdle {
                     val update = com.example.data.PremiumGrantPolicy.apply(mapOf("uid" to "local-gift", "role" to "free"), 1, true, System.currentTimeMillis(), "gift-ui")
@@ -804,8 +799,6 @@ class RuntimeVisibilityTest(private val screen: String) {
             }
             "premium-editor-remove" -> {
                 compose.onNodeWithTag("remove_premium_button").performScrollTo().performClick()
-                compose.onNodeWithText(appTr("¿Quitar Premium?")).assertExists()
-                compose.onNodeWithText(appTr("Confirmar y quitar")).performClick()
                 compose.onNodeWithText(appTr("¿Quitar Premium?")).assertDoesNotExist()
                 compose.onNodeWithTag("remove_premium_button").assertIsEnabled()
             }
@@ -814,8 +807,7 @@ class RuntimeVisibilityTest(private val screen: String) {
                 for ((label, days) in listOf("+1 Día" to 1, "+7 Días" to 7, "+30 Días" to 30, "+90 Días (3m)" to 90, "+1 Año (365d)" to 365)) {
                     val before = occupiedAccount["premiumUntil"] as Long
                     compose.onNodeWithTag("premium_duration_$label").performScrollTo().performClick()
-                    compose.onNodeWithText(appTr("¿Otorgar Premium?")).assertExists()
-                    compose.onNodeWithText(appTr("Confirmar")).performClick()
+                    compose.onNodeWithText(appTr("¿Otorgar Premium?")).assertDoesNotExist()
                     compose.onNodeWithTag("premium_duration_$label").assertIsNotEnabled()
                     Assert.assertEquals(days, requestedDays)
                     Assert.assertTrue(requestedExtension)

@@ -123,18 +123,56 @@ service cloud.firestore {
                 && next.premiumUntil <= request.time.toMillis() + 30 * day + 300000
               : next.get('premiumUntil', 0) == old.get('premiumUntil', 0)));
     }
+    function administrativePremiumReceipt() {
+      let old = resource.data.get('subscriptionHistory', []);
+      let next = request.resource.data;
+      let history = next.subscriptionHistory;
+      let entry = history[history.size() - 1];
+      let removed = next.lastPremiumDays == 0;
+      return history.size() == old.size() + 1 && history.removeAll([entry]) == old && !old.hasAny([entry])
+        && entry.keys().hasOnly(['id','timestamp','durationMillis','planName','status','amount','source'])
+        && entry.id == next.lastPremiumOperationId && entry.timestamp is int
+        && entry.timestamp >= request.time.toMillis() - 300000 && entry.timestamp <= request.time.toMillis() + 300000
+        && entry.durationMillis == next.lastPremiumDays * 86400000 && entry.status == 'Completado'
+        && entry.planName == (removed ? 'Suscripción Premium retirada' : 'Suscripción Premium regalada')
+        && entry.amount == (removed ? '0' : 'Regalo') && entry.source == (removed ? 'ADMIN_REVOCATION' : 'ADMIN_GIFT');
+    }
+    function administrativePremiumChange(userId) {
+      let old = resource.data;
+      let next = request.resource.data;
+      let actor = account();
+      let days = next.get('lastPremiumDays', -1);
+      let removed = days == 0;
+      let demote = removed && old.get('role', '') in ['premium','moderador'];
+      let base = next.get('lastPremiumExtend', false) && roleDeadline(old) > request.time.toMillis() ? roleDeadline(old) : request.time.toMillis();
+      return isAdmin() && actor.get('banned', false) == false && !(actor.get('role', '') in ['banned']) && actor.get('secondaryRole', '') != 'banned'
+        && availableRoleTarget(request.auth.uid) && availableRoleTarget(userId)
+        && old.get('admin', false) == false && !(old.get('role', '') in ['admin','administrador','banned'])
+        && old.get('secondaryRole', '') != 'banned' && old.get('banned', false) == false
+        && days is int && days >= 0 && days <= 3650 && next.lastPremiumExtend is bool
+        && next.lastPremiumOperationId is string && next.lastPremiumOperationId.size() == 36
+        && next.lastPremiumChangedAt == request.time && next.lastModifiedByAdmin == request.time && next.lastPremiumChangedBy == request.auth.uid
+        && next.diff(old).affectedKeys().hasOnly(['premiumUntil','subscriptionPlan','subscriptionHistory','lastModifiedByAdmin','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','role','secondaryRole','banned','bannedTimestamp','last_role_update'])
+        && next.get('role', '') == (demote ? 'free' : old.get('role', ''))
+        && next.get('secondaryRole', '') == (removed && old.get('secondaryRole', '') == 'moderador' ? '' : old.get('secondaryRole', ''))
+        && next.get('banned', false) == false && next.get('bannedTimestamp', 0) == (demote ? 0 : old.get('bannedTimestamp', 0))
+        && next.get('last_role_update', 0) == (demote ? request.time : old.get('last_role_update', 0))
+        && next.subscriptionPlan == (removed ? 'FREE' : 'ADMIN_GIFT') && next.premiumUntil is int
+        && (removed ? next.premiumUntil == 0 : next.premiumUntil >= base + days * 86400000 - 300000 && next.premiumUntil <= base + days * 86400000 + 300000)
+        && administrativePremiumReceipt();
+    }
     match /users/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if signedIn() && request.auth.uid == userId && request.resource.data.role == 'free'
-        && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastModifiedByAdmin','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','last_role_update','lastRoleChangedBy','bannedTimestamp'])
+        && !request.resource.data.keys().hasAny(['banned','premiumUntil','secondaryRole','isVerified','verified','admin','subscriptionHistory','subscriptionPlan','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','lastModifiedByAdmin','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','last_role_update','lastRoleChangedBy','bannedTimestamp'])
         && request.resource.data.get('blueEssence', 0) == 0 && request.resource.data.get('orangeEssence', 0) == 0
         && request.resource.data.get('registeredDevices', []).size() <= 2;
-      // Balances, purchases and ledger receipts remain service-only. Role grants use bounded signed-admin validation.
+      // Balances and purchases remain service-only. Roles and Premium gifts use bounded signed-admin validation.
       allow update: if signedIn()
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blueEssence','orangeEssence','premiumUntil','subscriptionPlan','subscriptionHistory','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','role','banned','bannedTimestamp','last_role_update','lastRoleChangedBy'])
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blueEssence','orangeEssence','premiumUntil','subscriptionPlan','subscriptionHistory','lastPremiumChangedAt','lastPremiumChangedBy','lastPremiumDays','lastPremiumExtend','lastPremiumOperationId','lastEconomyOperation','subscribedCreators','creatorSubscriberCount','role','banned','bannedTimestamp','last_role_update','lastRoleChangedBy'])
         && (isAdmin() || (request.auth.uid == userId
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role','secondaryRole','banned','isVerified','verified','admin','lastModifiedByAdmin'])
-          && request.resource.data.get('registeredDevices', []).size() <= 2)) || administrativeRoleChange(userId);
+          && request.resource.data.get('registeredDevices', []).size() <= 2)) || administrativeRoleChange(userId) || administrativePremiumChange(userId);
       allow delete: if false;
       match /messages/{messageId} {
         function source() { return getAfter(/databases/$(database)/documents/support_reports/$(messageId)).data; }

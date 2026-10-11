@@ -119,10 +119,21 @@ object SubscriptionManager {
         }
     }
 
-    fun setUnreadMessageIds(ids: Set<String>) {
-        _unreadMessageIds.value = ids
-        _unreadMessagesCount.value = ids.size
+    // Keep the acknowledgement tied to message content: a new reply must notify again.
+    private val acknowledgedRevisions = mutableMapOf<String, String>()
+    private fun unreadKeys(messages: List<Map<String, Any>>) = com.example.data.InboxNotificationPolicy.unreadKeys(messages.filterNot {
+        val key = com.example.data.InboxNotificationPolicy.key(it)
+        key != null && acknowledgedRevisions[key] == com.example.data.PanelReadRepository.revision(it)
+    })
+    fun acknowledgeMessage(message: Map<String, Any>) {
+        val key = com.example.data.InboxNotificationPolicy.key(message) ?: return
+        acknowledgedRevisions[key] = com.example.data.PanelReadRepository.revision(message)
+        unreadMessagesSubcollection = unreadKeys(inboxDocuments)
+        unreadPrivateArray = unreadKeys(inboxArray)
+        unreadSupportReports = unreadSupportReports - key
+        recalculateUnreadCount()
     }
+
 
     init {
         scope.launch {
@@ -153,6 +164,7 @@ object SubscriptionManager {
                 inboxArray = emptyList(); inboxDocuments = emptyList()
                 premiumPlan = ""
                 _unreadModeratorSupportCount.value = 0
+                acknowledgedRevisions.clear()
                 unreadMessagesSubcollection = emptySet()
                 unreadSupportReports = emptySet()
                 unreadPrivateArray = emptySet()
@@ -276,7 +288,7 @@ object SubscriptionManager {
                 .addSnapshotListener { snapshot, error ->
                     if (error == null && snapshot != null) {
                         inboxDocuments = snapshot.documents.map { it.data.orEmpty() + ("id" to it.id) }
-                        unreadMessagesSubcollection = com.example.data.InboxNotificationPolicy.unreadKeys(inboxDocuments)
+                        unreadMessagesSubcollection = unreadKeys(inboxDocuments)
                         recalculateUnreadCount()
                     }
                 }
@@ -293,6 +305,7 @@ object SubscriptionManager {
             }
 
             fun isReportUnreadForUser(doc: com.google.firebase.firestore.DocumentSnapshot): Boolean {
+                if (acknowledgedRevisions["support:${doc.id}"] == com.example.data.PanelReadRepository.revision(doc.data.orEmpty() + ("id" to doc.id))) return false
                 val status = doc.getString("status") ?: ""
                 val isClosed = status.equals("SOLUCIONADO", true) ||
                                status.equals("CERRADO", true) ||
@@ -404,7 +417,7 @@ object SubscriptionManager {
                     @Suppress("UNCHECKED_CAST")
                     val privateMsgs = listenSnapshot.get("privateMessages") as? List<Map<String, Any>>
                     inboxArray = privateMsgs.orEmpty()
-                    val unreadInArray = com.example.data.InboxNotificationPolicy.unreadKeys(inboxArray)
+                    val unreadInArray = unreadKeys(inboxArray)
 
                     hasUnreadFromDoc = hasUnread
                     docUnreadCount = remoteDocCount

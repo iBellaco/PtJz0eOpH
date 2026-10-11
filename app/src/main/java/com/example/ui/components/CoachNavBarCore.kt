@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.CoachNavStyle
 import com.example.util.tr
 
-data class CoachNavItem(val title: String, val icon: ImageVector, val accentColor: Color)
+data class CoachNavItem(val title: String, val icon: ImageVector, val accentColor: Color, val notificationCount: Int? = null)
 
 @Composable
 internal fun CoachNavBarCore(
@@ -42,7 +42,7 @@ internal fun CoachNavBarCore(
 ) {
     if (items.isEmpty()) return
     val index = selectedIndex.coerceIn(items.indices)
-    val position by animateFloatAsState(index.toFloat(), spring(dampingRatio = .72f, stiffness = 380f), label = "coach_nav_position")
+    val position = animateFloatAsState(index.toFloat(), spring(dampingRatio = .72f, stiffness = 380f), label = "coach_nav_position")
     val active = items[index].accentColor
     val barShape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
     BoxWithConstraints(modifier.fillMaxWidth().height(76.dp).clip(barShape).background(backgroundColor)) {
@@ -51,7 +51,7 @@ internal fun CoachNavBarCore(
         val heightPx = with(density) { maxHeight.toPx() }
         Canvas(Modifier.fillMaxSize()) {
             val slotWidth = size.width / items.size
-            val centerX = slotWidth * (position + .5f)
+            val centerX = slotWidth * (position.value + .5f)
             val centerY = if (style == CoachNavStyle.LIQUID) size.height / 2f else 28.dp.toPx()
             when (style) {
                 CoachNavStyle.ORIGINAL -> Unit
@@ -96,7 +96,8 @@ internal fun CoachNavBarCore(
                         modifier = if (style == CoachNavStyle.LIQUID) Modifier.fillMaxSize() else Modifier.fillMaxWidth().height(48.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(item.icon, contentDescription = tr(item.title), tint = if (selected) selectedColor else unselectedColor,
+                        if (itemIndex == 4 && items.size == 5) UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount())
+                        else Icon(item.icon, contentDescription = tr(item.title), tint = if (selected) selectedColor else unselectedColor,
                             modifier = Modifier.size(21.dp).graphicsLayer { scaleX = iconScale; scaleY = iconScale })
                     }
                     if (style != CoachNavStyle.LIQUID) {

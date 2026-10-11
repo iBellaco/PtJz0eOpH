@@ -53,10 +53,11 @@ fun CoachNavStyleRenderer(style: CoachNavStyle, items: List<CoachNavItem>, selec
     val background = com.example.ui.theme.AppThemeManager.getNavBarBackgroundColor()
     val selected = com.example.ui.theme.AppThemeManager.getNavBarSelectedIconColor()
     val unselected = com.example.ui.theme.AppThemeManager.getNavBarUnselectedColor()
+    val safeModifier = if (style == CoachNavStyle.ORIGINAL) modifier else modifier.windowInsetsPadding(WindowInsets.navigationBars)
     when (style) {
         CoachNavStyle.ORIGINAL -> OriginalCoachNavBar(items, selectedIndex, onSelected, modifier)
-        CoachNavStyle.ARC_GLOWING -> ArcGlowingNavBar(items, selectedIndex, background, selected, unselected, onSelected, modifier)
-        CoachNavStyle.LIQUID -> LiquidNavBar(items, selectedIndex, background, selected, unselected, onSelected, modifier)
-        CoachNavStyle.NEON_WAVE -> NeonWaveNavBar(items, selectedIndex, background, selected, unselected, onSelected, modifier)
+        CoachNavStyle.ARC_GLOWING -> ArcGlowingNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
+        CoachNavStyle.LIQUID -> LiquidNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
+        CoachNavStyle.NEON_WAVE -> NeonWaveNavBar(items, selectedIndex, background, selected, unselected, onSelected, safeModifier)
     }
 }

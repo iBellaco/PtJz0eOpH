@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
 import java.util.UUID
+import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.testTag
 
 enum class MessageTag(
     val id: String,
@@ -354,6 +356,7 @@ fun AdminUserMessagesViewerDialog(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isDeletingId by remember { mutableStateOf<String?>(null) }
+    val deletionScope = rememberCoroutineScope()
 
     fun loadMessages() {
         isLoading = true
@@ -604,41 +607,19 @@ fun AdminUserMessagesViewerDialog(
                                             IconButton(
                                                 onClick = {
                                                     isDeletingId = msg.id
-                                                    val db = FirebaseFirestore.getInstance()
-                                                    val userDocRef = db.collection("users").document(userUid)
-
-                                                    // 1. Intentar borrar de la subcolección
-                                                    userDocRef.collection("messages").document(msg.id).delete()
-
-                                                    // 2. Borrar del array 'privateMessages' del documento principal
-                                                    userDocRef.get().addOnSuccessListener { snap ->
-                                                        @Suppress("UNCHECKED_CAST")
-                                                        val pMsgs = snap.get("privateMessages") as? List<Map<String, Any>>
-                                                        if (pMsgs != null) {
-                                                            val updated = pMsgs.filter { (it["id"] as? String) != msg.id }
-                                                            val remainingUnread = updated.count { (it["isRead"] as? Boolean) == false }
-                                                            userDocRef.update(
-                                                                "privateMessages", updated,
-                                                                "hasUnreadMessages", remainingUnread > 0,
-                                                                "unreadMessagesCount", remainingUnread
-                                                            ).addOnCompleteListener {
-                                                                isDeletingId = null
-                                                                messages = messages.filter { it.id != msg.id }
+                                                    deletionScope.launch {
+                                                        runCatching { com.example.data.UserMessageDeleteRepository.delete(userUid, msg.id) }
+                                                            .onSuccess {
+                                                                messages = messages.filterNot { it.id == msg.id }
                                                                 Toast.makeText(context, com.example.util.appTr("Mensaje eliminado."), Toast.LENGTH_SHORT).show()
+                                                            }.onFailure {
+                                                                Toast.makeText(context, com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo."), Toast.LENGTH_LONG).show()
                                                             }
-                                                        } else {
-                                                            isDeletingId = null
-                                                            messages = messages.filter { it.id != msg.id }
-                                                            Toast.makeText(context, com.example.util.appTr("Mensaje eliminado."), Toast.LENGTH_SHORT).show()
-                                                        }
-                                                    }.addOnFailureListener {
                                                         isDeletingId = null
-                                                        messages = messages.filter { it.id != msg.id }
-                                                        Toast.makeText(context, com.example.util.appTr("Mensaje eliminado."), Toast.LENGTH_SHORT).show()
                                                     }
                                                 },
-                                                modifier = Modifier.size(24.dp),
-                                                enabled = isDeletingId != msg.id
+                                                modifier = Modifier.size(48.dp).testTag("delete_user_message_${msg.id}"),
+                                                enabled = isDeletingId == null
                                             ) {
                                                 if (isDeletingId == msg.id) {
                                                     CircularProgressIndicator(modifier = Modifier.size(12.dp), color = Color.White)

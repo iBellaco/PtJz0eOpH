@@ -372,7 +372,7 @@ class MainActivity : ComponentActivity() {
                 com.example.ui.components.BlurredMeshBackground(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    com.example.ui.components.SafeDisplayContent {
                         DraftingApp()
 
 
@@ -472,12 +472,13 @@ fun DashboardScreen(
     val navSelectedIcon = AppThemeManager.getNavBarSelectedIconColor()
     val navSelectedText = AppThemeManager.getNavBarSelectedTextColor()
     val navUnselected = AppThemeManager.getNavBarUnselectedColor()
+    val userNotifications = com.example.ui.components.userPanelNotificationCount()
     val navDestinations = listOf(
         CoachNavItem(tr("Inicio"), Icons.Default.Home, navAccent),
         CoachNavItem(tr("Selección"), Icons.Default.Groups, navSelectedText),
         CoachNavItem(tr("Tier List"), Icons.Default.TrendingUp, navAccent),
         CoachNavItem(tr("Catálogo"), Icons.AutoMirrored.Filled.MenuBook, navSelectedText),
-        CoachNavItem(tr("Usuario"), Icons.Default.Person, navAccent)
+        CoachNavItem(tr("Usuario"), Icons.Default.Person, navAccent, userNotifications)
     )
 
     Scaffold(
@@ -522,20 +523,11 @@ fun DashboardScreen(
                         style = if (isPremium) AppThemeManager.currentNavStyle else CoachNavStyle.ORIGINAL,
                         items = navDestinations,
                         selectedIndex = pagerState.currentPage,
-                        onSelected = { page -> coroutineScope.launch { pagerState.animateScrollToPage(page) } }
+                        onSelected = { page -> coroutineScope.launch { pagerState.scrollToPage(page) } }
                     )
                 }
 
-                // Ambient Runic Particles Floating across Bottom Navigation Bar
-                if (AppThemeManager.isParticlesEnabled && isPremium) {
-                    RunicNavBarParticleAnimation(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clipToBounds(),
-                        particleCount = 14,
-                        accentColor = navAccent
-                    )
-                }
+
             }
             }
         }
