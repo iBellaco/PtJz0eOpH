@@ -40,6 +40,19 @@ class ApkCertificateTest(unittest.TestCase):
         for field in current:
             self.assertFalse(apk.provenance_matches({'schema': 1, **current, field: 'different'}, current))
 
+    def test_delivery_only_tree_change_preserves_every_binary_check(self):
+        current = {'source_tree': 'b' * 40, 'apk_sha256': 'hash',
+                   'certificate_sha256': 'cert', 'version_name': '1.1.10.257',
+                   'version_code': 973, 'obfuscation_proof_sha256': 'proof'}
+        document = {'schema': 1, **current, 'source_tree': 'a' * 40}
+        self.assertTrue(apk.delivery_provenance_matches(document, current, lambda before, after: True))
+        self.assertFalse(apk.delivery_provenance_matches(document, current, lambda before, after: False))
+        for field in current.keys() - {'source_tree'}:
+            self.assertFalse(apk.delivery_provenance_matches(
+                {**document, field: 'different'}, current, lambda before, after: True))
+        self.assertFalse(apk.delivery_provenance_matches(
+            {**document, 'source_tree': 'invalid'}, current, lambda before, after: True))
+
 
 if __name__ == '__main__':
     unittest.main()

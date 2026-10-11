@@ -11,6 +11,8 @@ DELIVERY_ONLY_FILES = {
     '.github/scripts/cleanup-completed-runs.test.cjs',
     '.github/scripts/find-validated-apk.py',
     '.github/scripts/test_validated_apk.py',
+    '.github/scripts/verify-apk-signing.py',
+    '.github/scripts/test_apk_signing.py',
     'docs/coach-audit-1.1.10.257.md',
 }
 
@@ -32,6 +34,21 @@ def eligible(run, repository):
             and re.fullmatch(r'[0-9a-f]{40}', run.get('head_sha', '')) is not None)
 
 
+def same_apk_inputs(repository, source_tree, target_tree, request=api):
+    if source_tree == target_tree:
+        return True
+    prefix = f'repos/{repository}'
+    previous = request(f"{prefix}/git/trees/{source_tree}?recursive=1")
+    current = request(f"{prefix}/git/trees/{target_tree}?recursive=1")
+    if previous.get('truncated', True) or current.get('truncated', True):
+        return False
+    def apk_inputs(tree):
+        return {entry['path']: (entry['type'], entry['sha'])
+                for entry in tree['tree'] if entry['type'] != 'tree'
+                and entry['path'] not in DELIVERY_ONLY_FILES}
+    return apk_inputs(previous) == apk_inputs(current)
+
+
 def find(repository, target_sha, request=api):
     prefix = f'repos/{repository}'
     target_tree = request(f'{prefix}/git/commits/{target_sha}')['tree']['sha']
@@ -41,15 +58,7 @@ def find(repository, target_sha, request=api):
             continue
         source_tree = request(f"{prefix}/git/commits/{run['head_sha']}")['tree']['sha']
         if source_tree != target_tree:
-            previous = request(f"{prefix}/git/trees/{source_tree}?recursive=1")
-            current = request(f"{prefix}/git/trees/{target_tree}?recursive=1")
-            if previous.get('truncated', True) or current.get('truncated', True):
-                continue
-            def apk_inputs(tree):
-                return {entry['path']: (entry['type'], entry['sha'])
-                        for entry in tree['tree'] if entry['type'] != 'tree'
-                        and entry['path'] not in DELIVERY_ONLY_FILES}
-            if apk_inputs(previous) != apk_inputs(current):
+            if not same_apk_inputs(repository, source_tree, target_tree, request):
                 continue
         jobs = request(f"{prefix}/actions/runs/{run['id']}/jobs?per_page=100")['jobs']
         passed = {job['name'] for job in jobs if job.get('conclusion') == 'success'}

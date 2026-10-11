@@ -1,5 +1,6 @@
 """Check the actual APK certificate against the restored signing identity."""
 import os
+import importlib.util
 import hashlib
 import json
 from pathlib import Path
@@ -19,6 +20,16 @@ def certificate_matches(output, expected):
 
 def provenance_matches(document, current):
     return document.get('schema') == 1 and all(document.get(key) == value for key, value in current.items())
+
+
+def delivery_provenance_matches(document, current, source_matches):
+    """Keep binary, certificate, version and obfuscation proof checks intact."""
+    validated_tree = document.get('source_tree', '')
+    if not re.fullmatch(r'[0-9a-f]{40}', validated_tree):
+        return False
+    if not source_matches(validated_tree, current['source_tree']):
+        return False
+    return provenance_matches(document, {**current, 'source_tree': validated_tree})
 
 
 def main():
@@ -48,7 +59,13 @@ def main():
                'obfuscation_proof_sha256': hashlib.sha256(apk.with_name('coach-obfuscation-proof.json').read_bytes()).hexdigest()}
     provenance = apk.with_name('coach-apk-provenance.json')
     if os.environ.get('COACH_REQUIRE_APK_PROVENANCE') == 'true':
-        if not provenance.is_file() or not provenance_matches(json.loads(provenance.read_text()), current):
+        spec = importlib.util.spec_from_file_location('validated_apk', Path(__file__).with_name('find-validated-apk.py'))
+        validation = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(validation)
+        def source_matches(before, after):
+            return validation.same_apk_inputs(os.environ['GITHUB_REPOSITORY'], before, after)
+        if not provenance.is_file() or not delivery_provenance_matches(
+                json.loads(provenance.read_text()), current, source_matches):
             raise SystemExit('El APK no coincide con los archivos, la versión y el certificado validados. No se publicará.')
     else:
         provenance.write_text(json.dumps({'schema': 1, **current}, indent=2) + '\n')
