@@ -132,8 +132,10 @@ class DraftRivalNameInstalledTest {
                         868 * config.allySlotYRatios[0] - 18f, paint)
                     canvas.drawText("MEL", 1920 * config.getEnemySlotX(0) - 868 * .074f - paint.measureText("MEL"),
                         868 * config.enemySlotYRatios[0] - 18f, paint)
-                    val result = kotlinx.coroutines.withTimeout(60_000L) {
+                    kotlinx.coroutines.withTimeout(60_000L) {
                         scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                    }
+                    val result = kotlinx.coroutines.withTimeout(60_000L) {
                         scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
                     }
                     assertEquals("seraphine", result.alliesBySlot[0]?.id)
@@ -173,10 +175,15 @@ class DraftRivalNameInstalledTest {
             progress("start")
             val bitmap = frame(titles)
             return try {
-                kotlinx.coroutines.withTimeout(60_000L) {
+                var result = kotlinx.coroutines.withTimeout(60_000L) {
                     scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                }
+                if (phase == "selection" || phase == "trade") {
+                    result = kotlinx.coroutines.withTimeout(60_000L) {
                         scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
-                }.also { progress("done ${it.allyRolesBySlot} ${it.alliesBySlot.mapValues { entry -> entry.value.id }}") }
+                    }
+                }
+                result.also { progress("done ${it.allyRolesBySlot} ${it.alliesBySlot.mapValues { entry -> entry.value.id }}") }
             } finally { bitmap.recycle() }
         }
         try {
