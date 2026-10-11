@@ -525,6 +525,7 @@ fun LiteRTEngineViewerDialog(
                                             RoundedCornerShape(6.dp)
                                         )
                                         .coachClickable { selectedTarget = target }
+                                        .widthIn(min = 48.dp)
                                         .heightIn(min = 48.dp)
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                         .testTag("calibration_target_${target.name.lowercase()}")
