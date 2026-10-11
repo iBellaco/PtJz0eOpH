@@ -84,16 +84,27 @@ class DraftRivalNameInstalledTest {
             }
             canvas.drawText("AKSHAN", allyTitle.left + 8f, bitmap.height * config.allySlotYRatios[4] - 7f, paint)
             scanner.resetSlotMemory()
-            var finalResult = selected
-            repeat(5) {
-                finalResult = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID)
-                kotlinx.coroutines.delay(200)
+            scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID)
+            val ninth = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID)
+            assertEquals(true, ninth.detectedFirstPick)
+            assertEquals(false, ninth.tenthPickIsAlly)
+            assertEquals(9, ninth.alliesBySlot.size + ninth.enemiesBySlot.size)
+            val turn = scanner.getDraftPickSequence(true).last()
+            // The hub uses the direct avatar path between full name-band scans.
+            scanner.scanActiveSlotDirectly(bitmap, turn, context)
+            kotlinx.coroutines.delay(200)
+            val visual = scanner.scanActiveSlotDirectly(bitmap, turn, context)
+            assertEquals("fiddlesticks", visual?.champion?.id)
+            val finalPortrait = com.example.service.screen.LiteRTVisionClassifier.finishLastVisibleSelection()
+            assertEquals("fiddlesticks", finalPortrait?.pickedChampion?.id)
+            assertTrue(finalPortrait?.isConfirmed == true)
+            val hud = com.example.service.OverlayState().apply {
+                ninth.alliesBySlot.forEach { (slot, champion) -> allies[slot] = champion }
+                ninth.enemiesBySlot.forEach { (slot, champion) -> enemies[slot] = champion }
             }
-            assertEquals(true, finalResult.detectedFirstPick)
-            assertEquals(false, finalResult.tenthPickIsAlly)
-            assertEquals("fiddlesticks", finalResult.lastPickChampion?.id)
-            assertTrue(finalResult.isLastPickConfirmed)
-            assertEquals(10, finalResult.alliesBySlot.size + finalResult.enemiesBySlot.size)
+            hud.applyConfirmedLastPick(ninth.copy(isLastPickConfirmed = true,
+                lastPickChampion = finalPortrait?.pickedChampion))
+            assertEquals(10, (hud.allies + hud.enemies).filterNotNull().size)
         } finally { bitmap.recycle(); scanner.resetSlotMemory(); scanner.updateCalibration(context, original) }
     }
 
