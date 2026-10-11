@@ -26,6 +26,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Test optional function deployment restrictions
+        run: python3 -m unittest discover -s .github/scripts -p test_optional_function_deploy.py
       - name: Install rule-test dependencies
         working-directory: tests/firestore
         run: npm ci --no-audit --no-fund
@@ -121,8 +123,9 @@ jobs:
             cat "$DEPLOY_LOG"
           else
             cat "$DEPLOY_LOG"
-            if grep -Fq 'HTTP Error: 403, Permission denied to get service' "$DEPLOY_LOG"; then
-              echo '::warning::La cuenta de GitHub no puede desplegar Cloud Functions; se mantiene activo el trabajador privado programado.'
+            if bash .github/scripts/can-defer-functions.sh "$DEPLOY_LOG"; then
+              echo '::warning::Despliegue directo pendiente por restricciones de acceso; se verificará el trabajador privado programado antes de publicar permisos.'
+              echo 'El despliegue directo NO se realizó. Habilitar Cloud Build con una cuenta propietaria cuando la API esté pendiente. La continuidad depende de que el trabajador y las comprobaciones siguientes terminen correctamente.' >> "$GITHUB_STEP_SUMMARY"
             else
               exit 1
             fi
