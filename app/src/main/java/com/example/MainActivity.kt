@@ -428,7 +428,7 @@ fun DashboardScreen(
     val targetChampId = activity?.intent?.getStringExtra("OPEN_CHAMPION_DETAIL")
     val initialPage = if (activity?.intent?.getBooleanExtra("OPEN_TIER_LIST", false) == true || targetChampId != null) 2 else 0
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { 5 })
-    val openInboxFromPhone by com.example.data.InboxPhoneNotifications.openInbox.collectAsState()
+    val openInboxFromPhone by com.example.data.InboxPhoneNotifications.openInbox.collectAsStateWithLifecycle()
     LaunchedEffect(openInboxFromPhone) {
         if (openInboxFromPhone) pagerState.scrollToPage(4)
     }
