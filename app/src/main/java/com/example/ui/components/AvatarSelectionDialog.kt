@@ -626,7 +626,7 @@ fun AvatarSelectionBottomSheet(
                         else -> null
                     }
 
-                    val borders = remember(userRole, secondaryRole) {
+                    val borders = run {
                         val list = mutableListOf<String>()
                         list.add("NONE")    // Sin Marco especial (avatar limpio sin efectos)
                         list.add("DEFAULT") // Por Defecto (animación de rareza y resplandor del avatar sin marco de imagen)
