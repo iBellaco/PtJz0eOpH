@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -549,7 +550,7 @@ fun LiteRTEngineViewerDialog(
                         } else if (selectedTarget.isAlly) calibrationConfig.allyAvatarCenterX else calibrationConfig.enemyAvatarCenterX
                         val selectedY = (if (selectedTarget.isAlly) calibrationConfig.allySlotYRatios else calibrationConfig.enemySlotYRatios).let { ys -> if (slotIndex != null) listOf(ys[slotIndex]) else ys }
                         val selectedDiameter = (if (selectedTarget.isAlly) calibrationConfig.allySlotDiameterRatios else calibrationConfig.enemySlotDiameterRatios).let { ds -> if (slotIndex != null) listOf(ds[slotIndex]) else ds }
-                        val currentCoordsText = "${selectedTarget.title}: X=${(selectedX * 100).format(2)}% | Y=${((selectedY.minOrNull() ?: 0f) * 100).format(2)}–${((selectedY.maxOrNull() ?: 0f) * 100).format(2)}% | ⌀=${(selectedDiameter.average().toFloat() * 100).format(2)}%"
+                        val currentCoordsText = "${com.example.util.tr(selectedTarget.title)}: X=${(selectedX * 100).format(2)}% | Y=${((selectedY.minOrNull() ?: 0f) * 100).format(2)}–${((selectedY.maxOrNull() ?: 0f) * 100).format(2)}% | ⌀=${(selectedDiameter.average().toFloat() * 100).format(2)}%"
 
                         Box(
                             modifier = Modifier
