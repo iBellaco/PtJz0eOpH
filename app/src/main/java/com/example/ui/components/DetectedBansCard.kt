@@ -30,7 +30,7 @@ internal fun DetectedBansCard(slots: List<BanSlot>) {
             val sideKey = if (side == BanSide.ALLY) "ally" else "enemy"
             val color = if (side == BanSide.ALLY) HextechCyan else DangerRed
             Column(Modifier.weight(1f).testTag("draft_bans_$sideKey")) {
-                Text(tr(if (side == BanSide.ALLY) "Baneos aliados" else "Baneos rivales"), color = color, fontSize = 8.sp)
+                Text(tr(if (side == BanSide.ALLY) "Baneos aliados" else "Baneos rivales"), color = color, fontSize = 8.sp, lineHeight = 10.sp)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     for (index in 0..4) {
                         val slot = slots.firstOrNull { it.side == side && it.index == index } ?: BanSlot(side, index)
@@ -47,9 +47,9 @@ internal fun DetectedBansCard(slots: List<BanSlot>) {
                             else Box(Modifier.size(20.dp).background(HextechSurfaceVariant, CircleShape)
                                 .border(.8.dp, color.copy(alpha = .4f), CircleShape), contentAlignment = Alignment.Center) {
                                 Text(if(slot.state == BanState.EMPTY) "—" else if(slot.state == BanState.PENDING) "…" else "?",
-                                    color = TextMuted, fontSize = 10.sp)
+                                    color = TextMuted, fontSize = 10.sp, lineHeight = 12.sp)
                             }
-                            Text(label, color = TextSecondary, fontSize = 6.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(label, color = TextSecondary, fontSize = 6.5.sp, lineHeight = 8.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }

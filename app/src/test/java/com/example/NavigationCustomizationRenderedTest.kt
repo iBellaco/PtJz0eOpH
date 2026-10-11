@@ -68,7 +68,13 @@ class NavigationCustomizationRenderedTest {
             if(it.index==0) it.copy(championId="ahri",state=com.example.service.screen.BanState.CONFIRMED)
             else if(it.index==1) it.copy(state=com.example.service.screen.BanState.EMPTY) else it
         }
-        compose.setContent { MyApplicationTheme { com.example.ui.components.DetectedBansCard(slots) } }
+        var density = 1f
+        compose.setContent { MyApplicationTheme {
+            density = androidx.compose.ui.platform.LocalDensity.current.density
+            com.example.ui.components.DetectedBansCard(slots)
+        } }
+        assertTrue("Bans must fit a compact row", compose.onNodeWithTag("draft_detected_bans")
+            .fetchSemanticsNode().boundsInRoot.height <= 48 * density)
         for(side in listOf("ally","enemy")) for(index in 0..4) {
             compose.onNodeWithTag("draft_ban_${side}_$index",useUnmergedTree=true).assertExists()
         }
