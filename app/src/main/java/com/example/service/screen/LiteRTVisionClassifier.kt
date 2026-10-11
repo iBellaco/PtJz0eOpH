@@ -154,7 +154,7 @@ object LiteRTVisionClassifier {
     }
 
     /** Locates small header portraits at multiple scales, independently from the pick-column calibrator. */
-    internal fun findHeaderBanObservations(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>): List<BanObservation> {
+    internal fun findHeaderBanObservations(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>, config: VisionCalibrationConfig = VisionCalibrationConfig()): List<BanObservation> {
         ensureIndexed(context)
         val catalog = WildRiftRepository.champions.distinctBy { it.id }
             .filter { championEmbeddingCache.containsKey(it.id) }
@@ -251,8 +251,14 @@ object LiteRTVisionClassifier {
         }
         // Refine only textured but unidentified positions. A single central template can miss
         // differently scaled portraits; the final confidence and separation gates stay unchanged.
-        return positioned.map { observation ->
-            if (observation.championId != null || observation.empty) return@map observation
+        val calibrated = positioned.filter { if (it.side == BanSide.ALLY) !config.manualAllyBans else !config.manualEnemyBans } +
+            BanSide.entries.flatMap { side ->
+                val ally = side == BanSide.ALLY
+                if (if (ally) config.manualAllyBans else config.manualEnemyBans)
+                    config.banRegions(ally).map { BanObservation(side, it, null, false) } else emptyList()
+            }
+        return calibrated.map { observation ->
+            if (observation.championId != null) return@map observation
             val region = observation.region
             val centerX = kotlin.math.round(region.x * width).toInt()
             val centerY = kotlin.math.round(region.y * height).toInt()
@@ -274,6 +280,10 @@ object LiteRTVisionClassifier {
                     val references = championEmbeddingCache.getValue(champion.id)
                     champion to intArrayOf(4, 13, 22).maxOf { PortraitMatcher.correlation(descriptor, references[it]) }
                 }.sortedByDescending { it.second }.take(8)
+                if (refined.championId == null && emptyReferences.isNotEmpty() &&
+                    candidates.first().second < .65f && PortraitMatcher.similarity(descriptor, emptyReferences) >= .90f) {
+                    refined = observation.copy(empty = true)
+                }
                 if (candidates.first().second < .60f) continue
                 val ranked = candidates.map { (champion, _) -> champion to
                     PortraitMatcher.similarity(descriptor, championEmbeddingCache.getValue(champion.id))
@@ -283,7 +293,7 @@ object LiteRTVisionClassifier {
                         ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
                     bestScore = best.second
                     refined = observation.copy(region = BanRegion(x.toFloat()/width, y.toFloat()/height,
-                        radius.toFloat()/height), championId = best.first.id)
+                        radius.toFloat()/height), championId = best.first.id, empty = false)
                 }
             }
             refined

@@ -76,9 +76,11 @@ import com.example.service.screen.LiteRTVisionClassifier
 import com.example.service.screen.TenthPickDiagnosticManager
 import com.example.service.screen.VisionCalibrationConfig
 
-enum class CircleTarget(val title: String, val isAlly: Boolean, val slotIndex: Int? = null) {
+enum class CircleTarget(val title: String, val isAlly: Boolean, val slotIndex: Int? = null, val isBan: Boolean = false) {
     ALLY_COLUMN_X("Columna Aliado X", true),
     ENEMY_COLUMN_X("Columna Rival X", false),
+    ALLY_BANS("Baneo aliado", true, isBan = true),
+    ENEMY_BANS("Baneo rival", false, isBan = true),
     ALLY_SLOT_1("Aliado 1", true, 0),
     ALLY_SLOT_2("Aliado 2", true, 1),
     ALLY_SLOT_3("Aliado 3", true, 2),
@@ -115,7 +117,8 @@ fun LiteRTEngineViewerDialog(
     var calibrationStep by remember { mutableStateOf(0.005f) } // 0.5% por defecto
 
     fun modifyDetectionCircle(deltaX: Float = 0f, deltaY: Float = 0f, deltaSize: Float = 0f) {
-        val updated = selectedTarget.slotIndex?.let { index ->
+        val updated = if (selectedTarget.isBan) calibrationConfig.adjustBanRow(
+            selectedTarget.isAlly, deltaX, deltaY, deltaSize) else selectedTarget.slotIndex?.let { index ->
             calibrationConfig.adjustDraftSlot(selectedTarget.isAlly, index, deltaX, deltaY, deltaSize)
         } ?: calibrationConfig.adjustDraftColumn(
             isAlly = selectedTarget.isAlly,
@@ -512,7 +515,7 @@ fun LiteRTEngineViewerDialog(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp),
-                            maxItemsInEachRow = 3
+                            maxItemsInEachRow = 4
                         ) {
                             CircleTarget.entries.forEach { target ->
                                 val isSel = selectedTarget == target
@@ -545,11 +548,13 @@ fun LiteRTEngineViewerDialog(
 
                         // Indicador de Coordenadas Actuales del Objetivo
                         val slotIndex = selectedTarget.slotIndex
-                        val selectedX = if (slotIndex != null) {
+                        val selectedX = if (selectedTarget.isBan) {
+                            (if (selectedTarget.isAlly) calibrationConfig.allyBanXRatios else calibrationConfig.enemyBanXRatios).first()
+                        } else if (slotIndex != null) {
                             if (selectedTarget.isAlly) calibrationConfig.getAllySlotX(slotIndex) else calibrationConfig.getEnemySlotX(slotIndex)
                         } else if (selectedTarget.isAlly) calibrationConfig.allyAvatarCenterX else calibrationConfig.enemyAvatarCenterX
-                        val selectedY = (if (selectedTarget.isAlly) calibrationConfig.allySlotYRatios else calibrationConfig.enemySlotYRatios).let { ys -> if (slotIndex != null) listOf(ys[slotIndex]) else ys }
-                        val selectedDiameter = (if (selectedTarget.isAlly) calibrationConfig.allySlotDiameterRatios else calibrationConfig.enemySlotDiameterRatios).let { ds -> if (slotIndex != null) listOf(ds[slotIndex]) else ds }
+                        val selectedY = if (selectedTarget.isBan) listOf(if (selectedTarget.isAlly) calibrationConfig.allyBanYRatio else calibrationConfig.enemyBanYRatio) else (if (selectedTarget.isAlly) calibrationConfig.allySlotYRatios else calibrationConfig.enemySlotYRatios).let { ys -> if (slotIndex != null) listOf(ys[slotIndex]) else ys }
+                        val selectedDiameter = if (selectedTarget.isBan) listOf(calibrationConfig.banDiameterRatio) else (if (selectedTarget.isAlly) calibrationConfig.allySlotDiameterRatios else calibrationConfig.enemySlotDiameterRatios).let { ds -> if (slotIndex != null) listOf(ds[slotIndex]) else ds }
                         val currentCoordsText = "${com.example.util.tr(selectedTarget.title)}: X=${(selectedX * 100).format(2)}% | Y=${((selectedY.minOrNull() ?: 0f) * 100).format(2)}–${((selectedY.maxOrNull() ?: 0f) * 100).format(2)}% | ⌀=${(selectedDiameter.average().toFloat() * 100).format(2)}%"
 
                         Box(

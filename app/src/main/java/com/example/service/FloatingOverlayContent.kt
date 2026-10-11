@@ -250,7 +250,7 @@ internal fun FloatingOverlayContent(
     // 4. Null-Frame Drop: Si el ImageReader no tiene un fotograma nuevo, se salta el ciclo sin re-analizar imágenes estáticas.
     LaunchedEffect(autoScanEnabled) {
         if (autoScanEnabled) {
-            DraftVisionScanner.resetSlotLifecycle()
+            DraftVisionScanner.resetSlotMemory()
             if (allies.all { it == null } && enemies.all { it == null }) DraftVisionScanner.clearDetectedBans()
         }
         if (!autoScanEnabled) {

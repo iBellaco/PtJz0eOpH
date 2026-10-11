@@ -19,11 +19,14 @@ internal class BannedPortraitScanner {
     }
 
     @Synchronized fun scan(bitmap: Bitmap, context: Context?, nowMs: Long,
-                           exclusions: List<Rect> = emptyList()): Set<String> {
+                           exclusions: List<Rect> = emptyList(), config: VisionCalibrationConfig = VisionCalibrationConfig()): Set<String> {
         if (bitmap.isRecycled || bitmap.width < bitmap.height || nowMs - lastScanAt < 1500L) return confirmedIds()
         lastScanAt = nowMs
-        update(LiteRTVisionClassifier.findHeaderBanObservations(bitmap, context, exclusions),
+        update(LiteRTVisionClassifier.findHeaderBanObservations(bitmap, context, exclusions, config),
             bitmap.width.toFloat() / bitmap.height)
+        if (config.manualAllyBans || config.manualEnemyBans) slots = slots.map {
+            it.copy(region = it.region?.copy(radius = config.banDiameterRatio / 2f))
+        }
         return confirmedIds()
     }
 
