@@ -79,6 +79,12 @@ object SubscriptionManager {
     private var inboxOwnerUid = ""
     private var inboxArrayLoaded = false
     private var inboxDocumentsLoaded = false
+    private var inboxSupportUid = emptyList<Map<String, Any>>()
+    private var inboxSupportEmail = emptyList<Map<String, Any>>()
+    private var inboxSupportUidLoaded = false
+    private var inboxSupportEmailLoaded = false
+    private fun phoneMessages() = inboxArray + inboxDocuments + inboxSupportEmail + inboxSupportUid
+    private fun phoneSourcesReady() = inboxArrayLoaded && inboxDocumentsLoaded && inboxSupportUidLoaded && inboxSupportEmailLoaded
     private var unreadMessagesSubcollection = emptySet<String>()
     private var unreadSupportReports = emptySet<String>()
     private var unreadPrivateArray = emptySet<String>()
@@ -130,7 +136,7 @@ object SubscriptionManager {
     })
     fun refreshPhoneNotifications(context: Context) {
         val uid = _currentUserUid.value
-        if (uid.isNotBlank()) com.example.data.InboxPhoneNotifications.update(context, uid, inboxArray + inboxDocuments, authoritative = inboxArrayLoaded && inboxDocumentsLoaded)
+        if (uid.isNotBlank()) com.example.data.InboxPhoneNotifications.update(context, uid, phoneMessages(), authoritative = phoneSourcesReady())
     }
     fun acknowledgeMessage(message: Map<String, Any>) {
         val key = com.example.data.InboxNotificationPolicy.key(message) ?: return
@@ -177,6 +183,10 @@ object SubscriptionManager {
                 inboxOwnerUid = ""
                 inboxArrayLoaded = false
                 inboxDocumentsLoaded = false
+                inboxSupportUid = emptyList()
+                inboxSupportEmail = emptyList()
+                inboxSupportUidLoaded = false
+                inboxSupportEmailLoaded = false
                 unreadMessagesSubcollection = emptySet()
                 unreadSupportReports = emptySet()
                 unreadPrivateArray = emptySet()
@@ -258,6 +268,10 @@ object SubscriptionManager {
             inboxDocumentsLoaded = false
             inboxArray = emptyList()
             inboxDocuments = emptyList()
+            inboxSupportUid = emptyList()
+            inboxSupportEmail = emptyList()
+            inboxSupportUidLoaded = false
+            inboxSupportEmailLoaded = user.email.isNullOrBlank()
         }
         startHeartbeat(user.uid)
         com.example.data.InboxPhoneNotifications.schedule(context.applicationContext, user.uid)
@@ -311,7 +325,7 @@ object SubscriptionManager {
                         inboxDocumentsLoaded = true
                         inboxDocuments = snapshot.documents.map { it.data.orEmpty() + ("id" to it.id) }
                         unreadMessagesSubcollection = unreadKeys(inboxDocuments)
-                        com.example.data.InboxPhoneNotifications.update(context, user.uid, inboxArray + inboxDocuments, authoritative = inboxArrayLoaded && inboxDocumentsLoaded)
+                        com.example.data.InboxPhoneNotifications.update(context, user.uid, phoneMessages(), authoritative = phoneSourcesReady())
                         recalculateUnreadCount()
                     }
                 }
@@ -324,6 +338,7 @@ object SubscriptionManager {
 
             fun checkAndUpdateSupportUnread() {
                 unreadSupportReports = unreadSupportByUid + unreadSupportByEmail
+                refreshPhoneNotifications(context)
                 recalculateUnreadCount()
             }
 
@@ -359,6 +374,8 @@ object SubscriptionManager {
                 .whereEqualTo("userId", user.uid)
                 .addSnapshotListener { snapshot, error ->
                     if (error == null && snapshot != null) {
+                        inboxSupportUidLoaded = true
+                        inboxSupportUid = snapshot.documents.map { com.example.data.InboxPhoneNotificationPolicy.supportMessage(it.id, it.data.orEmpty()) }
                         unreadSupportByUid = snapshot.documents.filter(::isReportUnreadForUser).map { "support:${it.id}" }.toSet()
                         checkAndUpdateSupportUnread()
                     }
@@ -370,6 +387,8 @@ object SubscriptionManager {
                     .whereEqualTo("userEmail", uEmail.trim())
                     .addSnapshotListener { snapshot, error ->
                         if (error == null && snapshot != null) {
+                            inboxSupportEmailLoaded = true
+                            inboxSupportEmail = snapshot.documents.map { com.example.data.InboxPhoneNotificationPolicy.supportMessage(it.id, it.data.orEmpty()) }
                             unreadSupportByEmail = snapshot.documents.filter(::isReportUnreadForUser).map { "support:${it.id}" }.toSet()
                             checkAndUpdateSupportUnread()
                         }
@@ -441,7 +460,7 @@ object SubscriptionManager {
                     val privateMsgs = listenSnapshot.get("privateMessages") as? List<Map<String, Any>>
                     inboxArrayLoaded = true
                     inboxArray = privateMsgs.orEmpty()
-                    com.example.data.InboxPhoneNotifications.update(context, user.uid, inboxArray + inboxDocuments, authoritative = inboxArrayLoaded && inboxDocumentsLoaded)
+                    com.example.data.InboxPhoneNotifications.update(context, user.uid, phoneMessages(), authoritative = phoneSourcesReady())
                     val unreadInArray = unreadKeys(inboxArray)
 
                     hasUnreadFromDoc = hasUnread

@@ -114,16 +114,31 @@ class InboxNotificationWorker(context: Context, parameters: WorkerParameters) : 
             val snapshot = profile.get(com.google.firebase.firestore.Source.SERVER).await()
             val legacy = (snapshot.get("privateMessages") as? List<*>).orEmpty().filterIsInstance<Map<String, Any>>()
             val prefs = applicationContext.getSharedPreferences("inbox_phone", Context.MODE_PRIVATE)
-            val cursorKey = "cursor_" + PanelReadRepository.key(uid)
-            val cursor = prefs.getString(cursorKey, "").orEmpty()
-            var query = profile.collection("messages").whereEqualTo("isRead", false)
-                .orderBy(com.google.firebase.firestore.FieldPath.documentId()).limit(100)
-            if (cursor.isNotBlank()) query = query.startAfter(cursor)
-            val page = query.get(com.google.firebase.firestore.Source.SERVER).await().documents
-            val documents = page.map { it.data.orEmpty() + ("id" to it.id) }
-            InboxPhoneNotifications.update(applicationContext, uid, legacy + documents,
-                authoritative = cursor.isBlank() && page.size < 100)
-            prefs.edit().putString(cursorKey, if (page.size == 100) page.last().id else "").apply()
+            var complete = true
+            val cursors = mutableMapOf<String, String>()
+            suspend fun page(query: com.google.firebase.firestore.Query, source: String): List<com.google.firebase.firestore.DocumentSnapshot> {
+                val cursorKey = "cursor_" + PanelReadRepository.key(uid, source)
+                val cursor = prefs.getString(cursorKey, "").orEmpty()
+                var bounded = query.orderBy(com.google.firebase.firestore.FieldPath.documentId()).limit(100)
+                if (cursor.isNotBlank()) bounded = bounded.startAfter(cursor)
+                val documents = bounded.get(com.google.firebase.firestore.Source.SERVER).await().documents
+                complete = complete && cursor.isBlank() && documents.size < 100
+                cursors[cursorKey] = if (documents.size == 100) documents.last().id else ""
+                return documents
+            }
+            val documents = page(profile.collection("messages").whereEqualTo("isRead", false), "messages")
+                .map { it.data.orEmpty() + ("id" to it.id) }
+            val reports = com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("support_reports")
+            val support = page(reports.whereEqualTo("userId", uid), "support_uid").toMutableList()
+            user.email?.takeIf { it.isNotBlank() }?.let { email ->
+                support.addAll(page(reports.whereEqualTo("userEmail", email.trim()), "support_email"))
+            }
+            InboxPhoneNotifications.update(applicationContext, uid, legacy + documents + support.map {
+                InboxPhoneNotificationPolicy.supportMessage(it.id, it.data.orEmpty())
+            }, authoritative = complete)
+            val editor = prefs.edit()
+            cursors.forEach { (key, cursor) -> editor.putString(key, cursor) }
+            editor.apply()
             Result.success()
         } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
         catch (_: Exception) { Result.retry() }

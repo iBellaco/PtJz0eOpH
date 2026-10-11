@@ -13,6 +13,15 @@ class InboxPhoneNotificationPolicyTest {
         assertTrue(InboxPhoneNotificationPolicy.candidates(listOf(message(), message(read = true))).isEmpty())
     }
 
+    @Test fun supportAnswersAlertButUserRequestsReadOrClosedTicketsDoNot() {
+        fun candidates(data: Map<String, Any>) = InboxPhoneNotificationPolicy.candidates(listOf(InboxPhoneNotificationPolicy.supportMessage("ticket", data)))
+        assertTrue(candidates(mapOf("isRead" to false, "conversation" to listOf(mapOf("senderRole" to "USER")))).isEmpty())
+        val answer = mapOf<String, Any>("userRead" to false, "adminReply" to "Respuesta")
+        assertEquals(1, candidates(answer).size)
+        assertTrue(candidates(answer + ("userRead" to true)).isEmpty())
+        assertTrue(candidates(answer + ("status" to "CLOSED")).isEmpty())
+    }
+
     @Test fun changedReplyGetsANewRevisionButReadingNeverCreatesAnAlert() {
         val old = InboxPhoneNotificationPolicy.candidates(listOf(message())).values.single()
         val updated = InboxPhoneNotificationPolicy.candidates(listOf(message(body = "Dos", time = 2L))).values.single()
