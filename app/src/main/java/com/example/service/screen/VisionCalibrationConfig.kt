@@ -233,6 +233,7 @@ VisionCalibrationConfig(
     fun saveToPrefs(context: Context) {
         val prefs = context.getSharedPreferences("vision_calibration_prefs", Context.MODE_PRIVATE)
         prefs.edit().apply {
+            putInt("calibration_version", CURRENT_CALIBRATION_VERSION)
             allyBanXRatios.forEachIndexed { i, x -> putFloat("ban_ally_x_$i", x) }
             enemyBanXRatios.forEachIndexed { i, x -> putFloat("ban_enemy_x_$i", x) }
             putFloat("ban_ally_y", allyBanYRatio)
