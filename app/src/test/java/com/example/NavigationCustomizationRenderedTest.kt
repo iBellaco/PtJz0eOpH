@@ -80,7 +80,11 @@ class NavigationCustomizationRenderedTest {
             compose.onNodeWithTag("nav_particles").assertDoesNotExist()
             compose.runOnIdle { particles = true }
             compose.mainClock.advanceTimeBy(1000)
-            compose.onNodeWithTag("nav_particles").assertIsDisplayed()
+            val particleBounds = compose.onNodeWithTag("nav_particles").fetchSemanticsNode().boundsInRoot
+            val barBounds = compose.onNodeWithTag("nav_pixels").fetchSemanticsNode().boundsInRoot
+            assertEquals("Particles must cover the visible bar in $option", barBounds, particleBounds)
+            assertTrue("Particles must have a nonzero area in $option: $particleBounds",
+                particleBounds.width > 0 && particleBounds.height > 0)
             val on = snapshot("nav_pixels", "particles-on")
             try {
                 assertEquals(off.width, on.width)
