@@ -126,11 +126,15 @@ object DraftVisionScanner {
     val allySlotRolesCache = mutableMapOf<Int, LaneRole>()
     val allySlotOcrLaneCache = mutableMapOf<Int, LaneRole>()
     private val bannedPortraitScanner = BannedPortraitScanner()
+    internal val banDetectionActiveFlow = kotlinx.coroutines.flow.MutableStateFlow(false)
+    internal val banSlotsFlow = kotlinx.coroutines.flow.MutableStateFlow(emptyBanSlots())
     val bannedChampionIdsFlow = kotlinx.coroutines.flow.MutableStateFlow<Set<String>>(emptySet())
     val detectedBannedChampionIds: Set<String> get() = bannedChampionIdsFlow.value
 
     fun clearDetectedBans() {
+        banDetectionActiveFlow.value = false
         bannedPortraitScanner.reset()
+        banSlotsFlow.value = emptyBanSlots()
         bannedChampionIdsFlow.value = emptySet()
     }
 
@@ -1195,12 +1199,16 @@ object DraftVisionScanner {
 
         val draftVisible = allyOcrChampions.any { it != null } || enemyOcrChampions.any { it != null } ||
             currentScanFrameOcrLanes.isNotEmpty() || isActiveSelectionDetected || isPreparationPhase
+        banDetectionActiveFlow.value = detectBannedPortraits
         if (!detectBannedPortraits) clearDetectedBans()
         else if (draftVisible) {
             val exclusions = debugTextRects + listOfNotNull(overlayRect)
             val pickedIds = (allyOcrChampions.filterNotNull() + enemyOcrChampions.filterNotNull()).map { it.id }.toSet()
             bannedChampionIdsFlow.value = bannedPortraitScanner.scan(bitmap, context,
                 android.os.SystemClock.elapsedRealtime(), exclusions) - pickedIds
+            banSlotsFlow.value = bannedPortraitScanner.slots.map { slot ->
+                if (slot.championId in pickedIds) slot.copy(championId = null, state = BanState.UNKNOWN) else slot
+            }
         }
 
         val otherPicks = getConfirmedPicksExcept(tenthTurn, confirmedHudPicks)

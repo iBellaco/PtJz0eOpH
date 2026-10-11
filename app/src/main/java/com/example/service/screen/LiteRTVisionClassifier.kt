@@ -141,12 +141,24 @@ object LiteRTVisionClassifier {
         indexedIds = championEmbeddingCache.keys.toSet()
     }
 
+    private var emptyBanReferenceCache: List<FloatArray>? = null
+    private fun emptyBanReferences(context: Context?): List<FloatArray> {
+        emptyBanReferenceCache?.let { return it }
+        if (context == null) return emptyList()
+        return runCatching {
+            val data = org.json.JSONObject(context.assets.open("ban_empty_reference.json").bufferedReader().use { it.readText() })
+            val values = data.getJSONArray("pixels")
+            val pixels = IntArray(values.length()) { values.getInt(it) or (0xff shl 24) }
+            PortraitMatcher.references(pixels, data.getInt("width"), data.getInt("height"))
+        }.getOrElse { emptyList() }.also { emptyBanReferenceCache = it }
+    }
+
     /** Locates small header portraits at multiple scales, independently from the pick-column calibrator. */
-    internal fun findHeaderBans(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>): Set<String> {
+    internal fun findHeaderBanObservations(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>): List<BanObservation> {
         ensureIndexed(context)
         val catalog = WildRiftRepository.champions.distinctBy { it.id }
             .filter { championEmbeddingCache.containsKey(it.id) }
-        if (catalog.isEmpty()) return emptySet()
+        if (catalog.isEmpty()) return emptyList()
         val height = bitmap.height
         val width = bitmap.width
         val headerHeight = (height * .12f).toInt()
@@ -155,6 +167,8 @@ object LiteRTVisionClassifier {
         data class Proposal(val x: Int, val y: Int, val radius: Int, val score: Float,
                             val descriptor: FloatArray, val shortlist: List<Champion>)
         val proposals = mutableListOf<Proposal>()
+        val emptyProposals = mutableListOf<Proposal>()
+        val emptyReferences = emptyBanReferences(context)
         // Use image height to preserve physical portrait proportions on every aspect ratio.
         // Translation/scale refinement is performed against the existing local reference descriptors.
         for (ratio in floatArrayOf(.026f, .030f, .034f, .038f)) {
@@ -176,16 +190,25 @@ object LiteRTVisionClassifier {
                     val coarse = catalog.map { champ ->
                         champ to PortraitMatcher.correlation(input, championEmbeddingCache.getValue(champ.id)[13])
                     }.sortedByDescending { it.second }
+                    if (coarse.first().second < .65f && emptyReferences.isNotEmpty() &&
+                        PortraitMatcher.correlation(input, emptyReferences[13]) >= .65f) {
+                        val score = PortraitMatcher.similarity(input, emptyReferences)
+                        if (score >= .90f) emptyProposals.add(Proposal(x, y, radius, score, input, emptyList()))
+                    }
                     if (coarse.first().second >= .60f) {
                         proposals.add(Proposal(x, y, radius, coarse.first().second, input, coarse.take(8).map { it.first }))
                     }
                 }
             }
         }
-        val found = mutableListOf<Pair<Proposal, Champion>>()
-        for (proposal in proposals.sortedByDescending { it.score }.take(200)) {
+        val found = mutableListOf<Pair<Proposal, Champion?>>()
+        for (proposal in (proposals.sortedByDescending { it.score }.take(200) + emptyProposals.sortedByDescending { it.score }.take(40)).sortedByDescending { it.score }) {
             if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 5) continue
             if (found.any { kotlin.math.abs(it.first.x - proposal.x) < maxOf(it.first.radius, proposal.radius) * 1.4f }) continue
+            if (proposal.shortlist.isEmpty()) {
+                found.add(proposal to null)
+                continue
+            }
             val ranked = proposal.shortlist.map { champ ->
                 champ to PortraitMatcher.similarity(proposal.descriptor, championEmbeddingCache.getValue(champ.id))
             }.sortedByDescending { it.second }
@@ -195,8 +218,12 @@ object LiteRTVisionClassifier {
             }
         }
         // A single gameplay HUD portrait must not be interpreted as a ban row.
-        if (found.size < 3 || found.none { it.first.x < width / 2 } || found.none { it.first.x > width / 2 }) return emptySet()
-        return found.map { it.second.id }.toSet()
+        if (found.size < 3 || found.none { it.first.x < width / 2 } || found.none { it.first.x > width / 2 }) return emptyList()
+        return found.map { (proposal, champion) ->
+            BanObservation(if (proposal.x < width / 2) BanSide.ALLY else BanSide.ENEMY,
+                BanRegion(proposal.x.toFloat() / width, proposal.y.toFloat() / height,
+                    proposal.radius.toFloat() / height), champion?.id, champion == null)
+        }
     }
 
     /** Keep only evidence from a visible draft slot, never from the loading background. */

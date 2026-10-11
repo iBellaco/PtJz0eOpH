@@ -133,6 +133,7 @@ internal fun FloatingOverlayContent(
     val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsStateWithLifecycle()
     val canDetectBans = com.example.service.screen.BanDetectionAccess.canDetect(userRole, adminClaim)
     val detectedBans by DraftVisionScanner.bannedChampionIdsFlow.collectAsStateWithLifecycle()
+    val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
     val bannedIds = if (canDetectBans) detectedBans else emptySet()
     LaunchedEffect(canDetectBans) { if (!canDetectBans) DraftVisionScanner.clearDetectedBans() }
     val currentAuthEmail = remember { com.example.util.AuthManager.getAuth()?.currentUser?.email }
@@ -1148,7 +1149,7 @@ internal fun FloatingOverlayContent(
                                 when (overlayHubTab) {
                                     OverlayHubTab.DRAFT -> {
                                         FloatingDraftCoachView(
-                                            bannedChampions = WildRiftRepository.champions.filter { it.id in bannedIds }.distinctBy { it.id },
+                                            banSlots = if (canDetectBans) banSlots else emptyList(),
                                             isLandscapeMode = isLandscapeMode,
                                             activeRole = activeRole,
                                             onActiveRoleChange = {
