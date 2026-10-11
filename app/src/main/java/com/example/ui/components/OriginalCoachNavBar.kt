@@ -19,7 +19,7 @@ fun OriginalCoachNavBar(items: List<CoachNavItem>, selectedIndex: Int, onSelecte
                 onClick = { onSelected(index) },
                 modifier = Modifier.testTag("coach_nav_item_$index"),
                 icon = {
-                    if (index == 4 && items.size == 5) UserNotificationIcon(userPanelNotificationCount())
+                    if (index == 4 && items.size == 5) UserNotificationIcon(item.notificationCount ?: userPanelNotificationCount())
                     else Icon(item.icon, contentDescription = tr(item.title))
                 },
                 label = { Text(tr(item.title)) },

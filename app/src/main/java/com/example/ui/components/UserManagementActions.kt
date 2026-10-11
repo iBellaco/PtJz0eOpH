@@ -207,6 +207,7 @@ internal fun updateUserSecondaryRoleInCloud(
     context: Context,
     uid: String,
     targetSecondaryRoleId: String,
+    onError: (Throwable) -> Unit = {},
     onSuccess: (newSecondaryRole: String) -> Unit
 ) {
     val db = FirebaseFirestore.getInstance()
@@ -228,6 +229,7 @@ internal fun updateUserSecondaryRoleInCloud(
         }
         .addOnFailureListener { e ->
             Toast.makeText(context, com.example.util.appTr("Error al actualizar rol secundario: ${e.message}"), Toast.LENGTH_LONG).show()
+            onError(e)
         }
 }
 

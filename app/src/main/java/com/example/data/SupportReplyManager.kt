@@ -389,6 +389,9 @@ object SupportReplyManager {
                 val data = mapOf<String, Any>("userRead" to true, "isRead" to true, "hasNewAdminReply" to false,
                     "hasNewReply" to false, "userReadAtMillis" to System.currentTimeMillis())
                 if (source.exists()) {
+                    val latest = SupportConversationPolicy.decode(source.get("conversation")).lastOrNull()?.id
+                    if (!observedLastMessageId.isNullOrBlank() && !latest.isNullOrBlank() && latest != observedLastMessageId)
+                        return@runTransaction false
                     transaction.update(ref, data)
                 }
                 if (mirror.exists()) {

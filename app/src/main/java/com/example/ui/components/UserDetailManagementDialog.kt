@@ -92,7 +92,6 @@ fun UserDetailManagementDialog(
     val isAdmin = currentLoggedInRole == "admin" || com.example.util.AuthManager.isCurrentUserAdmin()
     val canAssignSecondaryOrVerify = isAdmin || isMod
 
-    var roleToConfirm by remember { mutableStateOf<AppUserRole?>(null) }
     var secondaryRoleToConfirm by remember { mutableStateOf<AppUserRole?>(null) }
     var isChangingRole by remember { mutableStateOf(false) }
     var showEconomyRequest by remember { mutableStateOf(false) }
@@ -103,8 +102,6 @@ fun UserDetailManagementDialog(
     var isProcessing by remember { mutableStateOf(false) }
     var customDaysInput by remember { mutableStateOf("") }
     var showCustomDaysDialog by remember { mutableStateOf(false) }
-    var premiumDaysToConfirm by remember { mutableStateOf<Int?>(null) }
-    var showRemovePremiumConfirmation by remember { mutableStateOf(false) }
     var verificationToConfirm by remember { mutableStateOf<Boolean?>(null) }
     var showResetSlotsConfirmation by remember { mutableStateOf(false) }
     var showGiveEssenceDialog by remember { mutableStateOf(false) }
@@ -140,25 +137,99 @@ fun UserDetailManagementDialog(
         isProcessing = true
         fun complete(result: Result<Map<String, Any>>) {
             isProcessing = false
-            result.onSuccess { acceptPremiumUpdate(it); afterSuccess() }
+            result.onSuccess { acceptPremiumUpdate(it); afterSuccess() }.onFailure {
+                Toast.makeText(context, it.message ?: com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo."), Toast.LENGTH_LONG).show()
+            }
         }
         if (premiumGrantAction != null) premiumGrantAction(days, extend, ::complete)
         else managementScope.launch { complete(runCatching { applyPremiumDuration(uid, days, extend) }) }
     }
 
 
+    fun removePremiumDirectly() {
+        if (isProcessing || !isAdmin) return
+        isProcessing = true
+        val finishRemoval: (Result<Map<String, Any>>) -> Unit = { outcome ->
+            outcome.onSuccess { updated ->
+                isProcessing = false
+                acceptPremiumUpdate(updated)
+                Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
+                onReloadAll()
+            }.onFailure { failure ->
+                isProcessing = false
+                Toast.makeText(context, failure.message ?: com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo."), Toast.LENGTH_LONG).show()
+            }
+        }
+        if (premiumRemoveAction != null) {
+            premiumRemoveAction(uid, finishRemoval)
+        } else {
+            managementScope.launch { finishRemoval(runCatching { removePremiumFromUser(uid) }) }
+        }
+    }
+    fun changeRoleDirectly(target: AppUserRole) {
+        if (!isAdmin || isChangingRole) return
+        isChangingRole = true
+        roleChangeError = null
+        val failed: (Throwable) -> Unit = { failure ->
+            isChangingRole = false
+            if (failure is com.example.data.EconomyPendingException) {
+                roleChangeError = com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo.")
+            } else roleChangeError = com.example.util.appTr(failure.message ?: "No se pudo completar la operación. Vuelve a intentarlo.")
+        }
+        val succeeded: (String, Boolean, Long?) -> Unit = { newRole, isBanned, inheritedUntil ->
+            isChangingRole = false
+            currentRole = newRole
+            currentBanned = isBanned
+            currentPremiumUntil = inheritedUntil
+            if (newRole == "free") currentPremiumPlan = "FREE"
+            onUserUpdated(user.toMutableMap().apply {
+                put("role", newRole)
+                put("banned", isBanned)
+                if (inheritedUntil != null) put("premiumUntil", inheritedUntil)
+                if (newRole == "free") put("subscriptionPlan", "FREE")
+            })
+            onReloadAll()
+        }
+        if (roleChangeAction != null) roleChangeAction(target.id) { outcome ->
+            outcome.onSuccess { response ->
+                val account = response["account"] as? Map<*, *>
+                succeeded(target.id, target.id == "banned", (account?.get("premiumUntil") as? Number)?.toLong())
+            }.onFailure(failed)
+        } else updateUserRoleInCloud(context, uid, target.id, onError = failed, onSuccess = succeeded)
+    }
+    fun changeSecondaryDirectly(target: AppUserRole) {
+        if (!isAdmin || isChangingSecondaryRole) return
+        isChangingSecondaryRole = true
+        updateUserSecondaryRoleInCloud(context, uid, if (target == AppUserRole.FREE) "" else target.id,
+            onError = { isChangingSecondaryRole = false }) { updated ->
+            isChangingSecondaryRole = false
+            currentSecondaryRole = updated
+            onUserUpdated(user + ("secondaryRole" to updated))
+            onReloadAll()
+        }
+    }
+    fun changeVerificationDirectly(newStatus: Boolean) {
+        updateUserVerification(context, uid, newStatus) {
+            currentVerified = newStatus
+            onUserUpdated(user + mapOf("isVerified" to newStatus, "verified" to newStatus))
+        }
+    }
+    fun resetDevicesDirectly() {
+        resetUserHardwareSlots(context, uid) {
+            currentDeviceCount = 0
+            onUserUpdated(user + mapOf("registeredDevices" to emptyList<String>(), "sessionToken" to ""))
+        }
+    }
+
     Dialog(
         onDismissRequest = {
             when {
                 showCustomDaysDialog -> showCustomDaysDialog = false
-                premiumDaysToConfirm != null -> premiumDaysToConfirm = null
-                showRemovePremiumConfirmation -> showRemovePremiumConfirmation = false
                 verificationToConfirm != null -> verificationToConfirm = null
                 showResetSlotsConfirmation -> showResetSlotsConfirmation = false
                 showGiveEssenceDialog -> showGiveEssenceDialog = false
                 showPrivateMessageDialog -> showPrivateMessageDialog = false
                 showUserMessagesViewerDialog -> showUserMessagesViewerDialog = false
-                roleToConfirm != null -> roleToConfirm = null
                 secondaryRoleToConfirm != null -> secondaryRoleToConfirm = null
                 else -> onDismiss()
             }
@@ -171,14 +242,11 @@ fun UserDetailManagementDialog(
         BackHandler(enabled = true) {
             when {
                 showCustomDaysDialog -> showCustomDaysDialog = false
-                premiumDaysToConfirm != null -> premiumDaysToConfirm = null
-                showRemovePremiumConfirmation -> showRemovePremiumConfirmation = false
                 verificationToConfirm != null -> verificationToConfirm = null
                 showResetSlotsConfirmation -> showResetSlotsConfirmation = false
                 showGiveEssenceDialog -> showGiveEssenceDialog = false
                 showPrivateMessageDialog -> showPrivateMessageDialog = false
                 showUserMessagesViewerDialog -> showUserMessagesViewerDialog = false
-                roleToConfirm != null -> roleToConfirm = null
                 secondaryRoleToConfirm != null -> secondaryRoleToConfirm = null
                 else -> onDismiss()
             }
@@ -379,19 +447,19 @@ fun UserDetailManagementDialog(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+1 Día",
                                         modifier = Modifier.weight(1f),
-                                        onClick = { premiumDaysToConfirm = 1 }
+                                        onClick = { submitPremiumDays(1) }
                                     )
                                     DurationButton(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+7 Días",
                                         modifier = Modifier.weight(1f),
-                                        onClick = { premiumDaysToConfirm = 7 }
+                                        onClick = { submitPremiumDays(7) }
                                     )
                                     DurationButton(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+30 Días",
                                         modifier = Modifier.weight(1f),
-                                        onClick = { premiumDaysToConfirm = 30 }
+                                        onClick = { submitPremiumDays(30) }
                                     )
                                 }
 
@@ -402,13 +470,13 @@ fun UserDetailManagementDialog(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+90 Días (3m)",
                                         modifier = Modifier.weight(1f),
-                                        onClick = { premiumDaysToConfirm = 90 }
+                                        onClick = { submitPremiumDays(90) }
                                     )
                                     DurationButton(
                                         enabled = isAdmin && !isProcessing && !currentBanned,
                                         label = "+1 Año (365d)",
                                         modifier = Modifier.weight(1f),
-                                        onClick = { premiumDaysToConfirm = 365 }
+                                        onClick = { submitPremiumDays(365) }
                                     )
 
                                 }
@@ -434,7 +502,7 @@ fun UserDetailManagementDialog(
                                     // Quitar Premium
                                     OutlinedButton(
                                         enabled = isAdmin && !isProcessing && currentRole !in setOf("admin", "administrador"),
-                                        onClick = { showRemovePremiumConfirmation = true },
+                                        onClick = { removePremiumDirectly() },
                                         modifier = Modifier.weight(1f).testTag("remove_premium_button"),
                                         shape = RoundedCornerShape(6.dp),
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
@@ -541,6 +609,7 @@ fun UserDetailManagementDialog(
                                         }
                                     }
 
+                                    roleChangeError?.let { Text(it, color = DangerRed, modifier = Modifier.testTag("role_change_error")) }
                                     // Lista de roles asignables principales
                                     val primaryRoles = listOf(
                                         AppUserRole.FREE,
@@ -564,7 +633,7 @@ fun UserDetailManagementDialog(
                                                 onClick = {
                                                     if (!isSelected && !isChangingRole && isAdmin) {
                                                         roleChangeError = null
-                                                        roleToConfirm = targetRole
+                                                        changeRoleDirectly(targetRole)
                                                     }
                                                 },
                                                 enabled = !isSelected && !isChangingRole && isAdmin,
@@ -730,7 +799,7 @@ fun UserDetailManagementDialog(
                                     com.example.ui.components.CoachClickableSurface(
                                         onClick = {
                                             if (!isSecondaryEmpty && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
-                                                secondaryRoleToConfirm = AppUserRole.FREE
+                                                if (isAdmin) changeSecondaryDirectly(AppUserRole.FREE) else secondaryRoleToConfirm = AppUserRole.FREE
                                             }
                                         },
                                         enabled = !isSecondaryEmpty && !isChangingSecondaryRole && canAssignSecondaryOrVerify,
@@ -778,7 +847,7 @@ fun UserDetailManagementDialog(
                                         com.example.ui.components.CoachClickableSurface(
                                             onClick = {
                                                 if (!isSelected && !isChangingSecondaryRole && canAssignSecondaryOrVerify) {
-                                                    secondaryRoleToConfirm = targetRole
+                                                    if (isAdmin) changeSecondaryDirectly(targetRole) else secondaryRoleToConfirm = targetRole
                                                 }
                                             },
                                             enabled = !isSelected && !isChangingSecondaryRole && canAssignSecondaryOrVerify,
@@ -916,7 +985,7 @@ fun UserDetailManagementDialog(
                                 Button(
                                     onClick = {
                                         val newStatus = !currentVerified
-                                        verificationToConfirm = newStatus
+                                        if (isAdmin) changeVerificationDirectly(newStatus) else verificationToConfirm = newStatus
                                     },
                                     enabled = canAssignSecondaryOrVerify,
                                     modifier = Modifier.fillMaxWidth(),
@@ -945,7 +1014,7 @@ fun UserDetailManagementDialog(
 
                     // SECCIÓN 2: GESTIÓN DE HARDWARE Y SLOTS DE DISPOSITIVOS
                     item {
-                        UserDeviceManagementCard(currentDeviceCount) { showResetSlotsConfirmation = true }
+                        UserDeviceManagementCard(currentDeviceCount) { if (isAdmin) resetDevicesDirectly() else showResetSlotsConfirmation = true }
                     }
 
                     // SECCIÓN 3: COSMÉTICOS Y REGALOS DE AVATARES
@@ -1277,81 +1346,6 @@ fun UserDetailManagementDialog(
         )
     }
 
-    premiumDaysToConfirm?.let { days ->
-        AlertDialog(
-            onDismissRequest = { if (!isProcessing) premiumDaysToConfirm = null },
-            title = { Text(tr("¿Otorgar Premium?"), color = HextechGold, fontWeight = FontWeight.Bold) },
-            text = { Text("$days ${tr("Se agregarán días Premium a este usuario.")}", color = TextPrimary) },
-            confirmButton = {
-                Button(
-                    onClick = { submitPremiumDays(days) { premiumDaysToConfirm = null } },
-                    enabled = !isProcessing,
-                    colors = ButtonDefaults.buttonColors(containerColor = HextechGold)
-                ) { Text(tr("Confirmar"), color = HextechDarkBg) }
-            },
-            dismissButton = {
-                TextButton(onClick = { premiumDaysToConfirm = null }, enabled = !isProcessing) {
-                    Text(tr("Cancelar"), color = TextSecondary)
-                }
-            },
-            containerColor = HextechSurfaceBg
-        )
-    }
-
-    if (showRemovePremiumConfirmation) {
-        AlertDialog(
-            onDismissRequest = { if (!isProcessing) showRemovePremiumConfirmation = false },
-            title = { Text(tr("¿Quitar Premium?"), color = DangerRed, fontWeight = FontWeight.Bold) },
-            text = {
-                Text(
-                    tr(if (currentRole in setOf("premium", "moderador"))
-                        "Este usuario volverá al rol Gratis y perderá el tiempo Premium restante."
-                    else "Se retirará el tiempo Premium restante sin cambiar el rol actual."),
-                    color = TextPrimary
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        isProcessing = true
-                        val finishRemoval: (Result<Map<String, Any>>) -> Unit = { outcome ->
-                            outcome.onSuccess { updated ->
-                                isProcessing = false
-                                showRemovePremiumConfirmation = false
-                                acceptPremiumUpdate(updated)
-                                Toast.makeText(context, com.example.util.appTr("Tiempo premium retirado"), Toast.LENGTH_SHORT).show()
-                                onReloadAll()
-                            }.onFailure { failure ->
-                                isProcessing = false
-                                if (failure is com.example.data.EconomyPendingException) {
-                                    // The request is safely queued; don't leave the confirmation
-                                    // over the manager while the scheduled worker processes it.
-                                    showRemovePremiumConfirmation = false
-                                    Toast.makeText(context, failure.message, Toast.LENGTH_LONG).show()
-                                } else {
-                                    Toast.makeText(context, failure.message, Toast.LENGTH_LONG).show()
-                                }
-                            }
-                        }
-                        if (premiumRemoveAction != null) {
-                            premiumRemoveAction(uid, finishRemoval)
-                        } else {
-                            managementScope.launch { finishRemoval(runCatching { removePremiumFromUser(uid) }) }
-                        }
-                    },
-                    enabled = !isProcessing,
-                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
-                ) { Text(tr("Confirmar y quitar"), color = Color.White) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showRemovePremiumConfirmation = false }, enabled = !isProcessing) {
-                    Text(tr("Cancelar"), color = TextSecondary)
-                }
-            },
-            containerColor = HextechSurfaceBg
-        )
-    }
-
     verificationToConfirm?.let { newStatus ->
         AlertDialog(
             onDismissRequest = { verificationToConfirm = null },
@@ -1384,157 +1378,6 @@ fun UserDetailManagementDialog(
             }, modifier = Modifier.testTag("confirm_reset_user_devices"), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))) { Text(tr("Confirmar"), color = Color.White) } },
             dismissButton = { TextButton(onClick = { showResetSlotsConfirmation = false }, modifier = Modifier.testTag("cancel_reset_user_devices")) { Text(tr("Cancelar"), color = TextSecondary) } },
             containerColor = HextechSurfaceBg
-        )
-    }
-
-    // Diálogo de Confirmación para Cambio de Rol
-    if (roleToConfirm != null) {
-        val target = roleToConfirm!!
-        AlertDialog(
-            onDismissRequest = { if (!isChangingRole) roleToConfirm = null },
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.ManageAccounts,
-                        contentDescription = null,
-                        tint = target.primaryColor,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = com.example.util.tr("¿Cambiar rol a ${target.displayName}?"),
-                        color = HextechGold,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                }
-            },
-            text = {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = com.example.util.tr("¿Confirmas asignar este nuevo rol al usuario '$currentName'?"),
-                        color = TextPrimary,
-                        fontSize = 13.sp
-                    )
-
-                    roleChangeError?.let { Text(it, color = DangerRed, modifier = Modifier.testTag("role_change_error")) }
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Surface(
-                        color = HextechDarkBg,
-                        shape = RoundedCornerShape(8.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, target.primaryColor.copy(alpha = 0.5f)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = tr("NUEVO ROL ASIGNADO"),
-                                color = TextMuted,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            RoleBadge(
-                                role = target.id,
-                                isPremiumActive = target in listOf(AppUserRole.ADMIN, AppUserRole.MODERATOR, AppUserRole.PREMIUM),
-                                isBanned = (target == AppUserRole.BANNED),
-                                size = RoleBadgeSize.LARGE
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = com.example.util.tr(target.description),
-                                color = TextSecondary,
-                                fontSize = 11.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    if (target == AppUserRole.BANNED) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = tr("⚠️ Al asignar el rol Baneado, la cuenta del usuario será suspendida de inmediato y no podrá utilizar los servicios de la app."),
-                            color = DangerRed,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    } else if (target in listOf(AppUserRole.PREMIUM, AppUserRole.MODERATOR)) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = tr("✨ Este rango incluye acceso activo a las herramientas y ventajas del Pase Hextech."),
-                            color = HextechCyan,
-                            fontSize = 11.sp
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        isChangingRole = true
-                        roleChangeError = null
-                        val failed: (Throwable) -> Unit = { failure ->
-                            isChangingRole = false
-                            if (failure is com.example.data.EconomyPendingException) {
-                                roleToConfirm = null
-                                showEconomyRequest = true
-                            } else roleChangeError = com.example.util.appTr(failure.message ?: "No se pudo completar la operación. Vuelve a intentarlo.")
-                        }
-                        val succeeded: (String, Boolean, Long?) -> Unit = { newRole, isBanned, inheritedUntil ->
-                            isChangingRole = false
-                            roleToConfirm = null
-                            currentRole = newRole
-                            currentBanned = isBanned
-                            currentPremiumUntil = inheritedUntil
-                            if (newRole == "free") currentPremiumPlan = "FREE"
-                            onUserUpdated(user.toMutableMap().apply {
-                                put("role", newRole)
-                                put("banned", isBanned)
-                                if (inheritedUntil != null) put("premiumUntil", inheritedUntil)
-                                if (newRole == "free") put("subscriptionPlan", "FREE")
-                            })
-                            onReloadAll()
-                        }
-                        if (roleChangeAction != null) roleChangeAction(target.id) { outcome ->
-                            outcome.onSuccess { response ->
-                                val account = response["account"] as? Map<*, *>
-                                succeeded(target.id, target.id == "banned", (account?.get("premiumUntil") as? Number)?.toLong())
-                            }.onFailure(failed)
-                        } else updateUserRoleInCloud(context, uid, target.id, onError = failed, onSuccess = succeeded)
-                    },
-                    modifier = Modifier.heightIn(min = 48.dp).testTag("role_change_confirm"),
-                    enabled = !isChangingRole,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (target == AppUserRole.BANNED) DangerRed else HextechGold
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    if (isChangingRole) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = HextechDarkBg, strokeWidth = 2.dp)
-                    } else {
-                        Text(
-                            text = tr("Confirmar y Asignar"),
-                            color = if (target == AppUserRole.BANNED) Color.White else HextechDarkBg,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { if (!isChangingRole) roleToConfirm = null },
-                    modifier = Modifier.heightIn(min = 48.dp).testTag("role_change_cancel"),
-                    enabled = !isChangingRole
-                ) {
-                    Text(tr("Cancelar"), color = TextSecondary)
-                }
-            },
-            containerColor = HextechSurfaceBg,
-            shape = RoundedCornerShape(14.dp)
         )
     }
 

@@ -34,7 +34,10 @@ object EconomyServiceClient {
         val token = withTimeoutOrNull(10_000L) { user.getIdToken(false).await() }
             ?: throw IllegalStateException(appTr("No se pudo enviar la solicitud. Comprueba tu conexión y vuelve a intentarlo."))
         check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
-        val payload = fields + mapOf("action" to action, "id" to id)
+        val admin = token.claims["admin"] == true
+        val commandKey = "${user.uid}:$action:${fields.toSortedMap()}"
+        val directId = if (admin) AdminDirectOperationIds.reserve(commandKey, id) else id
+        val payload = fields + mapOf("action" to action, "id" to directId)
         val direct = try {
             @Suppress("UNCHECKED_CAST")
             withTimeoutOrNull(15_000L) {
@@ -42,14 +45,23 @@ object EconomyServiceClient {
             } ?: error("direct_service_timeout")
         } catch (error: FirebaseFunctionsException) {
             if (error.code in setOf(FirebaseFunctionsException.Code.NOT_FOUND, FirebaseFunctionsException.Code.UNAVAILABLE, FirebaseFunctionsException.Code.DEADLINE_EXCEEDED)) null
-            else throw IllegalStateException(error.message ?: appTr("No se pudo completar la operación. Vuelve a intentarlo."), error)
+            else {
+                if (admin) AdminDirectOperationIds.complete(commandKey)
+                throw IllegalStateException(error.message ?: appTr("No se pudo completar la operación. Vuelve a intentarlo."), error)
+            }
         } catch (error: CancellationException) {
             throw error
         } catch (_: Exception) { null }
         direct?.let { result ->
             check(AuthManager.getAuth()?.currentUser?.uid == user.uid) { appTr("Inicia sesión") }
+            if (admin) AdminDirectOperationIds.complete(commandKey)
             if (result["ok"] == true) return result
             throw IllegalStateException(appTr("No se pudo completar la operación. Vuelve a intentarlo."))
+        }
+        // Administrative commands must either complete directly or report a recoverable error.
+        // Never enqueue a privileged command behind the five-minute worker.
+        check(token.claims["admin"] != true) {
+            appTr("No se pudo completar la operación. Vuelve a intentarlo.")
         }
         // The direct service is optional during migration. Keep the private queue as a
         // durable fallback and continue watching it instead of reporting a false success.
@@ -115,4 +127,11 @@ object EconomyServiceClient {
         return result ?: throw EconomyPendingException()
     }
 
+}
+
+/** Retrying an unconfirmed administrative command reuses its server idempotency key. */
+internal object AdminDirectOperationIds {
+    private val ids = mutableMapOf<String, String>()
+    @Synchronized fun reserve(key: String, proposed: String): String = ids.getOrPut(key) { proposed }
+    @Synchronized fun complete(key: String) { ids.remove(key) }
 }

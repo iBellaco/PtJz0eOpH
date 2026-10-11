@@ -38,11 +38,11 @@ fun FAQScreen(
         listOf(
             Pair(
                 "¿Cómo funciona el overlay flotante durante la partida?",
-                "Básicamente, al activar el asistente te aparece una burbuja en la pantalla que puedes mover donde te sea más cómoda. Cuando entras a selección de campeones, la abres y te tira al toque las recomendaciones según tu línea y el draft enemigo. Lo armé para que no tengas que salirte del juego ni marearte buscando guías."
+                "Al activar el asistente aparece una burbuja que puedes mover a una posición cómoda. Durante la selección de campeones, ábrela para recibir al instante recomendaciones según tu línea y la composición rival. Puedes consultarlas sin salir del juego."
             ),
             Pair(
                 "¿Para qué sirve exactamente cada botón y sección de la app?",
-                "Te cuento rápido cómo está armado: el botón de selección de campeones te abre el asistente de draft interactivo para armar tus composiciones y counters en tiempo real. La sección de Tier List te muestra el meta actual ordenado por tiers (S+, S, A) según winrate y desempeño en las rankeds. Las estadísticas recopilan datos actualizados por rol y enfrentamientos directos. El panel de usuario te deja gestionar tu cuenta, verificar tu estado premium y revisar tu historial de partidas guardadas con Room."
+                "Selección abre el asistente para preparar composiciones y respuestas a los campeones rivales. Clasificación muestra el meta por niveles, tasa de victoria y rendimiento. Catálogo permite consultar campeones, objetos y runas. Usuario permite gestionar tu cuenta y suscripción. El historial conserva las partidas que hayas guardado."
             ),
             Pair(
                 "¿De dónde salen las estadísticas, los campeones y las builds?",
@@ -50,15 +50,15 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Por qué cambian las recomendaciones de campeones si elijo 1er Pick?",
-                "Buena pregunta. No es lo mismo pickear de los primeros que ir de counter en la última ronda. Si vas de primer pick, la app te sugiere campeones seguros que encajen bien en cualquier composición y no tengan counters fáciles. Si eres el último, te busca el counter perfecto contra el rival que ya sacó la cara."
+                "La primera selección tiene menos información sobre el equipo rival, por lo que se priorizan opciones flexibles y seguras. En las últimas selecciones, el asistente puede valorar enfrentamientos concretos y las necesidades de ambos equipos. Ninguna recomendación garantiza una victoria."
             ),
             Pair(
                 "¿El asistente consume mucha batería o me genera lag jugando?",
-                "Cero lag. Está optimizado con aceleración por hardware y un motor súper ligero. Gasta menos del 2% de batería por hora, así que puedes jugar tranquilo tus ranked sin miedo a bajones de FPS ni tirones en las teamfights."
+                "El reconocimiento de pantalla consume recursos mientras está activo. Su efecto en batería y rendimiento depende del dispositivo, la temperatura y las aplicaciones abiertas. Detén el escáner al terminar la selección y ajusta la frecuencia si observas retrasos."
             ),
             Pair(
                 "¿Cómo se guardan mis partidas y drafts en el historial?",
-                "Si tienes la versión premium, con darle al botón de guardar al terminar la selección, la partida se almacena de una en tu base de datos local con Room. Así puedes revisar luego tus composiciones, ver con qué campeones tienes más winrate y repasar qué falló o funcionó."
+                "Con Premium, pulsa Guardar al terminar la selección para conservar la partida en este dispositivo. Después puedes revisar las composiciones y los resultados registrados. El análisis personal utiliza las partidas guardadas y los datos que hayas completado."
             ),
             Pair(
                 "¿Cómo se identifican las habilidades en Wild Rift (H1, H2, H3 y H4)?",
@@ -70,7 +70,7 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Cómo puedo personalizar los temas visuales de la aplicación?",
-                "Puedes cambiar el estilo visual de la app desde tu perfil o ajustes seleccionando entre varios temas de color inspirados en las regiones de Runaterra. Así adaptas la interfaz y los acentos cromáticos al diseño de tu preferencia."
+                "Abre Temas desde la página principal para elegir colores y probar la barra de navegación antes de aplicarla. La personalización de temas y barras requiere Premium."
             ),
             Pair(
                 "¿Cómo puedo cambiar mi avatar en la aplicación?",
@@ -94,11 +94,11 @@ fun FAQScreen(
             ),
             Pair(
                 "¿Qué pasa si abro la burbuja en medio de una teamfight por accidente?",
-                "Te tapará parte de la pantalla, así que te recomendamos abrirla SOLO durante la fase de selección de campeones (Draft), pantalla de carga o mientras estás muerto. Puedes moverla a una esquina muerta de tu pantalla para evitar toques accidentales."
+                "Te tapará parte de la pantalla, así que te recomendamos abrirla SOLO durante la fase de selección de campeones (Draft), pantalla de carga o mientras estás muerto. Puedes moverla a una esquina libre de tu pantalla para evitar toques accidentales."
             ),
             Pair(
                 "¿Por qué la burbuja se cierra sola a veces?",
-                "Esto suele ocurrir si el sistema operativo (Android) está matando los procesos en segundo plano para ahorrar batería. Asegúrate de darle permisos de 'Mostrar sobre otras apps' y quitarle la restricción de batería al asistente."
+                "Esto suele ocurrir si el sistema operativo (Android) está cerrando los procesos en segundo plano para ahorrar batería. Asegúrate de conceder permisos de 'Mostrar sobre otras apps' y quitarle la restricción de batería al asistente."
             ),
             Pair(
                 "¿Tengo que usar el mismo correo de mi cuenta de Riot Games?",
@@ -106,7 +106,7 @@ fun FAQScreen(
             ),
             Pair(
                 "Olvidé mi contraseña, ¿cómo la recupero?",
-                "En la pantalla de inicio de sesión, dale a '¿Olvidaste tu contraseña?'. Te enviaremos un correo con un enlace seguro para que la cambies."
+                "En la pantalla de inicio de sesión, pulsa '¿Olvidaste tu contraseña?'. Te enviaremos un correo con un enlace seguro para que la cambies."
             ),
             Pair(
                 "¿Se pueden tener dos cuentas en la misma aplicación?",

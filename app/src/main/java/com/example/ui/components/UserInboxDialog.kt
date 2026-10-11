@@ -161,7 +161,7 @@ fun UserInboxDialog(
         val all = mutableMapOf<String, Map<String, Any>>()
 
         fun resolveIsRead(m: Map<String, Any>, id: String, reportId: String): Boolean {
-            return com.example.data.SupportConversationPolicy.userHasRead(m)
+            return if (id.startsWith("economy_pending_")) id in localReadIds else com.example.data.SupportConversationPolicy.userHasRead(m)
         }
 
         for (m in supportReportMessages) {
@@ -225,15 +225,11 @@ fun UserInboxDialog(
                 it + mapOf("isRead" to true, "userRead" to true, "hasNewAdminReply" to false, "hasNewReply" to false)
             else it
         }
-        subcollectionMessages = updated(subcollectionMessages)
-        arrayMessages = updated(arrayMessages)
-        supportReportMessages = updated(supportReportMessages)
-        val newReadSet = localReadIds + id + reportId
-        localReadIds = newReadSet
-        inboxPrefs.edit().putStringSet("read_ids", newReadSet).apply()
-        SubscriptionManager.setUnreadMessageIds(com.example.data.InboxNotificationPolicy.unreadKeys(updated(messages)))
 
         if (id.startsWith("economy_pending_")) {
+            localReadIds = localReadIds + id
+            inboxPrefs.edit().putStringSet("read_ids", localReadIds).apply()
+            economyPendingMessage = economyPendingMessage?.plus("isRead" to true)
             readingIds -= id
             return null
         }
@@ -241,9 +237,17 @@ fun UserInboxDialog(
         return coroutineScope.launch {
             val ticket = target["conversation"] != null || supportReportMessages.any { it["id"] == reportId } || (target["tag"] as? String)?.uppercase() == "PAGO"
             runCatching {
-                if (ticket) SupportReplyManager.markUserRead(reportId,
+                val acknowledged = if (ticket) SupportReplyManager.markUserRead(reportId,
                     com.example.data.SupportConversationPolicy.decode(target["conversation"]).lastOrNull()?.id)
                 else com.example.data.UserMessageReadRepository.mark(userUid, id, target)
+                check(acknowledged)
+            }.onSuccess {
+                subcollectionMessages = updated(subcollectionMessages)
+                arrayMessages = updated(arrayMessages)
+                supportReportMessages = updated(supportReportMessages)
+                SubscriptionManager.acknowledgeMessage(target)
+            }.onFailure {
+                Toast.makeText(context, com.example.util.appTr("No se pudo marcar como leído. Vuelve a intentarlo."), Toast.LENGTH_LONG).show()
             }
             readingIds -= id
         }
@@ -256,93 +260,18 @@ fun UserInboxDialog(
 
     fun deleteMessage(id: String) {
         if (!com.example.data.SupportTicketAccess.isAdmin()) return
-        val targetMsg = messages.find { (it["id"] as? String) == id }
-        val reportId = targetMsg?.get("reportId") as? String ?: ""
-        val title = (targetMsg?.get("title") as? String ?: "").trim()
-        val cleanTitle = title.removePrefix("Soporte: ").removePrefix("Reporte: ").trim()
-
-        // Protección estricta: Los mensajes/tickets de soporte únicamente pueden ser eliminados por el administrador
-        val isTargetSupport = targetMsg != null && (
-            (targetMsg["tag"] as? String)?.equals("SUPPORT", ignoreCase = true) == true ||
-            (targetMsg["reportId"] as? String)?.isNotBlank() == true ||
-            (targetMsg["ticketId"] as? String)?.isNotBlank() == true ||
-            FeedbackRepository.isSupportMessage(targetMsg) ||
-            title.contains("Soporte", ignoreCase = true) ||
-            title.contains("Ticket", ignoreCase = true) ||
-            title.contains("Reporte", ignoreCase = true) ||
-            (targetMsg["category"] as? String)?.isNotBlank() == true ||
-            (targetMsg["isSupport"] as? Boolean) == true
-        )
-        if (isTargetSupport) {
-            return
-        }
-
-        val newDeleted = deletedIds + id +
-            (if (reportId.isNotBlank()) listOf(reportId) else emptyList())
-
-        deletedIds = newDeleted
-        inboxPrefs.edit().putStringSet("deleted_ids", newDeleted).apply()
-        deletedRefreshTrigger++
-
-        // Actualizar estado local de inmediato
-        subcollectionMessages = subcollectionMessages.filterNot { m ->
-            val mId = m["id"] as? String ?: ""
-            val rId = m["reportId"] as? String ?: ""
-            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId))
-        }
-        arrayMessages = arrayMessages.filterNot { m ->
-            val mId = m["id"] as? String ?: ""
-            val rId = m["reportId"] as? String ?: ""
-            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId))
-        }
-        supportReportMessages = supportReportMessages.filterNot { m ->
-            val mId = m["id"] as? String ?: ""
-            val rId = m["reportId"] as? String ?: ""
-            mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId))
-        }
-
-        val db = FirebaseFirestore.getInstance()
-        val uRef = db.collection("users").document(userUid)
-        uRef.collection("messages").document(id).delete()
-        if (reportId.isNotBlank() && reportId != id) {
-            uRef.collection("messages").document(reportId).delete()
-        }
-        try { db.collection("support_reports").document(id).delete() } catch (_: Exception) {}
-        if (reportId.isNotBlank() && reportId != id) {
-            try { db.collection("support_reports").document(reportId).delete() } catch (_: Exception) {}
-        }
-
-        // Eliminar también en la nube de soporte
+        val message = messages.find { it["id"] == id } ?: return
+        if (FeedbackRepository.isSupportMessage(message)) return
+        val reportId = (message["reportId"] as? String).orEmpty()
         coroutineScope.launch {
-            try {
-                FeedbackRepository.deleteFeedback(id)
-                if (reportId.isNotBlank() && reportId != id) {
-                    FeedbackRepository.deleteFeedback(reportId)
+            runCatching { com.example.data.UserMessageDeleteRepository.delete(userUid, id, reportId) }
+                .onSuccess {
+                    val ids = setOf(id, reportId).filter(String::isNotBlank).toSet()
+                    subcollectionMessages = com.example.data.UserMessageDeleteRepository.remaining(subcollectionMessages, ids)
+                    arrayMessages = com.example.data.UserMessageDeleteRepository.remaining(arrayMessages, ids)
+                }.onFailure {
+                    Toast.makeText(context, com.example.util.appTr("No se pudo completar la operación. Vuelve a intentarlo."), Toast.LENGTH_LONG).show()
                 }
-            } catch (_: Exception) {}
-        }
-
-        uRef.get().addOnSuccessListener { snap ->
-            @Suppress("UNCHECKED_CAST")
-            val pMsgs = snap.get("privateMessages") as? List<Map<String, Any>>
-            if (pMsgs != null) {
-                val updated = pMsgs.filterNot { m ->
-                    val mId = m["id"] as? String ?: ""
-                    val rId = m["reportId"] as? String ?: ""
-                    mId == id || (reportId.isNotBlank() && (mId == reportId || rId == reportId))
-                }
-                val remainingUnread = updated.count { (it["isRead"] as? Boolean) == false && !localReadIds.contains(it["id"] as? String ?: "") }
-                uRef.update(
-                    "privateMessages", updated,
-                    "hasUnreadMessages", remainingUnread > 0,
-                    "unreadMessagesCount", remainingUnread
-                )
-            } else {
-                uRef.update(
-                    "hasUnreadMessages", false,
-                    "unreadMessagesCount", 0
-                )
-            }
         }
     }
 
@@ -729,7 +658,8 @@ fun UserInboxDialog(
                                             if (!isRead) {
                                                 HextechAnimatedIconButton(
                                                     onClick = { markMessageAsRead(id) },
-                                                    size = 30.dp,
+                                                    size = 48.dp,
+                                                    modifier = Modifier.testTag("inbox_mark_read_$id"),
                                                     backgroundColor = Color.Transparent,
                                                     borderColor = Color.Transparent,
                                                     glowColor = Color(0xFF0EA5E9)
@@ -847,17 +777,7 @@ fun UserInboxDialog(
                                             Spacer(modifier = Modifier.height(4.dp))
                                         }
                                         Text(com.example.util.tr(content), color = Color.LightGray, fontSize = 13.sp)
-                                        if (!isRead) {
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                                HextechAnimatedTextLink(
-                                                    text = tr("Marcar como leído"),
-                                                    onClick = { markMessageAsRead(id) },
-                                                    color = Color(0xFF0EA5E9),
-                                                    fontSize = 11.5.sp
-                                                )
-                                            }
-                                        }
+
                                     }
                                 }
                             }
