@@ -1453,25 +1453,25 @@ fun ChampionDetailSheet(
                                         .fillMaxWidth()
                                         .background(HextechDarkBg.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
                                         .border(0.5.dp, HextechCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
-                                        .testTag("build_situational_rune_${detailRune.id}")
-                                        .coachClickable {
-                                            val buildAdvice = com.example.util.trStr(currentLang, sRune.description)
-                                            val advice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
-                                                runeName = rName,
-                                                championName = champion.getLocalizedName(currentLang),
-                                                roleName = selectedRole.getLocalizedName(currentLang),
-                                                language = currentLang,
-                                                situational = true,
-                                                buildAdvice = buildAdvice
-                                            )
-                                            runeDetailSelection = RuneDetailSelection(detailRune, advice)
-                                        }
                                         .padding(6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(runeSecSize)
+                                            .size(48.dp)
+                                            .testTag("build_situational_rune_${detailRune.id}")
+                                            .coachClickable {
+                                                val buildAdvice = com.example.util.trStr(currentLang, sRune.description)
+                                                val advice = com.example.util.BuildElementAdvice.contextualRuneAdvice(
+                                                    runeName = rName,
+                                                    championName = champion.getLocalizedName(currentLang),
+                                                    roleName = selectedRole.getLocalizedName(currentLang),
+                                                    language = currentLang,
+                                                    situational = true,
+                                                    buildAdvice = buildAdvice
+                                                )
+                                                runeDetailSelection = RuneDetailSelection(detailRune, advice)
+                                            }
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(HextechSurfaceVariant)
                                             .border(1.dp, HextechCyan, RoundedCornerShape(8.dp)),
@@ -1495,7 +1495,24 @@ fun ChampionDetailSheet(
                                         AppAssetImage(
                                             url = com.example.data.WildRiftSpellsAndRunes.getRuneIconByName(sourceName),
                                             contentDescription = tr(sourceName), fallbackText = tr(sourceName),
-                                            modifier = Modifier.size(runeSecSize), shape = RoundedCornerShape(8.dp)
+                                            modifier = Modifier.size(48.dp)
+                                                .testTag("build_source_rune_${detailRune.id}_${sourceName.lowercase().replace(" ", "_")}")
+                                                .coachClickable {
+                                                    val sourceRune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(sourceName)
+                                                        ?: com.example.data.WildRiftRepository.runes.find { it.name.equals(sourceName, true) }
+                                                    if (sourceRune != null) {
+                                                        runeDetailSelection = RuneDetailSelection(
+                                                            sourceRune,
+                                                            com.example.util.BuildElementAdvice.contextualRuneAdvice(
+                                                                runeName = sourceRune.name,
+                                                                championName = champion.getLocalizedName(currentLang),
+                                                                roleName = selectedRole.getLocalizedName(currentLang),
+                                                                language = currentLang,
+                                                                situational = false
+                                                            )
+                                                        )
+                                                    }
+                                                }, shape = RoundedCornerShape(8.dp)
                                         )
                                     }
 

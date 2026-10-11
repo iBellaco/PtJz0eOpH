@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.ui.test.*
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.example.data.WildRiftRepository
 import com.example.data.local.CustomChampionBuildsManager
@@ -34,7 +35,10 @@ class BuildCoachingRenderedTest {
     @Test fun `situational runes have individual effects and build advice in Spanish`()=inspectSituationalRunes("es")
     @Test fun `situational runes have individual effects and build advice in Portuguese`()=inspectSituationalRunes("pt")
 
-    private fun inspectSituationalRunes(language: String) {
+    @Test fun `Hwei orb and bone plating replacement icons open different details in Spanish`()=inspectSituationalRunes("es", "hwei")
+    @Test fun `Hwei orb and bone plating replacement icons open different details in Portuguese`()=inspectSituationalRunes("pt", "hwei")
+
+    private fun inspectSituationalRunes(language: String, championId: String = "syndra") {
         val context = RuntimeEnvironment.getApplication()
         com.example.util.DynamicTranslations.loadSync(context)
         AppLanguage.select(context, language)
@@ -48,14 +52,15 @@ class BuildCoachingRenderedTest {
             com.example.data.local.RuneBuildEntry(runeName = "Orbe Anulador", description = if (language == "pt") "Guarde a saída para acompanhar o escudo." else "Conserva la salida para acompañar el escudo."),
             com.example.data.local.RuneBuildEntry(runeName = "Revestimiento de Huesos", description = if (language == "pt") "Reserve a defesa para a sequência de golpes." else "Reserva la defensa para la secuencia de golpes.")
         )
+        val visibleEntries = if (championId == "hwei") entries.take(1) else entries
         records.value = CustomChampionBuildsManager.getDefaultBuilds(context).map {
-            if (it.championId == "syndra") it.copy(situationalRunes = entries) else it
+            if (it.championId == championId) it.copy(situationalRunes = visibleEntries) else it
         }
-        val champion = WildRiftRepository.champions.first { it.id == "syndra" }
+        val champion = WildRiftRepository.champions.first { it.id == championId }
         compose.setContent { MyApplicationTheme { ChampionDetailSheet(champion = champion, isOverlay = false, onDismiss = {}) } }
         var previousEffect: String? = null
         val out = File("build/reports/portuguese-rendered").apply { mkdirs() }
-        for ((index, entry) in entries.withIndex()) {
+        for ((index, entry) in visibleEntries.withIndex()) {
             val rune = com.example.data.WildRiftSpellsAndRunes.getRuneByName(entry.runeName)!!
             compose.onNodeWithTag("build_situational_rune_${rune.id}").performScrollTo().performClick()
             compose.onNodeWithTag("build_rune_detail_title").assertTextEquals(rune.getLocalizedName(language))
@@ -66,8 +71,32 @@ class BuildCoachingRenderedTest {
             compose.onNode(hasText(entry.description, substring = true) and hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertExists()
             compose.onAllNodes(hasText(entries[1 - index].description, substring = true) and
                 hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertCountEquals(0)
-            compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-situational-rune-$index-$language.png").path)
+            compose.onAllNodes(isRoot()).onLast().captureRoboImage(File(out, "build-situational-rune-$championId-$index-$language.png").path)
             compose.onNodeWithText(if (language == "pt") "Fechar" else "Cerrar").performClick()
+            // Tap the OTHER icon in the same replacement pair, not another alternative row.
+            // This is the interaction that previously bubbled to the row's alternative handler.
+            val sourceMatcher = SemanticsMatcher("source of ${rune.id}") {
+                it.config.getOrNull(SemanticsProperties.TestTag)?.startsWith("build_source_rune_${rune.id}_") == true
+            }
+            val sourceCount = compose.onAllNodes(sourceMatcher).fetchSemanticsNodes().size
+            org.junit.Assert.assertTrue("Replacement icons must be independently clickable", sourceCount > 0)
+            for (sourceIndex in 0 until sourceCount) {
+                val sourceNode = compose.onAllNodes(sourceMatcher)[sourceIndex]
+                val sourceLabel = sourceNode.fetchSemanticsNode().config[SemanticsProperties.ContentDescription].first()
+                val sourceRune = com.example.data.WildRiftRepository.runes.first {
+                    it.getLocalizedName(language) == sourceLabel
+                }
+                if (championId == "hwei") org.junit.Assert.assertEquals("Revestimiento de Huesos", sourceRune.name)
+                sourceNode.performScrollTo().performClick()
+                compose.onNodeWithTag("build_rune_detail_title").assertTextEquals(sourceRune.getLocalizedName(language))
+                val sourceEffect = compose.onNodeWithTag("build_rune_effect").fetchSemanticsNode()
+                    .config[SemanticsProperties.Text].joinToString { it.text }
+                org.junit.Assert.assertEquals(sourceRune.getLocalizedDescription(language), sourceEffect)
+                org.junit.Assert.assertNotEquals(effect, sourceEffect)
+                compose.onAllNodes(hasText(entry.description, substring = true) and
+                    hasAnyAncestor(hasTestTag("build_element_advice_card"))).assertCountEquals(0)
+                compose.onNodeWithText(if (language == "pt") "Fechar" else "Cerrar").performClick()
+            }
         }
     }
     @Test @Config(qualifiers="w330dp-h720dp-xhdpi") fun `matchup avatars show their name without navigating in Spanish`()=inspectMatchupNames("es")
