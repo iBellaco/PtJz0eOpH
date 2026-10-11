@@ -1,9 +1,18 @@
-"""Reuse only a fully validated, same-repository PR APK with an identical tree."""
+"""Reuse only a fully validated, same-repository PR APK with unchanged APK sources and build inputs."""
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
+
+# These files cannot change the APK: delivery housekeeping and its own tests.
+DELIVERY_ONLY_FILES = {
+    '.github/scripts/cleanup-completed-runs.cjs',
+    '.github/scripts/cleanup-completed-runs.test.cjs',
+    '.github/scripts/find-validated-apk.py',
+    '.github/scripts/test_validated_apk.py',
+    'docs/coach-audit-1.1.10.257.md',
+}
 
 REQUIRED_JOBS = {'security-and-data-tests', 'build-apk', 'core-and-rendered', 'installed-audit', 'installed-spanish', 'build-and-release'}
 
@@ -32,7 +41,15 @@ def find(repository, target_sha, request=api):
             continue
         source_tree = request(f"{prefix}/git/commits/{run['head_sha']}")['tree']['sha']
         if source_tree != target_tree:
-            continue
+            comparison = request(f"{prefix}/compare/{run['head_sha']}...{target_sha}")
+            files = comparison.get('files', [])
+            # Comparisons cap files at 300. Fail closed for large/incomplete diffs.
+            if not files or len(files) >= 300 or any(
+                f.get('filename') not in DELIVERY_ONLY_FILES
+                or f.get('previous_filename', f.get('filename')) not in DELIVERY_ONLY_FILES
+                for f in files
+            ):
+                continue
         jobs = request(f"{prefix}/actions/runs/{run['id']}/jobs?per_page=100")['jobs']
         passed = {job['name'] for job in jobs if job.get('conclusion') == 'success'}
         if not REQUIRED_JOBS.issubset(passed):
@@ -47,7 +64,9 @@ def find(repository, target_sha, request=api):
 
 if __name__ == '__main__':
     run_id, source_sha = '', ''
-    if os.environ.get('GITHUB_REF') == 'refs/heads/main':
+    subprocess.run(['node', '.github/scripts/cleanup-completed-runs.test.cjs'], check=True)
+    if (os.environ.get('GITHUB_REF') == 'refs/heads/main'
+            or os.environ.get('GITHUB_HEAD_REF') == 'coach-validacion'):
         try:
             run_id, source_sha = find(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_SHA'])
         except (RuntimeError, KeyError, ValueError):
