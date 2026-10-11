@@ -259,7 +259,7 @@ object LiteRTVisionClassifier {
             val baseRadius = kotlin.math.round(region.radius * height).toInt()
             var bestScore = 0f
             var refined = observation
-            for (dx in intArrayOf(-2, 0, 2)) for (dy in -2..2) for (dr in intArrayOf(-4, -2, 0, 2, 4)) {
+            for (dx in intArrayOf(-2, 0, 2)) for (dy in -2..2) for (dr in -4..4) {
                 val x = centerX + dx; val y = centerY + dy
                 val radius = (baseRadius + dr).coerceAtLeast(6)
                 val rect = android.graphics.Rect(x-radius, y-radius, x+radius, y+radius)

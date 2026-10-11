@@ -23,7 +23,7 @@ class DraftCalibrationRenderedTest {
     @get:Rule val compose = createComposeRule()
 
     @Test fun everyIndividualAvatarRespondsToFourDirectionsAndSizeWithoutMovingNeighbours() {
-        val context = RuntimeEnvironment.getApplication<Application>()
+        val context = RuntimeEnvironment.getApplication()
         val original = DraftVisionScanner.calibrationConfig
         try {
             DraftVisionScanner.updateCalibration(context, VisionCalibrationConfig())
