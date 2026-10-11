@@ -519,7 +519,7 @@ fun DashboardScreen(
                     )
 
                     CoachNavStyleRenderer(
-                        style = if (isPremium) AppThemeManager.currentNavStyle else CoachNavStyle.ARC_GLOWING,
+                        style = if (isPremium) AppThemeManager.currentNavStyle else CoachNavStyle.ORIGINAL,
                         items = navDestinations,
                         selectedIndex = pagerState.currentPage,
                         onSelected = { page -> coroutineScope.launch { pagerState.animateScrollToPage(page) } }

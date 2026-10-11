@@ -130,6 +130,11 @@ internal fun FloatingOverlayContent(
     val activeProfileId by com.example.data.AccountProfileManager.activeProfileId.collectAsStateWithLifecycle()
     val isLoggedInAndPremium = isPremium && activeProfileId != null
     val userRole by com.example.util.SubscriptionManager.userRole.collectAsStateWithLifecycle()
+    val adminClaim by com.example.util.AuthManager.isAdminClaim.collectAsStateWithLifecycle()
+    val canDetectBans = com.example.service.screen.BanDetectionAccess.canDetect(userRole, adminClaim)
+    val detectedBans by DraftVisionScanner.bannedChampionIdsFlow.collectAsStateWithLifecycle()
+    val bannedIds = if (canDetectBans) detectedBans else emptySet()
+    LaunchedEffect(canDetectBans) { if (!canDetectBans) DraftVisionScanner.clearDetectedBans() }
     val currentAuthEmail = remember { com.example.util.AuthManager.getAuth()?.currentUser?.email }
     val isAdmin = userRole == "admin" || userRole == "moderador" || (currentAuthEmail != null && currentAuthEmail.contains("barbadiego", ignoreCase = true)) || com.example.util.AuthManager.isCurrentUserAdmin()
     val context = LocalContext.current
@@ -222,13 +227,14 @@ internal fun FloatingOverlayContent(
         enemies.getOrNull(roleIndex)
     }
 
-    val analysis = remember(activeRole, isFirstPick, allies.toList(), enemies.toList(), explicitEnemyOpponent) {
+    val analysis = remember(activeRole, isFirstPick, allies.toList(), enemies.toList(), explicitEnemyOpponent, bannedIds) {
         WildRiftRepository.analyzeDraft(
             myRole = activeRole,
             allies = allies.filterNotNull(),
             enemies = enemies.filterNotNull(),
             enemyLaneOpponent = explicitEnemyOpponent,
-            isFirstPick = isFirstPick
+            isFirstPick = isFirstPick,
+            bannedChampionIds = bannedIds
         )
     }
 
@@ -244,7 +250,7 @@ internal fun FloatingOverlayContent(
     // 3. Adaptive Cooldown: Si una inferencia toma más tiempo del previsto, se aplica un intervalo compensatorio
     //    para evitar saturación térmica y mantener estabilidad de fotogramas en Android.
     // 4. Null-Frame Drop: Si el ImageReader no tiene un fotograma nuevo, se salta el ciclo sin re-analizar imágenes estáticas.
-    LaunchedEffect(autoScanEnabled) {
+    LaunchedEffect(autoScanEnabled, canDetectBans) {
         if (autoScanEnabled) DraftVisionScanner.resetSlotLifecycle()
         if (!autoScanEnabled) {
             DraftVisionScanner.isVisionEngineBusy.value = false
@@ -387,7 +393,7 @@ internal fun FloatingOverlayContent(
                                     // -----------------------------------------------------------------
                                     // RUTA DE BAJA FRECUENCIA: SINCRONIZACIÓN GLOBAL Y SLOTS INACTIVOS
                                     // -----------------------------------------------------------------
-                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks())
+                                    val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = canDetectBans)
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
                                             if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
@@ -512,7 +518,7 @@ internal fun FloatingOverlayContent(
         coroutineScope.launch(Dispatchers.IO) {
             val bitmap = screenCaptureManager?.captureCurrentFrame()
             if (bitmap != null) {
-                val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks())
+                val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = canDetectBans)
                 withContext(Dispatchers.Main) {
                     if (result.isSuccessful) {
                         // Sincronizar primera selección si se detectó y no ha sido fijada manualmente
@@ -1139,6 +1145,7 @@ internal fun FloatingOverlayContent(
                                 when (overlayHubTab) {
                                     OverlayHubTab.DRAFT -> {
                                         FloatingDraftCoachView(
+                                            bannedChampions = WildRiftRepository.champions.filter { it.id in bannedIds }.distinctBy { it.id },
                                             isLandscapeMode = isLandscapeMode,
                                             activeRole = activeRole,
                                             onActiveRoleChange = {
@@ -1432,9 +1439,9 @@ internal fun FloatingOverlayContent(
             set
         }
 
-        val filteredList = remember(searchChampQuery, alreadySelectedIds, selectedRoleFilter, targetRole) {
+        val filteredList = remember(searchChampQuery, alreadySelectedIds, selectedRoleFilter, targetRole, bannedIds) {
             WildRiftRepository.champions.filter { champ ->
-                val notSelected = !alreadySelectedIds.contains(champ.id)
+                val notSelected = !alreadySelectedIds.contains(champ.id) && champ.id !in bannedIds
                 val matchesQuery = searchChampQuery.isBlank() || champ.name.contains(searchChampQuery, ignoreCase = true) || champ.summary.contains(searchChampQuery, ignoreCase = true)
                 val matchesRole = selectedRoleFilter == null || champ.primaryRole == selectedRoleFilter || champ.secondaryRoles.contains(selectedRoleFilter)
                 notSelected && matchesQuery && matchesRole

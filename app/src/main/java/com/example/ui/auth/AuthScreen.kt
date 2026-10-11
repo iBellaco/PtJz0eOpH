@@ -242,6 +242,7 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     var showBuyEssenceDialog by remember { mutableStateOf(false) }
     var showRedemptionDialog by remember { mutableStateOf(false) }
     var showSignOutConfirm by remember { mutableStateOf(false) }
+    var signOutConfirmed by remember { mutableStateOf(false) }
     val activeProfile by com.example.data.AccountProfileManager.activeProfile.collectAsState()
 
     val effectiveUserUid = user?.uid ?: activeProfile.id.ifBlank { "local-profile-test" }
@@ -1313,26 +1314,13 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             )
             Spacer(Modifier.height(12.dp))
 
-            com.example.ui.components.HextechAnimatedOutlinedButton(
-                onClick = { showSignOutConfirm = true },
-                backgroundColor = com.example.ui.theme.HextechSurfaceVariant.copy(alpha = 0.5f),
-                borderColor = DangerRed.copy(alpha = 0.65f),
-                glowColor = DangerRed,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 52.dp),
-                shape = RoundedCornerShape(12.dp),
-                scaleDown = 0.92f
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ExitToApp,
-                    contentDescription = null,
-                    tint = DangerRed,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(tr("Cerrar Sesión"), color = DangerRed, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-            }
+            com.example.ui.components.AnimatedLogoutButton(
+                onRequestConfirmation = { showSignOutConfirm = true },
+                startAnimation = signOutConfirmed,
+                onLogoutComplete = { signOutConfirmed = false; onSignOut() },
+                label = tr("Cerrar Sesión"),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)
+            )
         }
     }
 
@@ -1342,15 +1330,9 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             title = { Text(tr("Cerrar Sesión"), color = DangerRed, fontWeight = FontWeight.Bold) },
             text = { Text(tr("¿Estás seguro de que deseas cerrar sesión? Se recomienda mantener la sesión abierta para asegurar la sincronización correcta de tu cuenta y licencias."), color = activeTheme.textSecondary, fontSize = 13.sp) },
             confirmButton = {
-                com.example.ui.components.AnimatedLogoutButton(
-                    onLogoutComplete = {
-                        showSignOutConfirm = false
-                        onSignOut()
-                    },
-                    label = tr("Cerrar Sesión"),
-                    darkMode = !com.example.ui.theme.isLightAppTheme,
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-                )
+                TextButton(onClick = { showSignOutConfirm = false; signOutConfirmed = true }) {
+                    Text(tr("Cerrar Sesión"), color = DangerRed)
+                }
             },
             dismissButton = {
                 TextButton(onClick = { showSignOutConfirm = false }) {

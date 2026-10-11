@@ -349,7 +349,8 @@ object WildRiftRepository {
         enemies: List<Champion>,
         enemyLaneOpponent: Champion? = null,
         isFirstPick: Boolean = false,
-        lang: String = "es"
+        lang: String = "es",
+        bannedChampionIds: Set<String> = emptySet()
     ): DraftAnalysisResult {
 
         val activeEnemies = (enemies + listOfNotNull(enemyLaneOpponent)).filter { it.id != "empty" }.distinctBy { it.id }
@@ -431,7 +432,7 @@ object WildRiftRepository {
         }
 
         val availableChampions = champions.filter { champ ->
-            champ.id != "empty" &&
+            champ.id != "empty" && champ.id !in bannedChampionIds &&
             !activeAllies.any { it.id == champ.id } && !activeEnemies.any { it.id == champ.id }
         }
 
@@ -601,7 +602,7 @@ object WildRiftRepository {
             directMatchupWarning = t(lang,"Rival na sua rota: ${lane.getLocalizedName(lang)}. Opções para esta rota: $choices.",
                 "Rival en tu línea: ${lane.getLocalizedName(lang)}. Opciones para esta línea: $choices.")
         }
-        if (recommendations.isNotEmpty()) directCounterBestPick = recommendations.take(3).joinToString { it.champion.getLocalizedName(lang) }
+        directCounterBestPick = recommendations.take(3).takeIf { it.isNotEmpty() }?.joinToString { it.champion.getLocalizedName(lang) }
 
         return DraftAnalysisResult(
             physicalDamagePercent = physPct,

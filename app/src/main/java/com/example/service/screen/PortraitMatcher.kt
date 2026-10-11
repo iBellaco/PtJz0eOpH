@@ -63,12 +63,14 @@ internal object PortraitMatcher {
                     add(descriptor(pixels, width, height, scale, dx, dy))
     }
 
+    fun correlation(input: FloatArray, reference: FloatArray): Float {
+        var dot = 0f
+        for (i in input.indices) dot += input[i] * reference[i]
+        return dot.coerceIn(0f, 1f)
+    }
+
     fun similarity(input: FloatArray, references: List<FloatArray>): Float =
-        references.maxOfOrNull { reference ->
-            var dot = 0f
-            for (i in input.indices) dot += input[i] * reference[i]
-            dot.coerceIn(0f, 1f)
-        } ?: 0f
+        references.maxOfOrNull { correlation(input, it) } ?: 0f
 
     fun accepts(best: Float, second: Float, threshold: Float): Boolean =
         best >= threshold && best - second >= MIN_MARGIN

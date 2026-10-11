@@ -52,32 +52,23 @@ internal fun CoachNavBarCore(
         Canvas(Modifier.fillMaxSize()) {
             val slotWidth = size.width / items.size
             val centerX = slotWidth * (position + .5f)
-            val centerY = size.height * .38f
+            val centerY = if (style == CoachNavStyle.LIQUID) size.height / 2f else 28.dp.toPx()
             when (style) {
+                CoachNavStyle.ORIGINAL -> Unit
                 CoachNavStyle.ARC_GLOWING -> {
                     drawCircle(active.copy(alpha = .12f), 22.dp.toPx(), Offset(centerX, centerY))
                     drawCircle(active.copy(alpha = .48f), 17.dp.toPx(), Offset(centerX, centerY), style = Stroke(6.dp.toPx()))
                     drawCircle(Color.White.copy(alpha = .9f), 13.dp.toPx(), Offset(centerX, centerY), style = Stroke(1.4.dp.toPx()))
                 }
                 CoachNavStyle.LIQUID -> {
-                    val w = 46.dp.toPx(); val h = 34.dp.toPx()
+                    val w = 46.dp.toPx(); val h = 26.dp.toPx()
                     val path = Path().apply {
                         moveTo(centerX - w / 2, centerY)
                         cubicTo(centerX - w / 2, centerY - h, centerX + w / 2, centerY - h, centerX + w / 2, centerY)
-                        cubicTo(centerX + w / 2, centerY + h * .72f, centerX - w / 2, centerY + h * .72f, centerX - w / 2, centerY)
+                        cubicTo(centerX + w / 2, centerY + h, centerX - w / 2, centerY + h, centerX - w / 2, centerY)
                         close()
                     }
                     drawPath(path, active.copy(alpha = .2f)); drawPath(path, active.copy(alpha = .85f), style = Stroke(1.5.dp.toPx()))
-                }
-                CoachNavStyle.CURVED_FAB -> {
-                    drawCircle(active.copy(alpha = .18f), 21.dp.toPx(), Offset(centerX, centerY - 4.dp.toPx()))
-                    drawCircle(active, 4.dp.toPx(), Offset(centerX, size.height - 9.dp.toPx()))
-                }
-                CoachNavStyle.CURVED_SCOOP -> {
-                    val radius = 25.dp.toPx()
-                    drawCircle(backgroundColor, radius + 5.dp.toPx(), Offset(centerX, 0f))
-                    drawCircle(active.copy(alpha = .22f), radius, Offset(centerX, 5.dp.toPx()))
-                    drawCircle(active, 3.dp.toPx(), Offset(centerX, size.height - 8.dp.toPx()))
                 }
                 CoachNavStyle.NEON_WAVE -> {
                     val path = Path().apply {
@@ -93,19 +84,22 @@ internal fun CoachNavBarCore(
         Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
             items.forEachIndexed { itemIndex, item ->
                 val selected = itemIndex == index
-                val scoopOffset = if (selected && (style == CoachNavStyle.CURVED_SCOOP || style == CoachNavStyle.CURVED_FAB && itemIndex == items.size / 2)) (-6).dp else 0.dp
                 val iconScale by animateFloatAsState(if (selected) 1.1f else 1f, spring(dampingRatio = .62f), label = "nav_icon_scale_$itemIndex")
                 Column(
-                    modifier = Modifier.weight(1f).fillMaxHeight().offset(y = scoopOffset)
+                    modifier = Modifier.weight(1f).fillMaxHeight()
                         .clickable { onSelected(itemIndex) }.testTag("coach_nav_item_$itemIndex")
-                        .padding(top = if (style == CoachNavStyle.CURVED_SCOOP && selected) 3.dp else 7.dp, bottom = 5.dp),
+                        .padding(top = if (style == CoachNavStyle.LIQUID) 0.dp else 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Top
                 ) {
-                    Icon(item.icon, contentDescription = tr(item.title), tint = if (selected) selectedColor else unselectedColor,
-                        modifier = Modifier.size(21.dp).graphicsLayer { scaleX = iconScale; scaleY = iconScale })
+                    Box(
+                        modifier = if (style == CoachNavStyle.LIQUID) Modifier.fillMaxSize() else Modifier.fillMaxWidth().height(48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(item.icon, contentDescription = tr(item.title), tint = if (selected) selectedColor else unselectedColor,
+                            modifier = Modifier.size(21.dp).graphicsLayer { scaleX = iconScale; scaleY = iconScale })
+                    }
                     if (style != CoachNavStyle.LIQUID) {
-                        Spacer(Modifier.height(3.dp))
                         Text(tr(item.title), color = if (selected) selectedColor else unselectedColor, fontSize = 10.sp,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, maxLines = 1)
                     }
@@ -117,9 +111,9 @@ internal fun CoachNavBarCore(
 
 @Composable
 internal fun CoachNavPreviewItems(): List<CoachNavItem> = listOf(
-    CoachNavItem("Inicio", Icons.Default.Home, Color(0xFF0AC8B9)),
-    CoachNavItem("Selección", Icons.Default.Groups, Color(0xFFC8AA6E)),
-    CoachNavItem("Clasificación", Icons.Default.TrendingUp, Color(0xFF7B9CFF)),
-    CoachNavItem("Catálogo", Icons.AutoMirrored.Filled.MenuBook, Color(0xFFB9A0FF)),
-    CoachNavItem("Usuario", Icons.Default.Person, Color(0xFF55D6BE))
+    CoachNavItem("Inicio", Icons.Default.Home, com.example.ui.theme.AppThemeManager.getNavBarAccentColor()),
+    CoachNavItem("Selección", Icons.Default.Groups, com.example.ui.theme.AppThemeManager.getNavBarAccentColor()),
+    CoachNavItem("Clasificación", Icons.Default.TrendingUp, com.example.ui.theme.AppThemeManager.getNavBarAccentColor()),
+    CoachNavItem("Catálogo", Icons.AutoMirrored.Filled.MenuBook, com.example.ui.theme.AppThemeManager.getNavBarAccentColor()),
+    CoachNavItem("Usuario", Icons.Default.Person, com.example.ui.theme.AppThemeManager.getNavBarAccentColor())
 )

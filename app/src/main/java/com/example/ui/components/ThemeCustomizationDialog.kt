@@ -57,7 +57,8 @@ fun ThemeCustomizationBottomSheet(
     val isParticlesEnabled = AppThemeManager.isParticlesEnabled
     var previewTheme by remember { mutableStateOf(currentTheme) }
     var showPremiumRequiredDialog by remember { mutableStateOf(false) }
-    var showNavigationShowcase by remember { mutableStateOf(false) }
+    var previewNavStyle by remember { mutableStateOf(AppThemeManager.currentNavStyle) }
+    var previewNavTab by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(currentTheme) {
         previewTheme = currentTheme
@@ -295,11 +296,11 @@ fun ThemeCustomizationBottomSheet(
                         if (!isPremium) Icon(Icons.Default.Lock, "Premium", tint = HextechGold, modifier = Modifier.size(17.dp))
                     }
                     CoachNavStyle.entries.forEach { style ->
-                        val selected = AppThemeManager.currentNavStyle == style
+                        val selected = previewNavStyle == style
                         Surface(
                             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                                 .coachClickable {
-                                    if (isPremium) AppThemeManager.setNavStyle(style, context)
+                                    if (isPremium) previewNavStyle = style
                                     else showPremiumRequiredDialog = true
                                 }.testTag("theme_nav_style_${style.id}"),
                             shape = RoundedCornerShape(9.dp),
@@ -315,18 +316,17 @@ fun ThemeCustomizationBottomSheet(
                             }
                         }
                     }
-                    OutlinedButton(
-                        onClick = { if (isPremium) showNavigationShowcase = true else showPremiumRequiredDialog = true },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("theme_nav_showcase"),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = HextechGold)
-                    ) { Text(tr("Probar navegación"), fontWeight = FontWeight.SemiBold) }
-                }
-            }
-
-            if (showNavigationShowcase) {
-                Dialog(onDismissRequest = { showNavigationShowcase = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-                    Surface(Modifier.fillMaxWidth(.96f).fillMaxHeight(.82f), shape = RoundedCornerShape(20.dp), color = HextechDarkBg) {
-                        ShowcaseScreen(onClose = { showNavigationShowcase = false })
+                    if (isPremium) {
+                        Text(tr("Vista previa"), color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                        CoachNavStyleRenderer(previewNavStyle, CoachNavPreviewItems(), previewNavTab,
+                            onSelected = { previewNavTab = it }, modifier = Modifier.testTag("theme_nav_preview"))
+                        Button(
+                            onClick = { AppThemeManager.setNavStyle(previewNavStyle, context) },
+                            enabled = previewNavStyle != AppThemeManager.currentNavStyle,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("theme_nav_apply")
+                        ) { Text(tr("Aplicar navegación")) }
+                    } else {
+                        Text(tr("Personalización de navegación exclusiva Premium"), color = TextSecondary, fontSize = 11.sp)
                     }
                 }
             }
