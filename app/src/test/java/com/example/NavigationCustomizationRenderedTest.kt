@@ -130,12 +130,19 @@ class NavigationCustomizationRenderedTest {
         val context = RuntimeEnvironment.getApplication()
         com.example.util.DynamicTranslations.loadSync(context)
         AppThemeManager.setNavStyle(CoachNavStyle.ORIGINAL)
+        // The catalogue opens a second window over an animated bottom sheet. Advance
+        // its clock explicitly instead of waiting for window animations to become idle.
+        compose.mainClock.autoAdvance = false
         compose.setContent { MyApplicationTheme { ThemeCustomizationBottomSheet(isPremium=true, onDismiss={}) } }
+        compose.mainClock.advanceTimeBy(1000)
         compose.onNodeWithTag("theme_nav_catalog").performScrollTo().performClick()
+        compose.mainClock.advanceTimeBy(1000)
         compose.onNodeWithTag("theme_nav_style_liquid").performClick()
+        compose.mainClock.advanceTimeBy(1000)
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
         compose.onNodeWithTag("theme_nav_preview").performScrollTo().assertExists()
         compose.onNodeWithTag("coach_nav_item_3").performClick()
+        compose.mainClock.advanceTimeBy(1000)
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
         compose.onNodeWithTag("theme_nav_apply").performScrollTo().performClick()
         assertEquals(CoachNavStyle.LIQUID, AppThemeManager.currentNavStyle)
