@@ -78,9 +78,18 @@ class NavigationCustomizationRenderedTest {
             assertTint(AppThemeManager.getNavBarSelectedIconColor(), "selected")
             val off = snapshot("nav_pixels", "particles-off")
             compose.onNodeWithTag("nav_particles").assertDoesNotExist()
-            compose.runOnIdle { particles = true }
+            compose.runOnIdle {
+                particles = true
+                androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+            }
             compose.mainClock.advanceTimeBy(1000)
-            val particleBounds = compose.onNodeWithTag("nav_particles").fetchSemanticsNode().boundsInRoot
+            // Native image capture drains Android's drawing queue independently of
+            // the paused Compose clock. Synchronize the newly inserted Canvas too.
+            compose.waitUntil(timeoutMillis = 5000) {
+                compose.mainClock.advanceTimeByFrame()
+                compose.onAllNodesWithTag("nav_particles", useUnmergedTree = true).fetchSemanticsNodes().size == 1
+            }
+            val particleBounds = compose.onNodeWithTag("nav_particles", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             val barBounds = compose.onNodeWithTag("nav_pixels").fetchSemanticsNode().boundsInRoot
             assertEquals("Particles must cover the visible bar in $option", barBounds, particleBounds)
             assertTrue("Particles must have a nonzero area in $option: $particleBounds",
