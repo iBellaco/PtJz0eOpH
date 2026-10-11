@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,8 +47,11 @@ fun CoachNavStylePicker(selected: CoachNavStyle, isPremium: Boolean,
         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("theme_nav_catalog")) {
         Text(tr("Explorar estilos"))
     }
+    // Dialog windows wrap their content: taking a fraction of their own height
+    // creates repeated shrinking measurements. Use the available screen instead.
+    val catalogueHeight = LocalConfiguration.current.screenHeightDp.dp * .8f
     if (open) Dialog(onDismissRequest = { open = false }) {
-        Surface(modifier = Modifier.fillMaxWidth().fillMaxHeight(.8f), color = HextechSurface, shape = MaterialTheme.shapes.large) {
+        Surface(modifier = Modifier.fillMaxWidth().height(catalogueHeight), color = HextechSurface, shape = MaterialTheme.shapes.large) {
             Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(tr("Barra de navegación"), color = HextechGold, fontWeight = FontWeight.Bold)
                 OutlinedTextField(query, { query = it }, label = { Text(tr("Buscar estilo")) },
