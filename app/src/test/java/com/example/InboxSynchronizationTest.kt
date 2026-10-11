@@ -26,4 +26,20 @@ class InboxSynchronizationTest {
         assertEquals("third", AdminDirectOperationIds.reserve("admin-grant", "third"))
         AdminDirectOperationIds.complete("admin-grant")
     }
+    @Test fun directPremiumRemovalDemotesOnlyPremiumAndModeratorAndRevokesSecondaryModerator() {
+        for (role in listOf("premium", "moderador", "streamer", "creador", "patrocinador")) {
+            val patch = AdminPremiumPolicy.patch(mapOf("role" to role, "secondaryRole" to "moderador"), 0, true, 1000L, "test")
+            assertEquals(0L, patch["premiumUntil"])
+            assertEquals("", patch["secondaryRole"])
+            if (role in listOf("premium", "moderador")) assertEquals("free", patch["role"])
+            else assertFalse(patch.containsKey("role"))
+        }
+    }
+    @Test fun directPremiumGiftExtendsWithoutChangingTheExistingRoleAndCannotRemoveAdministrator() {
+        val patch = AdminPremiumPolicy.patch(mapOf("role" to "creador", "premiumUntil" to 10000L), 7, true, 1000L, "test")
+        assertEquals(10000L + 7L * 86400000L, patch["premiumUntil"])
+        assertFalse(patch.containsKey("role"))
+        assertThrows(IllegalArgumentException::class.java) { AdminPremiumPolicy.patch(mapOf("role" to "admin"), 0, true, 1000L, "test") }
+        assertThrows(IllegalArgumentException::class.java) { AdminPremiumPolicy.patch(mapOf("role" to "free"), 3651, true, 1000L, "test") }
+    }
 }

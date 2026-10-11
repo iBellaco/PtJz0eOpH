@@ -16,16 +16,11 @@ import java.util.UUID
 import kotlinx.coroutines.launch
 
 internal suspend fun applyPremiumDuration(uid: String, days: Int, extendExisting: Boolean = true): Map<String, Any> {
-    @Suppress("UNCHECKED_CAST")
-    return com.example.data.EconomyServiceClient.call("PREMIUM_GRANT", mapOf("uid" to uid,
-        "days" to days, "extend" to extendExisting))["account"] as Map<String, Any>
+    return com.example.data.AdminPremiumRepository.change(uid, days, extendExisting)
 }
 
 internal suspend fun removePremiumFromUser(uid: String): Map<String, Any> {
-    @Suppress("UNCHECKED_CAST")
-    return com.example.data.EconomyServiceClient.call(
-        "PREMIUM_REMOVE", mapOf("uid" to uid), awaitQueuedResult = false
-    )["account"] as Map<String, Any>
+    return com.example.data.AdminPremiumRepository.change(uid, 0)
 }
 
 internal fun updateUserVerification(

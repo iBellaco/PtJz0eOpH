@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, getCountFromServer, collection, collectionGroup, query, where, runTransaction, writeBatch, serverTimestamp, Timestamp, increment, onSnapshot } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-coach-tests', firestore: { host: '127.0.0.1', port: 8088, rules: readFileSync(new URL('../../firestore.rules', import.meta.url), 'utf8') } });
@@ -662,6 +663,34 @@ try {
   });
   await test('availability markers are server-owned even with an administrative claim',async()=>{
     for(const store of [user,admin]) await assertFails(setDoc(doc(store,'system_config/economy_service'),{enabled:true,schema:2}));
+  });
+  await test('administrator grants and removes Premium directly with bounded immutable receipts', async()=>{
+    const uid='premium-direct', target=doc(admin,`users/${uid}`), now=Date.now(), DAY=86400000;
+    await env.withSecurityRulesDisabled(async context=>setDoc(doc(context.firestore(),`users/${uid}`),{role:'creador',secondaryRole:'moderador',premiumUntil:now+DAY,subscriptionPlan:'ADMIN_GIFT',blueEssence:99,orangeEssence:25}));
+    const patch=(old,days,extra={})=>{
+      const id=crypto.randomUUID(), stamp=Date.now(), removed=days===0;
+      const record={id,timestamp:stamp,durationMillis:days*DAY,planName:removed?'Suscripción Premium retirada':'Suscripción Premium regalada',status:'Completado',amount:removed?'0':'Regalo',source:removed?'ADMIN_REVOCATION':'ADMIN_GIFT'};
+      return {premiumUntil:removed?0:Math.max(old.premiumUntil??0,stamp)+days*DAY,subscriptionPlan:removed?'FREE':'ADMIN_GIFT',subscriptionHistory:[...(old.subscriptionHistory??[]),record],lastPremiumDays:days,lastPremiumExtend:true,lastPremiumOperationId:id,lastPremiumChangedAt:serverTimestamp(),lastModifiedByAdmin:serverTimestamp(),lastPremiumChangedBy:'admin',...extra};
+    };
+    let old=(await getDoc(target)).data(); const gift=patch(old,90);
+    await assertFails(updateDoc(doc(user,`users/${uid}`),gift));
+    await assertFails(updateDoc(doc(moderator,`users/${uid}`),gift));
+    await assertSucceeds(runTransaction(admin,async tx=>{await tx.get(target);tx.update(target,gift);}));
+    old=(await getDoc(target)).data(); assert.equal(old.role,'creador');assert.equal(old.blueEssence,99);
+    await assertFails(updateDoc(target,patch(old,3651)));
+    await assertFails(updateDoc(target,patch(old,1,{orangeEssence:1000})));
+    await assertFails(updateDoc(target,patch(old,1,{role:'premium'})));
+    await assertFails(updateDoc(target,patch(old,1,{subscriptionHistory:[]})));
+    await assertSucceeds(updateDoc(target,patch(old,0,{secondaryRole:''})));
+    old=(await getDoc(target)).data();assert.equal(old.role,'creador');assert.equal(old.secondaryRole,'');assert.equal(old.premiumUntil,0);assert.equal(old.subscriptionHistory.length,2);
+    for(const role of ['premium','moderador']) {
+      await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),`users/${uid}`),{role}));
+      old=(await getDoc(target)).data();
+      await assertSucceeds(updateDoc(target,patch(old,0,{role:'free',banned:false,bannedTimestamp:0,last_role_update:serverTimestamp()})));
+      assert.equal((await getDoc(target)).data().role,'free');
+    }
+    await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),`users/${uid}`),{role:'admin'}));
+    await assertFails(updateDoc(target,patch((await getDoc(target)).data(),0)));
   });
   console.log(`${count} rule scenarios passed`);
 } finally { await env.cleanup(); }

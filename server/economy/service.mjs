@@ -90,6 +90,9 @@ export async function executeEconomy(db, auth, raw, clock = Date.now, {requested
         writes.push([profile.collection('messages').doc(input.id), message]); updates.hasUnreadMessages = true; updates.unreadMessagesCount = FieldValue.increment(1);
       }
     } else if (input.action === 'PREMIUM_GRANT' || input.action === 'PREMIUM_REMOVE') {
+      ensure(requestedAtMillis === undefined || deadline(account.lastPremiumChangedAt) <= requestedAtMillis,
+        'failed-precondition', 'Premium ya fue actualizado por una operación más reciente');
+      updates.lastPremiumChangedAt = now;
       ensure(!['admin', 'administrador'].includes(account.role), 'failed-precondition', 'El acceso de administración es vitalicio.');
       const days = input.action === 'PREMIUM_GRANT' ? integer(input.days, 1, 3650) : 0;
       ensure(input.action !== 'PREMIUM_GRANT' || typeof input.extend === 'boolean', 'invalid-argument', 'Operación no válida');
