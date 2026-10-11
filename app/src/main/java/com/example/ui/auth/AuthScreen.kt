@@ -63,7 +63,6 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.util.SubscriptionManager
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Check
@@ -228,7 +227,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
     val hasImageFrame = currentRankBorder.isNotBlank() && currentRankBorder.uppercase(java.util.Locale.ROOT) !in setOf("NONE", "DEFAULT")
     val hasRoleFrame = userRole in listOf("admin", "moderador", "creador", "creador_lvl2", "creador_lvl3", "creador_lvl4", "creador_lvl5", "streamer") || secondaryRole.isNotBlank() || hasImageFrame
     var showAvatarDialog by remember { mutableStateOf(false) }
-    var showThemeDialog by remember { mutableStateOf(false) }
     var showPlansDialog by remember { mutableStateOf(false) }
     var showHistoryDialog by remember { mutableStateOf(false) }
     var showInboxDialog by remember { mutableStateOf(false) }
@@ -258,17 +256,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
                 showAvatarDialog = false
                 showPlansDialog = true
             }
-        )
-    }
-
-    if (showThemeDialog) {
-        com.example.ui.components.ThemeCustomizationBottomSheet(
-            isPremium = isPremium,
-            onOpenPremiumPlans = {
-                showThemeDialog = false
-                showPlansDialog = true
-            },
-            onDismiss = { showThemeDialog = false }
         )
     }
 
@@ -922,156 +909,6 @@ fun AuthenticatedProfilePanel(user: com.google.firebase.auth.FirebaseUser? = nul
             }
 
             Spacer(modifier = Modifier.height(10.dp))
-
-            val isUserPremium = isPremium
-            if (isUserPremium) {
-                // Quick Theme Selector Strip: Instant 1-tap live theme transformation with horizontal scroll!
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(activeTheme.surfaceVariant.copy(alpha = 0.6f))
-                        .border(1.dp, activeTheme.cardBorder, RoundedCornerShape(14.dp))
-                        .padding(10.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Palette,
-                                contentDescription = null,
-                                tint = activeTheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = tr("Tema de Región:"),
-                                color = activeTheme.textPrimary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = tr(activeTheme.titleKey),
-                                color = activeTheme.secondary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(activeTheme.primary.copy(alpha = 0.12f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = com.example.util.tr("↔ " + tr("Desliza temas")),
-                                color = activeTheme.primary,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Scrollable row of all region and thematic game styles
-                    androidx.compose.foundation.lazy.LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        val allThemes = AppTheme.entries
-                        items(allThemes.size) { index ->
-                            val themeItem = allThemes[index]
-                            val isSelected = themeItem == activeTheme
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (isSelected) themeItem.primary.copy(alpha = 0.25f) else themeItem.surface,
-                                border = BorderStroke(
-                                    if (isSelected) 1.5.dp else 0.8.dp,
-                                    if (isSelected) themeItem.secondary else themeItem.cardBorder.copy(alpha = 0.6f)
-                                ),
-                                modifier = Modifier
-                                    .tactileClickable(scaleDown = 0.92f) {
-                                        AppThemeManager.setTheme(themeItem, context)
-                                    }
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(8.dp)
-                                            .clip(CircleShape)
-                                            .background(themeItem.primary)
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Text(
-                                        text = tr(themeItem.titleKey),
-                                        color = if (isSelected) themeItem.secondary else themeItem.textSecondary,
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                    if (isSelected) {
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = null,
-                                            tint = themeItem.secondary,
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Consejo del Coach Soberano colocado DIRECTAMENTE debajo de los temas de regiones
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = activeTheme.surfaceVariant.copy(alpha = 0.5f),
-                    border = BorderStroke(1.dp, activeTheme.primary.copy(alpha = 0.35f)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .tactileClickable { }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Text(com.example.util.tr("💡"), fontSize = 22.sp)
-                        Column {
-                            Text(
-                                text = tr("Consejo del Coach Soberano"),
-                                color = activeTheme.secondary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = tr("¡Cada región altera la energía y colores de la interfaz! Selecciona tu región favorita para sincronizar tu estilo competitivo."),
-                                color = activeTheme.textSecondary,
-                                fontSize = 10.5.sp,
-                                lineHeight = 14.sp
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
 
             // Animated button for Plans
             com.example.ui.components.HextechAnimatedButton(

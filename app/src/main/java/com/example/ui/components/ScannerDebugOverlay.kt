@@ -24,6 +24,8 @@ fun ScannerDebugOverlay(
     config: VisionCalibrationConfig = DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle().value,
     overlayRect: android.graphics.Rect?
 ) {
+    val detectingBans by DraftVisionScanner.banDetectionActiveFlow.collectAsStateWithLifecycle()
+    val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
     val rawConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
     val allyRoles by DraftVisionScanner.allyRolesBySlotFlow.collectAsStateWithLifecycle()
@@ -115,6 +117,30 @@ fun ScannerDebugOverlay(
         val currentConfig = AdaptiveScreenLayoutEngine.computeAdaptiveConfig(w.toInt(), h.toInt(), rawConfig)
         val avatarDiameter = h * currentConfig.avatarDiameterRatio
         val avatarRadius = avatarDiameter / 2f
+
+        // The rectangles are the exact header bands searched by the classifier.
+        // Thin circle strokes stay outside its portrait descriptor samples.
+        if (detectingBans) {
+            for (side in com.example.service.screen.BanSide.entries) {
+                val x = if (side == com.example.service.screen.BanSide.ALLY) 0f else w * .73f
+                val color = if (side == com.example.service.screen.BanSide.ALLY) Color(0xCC00E5FF) else Color(0xCCFF1744)
+                drawRect(color.copy(alpha = .35f), Offset(x, 0f), Size(w * .27f, h * .12f), style = Stroke(1f))
+                for (slot in banSlots.filter { it.side == side }) {
+                    val region = slot.region ?: continue
+                    val center = Offset(region.x * w, region.y * h)
+                    val radius = region.radius * h
+                    drawCircle(if (slot.state == com.example.service.screen.BanState.EMPTY) Color.Gray else color,
+                        radius, center, style = Stroke(if (slot.state == com.example.service.screen.BanState.CONFIRMED) 2f else 1f))
+                    val status = when (slot.state) {
+                        com.example.service.screen.BanState.CONFIRMED -> "Ban"
+                        com.example.service.screen.BanState.EMPTY -> "Sin ban"
+                        else -> "Sin confirmar"
+                    }
+                    drawDiagnosticText("${com.example.util.appTr(status)} ${slot.index + 1}", center.x.coerceIn(28f, w - 28f),
+                        h * .12f - labelPaint.fontMetrics.top + 6f, labelPaint)
+                }
+            }
+        }
 
         // SLOTS VERTICALES (LADO IZQUIERDO Y DERECHO) - AJUSTADOS PARA DRAFT REAL
         for (sIdx in 0..4) {
@@ -292,19 +318,23 @@ fun ScannerDebugOverlay(
             lastDurationMs,
             skippedFrames
         )
-        val hudX = w * 0.12f
+        val hudX = w * 0.29f
+        val hudWidth = w * .42f
+        hudPaint.textSize = with(density) { 9.5.sp.toPx() }
+        val measuredHud = hudPaint.measureText(com.example.util.appTr(hudText))
+        if (measuredHud > hudWidth - 12f) hudPaint.textSize *= (hudWidth - 12f) / measuredHud
         val hudY = 24f
 
         drawRoundRect(
             color = Color(0xCC050A14),
-            topLeft = Offset(hudX - 10f, 6f),
-            size = Size(with(density) { 340.sp.toPx() }, 26f),
+            topLeft = Offset(hudX - 4f, 6f),
+            size = Size(hudWidth, 26f),
             cornerRadius = CornerRadius(6f, 6f)
         )
         drawRoundRect(
             color = if (isBusy) Color(0xFFFFD700) else Color(0x8800E676),
-            topLeft = Offset(hudX - 10f, 6f),
-            size = Size(with(density) { 340.sp.toPx() }, 26f),
+            topLeft = Offset(hudX - 4f, 6f),
+            size = Size(hudWidth, 26f),
             cornerRadius = CornerRadius(6f, 6f),
             style = Stroke(width = 1f)
         )

@@ -72,7 +72,7 @@ import com.example.util.tr
 @Composable
 internal fun FloatingDraftCoachView(
     isLandscapeMode: Boolean,
-    bannedChampions: List<Champion> = emptyList(),
+    banSlots: List<com.example.service.screen.BanSlot> = emptyList(),
     activeRole: LaneRole,
     onActiveRoleChange: (LaneRole) -> Unit,
     isFirstPick: Boolean,
@@ -160,8 +160,8 @@ internal fun FloatingDraftCoachView(
                 color = TextSecondary, fontSize = 10.sp,
                 modifier = Modifier.fillMaxWidth().padding(4.dp).testTag("draft_unassigned_allies"))
         }
-        if (bannedChampions.isNotEmpty()) {
-            com.example.ui.components.DetectedBansCard(bannedChampions)
+        if (banSlots.isNotEmpty()) {
+            com.example.ui.components.DetectedBansCard(banSlots)
             Spacer(Modifier.height(6.dp))
         }
         // TABLERO DE DRAFT VERSUS (ALIADO VS RIVAL POR LÍNEAS)

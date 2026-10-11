@@ -78,6 +78,43 @@ class BannedPortraitScannerTest {
         }
     }
 
+    @Test fun splitHeaderRecognizesEmptyPositionAndKeepsBothTeams() {
+        val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/split-header.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
+        val scanner = BannedPortraitScanner()
+        scanner.scan(bitmap, context, 0)
+        scanner.scan(bitmap, context, 1500)
+        assertEquals(10, scanner.slots.size)
+        assertEquals(scanner.slots.toString(), com.example.service.screen.BanState.EMPTY, scanner.slots.first { it.side == com.example.service.screen.BanSide.ALLY && it.index == 1 }.state)
+        assertTrue(scanner.slots.count { it.state == com.example.service.screen.BanState.CONFIRMED } >= 6)
+        assertTrue(scanner.slots.filter { it.state == com.example.service.screen.BanState.CONFIRMED }.map { it.side }.toSet().size == 2)
+        bitmap.recycle()
+    }
+
+    @Test fun emptyEvidenceClearsABanButAmbiguousOrHiddenFramesDoNot() {
+        val scanner = BannedPortraitScanner()
+        val side = com.example.service.screen.BanSide.ALLY
+        val region = com.example.service.screen.BanRegion(.05f,.05f,.03f)
+        val portrait = com.example.service.screen.BanObservation(side,region,"ahri")
+        val empty = com.example.service.screen.BanObservation(side,region,empty=true)
+        scanner.update(listOf(portrait), 2f)
+        assertEquals(com.example.service.screen.BanState.PENDING,scanner.slots.first().state)
+        scanner.update(listOf(portrait), 2f)
+        assertEquals("ahri",scanner.slots.first().championId)
+        scanner.update(emptyList(), 2f)
+        assertEquals("ahri",scanner.slots.first().championId)
+        scanner.update(listOf(empty), 2f)
+        assertEquals("ahri",scanner.slots.first().championId)
+        scanner.update(listOf(empty), 2f)
+        assertEquals(com.example.service.screen.BanState.EMPTY,scanner.slots.first().state)
+        assertNull(scanner.slots.first().championId)
+        val replacement = portrait.copy(championId="sona")
+        scanner.update(listOf(replacement),2f)
+        scanner.update(listOf(replacement),2f)
+        assertEquals("sona",scanner.slots.first().championId)
+        scanner.reset()
+        assertTrue(scanner.slots.all { it.state == com.example.service.screen.BanState.UNKNOWN })
+    }
+
     @Test fun bannedChampionsNeverAppearAsRecommendationsIncludingWhenAllChoicesAreBanned() {
         val initial = WildRiftRepository.analyzeDraft(myRole = com.example.model.LaneRole.MID,
             allies = emptyList(), enemies = emptyList())
