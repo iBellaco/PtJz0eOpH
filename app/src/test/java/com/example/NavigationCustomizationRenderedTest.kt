@@ -34,7 +34,6 @@ class NavigationCustomizationRenderedTest {
         var selected by mutableIntStateOf(4)
         var particles by mutableStateOf(false)
         AppThemeManager.setNavBarOption(com.example.ui.theme.NavBarColorOption.THEME_AUTO)
-        compose.mainClock.autoAdvance = false
         compose.setContent { MyApplicationTheme {
             androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
                 com.example.ui.components.CoachNavStyleRenderer(style,
@@ -44,7 +43,10 @@ class NavigationCustomizationRenderedTest {
             }
         } }
         for (option in CoachNavStyle.entries) {
-            compose.runOnIdle { style = option; selected = 4; particles = false }
+            compose.runOnIdle {
+                style = option; selected = 4; particles = false
+                androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+            }
             compose.mainClock.advanceTimeBy(1000)
             fun snapshot(tag: String, phase: String, unmerged: Boolean = false): android.graphics.Bitmap {
                 val file = java.io.File("build/reports/portuguese-rendered/nav-${option.id}-$phase-es.png")
@@ -83,8 +85,7 @@ class NavigationCustomizationRenderedTest {
                 androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
             }
             compose.mainClock.advanceTimeBy(1000)
-            // Native image capture drains Android's drawing queue independently of
-            // the paused Compose clock. Synchronize the newly inserted Canvas too.
+            // Synchronize the newly inserted Canvas after a native image capture.
             compose.waitUntil(timeoutMillis = 5000) {
                 compose.mainClock.advanceTimeByFrame()
                 compose.onAllNodesWithTag("nav_particles", useUnmergedTree = true).fetchSemanticsNodes().size == 1
@@ -103,7 +104,10 @@ class NavigationCustomizationRenderedTest {
                     if (off.getPixel(x, y) != on.getPixel(x, y)) changed++
                 assertTrue("Particles must change visible pixels in $option", changed > 25)
             } finally { off.recycle(); on.recycle() }
-            compose.runOnIdle { particles = false; selected = 0 }
+            compose.runOnIdle {
+                particles = false; selected = 0
+                androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+            }
             compose.mainClock.advanceTimeBy(1000)
             assertTint(AppThemeManager.getNavBarUnselectedColor(), "inactive", .16f)
         }
