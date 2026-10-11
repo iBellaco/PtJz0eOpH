@@ -69,6 +69,9 @@ internal class BannedPortraitScanner {
             val old = previous[key]
             when {
                 observation == null -> slot // no evidence of an empty slot, preserve last confirmation
+                observation.championId == null && !observation.empty ->
+                    if (slot.state == BanState.CONFIRMED) slot else slot.copy(region = observation.region,
+                        championId = null, state = BanState.UNKNOWN)
                 old != null && observation.empty && old.empty -> slot.copy(region = observation.region, championId = null, state = BanState.EMPTY)
                 old != null && !observation.empty && observation.championId == old.championId && old.championId != null ->
                     slot.copy(region = observation.region, championId = observation.championId, state = BanState.CONFIRMED)

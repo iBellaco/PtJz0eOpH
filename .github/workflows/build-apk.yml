@@ -235,7 +235,7 @@ jobs:
     - name: Run the complete Android unit test suite
       env:
         CI: 'true'
-      run: ./gradlew :app:testDebugUnitTest --max-workers=1 --stacktrace --no-daemon
+      run: ./gradlew :app:testDebugUnitTest --fail-fast --max-workers=1 --stacktrace --no-daemon
     - name: Upload core regression results
       if: always()
       uses: actions/upload-artifact@v4

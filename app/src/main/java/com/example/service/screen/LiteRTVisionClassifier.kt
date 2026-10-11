@@ -219,10 +219,35 @@ object LiteRTVisionClassifier {
         }
         // A single gameplay HUD portrait must not be interpreted as a ban row.
         if (found.size < 3 || found.none { it.first.x < width / 2 } || found.none { it.first.x > width / 2 }) return emptyList()
-        return found.map { (proposal, champion) ->
+        val observations = found.map { (proposal, champion) ->
             BanObservation(if (proposal.x < width / 2) BanSide.ALLY else BanSide.ENEMY,
                 BanRegion(proposal.x.toFloat() / width, proposal.y.toFloat() / height,
                     proposal.radius.toFloat() / height), champion?.id, champion == null)
+        }
+        return fillHeaderPositions(observations, width.toFloat() / height) { region ->
+            val cx = region.x * width
+            val cy = region.y * height
+            val radius = region.radius * height
+            val rect = android.graphics.Rect((cx-radius).toInt(), (cy-radius).toInt(),
+                (cx+radius).toInt(), (cy+radius).toInt())
+            if (exclusions.any { android.graphics.Rect.intersects(it, rect) }) false else {
+                // A header portrait has spatial color variation; a blank background does not.
+                // This only reserves an unknown position, never confirms a ban or its identity.
+                val sums = DoubleArray(3); val squares = DoubleArray(3)
+                var count = 0
+                for (distance in floatArrayOf(.3f, .5f, .7f)) for (angleIndex in 0 until 24) {
+                    val angle = angleIndex * Math.PI * 2 / 24
+                    val x = (cx + radius * distance * kotlin.math.cos(angle)).toInt().coerceIn(0, width-1)
+                    val y = (cy + radius * distance * kotlin.math.sin(angle)).toInt().coerceIn(0, height-1)
+                    val pixel = bitmap.getPixel(x, y)
+                    for (c in 0..2) {
+                        val value = ((pixel ushr (16 - c*8)) and 255).toDouble()
+                        sums[c] += value; squares[c] += value * value
+                    }
+                    count++
+                }
+                (0..2).sumOf { squares[it] / count - (sums[it] / count) * (sums[it] / count) } / 3 >= 144.0
+            }
         }
     }
 

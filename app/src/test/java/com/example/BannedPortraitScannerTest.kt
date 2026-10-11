@@ -84,7 +84,7 @@ class BannedPortraitScannerTest {
         scanner.scan(bitmap, context, 0)
         scanner.scan(bitmap, context, 1500)
         assertEquals(10, scanner.slots.size)
-        assertEquals(com.example.service.screen.BanState.EMPTY, scanner.slots.first { it.side == com.example.service.screen.BanSide.ALLY && it.index == 1 }.state)
+        assertEquals(scanner.slots.toString(), com.example.service.screen.BanState.EMPTY, scanner.slots.first { it.side == com.example.service.screen.BanSide.ALLY && it.index == 1 }.state)
         assertTrue(scanner.slots.count { it.state == com.example.service.screen.BanState.CONFIRMED } >= 6)
         assertTrue(scanner.slots.filter { it.state == com.example.service.screen.BanState.CONFIRMED }.map { it.side }.toSet().size == 2)
         bitmap.recycle()
