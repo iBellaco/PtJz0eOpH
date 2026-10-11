@@ -28,6 +28,6 @@ class AvatarCatalogScrollTest {
         compose.onNodeWithTag("avatar_card_${last.id}").assertIsDisplayed()
         compose.onNodeWithTag("avatar_catalog_scroll").performScrollToIndex(0)
         compose.mainClock.advanceTimeBy(1000)
-        compose.onNodeWithText("Avatares", substring=false).assertExists()
+        compose.onAllNodesWithText("Avatares", substring=false)[0].assertIsDisplayed()
     }
 }
