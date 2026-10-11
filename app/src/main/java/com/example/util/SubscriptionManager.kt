@@ -76,6 +76,9 @@ object SubscriptionManager {
     private var heartbeatJob: kotlinx.coroutines.Job? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
+    private var inboxOwnerUid = ""
+    private var inboxArrayLoaded = false
+    private var inboxDocumentsLoaded = false
     private var unreadMessagesSubcollection = emptySet<String>()
     private var unreadSupportReports = emptySet<String>()
     private var unreadPrivateArray = emptySet<String>()
@@ -127,7 +130,7 @@ object SubscriptionManager {
     })
     fun refreshPhoneNotifications(context: Context) {
         val uid = _currentUserUid.value
-        if (uid.isNotBlank()) com.example.data.InboxPhoneNotifications.update(context, uid, inboxArray + inboxDocuments, authoritative = true)
+        if (uid.isNotBlank()) com.example.data.InboxPhoneNotifications.update(context, uid, inboxArray + inboxDocuments, authoritative = inboxArrayLoaded && inboxDocumentsLoaded)
     }
     fun acknowledgeMessage(message: Map<String, Any>) {
         val key = com.example.data.InboxNotificationPolicy.key(message) ?: return
@@ -171,6 +174,9 @@ object SubscriptionManager {
                 premiumPlan = ""
                 _unreadModeratorSupportCount.value = 0
                 acknowledgedRevisions.clear()
+                inboxOwnerUid = ""
+                inboxArrayLoaded = false
+                inboxDocumentsLoaded = false
                 unreadMessagesSubcollection = emptySet()
                 unreadSupportReports = emptySet()
                 unreadPrivateArray = emptySet()
@@ -246,7 +252,14 @@ object SubscriptionManager {
             return
         }
 
-        startHeartbeat(user!!.uid)
+        if (inboxOwnerUid != user!!.uid) {
+            inboxOwnerUid = user.uid
+            inboxArrayLoaded = false
+            inboxDocumentsLoaded = false
+            inboxArray = emptyList()
+            inboxDocuments = emptyList()
+        }
+        startHeartbeat(user.uid)
         com.example.data.InboxPhoneNotifications.schedule(context.applicationContext, user.uid)
         com.example.data.StreamerPublicationLifecycle.start(context.applicationContext, user.uid)
 
@@ -295,9 +308,10 @@ object SubscriptionManager {
                 .collection("messages")
                 .addSnapshotListener { snapshot, error ->
                     if (error == null && snapshot != null) {
+                        inboxDocumentsLoaded = true
                         inboxDocuments = snapshot.documents.map { it.data.orEmpty() + ("id" to it.id) }
                         unreadMessagesSubcollection = unreadKeys(inboxDocuments)
-                        com.example.data.InboxPhoneNotifications.update(context, user.uid, inboxArray + inboxDocuments, authoritative = true)
+                        com.example.data.InboxPhoneNotifications.update(context, user.uid, inboxArray + inboxDocuments, authoritative = inboxArrayLoaded && inboxDocumentsLoaded)
                         recalculateUnreadCount()
                     }
                 }
@@ -425,8 +439,9 @@ object SubscriptionManager {
                     val remoteDocCount = listenSnapshot.getLong("unreadMessagesCount")?.toInt() ?: if (hasUnread) 1 else 0
                     @Suppress("UNCHECKED_CAST")
                     val privateMsgs = listenSnapshot.get("privateMessages") as? List<Map<String, Any>>
+                    inboxArrayLoaded = true
                     inboxArray = privateMsgs.orEmpty()
-                    com.example.data.InboxPhoneNotifications.update(context, user.uid, inboxArray + inboxDocuments, authoritative = true)
+                    com.example.data.InboxPhoneNotifications.update(context, user.uid, inboxArray + inboxDocuments, authoritative = inboxArrayLoaded && inboxDocumentsLoaded)
                     val unreadInArray = unreadKeys(inboxArray)
 
                     hasUnreadFromDoc = hasUnread

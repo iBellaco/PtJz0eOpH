@@ -121,7 +121,8 @@ class InboxNotificationWorker(context: Context, parameters: WorkerParameters) : 
             if (cursor.isNotBlank()) query = query.startAfter(cursor)
             val page = query.get(com.google.firebase.firestore.Source.SERVER).await().documents
             val documents = page.map { it.data.orEmpty() + ("id" to it.id) }
-            InboxPhoneNotifications.update(applicationContext, uid, legacy + documents)
+            InboxPhoneNotifications.update(applicationContext, uid, legacy + documents,
+                authoritative = cursor.isBlank() && page.size < 100)
             prefs.edit().putString(cursorKey, if (page.size == 100) page.last().id else "").apply()
             Result.success()
         } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
