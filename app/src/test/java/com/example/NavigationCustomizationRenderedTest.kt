@@ -6,7 +6,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.material.icons.filled.Home
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.example.ui.components.AnimatedLogoutButton
@@ -29,6 +28,7 @@ import org.robolectric.annotation.GraphicsMode
 class NavigationCustomizationRenderedTest {
     @get:Rule val compose = createComposeRule()
 
+    @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
     @Test fun everyStyleShowsParticlesAboveItsBackgroundAndGivesUserTheSameTint() {
         var style by mutableStateOf(CoachNavStyle.ORIGINAL)
         var selected by mutableIntStateOf(4)
@@ -43,31 +43,45 @@ class NavigationCustomizationRenderedTest {
         for (option in CoachNavStyle.entries) {
             compose.runOnIdle { style = option; selected = 4; particles = false }
             compose.mainClock.advanceTimeBy(1000)
-            fun assertTint(expected: androidx.compose.ui.graphics.Color, tolerance: Float = .03f) {
-                val pixels = compose.onNodeWithTag("user_navigation_icon", useUnmergedTree = true).captureToImage().toPixelMap()
-                var matches = 0
-                for (x in 0 until pixels.width) for (y in 0 until pixels.height) {
-                    val color = pixels[x, y]
-                    if (kotlin.math.abs(color.red - expected.red) < tolerance &&
-                        kotlin.math.abs(color.green - expected.green) < tolerance &&
-                        kotlin.math.abs(color.blue - expected.blue) < tolerance) matches++
-                }
-                assertTrue("User tint must match $expected in $option", matches > 10)
+            fun snapshot(tag: String, phase: String, unmerged: Boolean = false): android.graphics.Bitmap {
+                val file = java.io.File("build/reports/portuguese-rendered/nav-${option.id}-$phase-es.png")
+                file.parentFile.mkdirs()
+                compose.onNodeWithTag(tag, useUnmergedTree = unmerged).captureRoboImage(file.path,
+                    roborazziOptions = com.github.takahirom.roborazzi.RoborazziOptions(
+                        taskType = com.github.takahirom.roborazzi.RoborazziTaskType.Record))
+                return requireNotNull(android.graphics.BitmapFactory.decodeFile(file.path))
             }
-            assertTint(AppThemeManager.getNavBarSelectedIconColor())
-            val off = compose.onNodeWithTag("nav_pixels").captureToImage().toPixelMap()
+            fun assertTint(expected: androidx.compose.ui.graphics.Color, phase: String, tolerance: Float = .03f) {
+                val bitmap = snapshot("user_navigation_icon", phase, unmerged = true)
+                try {
+                    var matches = 0
+                    for (x in 0 until bitmap.width) for (y in 0 until bitmap.height) {
+                        val color = androidx.compose.ui.graphics.Color(bitmap.getPixel(x, y))
+                        if (kotlin.math.abs(color.red - expected.red) < tolerance &&
+                            kotlin.math.abs(color.green - expected.green) < tolerance &&
+                            kotlin.math.abs(color.blue - expected.blue) < tolerance) matches++
+                    }
+                    assertTrue("User tint must match $expected in $option", matches > 10)
+                } finally { bitmap.recycle() }
+            }
+            assertTint(AppThemeManager.getNavBarSelectedIconColor(), "selected")
+            val off = snapshot("nav_pixels", "particles-off")
             compose.onNodeWithTag("nav_particles").assertDoesNotExist()
             compose.runOnIdle { particles = true }
             compose.mainClock.advanceTimeBy(1000)
             compose.onNodeWithTag("nav_particles").assertIsDisplayed()
-            val on = compose.onNodeWithTag("nav_pixels").captureToImage().toPixelMap()
-            var changed = 0
-            for (x in 0 until off.width step 3) for (y in 0 until off.height step 3)
-                if (off[x, y] != on[x, y]) changed++
-            assertTrue("Particles must change visible pixels in $option", changed > 25)
+            val on = snapshot("nav_pixels", "particles-on")
+            try {
+                assertEquals(off.width, on.width)
+                assertEquals(off.height, on.height)
+                var changed = 0
+                for (x in 0 until off.width step 3) for (y in 0 until off.height step 3)
+                    if (off.getPixel(x, y) != on.getPixel(x, y)) changed++
+                assertTrue("Particles must change visible pixels in $option", changed > 25)
+            } finally { off.recycle(); on.recycle() }
             compose.runOnIdle { particles = false; selected = 0 }
             compose.mainClock.advanceTimeBy(1000)
-            assertTint(AppThemeManager.getNavBarUnselectedColor(), .16f)
+            assertTint(AppThemeManager.getNavBarUnselectedColor(), "inactive", .16f)
         }
     }
 
