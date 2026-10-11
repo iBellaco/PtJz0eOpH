@@ -136,7 +136,7 @@ fun ScannerDebugOverlay(
                         com.example.service.screen.BanState.EMPTY -> "Sin ban"
                         else -> "Sin confirmar"
                     }
-                    drawDiagnosticText("$status ${slot.index + 1}", center.x.coerceIn(28f, w - 28f),
+                    drawDiagnosticText("${com.example.util.appTr(status)} ${slot.index + 1}", center.x.coerceIn(28f, w - 28f),
                         h * .12f - labelPaint.fontMetrics.top + 6f, labelPaint)
                 }
             }
