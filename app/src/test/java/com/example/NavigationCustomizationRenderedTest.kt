@@ -36,9 +36,12 @@ class NavigationCustomizationRenderedTest {
         AppThemeManager.setNavBarOption(com.example.ui.theme.NavBarColorOption.THEME_AUTO)
         compose.mainClock.autoAdvance = false
         compose.setContent { MyApplicationTheme {
-            com.example.ui.components.CoachNavStyleRenderer(style,
-                com.example.ui.components.CoachNavPreviewItems(), selected, {},
-                androidx.compose.ui.Modifier.testTag("nav_pixels"), particlesEnabled = particles)
+            androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
+                com.example.ui.components.CoachNavStyleRenderer(style,
+                    com.example.ui.components.CoachNavPreviewItems(), selected, {},
+                    androidx.compose.ui.Modifier.align(androidx.compose.ui.Alignment.BottomCenter)
+                        .testTag("nav_pixels"), particlesEnabled = particles)
+            }
         } }
         for (option in CoachNavStyle.entries) {
             compose.runOnIdle { style = option; selected = 4; particles = false }
@@ -46,10 +49,18 @@ class NavigationCustomizationRenderedTest {
             fun snapshot(tag: String, phase: String, unmerged: Boolean = false): android.graphics.Bitmap {
                 val file = java.io.File("build/reports/portuguese-rendered/nav-${option.id}-$phase-es.png")
                 file.parentFile.mkdirs()
-                compose.onNodeWithTag(tag, useUnmergedTree = unmerged).captureRoboImage(file.path,
+                val bounds = compose.onNodeWithTag(tag, useUnmergedTree = unmerged)
+                    .fetchSemanticsNode().boundsInRoot
+                assertTrue("$tag must have a visible area in $option: $bounds", bounds.width > 0 && bounds.height > 0)
+                // Capture the stable full-screen host before cropping a destination.
+                compose.onRoot().captureRoboImage(file.path,
                     roborazziOptions = com.github.takahirom.roborazzi.RoborazziOptions(
                         taskType = com.github.takahirom.roborazzi.RoborazziTaskType.Record))
-                return requireNotNull(android.graphics.BitmapFactory.decodeFile(file.path))
+                val full = requireNotNull(android.graphics.BitmapFactory.decodeFile(file.path))
+                val crop = android.graphics.Bitmap.createBitmap(full, bounds.left.toInt(), bounds.top.toInt(),
+                    bounds.width.toInt(), bounds.height.toInt())
+                if (crop !== full) full.recycle()
+                return crop
             }
             fun assertTint(expected: androidx.compose.ui.graphics.Color, phase: String, tolerance: Float = .03f) {
                 val bitmap = snapshot("user_navigation_icon", phase, unmerged = true)
