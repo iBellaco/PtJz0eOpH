@@ -51,6 +51,63 @@ class DraftRivalNameInstalledTest {
         } finally { recognizer.close() }
     }
 
+    @Test fun reportedSlotsDoNotLoseSennaOrMalphiteAndFinishWithVisualRivalPick() = kotlinx.coroutines.runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val scanner = com.example.service.screen.DraftVisionScanner
+        val original = scanner.calibrationConfig
+        val fixture = InstrumentationRegistry.getInstrumentation().context.assets.open("draft/reported-ten-slots.json")
+            .bufferedReader().use { org.json.JSONObject(it.readText()).getString("pngBase64") }
+        val bytes = android.util.Base64.decode(fixture, android.util.Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!.copy(android.graphics.Bitmap.Config.ARGB_8888, true)!!
+        try {
+            scanner.resetSlotMemory()
+            scanner.updateCalibration(context, com.example.service.screen.VisionCalibrationConfig())
+            val first = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID)
+            assertTrue("A single OCR reading cannot select a player", first.alliesBySlot.isEmpty())
+            val selected = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID)
+            assertEquals("senna", selected.alliesBySlot[0]?.id)
+            assertEquals("fizz", selected.alliesBySlot[1]?.id)
+            assertEquals("nami", selected.alliesBySlot[2]?.id)
+            assertEquals("malphite", selected.alliesBySlot[3]?.id)
+            assertNull("Lane title must not select the Akshan preview", selected.alliesBySlot[4])
+            assertEquals("malphite", selected.alliesByRole[com.example.model.LaneRole.TOP]?.id)
+            assertEquals("senna", selected.alliesByRole[com.example.model.LaneRole.ADC]?.id)
+            // Final turn: ninth player is now selected; final rival has portrait but no title.
+            val config = scanner.calibrationConfig
+            val canvas = android.graphics.Canvas(bitmap)
+            val black = android.graphics.Paint().apply { color = android.graphics.Color.BLACK }
+            val allyTitle = com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotNameRect(bitmap.width, bitmap.height, true, 4, config)
+            canvas.drawRect(allyTitle, black)
+            canvas.drawRect(com.example.service.screen.AdaptiveScreenLayoutEngine.calculateSlotNameRect(bitmap.width, bitmap.height, false, 4, config), black)
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                color = android.graphics.Color.WHITE; textSize = 14f; typeface = android.graphics.Typeface.DEFAULT_BOLD
+            }
+            canvas.drawText("AKSHAN", allyTitle.left + 8f, bitmap.height * config.allySlotYRatios[4] - 7f, paint)
+            scanner.resetSlotMemory()
+            scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID)
+            val ninth = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID)
+            assertEquals(true, ninth.detectedFirstPick)
+            assertEquals(false, ninth.tenthPickIsAlly)
+            assertEquals(9, ninth.alliesBySlot.size + ninth.enemiesBySlot.size)
+            val turn = scanner.getDraftPickSequence(true).last()
+            // The hub uses the direct avatar path between full name-band scans.
+            scanner.scanActiveSlotDirectly(bitmap, turn, context)
+            kotlinx.coroutines.delay(200)
+            val visual = scanner.scanActiveSlotDirectly(bitmap, turn, context)
+            assertEquals("fiddlesticks", visual?.champion?.id)
+            val finalPortrait = com.example.service.screen.LiteRTVisionClassifier.finishLastVisibleSelection()
+            assertEquals("fiddlesticks", finalPortrait?.pickedChampion?.id)
+            assertTrue(finalPortrait?.isConfirmed == true)
+            val hud = com.example.service.OverlayState().apply {
+                ninth.alliesBySlot.forEach { (slot, champion) -> allies[slot] = champion }
+                ninth.enemiesBySlot.forEach { (slot, champion) -> enemies[slot] = champion }
+            }
+            hud.applyConfirmedLastPick(ninth.copy(isLastPickConfirmed = true,
+                lastPickChampion = finalPortrait?.pickedChampion))
+            assertEquals(10, (hud.allies + hud.enemies).filterNotNull().size)
+        } finally { bitmap.recycle(); scanner.resetSlotMemory(); scanner.updateCalibration(context, original) }
+    }
+
     @Test fun firstSelectionsAreReadWithRedMagicAndPocoCoordinates() = kotlinx.coroutines.runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val scanner = com.example.service.screen.DraftVisionScanner
@@ -86,6 +143,9 @@ class DraftRivalNameInstalledTest {
                         868 * config.allySlotYRatios[0] - 18f, paint)
                     canvas.drawText("MEL", 1920 * config.getEnemySlotX(0) - 868 * .074f - paint.measureText("MEL"),
                         868 * config.enemySlotYRatios[0] - 18f, paint)
+                    kotlinx.coroutines.withTimeout(60_000L) {
+                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                    }
                     val result = kotlinx.coroutines.withTimeout(60_000L) {
                         scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
                     }
@@ -126,9 +186,15 @@ class DraftRivalNameInstalledTest {
             progress("start")
             val bitmap = frame(titles)
             return try {
-                kotlinx.coroutines.withTimeout(60_000L) {
+                var result = kotlinx.coroutines.withTimeout(60_000L) {
                     scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
-                }.also { progress("done ${it.allyRolesBySlot} ${it.alliesBySlot.mapValues { entry -> entry.value.id }}") }
+                }
+                if (phase == "selection" || phase == "trade") {
+                    result = kotlinx.coroutines.withTimeout(60_000L) {
+                        scanner.scanDraftFromBitmap(bitmap, context, true, com.example.model.LaneRole.TOP)
+                    }
+                }
+                result.also { progress("done ${it.allyRolesBySlot} ${it.alliesBySlot.mapValues { entry -> entry.value.id }}") }
             } finally { bitmap.recycle() }
         }
         try {

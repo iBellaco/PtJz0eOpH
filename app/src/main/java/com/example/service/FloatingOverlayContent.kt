@@ -251,7 +251,8 @@ internal fun FloatingOverlayContent(
     LaunchedEffect(autoScanEnabled) {
         if (autoScanEnabled) {
             DraftVisionScanner.resetSlotLifecycle()
-            if (allies.all { it == null } && enemies.all { it == null }) DraftVisionScanner.clearDetectedBans()
+            if (allies.all { it == null } && enemies.all { it == null } &&
+                DraftVisionScanner.detectedBannedChampionIds.isEmpty()) DraftVisionScanner.resetSlotMemory()
         }
         if (!autoScanEnabled) {
             DraftVisionScanner.isVisionEngineBusy.value = false

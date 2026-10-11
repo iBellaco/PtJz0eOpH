@@ -322,6 +322,18 @@ object DraftVisionScanner {
     }
 
     fun updateCalibration(context: android.content.Context, newConfig: VisionCalibrationConfig) {
+        val old = calibrationConfig
+        if (old.allyBanXRatios != newConfig.allyBanXRatios || old.enemyBanXRatios != newConfig.enemyBanXRatios ||
+            old.allyBanYRatio != newConfig.allyBanYRatio || old.enemyBanYRatio != newConfig.enemyBanYRatio ||
+            old.banDiameterRatio != newConfig.banDiameterRatio || old.manualAllyBans != newConfig.manualAllyBans ||
+            old.manualEnemyBans != newConfig.manualEnemyBans) {
+            val active = banDetectionActiveFlow.value
+            clearDetectedBans()
+            banDetectionActiveFlow.value = active
+            banSlotsFlow.value = emptyBanSlots().map { slot ->
+                slot.copy(region = newConfig.banRegions(slot.side == BanSide.ALLY)[slot.index])
+            }
+        }
         calibrationConfig = newConfig
         calibrationConfigFlow.value = newConfig
         newConfig.saveToPrefs(context)
@@ -347,6 +359,7 @@ object DraftVisionScanner {
     // Las predicciones visuales del décimo pick deben volver a evaluarse en cada fotograma.
     private val allySlotNameConfirmed = BooleanArray(5)
     private val enemySlotNameConfirmed = BooleanArray(5)
+    private val titleConfirmation = SlotTitleConfirmation()
     private var lastVisualPick: Pair<Boolean, Champion>? = null
     private val slotLifecycle = DraftSlotLifecycle()
 
@@ -400,6 +413,7 @@ object DraftVisionScanner {
     private val enemySlotFilters = Array(5) { SlotTemporalFilter() }
 
     fun resetSlotMemory() {
+        titleConfirmation.reset()
         lastVisualPick = null
         slotLifecycle.reset()
         observedFirstPick = null
@@ -526,7 +540,7 @@ object DraftVisionScanner {
                         targetedAllyReadings[i] = AllyDraftNameReader.readTitleRows(slotText.textBlocks.flatMap { it.lines }.map {
                             it.text to (it.boundingBox?.centerY() ?: scaled.height / 2)
                         }, (scaled.height * 0.30f).toInt(), allChamps,
-                            ((height * (calib.allySlotYRatios[i] - 0.01f) - nameRect.top) * scaled.height / nameRect.height()).toInt())
+                            ((height * (calib.allySlotYRatios[i] + 0.005f) - nameRect.top) * scaled.height / nameRect.height()).toInt())
                     }
                     val centerY = scaled.height / 2
                     val candidates = slotText.textBlocks.flatMap { it.lines }.mapNotNull { line ->
@@ -756,9 +770,9 @@ object DraftVisionScanner {
                 val isolated = targetedAllyReadings[i]
                 val reading = if (isolated.ambiguous || isolated.lane != null || isolated.champion != null) isolated
                     else AllyDraftNameReader.readTitleRows(titleLines, (titleRect.height() * 0.30f).toInt(), allChamps,
-                        (height * (calib.allySlotYRatios[i] - 0.01f)).toInt())
+                        (height * (calib.allySlotYRatios[i] + 0.005f)).toInt())
                 detectedRoleInSlot = reading.lane
-                detectedChampInSlot = reading.champion
+                detectedChampInSlot = reading.champion.takeIf { titleConfirmation.observe(true, i, it?.id) }
                 if (detectedRoleInSlot != null) {
                     currentScanFrameOcrLanes[i] = detectedRoleInSlot
                     slot.explicitRole = detectedRoleInSlot
@@ -784,7 +798,7 @@ object DraftVisionScanner {
                             lineNorm.contains("winrate")
 
                         val selfMarker = AllyDraftNameReader.identifiesUser(line, emptyList())
-                        val isPlayerNameLine = box != null && box.centerY() > height * (calib.allySlotYRatios[i] - 0.01f)
+                        val isPlayerNameLine = box != null && box.centerY() > height * (calib.allySlotYRatios[i] + 0.005f)
                         val isUserTag = !isLegendaryRanked && (selfMarker ||
                             (isPlayerNameLine && AllyDraftNameReader.identifiesUser(line, currentUserNameClean)))
 
@@ -977,7 +991,9 @@ object DraftVisionScanner {
                     }
                 }
 
-                detectedEnemyChamp = targetedEnemyChampions[i] ?: detectedEnemyChamp
+                detectedEnemyChamp = (targetedEnemyChampions[i] ?: detectedEnemyChamp).takeIf {
+                    titleConfirmation.observe(false, i, it?.id)
+                }
 
                 // REGLAS ESTRICTAS DEL USUARIO:
                 // Si el OCR detecta un campeón en el slot rival, se confirma al 100% y se guarda en memoria.
@@ -1205,7 +1221,7 @@ object DraftVisionScanner {
             val exclusions = debugTextRects + listOfNotNull(overlayRect)
             val pickedIds = (allyOcrChampions.filterNotNull() + enemyOcrChampions.filterNotNull()).map { it.id }.toSet()
             bannedChampionIdsFlow.value = bannedPortraitScanner.scan(bitmap, context,
-                android.os.SystemClock.elapsedRealtime(), exclusions) - pickedIds
+                android.os.SystemClock.elapsedRealtime(), exclusions, calib) - pickedIds
             banSlotsFlow.value = bannedPortraitScanner.slots.map { slot ->
                 if (slot.championId in pickedIds) slot.copy(championId = null, state = BanState.UNKNOWN) else slot
             }
@@ -1257,6 +1273,10 @@ object DraftVisionScanner {
 
         if (liteRTDecision != null && confirmedPicksCount >= 9) {
             val (champWinner, confidence) = liteRTDecision
+            if (currentIsFirstPick == null) {
+                detectedFirstPick = DraftPickOrderPolicy.firstPickFromTenthSide(tenthIsAlly)
+                isFirstPickState.value = detectedFirstPick!!
+            }
             lastVisualPick = tenthIsAlly to champWinner
             detectedTenthChampion = champWinner
             isTenthConfirmed = true
@@ -1296,13 +1316,16 @@ object DraftVisionScanner {
 
         try { tenthCrop?.recycle() } catch (_: Throwable) {}
         
+        val resolvedAlliedRoles = AllyDraftReconciler.resolveRoles(
+            allySlots.mapNotNull { slot -> slot.champion?.let { slot.slotIndex to it } }.toMap(),
+            allySlotOcrLaneCache, allySlotRolesCache)
         // 4.1 Aliados: Cada slot aliado (0..4) mapea determinísticamente a su carril (allySlotRolesCache)
         val alliesMap = mutableMapOf<LaneRole, Champion>()
         val allyConfidences = mutableMapOf<LaneRole, Int>()
 
         for (i in 0..4) {
             val slot = allySlots[i]
-            val role = allySlotRolesCache[i] ?: continue
+            val role = resolvedAlliedRoles[i] ?: continue
             slot.assignedRole = role
             slot.explicitRole = role
             val champ = slot.champion
@@ -1370,7 +1393,7 @@ object DraftVisionScanner {
             val eChamp = enemiesBySlotMap[i]?.name ?: enemySlotConfirmedChampions[i]?.name
             if (eChamp != null) visualMatches["enemy_$i"] = eChamp
         }
-        allyRolesBySlotFlow.value = allySlotRolesCache.toMap()
+        allyRolesBySlotFlow.value = resolvedAlliedRoles
         debugVisualMatches.value = visualMatches
 
         val allyChampsList = alliesBySlotMap.values.distinctBy { it.id }
@@ -1403,7 +1426,7 @@ object DraftVisionScanner {
             alliesBySlot = alliesBySlotMap,
             enemiesBySlot = enemiesBySlotMap,
             alliesByRole = alliesMap,
-            allyRolesBySlot = allySlotRolesCache.toMap(),
+            allyRolesBySlot = resolvedAlliedRoles,
             enemiesByRole = finalEnemiesMap,
             enemyConfidencesByRole = enemyConfidences,
             detectedRole = userDetectedLane,

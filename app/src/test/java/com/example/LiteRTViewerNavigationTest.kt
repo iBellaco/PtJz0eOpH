@@ -62,6 +62,16 @@ class LiteRTViewerNavigationTest {
         }
     }
 
+    @Test fun `resuming during bans preserves the header before any player selects`() {
+        val scanner = com.example.service.screen.DraftVisionScanner
+        scanner.resetSlotMemory()
+        scanner.bannedChampionIdsFlow.value = setOf("zeri")
+        val state = com.example.service.OverlayState().apply { isExpanded = true; autoScanEnabled = false }
+        renderOverlay(state)
+        compose.onNodeWithTag("overlay_auto_scan_toggle").assertIsDisplayed().performClick()
+        compose.runOnIdle { assertEquals(setOf("zeri"), scanner.detectedBannedChampionIds) }
+    }
+
     private fun overlayState(active: Boolean): com.example.service.OverlayState {
         val context = RuntimeEnvironment.getApplication()
         com.example.util.DynamicTranslations.loadSync(context)

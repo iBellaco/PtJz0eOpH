@@ -22,6 +22,34 @@ import org.robolectric.annotation.GraphicsMode
 class DraftCalibrationRenderedTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun bothBanRowsMoveInFourDirectionsResizeUniformlyAndPersist() {
+        val context = RuntimeEnvironment.getApplication()
+        val original = DraftVisionScanner.calibrationConfig
+        try {
+            DraftVisionScanner.updateCalibration(context, VisionCalibrationConfig())
+            compose.setContent { MyApplicationTheme { LiteRTEngineViewerDialog({}, initializeDiagnostics = false) } }
+            for (ally in listOf(true, false)) {
+                compose.onNodeWithTag(if (ally) "calibration_target_ally_bans" else "calibration_target_enemy_bans").performScrollTo().performClick()
+                val before = DraftVisionScanner.calibrationConfig
+                fun press(tag: String) { compose.onNodeWithTag(tag).performScrollTo().performClick(); compose.waitForIdle() }
+                press("vision_calibration_right")
+                val right = DraftVisionScanner.calibrationConfig
+                val xs = if (ally) before.allyBanXRatios else before.enemyBanXRatios
+                val moved = if (ally) right.allyBanXRatios else right.enemyBanXRatios
+                xs.indices.forEach { assertEquals(xs[it] + .005f, moved[it], .00001f) }
+                press("vision_calibration_left"); press("vision_calibration_down")
+                assertEquals((if (ally) before.allyBanYRatio else before.enemyBanYRatio) + .005f,
+                    if (ally) DraftVisionScanner.calibrationConfig.allyBanYRatio else DraftVisionScanner.calibrationConfig.enemyBanYRatio, .00001f)
+                press("vision_calibration_up"); press("calibration_size_increase")
+                assertEquals(before.banDiameterRatio + .005f, DraftVisionScanner.calibrationConfig.banDiameterRatio, .00001f)
+                press("calibration_size_decrease")
+                assertEquals(before.allySlotYRatios, DraftVisionScanner.calibrationConfig.allySlotYRatios)
+                assertEquals(before.enemySlotXRatios, DraftVisionScanner.calibrationConfig.enemySlotXRatios)
+                assertEquals(DraftVisionScanner.calibrationConfig, VisionCalibrationConfig.loadFromPrefs(context))
+            }
+        } finally { DraftVisionScanner.updateCalibration(context, original) }
+    }
+
     @Test fun everyIndividualAvatarRespondsToFourDirectionsAndSizeWithoutMovingNeighbours() {
         val context = RuntimeEnvironment.getApplication()
         val original = DraftVisionScanner.calibrationConfig
