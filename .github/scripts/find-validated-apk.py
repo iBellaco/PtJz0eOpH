@@ -1,9 +1,18 @@
-"""Reuse only a fully validated, same-repository PR APK with an identical tree."""
+"""Reuse only a fully validated, same-repository PR APK with unchanged APK sources and build inputs."""
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
+
+# These files cannot change the APK: delivery housekeeping and its own tests.
+DELIVERY_ONLY_FILES = {
+    '.github/scripts/cleanup-completed-runs.cjs',
+    '.github/scripts/cleanup-completed-runs.test.cjs',
+    '.github/scripts/find-validated-apk.py',
+    '.github/scripts/test_validated_apk.py',
+    'docs/coach-audit-1.1.10.257.md',
+}
 
 REQUIRED_JOBS = {'security-and-data-tests', 'build-apk', 'core-and-rendered', 'installed-audit', 'installed-spanish', 'build-and-release'}
 
@@ -32,7 +41,16 @@ def find(repository, target_sha, request=api):
             continue
         source_tree = request(f"{prefix}/git/commits/{run['head_sha']}")['tree']['sha']
         if source_tree != target_tree:
-            continue
+            previous = request(f"{prefix}/git/trees/{source_tree}?recursive=1")
+            current = request(f"{prefix}/git/trees/{target_tree}?recursive=1")
+            if previous.get('truncated', True) or current.get('truncated', True):
+                continue
+            def apk_inputs(tree):
+                return {entry['path']: (entry['type'], entry['sha'])
+                        for entry in tree['tree'] if entry['type'] != 'tree'
+                        and entry['path'] not in DELIVERY_ONLY_FILES}
+            if apk_inputs(previous) != apk_inputs(current):
+                continue
         jobs = request(f"{prefix}/actions/runs/{run['id']}/jobs?per_page=100")['jobs']
         passed = {job['name'] for job in jobs if job.get('conclusion') == 'success'}
         if not REQUIRED_JOBS.issubset(passed):
@@ -47,7 +65,9 @@ def find(repository, target_sha, request=api):
 
 if __name__ == '__main__':
     run_id, source_sha = '', ''
-    if os.environ.get('GITHUB_REF') == 'refs/heads/main':
+    subprocess.run(['node', '.github/scripts/cleanup-completed-runs.test.cjs'], check=True)
+    if (os.environ.get('GITHUB_REF') == 'refs/heads/main'
+            or os.environ.get('GITHUB_HEAD_REF') == 'coach-validacion'):
         try:
             run_id, source_sha = find(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_SHA'])
         except (RuntimeError, KeyError, ValueError):

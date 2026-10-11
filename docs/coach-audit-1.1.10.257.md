@@ -8,5 +8,5 @@
 - Salida: puerta de 20 dp sin icono extra; marcha de 1,25 segundos y secuencia de aproximadamente 3,5 segundos, con bloqueo de pulsaciones repetidas y callback final.
 - Ayuda: español neutro y traducciones portuguesas correspondientes; indicaciones actualizadas sobre temas y consumo de recursos, sin cifras de rendimiento sin verificar.
 - Archivos: cliente de operaciones, gestor de usuarios, repositorios de lectura y borrado, contador compartido, bandeja y visor de mensajes, navegación, contenedor de pantalla segura, salida animada, preguntas frecuentes, traducciones, pruebas y versión.
-- Verificación: auditoría fuente portuguesa sin residuos; pendientes comprobaciones completas de Actions y APK instalado ES/PT antes de publicar.
+- Verificación: auditoría fuente portuguesa sin residuos; comprobaciones completas de Actions y APK instalado ES/PT aprobadas. La limpieza protege durante una hora los borradores recién creados para evitar eliminar una entrega mientras se suben sus archivos; el caso concurrente y el borrador abandonado tienen prueba de regresión.
 - Límites: no se afirma haber realizado una prueba física en todos los modelos de teléfono ni una medición de fluidez de cada uno.

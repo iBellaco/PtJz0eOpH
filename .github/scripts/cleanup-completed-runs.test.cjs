@@ -12,6 +12,8 @@ const cleanup = require('./cleanup-completed-runs.cjs');
     if (fn === releaseApi.listReleases) return [
       ...Array.from({ length: 40 }, (_, i) => ({ id: i + 1, draft: false, prerelease: false, published_at: new Date(i * 1000).toISOString() })),
       { id: require('../coach-signing.json').release_id, draft: true },
+      { id: 1001, draft: true, created_at: new Date().toISOString() },
+      { id: 1002, draft: true, created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
       { id: 1000, draft: false, prerelease: true, published_at: new Date(41000).toISOString() }
     ];
     assert.equal(fn, api.listWorkflowRunsForRepo);
@@ -20,9 +22,11 @@ const cleanup = require('./cleanup-completed-runs.cjs');
   } };
   await cleanup({ github, context, core: { info() {} } });
   assert.equal(deleted.length, 91);
-  assert.equal(releaseDeleted.length, 12);
+  assert.equal(releaseDeleted.length, 13);
   assert.ok(!releaseDeleted.includes(require('../coach-signing.json').release_id));
   assert.ok(releaseDeleted.includes(1000));
+  assert.ok(!releaseDeleted.includes(1001), 'uploading release remains intact');
+  assert.ok(releaseDeleted.includes(1002), 'abandoned old draft is removed');
   assert.ok(deleted.includes(2));
   assert.ok(!deleted.includes(117));
   assert.ok(!deleted.includes(120));

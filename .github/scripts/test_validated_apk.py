@@ -12,10 +12,18 @@ class ValidatedApkTest(unittest.TestCase):
     fixture_run = {'id': 42, 'status': 'completed', 'conclusion': 'success', 'event': 'pull_request',
            'head_branch': 'coach-validacion', 'head_repository': {'full_name': repository}, 'head_sha': 'a' * 40}
 
-    def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None):
+    def invoke(self, changed_tree=False, failed_job=None, expired=False, run=None, files=None):
         def request(path):
             if '/git/commits/' in path:
                 return {'tree': {'sha': 'different' if changed_tree and path.endswith('a' * 40) else 'same'}}
+            if '/git/trees/' in path:
+                changed = files if files is not None else [{'filename': 'app/src/main/Example.kt'}]
+                entries = [{'path': 'app/build.gradle.kts', 'type': 'blob', 'sha': 'base'}]
+                for f in changed:
+                    entries.append({'path': f.get('previous_filename', f['filename'])
+                                    if '/different?' in path else f['filename'],
+                                    'type': 'blob', 'sha': 'old' if '/different?' in path else 'new'})
+                return {'truncated': len(changed) >= 300, 'tree': entries}
             if '/workflows/' in path:
                 return {'workflow_runs': [run or self.fixture_run]}
             if '/jobs?' in path:
@@ -30,6 +38,21 @@ class ValidatedApkTest(unittest.TestCase):
 
     def test_any_source_change_requires_new_validation(self):
         self.assertEqual(('', ''), self.invoke(changed_tree=True))
+
+    def test_delivery_housekeeping_can_reuse_the_installed_apk(self):
+        self.assertEqual(('42', 'a' * 40), self.invoke(changed_tree=True,
+            files=[{'filename': p} for p in validated.DELIVERY_ONLY_FILES]))
+
+    def test_build_inputs_and_renamed_source_cannot_be_excluded(self):
+        for filename in ['app/build.gradle.kts', '.github/workflows/build-apk.yml',
+                         'gradle/libs.versions.toml', 'AGENTS.md']:
+            self.assertEqual(('', ''), self.invoke(changed_tree=True, files=[{'filename': filename}]))
+        self.assertEqual(('', ''), self.invoke(changed_tree=True, files=[{
+            'filename': '.github/scripts/cleanup-completed-runs.cjs',
+            'previous_filename': 'app/src/main/Example.kt'}]))
+        self.assertEqual(('42', 'a' * 40), self.invoke(changed_tree=True, files=[]))
+        self.assertEqual(('', ''), self.invoke(changed_tree=True,
+            files=[{'filename': '.github/scripts/cleanup-completed-runs.cjs'}] * 300))
 
     def test_failed_installed_audit_prevents_reuse(self):
         self.assertEqual(('', ''), self.invoke(failed_job='installed-audit'))

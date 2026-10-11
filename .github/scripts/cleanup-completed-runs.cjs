@@ -29,6 +29,14 @@ module.exports = async ({ github, context, core }, limit = 30) => {
     .sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at));
   const keep = new Set(published.slice(0, limit - 1).map(release => release.id));
   keep.add(signingReleaseId);
+  // gh release create uploads assets to a draft before publishing it. A parallel
+  // service cleanup must not remove that draft while its upload is in progress.
+  const uploadGraceMs = 60 * 60 * 1000;
+  for (const release of releases) {
+    if (release.draft && Date.now() - new Date(release.created_at).getTime() < uploadGraceMs) {
+      keep.add(release.id);
+    }
+  }
   let removedReleases = 0;
   for (const release of releases.filter(release => !keep.has(release.id))) {
     try {
