@@ -295,27 +295,9 @@ fun ThemeCustomizationBottomSheet(
                         }
                         if (!isPremium) Icon(Icons.Default.Lock, "Premium", tint = HextechGold, modifier = Modifier.size(17.dp))
                     }
-                    CoachNavStyle.entries.forEach { style ->
-                        val selected = previewNavStyle == style
-                        Surface(
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                                .coachClickable {
-                                    if (isPremium) previewNavStyle = style
-                                    else showPremiumRequiredDialog = true
-                                }.testTag("theme_nav_style_${style.id}"),
-                            shape = RoundedCornerShape(9.dp),
-                            color = if (selected) HextechCyan.copy(alpha = .14f) else HextechSurfaceVariant,
-                            border = BorderStroke(if (selected) 1.5.dp else 1.dp, if (selected) HextechCyan else HextechCardBorder)
-                        ) {
-                            Row(Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically) {
-                            Text(tr(style.title), modifier = Modifier.weight(1f), color = if (selected) HextechCyan else TextPrimary,
-                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, fontSize = 12.sp)
-                                if (selected) Icon(Icons.Default.CheckCircle, null, tint = HextechCyan, modifier = Modifier.size(18.dp))
-                                else if (!isPremium) Icon(Icons.Default.Lock, null, tint = TextMuted, modifier = Modifier.size(15.dp))
-                            }
-                        }
-                    }
+                    CoachNavStylePicker(previewNavStyle, isPremium,
+                        onSelected = { previewNavStyle = it },
+                        onPremiumRequired = { showPremiumRequiredDialog = true })
                     if (isPremium) {
                         Text(tr("Vista previa"), color = TextPrimary, fontWeight = FontWeight.SemiBold)
                         CoachNavStyleRenderer(previewNavStyle, CoachNavPreviewItems(), previewNavTab,

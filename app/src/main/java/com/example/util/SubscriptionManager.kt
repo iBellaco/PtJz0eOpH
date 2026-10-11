@@ -125,9 +125,14 @@ object SubscriptionManager {
         val key = com.example.data.InboxNotificationPolicy.key(it)
         key != null && acknowledgedRevisions[key] == com.example.data.PanelReadRepository.revision(it)
     })
+    fun refreshPhoneNotifications(context: Context) {
+        val uid = _currentUserUid.value
+        if (uid.isNotBlank()) com.example.data.InboxPhoneNotifications.update(context, uid, inboxArray + inboxDocuments, authoritative = true)
+    }
     fun acknowledgeMessage(message: Map<String, Any>) {
         val key = com.example.data.InboxNotificationPolicy.key(message) ?: return
         acknowledgedRevisions[key] = com.example.data.PanelReadRepository.revision(message)
+        presenceContext?.let { com.example.data.InboxPhoneNotifications.acknowledge(it, _currentUserUid.value, key) }
         unreadMessagesSubcollection = unreadKeys(inboxDocuments)
         unreadPrivateArray = unreadKeys(inboxArray)
         unreadSupportReports = unreadSupportReports - key
@@ -146,6 +151,7 @@ object SubscriptionManager {
             val user = it.currentUser
             _currentUserUid.value = if (AuthManager.isGuestOrUnauthenticated(user)) "" else user?.uid.orEmpty()
             if (AuthManager.isGuestOrUnauthenticated(user)) {
+                presenceContext?.let { com.example.data.InboxPhoneNotifications.stop(it) }
                 _userRole.value = "free"
                 _secondaryRole.value = ""
                 _userName.value = ""
@@ -223,6 +229,7 @@ object SubscriptionManager {
         _currentUserUid.value = if (AuthManager.isGuestOrUnauthenticated(user)) "" else user?.uid.orEmpty()
 
         if (AuthManager.isGuestOrUnauthenticated(user)) {
+            com.example.data.InboxPhoneNotifications.stop(context)
             _userRole.value = "free"
             _userName.value = ""
             _isPremium.value = false
@@ -240,6 +247,7 @@ object SubscriptionManager {
         }
 
         startHeartbeat(user!!.uid)
+        com.example.data.InboxPhoneNotifications.schedule(context.applicationContext, user.uid)
         com.example.data.StreamerPublicationLifecycle.start(context.applicationContext, user.uid)
 
         val db = FirebaseFirestore.getInstance()
@@ -289,6 +297,7 @@ object SubscriptionManager {
                     if (error == null && snapshot != null) {
                         inboxDocuments = snapshot.documents.map { it.data.orEmpty() + ("id" to it.id) }
                         unreadMessagesSubcollection = unreadKeys(inboxDocuments)
+                        com.example.data.InboxPhoneNotifications.update(context, user.uid, inboxArray + inboxDocuments, authoritative = true)
                         recalculateUnreadCount()
                     }
                 }
@@ -417,6 +426,7 @@ object SubscriptionManager {
                     @Suppress("UNCHECKED_CAST")
                     val privateMsgs = listenSnapshot.get("privateMessages") as? List<Map<String, Any>>
                     inboxArray = privateMsgs.orEmpty()
+                    com.example.data.InboxPhoneNotifications.update(context, user.uid, inboxArray + inboxDocuments, authoritative = true)
                     val unreadInArray = unreadKeys(inboxArray)
 
                     hasUnreadFromDoc = hasUnread

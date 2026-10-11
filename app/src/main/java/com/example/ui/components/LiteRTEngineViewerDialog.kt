@@ -514,35 +514,44 @@ fun LiteRTEngineViewerDialog(
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                            maxItemsInEachRow = 4
-                        ) {
-                            CircleTarget.entries.forEach { target ->
-                                val isSel = selectedTarget == target
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(if (isSel) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFF0F172A))
-                                        .border(
-                                            1.dp,
-                                            if (isSel) Color(0xFF38BDF8) else Color(0xFF334155),
-                                            RoundedCornerShape(6.dp)
-                                        )
-                                        .coachClickable { selectedTarget = target }
-                                        .widthIn(min = 48.dp)
-                                        .heightIn(min = 48.dp)
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                        .testTag("calibration_target_${target.name.lowercase()}")
-                                ) {
-                                    Text(
-                                        text = com.example.util.tr(target.title),
-                                        color = if (isSel) Color(0xFF38BDF8) else Color(0xFF94A3B8),
-                                        fontSize = 8.5.sp,
-                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
-                                    )
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(true, false).forEach { side ->
+                                Column(Modifier.weight(1f).testTag(if (side) "calibration_allies" else "calibration_rivals")) {
+                                    Text(tr(if (side) "Aliados" else "Rivales"),
+                                        color = if (side) Color(0xFF38BDF8) else Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+                                FlowRow(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                                        maxItemsInEachRow = 2
+                                    ) {
+                                        CircleTarget.entries.filter { it.isAlly == side }.forEach { target ->
+                                            val isSel = selectedTarget == target
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .background(if (isSel) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFF0F172A))
+                                                    .border(
+                                                        1.dp,
+                                                        if (isSel) Color(0xFF38BDF8) else Color(0xFF334155),
+                                                        RoundedCornerShape(6.dp)
+                                                    )
+                                                    .coachClickable { selectedTarget = target }
+                                                    .widthIn(min = 48.dp)
+                                                    .heightIn(min = 48.dp)
+                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                                    .testTag("calibration_target_${target.name.lowercase()}")
+                                            ) {
+                                                Text(
+                                                    text = com.example.util.tr(target.title),
+                                                    color = if (isSel) Color(0xFF38BDF8) else Color(0xFF94A3B8),
+                                                    fontSize = 8.5.sp,
+                                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                                )
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
                         }

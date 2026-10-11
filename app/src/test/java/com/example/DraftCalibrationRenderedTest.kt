@@ -29,6 +29,14 @@ class DraftCalibrationRenderedTest {
             DraftVisionScanner.updateCalibration(context, VisionCalibrationConfig())
             compose.setContent { MyApplicationTheme { LiteRTEngineViewerDialog({}, initializeDiagnostics = false) } }
             for (ally in listOf(true, false)) {
+                val group = if (ally) "calibration_allies" else "calibration_rivals"
+                val side = if (ally) "ally" else "enemy"
+                compose.onNodeWithTag("calibration_target_${side}_column_x", useUnmergedTree = true)
+                    .assert(hasAnyAncestor(hasTestTag(group)))
+                for (index in 1..5) compose.onNodeWithTag("calibration_target_${side}_slot_$index", useUnmergedTree = true)
+                    .assert(hasAnyAncestor(hasTestTag(group)))
+            }
+            for (ally in listOf(true, false)) {
                 compose.onNodeWithTag(if (ally) "calibration_target_ally_bans" else "calibration_target_enemy_bans").performScrollTo().performClick()
                 val before = DraftVisionScanner.calibrationConfig
                 fun press(tag: String) { compose.onNodeWithTag(tag).performScrollTo().performClick(); compose.waitForIdle() }

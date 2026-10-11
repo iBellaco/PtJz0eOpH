@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.material.icons.filled.Home
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.example.ui.components.AnimatedLogoutButton
@@ -27,6 +28,48 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class NavigationCustomizationRenderedTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun everyStyleShowsParticlesAboveItsBackgroundAndGivesUserTheSameTint() {
+        var style by mutableStateOf(CoachNavStyle.ORIGINAL)
+        var selected by mutableIntStateOf(4)
+        var particles by mutableStateOf(false)
+        AppThemeManager.setNavBarOption(com.example.ui.theme.NavBarColorOption.THEME_AUTO)
+        compose.mainClock.autoAdvance = false
+        compose.setContent { MyApplicationTheme {
+            com.example.ui.components.CoachNavStyleRenderer(style,
+                com.example.ui.components.CoachNavPreviewItems(), selected, {},
+                androidx.compose.ui.Modifier.testTag("nav_pixels"), particlesEnabled = particles)
+        } }
+        for (option in CoachNavStyle.entries) {
+            compose.runOnIdle { style = option; selected = 4; particles = false }
+            compose.mainClock.advanceTimeBy(1000)
+            fun assertTint(expected: androidx.compose.ui.graphics.Color, tolerance: Float = .03f) {
+                val pixels = compose.onNodeWithTag("user_navigation_icon", useUnmergedTree = true).captureToImage().toPixelMap()
+                var matches = 0
+                for (x in 0 until pixels.width) for (y in 0 until pixels.height) {
+                    val color = pixels[x, y]
+                    if (kotlin.math.abs(color.red - expected.red) < tolerance &&
+                        kotlin.math.abs(color.green - expected.green) < tolerance &&
+                        kotlin.math.abs(color.blue - expected.blue) < tolerance) matches++
+                }
+                assertTrue("User tint must match $expected in $option", matches > 10)
+            }
+            assertTint(AppThemeManager.getNavBarSelectedIconColor())
+            val off = compose.onNodeWithTag("nav_pixels").captureToImage().toPixelMap()
+            compose.onNodeWithTag("nav_particles").assertDoesNotExist()
+            compose.runOnIdle { particles = true }
+            compose.mainClock.advanceTimeBy(1000)
+            compose.onNodeWithTag("nav_particles").assertIsDisplayed()
+            val on = compose.onNodeWithTag("nav_pixels").captureToImage().toPixelMap()
+            var changed = 0
+            for (x in 0 until off.width step 3) for (y in 0 until off.height step 3)
+                if (off[x, y] != on[x, y]) changed++
+            assertTrue("Particles must change visible pixels in $option", changed > 25)
+            compose.runOnIdle { particles = false; selected = 0 }
+            compose.mainClock.advanceTimeBy(1000)
+            assertTint(AppThemeManager.getNavBarUnselectedColor(), .16f)
+        }
+    }
 
     @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
     @Test fun liquidIndicatorIsCenteredOnTheSelectedIcon() {
@@ -88,7 +131,8 @@ class NavigationCustomizationRenderedTest {
         com.example.util.DynamicTranslations.loadSync(context)
         AppThemeManager.setNavStyle(CoachNavStyle.ORIGINAL)
         compose.setContent { MyApplicationTheme { ThemeCustomizationBottomSheet(isPremium=true, onDismiss={}) } }
-        compose.onNodeWithTag("theme_nav_style_liquid").performScrollTo().performClick()
+        compose.onNodeWithTag("theme_nav_catalog").performScrollTo().performClick()
+        compose.onNodeWithTag("theme_nav_style_liquid").performClick()
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
         compose.onNodeWithTag("theme_nav_preview").performScrollTo().assertExists()
         compose.onNodeWithTag("coach_nav_item_3").performClick()
@@ -103,7 +147,7 @@ class NavigationCustomizationRenderedTest {
         compose.setContent { MyApplicationTheme { ThemeCustomizationBottomSheet(isPremium=false, onDismiss={}) } }
         compose.onNodeWithTag("theme_nav_preview").assertDoesNotExist()
         compose.onNodeWithTag("theme_nav_apply").assertDoesNotExist()
-        compose.onNodeWithTag("theme_nav_style_liquid").performScrollTo().performClick()
+        compose.onNodeWithTag("theme_nav_catalog").performScrollTo().performClick()
         assertEquals(CoachNavStyle.ORIGINAL, AppThemeManager.currentNavStyle)
     }
 
