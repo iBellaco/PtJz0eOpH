@@ -1,5 +1,6 @@
 """Package the project ZIP only after the signed release APK is validated."""
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -25,8 +26,12 @@ def main():
         raise SystemExit('Invalid delivery version')
     digest = hashlib.sha256(apk.read_bytes()).hexdigest()
     tree = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip()
+    spec = importlib.util.spec_from_file_location('validated_apk', Path(__file__).with_name('find-validated-apk.py'))
+    validation = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(validation)
+    matching_source = validation.same_apk_inputs(os.environ['GITHUB_REPOSITORY'], provenance['source_tree'], tree)
     if (digest != provenance['apk_sha256'] or digest != proof['apk_sha256']
-            or tree != provenance['source_tree'] or proof['renamed_application_classes'] < 100):
+            or not matching_source or proof['renamed_application_classes'] < 100):
         raise SystemExit('Delivery does not match the validated signed and obfuscated APK')
     output = Path(os.environ.get('RUNNER_TEMP', '/tmp')) / 'coach-delivery'
     output.mkdir(parents=True, exist_ok=True)

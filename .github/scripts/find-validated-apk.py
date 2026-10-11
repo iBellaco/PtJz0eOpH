@@ -13,6 +13,7 @@ DELIVERY_ONLY_FILES = {
     '.github/scripts/cleanup-completed-runs.test.cjs',
     '.github/scripts/find-validated-apk.py',
     '.github/scripts/test_validated_apk.py',
+    '.github/scripts/package-delivery.py',
     '.github/scripts/verify-apk-signing.py',
     '.github/scripts/test_apk_signing.py',
     'docs/coach-audit-1.1.10.257.md',
