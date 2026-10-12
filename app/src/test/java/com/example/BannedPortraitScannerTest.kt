@@ -66,6 +66,8 @@ class BannedPortraitScannerTest {
             val ids = scanner.scan(bitmap, context, 1500)
             assertTrue("Poco bans=$ids", ids.containsAll(setOf("hwei", "varus", "kayn", "nocturne", "zyra", "norra", "k_sante")))
             assertFalse("Adjacent profile must not occupy a ban", "caitlyn" in ids)
+            assertEquals(listOf("hwei","varus","kayn","nocturne",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ALLY }.sortedBy {it.index}.map {it.championId})
+            assertEquals(listOf("zyra","norra","hwei","k_sante",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ENEMY }.sortedBy {it.index}.map {it.championId})
             assertEquals("zyra",scanner.slots.first { it.side == com.example.service.screen.BanSide.ENEMY && it.index==0 }.championId)
             assertEquals(com.example.service.screen.BanState.EMPTY,scanner.slots.first { it.side == com.example.service.screen.BanSide.ENEMY && it.index==4 }.state)
         } finally { bitmap.recycle() }
