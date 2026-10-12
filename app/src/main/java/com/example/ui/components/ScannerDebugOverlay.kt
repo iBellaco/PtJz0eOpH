@@ -28,7 +28,6 @@ fun ScannerDebugOverlay(
     val banSlots by DraftVisionScanner.banSlotsFlow.collectAsStateWithLifecycle()
     val rawConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
     val debugMatches by DraftVisionScanner.debugVisualMatches.collectAsStateWithLifecycle()
-    val allyRoles by DraftVisionScanner.allyRolesBySlotFlow.collectAsStateWithLifecycle()
     val language = com.example.util.currentAppLanguage()
     val density = LocalDensity.current
 
@@ -37,6 +36,7 @@ fun ScannerDebugOverlay(
     val skippedFrames by DraftVisionScanner.framesSkippedCount.collectAsStateWithLifecycle()
     val lastDurationMs by DraftVisionScanner.lastProcessingDurationMs.collectAsStateWithLifecycle()
     val isBusy by DraftVisionScanner.isVisionEngineBusy.collectAsStateWithLifecycle()
+    val automaticScanActive by com.example.service.screen.TenthPickDiagnosticManager.automaticScanActiveFlow.collectAsStateWithLifecycle()
     val isFirstPickAlly by DraftVisionScanner.isFirstPickState.collectAsStateWithLifecycle()
 
     // OPTIMIZACIÓN DE RENDIMIENTO (60-120 FPS):
@@ -107,6 +107,17 @@ fun ScannerDebugOverlay(
         if (w <= 0 || h <= 0) return@Canvas
 
         val textRects = mutableListOf<android.graphics.Rect>()
+        allyLabelPaint.textSize = minOf(with(density) { 9.5.sp.toPx() }, h * .018f)
+        enemyLabelPaint.textSize = allyLabelPaint.textSize
+        firstAllyLabelPaint.textSize = minOf(with(density) { 8.sp.toPx() }, h * .014f)
+        firstEnemyLabelPaint.textSize = firstAllyLabelPaint.textSize
+        labelPaint.textSize = minOf(with(density) { 9.sp.toPx() }, h * .015f)
+        fun caption(text: String, paint: android.graphics.Paint, maxWidth: Float): String {
+            if (paint.measureText(text) <= maxWidth) return text
+            var fitted = text
+            while (fitted.isNotEmpty() && paint.measureText("$fitted…") > maxWidth) fitted = fitted.dropLast(1)
+            return "$fitted…"
+        }
         fun drawDiagnosticText(rawText: String, x: Float, y: Float, paint: android.graphics.Paint, margin: Float = 5f) {
             val text = com.example.util.appTr(rawText)
             val width = paint.measureText(text)
@@ -147,7 +158,7 @@ fun ScannerDebugOverlay(
                         else -> "Ban ${slot.index + 1}"
                     }
                     val halfText = labelPaint.measureText(status) / 2f
-                    drawDiagnosticText(status, center.x.coerceIn(halfText + 2f, w - halfText - 2f),
+                    drawDiagnosticText(caption(status, labelPaint, radius * 2f + 4f), center.x.coerceIn(halfText + 2f, w - halfText - 2f),
                         center.y + radius - labelPaint.fontMetrics.top + 6f, labelPaint, margin = 1f)
                 }
             }
@@ -196,16 +207,15 @@ fun ScannerDebugOverlay(
             )
 
             // Etiqueta del slot / rol aliado dinámico: único 1 a 1 por equipo sin duplicados
-            val detectedAllyRole = allyRoles[sIdx]?.shortName
-            val slotLabel = if (detectedAllyRole != null) "Aliado ${sIdx + 1} ($detectedAllyRole)" else "Aliado ${sIdx + 1}"
+            val slotLabel = "Aliado ${sIdx + 1}"
             val allyLabelX = (allyX - allyAvatarRad).coerceAtLeast(8f)
             val allyMatch = debugMatches["ally_$sIdx"]
             val belowHeader = detectingBans && sIdx == 0
             val allyCaptionPaint = if (belowHeader) firstAllyLabelPaint else allyLabelPaint
             drawDiagnosticText(
-                if (allyMatch != null) "$slotLabel: $allyMatch" else slotLabel,
-                allyLabelX,
-                allyY - allyAvatarRad - 6f,
+                caption(if (allyMatch != null) "$slotLabel: $allyMatch" else slotLabel, allyCaptionPaint, allyNameRect.width().toFloat()),
+                if (belowHeader) allyOcrLeft else allyLabelX,
+                if (belowHeader) allyOcrTop - allyCaptionPaint.fontMetrics.top + 1f else allyY - allyAvatarRad - 6f,
                 allyCaptionPaint, margin = if (belowHeader) 1f else 5f
             )
 
@@ -253,30 +263,14 @@ fun ScannerDebugOverlay(
             // Etiqueta del slot rival: en Wild Rift la línea del enemigo está oculta.
             // No se muestra línea por defecto, pero si ya hay un campeón detectado se infiere su rol primario o flex
             val enemyMatch = debugMatches["enemy_$sIdx"]
-            val confirmedEnemy = DraftVisionScanner.enemySlotConfirmedChampions[sIdx]
-            val enemyChamp = confirmedEnemy ?: enemyMatch?.let { name ->
-                com.example.data.WildRiftRepository.getChampionByName(name)
-            }
-
-            val enemySlotLabel = if (enemyChamp != null) {
-                val primary = enemyChamp.primaryRole.shortName
-                val secondaries = enemyChamp.secondaryRoles.map { it.shortName }.filter { it != primary }
-                if (secondaries.isNotEmpty()) {
-                    val flexStr = (listOf(primary) + secondaries).distinct().joinToString("/")
-                    "Rival ${sIdx + 1} ($flexStr • Flex)"
-                } else {
-                    "Rival ${sIdx + 1} ($primary)"
-                }
-            } else {
-                "Rival ${sIdx + 1}"
-            }
+            val enemySlotLabel = "Rival ${sIdx + 1}"
 
             val enemyLabelX = (enemyX + enemyAvatarRad).coerceAtMost(w - 10f)
             val enemyCaptionPaint = if (belowHeader) firstEnemyLabelPaint else enemyLabelPaint
             drawDiagnosticText(
-                if (enemyMatch != null) "$enemySlotLabel: $enemyMatch" else enemySlotLabel,
-                enemyLabelX,
-                enemyY - enemyAvatarRad - 6f,
+                caption(if (enemyMatch != null) "$enemySlotLabel: $enemyMatch" else enemySlotLabel, enemyCaptionPaint, enemyNameRect.width().toFloat()),
+                if (belowHeader) enemyOcrRight else enemyLabelX,
+                if (belowHeader) enemyOcrTop - enemyCaptionPaint.fontMetrics.top + 1f else enemyY - enemyAvatarRad - 6f,
                 enemyCaptionPaint, margin = if (belowHeader) 1f else 5f
             )
 
@@ -327,7 +321,7 @@ fun ScannerDebugOverlay(
         val hudText = String.format(
             java.util.Locale.US,
             "Motor Visión: %s | Tasa: %.1f Hz | Latencia: %dms | Fotogramas Saltados: %d",
-            if (isBusy) "PROCESANDO" else "LISTO",
+            if (isBusy) "PROCESANDO" else if (automaticScanActive) "LISTO" else "PAUSADO",
             liveScanFps,
             lastDurationMs,
             skippedFrames

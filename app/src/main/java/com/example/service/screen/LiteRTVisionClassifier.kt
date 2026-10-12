@@ -110,6 +110,7 @@ object LiteRTVisionClassifier {
     val reportFlow: StateFlow<LiteRTInferenceReport> = _reportFlow.asStateFlow()
 
     private val championEmbeddingCache = ConcurrentHashMap<String, List<FloatArray>>()
+    private val portraitAssetPaths = ConcurrentHashMap<String,String>()
     private var indexedIds: Set<String> = emptySet()
     private var lastValidFrameAt = 0L
     private var targetKey: String? = null
@@ -132,6 +133,7 @@ object LiteRTVisionClassifier {
                     val pixels = IntArray(bmp.width * bmp.height)
                     bmp.getPixels(pixels, 0, bmp.width, 0, 0, bmp.width, bmp.height)
                     championEmbeddingCache[champ.id] = PortraitMatcher.references(pixels, bmp.width, bmp.height)
+                    portraitAssetPaths[champ.id] = asset
                 } finally { bmp.recycle() }
             } catch (e: Exception) {
                 AppLogger.w(TAG, "Retrato no disponible: ${champ.id}")
@@ -214,7 +216,7 @@ object LiteRTVisionClassifier {
         }
         val found = mutableListOf<Pair<Proposal, Champion?>>()
         for (proposal in (proposals.sortedByDescending { it.score }.take(200) + emptyProposals.sortedByDescending { it.score }.take(40)).sortedByDescending { it.score }) {
-            if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 5) continue
+            if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 7) continue
             if (found.any { kotlin.math.abs(it.first.x - proposal.x) < maxOf(it.first.radius, proposal.radius) * 1.4f }) continue
             if (proposal.shortlist.isEmpty()) {
                 found.add(proposal to null)
@@ -235,7 +237,43 @@ object LiteRTVisionClassifier {
                 BanRegion(proposal.x.toFloat() / width, proposal.y.toFloat() / height,
                     proposal.radius.toFloat() / height), champion?.id, champion == null)
         }
-        val positioned = fillHeaderPositions(observations, width.toFloat() / height) { region ->
+        // A final unused rival ban may have no crossed-out emblem. Infer its position
+        // only from a regular row of at least four observed circles near the screen edge,
+        // and require a uniform interior. A textured unknown portrait stays unknown.
+        val rivalRow = observations.filter { it.side == BanSide.ENEMY }.sortedBy { it.region.x }
+        val finalEmpty = if (rivalRow.size >= 4) {
+            val gaps = rivalRow.zipWithNext { a, b -> b.region.x - a.region.x }.sorted()
+            val step = gaps[gaps.size / 2]
+            val last = rivalRow.last().region
+            val region = last.copy(x = last.x + step)
+            val regular = gaps.all { gap ->
+                val multiples = kotlin.math.round(gap / step).toInt()
+                multiples in 1..3 && kotlin.math.abs(gap - multiples * step) < step * .25f
+            }
+            val candidateRect = android.graphics.Rect(((region.x * width) - region.radius * height).toInt(),
+                ((region.y * height) - region.radius * height).toInt(),
+                ((region.x * width) + region.radius * height).toInt(),
+                ((region.y * height) + region.radius * height).toInt())
+            if (regular && step > 0f && region.x > 1f - step * 1.5f &&
+                region.x + region.radius * height / width < 1f &&
+                exclusions.none { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(candidateRect)) }) {
+                val colors = (0 until 24).flatMap { angleIndex ->
+                    val angle = angleIndex * Math.PI * 2 / 24
+                    listOf(.3f, .4f, .5f).map { distance ->
+                        val x = (region.x * width + region.radius * height * distance * kotlin.math.cos(angle)).toInt().coerceIn(0,width-1)
+                        val y = (region.y * height + region.radius * height * distance * kotlin.math.sin(angle)).toInt().coerceIn(0,height-1)
+                        bitmap.getPixel(x,y)
+                    }
+                }
+                val variance = (0..2).sumOf { channel ->
+                    val values = colors.map { ((it ushr (16-channel*8)) and 255).toDouble() }
+                    val mean = values.average()
+                    values.sumOf { (it-mean)*(it-mean) } / values.size
+                } / 3.0
+                if (variance < 36.0) BanObservation(BanSide.ENEMY,region,empty=true) else null
+            } else null
+        } else null
+        val positioned = fillHeaderPositions(observations + listOfNotNull(finalEmpty), width.toFloat() / height) { region ->
             val cx = region.x * width
             val cy = region.y * height
             val radius = region.radius * height
@@ -276,6 +314,9 @@ object LiteRTVisionClassifier {
             val baseRadius = kotlin.math.round(region.radius * height).toInt()
             var bestScore = 0f
             var refined = observation
+            // Keep the best alignment at each radius: resampling can move the optimum
+            // between neighbouring crop sizes even when coarse correlation is lower.
+            val unresolved = mutableMapOf<Int, Triple<Float, FloatArray, List<Champion>>>()
             for (dx in intArrayOf(-4, -2, 0, 2, 4)) for (dy in -3..3) for (dr in -5..5) {
                 val x = centerX + dx; val y = centerY + dy
                 val radius = (baseRadius + dr).coerceAtLeast(6)
@@ -300,11 +341,36 @@ object LiteRTVisionClassifier {
                     PortraitMatcher.similarity(descriptor, championEmbeddingCache.getValue(champion.id))
                 }.sortedByDescending { it.second }
                 val best = ranked.first()
+                if (best.second >= .70f && best.second > (unresolved[radius]?.first ?: 0f)) {
+                    unresolved[radius] = Triple(best.second, descriptor, ranked.map { it.first })
+                }
                 if (best.second > bestScore && PortraitMatcher.accepts(best.second,
                         ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
                     bestScore = best.second
                     refined = observation.copy(region = BanRegion(x.toFloat()/width, y.toFloat()/height,
                         radius.toFloat()/height), championId = best.first.id, empty = false)
+                }
+            }
+            val pending = unresolved.values.sortedByDescending { it.first }.take(4)
+            val ctx = context ?: WildRiftApp.instance
+            // An off-center crop may resemble the empty emblem while another crop
+            // contains a textured portrait. Evaluate that stronger evidence before
+            // committing an empty slot; keep both identity confidence gates.
+            if (refined.championId == null && pending.isNotEmpty() && ctx != null) {
+                val ranked = pending.flatMap { it.third }.distinctBy { it.id }.mapNotNull { champion ->
+                    val asset = portraitAssetPaths[champion.id] ?: return@mapNotNull null
+                    runCatching {
+                        val bmp = ctx.assets.open("champions/$asset").use { BitmapFactory.decodeStream(it) } ?: return@runCatching null
+                        try {
+                            val pixels=IntArray(bmp.width*bmp.height)
+                            bmp.getPixels(pixels,0,bmp.width,0,0,bmp.width,bmp.height)
+                            champion to pending.maxOf { PortraitMatcher.fineSimilarity(it.second,pixels,bmp.width,bmp.height) }
+                        } finally { bmp.recycle() }
+                    }.getOrNull()
+                }.sortedByDescending { it.second }
+                val best=ranked.firstOrNull()
+                if (best != null && PortraitMatcher.accepts(best.second,ranked.getOrNull(1)?.second ?: 0f,DEFAULT_CONFIDENCE_THRESHOLD)) {
+                    refined=observation.copy(championId=best.first.id,empty=false)
                 }
             }
             refined

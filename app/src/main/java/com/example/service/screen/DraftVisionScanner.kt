@@ -445,7 +445,7 @@ object DraftVisionScanner {
         allySlotFilters.forEach { it.reset() }
         enemySlotFilters.forEach { it.reset() }
         LiteRTVisionClassifier.reset()
-        showCalibrationBoxes.value = false
+        debugVisualMatches.value = emptyMap()
         AppLogger.d(TAG, "Memoria de roles, invocadores y motor LiteRT reiniciada por completo")
     }
 

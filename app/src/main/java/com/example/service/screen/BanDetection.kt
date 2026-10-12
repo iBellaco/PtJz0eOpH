@@ -16,8 +16,9 @@ internal fun emptyBanSlots(): List<BanSlot> = BanSide.entries.flatMap { side ->
 /** Fill visible but unreadable portraits before assigning slot numbers. Never invents a champion. */
 internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Float,
     hasPortrait: (BanRegion) -> Boolean): List<BanObservation> = BanSide.entries.flatMap { side ->
-    val row = observations.filter { it.side == side }.sortedBy { it.region.x }.toMutableList()
-    if (row.isNotEmpty() && row.size < 5) {
+    val candidates = observations.filter { it.side == side }.sortedBy { it.region.x }
+    val row = candidates.toMutableList()
+    if (row.isNotEmpty()) {
         val nominal = .080f / aspect
         val gaps = row.zipWithNext { a, b -> b.region.x - a.region.x }
             .map { gap -> gap / kotlin.math.round(gap / nominal).toInt().coerceIn(1, 4) }
@@ -36,7 +37,7 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
         }
         for ((a, b) in row.toList().zipWithNext()) {
             var x = a.region.x + step
-            while (x < b.region.x - step * .45f && row.size < 5) {
+            while (x < b.region.x - step * .45f && row.size < 7) {
                 addAt(x, (a.region.y + b.region.y) / 2)
                 x += step
             }
@@ -44,5 +45,6 @@ internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Flo
         while (row.size < 5 && addAt(row.first().region.x - step, row.first().region.y)) { /* visible leading slots */ }
         while (row.size < 5 && addAt(row.last().region.x + step, row.last().region.y)) { /* visible trailing slots */ }
     }
-    row
+    // Fill interior gaps before excluding an adjacent profile toward the center.
+    if (side == BanSide.ALLY) row.take(5) else row.takeLast(5)
 }

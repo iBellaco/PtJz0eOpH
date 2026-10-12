@@ -237,8 +237,6 @@ internal fun FloatingOverlayContent(
     LaunchedEffect(autoScanEnabled) {
         if (autoScanEnabled) {
             DraftVisionScanner.resetSlotLifecycle()
-            if (allies.all { it == null } && enemies.all { it == null } &&
-                DraftVisionScanner.detectedBannedChampionIds.isEmpty()) DraftVisionScanner.resetSlotMemory()
         }
         if (!autoScanEnabled) {
             DraftVisionScanner.isVisionEngineBusy.value = false
@@ -308,6 +306,7 @@ internal fun FloatingOverlayContent(
 
                     if (screenCaptureManager == null || !screenCaptureManager.isReady()) {
                         withContext(Dispatchers.Main) {
+                                            if (!autoScanEnabled) return@withContext
                             scanNoticeMessage = "Permiso de captura inactivo. Toca aquí para activarlo."
                         }
                         delay(500L)
@@ -322,6 +321,7 @@ internal fun FloatingOverlayContent(
                                 if (slotObservation != com.example.service.screen.DraftSlotLifecycle.Observation.ACTIVE) {
                                     if (slotObservation == com.example.service.screen.DraftSlotLifecycle.Observation.FINISHED) {
                                         withContext(Dispatchers.Main) {
+                                            if (!autoScanEnabled) return@withContext
                                             val finalReport = com.example.service.screen.LiteRTVisionClassifier.finishLastVisibleSelection()
                                             if (finalReport?.pickedChampion != null) {
                                                 state.applyConfirmedLastPick(com.example.service.screen.DraftScanResult(
@@ -351,6 +351,7 @@ internal fun FloatingOverlayContent(
 
                                     if (detectedPicks.isNotEmpty()) {
                                         withContext(Dispatchers.Main) {
+                                            if (!autoScanEnabled) return@withContext
                                             var fastPicksAdded = 0
                                             for ((turn, champ) in detectedPicks) {
                                                 val before = (allies + enemies).count { it != null }
@@ -384,6 +385,7 @@ internal fun FloatingOverlayContent(
                                     val result = DraftVisionScanner.scanDraftFromBitmap(bitmap, context, if (state.isFirstPickManuallySelected) isFirstPick else null, activeRole, confirmedHudPicks(), detectBannedPortraits = true)
                                     if (result.isSuccessful) {
                                         withContext(Dispatchers.Main) {
+                                            if (!autoScanEnabled) return@withContext
                                             if (result.detectedFirstPick != null && !state.isFirstPickManuallySelected) {
                                                 isFirstPick = result.detectedFirstPick
                                             }
@@ -1176,22 +1178,7 @@ internal fun FloatingOverlayContent(
                                             },
                                             isSavedRecently = isSavedRecently,
                                             onClearAll = {
-                                                state.trackedLastPick = null
-                                                for (i in 0 until 5) {
-                                                    allies[i] = null
-                                                    enemies[i] = null
-                                                }
-                                                manualLockedAllySlots.clear()
-                                                state.unassignedAllies.clear()
-                                                manualLockedEnemySlots.clear()
-                                                state.enemyConfidences.clear()
-                                                state.allySummonerNames.clear()
-                                                state.enemySummonerNames.clear()
-                                                state.allySpells.clear()
-                                                state.enemySpells.clear()
-                                                state.isRoleManuallySelected = false
-                                                state.isFirstPickManuallySelected = false
-                                                DraftVisionScanner.resetSlotMemory()
+                                                state.clearDraftAndCrops(context)
                                                 android.widget.Toast.makeText(context, com.example.util.appTr("Equipos vaciados"), android.widget.Toast.LENGTH_SHORT).show()
                                             },
                                             onManualEdit = { autoScanEnabled = false },
@@ -1265,7 +1252,7 @@ internal fun FloatingOverlayContent(
                                     enabled = true,
                                     onCheckedChange = { isChecked ->
                                         if (isChecked) {
-                                            autoScanEnabled = true
+                                            state.startAutomaticScan()
                                             if (screenCaptureManager?.isReady() != true) {
                                                 scanNoticeMessage = "Requiere permiso de pantalla. Toca aquí para activarlo."
                                                 try {

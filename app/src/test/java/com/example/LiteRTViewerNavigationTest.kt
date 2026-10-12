@@ -148,4 +148,26 @@ class LiteRTViewerNavigationTest {
         compose.onNodeWithText("Voltar ao hub").assertIsDisplayed()
         compose.onNodeWithText("Voltar ao hub").assertIsDisplayed()
     }
+    @Test fun `crop shortcut reaches delete controls even with diagnostic saving disabled`() {
+        val ctx=RuntimeEnvironment.getApplication()
+        val crops=com.example.service.screen.TenthPickDiagnosticManager
+        val bitmap=android.graphics.Bitmap.createBitmap(24,24,android.graphics.Bitmap.Config.ARGB_8888)
+        try {
+            crops.init(ctx);crops.clearAllCaches(ctx);crops.setDiagnosticMode(ctx,true);crops.setAutomaticScanActive(true)
+            assertNotNull(crops.recordTenthPickCrop(bitmap,false,4,"navigation",context=ctx))
+            crops.setAutomaticScanActive(false);crops.setDiagnosticMode(ctx,false)
+            compose.setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    Box(Modifier.width(360.dp).height(480.dp)) {
+                        LiteRTEngineViewerDialog(onDismissRequest={},initializeDiagnostics=false)
+                    }
+                }
+            }
+            compose.onNodeWithTag("vision_crop_gallery").performClick()
+            compose.waitForIdle()
+            compose.onNodeWithTag("vision_crop_clear").assertIsDisplayed().performClick()
+            compose.runOnIdle { assertEquals(0,crops.cacheStatsFlow.value.totalFiles) }
+        } finally { crops.setAutomaticScanActive(false);crops.clearAllCaches(ctx);bitmap.recycle() }
+    }
+
 }

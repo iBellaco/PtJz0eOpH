@@ -14,6 +14,10 @@ internal object PortraitMatcher {
         }
     }
 
+    // The circular sample grid is symmetric on both axes; cache its extents once.
+    private val minimumSampleCoordinate = samples.minOf { it.first }
+    private val maximumSampleCoordinate = samples.maxOf { it.first }
+
     fun descriptor(pixels: IntArray, width: Int, height: Int,
                    scale: Float = 1f, dx: Float = 0f, dy: Float = 0f): FloatArray {
         require(width > 0 && height > 0 && pixels.size == width * height)
@@ -73,11 +77,47 @@ internal object PortraitMatcher {
         references.maxOfOrNull { correlation(input, it) } ?: 0f
 
     /** Only these pixels are sampled (plus bilinear neighbours); border captions cannot alter a descriptor. */
-    internal fun sampledRect(crop: android.graphics.Rect): android.graphics.Rect =
-        android.graphics.Rect(crop).apply {
-            val paddingPixels = ((minOf(width(), height()) / 2f) * .20f).toInt().minus(1).coerceAtLeast(0)
-            inset(paddingPixels, paddingPixels)
+    internal fun sampledRect(crop: android.graphics.Rect): android.graphics.Rect {
+        // Use the actual descriptor positions, including each bilinear neighbour.
+        // A broad approximation incorrectly excludes valid small header crops when
+        // a diagnostic caption is adjacent to, but outside, sampled portrait pixels.
+        fun limits(size: Int): Pair<Int,Int> {
+            val first = ((.5f + minimumSampleCoordinate)*size-.5f).coerceIn(0f,(size-1).toFloat()).toInt()
+            val last = ((.5f + maximumSampleCoordinate)*size-.5f).coerceIn(0f,(size-1).toFloat()).toInt()
+            return first to (last+2).coerceAtMost(size)
         }
+        val (left,right) = limits(crop.width())
+        val (top,bottom) = limits(crop.height())
+        return android.graphics.Rect(crop.left+left,crop.top+top,crop.left+right,crop.top+bottom)
+    }
+
+    /** Fine reference alignment is used only for an unresolved header portrait. */
+    fun fineSimilarity(input: FloatArray, pixels: IntArray, width: Int, height: Int): Float {
+        val variants = buildList {
+            for (scale in floatArrayOf(.85f,1f,1.15f))
+                for (dx in floatArrayOf(-.04f,0f,.04f)) for (dy in floatArrayOf(-.04f,0f,.04f)) add(Triple(scale,dx,dy))
+            for (scale in floatArrayOf(.925f,1.075f))
+                for (dx in floatArrayOf(-.03f,0f,.03f)) for (dy in floatArrayOf(-.03f,0f,.03f)) add(Triple(scale,dx,dy))
+        }
+        fun score(candidate: Triple<Float,Float,Float>) = correlation(input,
+            descriptor(pixels,width,height,candidate.first,candidate.second,candidate.third))
+        val starts = variants.map { it to score(it) }.sortedByDescending { it.second }.take(3)
+        var best = starts.first().second
+        for ((start, initialScore) in starts) {
+            var point = start
+            var localBest = initialScore
+            for (step in floatArrayOf(.02f,.01f,.005f)) {
+                val center = point
+                for (ds in floatArrayOf(-step,0f,step)) for (dx in floatArrayOf(-step,0f,step)) for (dy in floatArrayOf(-step,0f,step)) {
+                    val candidate = Triple(center.first+ds,center.second+dx,center.third+dy)
+                    val value = score(candidate)
+                    if (value > localBest) { localBest=value; point=candidate }
+                }
+            }
+            best = maxOf(best,localBest)
+        }
+        return best
+    }
 
     fun accepts(best: Float, second: Float, threshold: Float): Boolean =
         best >= threshold && best - second >= MIN_MARGIN

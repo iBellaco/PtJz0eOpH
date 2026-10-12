@@ -58,6 +58,39 @@ class BannedPortraitScannerTest {
         } } finally { vision.overlayRect = previousOverlay; vision.debugTextRects = previousMasks }
     }
 
+    @Test fun pocoLegendaryHeaderUsesTheFiveOuterBanPositionsAndDiscardsAdjacentProfile() {
+        val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/poco-7457.png")!!.use { BitmapFactory.decodeStream(it)!! }
+        val scanner = BannedPortraitScanner()
+        try {
+            scanner.scan(bitmap, context, 0)
+            val ids = scanner.scan(bitmap, context, 1500)
+            assertTrue("Poco bans=$ids", ids.containsAll(setOf("hwei", "varus", "kayn", "nocturne", "zyra", "norra", "k_sante")))
+            assertFalse("Adjacent profile must not occupy a ban", "caitlyn" in ids)
+            assertEquals(listOf("hwei","varus","kayn","nocturne",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ALLY }.sortedBy {it.index}.map {it.championId})
+            assertEquals(listOf("zyra","norra","hwei","k_sante",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ENEMY }.sortedBy {it.index}.map {it.championId})
+            assertEquals("zyra",scanner.slots.first { it.side == com.example.service.screen.BanSide.ENEMY && it.index==0 }.championId)
+            assertEquals(com.example.service.screen.BanState.EMPTY,scanner.slots.first { it.side == com.example.service.screen.BanSide.ENEMY && it.index==4 }.state)
+        } finally { bitmap.recycle() }
+    }
+
+    @Test fun pocoResampledCapturePreservesNorraAndTheFivePositionsOnEachSide() {
+        val original = javaClass.classLoader!!.getResourceAsStream("bans/poco-7457.png")!!.use { BitmapFactory.decodeStream(it)!! }
+        val bitmap = android.graphics.Bitmap.createScaledBitmap(original,1920,862,true)
+        val scanner = BannedPortraitScanner()
+        val boxes=listOf(Rect(60,47,340,75),Rect(1010,47,1280,75),Rect(370,3,909,557))
+        val masks=boxes.map { box ->
+            val physical=Rect(kotlin.math.floor(box.left*2712/1280.0).toInt(),kotlin.math.floor(box.top*1220/576.0).toInt(),
+                kotlin.math.ceil(box.right*2712/1280.0).toInt(),kotlin.math.ceil(box.bottom*1220/576.0).toInt())
+            com.example.service.screen.CaptureCoordinateSpace.map(physical,2712,1220,1920,862)
+        }
+        try {
+            scanner.scan(bitmap,context,0,masks)
+            scanner.scan(bitmap,context,1500,masks)
+            assertEquals(listOf("hwei","varus","kayn","nocturne",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ALLY }.sortedBy {it.index}.map {it.championId})
+            assertEquals(listOf("zyra","norra","hwei","k_sante",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ENEMY }.sortedBy {it.index}.map {it.championId})
+        } finally { bitmap.recycle(); original.recycle() }
+    }
+
     @Test fun latestReportedHeaderRecognizesAllNineRealBansAndTheEmptyPosition() {
         val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/reported-7296.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
         val scanner = BannedPortraitScanner()
