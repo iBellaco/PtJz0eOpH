@@ -235,7 +235,40 @@ object LiteRTVisionClassifier {
                 BanRegion(proposal.x.toFloat() / width, proposal.y.toFloat() / height,
                     proposal.radius.toFloat() / height), champion?.id, champion == null)
         }
-        val positioned = fillHeaderPositions(observations, width.toFloat() / height) { region ->
+        // A final unused rival ban may have no crossed-out emblem. Infer its position
+        // only from a regular row of at least four observed circles near the screen edge,
+        // and require a uniform interior. A textured unknown portrait stays unknown.
+        val rivalRow = observations.filter { it.side == BanSide.ENEMY }.sortedBy { it.region.x }
+        val finalEmpty = if (rivalRow.size >= 4) {
+            val gaps = rivalRow.zipWithNext { a, b -> b.region.x - a.region.x }.sorted()
+            val step = gaps[gaps.size / 2]
+            val last = rivalRow.last().region
+            val region = last.copy(x = last.x + step)
+            val regular = gaps.all { kotlin.math.abs(it - step) < step * .25f }
+            val candidateRect = android.graphics.Rect(((region.x * width) - region.radius * height).toInt(),
+                ((region.y * height) - region.radius * height).toInt(),
+                ((region.x * width) + region.radius * height).toInt(),
+                ((region.y * height) + region.radius * height).toInt())
+            if (regular && step > 0f && region.x > 1f - step * 1.5f &&
+                region.x + region.radius * height / width < 1f &&
+                exclusions.none { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(candidateRect)) }) {
+                val colors = (0 until 24).flatMap { angleIndex ->
+                    val angle = angleIndex * Math.PI * 2 / 24
+                    listOf(.3f, .5f, .7f).map { distance ->
+                        val x = (region.x * width + region.radius * height * distance * kotlin.math.cos(angle)).toInt().coerceIn(0,width-1)
+                        val y = (region.y * height + region.radius * height * distance * kotlin.math.sin(angle)).toInt().coerceIn(0,height-1)
+                        bitmap.getPixel(x,y)
+                    }
+                }
+                val variance = (0..2).sumOf { channel ->
+                    val values = colors.map { ((it ushr (16-channel*8)) and 255).toDouble() }
+                    val mean = values.average()
+                    values.sumOf { (it-mean)*(it-mean) } / values.size
+                } / 3.0
+                if (variance < 36.0) BanObservation(BanSide.ENEMY,region,empty=true) else null
+            } else null
+        } else null
+        val positioned = fillHeaderPositions(observations + listOfNotNull(finalEmpty), width.toFloat() / height) { region ->
             val cx = region.x * width
             val cy = region.y * height
             val radius = region.radius * height

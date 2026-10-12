@@ -96,7 +96,7 @@ enum class CircleTarget(val title: String, val isAlly: Boolean, val slotIndex: I
     ENEMY_SLOT_5("Rival 5", false, 4)
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun LiteRTEngineViewerDialog(
     onDismissRequest: () -> Unit,
