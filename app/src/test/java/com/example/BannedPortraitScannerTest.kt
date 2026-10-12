@@ -39,6 +39,25 @@ class BannedPortraitScannerTest {
         }
     }
 
+    @Test fun physicalDisplayMasksAreConvertedBeforeRecognizingBansOnTheReducedFrame() {
+        val vision = com.example.service.screen.DraftVisionScanner
+        val previousOverlay = vision.overlayRect
+        val previousMasks = vision.debugTextRects
+        try { for (name in listOf("7448", "7449")) {
+            val original = javaClass.classLoader!!.getResourceAsStream("bans/live-$name.png")!!.use { BitmapFactory.decodeStream(it)!! }
+            val bitmap = Bitmap.createScaledBitmap(original, 1920, 868, true)
+            try {
+                vision.publishScreenOverlay(Rect(1029,29,1974,1000),2688,1216)
+                vision.publishScreenDiagnosticText(listOf(Rect(0,100,546,137),Rect(2100,100,2688,137)),2688,1216)
+                val masks = vision.diagnosticTextForFrame(bitmap.width, bitmap.height) + listOfNotNull(vision.overlayForFrame(bitmap.width, bitmap.height))
+                val scanner = BannedPortraitScanner()
+                scanner.scan(bitmap, context, 0, masks)
+                val ids = scanner.scan(bitmap, context, 1500, masks)
+                assertTrue("$name: $ids", ids.containsAll(setOf("samira", "nocturne", "cho_gath", "hwei", "zeri", "fiora", "rammus", "blitzcrank", "vex")))
+            } finally { if (bitmap !== original) bitmap.recycle(); original.recycle() }
+        } } finally { vision.overlayRect = previousOverlay; vision.debugTextRects = previousMasks }
+    }
+
     @Test fun latestReportedHeaderRecognizesAllNineRealBansAndTheEmptyPosition() {
         val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/reported-7296.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
         val scanner = BannedPortraitScanner()

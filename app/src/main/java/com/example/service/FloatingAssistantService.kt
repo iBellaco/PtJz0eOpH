@@ -131,6 +131,8 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     layoutType,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                         WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                     PixelFormat.TRANSLUCENT
                 ).apply {
@@ -322,7 +324,16 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
             val absoluteY = if (loc[1] != 0) loc[1] else params.y
 
             val margin = (32 * density).toInt() // Incremented margin to be safe
-            DraftVisionScanner.overlayRect = android.graphics.Rect(absoluteX - margin, absoluteY - margin, absoluteX + cWidth + margin, absoluteY + cHeight + margin)
+            val wm = windowManager ?: return
+            val screenSize = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                wm.currentWindowMetrics.bounds.let { it.width() to it.height() }
+            } else {
+                android.util.DisplayMetrics().also { @Suppress("DEPRECATION") wm.defaultDisplay.getRealMetrics(it) }
+                    .let { it.widthPixels to it.heightPixels }
+            }
+            DraftVisionScanner.publishScreenOverlay(
+                android.graphics.Rect(absoluteX - margin, absoluteY - margin, absoluteX + cWidth + margin, absoluteY + cHeight + margin),
+                screenSize.first, screenSize.second)
         } catch (_: Exception) {}
     }
 

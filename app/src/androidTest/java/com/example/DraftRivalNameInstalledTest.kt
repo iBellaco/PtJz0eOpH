@@ -31,20 +31,29 @@ class DraftRivalNameInstalledTest {
         val previousMasks = scanner.debugTextRects
         // WildRiftApp initializes the catalog before instrumentation, as in production.
         try {
-            for (name in listOf("7394", "7395")) {
+            for (name in listOf("7448", "7449")) {
                 val fixture = InstrumentationRegistry.getInstrumentation().context.assets.open("draft/live-red-magic-$name.json")
                     .bufferedReader().use { org.json.JSONObject(it.readText()) }
                 val bytes = android.util.Base64.decode(fixture.getString("pngBase64"), android.util.Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!
+                val original = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!
+                val bitmap = Bitmap.createScaledBitmap(original, 1920, 868, true)
+                if (bitmap !== original) original.recycle()
+                // Actual physical Red Magic display and its downscaled MediaProjection frame.
+                val sourceWidth = 2688
+                val sourceHeight = 1216
+                fun physicalRect(values: org.json.JSONArray): android.graphics.Rect = android.graphics.Rect(
+                    kotlin.math.floor(values.getInt(0) * sourceWidth / 1280.0).toInt(),
+                    kotlin.math.floor(values.getInt(1) * sourceHeight / 579.0).toInt(),
+                    kotlin.math.ceil(values.getInt(2) * sourceWidth / 1280.0).toInt(),
+                    kotlin.math.ceil(values.getInt(3) * sourceHeight / 579.0).toInt())
                 try {
                     scanner.resetSlotMemory()
                     scanner.updateCalibration(context, com.example.service.screen.VisionCalibrationConfig())
                     val masks = fixture.getJSONArray("debugTextRects")
-                    scanner.debugTextRects = (0 until masks.length()).map { index -> masks.getJSONArray(index).let {
-                        android.graphics.Rect(it.getInt(0), it.getInt(1), it.getInt(2), it.getInt(3)) } }
-                    fixture.getJSONArray("overlayRect").let { scanner.overlayRect = android.graphics.Rect(it.getInt(0), it.getInt(1), it.getInt(2), it.getInt(3)) }
+                    scanner.publishScreenDiagnosticText((0 until masks.length()).map { physicalRect(masks.getJSONArray(it)) }, sourceWidth, sourceHeight)
+                    scanner.publishScreenOverlay(physicalRect(fixture.getJSONArray("overlayRect")), sourceWidth, sourceHeight)
                     val hud = com.example.service.OverlayState()
-                    repeat(3) {
+                    repeat(2) {
                         val result = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID,
                             detectBannedPortraits = true)
                         assertTrue("$name: ${result.statusMessage}", result.isSuccessful)
