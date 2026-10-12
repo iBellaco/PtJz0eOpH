@@ -803,7 +803,7 @@ fun LiteRTEngineViewerDialog(
                                     DraftVisionScanner.resetCalibration(context)
                                     Toast.makeText(context, com.example.util.appTr("Calibración restablecida"), Toast.LENGTH_SHORT).show()
                                 },
-                                modifier = Modifier.weight(0.9f).height(34.dp),
+                                modifier = Modifier.weight(0.9f).heightIn(min = 48.dp).testTag("vision_calibration_reset_device"),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
                                 border = BorderStroke(1.dp, Color(0xFF334155)),
                                 shape = RoundedCornerShape(6.dp),

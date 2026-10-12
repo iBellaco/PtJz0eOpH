@@ -533,10 +533,18 @@ object DraftVisionScanner {
                         val local = Rect(excluded).apply { offset(-nameRect.left, -nameRect.top) }
                         canvas.drawRect(local, paint)
                     }
+                    if (isAlly) DraftImagePreprocessor.suppressLeadingMasteryBadge(crop)
                     scaled = Bitmap.createScaledBitmap(crop, (crop.width * 3).coerceAtMost(1400), (crop.height * 3).coerceAtMost(420), true)
                     val slotText = recognizer.process(InputImage.fromBitmap(scaled, 0)).await()
                     if (isAlly) {
-                        targetedAllyReadings[i] = AllyDraftNameReader.readTitleRows(slotText.textBlocks.flatMap { it.lines }.map {
+                        val titleRows = slotText.textBlocks.flatMap { it.lines }.filterNot { line ->
+                            val box = line.boundingBox
+                            box != null && box.right < scaled.width * .12f &&
+                                AllyDraftNameReader.read(listOf(line.text), allChamps).let {
+                                    it.champion == null && it.lane == null && !it.ambiguous
+                                }
+                        }
+                        targetedAllyReadings[i] = AllyDraftNameReader.readTitleRows(titleRows.map {
                             it.text to (it.boundingBox?.centerY() ?: scaled.height / 2)
                         }, (scaled.height * 0.30f).toInt(), allChamps,
                             ((height * (calib.allySlotYRatios[i] + 0.005f) - nameRect.top) * scaled.height / nameRect.height()).toInt())
@@ -771,8 +779,10 @@ object DraftVisionScanner {
                     else AllyDraftNameReader.readTitleRows(titleLines, (titleRect.height() * 0.30f).toInt(), allChamps,
                         (height * (calib.allySlotYRatios[i] + 0.005f)).toInt())
                 detectedRoleInSlot = reading.lane
-                detectedChampInSlot = reading.champion.takeIf { titleConfirmation.observe(true, i, it?.id) }
-                if (detectedRoleInSlot != null) {
+                val stableTitle = titleConfirmation.observe(true, i,
+                    reading.champion?.id ?: reading.lane?.let { "lane:${it.name}" })
+                detectedChampInSlot = reading.champion.takeIf { stableTitle }
+                if (detectedRoleInSlot != null && (stableTitle || allySlotConfirmedChampions[i] == null)) {
                     currentScanFrameOcrLanes[i] = detectedRoleInSlot
                     slot.explicitRole = detectedRoleInSlot
                 }
@@ -861,7 +871,7 @@ object DraftVisionScanner {
                     slot.champion = detectedChampInSlot
                     slot.confidencePercent = 100
                     slot.isLikelyUnpicked = false
-                } else if (detectedRoleInSlot != null) {
+                } else if (detectedRoleInSlot != null && stableTitle) {
                     // El slot está mostrando el nombre de la línea asignada (ej. "CALLE CENTRAL", "APOYO", "JUNGLA").
                     // Esto indica de forma concluyente que el jugador AÚN NO ha seleccionado ningún campeón.
                     allySlotConfirmedChampions[i] = null

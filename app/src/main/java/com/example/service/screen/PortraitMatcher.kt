@@ -72,6 +72,13 @@ internal object PortraitMatcher {
     fun similarity(input: FloatArray, references: List<FloatArray>): Float =
         references.maxOfOrNull { correlation(input, it) } ?: 0f
 
+    /** Only these pixels are sampled (plus bilinear neighbours); border captions cannot alter a descriptor. */
+    internal fun sampledRect(crop: android.graphics.Rect): android.graphics.Rect =
+        android.graphics.Rect(crop).apply {
+            val paddingPixels = ((minOf(width(), height()) / 2f) * .20f).toInt().minus(1).coerceAtLeast(0)
+            inset(paddingPixels, paddingPixels)
+        }
+
     fun accepts(best: Float, second: Float, threshold: Float): Boolean =
         best >= threshold && best - second >= MIN_MARGIN
 }

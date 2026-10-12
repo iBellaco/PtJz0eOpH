@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.service.applyConfirmedLastPick
+import com.example.service.syncScannedAllies
+import com.example.service.syncScannedEnemies
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -21,6 +23,49 @@ import org.junit.runner.RunWith
 /** Real pixels from the reported name bands, without account/player names. */
 @RunWith(AndroidJUnit4::class)
 class DraftRivalNameInstalledTest {
+    @Test fun liveRedMagicCapturesWithMasteryBadgesAndViewerMasksFillTheActualHub() = kotlinx.coroutines.runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val scanner = com.example.service.screen.DraftVisionScanner
+        val previous = scanner.calibrationConfig
+        val previousOverlay = scanner.overlayRect
+        val previousMasks = scanner.debugTextRects
+        com.example.data.WildRiftRepository.initChampions(context)
+        try {
+            for (name in listOf("7394", "7395")) {
+                val fixture = InstrumentationRegistry.getInstrumentation().context.assets.open("draft/live-red-magic-$name.json")
+                    .bufferedReader().use { org.json.JSONObject(it.readText()) }
+                val bytes = android.util.Base64.decode(fixture.getString("pngBase64"), android.util.Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)!!
+                try {
+                    scanner.resetSlotMemory()
+                    scanner.updateCalibration(context, com.example.service.screen.VisionCalibrationConfig())
+                    val masks = fixture.getJSONArray("debugTextRects")
+                    scanner.debugTextRects = (0 until masks.length()).map { index -> masks.getJSONArray(index).let {
+                        android.graphics.Rect(it.getInt(0), it.getInt(1), it.getInt(2), it.getInt(3)) } }
+                    fixture.getJSONArray("overlayRect").let { scanner.overlayRect = android.graphics.Rect(it.getInt(0), it.getInt(1), it.getInt(2), it.getInt(3)) }
+                    val hud = com.example.service.OverlayState()
+                    repeat(3) {
+                        val result = scanner.scanDraftFromBitmap(bitmap, context, null, com.example.model.LaneRole.MID,
+                            detectBannedPortraits = true)
+                        assertTrue("$name: ${result.statusMessage}", result.isSuccessful)
+                        hud.syncScannedAllies(result)
+                        hud.syncScannedEnemies(result)
+                        kotlinx.coroutines.delay(1550)
+                    }
+                    val allies = hud.allies.filterNotNull().map { it.id }.toSet()
+                    val rivals = hud.enemies.filterNotNull().map { it.id }.toSet()
+                    assertTrue("$name allies=$allies", allies.containsAll(setOf("senna", "fizz", "nami", "malphite")))
+                    assertTrue("$name rivals=$rivals", rivals.containsAll(setOf("heimerdinger", "braum", "tristana", "jayce", "fiddlesticks")))
+                    assertTrue("$name bans=${scanner.detectedBannedChampionIds}", scanner.detectedBannedChampionIds.containsAll(
+                        setOf("samira", "nocturne", "cho_gath", "hwei", "zeri", "fiora", "rammus", "blitzcrank", "vex")))
+                } finally { bitmap.recycle() }
+            }
+        } finally {
+            scanner.resetSlotMemory(); scanner.updateCalibration(context, previous)
+            scanner.overlayRect = previousOverlay; scanner.debugTextRects = previousMasks
+        }
+    }
+
     @Test fun currentMilioNameIsReadFromTheReportedCapture() = inspect("milio")
     @Test fun currentCaitlynNameIsReadFromTheReportedCapture() = inspect("caitlyn")
 

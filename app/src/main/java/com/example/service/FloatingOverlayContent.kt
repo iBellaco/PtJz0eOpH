@@ -167,21 +167,7 @@ internal fun FloatingOverlayContent(
     val manualLockedAllySlots = state.manualLockedAllySlots
     val manualLockedEnemySlots = state.manualLockedEnemySlots
 
-    val syncAlliedHud: (Map<LaneRole, Champion>, Set<LaneRole>) -> Int = { scanned, observedRoles ->
-        val next = com.example.service.screen.AllyDraftReconciler.hudAllies(
-            allies.toList(), scanned, manualLockedAllySlots.filterValues { it }.keys, observedRoles
-        )
-        val changes = next.indices.count { allies[it]?.id != next[it]?.id }
-        androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
-            next.forEachIndexed { index, champ -> allies[index] = champ }
-            for (index in enemies.indices) {
-                if (manualLockedEnemySlots[index] != true && next.any { it != null && it.id == enemies[index]?.id }) {
-                    enemies[index] = null
-                }
-            }
-        }
-        changes
-    }
+    val syncAlliedHud: (com.example.service.screen.DraftScanResult) -> Int = { state.syncScannedAllies(it) }
 
     val syncEnemyHud: (com.example.service.screen.DraftScanResult) -> Int = { state.syncScannedEnemies(it) }
 
@@ -402,9 +388,7 @@ internal fun FloatingOverlayContent(
                                                 isFirstPick = result.detectedFirstPick
                                             }
 
-                                            val newAlliesAdded = syncAlliedHud(result.alliesByRole, result.allyRolesBySlot.values.toSet())
-                                            state.unassignedAllies.clear()
-                                            state.unassignedAllies.addAll(result.alliesBySlot.filterKeys { it !in result.allyRolesBySlot }.values.distinctBy { it.id })
+                                            val newAlliesAdded = syncAlliedHud(result)
                                             val newEnemiesAdded = syncEnemyHud(result)
 
                                             commitLastPickToHud(result)
@@ -529,9 +513,7 @@ internal fun FloatingOverlayContent(
                         }
 
                         // 1. Asignación directa y de alta precisión por rol (respetando selecciones manuales)
-                        syncAlliedHud(result.alliesByRole, result.allyRolesBySlot.values.toSet())
-                        state.unassignedAllies.clear()
-                        state.unassignedAllies.addAll(result.alliesBySlot.filterKeys { it !in result.allyRolesBySlot }.values.distinctBy { it.id })
+                        syncAlliedHud(result)
                         syncEnemyHud(result)
 
                         commitLastPickToHud(result)

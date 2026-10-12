@@ -4,6 +4,23 @@ import com.example.model.LaneRole
 import com.example.service.screen.DraftScanResult
 import com.example.service.screen.TenthPickHudPolicy
 
+internal fun OverlayState.syncScannedAllies(result: DraftScanResult): Int {
+    val next = com.example.service.screen.AllyDraftReconciler.hudAllies(
+        allies.toList(), result.alliesByRole, manualLockedAllySlots.filterValues { it }.keys,
+        result.allyRolesBySlot.values.toSet())
+    val changes = next.indices.count { allies[it]?.id != next[it]?.id }
+    androidx.compose.runtime.snapshots.Snapshot.withMutableSnapshot {
+        next.forEachIndexed { index, champion -> allies[index] = champion }
+        for (index in enemies.indices) {
+            if (manualLockedEnemySlots[index] != true && next.any { it != null && it.id == enemies[index]?.id })
+                enemies[index] = null
+        }
+        unassignedAllies.clear()
+        unassignedAllies.addAll(result.alliesBySlot.filterKeys { it !in result.allyRolesBySlot }.values.distinctBy { it.id })
+    }
+    return changes
+}
+
 internal fun OverlayState.syncScannedEnemies(result: DraftScanResult): Int {
     val roles = com.example.service.screen.AllyDraftReconciler.roles
     val next = com.example.service.screen.EnemyDraftReconciler.hudEnemies(

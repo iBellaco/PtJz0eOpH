@@ -389,7 +389,7 @@ jobs:
   installed-spanish:
     needs: build-apk
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
     - *id001
     - *id002
