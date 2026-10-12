@@ -236,7 +236,7 @@ internal fun FloatingOverlayContent(
     // 4. Null-Frame Drop: Si el ImageReader no tiene un fotograma nuevo, se salta el ciclo sin re-analizar imágenes estáticas.
     LaunchedEffect(autoScanEnabled) {
         if (autoScanEnabled) {
-            state.prepareAutomaticScan()
+            DraftVisionScanner.resetSlotLifecycle()
         }
         if (!autoScanEnabled) {
             DraftVisionScanner.isVisionEngineBusy.value = false
@@ -1252,7 +1252,7 @@ internal fun FloatingOverlayContent(
                                     enabled = true,
                                     onCheckedChange = { isChecked ->
                                         if (isChecked) {
-                                            autoScanEnabled = true
+                                            state.startAutomaticScan()
                                             if (screenCaptureManager?.isReady() != true) {
                                                 scanNoticeMessage = "Requiere permiso de pantalla. Toca aquí para activarlo."
                                                 try {

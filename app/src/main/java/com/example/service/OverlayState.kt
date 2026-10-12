@@ -33,6 +33,11 @@ class OverlayState {
                 com.example.service.screen.DraftVisionScanner.debugVisualMatches.value = emptyMap()
             }
         }
+    internal fun startAutomaticScan() {
+        if (autoScanEnabled) return
+        prepareAutomaticScan()
+        autoScanEnabled = true
+    }
     internal fun prepareAutomaticScan() {
         trackedLastPick = null
         for (i in 0..4) {

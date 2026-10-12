@@ -89,7 +89,7 @@ class DraftRivalNameInstalledTest {
             hud.allies[0]=com.example.model.Champion(id="sona",name="Sona")
             scanner.allySlotConfirmedChampions[0]=hud.allies[0]
             scanner.debugVisualMatches.value=mapOf("ally_0" to "Sona")
-            hud.autoScanEnabled=true;hud.prepareAutomaticScan()
+            hud.startAutomaticScan()
             assertTrue(scanner.debugVisualMatches.value.isEmpty())
             scanner.updateCalibration(ctx,com.example.service.screen.VisionCalibrationConfig(
                 allyAvatarCenterX=.120f,enemyAvatarCenterX=.911f,

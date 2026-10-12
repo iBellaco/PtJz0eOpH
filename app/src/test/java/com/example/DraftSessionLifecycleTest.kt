@@ -57,11 +57,12 @@ class DraftSessionLifecycleTest {
         DraftVisionScanner.allySlotConfirmedChampions[0]=hud.allies[0]
         DraftVisionScanner.debugVisualMatches.value=mapOf("ally_0" to "Sona")
         DraftVisionScanner.showCalibrationBoxes.value=true
-        hud.prepareAutomaticScan()
+        hud.startAutomaticScan()
         assertNull(hud.allies[0]);assertEquals(manual,hud.allies[1])
         assertTrue(DraftVisionScanner.allySlotConfirmedChampions.all { it==null })
         assertTrue(DraftVisionScanner.debugVisualMatches.value.isEmpty())
         assertTrue(DraftVisionScanner.showCalibrationBoxes.value)
         DraftVisionScanner.showCalibrationBoxes.value=false
+        hud.autoScanEnabled=false
     }
 }
