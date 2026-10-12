@@ -79,6 +79,29 @@ internal object PortraitMatcher {
             inset(paddingPixels, paddingPixels)
         }
 
+    /** Fine reference alignment is used only for an unresolved header portrait. */
+    fun fineSimilarity(input: FloatArray, pixels: IntArray, width: Int, height: Int): Float {
+        val variants = buildList {
+            for (scale in floatArrayOf(.85f,1f,1.15f))
+                for (dx in floatArrayOf(-.04f,0f,.04f)) for (dy in floatArrayOf(-.04f,0f,.04f)) add(Triple(scale,dx,dy))
+            for (scale in floatArrayOf(.925f,1.075f))
+                for (dx in floatArrayOf(-.03f,0f,.03f)) for (dy in floatArrayOf(-.03f,0f,.03f)) add(Triple(scale,dx,dy))
+        }
+        var point = variants.first()
+        var best = 0f
+        fun evaluate(candidate: Triple<Float,Float,Float>) {
+            val score = correlation(input,descriptor(pixels,width,height,candidate.first,candidate.second,candidate.third))
+            if (score > best) { best=score; point=candidate }
+        }
+        variants.forEach(::evaluate)
+        for (step in floatArrayOf(.02f,.01f,.005f)) {
+            val center=point
+            for (ds in floatArrayOf(-step,0f,step)) for (dx in floatArrayOf(-step,0f,step)) for (dy in floatArrayOf(-step,0f,step))
+                evaluate(Triple(center.first+ds,center.second+dx,center.third+dy))
+        }
+        return best
+    }
+
     fun accepts(best: Float, second: Float, threshold: Float): Boolean =
         best >= threshold && best - second >= MIN_MARGIN
 }

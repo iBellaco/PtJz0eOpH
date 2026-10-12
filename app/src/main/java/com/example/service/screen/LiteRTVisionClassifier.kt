@@ -110,6 +110,7 @@ object LiteRTVisionClassifier {
     val reportFlow: StateFlow<LiteRTInferenceReport> = _reportFlow.asStateFlow()
 
     private val championEmbeddingCache = ConcurrentHashMap<String, List<FloatArray>>()
+    private val portraitAssetPaths = ConcurrentHashMap<String,String>()
     private var indexedIds: Set<String> = emptySet()
     private var lastValidFrameAt = 0L
     private var targetKey: String? = null
@@ -132,6 +133,7 @@ object LiteRTVisionClassifier {
                     val pixels = IntArray(bmp.width * bmp.height)
                     bmp.getPixels(pixels, 0, bmp.width, 0, 0, bmp.width, bmp.height)
                     championEmbeddingCache[champ.id] = PortraitMatcher.references(pixels, bmp.width, bmp.height)
+                    portraitAssetPaths[champ.id] = asset
                 } finally { bmp.recycle() }
             } catch (e: Exception) {
                 AppLogger.w(TAG, "Retrato no disponible: ${champ.id}")
@@ -244,7 +246,10 @@ object LiteRTVisionClassifier {
             val step = gaps[gaps.size / 2]
             val last = rivalRow.last().region
             val region = last.copy(x = last.x + step)
-            val regular = gaps.all { kotlin.math.abs(it - step) < step * .25f }
+            val regular = gaps.all { gap ->
+                val multiples = kotlin.math.round(gap / step).toInt()
+                multiples in 1..3 && kotlin.math.abs(gap - multiples * step) < step * .25f
+            }
             val candidateRect = android.graphics.Rect(((region.x * width) - region.radius * height).toInt(),
                 ((region.y * height) - region.radius * height).toInt(),
                 ((region.x * width) + region.radius * height).toInt(),
@@ -254,7 +259,7 @@ object LiteRTVisionClassifier {
                 exclusions.none { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(candidateRect)) }) {
                 val colors = (0 until 24).flatMap { angleIndex ->
                     val angle = angleIndex * Math.PI * 2 / 24
-                    listOf(.3f, .5f, .7f).map { distance ->
+                    listOf(.3f, .4f, .5f).map { distance ->
                         val x = (region.x * width + region.radius * height * distance * kotlin.math.cos(angle)).toInt().coerceIn(0,width-1)
                         val y = (region.y * height + region.radius * height * distance * kotlin.math.sin(angle)).toInt().coerceIn(0,height-1)
                         bitmap.getPixel(x,y)
@@ -309,6 +314,8 @@ object LiteRTVisionClassifier {
             val baseRadius = kotlin.math.round(region.radius * height).toInt()
             var bestScore = 0f
             var refined = observation
+            var unresolvedScore = 0f
+            var unresolved: Pair<FloatArray,List<Champion>>? = null
             for (dx in intArrayOf(-4, -2, 0, 2, 4)) for (dy in -3..3) for (dr in -5..5) {
                 val x = centerX + dx; val y = centerY + dy
                 val radius = (baseRadius + dr).coerceAtLeast(6)
@@ -333,11 +340,34 @@ object LiteRTVisionClassifier {
                     PortraitMatcher.similarity(descriptor, championEmbeddingCache.getValue(champion.id))
                 }.sortedByDescending { it.second }
                 val best = ranked.first()
+                if (best.second > unresolvedScore && best.second >= .70f) {
+                    unresolvedScore = best.second
+                    unresolved = descriptor to ranked.map { it.first }
+                }
                 if (best.second > bestScore && PortraitMatcher.accepts(best.second,
                         ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
                     bestScore = best.second
                     refined = observation.copy(region = BanRegion(x.toFloat()/width, y.toFloat()/height,
                         radius.toFloat()/height), championId = best.first.id, empty = false)
+                }
+            }
+            val pending = unresolved
+            val ctx = context ?: WildRiftApp.instance
+            if (refined.championId == null && !refined.empty && pending != null && ctx != null) {
+                val ranked = pending.second.mapNotNull { champion ->
+                    val asset = portraitAssetPaths[champion.id] ?: return@mapNotNull null
+                    runCatching {
+                        val bmp = ctx.assets.open("champions/$asset").use { BitmapFactory.decodeStream(it) } ?: return@runCatching null
+                        try {
+                            val pixels=IntArray(bmp.width*bmp.height)
+                            bmp.getPixels(pixels,0,bmp.width,0,0,bmp.width,bmp.height)
+                            champion to PortraitMatcher.fineSimilarity(pending.first,pixels,bmp.width,bmp.height)
+                        } finally { bmp.recycle() }
+                    }.getOrNull()
+                }.sortedByDescending { it.second }
+                val best=ranked.firstOrNull()
+                if (best != null && PortraitMatcher.accepts(best.second,ranked.getOrNull(1)?.second ?: 0f,DEFAULT_CONFIDENCE_THRESHOLD)) {
+                    refined=observation.copy(championId=best.first.id,empty=false)
                 }
             }
             refined
