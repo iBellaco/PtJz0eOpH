@@ -87,17 +87,22 @@ internal object PortraitMatcher {
             for (scale in floatArrayOf(.925f,1.075f))
                 for (dx in floatArrayOf(-.03f,0f,.03f)) for (dy in floatArrayOf(-.03f,0f,.03f)) add(Triple(scale,dx,dy))
         }
-        var point = variants.first()
-        var best = 0f
-        fun evaluate(candidate: Triple<Float,Float,Float>) {
-            val score = correlation(input,descriptor(pixels,width,height,candidate.first,candidate.second,candidate.third))
-            if (score > best) { best=score; point=candidate }
-        }
-        variants.forEach(::evaluate)
-        for (step in floatArrayOf(.02f,.01f,.005f)) {
-            val center=point
-            for (ds in floatArrayOf(-step,0f,step)) for (dx in floatArrayOf(-step,0f,step)) for (dy in floatArrayOf(-step,0f,step))
-                evaluate(Triple(center.first+ds,center.second+dx,center.third+dy))
+        fun score(candidate: Triple<Float,Float,Float>) = correlation(input,
+            descriptor(pixels,width,height,candidate.first,candidate.second,candidate.third))
+        val starts = variants.map { it to score(it) }.sortedByDescending { it.second }.take(3)
+        var best = starts.first().second
+        for ((start, initialScore) in starts) {
+            var point = start
+            var localBest = initialScore
+            for (step in floatArrayOf(.02f,.01f,.005f)) {
+                val center = point
+                for (ds in floatArrayOf(-step,0f,step)) for (dx in floatArrayOf(-step,0f,step)) for (dy in floatArrayOf(-step,0f,step)) {
+                    val candidate = Triple(center.first+ds,center.second+dx,center.third+dy)
+                    val value = score(candidate)
+                    if (value > localBest) { localBest=value; point=candidate }
+                }
+            }
+            best = maxOf(best,localBest)
         }
         return best
     }

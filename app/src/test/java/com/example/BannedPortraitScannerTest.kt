@@ -73,6 +73,18 @@ class BannedPortraitScannerTest {
         } finally { bitmap.recycle() }
     }
 
+    @Test fun pocoResampledCapturePreservesNorraAndTheFivePositionsOnEachSide() {
+        val original = javaClass.classLoader!!.getResourceAsStream("bans/poco-7457.png")!!.use { BitmapFactory.decodeStream(it)!! }
+        val bitmap = android.graphics.Bitmap.createScaledBitmap(original,1920,862,true)
+        val scanner = BannedPortraitScanner()
+        try {
+            scanner.scan(bitmap,context,0)
+            scanner.scan(bitmap,context,1500)
+            assertEquals(listOf("hwei","varus","kayn","nocturne",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ALLY }.sortedBy {it.index}.map {it.championId})
+            assertEquals(listOf("zyra","norra","hwei","k_sante",null),scanner.slots.filter { it.side==com.example.service.screen.BanSide.ENEMY }.sortedBy {it.index}.map {it.championId})
+        } finally { bitmap.recycle(); original.recycle() }
+    }
+
     @Test fun latestReportedHeaderRecognizesAllNineRealBansAndTheEmptyPosition() {
         val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/reported-7296.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
         val scanner = BannedPortraitScanner()

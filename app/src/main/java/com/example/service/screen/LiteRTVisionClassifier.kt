@@ -314,8 +314,9 @@ object LiteRTVisionClassifier {
             val baseRadius = kotlin.math.round(region.radius * height).toInt()
             var bestScore = 0f
             var refined = observation
-            var unresolvedScore = 0f
-            var unresolved: Pair<FloatArray,List<Champion>>? = null
+            // Keep the best alignment at each radius: resampling can move the optimum
+            // between neighbouring crop sizes even when coarse correlation is lower.
+            val unresolved = mutableMapOf<Int, Triple<Float, FloatArray, List<Champion>>>()
             for (dx in intArrayOf(-4, -2, 0, 2, 4)) for (dy in -3..3) for (dr in -5..5) {
                 val x = centerX + dx; val y = centerY + dy
                 val radius = (baseRadius + dr).coerceAtLeast(6)
@@ -340,9 +341,8 @@ object LiteRTVisionClassifier {
                     PortraitMatcher.similarity(descriptor, championEmbeddingCache.getValue(champion.id))
                 }.sortedByDescending { it.second }
                 val best = ranked.first()
-                if (best.second > unresolvedScore && best.second >= .70f) {
-                    unresolvedScore = best.second
-                    unresolved = descriptor to ranked.map { it.first }
+                if (best.second >= .70f && best.second > (unresolved[radius]?.first ?: 0f)) {
+                    unresolved[radius] = Triple(best.second, descriptor, ranked.map { it.first })
                 }
                 if (best.second > bestScore && PortraitMatcher.accepts(best.second,
                         ranked.getOrNull(1)?.second ?: 0f, DEFAULT_CONFIDENCE_THRESHOLD)) {
@@ -351,17 +351,17 @@ object LiteRTVisionClassifier {
                         radius.toFloat()/height), championId = best.first.id, empty = false)
                 }
             }
-            val pending = unresolved
+            val pending = unresolved.values.sortedByDescending { it.first }.take(4)
             val ctx = context ?: WildRiftApp.instance
-            if (refined.championId == null && !refined.empty && pending != null && ctx != null) {
-                val ranked = pending.second.mapNotNull { champion ->
+            if (refined.championId == null && !refined.empty && pending.isNotEmpty() && ctx != null) {
+                val ranked = pending.flatMap { it.third }.distinctBy { it.id }.mapNotNull { champion ->
                     val asset = portraitAssetPaths[champion.id] ?: return@mapNotNull null
                     runCatching {
                         val bmp = ctx.assets.open("champions/$asset").use { BitmapFactory.decodeStream(it) } ?: return@runCatching null
                         try {
                             val pixels=IntArray(bmp.width*bmp.height)
                             bmp.getPixels(pixels,0,bmp.width,0,0,bmp.width,bmp.height)
-                            champion to PortraitMatcher.fineSimilarity(pending.first,pixels,bmp.width,bmp.height)
+                            champion to pending.maxOf { PortraitMatcher.fineSimilarity(it.second,pixels,bmp.width,bmp.height) }
                         } finally { bmp.recycle() }
                     }.getOrNull()
                 }.sortedByDescending { it.second }
