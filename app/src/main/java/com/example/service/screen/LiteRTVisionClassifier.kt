@@ -353,7 +353,10 @@ object LiteRTVisionClassifier {
             }
             val pending = unresolved.values.sortedByDescending { it.first }.take(4)
             val ctx = context ?: WildRiftApp.instance
-            if (refined.championId == null && !refined.empty && pending.isNotEmpty() && ctx != null) {
+            // An off-center crop may resemble the empty emblem while another crop
+            // contains a textured portrait. Evaluate that stronger evidence before
+            // committing an empty slot; keep both identity confidence gates.
+            if (refined.championId == null && pending.isNotEmpty() && ctx != null) {
                 val ranked = pending.flatMap { it.third }.distinctBy { it.id }.mapNotNull { champion ->
                     val asset = portraitAssetPaths[champion.id] ?: return@mapNotNull null
                     runCatching {
