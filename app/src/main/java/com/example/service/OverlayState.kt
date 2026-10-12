@@ -41,9 +41,12 @@ class OverlayState {
         val remembered = (scanner.allySlotConfirmedChampions.toList() + scanner.enemySlotConfirmedChampions.toList())
             .filterNotNull().map { it.id }.toSet()
         // Resume a populated draft; a blank hub cannot own old parser evidence.
-        if (displayed.isEmpty() || (remembered.isNotEmpty() && remembered.none { it in represented })) {
+        if (remembered.isNotEmpty() && (displayed.isEmpty() || remembered.none { it in represented })) {
             trackedLastPick = null
             scanner.resetSlotMemory()
+        } else if (displayed.isEmpty()) {
+            // No player evidence: discard captions, retaining a live ban-only phase.
+            scanner.debugVisualMatches.value = emptyMap()
         }
         scanner.resetSlotLifecycle()
         autoScanEnabled = true
