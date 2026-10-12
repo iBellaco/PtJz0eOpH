@@ -6,6 +6,19 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class DraftStableTitlesTest {
+    @Test fun isolatedOcrGapDoesNotStarveAStableNameButTwoGapsExpireEvidence() {
+        val reader = com.example.service.screen.SlotTitleConfirmation()
+        assertFalse(reader.observe(true, 0, "senna"))
+        assertFalse(reader.observe(true, 0, null))
+        assertTrue(reader.observe(true, 0, "senna"))
+        assertFalse(reader.observe(true, 0, "lane:ADC"))
+        assertFalse(reader.observe(true, 0, "senna"))
+        assertFalse(reader.observe(true, 0, null))
+        assertFalse(reader.observe(true, 0, null))
+        assertFalse(reader.observe(true, 0, "senna"))
+        assertTrue(reader.observe(true, 0, "senna"))
+    }
+
     @Test fun everySlotNeedsRepeatedEvidenceAndDoesNotShareAnotherSlotsReading() {
         val reader = SlotTitleConfirmation()
         for (ally in listOf(true, false)) for (slot in 0..4) {

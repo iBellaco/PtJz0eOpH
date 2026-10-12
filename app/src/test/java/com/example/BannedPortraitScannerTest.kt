@@ -23,6 +23,22 @@ class BannedPortraitScannerTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun prepare() { WildRiftRepository.initChampions(context, forceReload = true) }
 
+    @Test fun liveHeaderAndItsOwnCaptionMasksRecognizeAllBansAtCaptureAndPhysicalResolution() {
+        for (name in listOf("live-7394", "live-7395")) {
+            val original = javaClass.classLoader!!.getResourceAsStream("bans/$name.png")!!.use { BitmapFactory.decodeStream(it)!! }
+            try { for (factor in listOf(1, 2)) {
+                val bitmap = if (factor == 1) original else Bitmap.createScaledBitmap(original, original.width * 2, original.height * 2, true)
+                try {
+                    val masks = listOf(Rect(0, 48*factor, 260*factor, 65*factor), Rect(1000*factor, 48*factor, 1280*factor, 65*factor))
+                    val scanner = BannedPortraitScanner()
+                    scanner.scan(bitmap, context, 0, masks)
+                    val ids = scanner.scan(bitmap, context, 1500, masks)
+                    assertTrue("$name/$factor: $ids", ids.containsAll(setOf("samira", "nocturne", "cho_gath", "hwei", "zeri", "fiora", "rammus", "blitzcrank", "vex")))
+                } finally { if (bitmap !== original) bitmap.recycle() }
+            } } finally { original.recycle() }
+        }
+    }
+
     @Test fun latestReportedHeaderRecognizesAllNineRealBansAndTheEmptyPosition() {
         val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/reported-7296.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
         val scanner = BannedPortraitScanner()

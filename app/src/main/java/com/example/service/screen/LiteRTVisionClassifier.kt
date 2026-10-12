@@ -155,6 +155,17 @@ object LiteRTVisionClassifier {
 
     /** Locates small header portraits at multiple scales, independently from the pick-column calibrator. */
     internal fun findHeaderBanObservations(bitmap: Bitmap, context: Context?, exclusions: List<android.graphics.Rect>, config: VisionCalibrationConfig = VisionCalibrationConfig()): List<BanObservation> {
+        // Header matching uses one physical scale on HD/FHD/QHD captures. Coordinates stay normalized.
+        if (bitmap.height > 720) {
+            val scale = 720f / bitmap.height
+            val resized = Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt().coerceAtLeast(1), 720, true)
+            try {
+                val masks = exclusions.map { rect -> android.graphics.Rect(
+                    kotlin.math.floor(rect.left * scale).toInt(), kotlin.math.floor(rect.top * scale).toInt(),
+                    kotlin.math.ceil(rect.right * scale).toInt(), kotlin.math.ceil(rect.bottom * scale).toInt()) }
+                return findHeaderBanObservations(resized, context, masks, config)
+            } finally { resized.recycle() }
+        }
         ensureIndexed(context)
         val catalog = WildRiftRepository.champions.distinctBy { it.id }
             .filter { championEmbeddingCache.containsKey(it.id) }
@@ -182,7 +193,7 @@ object LiteRTVisionClassifier {
                 for (x in radius until width - radius step (radius / 4).coerceAtLeast(3)) {
                     if (x > width * .27f && x < width * .73f) continue
                     val cropRect = android.graphics.Rect(x - radius, y - radius, x + radius, y + radius)
-                    if (exclusions.any { android.graphics.Rect.intersects(it, cropRect) }) continue
+                    if (exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(cropRect)) }) continue
                     for (row in 0 until diameter) {
                         System.arraycopy(header, (y - radius + row) * width + x - radius, cropPixels, row * diameter, diameter)
                     }
@@ -230,7 +241,7 @@ object LiteRTVisionClassifier {
             val radius = region.radius * height
             val rect = android.graphics.Rect((cx-radius).toInt(), (cy-radius).toInt(),
                 (cx+radius).toInt(), (cy+radius).toInt())
-            if (exclusions.any { android.graphics.Rect.intersects(it, rect) }) false else {
+            if (exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(rect)) }) false else {
                 // A header portrait has spatial color variation; a blank background does not.
                 // This only reserves an unknown position, never confirms a ban or its identity.
                 val sums = DoubleArray(3); val squares = DoubleArray(3)
@@ -270,7 +281,7 @@ object LiteRTVisionClassifier {
                 val radius = (baseRadius + dr).coerceAtLeast(6)
                 val rect = android.graphics.Rect(x-radius, y-radius, x+radius, y+radius)
                 if (rect.left < 0 || rect.right > width || rect.top < 0 || rect.bottom > headerHeight ||
-                    exclusions.any { android.graphics.Rect.intersects(it, rect) }) continue
+                    exclusions.any { android.graphics.Rect.intersects(it, PortraitMatcher.sampledRect(rect)) }) continue
                 val diameter = radius * 2
                 val pixels = IntArray(diameter * diameter)
                 for (row in 0 until diameter) System.arraycopy(header,

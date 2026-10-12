@@ -1,0 +1,12 @@
+# Auditoría Coach 1.1.10.261
+
+- Build: 977.
+- Capturas de producción 1000507394/7395: conserva títulos reales, iconos de maestría, retratos, cabecera y etiquetas del visor; elimina únicamente nombres personales de invocadores para los fixtures. Comprueba lector completo y operaciones de sincronización del hub, sin reescribir títulos con fuentes artificiales.
+- Baneos con visor: la exclusión se limita a la zona de píxeles realmente muestreada por el descriptor, incluyendo vecinos bilineales. Una etiqueta que toca únicamente el borde del recorte ya no invalida todo el retrato. Se mantienen confianza, margen y dos observaciones. Capturas grandes se normalizan hasta 720 píxeles de alto para que el refinamiento tenga la misma escala física en HD/FHD/QHD.
+- Nombres aliados: suprime insignias doradas únicamente en la zona del icono inicial; ignora blobs aislados pequeños de esa zona antes de determinar la fila del título. Conserva el límite que excluye el nombre del jugador y las verificaciones de ambigüedad.
+- Evidencia temporal: tolera un único fotograma sin lectura y vence tras dos saltos; sigue exigiendo dos lecturas del mismo candidato. Una línea transitoria aislada no borra un campeón confirmado ni oculta su etiqueta; una línea repetida sí devuelve el slot al estado pendiente.
+- Hub: sincronización aliada compartida por los dos caminos de escaneo y por la prueba instalada, con preservación de bloqueos manuales y eliminación de duplicados entre equipos.
+- Poco X7 Pro: se conservan las coordenadas proporcionadas y el perfil cargado por modelo. La prueba de perfil verifica X aliado 0.120, X rival 0.911 y las diez alturas; los ajustes manuales existentes se conservan. Restablecer aplica el perfil del teléfono y tiene un objetivo de 48dp.
+- Pruebas tempranas de baneos, evidencia y perfiles antes de la revisión extensa de pantallas. Se añade una prueba instalada con las dos capturas y el visor activo; el límite del job español pasa de 20 a 25 minutos para incluirla, manteniendo todas las verificaciones.
+- Archivos: DraftVisionScanner, DraftImagePreprocessor, LiteRTVisionClassifier, PortraitMatcher, SlotTitleConfirmation, ConfirmedLastPickHud, FloatingOverlayContent, LiteRTEngineViewerDialog; fixtures de producción, pruebas, script de comprobación instalada y workflow.
+- Verificación de entrega: catálogos generados y diff locales; exige pruebas completas/renderizadas, APK instalado ES/PT, R8 y firma persistente antes de fusionar. La confirmación física del tester se distingue de la validación automatizada.

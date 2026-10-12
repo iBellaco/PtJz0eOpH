@@ -19,6 +19,21 @@ object DraftImagePreprocessor {
 
     private const val TAG = "DraftImagePreprocessor"
 
+    /** Remove a gold mastery badge only inside the leading icon zone, leaving the title and player line intact. */
+    internal fun suppressLeadingMasteryBadge(crop: Bitmap) {
+        val iconWidth = (crop.height * .65f).toInt().coerceIn(1, crop.width)
+        val iconHeight = (crop.height * .85f).toInt().coerceAtLeast(1)
+        var gold = 0
+        for (y in 0 until iconHeight) for (x in 0 until iconWidth) {
+            val pixel = crop.getPixel(x, y)
+            val red = Color.red(pixel); val green = Color.green(pixel); val blue = Color.blue(pixel)
+            if (red > 95 && green > 65 && red > green * 1.08f && green > blue * 1.25f) gold++
+        }
+        if (gold < maxOf(6, crop.height / 4)) return
+        android.graphics.Canvas(crop).drawRect(0f, 0f, iconWidth.toFloat(), crop.height.toFloat(),
+            android.graphics.Paint().apply { color = Color.BLACK })
+    }
+
     /**
      * Pre-procesa una captura de pantalla completa para aislar y maximizar la legibilidad
      * del texto de campeones y roles, suprimiendo activamente los iconos de maestría
