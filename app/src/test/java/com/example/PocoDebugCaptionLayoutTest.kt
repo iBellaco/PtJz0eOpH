@@ -3,6 +3,7 @@ package com.example
 import android.app.Application
 import android.graphics.Rect
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
@@ -43,12 +44,13 @@ class PocoDebugCaptionLayoutTest {
             DraftVisionScanner.debugVisualMatches.value=mapOf("ally_0" to "Senna","enemy_0" to "Viktor","ally_3" to "Línea de Barón")
             compose.setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f,1.5f)) {
-                    Box(Modifier.width(1280.dp).height(576.dp)) { ScannerDebugOverlay(overlayRect=null) }
+                    Box(Modifier.requiredSize(1280.dp,576.dp)) { ScannerDebugOverlay(overlayRect=null) }
                 }
             }
             compose.runOnIdle {
                 val masks=DraftVisionScanner.debugTextRects
                 assertTrue(masks.size>=20)
+                assertTrue("Test must draw at Poco screenshot width",masks.any {it.right>1000})
                 val allyCaption=masks[10];val rivalCaption=masks[11]
                 assertTrue(masks.take(5).none { Rect.intersects(it,allyCaption) })
                 assertTrue(masks.drop(5).take(5).none { Rect.intersects(it,rivalCaption) })
