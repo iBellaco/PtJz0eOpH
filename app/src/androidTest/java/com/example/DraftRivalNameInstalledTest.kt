@@ -29,7 +29,7 @@ class DraftRivalNameInstalledTest {
         val previous = scanner.calibrationConfig
         val previousOverlay = scanner.overlayRect
         val previousMasks = scanner.debugTextRects
-        com.example.data.WildRiftRepository.initChampions(context, forceReload = false)
+        // WildRiftApp initializes the catalog before instrumentation, as in production.
         try {
             for (name in listOf("7394", "7395")) {
                 val fixture = InstrumentationRegistry.getInstrumentation().context.assets.open("draft/live-red-magic-$name.json")
