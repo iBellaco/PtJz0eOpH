@@ -49,12 +49,12 @@ class DraftSessionLifecycleTest {
             assertNull(Crops.recordTenthPickCrop(bitmap,false,4,"after_clear",context=ctx))
         } finally { hud.autoScanEnabled=false;Crops.clearAllCaches(ctx);bitmap.recycle() }
     }
-    @Test fun automaticSessionDropsOldReadingsAndKeepsOnlyManuallyLockedPicks() {
+    @Test fun automaticSessionDropsUnrepresentedOldReadingsAndKeepsManuallyLockedPicks() {
         val hud=OverlayState()
         val manual=Champion(id="aurora",name="Aurora")
-        hud.allies[0]=Champion(id="sona",name="Sona");hud.allies[1]=manual
+        hud.allies[1]=manual
         hud.manualLockedAllySlots[1]=true
-        DraftVisionScanner.allySlotConfirmedChampions[0]=hud.allies[0]
+        DraftVisionScanner.allySlotConfirmedChampions[0]=Champion(id="sona",name="Sona")
         DraftVisionScanner.debugVisualMatches.value=mapOf("ally_0" to "Sona")
         DraftVisionScanner.showCalibrationBoxes.value=true
         hud.startAutomaticScan()

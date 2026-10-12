@@ -35,22 +35,18 @@ class OverlayState {
         }
     internal fun startAutomaticScan() {
         if (autoScanEnabled) return
-        prepareAutomaticScan()
-        autoScanEnabled = true
-    }
-    internal fun prepareAutomaticScan() {
-        trackedLastPick = null
-        for (i in 0..4) {
-            if (manualLockedAllySlots[i] != true) allies[i] = null
-            if (manualLockedEnemySlots[i] != true) enemies[i] = null
+        val scanner = com.example.service.screen.DraftVisionScanner
+        val displayed = (allies + enemies).filterNotNull().map { it.id }.toSet()
+        val represented = displayed + unassignedAllies.map { it.id }
+        val remembered = (scanner.allySlotConfirmedChampions.toList() + scanner.enemySlotConfirmedChampions.toList())
+            .filterNotNull().map { it.id }.toSet()
+        // Resume a populated draft; a blank hub cannot own old parser evidence.
+        if (displayed.isEmpty() || (remembered.isNotEmpty() && remembered.none { it in represented })) {
+            trackedLastPick = null
+            scanner.resetSlotMemory()
         }
-        unassignedAllies.clear()
-        enemyConfidences.clear()
-        allySummonerNames.clear()
-        enemySummonerNames.clear()
-        allySpells.clear()
-        enemySpells.clear()
-        com.example.service.screen.DraftVisionScanner.resetSlotMemory()
+        scanner.resetSlotLifecycle()
+        autoScanEnabled = true
     }
     internal fun clearDraftAndCrops(context: android.content.Context) {
         autoScanEnabled = false

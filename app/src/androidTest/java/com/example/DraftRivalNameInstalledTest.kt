@@ -86,8 +86,7 @@ class DraftRivalNameInstalledTest {
         if (bitmap!==original) original.recycle()
         val hud=com.example.service.OverlayState()
         try {
-            hud.allies[0]=com.example.model.Champion(id="sona",name="Sona")
-            scanner.allySlotConfirmedChampions[0]=hud.allies[0]
+            scanner.allySlotConfirmedChampions[0]=com.example.model.Champion(id="sona",name="Sona")
             scanner.debugVisualMatches.value=mapOf("ally_0" to "Sona")
             com.example.service.screen.TenthPickDiagnosticManager.setDiagnosticMode(ctx,true)
             hud.startAutomaticScan()
