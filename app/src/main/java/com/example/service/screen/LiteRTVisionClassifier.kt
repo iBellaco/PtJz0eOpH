@@ -214,7 +214,7 @@ object LiteRTVisionClassifier {
         }
         val found = mutableListOf<Pair<Proposal, Champion?>>()
         for (proposal in (proposals.sortedByDescending { it.score }.take(200) + emptyProposals.sortedByDescending { it.score }.take(40)).sortedByDescending { it.score }) {
-            if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 5) continue
+            if (found.count { (it.first.x < width / 2) == (proposal.x < width / 2) } >= 7) continue
             if (found.any { kotlin.math.abs(it.first.x - proposal.x) < maxOf(it.first.radius, proposal.radius) * 1.4f }) continue
             if (proposal.shortlist.isEmpty()) {
                 found.add(proposal to null)

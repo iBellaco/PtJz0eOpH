@@ -86,6 +86,14 @@ object TenthPickDiagnosticManager {
     private val _cacheStatsFlow = MutableStateFlow(DiagnosticCacheStats())
     val cacheStatsFlow: StateFlow<DiagnosticCacheStats> = _cacheStatsFlow.asStateFlow()
 
+    @Volatile private var automaticScanActive = false
+    private val _automaticScanActiveFlow = MutableStateFlow(false)
+    val automaticScanActiveFlow: StateFlow<Boolean> = _automaticScanActiveFlow.asStateFlow()
+    @Volatile private var cacheRevision = 0L
+    @Synchronized fun setAutomaticScanActive(active: Boolean) {
+        automaticScanActive = active
+        _automaticScanActiveFlow.value = active
+    }
     private var lastSaveTimestamp = 0L
     private var lastSavedSignature = ""
     private var isInitialized = false
@@ -125,7 +133,7 @@ object TenthPickDiagnosticManager {
      * Guarda el recorte utilizado para la detección del 10º campeón en el directorio de caché de la app.
      * Guarda en formato PNG sin pérdida (100% de calidad) para preservar la fidelidad óptica completa.
      */
-    fun recordTenthPickCrop(
+    @Synchronized fun recordTenthPickCrop(
         cropBitmap: Bitmap?,
         isAlly: Boolean,
         slotIndex: Int,
@@ -140,7 +148,7 @@ object TenthPickDiagnosticManager {
             init(ctx)
         }
 
-        if (!_isDiagnosticModeEnabled.value) {
+        if (!_isDiagnosticModeEnabled.value || !automaticScanActive) {
             return null
         }
 
@@ -279,6 +287,7 @@ object TenthPickDiagnosticManager {
      * Refresca la lista de recortes leídos desde el directorio de caché.
      */
     fun refreshSavedFrames(context: Context) {
+        val revision = cacheRevision
         scope.launch {
             try {
                 val dir = getDiagnosticCacheDir(context)
@@ -334,8 +343,10 @@ object TenthPickDiagnosticManager {
                 }
 
                 withContext(Dispatchers.Main) {
-                    _savedFramesFlow.value = frames
-                    updateCacheStats(dir, frames)
+                    if (revision == cacheRevision) {
+                        _savedFramesFlow.value = frames
+                        updateCacheStats(dir, frames)
+                    }
                 }
             } catch (e: Throwable) {
                 AppLogger.e(TAG, "Error al refrescar recortes diagnósticos", e)
@@ -361,7 +372,10 @@ object TenthPickDiagnosticManager {
     /**
      * Limpia y elimina todos los recortes diagnósticos de la caché.
      */
-    fun clearAllCaches(context: Context) {
+    @Synchronized fun clearAllCaches(context: Context) {
+        cacheRevision++
+        lastSaveTimestamp = 0L
+        lastSavedSignature = ""
         val dir = getDiagnosticCacheDir(context)
         try {
             val pngFiles = dir.listFiles { _, name -> name.endsWith(".png", ignoreCase = true) } ?: emptyArray()

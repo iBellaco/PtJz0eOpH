@@ -340,6 +340,7 @@ class FloatingAssistantService : Service(), LifecycleOwner, ViewModelStoreOwner,
     override fun onDestroy() {
         if (isDestroyed) return
         isDestroyed = true
+        com.example.service.screen.TenthPickDiagnosticManager.setAutomaticScanActive(false)
 
         try {
             unregisterComponentCallbacks(this)

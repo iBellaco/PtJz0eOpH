@@ -16,7 +16,9 @@ internal fun emptyBanSlots(): List<BanSlot> = BanSide.entries.flatMap { side ->
 /** Fill visible but unreadable portraits before assigning slot numbers. Never invents a champion. */
 internal fun fillHeaderPositions(observations: List<BanObservation>, aspect: Float,
     hasPortrait: (BanRegion) -> Boolean): List<BanObservation> = BanSide.entries.flatMap { side ->
-    val row = observations.filter { it.side == side }.sortedBy { it.region.x }.toMutableList()
+    val candidates = observations.filter { it.side == side }.sortedBy { it.region.x }
+    // An adjacent profile portrait sits toward the center, outside the five ban circles.
+    val row = (if (side == BanSide.ALLY) candidates.take(5) else candidates.takeLast(5)).toMutableList()
     if (row.isNotEmpty() && row.size < 5) {
         val nominal = .080f / aspect
         val gaps = row.zipWithNext { a, b -> b.region.x - a.region.x }

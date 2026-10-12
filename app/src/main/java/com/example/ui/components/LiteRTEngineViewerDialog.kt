@@ -37,6 +37,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -100,8 +103,11 @@ fun LiteRTEngineViewerDialog(
     initializeDiagnostics: Boolean = true
 ) {
     val context = LocalContext.current
+    val cropControlsRequester = remember { BringIntoViewRequester() }
+    val cropNavigationScope = androidx.compose.runtime.rememberCoroutineScope()
     val report by LiteRTVisionClassifier.reportFlow.collectAsStateWithLifecycle()
     val isDiagnosticEnabled by TenthPickDiagnosticManager.isDiagnosticModeEnabled.collectAsStateWithLifecycle()
+    val automaticScanActive by TenthPickDiagnosticManager.automaticScanActiveFlow.collectAsStateWithLifecycle()
     val savedFrames by TenthPickDiagnosticManager.savedFramesFlow.collectAsStateWithLifecycle()
     val cacheStats by TenthPickDiagnosticManager.cacheStatsFlow.collectAsStateWithLifecycle()
     val calibrationConfig by DraftVisionScanner.calibrationConfigFlow.collectAsStateWithLifecycle()
@@ -189,6 +195,12 @@ fun LiteRTEngineViewerDialog(
                         }
                     }
 
+                    IconButton(
+                        onClick = { cropNavigationScope.launch { cropControlsRequester.bringIntoView() } },
+                        modifier = Modifier.size(48.dp).testTag("vision_crop_gallery")
+                    ) {
+                        Icon(Icons.Default.CameraAlt, contentDescription = tr("Ver recortes"), tint = Color(0xFF00E5FF))
+                    }
                     TextButton(
                         onClick = onDismissRequest,
                         modifier = Modifier.heightIn(min = 48.dp).testTag("vision_viewer_back")
@@ -320,7 +332,7 @@ fun LiteRTEngineViewerDialog(
                                             imageVector = Icons.Default.AutoAwesome,
                                             contentDescription = null,
                                             tint = Color(0xFF475569),
-                                            modifier = Modifier.size(28.dp)
+                                            modifier = Modifier.size(48.dp).testTag("vision_crop_copy_path")
                                         )
                                     }
                                 }
@@ -896,6 +908,8 @@ fun LiteRTEngineViewerDialog(
                 // SECCIÓN: MODO DIAGNÓSTICO DE RECORTES DEL 10º PICK
                 DiagnosticModeSection(
                     isEnabled = isDiagnosticEnabled,
+                    automaticScanActive = automaticScanActive,
+                    controlsModifier = Modifier.bringIntoViewRequester(cropControlsRequester),
                     onToggle = { TenthPickDiagnosticManager.setDiagnosticMode(context, it) },
                     cacheStats = cacheStats,
                     savedFrames = savedFrames,
@@ -930,6 +944,8 @@ fun LiteRTEngineViewerDialog(
 @Composable
 private fun DiagnosticModeSection(
     isEnabled: Boolean,
+    automaticScanActive: Boolean,
+    controlsModifier: Modifier = Modifier,
     onToggle: (Boolean) -> Unit,
     cacheStats: TenthPickDiagnosticManager.DiagnosticCacheStats,
     savedFrames: List<TenthPickDiagnosticManager.DiagnosticCropInfo>,
@@ -972,8 +988,8 @@ private fun DiagnosticModeSection(
                         letterSpacing = 0.5.sp
                     )
                     Text(
-                        text = com.example.util.tr(if (isEnabled) "Guardando recortes en caché para inspección" else "Modo diagnóstico inactivo"),
-                        color = if (isEnabled) Color(0xFF10B981) else Color(0xFF94A3B8),
+                        text = com.example.util.tr(if (!isEnabled) "Modo diagnóstico inactivo" else if (automaticScanActive) "Guardando recortes en caché para inspección" else "Recortes en pausa: activa Auto-Scan para guardar."),
+                        color = if (isEnabled && automaticScanActive) Color(0xFF10B981) else Color(0xFF94A3B8),
                         fontSize = 10.sp
                     )
                 }
@@ -982,6 +998,7 @@ private fun DiagnosticModeSection(
             Switch(
                 checked = isEnabled,
                 onCheckedChange = onToggle,
+                modifier = Modifier.heightIn(min = 48.dp).testTag("vision_diagnostic_toggle"),
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = Color(0xFF00E5FF),
@@ -1039,7 +1056,7 @@ private fun DiagnosticModeSection(
                     if (cacheStats.directoryPath.isNotEmpty()) {
                         IconButton(
                             onClick = { onCopyPath(cacheStats.directoryPath) },
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(48.dp).testTag("vision_crop_copy_path")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ContentCopy,
@@ -1064,12 +1081,13 @@ private fun DiagnosticModeSection(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = controlsModifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = com.example.util.tr("${cacheStats.totalFiles} recortes guardados • ${cacheStats.formattedTotalSize}"),
+                        modifier = Modifier.weight(1f),
                         color = Color(0xFFCBD5E1),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -1078,7 +1096,7 @@ private fun DiagnosticModeSection(
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         OutlinedButton(
                             onClick = onRefresh,
-                            modifier = Modifier.height(28.dp),
+                            modifier = Modifier.heightIn(min = 48.dp).testTag("vision_crop_refresh"),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                             border = BorderStroke(1.dp, Color(0xFF475569)),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFCBD5E1))
@@ -1095,7 +1113,7 @@ private fun DiagnosticModeSection(
                         if (cacheStats.totalFiles > 0) {
                             OutlinedButton(
                                 onClick = onClearCache,
-                                modifier = Modifier.height(28.dp),
+                                modifier = Modifier.heightIn(min = 48.dp).testTag("vision_crop_clear"),
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                                 border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f)),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFF87171))

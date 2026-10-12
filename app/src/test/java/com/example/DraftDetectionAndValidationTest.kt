@@ -378,6 +378,7 @@ class DraftDetectionAndValidationTest {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         com.example.service.screen.TenthPickDiagnosticManager.init(context)
         com.example.service.screen.TenthPickDiagnosticManager.setDiagnosticMode(context, true)
+        com.example.service.screen.TenthPickDiagnosticManager.setAutomaticScanActive(true)
         com.example.service.screen.TenthPickDiagnosticManager.clearAllCaches(context)
 
         val bmp = android.graphics.Bitmap.createBitmap(144, 144, android.graphics.Bitmap.Config.ARGB_8888)
@@ -427,6 +428,7 @@ class DraftDetectionAndValidationTest {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         com.example.service.screen.TenthPickDiagnosticManager.init(context)
         com.example.service.screen.TenthPickDiagnosticManager.setDiagnosticMode(context, true)
+        com.example.service.screen.TenthPickDiagnosticManager.setAutomaticScanActive(true)
 
         val bmp = android.graphics.Bitmap.createBitmap(80, 80, android.graphics.Bitmap.Config.ARGB_8888)
         com.example.service.screen.TenthPickDiagnosticManager.recordTenthPickCrop(

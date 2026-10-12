@@ -22,7 +22,43 @@ class OverlayState {
     var isLegendaryQueue by androidx.compose.runtime.mutableStateOf(false)
     var isCompactBubble by androidx.compose.runtime.mutableStateOf(false)
     var isScanning by androidx.compose.runtime.mutableStateOf(false)
-    var autoScanEnabled by androidx.compose.runtime.mutableStateOf(false)
+    private var automaticScanState by androidx.compose.runtime.mutableStateOf(false)
+    var autoScanEnabled: Boolean
+        get() = automaticScanState
+        set(value) {
+            com.example.service.screen.TenthPickDiagnosticManager.setAutomaticScanActive(value)
+            automaticScanState = value
+            if (!value) {
+                com.example.service.screen.DraftVisionScanner.updateFps(0f)
+                com.example.service.screen.DraftVisionScanner.debugVisualMatches.value = emptyMap()
+            }
+        }
+    internal fun prepareAutomaticScan() {
+        trackedLastPick = null
+        for (i in 0..4) {
+            if (manualLockedAllySlots[i] != true) allies[i] = null
+            if (manualLockedEnemySlots[i] != true) enemies[i] = null
+        }
+        unassignedAllies.clear()
+        enemyConfidences.clear()
+        allySummonerNames.clear()
+        enemySummonerNames.clear()
+        allySpells.clear()
+        enemySpells.clear()
+        com.example.service.screen.DraftVisionScanner.resetSlotMemory()
+    }
+    internal fun clearDraftAndCrops(context: android.content.Context) {
+        autoScanEnabled = false
+        trackedLastPick = null
+        allies.indices.forEach { allies[it] = null; enemies[it] = null }
+        manualLockedAllySlots.clear(); manualLockedEnemySlots.clear()
+        unassignedAllies.clear(); enemyConfidences.clear()
+        allySummonerNames.clear(); enemySummonerNames.clear()
+        allySpells.clear(); enemySpells.clear()
+        isRoleManuallySelected = false; isFirstPickManuallySelected = false
+        com.example.service.screen.DraftVisionScanner.resetSlotMemory()
+        com.example.service.screen.TenthPickDiagnosticManager.clearAllCaches(context)
+    }
     var scanNoticeMessage by androidx.compose.runtime.mutableStateOf<String?>(null)
     var isDraggingBubble by androidx.compose.runtime.mutableStateOf(false)
     var dragAccumulatedY by androidx.compose.runtime.mutableFloatStateOf(0f)

@@ -75,6 +75,53 @@ class DraftRivalNameInstalledTest {
         }
     }
 
+    @Test fun pocoLegendaryReadsCurrentTitlesAfterAStaleSessionAndClearRemovesCrops() = kotlinx.coroutines.runBlocking {
+        val ctx=InstrumentationRegistry.getInstrumentation().targetContext
+        val scanner=com.example.service.screen.DraftVisionScanner
+        val previous=scanner.calibrationConfig
+        val fixture=InstrumentationRegistry.getInstrumentation().context.assets.open("draft/poco-7457.json").bufferedReader().use { org.json.JSONObject(it.readText()) }
+        val bytes=android.util.Base64.decode(fixture.getString("pngBase64"),android.util.Base64.DEFAULT)
+        val original=BitmapFactory.decodeByteArray(bytes,0,bytes.size)!!
+        val bitmap=Bitmap.createScaledBitmap(original,1920,862,true)
+        if (bitmap!==original) original.recycle()
+        val hud=com.example.service.OverlayState()
+        try {
+            hud.allies[0]=com.example.model.Champion(id="sona",name="Sona")
+            scanner.allySlotConfirmedChampions[0]=hud.allies[0]
+            scanner.debugVisualMatches.value=mapOf("ally_0" to "Sona")
+            hud.autoScanEnabled=true;hud.prepareAutomaticScan()
+            assertTrue(scanner.debugVisualMatches.value.isEmpty())
+            scanner.updateCalibration(ctx,com.example.service.screen.VisionCalibrationConfig(
+                allyAvatarCenterX=.120f,enemyAvatarCenterX=.911f,
+                allySlotXRatios=List(5){.120f},enemySlotXRatios=List(5){.911f},
+                allySlotYRatios=listOf(.184f,.320f,.454f,.592f,.728f),
+                enemySlotYRatios=listOf(.179f,.315f,.449f,.587f,.723f)))
+            fun physical(a:org.json.JSONArray)=android.graphics.Rect(
+                kotlin.math.floor(a.getInt(0)*2712/1280.0).toInt(),kotlin.math.floor(a.getInt(1)*1220/576.0).toInt(),
+                kotlin.math.ceil(a.getInt(2)*2712/1280.0).toInt(),kotlin.math.ceil(a.getInt(3)*1220/576.0).toInt())
+            val masks=fixture.getJSONArray("debugTextRects")
+            scanner.publishScreenDiagnosticText((0 until masks.length()).map {physical(masks.getJSONArray(it))},2712,1220)
+            scanner.publishScreenOverlay(physical(fixture.getJSONArray("overlayRect")),2712,1220)
+            var latest:com.example.service.screen.DraftScanResult?=null
+            repeat(2) {
+                latest=scanner.scanDraftFromBitmap(bitmap,ctx,null,com.example.model.LaneRole.JUNGLE,detectBannedPortraits=true)
+                assertTrue(latest!!.statusMessage,latest!!.isSuccessful)
+                hud.syncScannedAllies(latest!!);hud.syncScannedEnemies(latest!!)
+                kotlinx.coroutines.delay(1550)
+            }
+            assertEquals("Poco ally names",setOf("senna","aurora","rell"),latest!!.alliesBySlot.values.map {it.id}.toSet())
+            assertEquals("Poco rival names",setOf("viktor","miss_fortune","darius","pyke"),latest!!.enemiesBySlot.values.map {it.id}.toSet())
+            assertNull(latest!!.alliesBySlot[3]);assertNull(latest!!.alliesBySlot[4]);assertNull(latest!!.enemiesBySlot[4])
+            assertTrue("Poco bans=${scanner.detectedBannedChampionIds}",scanner.detectedBannedChampionIds.containsAll(setOf("hwei","varus","kayn","nocturne","zyra","norra","k_sante")))
+            hud.clearDraftAndCrops(ctx)
+            assertTrue(com.example.service.screen.TenthPickDiagnosticManager.savedFramesFlow.value.isEmpty())
+            assertEquals(0,com.example.service.screen.TenthPickDiagnosticManager.cacheStatsFlow.value.totalFiles)
+        } finally {
+            hud.autoScanEnabled=false;bitmap.recycle();scanner.resetSlotMemory();scanner.updateCalibration(ctx,previous)
+            scanner.overlayRect=null;scanner.debugTextRects=emptyList()
+        }
+    }
+
     @Test fun currentMilioNameIsReadFromTheReportedCapture() = inspect("milio")
     @Test fun currentCaitlynNameIsReadFromTheReportedCapture() = inspect("caitlyn")
 

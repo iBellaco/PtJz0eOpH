@@ -58,6 +58,19 @@ class BannedPortraitScannerTest {
         } } finally { vision.overlayRect = previousOverlay; vision.debugTextRects = previousMasks }
     }
 
+    @Test fun pocoLegendaryHeaderUsesTheFiveOuterBanPositionsAndDiscardsAdjacentProfile() {
+        val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/poco-7457.png")!!.use { BitmapFactory.decodeStream(it)!! }
+        val scanner = BannedPortraitScanner()
+        try {
+            scanner.scan(bitmap, context, 0)
+            val ids = scanner.scan(bitmap, context, 1500)
+            assertTrue("Poco bans=$ids", ids.containsAll(setOf("hwei", "varus", "kayn", "nocturne", "zyra", "norra", "k_sante")))
+            assertFalse("Adjacent profile must not occupy a ban", "caitlyn" in ids)
+            assertEquals("zyra",scanner.slots.first { it.side == com.example.service.screen.BanSide.ENEMY && it.index==0 }.championId)
+            assertEquals(com.example.service.screen.BanState.EMPTY,scanner.slots.first { it.side == com.example.service.screen.BanSide.ENEMY && it.index==4 }.state)
+        } finally { bitmap.recycle() }
+    }
+
     @Test fun latestReportedHeaderRecognizesAllNineRealBansAndTheEmptyPosition() {
         val bitmap = javaClass.classLoader!!.getResourceAsStream("bans/reported-7296.jpg")!!.use { BitmapFactory.decodeStream(it)!! }
         val scanner = BannedPortraitScanner()
