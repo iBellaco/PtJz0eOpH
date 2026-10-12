@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import java.util.Locale
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -177,7 +178,7 @@ class DraftRivalNameInstalledTest {
         } finally { recognizer.close() }
     }
 
-    @Test fun reportedSlotsDoNotLoseSennaOrMalphiteAndFinishWithVisualRivalPick() = kotlinx.coroutines.runBlocking {
+    @Test fun reportedSlotsDoNotLoseSennaOrMalphiteAndFinishWithVisualRivalPick() = kotlinx.coroutines.runBlocking<Unit> {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val scanner = com.example.service.screen.DraftVisionScanner
         val original = scanner.calibrationConfig
