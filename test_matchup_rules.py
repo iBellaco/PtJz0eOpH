@@ -7,4 +7,4 @@ if __name__ == '__main__':
         'com.example.CoachMatchupCoverageTest', 'com.example.BuildChoiceRulesTest',
         'com.example.ChampionBuildsCatalogValidationTest',
         'com.example.DraftStableTitlesTest', 'com.example.BannedPortraitScannerTest',
-        'com.example.DeviceDraftProfileTest', 'com.example.CaptureCoordinateSpaceTest', 'com.example.DraftSessionLifecycleTest'])
+        'com.example.DeviceDraftProfileTest', 'com.example.CaptureCoordinateSpaceTest', 'com.example.DraftSessionLifecycleTest', 'com.example.PocoDebugCaptionLayoutTest', 'com.example.LiteRTViewerNavigationTest'])

@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.test.captureToImage
+import com.github.takahirom.roborazzi.captureRoboImage
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Density
@@ -26,10 +26,11 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk=[34],application=Application::class)
+@Config(sdk=[34],application=Application::class,qualifiers="w1280dp-h576dp-mdpi-land")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class PocoDebugCaptionLayoutTest {
     @get:Rule val compose=createComposeRule()
+    @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
     @Test fun largeFontPocoCaptionsKeepBanLabelsAndActualFirstTitlesSeparate() {
         val ctx=RuntimeEnvironment.getApplication()
         val previous=DraftVisionScanner.calibrationConfig
@@ -49,7 +50,12 @@ class PocoDebugCaptionLayoutTest {
                     Box(Modifier.requiredSize(1280.dp,576.dp)) { ScannerDebugOverlay(overlayRect=null) }
                 }
             }
-            compose.onRoot().captureToImage()
+            val evidence=java.io.File("build/reports/portuguese-rendered/poco-debug-large-font-es.png")
+            evidence.parentFile.mkdirs()
+            compose.onRoot().captureRoboImage(evidence.path,
+                roborazziOptions=com.github.takahirom.roborazzi.RoborazziOptions(
+                    taskType=com.github.takahirom.roborazzi.RoborazziTaskType.Record))
+            assertTrue("Rendered Poco evidence must exist",evidence.length()>0)
             compose.runOnIdle {
                 val masks=DraftVisionScanner.debugTextRects
                 assertTrue("Rendered diagnostic masks: $masks",masks.size>=20)
