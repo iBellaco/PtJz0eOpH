@@ -89,6 +89,7 @@ class DraftRivalNameInstalledTest {
             hud.allies[0]=com.example.model.Champion(id="sona",name="Sona")
             scanner.allySlotConfirmedChampions[0]=hud.allies[0]
             scanner.debugVisualMatches.value=mapOf("ally_0" to "Sona")
+            com.example.service.screen.TenthPickDiagnosticManager.setDiagnosticMode(ctx,true)
             hud.startAutomaticScan()
             assertTrue(scanner.debugVisualMatches.value.isEmpty())
             scanner.updateCalibration(ctx,com.example.service.screen.VisionCalibrationConfig(
@@ -115,9 +116,11 @@ class DraftRivalNameInstalledTest {
             assertTrue("Poco bans=${scanner.detectedBannedChampionIds}",scanner.detectedBannedChampionIds.containsAll(setOf("hwei","varus","kayn","nocturne","zyra","norra","k_sante")))
             assertEquals(listOf("hwei","varus","kayn","nocturne",null),scanner.banSlotsFlow.value.filter {it.side==com.example.service.screen.BanSide.ALLY}.sortedBy {it.index}.map {it.championId})
             assertEquals(listOf("zyra","norra","hwei","k_sante",null),scanner.banSlotsFlow.value.filter {it.side==com.example.service.screen.BanSide.ENEMY}.sortedBy {it.index}.map {it.championId})
+            assertTrue("Active Poco scan must create a diagnostic crop",com.example.service.screen.TenthPickDiagnosticManager.cacheStatsFlow.value.totalFiles>0)
             hud.clearDraftAndCrops(ctx)
             assertTrue(com.example.service.screen.TenthPickDiagnosticManager.savedFramesFlow.value.isEmpty())
             assertEquals(0,com.example.service.screen.TenthPickDiagnosticManager.cacheStatsFlow.value.totalFiles)
+            assertNull(com.example.service.screen.TenthPickDiagnosticManager.recordTenthPickCrop(bitmap,true,4,"paused",context=ctx))
         } finally {
             hud.autoScanEnabled=false;bitmap.recycle();scanner.resetSlotMemory();scanner.updateCalibration(ctx,previous)
             scanner.overlayRect=null;scanner.debugTextRects=emptyList()
